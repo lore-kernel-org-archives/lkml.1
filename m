@@ -1,105 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbXEOLMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933997AbXEOLSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760740AbXEOLMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 07:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbXEOLMq
+	id S933997AbXEOLSh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 07:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbXEOLS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 07:12:46 -0400
-Received: from klant.bhosted.nl ([217.148.95.132]:5587 "HELO
-	server1.bhosted.nl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1755261AbXEOLMp (ORCPT
+	Tue, 15 May 2007 07:18:29 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:57721 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755261AbXEOLS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 07:12:45 -0400
-Message-ID: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl>
-Date: Tue, 15 May 2007 13:12:39 +0200 (CEST)
-Subject: [2.6.21.1] OOPS in timer stats code
-From: "Folkert van Heusden" <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
+	Tue, 15 May 2007 07:18:29 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Tue, 15 May 2007 07:17:18 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Russell King <rmk@arm.linux.org.uk>, mchebab@infradead.org,
+       Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Replace "__attribute_pure__" with the shorter "__pure".
+Message-ID: <Pine.LNX.4.64.0705150705570.24052@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-After an uptime of, say, 4 hours I got an oops on my P4 with HT and 2GB ram.
-It has dynamic ticks enabled as well has timer stats. I cannot reboot the
-machine to give more details right now (19:00 gmt+1 i can).
+Replace the few occurrences of, and the macro definition of,
+"__attribute_pure__" with the shorter "__pure", to be more consistent
+with the other abbreviations in include/linux/compiler-gcc.h.
 
-For now, this is the oops:
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-[13092.479019] BUG: unable to handle kernel paging request at virtual
-address b9d0458f
-[13092.479115]  printing eip:
-[13092.479160] c10388a8
-[13092.479202] *pde = 00000000
-[13092.479246] Oops: 0000 [#1]
-[13092.479290] SMP
-[13092.479401] Modules linked in: wcfxo zaptel tuner tvaudio bttv
-video_buf ir_common i2c_algo_bit btcx_risc tveeprom pl2303 pwc usbserial
-nfs plusb w83627hf hwmon_vid usbnet snd_pcm_oss eeprom snd_mixer_oss
-i2c_isa i2c_core snd_intel8x0 snd_ac97_codec snd_pcm sd_mod snd_timer
-scsi_mod snd ide_cd soundcore snd_page_alloc cdrom ac97_bus parport_pc
-parport microcode firmware_class netconsole nfsd exportfs lockd sunrpc
-ipt_owner ip6table_filter ip6_tables ipv6 ipt_recent xt_limit xt_state
-act_police sch_ingress cls_u32 sch_sfq sch_cbq ipt_REJECT ipt_MASQUERADE
-ipt_TOS xt_tcpudp iptable_mangle iptable_filter rtl8150 e1000 3c59x mii
-iptable_nat ip_tables nf_nat nf_conntrack_ipv4 nf_conntrack nfnetlink
-x_tables capability commoncap ppp_deflate zlib_deflate zlib_inflate
-ppp_async crc_ccitt ppp_generic slip slhc genrtc rd
-[13092.483367] CPU:    1
-[13092.483368] EIP:    0060:[<c10388a8>]    Not tainted VLI
-[13092.483370] EFLAGS: 00010046   (2.6.21.1test #1)
-[13092.483511] EIP is at match_entries+0xb/0x38
-[13092.483558] eax: c25f9a80   ebx: 00000000   ecx: b9d0458b   edx: f039aec8
-[13092.483610] esi: f039aec8   edi: c25f99a0   ebp: f039aea0   esp: f039ae9c
-[13092.483660] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-[13092.483712] Process einstein_S5R2_4 (pid: 12710, ti=f039a000
-task=f7c32a70 task.ti=f039a000)
-[13092.483760] Stack: b9d0458b f039aec0 c1038911 c12109e9 c12ffe10
-c25f9ab0 00000096 c25f9b04
-[13092.484181]        c25f99a0 f039af50 c10389ec c120e6eb c25f9a80
-c10383ec c10385f0 00000000
-[13092.484581]        00000000 c1495c78 00000000 00000000 c13f7230
-00000001 f7c32fb8 c13f87c0
-[13092.484988] Call Trace:
-[13092.485105]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
-[13092.485220]  [<c1004e0a>] show_stack_log_lvl+0x8d/0xaa
-[13092.485336]  [<c1005044>] show_registers+0x1cd/0x2cb
-[13092.485457]  [<c10052a1>] die+0x11b/0x227
-[13092.485578]  [<c1212aef>] do_page_fault+0x319/0x57a
-[13092.485698]  [<c12110cc>] error_code+0x7c/0x84
-[13092.485813]  [<c1038911>] tstat_lookup+0x3c/0xc9
-[13092.485928]  [<c10389ec>] timer_stats_update_stats+0x4e/0x6f
-[13092.486041]  [<c1033d5d>] hrtimer_interrupt+0x184/0x1e3
-[13092.486156]  [<c100e9e2>] local_apic_timer_interrupt+0x55/0x5b
-[13092.486272]  [<c100ea12>] smp_apic_timer_interrupt+0x2a/0x39
-[13092.486390]  [<c1004a3f>] apic_timer_interrupt+0x33/0x38
-[13092.486510]  =======================
-[13092.486575] Code: 3d ff 03 00 00 89 e5 77 13 89 c2 83 c0 01 c1 e2 07 a3
-98 2c 37 c1 81 c2 00 2d 37 c1 89 d0 5d c3 55 89 c1 8b 42 04 89 e5 53 31 db
-<39> 41 04 74 05 89 d8 5b 5d c3 8b 42 08 39 41 08 75 f3 8b 42 0c
-[13092.489766] EIP: [<c10388a8>] match_entries+0xb/0x38 SS:ESP 0068:f039ae9c
-[13092.489901] Kernel panic - not syncing: Fatal exception in interrupt
-[13092.489951] BUG: at arch/i386/kernel/smp.c:546 smp_call_function()
-[13092.490003]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
-[13092.490091]  [<c1004d7b>] show_trace+0x12/0x14
-[13092.490178]  [<c1004e75>] dump_stack+0x16/0x18
-[13092.490267]  [<c100df63>] smp_call_function+0x10f/0x114
-[13092.490367]  [<c100dfb9>] smp_send_stop+0x1e/0x31
-[13092.490454]  [<c101ca83>] panic+0x50/0xf5
-[13092.490548]  [<c100539e>] die+0x218/0x227
-[13092.490640]  [<c1212aef>] do_page_fault+0x319/0x57a
-[13092.490738]  [<c12110cc>] error_code+0x7c/0x84
-[13092.490827]  [<c1038911>] tstat_lookup+0x3c/0xc9
-[13092.490914]  [<c10389ec>] timer_stats_update_stats+0x4e/0x6f
-[13092.491012]  [<c1033d5d>] hrtimer_interrupt+0x184/0x1e3
-[13092.491113]  [<c100e9e2>] local_apic_timer_interrupt+0x55/0x5b
-[13092.491201]  [<c100ea12>] smp_apic_timer_interrupt+0x2a/0x39
-[13092.491289]  [<c1004a3f>] apic_timer_interrupt+0x33/0x38
-[13092.491381]  =======================
+---
 
+  given that the short form of "__pure" is already defined, there's no
+point in supporting a longer (redundant) macro definition for exactly
+the same thing.
+
+  compile tested on x86 with "make allyesconfig".
+
+
+ arch/arm/nwfpe/fpopcode.h         |    6 +++---
+ drivers/media/video/v4l1-compat.c |    2 +-
+ include/asm-ppc/time.h            |    2 +-
+ include/linux/compiler-gcc.h      |    1 -
+ include/linux/compiler.h          |    3 ---
+ lib/crc32.c                       |   12 ++++++------
+ lib/libcrc32c.c                   |    6 +++---
+ 7 files changed, 14 insertions(+), 18 deletions(-)
+
+diff --git a/arch/arm/nwfpe/fpopcode.h b/arch/arm/nwfpe/fpopcode.h
+index ec78e35..8ae6f42 100644
+--- a/arch/arm/nwfpe/fpopcode.h
++++ b/arch/arm/nwfpe/fpopcode.h
+@@ -369,20 +369,20 @@ TABLE 5
+ #define getRoundingMode(opcode)		((opcode & MASK_ROUNDING_MODE) >> 5)
+
+ #ifdef CONFIG_FPE_NWFPE_XP
+-static inline __attribute_pure__ floatx80 getExtendedConstant(const unsigned int nIndex)
++static inline __pure floatx80 getExtendedConstant(const unsigned int nIndex)
+ {
+ 	extern const floatx80 floatx80Constant[];
+ 	return floatx80Constant[nIndex];
+ }
+ #endif
+
+-static inline __attribute_pure__ float64 getDoubleConstant(const unsigned int nIndex)
++static inline __pure float64 getDoubleConstant(const unsigned int nIndex)
+ {
+ 	extern const float64 float64Constant[];
+ 	return float64Constant[nIndex];
+ }
+
+-static inline __attribute_pure__ float32 getSingleConstant(const unsigned int nIndex)
++static inline __pure float32 getSingleConstant(const unsigned int nIndex)
+ {
+ 	extern const float32 float32Constant[];
+ 	return float32Constant[nIndex];
+diff --git a/drivers/media/video/v4l1-compat.c b/drivers/media/video/v4l1-compat.c
+index ede8543..6dbbfa2 100644
+--- a/drivers/media/video/v4l1-compat.c
++++ b/drivers/media/video/v4l1-compat.c
+@@ -145,7 +145,7 @@ const static unsigned int palette2pixelformat[] = {
+ 	[VIDEO_PALETTE_YUV422P] = V4L2_PIX_FMT_YUV422P,
+ };
+
+-static unsigned int __attribute_pure__
++static unsigned int __pure
+ palette_to_pixelformat(unsigned int palette)
+ {
+ 	if (palette < ARRAY_SIZE(palette2pixelformat))
+diff --git a/include/asm-ppc/time.h b/include/asm-ppc/time.h
+index f7eadf6..81dbcd4 100644
+--- a/include/asm-ppc/time.h
++++ b/include/asm-ppc/time.h
+@@ -57,7 +57,7 @@ static __inline__ void set_dec(unsigned int val)
+ /* Accessor functions for the timebase (RTC on 601) registers. */
+ /* If one day CONFIG_POWER is added just define __USE_RTC as 1 */
+ #ifdef CONFIG_6xx
+-extern __inline__ int __attribute_pure__ __USE_RTC(void) {
++extern __inline__ int __pure __USE_RTC(void) {
+ 	return (mfspr(SPRN_PVR)>>16) == 1;
+ }
+ #else
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index 03ec231..7820fef 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -38,6 +38,5 @@
+ #define __aligned(x)			__attribute__((aligned(x)))
+ #define __printf(a,b)			__attribute__((format(printf,a,b)))
+ #define  noinline			__attribute__((noinline))
+-#define __attribute_pure__		__attribute__((pure))
+ #define __attribute_const__		__attribute__((__const__))
+ #define __maybe_unused			__attribute__((unused))
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 498c359..cc0abaa 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -144,9 +144,6 @@ extern void __chk_io_ptr(const void __iomem *);
+  * would be.
+  * [...]
+  */
+-#ifndef __attribute_pure__
+-# define __attribute_pure__	/* unimplemented */
+-#endif
+
+ #ifndef noinline
+ #define noinline
+diff --git a/lib/crc32.c b/lib/crc32.c
+index bfc3331..d2c2f25 100644
+--- a/lib/crc32.c
++++ b/lib/crc32.c
+@@ -49,7 +49,7 @@ MODULE_LICENSE("GPL");
+  * @p: pointer to buffer over which CRC is run
+  * @len: length of buffer @p
+  */
+-u32 __attribute_pure__ crc32_le(u32 crc, unsigned char const *p, size_t len);
++u32 __pure crc32_le(u32 crc, unsigned char const *p, size_t len);
+
+ #if CRC_LE_BITS == 1
+ /*
+@@ -57,7 +57,7 @@ u32 __attribute_pure__ crc32_le(u32 crc, unsigned char const *p, size_t len);
+  * simplified by inlining the table in ?: form.
+  */
+
+-u32 __attribute_pure__ crc32_le(u32 crc, unsigned char const *p, size_t len)
++u32 __pure crc32_le(u32 crc, unsigned char const *p, size_t len)
+ {
+ 	int i;
+ 	while (len--) {
+@@ -69,7 +69,7 @@ u32 __attribute_pure__ crc32_le(u32 crc, unsigned char const *p, size_t len)
+ }
+ #else				/* Table-based approach */
+
+-u32 __attribute_pure__ crc32_le(u32 crc, unsigned char const *p, size_t len)
++u32 __pure crc32_le(u32 crc, unsigned char const *p, size_t len)
+ {
+ # if CRC_LE_BITS == 8
+ 	const u32      *b =(u32 *)p;
+@@ -145,7 +145,7 @@ u32 __attribute_pure__ crc32_le(u32 crc, unsigned char const *p, size_t len)
+  * @p: pointer to buffer over which CRC is run
+  * @len: length of buffer @p
+  */
+-u32 __attribute_pure__ crc32_be(u32 crc, unsigned char const *p, size_t len);
++u32 __pure crc32_be(u32 crc, unsigned char const *p, size_t len);
+
+ #if CRC_BE_BITS == 1
+ /*
+@@ -153,7 +153,7 @@ u32 __attribute_pure__ crc32_be(u32 crc, unsigned char const *p, size_t len);
+  * simplified by inlining the table in ?: form.
+  */
+
+-u32 __attribute_pure__ crc32_be(u32 crc, unsigned char const *p, size_t len)
++u32 __pure crc32_be(u32 crc, unsigned char const *p, size_t len)
+ {
+ 	int i;
+ 	while (len--) {
+@@ -167,7 +167,7 @@ u32 __attribute_pure__ crc32_be(u32 crc, unsigned char const *p, size_t len)
+ }
+
+ #else				/* Table-based approach */
+-u32 __attribute_pure__ crc32_be(u32 crc, unsigned char const *p, size_t len)
++u32 __pure crc32_be(u32 crc, unsigned char const *p, size_t len)
+ {
+ # if CRC_BE_BITS == 8
+ 	const u32      *b =(u32 *)p;
+diff --git a/lib/libcrc32c.c b/lib/libcrc32c.c
+index 60f4680..802f11f 100644
+--- a/lib/libcrc32c.c
++++ b/lib/libcrc32c.c
+@@ -66,7 +66,7 @@ EXPORT_SYMBOL(crc32c_le);
+  * loop below with crc32 and vary the POLY if we don't find value in terms
+  * of space and maintainability in keeping the two modules separate.
+  */
+-u32 __attribute_pure__
++u32 __pure
+ crc32c_le(u32 crc, unsigned char const *p, size_t len)
+ {
+ 	int i;
+@@ -160,7 +160,7 @@ static const u32 crc32c_table[256] = {
+  * crc using table.
+  */
+
+-u32 __attribute_pure__
++u32 __pure
+ crc32c_le(u32 seed, unsigned char const *data, size_t length)
+ {
+ 	u32 crc = __cpu_to_le32(seed);
+@@ -177,7 +177,7 @@ crc32c_le(u32 seed, unsigned char const *data, size_t length)
+ EXPORT_SYMBOL(crc32c_be);
+
+ #if CRC_BE_BITS == 1
+-u32 __attribute_pure__
++u32 __pure
+ crc32c_be(u32 crc, unsigned char const *p, size_t len)
+ {
+ 	int i;
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
