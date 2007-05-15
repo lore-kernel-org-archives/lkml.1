@@ -1,200 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbXEODWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbXEODZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758759AbXEODWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 23:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXEODWH
+	id S1759997AbXEODZx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 23:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbXEODZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 23:22:07 -0400
-Received: from usul.saidi.cx ([204.11.33.34]:35541 "EHLO usul.overt.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750940AbXEODWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 23:22:06 -0400
-Message-ID: <46492750.40408@overt.org>
-Date: Mon, 14 May 2007 20:21:52 -0700
-From: Philip Langdale <philipl@overt.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: Tobias Bengtsson <tobbe@tobbe.nu>, sdhci-devel@list.drzeus.cx,
-       LKML <linux-kernel@vger.kernel.org>
-References: <46479D59.4020400@overt.org> <46483A25.8030301@drzeus.cx>
-In-Reply-To: <46483A25.8030301@drzeus.cx>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 14 May 2007 23:25:47 -0400
+Received: from h80ad2262.async.vt.edu ([128.173.34.98]:56030 "EHLO
+	h80ad2262.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753656AbXEODZq (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 23:25:46 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Martin Peschke <mp3@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm2 - CONFIG_STATISTIC and Intel PowerTOP...
+In-Reply-To: Your message of "Wed, 09 May 2007 01:23:22 PDT."
+             <20070509012322.199f292b.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070509012322.199f292b.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1179199530_4787P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-I-Got-Here: Yes
-X-I-Got-Here: Yes3
-Subject: Re: [PATCH] sdhci: Add quirk to support polling for card presence
+Date: Mon, 14 May 2007 23:25:30 -0400
+Message-ID: <8277.1179199530@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is apparently at least one instance of the Ricoh SDHCI
-implementation out there where card insertion and removal
-interrupts do not work - so the only way to detect a change
-in the presence of a card is to poll.
+--==_Exmh_1179199530_4787P
+Content-Type: text/plain; charset=us-ascii
 
-This changes adds a polling quirk for the particular model
-reported. Others may be affected, but we can add them as they
-arise.
+On Wed, 09 May 2007 01:23:22 PDT, Andrew Morton said:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm2/
 
-As part of this change, caching of the present state is introduced
-to reduce the amount of work done when nothing has changed. This
-cached state is referred to in the standard interrupt path but as
-it is interrupt driven - the cached and new state should never be
-the same so it will cause no change in behaviour.
+So I'm trying to get the Intel PowerTop stuff working, and discovered that /
+proc/timer_stats and/or /proc/tstats has moved to /debug in -mm2 - but only if
+you're building for S390.  For other architechtures it just evaporates
+entirely.  I had to bash this patch in to get it to get included in an x86_64
+build:
 
-Signed-off-by: Philip Langdale <philipl@overt.org>
-
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index ff5bf73..2d5ec61 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -34,6 +34,7 @@ static unsigned int debug_quirks = 0;
- /* Controller doesn't like some resets when there is no card inserted. */
- #define SDHCI_QUIRK_NO_CARD_NO_RESET			(1<<2)
- #define SDHCI_QUIRK_SINGLE_POWER_WRITE			(1<<3)
-+#define SDHCI_QUIRK_NO_CARD_DETECT_INT			(1<<4)
-
- static const struct pci_device_id pci_ids[] __devinitdata = {
- 	{
-@@ -48,6 +49,16 @@ static const struct pci_device_id pci_ids[] __devinitdata = {
- 	{
- 		.vendor		= PCI_VENDOR_ID_RICOH,
- 		.device		= PCI_DEVICE_ID_RICOH_R5C822,
-+		.subvendor	= PCI_SUBVENDOR_ID_FUJITSU_SIEMENS,
-+		.subdevice	= PCI_SUBDEVICE_ID_FUJITSU_SIEMENS_SI1520,
-+		.driver_data	= SDHCI_QUIRK_FORCE_DMA |
-+				  SDHCI_QUIRK_NO_CARD_NO_RESET |
-+				  SDHCI_QUIRK_NO_CARD_DETECT_INT,
-+	},
+--- linux-2.6.21-mm2/arch/x86_64/Kconfig.statistics     2007-05-14 23:01:00.000000000 -0400
++++ linux-2.6.21-mm2/arch/x86_64/Kconfig        2007-05-14 23:00:45.000000000 -0400
+@@ -793,6 +793,8 @@
+ 
+ source "kernel/Kconfig.marker"
+ 
++source "lib/Kconfig.statistic"
 +
-+	{
-+		.vendor		= PCI_VENDOR_ID_RICOH,
-+		.device		= PCI_DEVICE_ID_RICOH_R5C822,
- 		.subvendor	= PCI_ANY_ID,
- 		.subdevice	= PCI_ANY_ID,
- 		.driver_data	= SDHCI_QUIRK_FORCE_DMA |
-@@ -788,13 +799,18 @@ static void sdhci_tasklet_card(unsigned long param)
- {
- 	struct sdhci_host *host;
- 	unsigned long flags;
-+	int present;
-+	int polling;
+ endmenu
+ 
+ source "arch/x86_64/Kconfig.debug"
 
- 	host = (struct sdhci_host*)param;
+Am just replicating the choice to put it in arch/s390/Kconfig - not sure why
+it was in there rather than lib/Kconfig.debug - is there a reason here?
 
-+	polling = host->chip->quirks & SDHCI_QUIRK_NO_CARD_DETECT_INT;
-+
- 	spin_lock_irqsave(&host->lock, flags);
+Having bashed *that* into place, I hit this at kernel link time:
 
--	if (!(readl(host->ioaddr + SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)) {
--		if (host->mrq) {
-+	present = readl(host->ioaddr + SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT;
-+	if (present != host->present) {
-+		if (!present && host->mrq) {
- 			printk(KERN_ERR "%s: Card removed during transfer!\n",
- 				mmc_hostname(host->mmc));
- 			printk(KERN_ERR "%s: Resetting controller.\n",
-@@ -806,11 +822,21 @@ static void sdhci_tasklet_card(unsigned long param)
- 			host->mrq->cmd->error = MMC_ERR_FAILED;
- 			tasklet_schedule(&host->finish_tasklet);
- 		}
--	}
-
--	spin_unlock_irqrestore(&host->lock, flags);
-+		host->present = present;
-+
-+		spin_unlock_irqrestore(&host->lock, flags);
-+
-+		mmc_detect_change(host->mmc,
-+				  polling ? 0 : msecs_to_jiffies(500));
-+	} else {
-+		spin_unlock_irqrestore(&host->lock, flags);
-+	}
-
--	mmc_detect_change(host->mmc, msecs_to_jiffies(500));
-+	if (polling) {
-+		host->detect_timer.expires = jiffies + HZ;
-+		add_timer(&host->detect_timer);
-+	}
- }
-
- static void sdhci_tasklet_finish(unsigned long param)
-@@ -865,6 +891,15 @@ static void sdhci_tasklet_finish(unsigned long param)
- 	mmc_request_done(host->mmc, mrq);
- }
-
-+static void sdhci_detect_timer(unsigned long data)
-+{
-+	struct sdhci_host *host;
-+
-+	host = (struct sdhci_host*)data;
-+
-+	tasklet_schedule(&host->card_tasklet);
-+}
-+
- static void sdhci_timeout_timer(unsigned long data)
- {
- 	struct sdhci_host *host;
-@@ -1329,6 +1364,8 @@ static int __devinit sdhci_probe_slot(struct pci_dev *pdev, int slot)
- 	 */
- 	mmc->max_blk_count = 65535;
-
-+	host->present = readl(host->ioaddr + SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT;;
-+
- 	/*
- 	 * Init tasklets.
- 	 */
-@@ -1344,6 +1381,12 @@ static int __devinit sdhci_probe_slot(struct pci_dev *pdev, int slot)
- 	if (ret)
- 		goto untasklet;
-
-+	if (host->chip->quirks & SDHCI_QUIRK_NO_CARD_DETECT_INT) {
-+		setup_timer(&host->detect_timer, sdhci_detect_timer, (unsigned long)host);
-+		host->detect_timer.expires = jiffies + HZ;
-+		add_timer(&host->detect_timer);
-+	}
-+
- 	sdhci_init(host);
-
- #ifdef CONFIG_MMC_DEBUG
-@@ -1396,6 +1439,10 @@ static void sdhci_remove_slot(struct pci_dev *pdev, int slot)
- 	tasklet_kill(&host->card_tasklet);
- 	tasklet_kill(&host->finish_tasklet);
-
-+	if (host->chip->quirks & SDHCI_QUIRK_NO_CARD_DETECT_INT) {
-+		del_timer_sync(&host->detect_timer);
-+	}
-+
- 	iounmap(host->ioaddr);
-
- 	pci_release_region(pdev, host->bar);
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 7400f4b..fafd1c4 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -198,6 +198,9 @@ struct sdhci_host {
- 	struct tasklet_struct	finish_tasklet;
-
- 	struct timer_list	timer;		/* Timer for timeouts */
-+
-+	struct timer_list	detect_timer;	/* Timer for card polling */
-+	int			present;	/* Cached card present state */
- };
-
- struct sdhci_chip {
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index ae849f0..e10eeaf 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2049,6 +2049,9 @@
- #define PCI_VENDOR_ID_VITESSE		0x1725
- #define PCI_DEVICE_ID_VITESSE_VSC7174	0x7174
-
-+#define PCI_SUBVENDOR_ID_FUJITSU_SIEMENS	0x1734
-+#define PCI_SUBDEVICE_ID_FUJITSU_SIEMENS_SI1520	0x10ad
-+
- #define PCI_VENDOR_ID_LINKSYS		0x1737
- #define PCI_DEVICE_ID_LINKSYS_EG1064	0x1064
+WARNING: lib/built-in.o - Section mismatch: reference to .init.text:statistic_hotcpu from .data between 'statistic_hotcpu_notifier' (at offset 0x640) and 'io_tlb_lock'
 
 
+--==_Exmh_1179199530_4787P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGSSgqcC3lWbTT17ARAj7WAJ0S72rG7bra6KB5fkJcNS8cYcAGeQCgo742
+ICJE9TrfevKKn9KrpT6Rtng=
+=jkHq
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1179199530_4787P--
