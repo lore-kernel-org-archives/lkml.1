@@ -1,64 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933204AbXEOJJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbXEOJNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933204AbXEOJJa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 05:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758325AbXEOJJY
+	id S933223AbXEOJNo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 05:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbXEOJNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 05:09:24 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:57933 "EHLO koto.vergenet.net"
+	Tue, 15 May 2007 05:13:37 -0400
+Received: from zakalwe.fi ([80.83.5.154]:39804 "EHLO zakalwe.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758084AbXEOJJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 05:09:23 -0400
-Date: Tue, 15 May 2007 18:09:19 +0900
-From: Simon Horman <horms@verge.net.au>
-To: linux-kernel@vger.kernel.org,
-       Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ARM] Fix hard_smp_processor_id compile error
-Message-ID: <20070515090917.GA22359@verge.net.au>
-References: <20070515022014.CC2A44F910@tabatha.lab.ultramonkey.org> <20070515081907.GA17611@flint.arm.linux.org.uk>
+	id S1757412AbXEOJNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 05:13:37 -0400
+Date: Tue, 15 May 2007 12:12:46 +0300
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: On __pure and __attribute_pure__
+Message-ID: <20070515091246.GE10873@zakalwe.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070515081907.GA17611@flint.arm.linux.org.uk>
-User-Agent: mutt-ng/devel-r804 (Debian)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 at 09:19:07AM +0100, Russell King wrote:
-> On Tue, May 15, 2007 at 11:18:50AM +0900, Simon Horman wrote:
-> > "Remove hardcoding of hard_smp_processor_id on UP systems",
-> > 2f4dfe206a2fc07099dfad77a8ea2f4b4ae2140f in Linus' tree, moved
-> > the definition of hard_smp_processor_id linux/smp.h to asm/smp.h
-> > for UP systems. This causes a regression on ARM as the definition
-> > was not added to asm-arm/smp.h.
-> > 
-> > Cc: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> > Signed-off-by: Simon Horman <horms@verge.net.au>
-> 
-> I took an alternative approach - since Integrator never had the complete
-> SMP support merged, I ripped it out of that platform.  Whether realview
-> suffers from the same thing or not I'm not sure - uniprocessor realview
-> is not something covered by the ARM default configuration files, and
-> therefore kautobuild won't check that configuration.
+Both __pure and __attribute_pure__ are the same, and I found out that 
+there is only a handful of users for these. __attribute_pure__ is 
+used in approximately 15 places, and __pure is not used anywhere.
 
-I can take a look into this. Is there a tree other than Linus'
-I should be working with?
+Is either __pure or __attribute_pure__ preferred? Imo, __pure looks 
+much nicer than __attribute_pure__ so we could do a replacement.
 
-> However, the things I find annoying about this is:
-> 
-> 1. asm/smp.h was _never_ included in ARM UP builds prior to this change.
-> 2. we have linux/smp.h and the general rule is that if asm/foo.h and
->    linux/foo.h are present, linux/foo.h is included in preference to
->    asm/foo.h
-> 
-> Given the amount of janitors we now have looking at the kernel code,
-> (2) is a big concern - it could mean a constant stream of patches
-> trying to "fix" files including asm/smp.h.
-> 
-> I would suggest that if there is a desire to include asm/smp.h on UP
-> builds, the inclusion of it by linux/smp.h is made unconditional.
-
-I was thinking that myself, though I'm kind of fearful of
-what kind of (additional) breakage it might cause.
-
+-- 
+Heikki Orsila			Barbie's law:
+heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
+http://www.iki.fi/shd
