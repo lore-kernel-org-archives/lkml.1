@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbXEOT26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761342AbXEOT3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760849AbXEOT26 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 15:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbXEOT2v
+	id S1761342AbXEOT3j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 15:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbXEOT3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 15:28:51 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:36312 "EHLO pasmtpA.tele.dk"
+	Tue, 15 May 2007 15:29:32 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:51399 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756541AbXEOT2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 15:28:51 -0400
-Date: Tue, 15 May 2007 21:29:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       Linus <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for powerpc
-Message-ID: <20070515192946.GA22476@uranus.ravnborg.org>
-References: <3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org> <989B956029373F45A0B8AF0297081890B76041@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <989B956029373F45A0B8AF0297081890B76041@zch01exm26.fsl.freescale.net>
-User-Agent: Mutt/1.4.2.1i
+	id S1755793AbXEOT3b convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 15:29:31 -0400
+X-Greylist: delayed 761 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 15:29:31 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [RFC] Orphaning MMC host drivers
+Date: Tue, 15 May 2007 14:14:30 -0500
+Message-ID: <9C23CDD79DA20A479D4615857B2E2C47E9FDD8@dlee13.ent.ti.com>
+In-Reply-To: <4648BAC9.5020405@drzeus.cx>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC] Orphaning MMC host drivers
+Thread-Index: AceWX5oeugQT/S5MSaeV4rO8SlOYLwAwtAYA
+From: "Syed Mohammed, Khasim" <x0khasim@ti.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
+       "LKML" <linux-kernel@vger.kernel.org>
+Cc: "Nicolas FERRE" <nicolas.ferre@rfo.atmel.com>,
+       "Andrew Victor" <andrew@sanpeople.com>,
+       "Ralf Baechle" <ralf@linux-mips.org>,
+       "Manuel Lauss" <mano@roarinelk.homelinux.net>,
+       "Yoichi Yuasa" <yoichi_yuasa@tripeaks.co.jp>,
+       "Pavel Pisa" <pisa@cmp.felk.cvut.cz>,
+       "Sascha Hauer" <s.hauer@pengutronix.de>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>,
+       "Tony Lindgren" <tony@atomide.com>,
+       "David Brownell" <david-b@pacbell.net>,
+       =?iso-8859-1?B?SnVoYSBZcmr2bOQ=?= <juha.yrjola@solidboot.com>,
+       "Briglia >> \"Anderson F. Briglia\"" <anderson.briglia@indt.org.br>,
+       "Kyungmin Park" <kmpark@infradead.org>,
+       "Carlos Aguiar" <carlos.aguiar@indt.org.br>
+X-OriginalArrivalTime: 15 May 2007 19:14:31.0562 (UTC) FILETIME=[441C06A0:01C79725]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 at 05:36:40PM +0800, Li Yang-r58472 wrote:
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> > Sent: Monday, May 14, 2007 9:57 PM
-> > To: Sam Ravnborg
-> > Cc: Li Yang-r58472; Linus; Andrew Morton; Linux Kernel;
-> linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning
-> whitelist for
-> > powerpc
-> > 
-> > 
-> > On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
-> > 
-> > > On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
-> > >> This patch fixes the following "Section mismatch" warnings when
-> > >> build powerpc platforms.
-> > >>
-> > >> -------------
-> > >> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference
-> to
-> > >> .init.text:early_get_page from .text between
-> > >> 'pte_alloc_one_kernel' (at
-> > >> offset 0xc68) and 'pte_alloc_one'
-> > >> WARNING: mm/built-in.o - Section mismatch: reference to
-> > >> .init.text:set_up_list3s from .text between
-> > >> 'kmem_cache_create' (at offset
-> > >> 0x20300) and 'cache_reap'
-> > >> -------------
-> > 
-> > This warnings should be handled by __init_refok instead.
-> 
-> Yes.  When __init_refok gets in, we can change all Pattern 9 members in
-> the whitelist to use __init_refok.
+Hi Pierre,
 
-I have applied the patch without the fixes for the above functions.
-Will merge and push the __init_refok changes soonish.
+Carlos Aguiar and Anderson Briglia are interested in making sure the driver works for existing boards as they have access to them, and I can make it work for new omaps (2430, 3430).
 
-	Sam
+TI OMAP MMC INTERFACE DRIVER
+P:	Carlos Aguiar, Anderson Briglia and Syed Khasim
+M:	linux-omap-open-source@linux.omap.com 
+W:	http://linux.omap.com
+W:	http://www.muru.com/linux/omap/
+S:	Maintained
+
+Regards,
+Khasim
