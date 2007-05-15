@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbXEOTii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762330AbXEOTix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759265AbXEOTii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 15:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761435AbXEOThO
+	id S1762330AbXEOTix (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 15:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762052AbXEOThX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 15:37:14 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45140 "EHLO
+	Tue, 15 May 2007 15:37:23 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45142 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762002AbXEOThL (ORCPT
+	with ESMTP id S1757611AbXEOThV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 15:37:11 -0400
+	Tue, 15 May 2007 15:37:21 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] audit_match_signal() and friends are used only if CONFIG_AUDITSYSCALL is set
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1Ho2pa-0003V7-D1@ZenIV.linux.org.uk>
+Subject: [PATCH] arm: walk_stacktrace() needs to be exported
+Cc: linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk
+Message-Id: <E1Ho2pk-0003VL-Bo@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Tue, 15 May 2007 20:37:10 +0100
+Date: Tue, 15 May 2007 20:37:20 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+oprofile depends on having it
+
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- kernel/auditfilter.c |    2 ++
+ arch/arm/kernel/stacktrace.c |    2 ++
  1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-index 6c61263..74cc0fc 100644
---- a/kernel/auditfilter.c
-+++ b/kernel/auditfilter.c
-@@ -311,6 +311,7 @@ int audit_match_class(int class, unsigned syscall)
- 	return classes[class][AUDIT_WORD(syscall)] & AUDIT_BIT(syscall);
- }
+diff --git a/arch/arm/kernel/stacktrace.c b/arch/arm/kernel/stacktrace.c
+index 398d0c0..8b63ad8 100644
+--- a/arch/arm/kernel/stacktrace.c
++++ b/arch/arm/kernel/stacktrace.c
+@@ -1,3 +1,4 @@
++#include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/stacktrace.h>
  
-+#ifdef CONFIG_AUDITSYSCALL
- static inline int audit_match_class_bits(int class, u32 *mask)
- {
- 	int i;
-@@ -347,6 +348,7 @@ static int audit_match_signal(struct audit_entry *entry)
- 		return 1;
- 	}
- }
-+#endif
+@@ -30,6 +31,7 @@ int walk_stackframe(unsigned long fp, unsigned long low, unsigned long high,
  
- /* Common user-space to kernel rule translation. */
- static inline struct audit_entry *audit_to_entry_common(struct audit_rule *rule)
+ 	return 0;
+ }
++EXPORT_SYMBOL(walk_stackframe);
+ 
+ #ifdef CONFIG_STACKTRACE
+ struct stack_trace_data {
 -- 
 1.5.0-rc2.GIT
-
 
