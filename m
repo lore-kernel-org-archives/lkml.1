@@ -1,62 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbXEODNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbXEODWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759507AbXEODNb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 23:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbXEODNY
+	id S1758759AbXEODWR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 23:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXEODWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 23:13:24 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59612 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752145AbXEODNX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 23:13:23 -0400
-Date: Mon, 14 May 2007 20:12:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, Chuck Ebbert <76306.1226@compuserve.com>
-Subject: Re: oprofile broken in 2.6.21 SMP (was Re: Remove constructor from
- buffer_head)
-Message-Id: <20070514201232.ad4768f9.akpm@linux-foundation.org>
-In-Reply-To: <20070513203816.GI30571@kvack.org>
-References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
-	<20070504134212.c18d2d65.akpm@linux-foundation.org>
-	<20070504143347.9a1d6a34.akpm@linux-foundation.org>
-	<200705050122.05275.ak@suse.de>
-	<20070504164529.f64a2985.akpm@linux-foundation.org>
-	<20070505093119.GC26000@wotan.suse.de>
-	<20070513203816.GI30571@kvack.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 May 2007 23:22:07 -0400
+Received: from usul.saidi.cx ([204.11.33.34]:35541 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750940AbXEODWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 23:22:06 -0400
+Message-ID: <46492750.40408@overt.org>
+Date: Mon, 14 May 2007 20:21:52 -0700
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Tobias Bengtsson <tobbe@tobbe.nu>, sdhci-devel@list.drzeus.cx,
+       LKML <linux-kernel@vger.kernel.org>
+References: <46479D59.4020400@overt.org> <46483A25.8030301@drzeus.cx>
+In-Reply-To: <46483A25.8030301@drzeus.cx>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-I-Got-Here: Yes
+X-I-Got-Here: Yes3
+Subject: Re: [PATCH] sdhci: Add quirk to support polling for card presence
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 May 2007 16:38:16 -0400 Benjamin LaHaise <bcrl@kvack.org> wrote:
+There is apparently at least one instance of the Ricoh SDHCI
+implementation out there where card insertion and removal
+interrupts do not work - so the only way to detect a change
+in the presence of a card is to poll.
 
-> On Sat, May 05, 2007 at 11:31:20AM +0200, Andi Kleen wrote:
-> > Hmm, after a opcontrol --reset i see the same issue now. Don't know what's 
-> > wrong, but it must be something different from the .20 perfctr allocation
-> > problem.
-> > 
-> > It looks like the daemon doesn't get any data from the kernel
-> 
-> I finally had time to track this down.  The breakage is caused by "[PATCH] 
-> x86-64: Let oprofile reserve MSR on all CPUs".  Oprofile is already calling 
-> the reserve functions on each CPU in the system when it sets up the MSRs.  
-> This results in oprofile getting a reservation failure on CPUs above 0.  The 
-> following makes oprofile adapt to the API change for now -- oprofile 
-> still needs to be modified to perform the reservations earlier during its 
-> initialization, but that's a little bit more involved than the immediate 
-> bug fix.  This only affects systems with more than 1 CPU.  This patch has 
-> been through limited testing (Athlon 64 X2 and Core 2, but not on the P4) on 
-> x86 and x86-64 (Core 2 only).
+This changes adds a polling quirk for the particular model
+reported. Others may be affected, but we can add them as they
+arise.
 
-Unfortunately we've left this a bit too late - your patch is patching code which
-isn't there any more in mainline and we also need a 2.6.21.x fix.
+As part of this change, caching of the present state is introduced
+to reduce the amount of work done when nothing has changed. This
+cached state is referred to in the standard interrupt path but as
+it is interrupt driven - the cached and new state should never be
+the same so it will cause no change in behaviour.
 
-So perhaps we could merge your "immediate bugfix" into -stable and implement the
-"more involved" fix for 2.6.22.
+Signed-off-by: Philip Langdale <philipl@overt.org>
 
-Andi, any preferences?
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index ff5bf73..2d5ec61 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -34,6 +34,7 @@ static unsigned int debug_quirks = 0;
+ /* Controller doesn't like some resets when there is no card inserted. */
+ #define SDHCI_QUIRK_NO_CARD_NO_RESET			(1<<2)
+ #define SDHCI_QUIRK_SINGLE_POWER_WRITE			(1<<3)
++#define SDHCI_QUIRK_NO_CARD_DETECT_INT			(1<<4)
+
+ static const struct pci_device_id pci_ids[] __devinitdata = {
+ 	{
+@@ -48,6 +49,16 @@ static const struct pci_device_id pci_ids[] __devinitdata = {
+ 	{
+ 		.vendor		= PCI_VENDOR_ID_RICOH,
+ 		.device		= PCI_DEVICE_ID_RICOH_R5C822,
++		.subvendor	= PCI_SUBVENDOR_ID_FUJITSU_SIEMENS,
++		.subdevice	= PCI_SUBDEVICE_ID_FUJITSU_SIEMENS_SI1520,
++		.driver_data	= SDHCI_QUIRK_FORCE_DMA |
++				  SDHCI_QUIRK_NO_CARD_NO_RESET |
++				  SDHCI_QUIRK_NO_CARD_DETECT_INT,
++	},
++
++	{
++		.vendor		= PCI_VENDOR_ID_RICOH,
++		.device		= PCI_DEVICE_ID_RICOH_R5C822,
+ 		.subvendor	= PCI_ANY_ID,
+ 		.subdevice	= PCI_ANY_ID,
+ 		.driver_data	= SDHCI_QUIRK_FORCE_DMA |
+@@ -788,13 +799,18 @@ static void sdhci_tasklet_card(unsigned long param)
+ {
+ 	struct sdhci_host *host;
+ 	unsigned long flags;
++	int present;
++	int polling;
+
+ 	host = (struct sdhci_host*)param;
+
++	polling = host->chip->quirks & SDHCI_QUIRK_NO_CARD_DETECT_INT;
++
+ 	spin_lock_irqsave(&host->lock, flags);
+
+-	if (!(readl(host->ioaddr + SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)) {
+-		if (host->mrq) {
++	present = readl(host->ioaddr + SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT;
++	if (present != host->present) {
++		if (!present && host->mrq) {
+ 			printk(KERN_ERR "%s: Card removed during transfer!\n",
+ 				mmc_hostname(host->mmc));
+ 			printk(KERN_ERR "%s: Resetting controller.\n",
+@@ -806,11 +822,21 @@ static void sdhci_tasklet_card(unsigned long param)
+ 			host->mrq->cmd->error = MMC_ERR_FAILED;
+ 			tasklet_schedule(&host->finish_tasklet);
+ 		}
+-	}
+
+-	spin_unlock_irqrestore(&host->lock, flags);
++		host->present = present;
++
++		spin_unlock_irqrestore(&host->lock, flags);
++
++		mmc_detect_change(host->mmc,
++				  polling ? 0 : msecs_to_jiffies(500));
++	} else {
++		spin_unlock_irqrestore(&host->lock, flags);
++	}
+
+-	mmc_detect_change(host->mmc, msecs_to_jiffies(500));
++	if (polling) {
++		host->detect_timer.expires = jiffies + HZ;
++		add_timer(&host->detect_timer);
++	}
+ }
+
+ static void sdhci_tasklet_finish(unsigned long param)
+@@ -865,6 +891,15 @@ static void sdhci_tasklet_finish(unsigned long param)
+ 	mmc_request_done(host->mmc, mrq);
+ }
+
++static void sdhci_detect_timer(unsigned long data)
++{
++	struct sdhci_host *host;
++
++	host = (struct sdhci_host*)data;
++
++	tasklet_schedule(&host->card_tasklet);
++}
++
+ static void sdhci_timeout_timer(unsigned long data)
+ {
+ 	struct sdhci_host *host;
+@@ -1329,6 +1364,8 @@ static int __devinit sdhci_probe_slot(struct pci_dev *pdev, int slot)
+ 	 */
+ 	mmc->max_blk_count = 65535;
+
++	host->present = readl(host->ioaddr + SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT;;
++
+ 	/*
+ 	 * Init tasklets.
+ 	 */
+@@ -1344,6 +1381,12 @@ static int __devinit sdhci_probe_slot(struct pci_dev *pdev, int slot)
+ 	if (ret)
+ 		goto untasklet;
+
++	if (host->chip->quirks & SDHCI_QUIRK_NO_CARD_DETECT_INT) {
++		setup_timer(&host->detect_timer, sdhci_detect_timer, (unsigned long)host);
++		host->detect_timer.expires = jiffies + HZ;
++		add_timer(&host->detect_timer);
++	}
++
+ 	sdhci_init(host);
+
+ #ifdef CONFIG_MMC_DEBUG
+@@ -1396,6 +1439,10 @@ static void sdhci_remove_slot(struct pci_dev *pdev, int slot)
+ 	tasklet_kill(&host->card_tasklet);
+ 	tasklet_kill(&host->finish_tasklet);
+
++	if (host->chip->quirks & SDHCI_QUIRK_NO_CARD_DETECT_INT) {
++		del_timer_sync(&host->detect_timer);
++	}
++
+ 	iounmap(host->ioaddr);
+
+ 	pci_release_region(pdev, host->bar);
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 7400f4b..fafd1c4 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -198,6 +198,9 @@ struct sdhci_host {
+ 	struct tasklet_struct	finish_tasklet;
+
+ 	struct timer_list	timer;		/* Timer for timeouts */
++
++	struct timer_list	detect_timer;	/* Timer for card polling */
++	int			present;	/* Cached card present state */
+ };
+
+ struct sdhci_chip {
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index ae849f0..e10eeaf 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2049,6 +2049,9 @@
+ #define PCI_VENDOR_ID_VITESSE		0x1725
+ #define PCI_DEVICE_ID_VITESSE_VSC7174	0x7174
+
++#define PCI_SUBVENDOR_ID_FUJITSU_SIEMENS	0x1734
++#define PCI_SUBDEVICE_ID_FUJITSU_SIEMENS_SI1520	0x10ad
++
+ #define PCI_VENDOR_ID_LINKSYS		0x1737
+ #define PCI_DEVICE_ID_LINKSYS_EG1064	0x1064
+
+
