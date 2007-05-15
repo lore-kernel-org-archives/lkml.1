@@ -1,106 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbXEOVWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758642AbXEOVWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756350AbXEOVWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbXEOVWF
+	id S1758642AbXEOVWb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbXEOVWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:22:05 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:35115 "EHLO
+	Tue, 15 May 2007 17:22:09 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:35112 "EHLO
 	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754287AbXEOVWD (ORCPT
+	with ESMTP id S1754129AbXEOVWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 May 2007 17:22:03 -0400
-Date: Tue, 15 May 2007 19:56:31 +0100 (BST)
+Date: Tue, 15 May 2007 19:44:58 +0100 (BST)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jayson Santos <jaysonsantos2003@yahoo.com.br>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] prio_tree: debugging patch
-Message-ID: <Pine.LNX.4.64.0705151953050.30826@blonde.wat.veritas.com>
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: select(0, ..) is valid ?
+In-Reply-To: <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0705151927360.28895@blonde.wat.veritas.com>
+References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
+ <20070515104453.f901e91f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 15 May 2007 21:22:02.0134 (UTC) FILETIME=[1434AB60:01C79737]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBqYXlzb25zYW50b3MyMDAzQHlhaG9vLmNvbS5icgByYW5keS5kdW5sYXBAb3JhY2xlLmNvbQA=
+X-OriginalArrivalTime: 15 May 2007 21:22:01.0123 (UTC) FILETIME=[139A6730:01C79737]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbmV0ZGV2QHZnZXIua2VybmVsLm9yZwBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAHBiYWRhcmlAdXMuaWJtLmNvbQBjbGFtZXRlckBzZ2kuY29tAA==
 X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jayson Santos has sighted mm/prio_tree.c:78,79 BUGs (kernel bugzilla 8446),
-and one was sighted a couple of years ago.  No reason yet to suppose they're
-prio_tree bugs, but we can't tell much about them without seeing the vmas.
+On Tue, 15 May 2007, Christoph Lameter wrote:
+> On Tue, 15 May 2007, Andrew Morton wrote:
+> 
+> > I _think_ we can just do
+> > 
+> > --- a/fs/compat.c~a
+> > +++ a/fs/compat.c
+> > @@ -1566,9 +1566,13 @@ int compat_core_sys_select(int n, compat
+> >  	 */
+> >  	ret = -ENOMEM;
+> >  	size = FDS_BYTES(n);
+> > -	bits = kmalloc(6 * size, GFP_KERNEL);
+> > -	if (!bits)
+> > -		goto out_nofds;
+> > +	if (likely(size)) {
+> > +		bits = kmalloc(6 * size, GFP_KERNEL);
+> > +		if (!bits)
+> > +			goto out_nofds;
+> > +	} else {
+> > +		bits = NULL;
+> > +	}
 
-So dump vma and the one it's supposed to resemble: I had expected to use
-print_hex_dump(), but that's designed for u8 dumps, whereas almost every
-field of vm_area_struct is either a pointer or an unsigned long - which
-look nonsense dumped as u8s.
+It's interesting that compat_core_sys_select() shows this kmalloc(0)
+failure but core_sys_select() does not.  That's because core_sys_select()
+avoids kmalloc by using a buffer on the stack for small allocations (and
+0 sure is small).  Shouldn't compat_core_sys_select() do just the same?
+Or is SLUB going to be so efficient that doing so is a waste of time?
 
-Replace the two BUG_ONs by a single WARN_ON; and if it fires, just keep
-this vma out of the tree (truncation and swapout won't be able to find it).
-How safe this is depends on what the error really is; but we hold a file's
-i_mmap_lock here, so it may be impossible to recover from BUG_ON.
+> >  	fds.in      = (unsigned long *)  bits;
+> >  	fds.out     = (unsigned long *) (bits +   size);
+> >  	fds.ex      = (unsigned long *) (bits + 2*size);
+> > _
+> > 
+> > I mean, if that oopses then I'd be very interested in finding out why.
+> > 
+> > But I'm starting to suspect that it would be better to permit kmalloc(0) in
+> > slub.  It depends on how many more of these things need fixing.
+> > 
+> > otoh, a kmalloc(0) could be a sign of some buggy/inefficient/weird code, so
+> > there's some value in forcing us to go look at all the callsites.
+>  
+> Hmmm... We could have kmalloc(0) return a pointer to the zero page? That 
+> would catch any writers?
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-Andrew, please replace -mm's prio-tree-debugging.patch by this one,
-which is now suitable for both 32-bit and 64-bit architectures.
+I don't think using the zero page that way would be at all safe:
+there's probably configurations/architectures in which it is write
+protected, but I don't believe that's a given at all.
 
-Jayson, you can use either this one or the one I sent earlier:
-they provide the same information so no need to update; but this
-one might allow you to continue working (depending on the corruption).
+But the principle is good: ERR_PTR(-MAX_ERRNO) should work,
+that area up the top should always give a fault.
+Hmm, but perhaps there are architectures on which it does not?
 
- mm/prio_tree.c |   33 ++++++++++++++++++++++++++++-----
- 1 file changed, 28 insertions(+), 5 deletions(-)
-
---- 2.6.22-rc1/mm/prio_tree.c	2005-03-02 07:39:17.000000000 +0000
-+++ linux/mm/prio_tree.c	2007-05-15 17:49:48.000000000 +0100
-@@ -67,6 +67,20 @@
-  * 	vma->shared.vm_set.head == NULL ==> a list node
-  */
- 
-+static void dump_vma(struct vm_area_struct *vma)
-+{
-+	void **ptr = (void **) vma;
-+	int i;
-+
-+	printk("vm_area_struct at %p:", ptr);
-+	for (i = 0; i < sizeof(*vma)/sizeof(*ptr); i++, ptr++) {
-+		if (!(i & 3))
-+			printk("\n");
-+		printk(" %p", *ptr);
-+	}
-+	printk("\n");
-+}
-+
- /*
-  * Add a new vma known to map the same set of pages as the old vma:
-  * useful for fork's dup_mmap as well as vma_prio_tree_insert below.
-@@ -74,14 +88,23 @@
-  */
- void vma_prio_tree_add(struct vm_area_struct *vma, struct vm_area_struct *old)
- {
--	/* Leave these BUG_ONs till prio_tree patch stabilizes */
--	BUG_ON(RADIX_INDEX(vma) != RADIX_INDEX(old));
--	BUG_ON(HEAP_INDEX(vma) != HEAP_INDEX(old));
--
- 	vma->shared.vm_set.head = NULL;
- 	vma->shared.vm_set.parent = NULL;
- 
--	if (!old->shared.vm_set.parent)
-+	if (WARN_ON(RADIX_INDEX(vma) != RADIX_INDEX(old) ||
-+		    HEAP_INDEX(vma)  != HEAP_INDEX(old))) {
-+		/*
-+		 * This should never happen, yet it has been seen a few times:
-+		 * we cannot say much about it without seeing the vma contents.
-+		 */
-+		dump_vma(vma);
-+		dump_vma(old);
-+		/*
-+		 * Don't try to link this (corrupt?) vma into the (corrupt?)
-+		 * prio_tree, but arrange for its removal to succeed later.
-+		 */
-+		INIT_LIST_HEAD(&vma->shared.vm_set.list);
-+	} else if (!old->shared.vm_set.parent)
- 		list_add(&vma->shared.vm_set.list,
- 				&old->shared.vm_set.list);
- 	else if (old->shared.vm_set.head)
+Hugh
