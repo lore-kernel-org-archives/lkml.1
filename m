@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbXEOOzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbXEOPCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758975AbXEOOzu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 10:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756139AbXEOOzn
+	id S1759232AbXEOPCk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 11:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXEOPCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 10:55:43 -0400
-Received: from tuxrocks.com ([63.99.9.217]:50620 "EHLO tuxrocks.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754497AbXEOOzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 10:55:43 -0400
-X-Greylist: delayed 2830 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 10:55:43 EDT
-Message-ID: <4649BE4A.8000707@tuxrocks.com>
-Date: Tue, 15 May 2007 09:06:02 -0500
-From: Frank Sorenson <frank@tuxrocks.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Alistair John Strachan <s0348365@sms.ed.ac.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v4
-References: <1178485128.31213.98.camel@localhost.localdomain>	 <200705142215.08910.s0348365@sms.ed.ac.uk> <1179180314.7074.36.camel@chaos>	 <200705142342.29994.s0348365@sms.ed.ac.uk> <1179217082.7074.47.camel@chaos>
-In-Reply-To: <1179217082.7074.47.camel@chaos>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 15 May 2007 11:02:34 -0400
+Received: from nemesis.fprintf.net ([66.134.112.218]:4188 "EHLO
+	nemesis.fprintf.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754072AbXEOPCd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 11:02:33 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 11:02:33 EDT
+Subject: Re: [Bugme-new] [Bug 8479] New: gettimeofday returning 1000000 in
+	tv_usec on core2duo
+From: Daniel Gryniewicz <dang@gentoo.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       stable@kernel.org
+In-Reply-To: <20070515101758.51d6bc47.dada1@cosmosbay.com>
+References: <200705150417.l4F4HlvS013354@fire-2.osdl.org>
+	 <46494DFC.6080104@cosmosbay.com>
+	 <20070514232301.69e27bbe.akpm@linux-foundation.org>
+	 <200705150922.47702.ak@suse.de>
+	 <20070515101758.51d6bc47.dada1@cosmosbay.com>
+Content-Type: text/plain
+Date: Tue, 15 May 2007 10:55:51 -0400
+Message-Id: <1179240951.7903.0.camel@athena.fprintf.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Thomas Gleixner wrote:
-> I've uploaded a new version of the x86_64 highres/dyntick patches:
+On Tue, 2007-05-15 at 10:17 +0200, Eric Dumazet wrote:
+> OK, here is the fix only patch, for linux-2.6.21-stable only, since 2.6.22 is already fixed.
 > 
-> http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-highres-v4.patch
+> [PATCH] x86_64 : Fix vgettimeofday()
+> 
+> vgettimeofday() may return some bad timeval values, (tv_usec = 1000000), because of a wrong compare.
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> 
+> --- arch/x86_64/kernel/vsyscall.c
+> +++ arch/x86_64/kernel/vsyscall.c
+> @@ -132,7 +132,7 @@ static __always_inline void do_vgettimeo
+>  
+>  	/* convert to usecs and add to timespec: */
+>  	tv->tv_usec += nsec_delta / NSEC_PER_USEC;
+> -	while (tv->tv_usec > USEC_PER_SEC) {
+> +	while (tv->tv_usec >= USEC_PER_SEC) {
+>  		tv->tv_sec += 1;
+>  		tv->tv_usec -= USEC_PER_SEC;
+>  	}
 
-Hangs at boot here:
-	Kernel alive
-	Kernel direct mapping tables up to 100000000 @ 8000-d000
-(and that's it)
+That fixed it, thanks.
 
-This is a Dell Inspiron E1705 with a Core 2 Duo 2.16GHz
+Daniel
 
-highres-v3 also hung at the same point, but 2.6.21-git2-v2 worked
-2.6.22-rc1 boots without problem
-
-Is there any information I can provide to help track down the problem?
-
-Thanks,
-
-Frank
-- --
-Frank Sorenson - KD7TZK
-Linux Systems Engineer, DSS Engineering, UBS AG
-frank@tuxrocks.com
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGSb5JaI0dwg4A47wRAjkgAJ9Urvpo+cTAbRvblYovBYy3PD76jACfbtjj
-EZSrOZDFMnOYjc02nHSAxaM=
-=/ffY
------END PGP SIGNATURE-----
