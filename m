@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761886AbXEOHeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762163AbXEOHgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761886AbXEOHeo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 03:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbXEOHeh
+	id S1762163AbXEOHgQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 03:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbXEOHgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 03:34:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40443 "EHLO gate.crashing.org"
+	Tue, 15 May 2007 03:36:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49247 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755259AbXEOHeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 03:34:37 -0400
-Subject: Re: [patch 4/4] powerpc 2.6.21-rt1: reduce scheduling latency by
-	changing tlb flush size
+	id S1756031AbXEOHgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 03:36:07 -0400
+Subject: Re: [PATCH v2] pcmcia: ppc64 needs 32-bit ioaddr_t
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-       Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <yyir6pi67yd.wl@toshiba.co.jp>
-References: <yyi3b1zapqa.wl@toshiba.co.jp>
-	 <1179125506.22481.297.camel@localhost.localdomain>
-	 <yyitzuf9857.wl@toshiba.co.jp> <200705141640.02561.arnd@arndb.de>
-	 <yyir6pi67yd.wl@toshiba.co.jp>
+To: Olof Johansson <olof@lixom.net>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070515043343.GA6561@lixom.net>
+References: <20070512143105.GA12890@lixom.net>
+	 <20070515043343.GA6561@lixom.net>
 Content-Type: text/plain
-Date: Tue, 15 May 2007 17:34:12 +1000
-Message-Id: <1179214452.32247.170.camel@localhost.localdomain>
+Date: Tue, 15 May 2007 17:35:05 +1000
+Message-Id: <1179214505.32247.172.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-15 at 13:12 +0900, Tsutomu OWA wrote:
-
-> > With this code, you get silent side-effects of enabling PPC_CELLEB
-> > along with another platform.
+On Mon, 2007-05-14 at 23:33 -0500, Olof Johansson wrote:
+> ppc64 really needs ioaddr_t to be 32-bit, since I/O beyond the
+> first PCI bus might be mapped at a higher range.
 > 
->   Yeah, thank you for pointing it out.
->   I'll send revised patch later.
+> While the type is exported to userspace, there hasn't been any platforms
+> with PCMCIA on 64-bit powerpc until now, so changing it won't regress
+> any existing users. Besides, those interfaces are overdue for removal
+> already.
 > 
-> > Maybe instead you should change the hpte_need_flush() to always flush
-> > when running on the celleb platform and PREEMPT_RT is enabled.
 > 
->   Hmm... Is it in linux-2.6.21?  grep'ing it did not help... 
-> 
->   Is http://patchwork.ozlabs.org/linuxppc/patch?id=10361 is the first place
-> where the hpte_need_flush() appears?
+> Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Yes, I added that when reworking the batching mecanism.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Ben.
-
+> Index: 2.6.21/include/pcmcia/cs_types.h
+> ===================================================================
+> --- 2.6.21.orig/include/pcmcia/cs_types.h
+> +++ 2.6.21/include/pcmcia/cs_types.h
+> @@ -21,7 +21,7 @@
+>  #include <sys/types.h>
+>  #endif
+>  
+> -#if defined(__arm__) || defined(__mips__)
+> +#if defined(__arm__) || defined(__mips__) || defined(__powerpc64__)
+>  /* This (ioaddr_t) is exposed to userspace & hence cannot be changed. */
+>  typedef u_int   ioaddr_t;
+>  #else
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
