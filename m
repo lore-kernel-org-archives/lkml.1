@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760464AbXEOXZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbXEOX02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760464AbXEOXZp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 19:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbXEOXZg
+	id S1760649AbXEOX02 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 19:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757031AbXEOX0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 19:25:36 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:52359 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756428AbXEOXZf (ORCPT
+	Tue, 15 May 2007 19:26:19 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:39744 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756746AbXEOX0S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 19:25:35 -0400
+	Tue, 15 May 2007 19:26:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Yc4KxY/+ik7cAf4+ayC711huY1jc3jBSyZrk2KFc+d+DlqoAU4c13/OeUkpZj69ESvExkHztYKhiG8APLRV9HMv7Zi8rd4uLEw1wijGIEWBzUV4QDja6xGLT6QOvfBsjE26yUYn5I2QngnoLifHW5P5WAvEf22UEpjgssEIs8aE=
-Message-ID: <464A4163.7090509@gmail.com>
-Date: Wed, 16 May 2007 03:25:23 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AuQVERaw07lU5t/loWe4I7QKmNcT6lu0cCWbYTAs0cV2CwSL2H5lRdnme0Aj70yAC7rPMeyE+AW82kl8QGSUsA8/xfTh9sPe/d0YgYoD5lbXVNcdk/SnbSgOxGa5PUWVUyCM/GNoSLCXDO11B2Ef3GUlGm2ulslfj7bVQe062PI=
+Message-ID: <787b0d920705151626x3a11b81csf0f3747a695131b0@mail.gmail.com>
+Date: Tue, 15 May 2007 19:26:17 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@lazybastard.org>
+Subject: Re: [PATCH] LogFS take three
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, "Greg KH" <greg@kroah.com>,
+       "Ingo Oeser" <ioe-lkml@rameria.de>
+In-Reply-To: <20070515151919.GA32510@lazybastard.org>
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mchehab@infradead.org
-Subject: Re: [PATCH] em28xx and ivtv should depend on PCI
-References: <E1Ho2p6-0003Tt-B7@ZenIV.linux.org.uk>
-In-Reply-To: <E1Ho2p6-0003Tt-B7@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070515151919.GA32510@lazybastard.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  drivers/media/video/em28xx/Kconfig |    2 +-
->  drivers/media/video/ivtv/Kconfig   |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/media/video/em28xx/Kconfig b/drivers/media/video/em28xx/Kconfig
-> index 3823b62..2c450bd 100644
-> --- a/drivers/media/video/em28xx/Kconfig
-> +++ b/drivers/media/video/em28xx/Kconfig
-> @@ -1,6 +1,6 @@
->  config VIDEO_EM28XX
->  	tristate "Empia EM2800/2820/2840 USB video capture support"
-> -	depends on VIDEO_V4L1 && I2C
-> +	depends on VIDEO_V4L1 && I2C && PCI
+Please don't forget the immutable bit. ("man lsattr")
+Having both, BSD-style, would be even better.
+The immutable bit is important for working around
+software bugs and "features" that damage files.
 
-Err .. why would a USB device need to be depend on PCI ?
-
+I also can't find xattr support.
