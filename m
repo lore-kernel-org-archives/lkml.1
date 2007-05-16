@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762855AbXEPFYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762642AbXEPF3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762855AbXEPFYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 01:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759891AbXEPFYm
+	id S1762642AbXEPF3l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 01:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760068AbXEPF3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 01:24:42 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:59990 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759504AbXEPFYl (ORCPT
+	Wed, 16 May 2007 01:29:35 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:35773
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757252AbXEPF3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 01:24:41 -0400
-Date: Wed, 16 May 2007 07:24:40 +0200 (CEST)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Andi Kleen <ak@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: stack alignment on i386
-Message-ID: <Pine.LNX.4.64.0705160648320.18296@artax.karlin.mff.cuni.cz>
-X-Personality-Disorder: Schizoid
+	Wed, 16 May 2007 01:29:34 -0400
+From: Rob Landley <rob@landley.net>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+Date: Wed, 16 May 2007 01:29:15 -0400
+User-Agent: KMail/1.9.1
+Cc: Tejun Heo <htejun@gmail.com>, Francesco Pretto <ceztko@gmail.com>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <46489D3B.8050805@gmail.com> <20070515210804.GG25902@redhat.com>
+In-Reply-To: <20070515210804.GG25902@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705160129.16048.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->    [PATCH] x86: Drop cc-options call for all options supported in gcc 
->3.2+
->
->    The kernel only supports gcc 3.2+ now so it doesn't make sense
->    anymore to explicitely check for options this compiler version
->    already has.
->
->    This actually fixes a bug. The -mprefered-stack-boundary check
->    never worked because gcc rightly complains
->
->      CC      arch/i386/kernel/asm-offsets.s
->    cc1: -mpreferred-stack-boundary=2 is not between 4 and 12
->
+On Tuesday 15 May 2007 5:08 pm, Dave Jones wrote:
+> On Mon, May 14, 2007 at 07:32:43PM +0200, Tejun Heo wrote:
+>  > Francesco Pretto wrote:
+>  > > 2007/5/4, Tejun Heo <htejun@gmail.com>:
+>  > >> Yeap, the third iteration of the patch just got submitted.
+>  > >>
+>  > >>   http://thread.gmane.org/gmane.linux.ide/18485
+>  > >>
+>  > >> Unfortunately, there doesn't seem to be an easy way out.  We'll need
+>  > >> userland shutdown(8) update.
+>  > >>
+>  > >> -- 
+>  > >> tejun
+>  > >>
+>  > > 
+>  > > Ok, i can't understand if the patch will be included in 2.6.22 (i
+>  > > didn't see it in the Andrew Morton merge plan). However, if you can
+>  > > confirm the inclusion, i can send bug reports for ubuntu and gentoo. I
+>  > > can even send an email to Miquel van Smoorenburg, who should be the
+>  > > mainstream sysvinit developer (and probably the last maintainer).
+>  > 
+>  > Okay, the patch made upstream and webpage posted.
+>  > 
+>  >  http://linux-ata.org/shutdown.html
+> 
+> There's a typo..
+> 
+> "Check whether /sys/modules/libata/parameters/spindown_compat  exists. If it 
+does, write 0 to it."
+> 
+> should be /sys/module/libata/parameters/spindown_compat
+> 
+> (no 's' after module)
 
-Hi
+Um, hang on.  So libata can't reliably turn the system off without data loss 
+and potential damage to hardware unless userspace goes through a special song 
+and dance?  And this is _not_ considered a defect in the kernel?
 
-Your patch for stack alignment on i386 is wrong. -mprefered-stack-boundary 
-is log2 of the stack alignment (read gcc man page). On AMD64 16-byte 
-alignment is enforced because of SSE, on i386 minimal alignment is 4 
-bytes.
+Why?
 
-See the code in gcc that triggered your error:
-       i = atoi (ix86_preferred_stack_boundary_string);
-       if (i < (TARGET_64BIT ? 4 : 2) || i > 12)
-         error ("-mpreferred-stack-boundary=%d is not between %d and 12", 
-i,
-                TARGET_64BIT ? 4 : 2);
-       else
-         ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
+(Is there any other piece of hardware that needs userspace to quiesce it just 
+so the _off_switch_ can take effect?  Yes, I read both the gmane thread and 
+the linux-ata.org link.  I used to maintain the busybox halt/reboot/poweroff 
+commands, although I don't anymore.  That just called reboot(), and this 
+worked.)
 
-You are actually dealing with gcc bug, not Linux bug --- when gcc is 
-compiled with AMD64 support it enforces 16-byte alignment even in 32-bit 
-mode.
+Why on _earth_ does complicating software suspend add extra requirements to 
+actual shutdown?  Since when does the shutdown command have to enumerate 
+attached block devices?  If anything this would belong in umount -a, but that 
+doesn't care about the hardware of the underlying block devices and 
+SHOULDN'T...
 
-Rather let it be as it was, adding -mpreferred-stack-boundary=4 doesn't 
-make sense, because it is default.
+I'm confused.  Could someone please explain?
 
-Mikulas
-
-Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-
---- linux-2.6.22-rc1/arch/i386/Makefile_	Thu May 17 23:47:31 2007
-+++ linux-2.6.22-rc1/arch/i386/Makefile	Thu May 17 23:47:45 2007
-@@ -34,7 +34,9 @@
-  CFLAGS += -pipe -msoft-float -mregparm=3 -freg-struct-return
-
-  # prevent gcc from keeping the stack 16 byte aligned
--CFLAGS += -mpreferred-stack-boundary=4
-+# gcc has a bug that it doesn't allow 4-byte alignment when compiled with
-+# 64-bit support and producing 32-bit code, so this option must be tested
-+CFLAGS += $(call cc-option,-mpreferred-stack-boundary=2)
-
-  # CPU-specific tuning. Anything which can be shared with UML should go here.
-  include $(srctree)/arch/i386/Makefile.cpu
+Rob
