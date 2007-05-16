@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761276AbXEPG6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761031AbXEPG7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761276AbXEPG6x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 02:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759676AbXEPG6p
+	id S1761031AbXEPG7o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 02:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXEPG7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 02:58:45 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:42874 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753569AbXEPG6o (ORCPT
+	Wed, 16 May 2007 02:59:37 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:61182 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751581AbXEPG7h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 02:58:44 -0400
-Date: Wed, 16 May 2007 08:58:39 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+	Wed, 16 May 2007 02:59:37 -0400
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: Re: Slab allocators: Define common size limitations
-In-Reply-To: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
-References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl>
+	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
+	 <20070514161224.GC11115@waste.org>
+	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
+	 <1179164453.2942.26.camel@lappy>
+	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
+	 <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins>
+	 <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 08:59:31 +0200
+Message-Id: <1179298771.7173.16.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007, Christoph Lameter wrote:
-> So define a common maximum size for kmalloc. For conveniences sake
-> we use the maximum size ever supported which is 32 MB. We limit the maximum
-> size to a lower limit if MAX_ORDER does not allow such large allocations.
+On Tue, 2007-05-15 at 15:02 -0700, Christoph Lameter wrote:
+> On Tue, 15 May 2007, Peter Zijlstra wrote:
+> 
+> > How about something like this; it seems to sustain a little stress.
+> 
+> Argh again mods to kmem_cache.
 
-What are the changes a large allocation will actually succeed?
-Is there an alignment rule for large allocations?
+Hmm, I had not understood you minded that very much; I did stay away
+from all the fast paths this time.
 
-E.g. for one of the PS3 drivers I need a physically contiguous 256 KiB-aligned
-block of 256 KiB. Currently I'm using __alloc_bootmem() for that, but maybe
-kmalloc() becomes a suitable alternative now?
+The thing is, I wanted to fold all the emergency allocs into a single
+slab, not a per cpu thing. And once you loose the per cpu thing, you
+need some extra serialization. Currently the top level lock is
+slab_lock(page), but that only works because we have interrupts disabled
+and work per cpu.
 
-Gr{oetje,eeting}s,
+Why is it bad to extend kmem_cache a bit?
 
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
