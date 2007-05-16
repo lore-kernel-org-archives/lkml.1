@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934424AbXEPXh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934500AbXEPXho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934424AbXEPXh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759014AbXEPXhS
+	id S934500AbXEPXho (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760654AbXEPXhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:37:18 -0400
-Received: from alnrmhc11.comcast.net ([206.18.177.51]:42402 "EHLO
-	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758157AbXEPXhQ (ORCPT
+	Wed, 16 May 2007 19:37:21 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:53105 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760312AbXEPXhU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:37:16 -0400
-Message-ID: <464B95A2.9020509@comcast.net>
-Date: Wed, 16 May 2007 19:37:06 -0400
-From: Ed Sweetman <safemode2@comcast.net>
-User-Agent: Icedove 1.5.0.10 (X11/20070328)
+	Wed, 16 May 2007 19:37:20 -0400
+Message-ID: <464B9573.8030407@zytor.com>
+Date: Wed, 16 May 2007 16:36:19 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: jhoblitt@ifa.hawaii.edu
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
- driver
-References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <464B63D8.2060501@gentoo.org> <20070516212736.GO15763@ifa.hawaii.edu> <464B8819.3050303@comcast.net> <464B9155.7070705@gentoo.org>
-In-Reply-To: <464B9155.7070705@gentoo.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Mel Gorman <mel@skynet.ie>
+CC: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>
+Subject: Re: 2.6.22-rc1-mm1
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com> <20070516174046.GE10225@skynet.ie>
+In-Reply-To: <20070516174046.GE10225@skynet.ie>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------050000090902000504010904"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Drake wrote:
-> Ed Sweetman wrote:
->> Like i mentioned off list, the problem here is that cpu freq modules 
->> dont depend (Kconfig) on CONFIG_ACPI_PROCESSOR, yet they do.
->
-> Not really. Firstly, some of the cpufreq modules *do* depend on 
-> CONFIG_ACPI_PROCESSOR. Secondly, the ones that don't have an existing 
-> dependency do not actually depend on ACPI_PROCESSOR in some/most 
-> configurations.
->
-> I'll send in a patch to fix the real problem soon.
->
-> Daniel
+This is a multi-part message in MIME format.
+--------------050000090902000504010904
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-The way i patched it was to just include a "select ACPI_PROCESSOR" in
-the X86_POWERNOW_K8 Kconfig entry.
+Correction, does *this patch* do it for you?
 
-Since the "driver" that the user sees in the Kconfig is X86_POWERNOW_K8
-is actually not a driver at all, our actual driver behaves differently
-since the "pseudo" driver only depends is CPUFREQ.  This is misleading,
-as the actual driver beneath it, depends on ACPI_PROCESSOR too.  Now the
-driver beneath it responds as you'd think.  It disables itself when it's
-depends lines are invalid.  Which is good. But the menu entry that we
-see is for X86_POWERNOW_K8, and that isn't disabled or anything when
-those depends lines of the driver it actually represents fails.
+	-hpa
 
 
-This is easily fixed with the select line in the "pseudo" driver
-...which i find a little more appropriate than a depends line.
+--------------050000090902000504010904
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff"
 
+diff --git a/arch/i386/boot/setup.ld b/arch/i386/boot/setup.ld
+index e9ca0c2..c9c5530 100644
+--- a/arch/i386/boot/setup.ld
++++ b/arch/i386/boot/setup.ld
+@@ -44,5 +44,5 @@ SECTIONS
+ 
+ 	/DISCARD/ : { *(.note*) }
+ 
+-	ASSERT(_end <= 0x8000, "Setup too big!")
++	. = ASSERT(_end <= 0x8000, "Setup too big!");
+ }
 
-As for actual module dependency issues, i haven't bothered looking into
-that.   As far as the Kconfig shows it shouldn't be allowed to have
-ACPI_PROCESSOR as a module at all. So maybe that's intended.
-
+--------------050000090902000504010904--
