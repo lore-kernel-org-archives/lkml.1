@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761348AbXEPAau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbXEPAcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761348AbXEPAau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 20:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759819AbXEPAam
+	id S1761509AbXEPAcd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 20:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759656AbXEPAcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 20:30:42 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:57302 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759349AbXEPAal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 20:30:41 -0400
-Date: Wed, 16 May 2007 09:30:02 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Tejun Heo <htejun@gmail.com>, jeff@garzik.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, garyhade@us.ibm.com
-Subject: Re: libata reset-seq merge broke sata_sil on sh
-Message-ID: <20070516003002.GA18863@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Tejun Heo <htejun@gmail.com>, jeff@garzik.org,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	garyhade@us.ibm.com
-References: <20070510072005.GA27316@linux-sh.org> <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com> <20070510072005.GA27316@linux-sh.org> <464301D3.5060306@gmail.com> <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com> <20070511005217.GA23186@linux-sh.org> <464439C8.7090309@gmail.com> <20070512034928.GB29259@linux-sh.org>
+	Tue, 15 May 2007 20:32:25 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:32092 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759439AbXEPAcY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 20:32:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=mbgQ+W+TFKxLW/xnYTOSiVbSVIcyymtlE0miqn9IGz3DxFPSr01rwLRfj4QUu6P06v9PPhXAV01GFCu+nHyra5v8fiJHs5wtXFVmCouHbaffEuqh6EkmsMg8+Sl7WWG+UjFrpPM3vhNR2HNkkKWN6STOQoeNCZ1XZ9I3wr7GzSg=  ;
+X-YMail-OSG: Cm9Fs6sVM1lTPBA.SG8ez5t3rWQJLnPJTAVtyeZy4C7UxXcH8c.A6n7TUyKSjWPakZei3IEN.w--
+Message-ID: <464A5113.5080907@yahoo.com.au>
+Date: Wed, 16 May 2007 10:32:19 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070512034928.GB29259@linux-sh.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: David Howells <dhowells@redhat.com>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 2/2] AFS: Implement shared-writable mmap
+References: <20070515155224.29345.22719.stgit@warthog.cambridge.redhat.com> <20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com>
+In-Reply-To: <20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 12, 2007 at 12:49:28PM +0900, Paul Mundt wrote:
-> On Fri, May 11, 2007 at 11:39:20AM +0200, Tejun Heo wrote:
-> > Paul Mundt wrote:
-> > > Bumping the hardreset delay up does indeed fix it, I've had to bump it up
-> > > to 1200 before it started working (at 600 it still fails):
-> > > 
-> > > [    0.967379] scsi0 : sata_sil
-> > > [    0.970425] scsi1 : sata_sil
-> > > [    0.973298] ata1: SATA max UDMA/100 cmd 0xfd000280 ctl 0xfd00028a bmdma 0xfd000200 irq 0
-> > > [    0.981331] ata2: SATA max UDMA/100 cmd 0xfd0002c0 ctl 0xfd0002ca bmdma 0xfd000208 irq 0
-> > > [    1.299353] ata1: device not ready (errno=-19), forcing hardreset
-> > > [    2.817893] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-> > > [    2.826284] ata1.00: ata_hpa_resize 1: sectors = 39070080, hpa_sectors = 39070080
-> > > [    2.831052] ata1.00: ATA-5: HHD424020F7SV00, 00MLA0A5, max UDMA/100
-> > > [    2.837548] ata1.00: 39070080 sectors, multi 0: LBA
-> > > [    2.842702] ata1.00: applying bridge limits
-> > > [    2.854162] ata1.00: ata_hpa_resize 1: sectors = 39070080, hpa_sectors = 39070080
-> > > [    2.858938] ata1.00: configured for UDMA/100
-> > > [    3.172602] ata2: SATA link down (SStatus 0 SControl 310)
-> > > [    3.175736] scsi 0:0:0:0: Direct-Access     ATA      HHD424020F7SV00  00ML PQ: 0 ANSI: 5
-> > > 
-> > > I'm not sure if it matters or not, but this is an iVDR drive, so that
-> > > might also have additional implications.
-> > 
-> > Don't have the flimsiest idea what an iVDR drive is but I take it that
-> > it's some sort of special purpose thing.  :-)
-> > 
-> http://www.ivdr.org
+David Howells wrote:
+> Implement shared-writable mmap for AFS.
 > 
-> The GoVault appears to be a similar device, in that they're both
-> removeable cartridges.
+> The key with which to access the file is obtained from the VMA at the point
+> where the PTE is made writable by the page_mkwrite() VMA op and cached in the
+> affected page.
 > 
-> > Gary, IIRC, the requirement for GoVault was 3secs, right?  Paul, can you
-> > try to estimate the minimum required delay?  Please go down by 100ms and
-> > report where it breaks.
-> > 
-> 800ms was the lowest it would work at, 700ms still breaks.
+> If there's an outstanding write on the page made with a different key, then
+> page_mkwrite() will flush it before attaching a record of the new key.
 
-Ping?
+Good, will be nice to get a page_mkwrite() user in the tree.
+
+
+
+> +/*
+> + * notification that a previously read-only page is about to become writable
+> + * - if it returns an error, the caller will deliver a bus error signal
+> + *
+> + * we use this to make a record of the key with which the writeback should be
+> + * performed and to flush any outstanding writes made with a different key
+> + *
+> + * the key to be used is attached to the file pinned by the VMA
+> + */
+> +int afs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+> +{
+> +	struct afs_vnode *vnode = AFS_FS_I(vma->vm_file->f_mapping->host);
+> +	struct key *key = vma->vm_file->private_data;
+> +	int ret;
+> +
+> +	_enter("{{%x:%u},%x},{%lx}",
+> +	       vnode->fid.vid, vnode->fid.vnode, key_serial(key), page->index);
+> +
+> +	lock_page(page);
+> +	ret = afs_prepare_write(vma->vm_file, page, 0, 0);
+> +	unlock_page(page);
+> +
+> +	_leave(" = %d", ret);
+> +	return ret;
+> +}
+
+By the looks of afs_prepare_write, it is going to go bang when the page
+gets truncated before lock_page.
+
+Checking page->mapping after lock_page should do the trick.
+
+-- 
+SUSE Labs, Novell Inc.
