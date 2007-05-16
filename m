@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031148AbXEPVNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933576AbXEPVO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031148AbXEPVNh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762608AbXEPVN1
+	id S933576AbXEPVO2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759121AbXEPVOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:13:27 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:55534 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754561AbXEPVN1 (ORCPT
+	Wed, 16 May 2007 17:14:20 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:8197 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754948AbXEPVOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:13:27 -0400
+	Wed, 16 May 2007 17:14:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sLQVoIiGh19WyNwp5nh9b3R1ZpwJzj0o6BRSh/5PPlAofV3oAsYC4JfyumTRjZ8c/46+x4ghWASqYauKTg6tuOMPzZbfnCh2S2gEIr10uXyYGlrmtBaByn3Ae94k2qJt/4ak3WpsZdFcA4CJgJbJuOy4WzxmoH0ejGRlTwne9rc=
-Message-ID: <6bffcb0e0705161413s5008e3b9o90a6e769121184e4@mail.gmail.com>
-Date: Wed, 16 May 2007 23:13:25 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: (1 loop device) Re: [1/3] 2.6.22-rc1: known regressions v2
-Cc: "Uwe Bugla" <uwe.bugla@gmx.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070516211146.GA5660@martell.zuzino.mipt.ru>
+        b=GZyHTUdfP3grRrw8gPVj1+BlOdOz5hSjlNBI0Cw6BIGk3F+d272Kh7d30GuCGyXofHk2TxY0Iipv4ODnpIZByTFnWC/pe3FdczZDyOljs5AimdMzV0N3mvG1zBJL955M+emwV6CFodhCIwIrkuGq10EqDAapxx451ZYctXJixqc=
+Message-ID: <1defaf580705161414i67e753d7x883a78da347f7d55@mail.gmail.com>
+Date: Wed, 16 May 2007 23:14:18 +0200
+From: "=?ISO-8859-1?Q?H=E5vard_Skinnemoen?=" <hskinnemoen@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH] atmel_spi: Pass correct DMA address to controller
+Cc: "Haavard Skinnemoen" <hskinnemoen@atmel.com>, wux@landicorp.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200705161254.59308.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <464B6A22.905@googlemail.com>
-	 <20070516211146.GA5660@martell.zuzino.mipt.ru>
+References: <11793107892086-git-send-email-hskinnemoen@atmel.com>
+	 <200705161254.59308.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding Uwe to CC]
-
-On 16/05/07, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> On Wed, May 16, 2007 at 10:31:30PM +0200, Michal Piotrowski wrote:
-> > Block devices
+On 5/16/07, David Brownell <david-b@pacbell.net> wrote:
+> On Wednesday 16 May 2007, Haavard Skinnemoen wrote:
+> > -     tx_dma = xfer->tx_dma;
+> > -     rx_dma = xfer->rx_dma;
+> > +     tx_dma = xfer->tx_dma + xfer->len - len;
+> > +     rx_dma = xfer->rx_dma + xfer->len - len;
 > >
-> > Subject    : loop devices limited to one single device
-> > References : http://lkml.org/lkml/2007/5/16/229
-> > Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
-> > Status     : Unknown
+> >       /* use scratch buffer only when rx or tx data is unspecified */
+> > -     if (rx_dma == INVALID_DMA_ADDRESS) {
+> > +     if (!xfer->rx_buf) {
 >
-> >> The patch against loop.c is neither a fix, nor does it create
-> >> loop devices on demand:
+> This test ...
 >
-> It does. In kernel memory.
+> >               rx_dma = as->buffer_dma;
+> >               if (len > BUFFER_SIZE)
+> >                       len = BUFFER_SIZE;
+> >       }
+> > -     if (tx_dma == INVALID_DMA_ADDRESS) {
+> > +     if (!xfer->tx_buf) {
 >
-> >> Facts are instead, at least on my machine:
->
-> >> The number of available loop devices is reduced from 8 (conventional
-> >> standard of preceding 2.6 kernels) to 1.
->
-> >> The consequence is: If you have to mount more than one single iso-image
-> >> with
-> >> the loop parameter you are receiving the following message during system
-> >> boot:
->
-> >> "mount: could not find any free loop device"
->
-> I suggest to read mknod(1) manpage.
->
->
+> ... and this one must not assume that the relevant buffer
+> is always NULL when the tx_dma has been set up.  Keep the
+> test against INVALID_DMA_ADDRESS, but fetch the address
+> from the spi_transfer.
 
+No it doesn't -- it's the other way around. It assumes that if
+xfer->tx_buf is NULL, the user didn't provide a buffer so it has to
+use the scratch buffer instead. The driver never does PIO transfers,
+so if tx_buf is valid, tx_dma ought to be valid  too. This is taken
+care of elsewhere by calling dma_map_single() if the user provided a
+virtual pointer but not a dma address.
 
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
+Checking for an invalid cpu-virtual pointer really should be
+equivalent to checking for an invalid DMA address at this point.
+
+I could perhaps add else blocks to those two ifs and add the offset to
+the respective dma addresses there instead if it makes it clearer. The
+tests are supposed to be the same as before, but I had to change them
+one way or another because of the added offset (which would make an
+invalid dma address non-invalid.)
+
+> It's legit to set up cpu-virtual (for PIO) and dma addresses
+> for each buffer, since the upper layer driver has no way to
+> know if the underlying controller driver is DMA-capable, or
+> for that matter PIO-capable.
+
+Yes, but are there any drivers that will provide a valid dma address
+and a NULL cpu-virtual pointer? That would indeed break my
+assumptions, but it would also break any PIO-only drivers, wouldn't
+it?
+
+Haavard
