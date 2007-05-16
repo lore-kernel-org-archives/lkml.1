@@ -1,104 +1,854 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759571AbXEPSyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762806AbXEPSza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759571AbXEPSyK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 14:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758324AbXEPSx6
+	id S1762806AbXEPSza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 14:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbXEPSzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 14:53:58 -0400
-Received: from mail.screens.ru ([213.234.233.54]:56689 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758117AbXEPSx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 14:53:57 -0400
-Date: Wed, 16 May 2007 22:52:03 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
-       Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
-Message-ID: <20070516185203.GB81@tv-sign.ru>
-References: <20070511134714.GA191@tv-sign.ru> <46448965.7070500@gmail.com> <20070511145345.GA240@tv-sign.ru> <4645559D.4050602@gmail.com> <20070513192753.GA3014@tv-sign.ru> <46477239.9030007@gmail.com> <20070514194446.GA159@tv-sign.ru> <46496EC1.3090109@gmail.com> <20070515220024.GA615@tv-sign.ru> <464AEA47.7030600@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 May 2007 14:55:24 -0400
+Received: from h155.mvista.com ([63.81.120.155]:17643 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757707AbXEPSzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 14:55:22 -0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com> (by way of Sergei
+	Shtylyov <sshtylyov@dev.rtsoft.ru>)
+Organization: MontaVista Software Inc.
+Subject: [PATCH 2.6.21-rt2] PowerPC: remove broken vsyscall code
+Date: Wed, 16 May 2007 21:56:51 +0300
+User-Agent: KMail/1.5
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <464AEA47.7030600@gmail.com>
-User-Agent: Mutt/1.5.11
+To: tglx@linutronix.de, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, johnstul@us.ibm.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705162256.51722.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Tejun,
+Remove PowerPC vsyscalls that were broken by the generic TOD patch.
 
-On 05/16, Tejun Heo wrote:
->
-> >> lock is read arrier, unlock is write barrier.
-> 
-> Let's say there's a shared data structure protected by a spinlock and
-> two threads are accessing it.
-> 
-> 1. thr1 locks spin
-> 2. thr1 updates data structure
-> 3. thr1 unlocks spin
-> 4. thr2 locks spin
-> 5. thr2 accesses data structure
-> 6. thr2 unlocks spin
-> 
-> If spin_unlock is not a write barrier and spin_lock is not a read
-> barrier, nothing guarantees memory accesses from step#5 will see the
-> changes made in step#2.  Memory fetch can occur during updates in step#2
-> or even before that.
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Ah, but this is something different. Both lock/unlock are full barriers,
-but they protect only one direction. A memory op must not leak out of the
-critical section, but it may leak in.
+---
+Since there's still no working PowerPC TOD vsyscalls fix, and they continue to
+be broken in the RT patch, I've respun this patch again...
 
-	A = B;		// 1
-	lock();		// 2
-	C = D;		// 3
+ arch/powerpc/kernel/vdso32/gettimeofday.S |  322 ------------------------------
+ arch/powerpc/kernel/vdso64/gettimeofday.S |  254 -----------------------
+ arch/powerpc/kernel/asm-offsets.c         |   15 -
+ arch/powerpc/kernel/smp.c                 |    2 
+ arch/powerpc/kernel/vdso32/Makefile       |    2 
+ arch/powerpc/kernel/vdso32/datapage.S     |   18 -
+ arch/powerpc/kernel/vdso32/vdso32.lds.S   |    4 
+ arch/powerpc/kernel/vdso64/Makefile       |    2 
+ arch/powerpc/kernel/vdso64/datapage.S     |   18 -
+ arch/powerpc/kernel/vdso64/vdso64.lds.S   |    4 
+ include/asm-powerpc/time.h                |   20 -
+ include/asm-powerpc/vdso_datapage.h       |   14 -
+ 12 files changed, 2 insertions(+), 673 deletions(-)
 
-this can be re-ordered to
-
-	lock();		// 2
-	C = D;		// 3
-	A = B;		// 1
-
-but 2 and 3 must not be re-ordered.
-
-To be sure, I contacted Paul E. McKenney privately, and his reply is
-
-	> No.  See for example IA64 in file include/asm-ia64/spinlock.h,
-	> line 34 for spin_lock() and line 92 for spin_unlock().  The
-	> spin_lock() case uses a ,acq completer, which will allow preceding
-	> reads to be reordered into the critical section.  The spin_unlock()
-	> uses the ,rel completer, which will allow subsequent writes to be
-	> reordered into the critical section.  The locking primitives are
-	> guaranteed to keep accesses bound within the critical section, but
-	> are free to let outside accesses be reordered into the critical
-	> section.
-	>
-	> Download the Itanium Volume 2 manual:
-	>
-	>         http://developer.intel.com/design/itanium/manuals/245318.htm
-	>
-	> Table 2.3 on page 2:489 (physical page 509) shows an example of how
-	> the rel and acq completers work.
-
-
-> > Could you also look at
-> > 	http://marc.info/?t=116275561700001&r=1
-> > 
-> > and, in particular,
-> > 	http://marc.info/?l=linux-kernel&m=116281136122456
-> 
-> This is because spin_lock() isn't a write barrier, right?  I totally
-> agree with you there.
-
-Yes, but in fact I think wake_up() needs a full mb() semantics (which we
-don't have _in theory_), because try_to_wake_up() first checks task->state
-and does nothing if it is TASK_RUNNING.
-
-That is why I think that smp_mb__before_spinlock() may be useful not only
-for workqueue.c
-
-Oleg.
+Index: linux-2.6/arch/powerpc/kernel/asm-offsets.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/asm-offsets.c
++++ linux-2.6/arch/powerpc/kernel/asm-offsets.c
+@@ -267,16 +267,7 @@ int main(void)
+ #endif /* ! CONFIG_PPC64 */
+ 
+ 	/* datapage offsets for use by vdso */
+-	DEFINE(CFG_TB_ORIG_STAMP, offsetof(struct vdso_data, tb_orig_stamp));
+-	DEFINE(CFG_TB_TICKS_PER_SEC, offsetof(struct vdso_data, tb_ticks_per_sec));
+-	DEFINE(CFG_TB_TO_XS, offsetof(struct vdso_data, tb_to_xs));
+-	DEFINE(CFG_STAMP_XSEC, offsetof(struct vdso_data, stamp_xsec));
+-	DEFINE(CFG_TB_UPDATE_COUNT, offsetof(struct vdso_data, tb_update_count));
+-	DEFINE(CFG_TZ_MINUTEWEST, offsetof(struct vdso_data, tz_minuteswest));
+-	DEFINE(CFG_TZ_DSTTIME, offsetof(struct vdso_data, tz_dsttime));
+ 	DEFINE(CFG_SYSCALL_MAP32, offsetof(struct vdso_data, syscall_map_32));
+-	DEFINE(WTOM_CLOCK_SEC, offsetof(struct vdso_data, wtom_clock_sec));
+-	DEFINE(WTOM_CLOCK_NSEC, offsetof(struct vdso_data, wtom_clock_nsec));
+ #ifdef CONFIG_PPC64
+ 	DEFINE(CFG_SYSCALL_MAP64, offsetof(struct vdso_data, syscall_map_64));
+ 	DEFINE(TVAL64_TV_SEC, offsetof(struct timeval, tv_sec));
+@@ -297,12 +288,6 @@ int main(void)
+ 	DEFINE(TZONE_TZ_MINWEST, offsetof(struct timezone, tz_minuteswest));
+ 	DEFINE(TZONE_TZ_DSTTIME, offsetof(struct timezone, tz_dsttime));
+ 
+-	/* Other bits used by the vdso */
+-	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
+-	DEFINE(CLOCK_MONOTONIC, CLOCK_MONOTONIC);
+-	DEFINE(NSEC_PER_SEC, NSEC_PER_SEC);
+-	DEFINE(CLOCK_REALTIME_RES, TICK_NSEC);
+-
+ #ifdef CONFIG_BUG
+ 	DEFINE(BUG_ENTRY_SIZE, sizeof(struct bug_entry));
+ #endif
+Index: linux-2.6/arch/powerpc/kernel/smp.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/smp.c
++++ linux-2.6/arch/powerpc/kernel/smp.c
+@@ -308,8 +308,6 @@ void smp_call_function_interrupt(void)
+ 	}
+ }
+ 
+-extern struct gettimeofday_struct do_gtod;
+-
+ struct thread_info *current_set[NR_CPUS];
+ 
+ DECLARE_PER_CPU(unsigned int, pvr);
+Index: linux-2.6/arch/powerpc/kernel/vdso32/Makefile
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/vdso32/Makefile
++++ linux-2.6/arch/powerpc/kernel/vdso32/Makefile
+@@ -1,7 +1,7 @@
+ 
+ # List of files in the vdso, has to be asm only for now
+ 
+-obj-vdso32 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o
++obj-vdso32 = sigtramp.o datapage.o cacheflush.o note.o
+ 
+ # Build rules
+ 
+Index: linux-2.6/arch/powerpc/kernel/vdso32/datapage.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/vdso32/datapage.S
++++ linux-2.6/arch/powerpc/kernel/vdso32/datapage.S
+@@ -65,21 +65,3 @@ V_FUNCTION_BEGIN(__kernel_get_syscall_ma
+ 	blr
+   .cfi_endproc
+ V_FUNCTION_END(__kernel_get_syscall_map)
+-
+-/*
+- * void unsigned long long  __kernel_get_tbfreq(void);
+- *
+- * returns the timebase frequency in HZ
+- */
+-V_FUNCTION_BEGIN(__kernel_get_tbfreq)
+-  .cfi_startproc
+-	mflr	r12
+-  .cfi_register lr,r12
+-	bl	__get_datapage@local
+-	lwz	r4,(CFG_TB_TICKS_PER_SEC + 4)(r3)
+-	lwz	r3,CFG_TB_TICKS_PER_SEC(r3)
+-	mtlr	r12
+-	crclr	cr0*4+so
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__kernel_get_tbfreq)
+Index: linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/vdso32/gettimeofday.S
++++ /dev/null
+@@ -1,322 +0,0 @@
+-/*
+- * Userland implementation of gettimeofday() for 32 bits processes in a
+- * ppc64 kernel for use in the vDSO
+- *
+- * Copyright (C) 2004 Benjamin Herrenschmuidt (benh@kernel.crashing.org,
+- *                    IBM Corp.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-#include <asm/processor.h>
+-#include <asm/ppc_asm.h>
+-#include <asm/vdso.h>
+-#include <asm/asm-offsets.h>
+-#include <asm/unistd.h>
+-
+-	.text
+-/*
+- * Exact prototype of gettimeofday
+- *
+- * int __kernel_gettimeofday(struct timeval *tv, struct timezone *tz);
+- *
+- */
+-V_FUNCTION_BEGIN(__kernel_gettimeofday)
+-  .cfi_startproc
+-	mflr	r12
+-  .cfi_register lr,r12
+-
+-	mr	r10,r3			/* r10 saves tv */
+-	mr	r11,r4			/* r11 saves tz */
+-	bl	__get_datapage@local	/* get data page */
+-	mr	r9, r3			/* datapage ptr in r9 */
+-	bl	__do_get_xsec@local	/* get xsec from tb & kernel */
+-	bne-	2f			/* out of line -> do syscall */
+-
+-	/* seconds are xsec >> 20 */
+-	rlwinm	r5,r4,12,20,31
+-	rlwimi	r5,r3,12,0,19
+-	stw	r5,TVAL32_TV_SEC(r10)
+-
+-	/* get remaining xsec and convert to usec. we scale
+-	 * up remaining xsec by 12 bits and get the top 32 bits
+-	 * of the multiplication
+-	 */
+-	rlwinm	r5,r4,12,0,19
+-	lis	r6,1000000@h
+-	ori	r6,r6,1000000@l
+-	mulhwu	r5,r5,r6
+-	stw	r5,TVAL32_TV_USEC(r10)
+-
+-	cmpli	cr0,r11,0		/* check if tz is NULL */
+-	beq	1f
+-	lwz	r4,CFG_TZ_MINUTEWEST(r9)/* fill tz */
+-	lwz	r5,CFG_TZ_DSTTIME(r9)
+-	stw	r4,TZONE_TZ_MINWEST(r11)
+-	stw	r5,TZONE_TZ_DSTTIME(r11)
+-
+-1:	mtlr	r12
+-	crclr	cr0*4+so
+-	li	r3,0
+-	blr
+-
+-2:
+-	mtlr	r12
+-	mr	r3,r10
+-	mr	r4,r11
+-	li	r0,__NR_gettimeofday
+-	sc
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__kernel_gettimeofday)
+-
+-/*
+- * Exact prototype of clock_gettime()
+- *
+- * int __kernel_clock_gettime(clockid_t clock_id, struct timespec *tp);
+- *
+- */
+-V_FUNCTION_BEGIN(__kernel_clock_gettime)
+-  .cfi_startproc
+-	/* Check for supported clock IDs */
+-	cmpli	cr0,r3,CLOCK_REALTIME
+-	cmpli	cr1,r3,CLOCK_MONOTONIC
+-	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+-	bne	cr0,99f
+-
+-	mflr	r12			/* r12 saves lr */
+-  .cfi_register lr,r12
+-	mr	r10,r3			/* r10 saves id */
+-	mr	r11,r4			/* r11 saves tp */
+-	bl	__get_datapage@local	/* get data page */
+-	mr	r9,r3			/* datapage ptr in r9 */
+-	beq	cr1,50f			/* if monotonic -> jump there */
+-
+-	/*
+-	 * CLOCK_REALTIME
+-	 */
+-
+-	bl	__do_get_xsec@local	/* get xsec from tb & kernel */
+-	bne-	98f			/* out of line -> do syscall */
+-
+-	/* seconds are xsec >> 20 */
+-	rlwinm	r5,r4,12,20,31
+-	rlwimi	r5,r3,12,0,19
+-	stw	r5,TSPC32_TV_SEC(r11)
+-
+-	/* get remaining xsec and convert to nsec. we scale
+-	 * up remaining xsec by 12 bits and get the top 32 bits
+-	 * of the multiplication, then we multiply by 1000
+-	 */
+-	rlwinm	r5,r4,12,0,19
+-	lis	r6,1000000@h
+-	ori	r6,r6,1000000@l
+-	mulhwu	r5,r5,r6
+-	mulli	r5,r5,1000
+-	stw	r5,TSPC32_TV_NSEC(r11)
+-	mtlr	r12
+-	crclr	cr0*4+so
+-	li	r3,0
+-	blr
+-
+-	/*
+-	 * CLOCK_MONOTONIC
+-	 */
+-
+-50:	bl	__do_get_xsec@local	/* get xsec from tb & kernel */
+-	bne-	98f			/* out of line -> do syscall */
+-
+-	/* seconds are xsec >> 20 */
+-	rlwinm	r6,r4,12,20,31
+-	rlwimi	r6,r3,12,0,19
+-
+-	/* get remaining xsec and convert to nsec. we scale
+-	 * up remaining xsec by 12 bits and get the top 32 bits
+-	 * of the multiplication, then we multiply by 1000
+-	 */
+-	rlwinm	r7,r4,12,0,19
+-	lis	r5,1000000@h
+-	ori	r5,r5,1000000@l
+-	mulhwu	r7,r7,r5
+-	mulli	r7,r7,1000
+-
+-	/* now we must fixup using wall to monotonic. We need to snapshot
+-	 * that value and do the counter trick again. Fortunately, we still
+-	 * have the counter value in r8 that was returned by __do_get_xsec.
+-	 * At this point, r6,r7 contain our sec/nsec values, r3,r4 and r5
+-	 * can be used
+-	 */
+-
+-	lwz	r3,WTOM_CLOCK_SEC(r9)
+-	lwz	r4,WTOM_CLOCK_NSEC(r9)
+-
+-	/* We now have our result in r3,r4. We create a fake dependency
+-	 * on that result and re-check the counter
+-	 */
+-	or	r5,r4,r3
+-	xor	r0,r5,r5
+-	add	r9,r9,r0
+-#ifdef CONFIG_PPC64
+-	lwz	r0,(CFG_TB_UPDATE_COUNT+4)(r9)
+-#else
+-	lwz	r0,(CFG_TB_UPDATE_COUNT)(r9)
+-#endif
+-        cmpl    cr0,r8,r0		/* check if updated */
+-	bne-	50b
+-
+-	/* Calculate and store result. Note that this mimmics the C code,
+-	 * which may cause funny results if nsec goes negative... is that
+-	 * possible at all ?
+-	 */
+-	add	r3,r3,r6
+-	add	r4,r4,r7
+-	lis	r5,NSEC_PER_SEC@h
+-	ori	r5,r5,NSEC_PER_SEC@l
+-	cmpl	cr0,r4,r5
+-	cmpli	cr1,r4,0
+-	blt	1f
+-	subf	r4,r5,r4
+-	addi	r3,r3,1
+-1:	bge	cr1,1f
+-	addi	r3,r3,-1
+-	add	r4,r4,r5
+-1:	stw	r3,TSPC32_TV_SEC(r11)
+-	stw	r4,TSPC32_TV_NSEC(r11)
+-
+-	mtlr	r12
+-	crclr	cr0*4+so
+-	li	r3,0
+-	blr
+-
+-	/*
+-	 * syscall fallback
+-	 */
+-98:
+-	mtlr	r12
+-	mr	r3,r10
+-	mr	r4,r11
+-99:
+-	li	r0,__NR_clock_gettime
+-	sc
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__kernel_clock_gettime)
+-
+-
+-/*
+- * Exact prototype of clock_getres()
+- *
+- * int __kernel_clock_getres(clockid_t clock_id, struct timespec *res);
+- *
+- */
+-V_FUNCTION_BEGIN(__kernel_clock_getres)
+-  .cfi_startproc
+-	/* Check for supported clock IDs */
+-	cmpwi	cr0,r3,CLOCK_REALTIME
+-	cmpwi	cr1,r3,CLOCK_MONOTONIC
+-	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+-	bne	cr0,99f
+-
+-	li	r3,0
+-	cmpli	cr0,r4,0
+-	crclr	cr0*4+so
+-	beqlr
+-	lis	r5,CLOCK_REALTIME_RES@h
+-	ori	r5,r5,CLOCK_REALTIME_RES@l
+-	stw	r3,TSPC32_TV_SEC(r4)
+-	stw	r5,TSPC32_TV_NSEC(r4)
+-	blr
+-
+-	/*
+-	 * syscall fallback
+-	 */
+-99:
+-	li	r0,__NR_clock_getres
+-	sc
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__kernel_clock_getres)
+-
+-
+-/*
+- * This is the core of gettimeofday() & friends, it returns the xsec
+- * value in r3 & r4 and expects the datapage ptr (non clobbered)
+- * in r9. clobbers r0,r4,r5,r6,r7,r8.
+- * When returning, r8 contains the counter value that can be reused
+- * by the monotonic clock implementation
+- */
+-__do_get_xsec:
+-  .cfi_startproc
+-	/* Check for update count & load values. We use the low
+-	 * order 32 bits of the update count
+-	 */
+-#ifdef CONFIG_PPC64
+-1:	lwz	r8,(CFG_TB_UPDATE_COUNT+4)(r9)
+-#else
+-1:	lwz	r8,(CFG_TB_UPDATE_COUNT)(r9)
+-#endif
+-	andi.	r0,r8,1			/* pending update ? loop */
+-	bne-	1b
+-	xor	r0,r8,r8		/* create dependency */
+-	add	r9,r9,r0
+-
+-	/* Load orig stamp (offset to TB) */
+-	lwz	r5,CFG_TB_ORIG_STAMP(r9)
+-	lwz	r6,(CFG_TB_ORIG_STAMP+4)(r9)
+-
+-	/* Get a stable TB value */
+-2:	mftbu	r3
+-	mftbl	r4
+-	mftbu	r0
+-	cmpl	cr0,r3,r0
+-	bne-	2b
+-
+-	/* Substract tb orig stamp. If the high part is non-zero, we jump to
+-	 * the slow path which call the syscall.
+-	 * If it's ok, then we have our 32 bits tb_ticks value in r7
+-	 */
+-	subfc	r7,r6,r4
+-	subfe.	r0,r5,r3
+-	bne-	3f
+-
+-	/* Load scale factor & do multiplication */
+-	lwz	r5,CFG_TB_TO_XS(r9)	/* load values */
+-	lwz	r6,(CFG_TB_TO_XS+4)(r9)
+-	mulhwu	r4,r7,r5
+-	mulhwu	r6,r7,r6
+-	mullw	r0,r7,r5
+-	addc	r6,r6,r0
+-
+-	/* At this point, we have the scaled xsec value in r4 + XER:CA
+-	 * we load & add the stamp since epoch
+-	 */
+-	lwz	r5,CFG_STAMP_XSEC(r9)
+-	lwz	r6,(CFG_STAMP_XSEC+4)(r9)
+-	adde	r4,r4,r6
+-	addze	r3,r5
+-
+-	/* We now have our result in r3,r4. We create a fake dependency
+-	 * on that result and re-check the counter
+-	 */
+-	or	r6,r4,r3
+-	xor	r0,r6,r6
+-	add	r9,r9,r0
+-#ifdef CONFIG_PPC64
+-	lwz	r0,(CFG_TB_UPDATE_COUNT+4)(r9)
+-#else
+-	lwz	r0,(CFG_TB_UPDATE_COUNT)(r9)
+-#endif
+-        cmpl    cr0,r8,r0		/* check if updated */
+-	bne-	1b
+-
+-	/* Warning ! The caller expects CR:EQ to be set to indicate a
+-	 * successful calculation (so it won't fallback to the syscall
+-	 * method). We have overriden that CR bit in the counter check,
+-	 * but fortunately, the loop exit condition _is_ CR:EQ set, so
+-	 * we can exit safely here. If you change this code, be careful
+-	 * of that side effect.
+-	 */
+-3:	blr
+-  .cfi_endproc
+Index: linux-2.6/arch/powerpc/kernel/vdso32/vdso32.lds.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/vdso32/vdso32.lds.S
++++ linux-2.6/arch/powerpc/kernel/vdso32/vdso32.lds.S
+@@ -117,10 +117,6 @@ VERSION
+     global:
+ 	__kernel_datapage_offset; /* Has to be there for the kernel to find */
+ 	__kernel_get_syscall_map;
+-	__kernel_gettimeofday;
+-	__kernel_clock_gettime;
+-	__kernel_clock_getres;
+-	__kernel_get_tbfreq;
+ 	__kernel_sync_dicache;
+ 	__kernel_sync_dicache_p5;
+ 	__kernel_sigtramp32;
+Index: linux-2.6/arch/powerpc/kernel/vdso64/Makefile
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/vdso64/Makefile
++++ linux-2.6/arch/powerpc/kernel/vdso64/Makefile
+@@ -1,6 +1,6 @@
+ # List of files in the vdso, has to be asm only for now
+ 
+-obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o
++obj-vdso64 = sigtramp.o datapage.o cacheflush.o note.o
+ 
+ # Build rules
+ 
+Index: linux-2.6/arch/powerpc/kernel/vdso64/datapage.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/vdso64/datapage.S
++++ linux-2.6/arch/powerpc/kernel/vdso64/datapage.S
+@@ -65,21 +65,3 @@ V_FUNCTION_BEGIN(__kernel_get_syscall_ma
+ 	blr
+   .cfi_endproc
+ V_FUNCTION_END(__kernel_get_syscall_map)
+-
+-
+-/*
+- * void unsigned long  __kernel_get_tbfreq(void);
+- *
+- * returns the timebase frequency in HZ
+- */
+-V_FUNCTION_BEGIN(__kernel_get_tbfreq)
+-  .cfi_startproc
+-	mflr	r12
+-  .cfi_register lr,r12
+-	bl	V_LOCAL_FUNC(__get_datapage)
+-	ld	r3,CFG_TB_TICKS_PER_SEC(r3)
+-	mtlr	r12
+-	crclr	cr0*4+so
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__kernel_get_tbfreq)
+Index: linux-2.6/arch/powerpc/kernel/vdso64/gettimeofday.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ /dev/null
+@@ -1,254 +0,0 @@
+-
+-	/*
+- * Userland implementation of gettimeofday() for 64 bits processes in a
+- * ppc64 kernel for use in the vDSO
+- *
+- * Copyright (C) 2004 Benjamin Herrenschmuidt (benh@kernel.crashing.org),
+- *                    IBM Corp.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-#include <asm/processor.h>
+-#include <asm/ppc_asm.h>
+-#include <asm/vdso.h>
+-#include <asm/asm-offsets.h>
+-#include <asm/unistd.h>
+-
+-	.text
+-/*
+- * Exact prototype of gettimeofday
+- *
+- * int __kernel_gettimeofday(struct timeval *tv, struct timezone *tz);
+- *
+- */
+-V_FUNCTION_BEGIN(__kernel_gettimeofday)
+-  .cfi_startproc
+-	mflr	r12
+-  .cfi_register lr,r12
+-
+-	mr	r11,r3			/* r11 holds tv */
+-	mr	r10,r4			/* r10 holds tz */
+-	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+-	bl	V_LOCAL_FUNC(__do_get_xsec)	/* get xsec from tb & kernel */
+-	lis     r7,15			/* r7 = 1000000 = USEC_PER_SEC */
+-	ori     r7,r7,16960
+-	rldicl  r5,r4,44,20		/* r5 = sec = xsec / XSEC_PER_SEC */
+-	rldicr  r6,r5,20,43		/* r6 = sec * XSEC_PER_SEC */
+-	std	r5,TVAL64_TV_SEC(r11)	/* store sec in tv */
+-	subf	r0,r6,r4		/* r0 = xsec = (xsec - r6) */
+-	mulld   r0,r0,r7		/* usec = (xsec * USEC_PER_SEC) /
+-					 * XSEC_PER_SEC
+-					 */
+-	rldicl  r0,r0,44,20
+-	cmpldi	cr0,r10,0		/* check if tz is NULL */
+-	std	r0,TVAL64_TV_USEC(r11)	/* store usec in tv */
+-	beq	1f
+-	lwz	r4,CFG_TZ_MINUTEWEST(r3)/* fill tz */
+-	lwz	r5,CFG_TZ_DSTTIME(r3)
+-	stw	r4,TZONE_TZ_MINWEST(r10)
+-	stw	r5,TZONE_TZ_DSTTIME(r10)
+-1:	mtlr	r12
+-	crclr	cr0*4+so
+-	li	r3,0			/* always success */
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__kernel_gettimeofday)
+-
+-
+-/*
+- * Exact prototype of clock_gettime()
+- *
+- * int __kernel_clock_gettime(clockid_t clock_id, struct timespec *tp);
+- *
+- */
+-V_FUNCTION_BEGIN(__kernel_clock_gettime)
+-  .cfi_startproc
+-	/* Check for supported clock IDs */
+-	cmpwi	cr0,r3,CLOCK_REALTIME
+-	cmpwi	cr1,r3,CLOCK_MONOTONIC
+-	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+-	bne	cr0,99f
+-
+-	mflr	r12			/* r12 saves lr */
+-  .cfi_register lr,r12
+-	mr	r10,r3			/* r10 saves id */
+-	mr	r11,r4			/* r11 saves tp */
+-	bl	V_LOCAL_FUNC(__get_datapage)	/* get data page */
+-	beq	cr1,50f			/* if monotonic -> jump there */
+-
+-	/*
+-	 * CLOCK_REALTIME
+-	 */
+-
+-	bl	V_LOCAL_FUNC(__do_get_xsec)	/* get xsec from tb & kernel */
+-
+-	lis     r7,15			/* r7 = 1000000 = USEC_PER_SEC */
+-	ori     r7,r7,16960
+-	rldicl  r5,r4,44,20		/* r5 = sec = xsec / XSEC_PER_SEC */
+-	rldicr  r6,r5,20,43		/* r6 = sec * XSEC_PER_SEC */
+-	std	r5,TSPC64_TV_SEC(r11)	/* store sec in tv */
+-	subf	r0,r6,r4		/* r0 = xsec = (xsec - r6) */
+-	mulld   r0,r0,r7		/* usec = (xsec * USEC_PER_SEC) /
+-					 * XSEC_PER_SEC
+-					 */
+-	rldicl  r0,r0,44,20
+-	mulli	r0,r0,1000		/* nsec = usec * 1000 */
+-	std	r0,TSPC64_TV_NSEC(r11)	/* store nsec in tp */
+-
+-	mtlr	r12
+-	crclr	cr0*4+so
+-	li	r3,0
+-	blr
+-
+-	/*
+-	 * CLOCK_MONOTONIC
+-	 */
+-
+-50:	bl	V_LOCAL_FUNC(__do_get_xsec)	/* get xsec from tb & kernel */
+-
+-	lis     r7,15			/* r7 = 1000000 = USEC_PER_SEC */
+-	ori     r7,r7,16960
+-	rldicl  r5,r4,44,20		/* r5 = sec = xsec / XSEC_PER_SEC */
+-	rldicr  r6,r5,20,43		/* r6 = sec * XSEC_PER_SEC */
+-	subf	r0,r6,r4		/* r0 = xsec = (xsec - r6) */
+-	mulld   r0,r0,r7		/* usec = (xsec * USEC_PER_SEC) /
+-					 * XSEC_PER_SEC
+-					 */
+-	rldicl  r6,r0,44,20
+-	mulli	r6,r6,1000		/* nsec = usec * 1000 */
+-
+-	/* now we must fixup using wall to monotonic. We need to snapshot
+-	 * that value and do the counter trick again. Fortunately, we still
+-	 * have the counter value in r8 that was returned by __do_get_xsec.
+-	 * At this point, r5,r6 contain our sec/nsec values.
+-	 * can be used
+-	 */
+-
+-	lwa	r4,WTOM_CLOCK_SEC(r3)
+-	lwa	r7,WTOM_CLOCK_NSEC(r3)
+-
+-	/* We now have our result in r4,r7. We create a fake dependency
+-	 * on that result and re-check the counter
+-	 */
+-	or	r9,r4,r7
+-	xor	r0,r9,r9
+-	add	r3,r3,r0
+-	ld	r0,CFG_TB_UPDATE_COUNT(r3)
+-        cmpld   cr0,r0,r8		/* check if updated */
+-	bne-	50b
+-
+-	/* Calculate and store result. Note that this mimmics the C code,
+-	 * which may cause funny results if nsec goes negative... is that
+-	 * possible at all ?
+-	 */
+-	add	r4,r4,r5
+-	add	r7,r7,r6
+-	lis	r9,NSEC_PER_SEC@h
+-	ori	r9,r9,NSEC_PER_SEC@l
+-	cmpl	cr0,r7,r9
+-	cmpli	cr1,r7,0
+-	blt	1f
+-	subf	r7,r9,r7
+-	addi	r4,r4,1
+-1:	bge	cr1,1f
+-	addi	r4,r4,-1
+-	add	r7,r7,r9
+-1:	std	r4,TSPC64_TV_SEC(r11)
+-	std	r7,TSPC64_TV_NSEC(r11)
+-
+-	mtlr	r12
+-	crclr	cr0*4+so
+-	li	r3,0
+-	blr
+-
+-	/*
+-	 * syscall fallback
+-	 */
+-98:
+-	mtlr	r12
+-	mr	r3,r10
+-	mr	r4,r11
+-99:
+-	li	r0,__NR_clock_gettime
+-	sc
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__kernel_clock_gettime)
+-
+-
+-/*
+- * Exact prototype of clock_getres()
+- *
+- * int __kernel_clock_getres(clockid_t clock_id, struct timespec *res);
+- *
+- */
+-V_FUNCTION_BEGIN(__kernel_clock_getres)
+-  .cfi_startproc
+-	/* Check for supported clock IDs */
+-	cmpwi	cr0,r3,CLOCK_REALTIME
+-	cmpwi	cr1,r3,CLOCK_MONOTONIC
+-	cror	cr0*4+eq,cr0*4+eq,cr1*4+eq
+-	bne	cr0,99f
+-
+-	li	r3,0
+-	cmpli	cr0,r4,0
+-	crclr	cr0*4+so
+-	beqlr
+-	lis	r5,CLOCK_REALTIME_RES@h
+-	ori	r5,r5,CLOCK_REALTIME_RES@l
+-	std	r3,TSPC64_TV_SEC(r4)
+-	std	r5,TSPC64_TV_NSEC(r4)
+-	blr
+-
+-	/*
+-	 * syscall fallback
+-	 */
+-99:
+-	li	r0,__NR_clock_getres
+-	sc
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__kernel_clock_getres)
+-
+-
+-/*
+- * This is the core of gettimeofday(), it returns the xsec
+- * value in r4 and expects the datapage ptr (non clobbered)
+- * in r3. clobbers r0,r4,r5,r6,r7,r8
+- * When returning, r8 contains the counter value that can be reused
+- */
+-V_FUNCTION_BEGIN(__do_get_xsec)
+-  .cfi_startproc
+-	/* check for update count & load values */
+-1:	ld	r8,CFG_TB_UPDATE_COUNT(r3)
+-	andi.	r0,r8,1			/* pending update ? loop */
+-	bne-	1b
+-	xor	r0,r8,r8		/* create dependency */
+-	add	r3,r3,r0
+-
+-	/* Get TB & offset it. We use the MFTB macro which will generate
+-	 * workaround code for Cell.
+-	 */
+-	MFTB(r7)
+-	ld	r9,CFG_TB_ORIG_STAMP(r3)
+-	subf	r7,r9,r7
+-
+-	/* Scale result */
+-	ld	r5,CFG_TB_TO_XS(r3)
+-	mulhdu	r7,r7,r5
+-
+-	/* Add stamp since epoch */
+-	ld	r6,CFG_STAMP_XSEC(r3)
+-	add	r4,r6,r7
+-
+-	xor	r0,r4,r4
+-	add	r3,r3,r0
+-	ld	r0,CFG_TB_UPDATE_COUNT(r3)
+-        cmpld   cr0,r0,r8		/* check if updated */
+-	bne-	1b
+-	blr
+-  .cfi_endproc
+-V_FUNCTION_END(__do_get_xsec)
+Index: linux-2.6/arch/powerpc/kernel/vdso64/vdso64.lds.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/vdso64/vdso64.lds.S
++++ linux-2.6/arch/powerpc/kernel/vdso64/vdso64.lds.S
+@@ -115,10 +115,6 @@ VERSION
+     global:
+ 	__kernel_datapage_offset; /* Has to be there for the kernel to find */
+ 	__kernel_get_syscall_map;
+-    	__kernel_gettimeofday;
+-	__kernel_clock_gettime;
+-	__kernel_clock_getres;
+-	__kernel_get_tbfreq;
+ 	__kernel_sync_dicache;
+ 	__kernel_sync_dicache_p5;
+ 	__kernel_sigtramp_rt64;
+Index: linux-2.6/include/asm-powerpc/time.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/time.h
++++ linux-2.6/include/asm-powerpc/time.h
+@@ -48,26 +48,6 @@ extern unsigned long ppc_proc_freq;
+ extern unsigned long ppc_tb_freq;
+ #define DEFAULT_TB_FREQ		125000000UL
+ 
+-/*
+- * By putting all of this stuff into a single struct we 
+- * reduce the number of cache lines touched by do_gettimeofday.
+- * Both by collecting all of the data in one cache line and
+- * by touching only one TOC entry on ppc64.
+- */
+-struct gettimeofday_vars {
+-	u64 tb_to_xs;
+-	u64 stamp_xsec;
+-	u64 tb_orig_stamp;
+-};
+-
+-struct gettimeofday_struct {
+-	unsigned long tb_ticks_per_sec;
+-	struct gettimeofday_vars vars[2];
+-	struct gettimeofday_vars * volatile varp;
+-	unsigned      var_idx;
+-	unsigned      tb_to_us;
+-};
+-
+ struct div_result {
+ 	u64 result_high;
+ 	u64 result_low;
+Index: linux-2.6/include/asm-powerpc/vdso_datapage.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/vdso_datapage.h
++++ linux-2.6/include/asm-powerpc/vdso_datapage.h
+@@ -74,11 +74,6 @@ struct vdso_data {
+ 	__u32 icache_size;		/* L1 i-cache size		0x68 */
+ 	__u32 icache_line_size;		/* L1 i-cache line size		0x6C */
+ 
+-	/* those additional ones don't have to be located anywhere
+-	 * special as they were not part of the original systemcfg
+-	 */
+-	__s32 wtom_clock_sec;			/* Wall to monotonic clock */
+-	__s32 wtom_clock_nsec;
+    	__u32 syscall_map_64[SYSCALL_MAP_SIZE]; /* map of syscalls  */
+    	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+ };
+@@ -89,15 +84,6 @@ struct vdso_data {
+  * And here is the simpler 32 bits version
+  */
+ struct vdso_data {
+-	__u64 tb_orig_stamp;		/* Timebase at boot		0x30 */
+-	__u64 tb_ticks_per_sec;		/* Timebase tics / sec		0x38 */
+-	__u64 tb_to_xs;			/* Inverse of TB to 2^20	0x40 */
+-	__u64 stamp_xsec;		/*				0x48 */
+-	__u32 tb_update_count;		/* Timebase atomicity ctr	0x50 */
+-	__u32 tz_minuteswest;		/* Minutes west of Greenwich	0x58 */
+-	__u32 tz_dsttime;		/* Type of dst correction	0x5C */
+-	__s32 wtom_clock_sec;			/* Wall to monotonic clock */
+-	__s32 wtom_clock_nsec;
+    	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
+ };
+ 
 
