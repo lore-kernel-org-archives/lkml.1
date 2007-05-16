@@ -1,440 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760160AbXEPQl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbXEPQnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760160AbXEPQl7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbXEPQlu
+	id S1761063AbXEPQnw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbXEPQnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:41:50 -0400
-Received: from mga09.intel.com ([134.134.136.24]:10218 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753742AbXEPQlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:41:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,544,1170662400"; 
-   d="scan'208";a="87470257"
-Message-ID: <464B3443.9070802@foo-projects.org>
-Date: Wed, 16 May 2007 09:41:39 -0700
-From: "Kok, Auke" <sofar@foo-projects.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>, cramerj@intel.com,
-       john.ronciak@intel.com, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, gregkh@suse.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI legacy I/O port free driver - Making Intel e1000
- driver legacy I/O port free
-References: <4642EDED.7020109@jp.fujitsu.com> <46433090.8050205@intel.com> <4643DB5A.7090104@jp.fujitsu.com> <4643DE6E.9090706@intel.com>
-In-Reply-To: <4643DE6E.9090706@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 May 2007 16:41:43.0389 (UTC) FILETIME=[15DD98D0:01C797D9]
+	Wed, 16 May 2007 12:43:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36957 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753742AbXEPQnp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 12:43:45 -0400
+Date: Wed, 16 May 2007 09:41:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com
+Subject: Re: 2.6.22-rc1-mm1
+Message-Id: <20070516094133.bec04e65.akpm@linux-foundation.org>
+In-Reply-To: <464B304C.5040104@googlemail.com>
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
+	<464B304C.5040104@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Tomohiro Kusumi wrote:
->> Dear Auke
->>
->>  > I'm ok with the bottom part of the patch, but I do not like
->>  > the modification of the pci device ID table in this way. As
->>  > Arjan van der Ven previously commented as well, this makes
->>  > it hard for future device ID's to be bound to the driver.
->>
->>   I googled the previous comment by Arjan. Now I understand
->>   that the patch makes it difficult to add PCI ID's to the
->>   driver at runtime.
->>
->>  > On top of that, there is no logical correlation between the
->>  > mapping and chipsets, so a lot of information is lost in that
->>  > table. It really does not show which _chipsets_ support this
->>  > functionality.
->>
->>   Thanks for pointing out the problem, but I can't quite understand
->>   what you are trying to say. What do you mean by the chipset?
->>   Are you talking about the chipset of the NIC? or the South bridge?
->>   I'd be glad if you can explain it to me.
+On Wed, 16 May 2007 18:24:44 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+
+> Andrew Morton napisał(a):
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
+> > 
 > 
-> perhaps my wording was poor. I was referring to the NIC chip. Since there are 
-> about 12 different physical e1000 NIC chips (and lots of different pci IDs per 
-> e1000 NIC chip), it would be best to correlate the capability of each NIC chip 
-> number to be able to work without legacy IO mode instead of providing this 
-> mapping based on the PCI device ID.
+> Almost every time when I try to run this script I hit a bug. I'm wondering why...
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc1-mm1/test_mount_fs.sh
 > 
-> It would serve two purposes: new pci id's for a chipset of which we already know 
-> that it can work without legacy IO can automatically inherit this property from 
-> the NIC chipset properties, and new e1000 chips would automatically get a 
-> default property for this value.
+> [ 6666.713016] kernel BUG at /home/devel/linux-mm/include/linux/mm.h:288!
+
+static inline int put_page_testzero(struct page *page)
+{
+	VM_BUG_ON(atomic_read(&page->_count) == 0);
+	return atomic_dec_and_test(&page->_count);
+}
+
+> [ 6666.719690] invalid opcode: 0000 [#1]
+> [ 6666.723397] PREEMPT SMP
+> [ 6666.725999] Modules linked in: xfs loop pktgen ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm evdev snd_timer snd soundcore intel_agp agpgart snd_page_alloc i2c_i801 ide_cd cdrom rtc unix
+> [ 6666.776026] CPU:    0
+> [ 6666.776027] EIP:    0060:[<c01693ec>]    Not tainted VLI
+> [ 6666.776028] EFLAGS: 00010202   (2.6.22-rc1-mm1 #3)
+> [ 6666.788519] EIP is at put_page+0x44/0xee
+> [ 6666.792491] eax: 00000001   ebx: c549f728   ecx: c04b27e0   edx: 00000001
+> [ 6666.799345] esi: 00000000   edi: 00000080   ebp: d067e9e0   esp: d067e9c8
+> [ 6666.806208] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> [ 6666.812104] Process mount (pid: 9419, ti=d067e000 task=d00a4070 task.ti=d067e000)
+> [ 6666.819486] Stack: d8980180 00000080 d067e9f0 d8980180 00000000 00000080 d067e9f0 fdc8eda3
+> [ 6666.828103]        fffffffc d8980180 d067ea20 fdc8f7ff fdc9b425 fdc96e5c 00080000 00000000
+> [ 6666.836635]        c549dfd0 00000200 ffffffff cd44b8e0 00002160 cd44b8e0 d067ea30 fdc78937
+> [ 6666.845253] Call Trace:
+> [ 6666.847939]  [<fdc8eda3>] xfs_buf_free+0x41/0x61 [xfs]
+> [ 6666.853247]  [<fdc8f7ff>] xfs_buf_get_noaddr+0x10c/0x118 [xfs]
+> [ 6666.859231]  [<fdc78937>] xlog_get_bp+0x65/0x69 [xfs]
+> [ 6666.864412]  [<fdc79e87>] xlog_write_log_records+0x73/0x20d [xfs]
+> [ 6666.870654]  [<fdc7a174>] xlog_clear_stale_blocks+0x153/0x15b [xfs]
+> [ 6666.877075]  [<fdc7a546>] xlog_find_tail+0x3ca/0x43d [xfs]
+> [ 6666.882695]  [<fdc7c241>] xlog_recover+0x14/0x9b [xfs]
+> [ 6666.887968]  [<fdc75d13>] xfs_log_mount+0xad/0xf1 [xfs]
+> [ 6666.893332]  [<fdc7ec47>] xfs_mountfs+0x959/0xc4a [xfs]
+> [ 6666.898689]  [<fdc714f6>] xfs_ioinit+0x26/0x2c [xfs]
+> [ 6666.903789]  [<fdc85692>] xfs_mount+0x2e5/0x358 [xfs]
+> [ 6666.908988]  [<fdc95b66>] vfs_mount+0x1a/0x1e [xfs]
+> [ 6666.914035]  [<fdc95a20>] xfs_fs_fill_super+0x76/0x1a2 [xfs]
+> [ 6666.919868]  [<c018597f>] get_sb_bdev+0x105/0x143
+> [ 6666.924652]  [<fdc94d57>] xfs_fs_get_sb+0x21/0x27 [xfs]
+> [ 6666.930033]  [<c0185501>] vfs_kern_mount+0x81/0xf1
+> [ 6666.934887]  [<c0199b51>] do_mount+0x716/0x80d
+> [ 6666.939390]  [<c0199cc8>] sys_mount+0x80/0xb5
+> [ 6666.943824]  [<c01041d0>] syscall_call+0x7/0xb
+> [ 6666.948338]  [<b7fbe410>] 0xb7fbe410
+> [ 6666.951983]  =======================
+> [ 6666.955606] INFO: lockdep is turned off.
+> [ 6666.959633] Code: 3f 19 0b 00 85 c0 74 0c 89 d8 e8 1a fa ff ff e9 b9 00 00 00 31 d2 83 7b 04 00 0f 94 c2 b8 e0 27 4b c0 e8 1c 19 0b 00 85 c0 74 04 <0f> 0b eb fe 83 7b 04 00 75 11 c7 04 24 be 60 3f c0 e8 91 c6 fb
+> [ 6666.979608] EIP: [<c01693ec>] put_page+0x44/0xee SS:ESP 0068:d067e9c8
+> [ 6667.271984] XFS: Filesystem loop1 has duplicate UUID - can't mount
+>
+> ...
+>
+> [ 6670.074487] XFS: Filesystem loop1 has duplicate UUID - can't mount
+> [ 6670.240395] XFS: Filesystem loop1 has duplicate UUID - can't mount
+> [ 6670.350305] XFS: Filesystem loop1 has duplicate UUID - can't mount
+> [ 6670.458773] XFS: Filesystem loop1 has duplicate UUID - can't mount
 > 
-> I will (time permitting) try to reverse your matrix to chip numbers and see if 
-> we can add this property in a much easier way.
-
-Okay, you appear to enable io for the following chipsets:
-
-82540 chips:
-  82540EM
-  82540EM_LOM
-  82540EP
-  82540EP_LOM
-  82540EP_LP
-those are all the 82540's, OK
-
-82541 chips:
-  82541EI
-  82541EI_MOBILE
-  82541ER
-  82541ER_LOM
-  82541GI
-  82541GI_LF
-  82541GI_MOBILE
-Those are all the 82541's, OK too
-
-82544 chips:
-  82544EI_COPPER
-  82544EI_FIBER
-  82544GC_COPPER
-  82544GC_LOM
-Those are all the 82543's, OK too
-
-82545's:
-  82545EM_COPPER
-  82545EM_FIBER
-Here you skip 3 other 82545 device ID's, was that intentional?
-
-82546's:
-  82546EB_COPPER
-  82546EB_FIBER
-  82546EB_QUAD_COPPER
-Here you skip over 9 82546 device ID's... same question.
-
-It appears that probably the 82543's would also work under ioport, 82547 might 
-be the odd one out that might work without IOport. I think 82542 definately 
-needs it...
-
-can you tell me how you created the initial list?
-
-Summarizing, it appears that we should condense the list to: (sketch)
-
-  switch (adapter->hw.mac.type) {
-  case e1000_82542 ... e1000_82541_rev_2:
-         adapter->ioport_capable = 1;
-	break;
-  default:
-	break;
-  }
-
-I also would like this option to be non-default, IOW use legacy IO by default, 
-and allow the user to specify a module load option to disable use of this feature:
-
-static unsigned int use_ioport = 1;
-module_param(use_ioport, uint, 0644);
-MODULE_PARM_DESC(use_ioport, "Use Legacy IO port mapping (default: 1)");
-
-or something like this to allow the feature to be tested before we turn legacy 
-ioport off for all adapters and everyone.
-
-Do you think you can accomodate these changes?
-
-Cheers,
-
-Auke
-
-
-
-
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc1-mm1/mm-dmesg2
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.22-rc1-mm1/mm-config
 > 
-> Auke
-> 
->> Tomohiro Kusumi
->>
->>
->> Kok, Auke wrote:
->>> Tomohiro Kusumi wrote:
->>>> Hi
->>>>
->>>> As you can see in the "10. pci_enable_device_bars() and Legacy I/O
->>>> Port space" of the Documentation/pci.txt, the latest kernel has
->>>> interfaces for PCI device drivers to tell the kernel which resource
->>>> the driver want to use, ex. I/O port or MMIO.
->>>>
->>>> I've made a patch which makes Intel e1000 driver legacy I/O port
->>>> free by using the PCI core changes I mentioned above. The Intel
->>>> e1000 driver can handle some of its devices without using I/O port.
->>>> So this patch changes the driver not to enable/request I/O port
->>>> region depending on the device id.
->>>>
->>>> As a result, the driver can handle its device even when there are
->>>> huge number of PCI devices being used on the system and no I/O
->>>> port region assigned to the device.
->>> Tomohiro,
->>>
->>> I'm ok with the bottom part of the patch, but I do not like the 
->>> modification of the pci device ID table in this way. As Arjan van der 
->>> Ven previously commented as well, this makes it hard for future device 
->>> ID's to be bound to the driver.
->>>
->>> On top of that, there is no logical correlation between the mapping and 
->>> chipsets, so a lot of information is lost in that table. It really does 
->>> not show which _chipsets_ support this functionality.
->>>
->>> I think if we want to work with this, we need some way of mapping the 
->>> device ID's back to chipsets, and enable the feature on that basis.
->>>
->>> Auke
->>>
->>>> Tomohiro Kusumi
->>>>
->>>> Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
->>>>
->>>> ---
->>>>  e1000.h      |    6 +-
->>>>  e1000_main.c |  152 
->>>> +++++++++++++++++++++++++++++++----------------------------
->>>>  2 files changed, 86 insertions(+), 72 deletions(-)
->>>>
->>>> diff -uprN linux-2.6.21.orig/drivers/net/e1000/e1000.h 
->>>> linux-2.6.21/drivers/net/e1000/e1000.h
->>>> --- linux-2.6.21.orig/drivers/net/e1000/e1000.h    2007-05-09 
->>>> 18:02:26.000000000 +0900
->>>> +++ linux-2.6.21/drivers/net/e1000/e1000.h    2007-05-09 
->>>> 18:02:59.000000000 +0900
->>>> @@ -74,8 +74,9 @@
->>>>  #define BAR_1        1
->>>>  #define BAR_5        5
->>>>
->>>> -#define INTEL_E1000_ETHERNET_DEVICE(device_id) {\
->>>> -    PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id)}
->>>> +#define E1000_USE_IOPORT       (1 << 0)
->>>> +#define INTEL_E1000_ETHERNET_DEVICE(device_id, flags) {\
->>>> +       PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id), .driver_data = flags}
->>>>
->>>>  struct e1000_adapter;
->>>>
->>>> @@ -347,6 +348,7 @@ struct e1000_adapter {
->>>>      boolean_t quad_port_a;
->>>>      unsigned long flags;
->>>>      uint32_t eeprom_wol;
->>>> +    int bars;               /* BARs to be enabled */
->>>>  };
->>>>
->>>>  enum e1000_state_t {
->>>> diff -uprN linux-2.6.21.orig/drivers/net/e1000/e1000_main.c 
->>>> linux-2.6.21/drivers/net/e1000/e1000_main.c
->>>> --- linux-2.6.21.orig/drivers/net/e1000/e1000_main.c    2007-05-09 
->>>> 18:02:27.000000000 +0900
->>>> +++ linux-2.6.21/drivers/net/e1000/e1000_main.c    2007-05-09 
->>>> 18:03:00.000000000 +0900
->>>> @@ -48,65 +48,65 @@ static char e1000_copyright[] = "Copyrig
->>>>   *   {PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id)}
->>>>   */
->>>>  static struct pci_device_id e1000_pci_tbl[] = {
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1000),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1001),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1004),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1008),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1009),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x100C),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x100D),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x100E),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x100F),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1010),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1011),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1012),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1013),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1014),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1015),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1016),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1017),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1018),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1019),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x101A),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x101D),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x101E),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1026),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1027),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1028),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1049),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x104A),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x104B),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x104C),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x104D),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x105E),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x105F),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1060),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1075),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1076),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1077),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1078),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1079),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x107A),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x107B),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x107C),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x107D),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x107E),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x107F),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x108A),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x108B),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x108C),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1096),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1098),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x1099),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x109A),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x10A4),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x10B5),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x10B9),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x10BA),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x10BB),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x10BC),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x10C4),
->>>> -    INTEL_E1000_ETHERNET_DEVICE(0x10C5),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1000, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1001, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1004, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1008, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1009, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x100C, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x100D, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x100E, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x100F, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1010, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1011, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1012, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1013, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1014, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1015, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1016, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1017, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1018, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1019, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x101A, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x101D, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x101E, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1026, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1027, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1028, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1049, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x104A, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x104B, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x104C, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x104D, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x105E, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x105F, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1060, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1075, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1076, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1077, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1078, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1079, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x107A, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x107B, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x107C, E1000_USE_IOPORT),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x107D, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x107E, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x107F, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x108A, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x108B, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x108C, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1096, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1098, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x1099, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x109A, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x10A4, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x10B5, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x10B9, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x10BA, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x10BB, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x10BC, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x10C4, 0),
->>>> +    INTEL_E1000_ETHERNET_DEVICE(0x10C5, 0),
->>>>      /* required last entry */
->>>>      {0,}
->>>>  };
->>>> @@ -879,7 +879,14 @@ e1000_probe(struct pci_dev *pdev,
->>>>      int i, err, pci_using_dac;
->>>>      uint16_t eeprom_data = 0;
->>>>      uint16_t eeprom_apme_mask = E1000_EEPROM_APME;
->>>> -    if ((err = pci_enable_device(pdev)))
->>>> +    int bars;
->>>> +
->>>> +    if (ent->driver_data & E1000_USE_IOPORT)
->>>> +        bars = pci_select_bars(pdev, IORESOURCE_MEM | IORESOURCE_IO);
->>>> +    else
->>>> +        bars = pci_select_bars(pdev, IORESOURCE_MEM);
->>>> +
->>>> +    if ((err = pci_enable_device_bars(pdev, bars)))
->>>>          return err;
->>>>
->>>>      if (!(err = pci_set_dma_mask(pdev, DMA_64BIT_MASK)) &&
->>>> @@ -894,7 +901,8 @@ e1000_probe(struct pci_dev *pdev,
->>>>          pci_using_dac = 0;
->>>>      }
->>>>
->>>> -    if ((err = pci_request_regions(pdev, e1000_driver_name)))
->>>> +    err = pci_request_selected_regions(pdev, bars, e1000_driver_name);
->>>> +    if (err)
->>>>          goto err_pci_reg;
->>>>
->>>>      pci_set_master(pdev);
->>>> @@ -913,6 +921,7 @@ e1000_probe(struct pci_dev *pdev,
->>>>      adapter->pdev = pdev;
->>>>      adapter->hw.back = adapter;
->>>>      adapter->msg_enable = (1 << debug) - 1;
->>>> +    adapter->bars = bars;
->>>>
->>>>      mmio_start = pci_resource_start(pdev, BAR_0);
->>>>      mmio_len = pci_resource_len(pdev, BAR_0);
->>>> @@ -922,12 +931,15 @@ e1000_probe(struct pci_dev *pdev,
->>>>      if (!adapter->hw.hw_addr)
->>>>          goto err_ioremap;
->>>>
->>>> -    for (i = BAR_1; i <= BAR_5; i++) {
->>>> -        if (pci_resource_len(pdev, i) == 0)
->>>> -            continue;
->>>> -        if (pci_resource_flags(pdev, i) & IORESOURCE_IO) {
->>>> -            adapter->hw.io_base = pci_resource_start(pdev, i);
->>>> -            break;
->>>> +    if (ent->driver_data & E1000_USE_IOPORT) {
->>>> +        for (i = BAR_1; i <= BAR_5; i++) {
->>>> +            if (pci_resource_len(pdev, i) == 0)
->>>> +                continue;
->>>> +            if (pci_resource_flags(pdev, i) & IORESOURCE_IO) {
->>>> +                adapter->hw.io_base =
->>>> +                    pci_resource_start(pdev, i);
->>>> +                break;
->>>> +            }
->>>>          }
->>>>      }
->>>>
->>>> @@ -1190,7 +1202,7 @@ err_sw_init:
->>>>  err_ioremap:
->>>>      free_netdev(netdev);
->>>>  err_alloc_etherdev:
->>>> -    pci_release_regions(pdev);
->>>> +    pci_release_selected_regions(pdev, bars);
->>>>  err_pci_reg:
->>>>  err_dma:
->>>>      pci_disable_device(pdev);
->>>> @@ -1242,7 +1254,7 @@ e1000_remove(struct pci_dev *pdev)
->>>>      iounmap(adapter->hw.hw_addr);
->>>>      if (adapter->hw.flash_address)
->>>>          iounmap(adapter->hw.flash_address);
->>>> -    pci_release_regions(pdev);
->>>> +    pci_release_selected_regions(pdev, adapter->bars);
->>>>
->>>>      free_netdev(netdev);
->>>>
->>>> @@ -5172,7 +5184,7 @@ e1000_resume(struct pci_dev *pdev)
->>>>
->>>>      pci_set_power_state(pdev, PCI_D0);
->>>>      pci_restore_state(pdev);
->>>> -    if ((err = pci_enable_device(pdev))) {
->>>> +    if ((err = pci_enable_device_bars(pdev, adapter->bars))) {
->>>>          printk(KERN_ERR "e1000: Cannot enable PCI device from 
->>>> suspend\n");
->>>>          return err;
->>>>      }
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+Looks like XFS did a free of an already-freed page.  There are a couple of
+likely suspects in git-xfs.patch.
+
+Does mainline do this?
+
