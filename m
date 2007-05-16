@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762352AbXEPMTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXEPMVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762352AbXEPMTz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758880AbXEPMTp
+	id S1762079AbXEPMVc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbXEPMVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:19:45 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:41753 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757507AbXEPMTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:19:44 -0400
-Date: Wed, 16 May 2007 14:19:04 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: Satyam Sharma <satyam.sharma@gmail.com>, Greg KH <gregkh@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, maxk@qualcomm.com,
-       bluez-devel@lists.sourceforge.net, Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
- at net/core/sock.c:1523
-In-Reply-To: <1179317775.10069.77.camel@violet>
-Message-ID: <Pine.LNX.4.64.0705161418250.25986@twin.jikos.cz>
-References: <462D1B09.9050005@goop.org>  <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
-  <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz> 
- <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com> 
- <Pine.LNX.4.64.0705161124030.25986@twin.jikos.cz> 
- <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com> 
- <1179315904.10069.67.camel@violet>  <a781481a0705160456q778cfb4dk67d754317d57e9bb@mail.gmail.com>
-  <a781481a0705160459p2d538d7fu8096bd594d6df2f9@mail.gmail.com>
- <1179317775.10069.77.camel@violet>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 May 2007 08:21:24 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:41148 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758236AbXEPMVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 08:21:22 -0400
+Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64
+	and powerpc
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: David Chinner <dgc@sgi.com>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+In-Reply-To: <20070516031626.GM85884050@sgi.com>
+References: <20070330071417.GI355@devserv.devel.redhat.com>
+	 <20070417125514.GA7574@amitarora.in.ibm.com>
+	 <20070418130600.GW5967@schatzie.adilger.int>
+	 <20070420135146.GA21352@amitarora.in.ibm.com>
+	 <20070420145918.GY355@devserv.devel.redhat.com>
+	 <20070424121632.GA10136@amitarora.in.ibm.com>
+	 <20070426175056.GA25321@amitarora.in.ibm.com>
+	 <20070515193722.GA3487@amitarora.in.ibm.com>
+	 <20070515195421.GA2948@amitarora.in.ibm.com>
+	 <20070515200359.GA5834@amitarora.in.ibm.com>
+	 <20070516031626.GM85884050@sgi.com>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 07:21:16 -0500
+Message-Id: <1179318076.10313.6.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, Marcel Holtmann wrote:
+On Wed, 2007-05-16 at 13:16 +1000, David Chinner wrote:
+> On Wed, May 16, 2007 at 01:33:59AM +0530, Amit K. Arora wrote:
 
-> since Jiri has a good test case for it, I leave it to him for testing.
-> If he confirms that this fixes the locking issues, then this is
-> Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+> > Following changes were made to the previous version:
+> >  1) Added description before sys_fallocate() definition.
+> >  2) Return EINVAL for len<=0 (With new draft that Ulrich pointed to,
+> >     posix_fallocate should return EINVAL for len <= 0.
+> >  3) Return EOPNOTSUPP if mode is not one of FA_ALLOCATE or FA_DEALLOCATE
+> >  4) Do not return ENODEV for dirs (let individual file systems decide if
+> >     they want to support preallocation to directories or not.
+> >  5) Check for wrap through zero.
+> >  6) Update c/mtime if fallocate() succeeds.
+> 
+> Please don't make this always happen. c/mtime updates should be dependent
+> on the mode being used and whether there is visible change to the file. If no
+> userspace visible changes to the file occurred, then timestamps should not
+> be changed.
 
-I will verify later this evening and will let you know. I am however 
-pretty convinced now that this is the right fix.
+i_blocks will be updated, so it seems reasonable to update ctime.  mtime
+shouldn't be changed, though, since the contents of the file will be
+unchanged.
 
-Thanks,
-
+> e.g. FA_ALLOCATE that changes file size requires same semantics of ftruncate()
+> extending the file, otherwise no change in timestamps should occur.
+> 
+> Cheers,
+> 
+> Dave.
 -- 
-Jiri Kosina
+David Kleikamp
+IBM Linux Technology Center
+
