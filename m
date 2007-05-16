@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760410AbXEPJFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbXEPJLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760410AbXEPJFm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 05:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbXEPJFa
+	id S1760136AbXEPJLy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 05:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbXEPJLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 05:05:30 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:58437 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756492AbXEPJF2 (ORCPT
+	Wed, 16 May 2007 05:11:41 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:60394 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756857AbXEPJLk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 05:05:28 -0400
-Date: Wed, 16 May 2007 11:05:26 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg K-H <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [Patch -mm] Driver core: coding style cleanup
-Message-ID: <20070516110526.67e5b36e@gondolin.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 05:11:40 -0400
+X-Sasl-enc: u5V80D/bogvMlmsQAcuPqP3VcwmYmfqFPqWIMLVYOyLV 1179306698
+Message-ID: <464ACB7E.9040405@imap.cc>
+Date: Wed, 16 May 2007 11:14:38 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+MIME-Version: 1.0
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: Linux 2.6.22-rc1
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>	 <4647569D.7010709@imap.cc>	 <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>	 <4648A3DF.7040004@imap.cc>	 <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>	 <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>	 <46498EE3.8010907@imap.cc> <a781481a0705151839l65ea7ee0yb61bf7c911a0c2f8@mail.gmail.com>
+In-Reply-To: <a781481a0705151839l65ea7ee0yb61bf7c911a0c2f8@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig23D7448D781512D1DF8519F6"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[This goes on top of
-driver-core-check-return-code-of-sysfs_create_link.patch]
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig23D7448D781512D1DF8519F6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Am 16.05.2007 03:39 schrieb Satyam Sharma:
+["default n" for menuconfig]
+> these problems would occur only the _first_ time someone
+> transitions from the old .config's to the new scheme. But those
+> "default y"s for all the various "configmenu"s (let's please call
+> them that) that got introduced in the Kconfig files would cause
+> unnecessary annoyance to users of make oldconfig _for ever_.
 
-This converts code of the form
+I'm not sure I'm following you. Where would that annoyance occur?
+On subsequent uses of "make oldconfig" the default shouldn't even
+matter, as the previous choice would just silently be kept.
 
-	if ((error = some_func()))
-		goto fixup;
-to
-	error = some_func();
-	if (error)
-		goto fixup;
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
----
- drivers/base/bus.c  |    6 ++++--
- drivers/base/core.c |   12 ++++++++----
- 2 files changed, 12 insertions(+), 6 deletions(-)
+--------------enig23D7448D781512D1DF8519F6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -764,13 +764,17 @@ int device_add(struct device *dev)
- 		if (error)
- 			goto ueventattrError;
- 	}
--	if ((error = device_add_class_symlinks(dev)))
-+	error = device_add_class_symlinks(dev);
-+	if (error)
- 		goto SymlinkError;
--	if ((error = device_add_attrs(dev)))
-+	error = device_add_attrs(dev);
-+	if (error)
- 		goto AttrsError;
--	if ((error = device_pm_add(dev)))
-+	error = device_pm_add(dev);
-+	if (error)
- 		goto PMError;
--	if ((error = bus_add_device(dev)))
-+	error = bus_add_device(dev);
-+	if (error)
- 		goto BusError;
- 	kobject_uevent(&dev->kobj, KOBJ_ADD);
- 	bus_attach_device(dev);
---- linux-2.6.orig/drivers/base/bus.c
-+++ linux-2.6/drivers/base/bus.c
-@@ -608,7 +608,8 @@ int bus_add_driver(struct device_driver 
- 	if (error)
- 		goto out_put_bus;
- 	drv->kobj.kset = &bus->drivers;
--	if ((error = kobject_register(&drv->kobj)))
-+	error = kobject_register(&drv->kobj);
-+	if (error)
- 		goto out_put_bus;
- 
- 	if (drv->bus->drivers_autoprobe) {
-@@ -757,7 +758,8 @@ static int bus_add_attrs(struct bus_type
- 
- 	if (bus->bus_attrs) {
- 		for (i = 0; attr_name(bus->bus_attrs[i]); i++) {
--			if ((error = bus_create_file(bus,&bus->bus_attrs[i])))
-+			error = bus_create_file(bus,&bus->bus_attrs[i]);
-+			if (error)
- 				goto Err;
- 		}
- 	}
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGSsuGMdB4Whm86/kRAqV4AJ9Tt+dwz6leCLuL2Ix9u26yQtE8/ACfRkwU
+J+ReXeRlOLMSSgUo0HOhr7k=
+=qnLn
+-----END PGP SIGNATURE-----
+
+--------------enig23D7448D781512D1DF8519F6--
