@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbXEPEwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbXEPExq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760620AbXEPEwZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 00:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXEPEwS
+	id S1761353AbXEPExq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 00:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXEPExk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 00:52:18 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:37465 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752151AbXEPEwS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 00:52:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=AwJ39IKVqkMTOF8+iq+gwr6Y4l3mz15SkVC09NFKtNnN+WvciafcmQ81+KZr8k62fj0HbI2qK79CTYnuSm2SE/DfdHK5nzZkz5Ls9/vo3rVSyktSxmP8dAc2AByfwSkagKN4fwjuZFF4Flqt2uJcGrxsBOKRSlhYc+fvRgh8Mgc=  ;
-X-YMail-OSG: 4X9pgc8VM1n1qwxgitNNGNWFuA.kTestpFENfYC8yEKkEJpKkOCc2_zbjKnYVWGuen01xXwhCQ--
-Message-ID: <464A8DF5.2010903@yahoo.com.au>
-Date: Wed, 16 May 2007 14:52:05 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Nate Diller <nate.diller@gmail.com>
-Subject: Re: Pagecache zeroing: zero_user_segment, zero_user_segments and
- zero_user
-References: <Pine.LNX.4.64.0705151958210.4852@schroedinger.engr.sgi.com> <20070515202442.eeaa49a0.akpm@linux-foundation.org> <Pine.LNX.4.64.0705152100010.5091@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0705152100010.5091@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 16 May 2007 00:53:40 -0400
+Received: from mail.tnnet.fi ([217.112.240.26]:52044 "EHLO mail.tnnet.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752151AbXEPExj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 00:53:39 -0400
+Message-ID: <464A8E4B.74E1DB2E@users.sourceforge.net>
+Date: Wed, 16 May 2007 07:53:31 +0300
+From: Jari Ruusu <jariruusu@users.sourceforge.net>
+To: markus reichelt <ml@mareichelt.de>
+Cc: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
+Subject: Re: Announce loop-AES-v3.2a file/swap crypto package
+References: <4649F5DC.87043316@users.sourceforge.net> <20070515211642.GA1058@tatooine.rebelbase.local>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 15 May 2007, Andrew Morton wrote:
+markus reichelt wrote:
+> * Jari Ruusu <jariruusu@users.sourceforge.net> wrote:
+> > loop-AES changes since previous release:
+> > - loop_twofish.c loop_serpent.c loop_blowfish.c modules included.
+> >   They are not built by default. Add EXTRA_CIPHERS=y make parameter
+> >   to build them.
 > 
-> 
->>>   The functions above default to KM_USER0 which is also always used when
->>>   zero_user_page was called except in one single case. We open code that
->>>   single case to draw attention to the spot.
->>>
->>
->>Dunno.  fwiw, we decided to _not_ embed KM_USER0 in the callee: we have had
->>some pretty ghastly bugs in the past due to misuse of kmap slots so the
->>idea was to shove the decision into the caller's face, make them think
->>about what they're doing
-> 
-> 
-> On the other hand non highmem platforms are burdened with always repeating
-> the same KM_USER0 in every function call. Isnt it enough to know that 
-> standard functions use KM_USER0 for their operations?
+> Just curious, will the ciphers package also be continued/available
+> separately as before or is it merged from now on into the loop-aes
+> package?
 
-Couldn't that be filtered out inline?
+Since loop-AES package now provides equivalent funtionality, it doesn't make
+sense to maintain second package providing redundant functionality. The
+merge was done because of difficulties getting versioned symbols to match
+between two separately compiled packages. Even if separate package were to
+be maintained (it won't be), it would not work well with versioned symbols.
+If you want to blame someone for that, then blame mainline linux kbuild
+guys.
+
+I forgot to clearly say following in loop-AES-v3.2a README:
+
+This command builds loop module with AES cipher integrated, as usual:
+
+    make KEYSCRUB=y LINUX_SOURCE=/some/path/here
+
+This command builds loop module with AES cipher integrated, and separate
+twofish, serpent, and blowfish loop cipher modules:
+
+    make KEYSCRUB=y EXTRA_CIPHERS=y LINUX_SOURCE=/some/path/here
+
+This command builds only twofish, serpent, and blowfish loop cipher modules.
+This assumes that kernel patch version of loop-AES is being used and is
+enabled in kernel configuration:
+
+    make EXTRA_CIPHERS=y BUILD_LOOP=n LINUX_SOURCE=/some/path/here
+
+Key scrubbing, as enabled by KEYSCRUB=y make command line parameter,
+currently only works for AES cipher. It has no effect on twofish, serpent,
+and blowfish ciphers.
 
 -- 
-SUSE Labs, Novell Inc.
+Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
