@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030853AbXEPVB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030250AbXEPVC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030853AbXEPVB4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763227AbXEPVBK
+	id S1030250AbXEPVC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030455AbXEPVBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:01:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59875 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934377AbXEPVBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:01:08 -0400
-X-Greylist: delayed 10572 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 17:01:08 EDT
-Date: Wed, 16 May 2007 23:01:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: v2.6.21-rt2
-Message-ID: <20070516210104.GA17240@elte.hu>
-References: <20070516180447.GA17922@elte.hu> <1179348842.20519.20.camel@imap.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 May 2007 17:01:30 -0400
+Received: from [212.12.190.104] ([212.12.190.104]:33033 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760059AbXEPVB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 17:01:27 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Date: Thu, 17 May 2007 00:01:21 +0300
+User-Agent: KMail/1.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1179348842.20519.20.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200705170001.21099.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> Chris Mason <chris.mason@oracle.com> wrote:
+> > > Should be: it uses first-fit.
+> > >
+> > > >  Looks like ext3 is just walking a list of
+> > > > bh/jh, maybe we can just sort the silly thing?
+> > >
+> > > The IO scheduler is supposed to do that.
+> > >
+> > > But I don't know what's causing this.
+> >
+> > I had high hopes of blaming cfq, but deadline gives the same results:
+> >
+> > create dir kernel-0 222MB in 5.38 seconds (41.33 MB/s)
+> > ... [ ~30MB/s here ] ...
+> > create dir kernel-7 222MB in 8.11 seconds (27.42 MB/s)
+> > create dir kernel-8 222MB in 18.39 seconds (12.09 MB/s)
+> > create dir kernel-9 222MB in 6.91 seconds (32.18 MB/s)
+> > create dir kernel-10 222MB in 24.32 seconds (9.14 MB/s)
+> > create dir kernel-11 222MB in 12.06 seconds (18.44 MB/s)
+> > create dir kernel-12 222MB in 10.95 seconds (20.31 MB/s)
+> >
+> > The good news is that if you let it run long enough, the times
+> > stabilize.  The bad news is:
+> >
+> > create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
+> > create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
+> > create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
+> > create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
+>
+> well hang on.  Doesn't this just mean that the first few runs were writing
+> into pagecache and the later ones were blocking due to dirty-memory
+> limits?
+>
+> Or do you have a sync in there?
+>
+> > echo 2048 > /sys/block/..../nr_requests didn't do it either.
+> >
+> > I guess I'll have systemtap tell me more about the log flushing.
 
-* Daniel Walker <dwalker@mvista.com> wrote:
+Try these:
+# echo anticipatory > /sys/block/.../scheduler
+# echo 0 > /sys/block/.../iosched/antic_expire
+# echo 192 > /sys/block/.../max_sectors_kb
+# echo 192 > /sys/block/.../read_ahead_kb
 
-> On Wed, 2007-05-16 at 20:04 +0200, Ingo Molnar wrote:
-> > i'm pleased to announce the v2.6.20-rt2 kernel, which can be downloaded 
-> > from the usual place:
-> 
-> 2.6.21-rt2 ?
+These give me best performance, but most noticeably antic_expire > 0 leaves 
+the IOScheduler in a apparent limbo.
 
-oops, right! :-)
+see http://bugzilla.kernel.org/show_bug.cgi?id=5900
 
-> >   - fixes for various problems by Steven Rostedt and Clark Williams
-> 
-> I think you missed the fix I submitted for one of Steve's changes.
-> 
-> http://lkml.org/lkml/2007/5/3/368
 
-hm - trace_hardirqs_on() should never be called with irqs on - lockdep 
-could break for example. Could you try to fix the call site instead?
+Thanks!
 
-	Ingo
+--
+Al
+
