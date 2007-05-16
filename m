@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbXEPHUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbXEPHfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbXEPHUg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbXEPHU2
+	id S1758845AbXEPHfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 03:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbXEPHfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 03:20:28 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:34226 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754352AbXEPHU1 (ORCPT
+	Wed, 16 May 2007 03:35:07 -0400
+Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:52192 "EHLO
+	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756414AbXEPHfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 03:20:27 -0400
-Date: Wed, 16 May 2007 00:18:51 -0700
-From: Greg KH <greg@kroah.com>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pci probe
-Message-ID: <20070516071851.GB19294@kroah.com>
-References: <4648B29A.6080406@gmail.com> <4649B270.8050002@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4649B270.8050002@gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Wed, 16 May 2007 03:35:05 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <20070516071300.GB14222@infradead.org>
+References: <464034CF.20700@wpkg.org> <20070516071300.GB14222@infradead.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6621E298-9B98-478F-AD6E-23559BCB4FF3@cam.ac.uk>
+Cc: Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
+       Krzysztof Halasa <khc@pm.waw.pl>
+Content-Transfer-Encoding: 7bit
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+Date: Wed, 16 May 2007 08:35:01 +0100
+To: Christoph Hellwig <hch@infradead.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 at 05:15:28PM +0400, Manu Abraham wrote:
-> Manu Abraham wrote:
-> > Hi,
-> > 
-> > I do have a device that's a multifunction device. Eventhough a MFD, it
-> > just has one Interrupt which is shared by by a Configuration space for
-> > each function. ie, INTA is shared between them functions.
-> > 
-> > In such a case, i am wondering, (since pci_probe returns a pointer to
-> > one PCI function alone and i need to use both the functions in one
-> > module alone rather than using a module for each function and that the
-> > functions are quite similar for them to be used in different modules,
-> > such that a separate probe/ISR etc is used) whether using pci_get_device
-> > would be a better alternative to do manual searching for the functions
-> > in such a case.
-> > 
-> 
-> Just figured out that pci_get_subsys() does work in a better. Looking at
-> kernel sources all i find is just one single user of pci_get_subsys()
-> 
-> building the code around pci_get_subsys(), does this have any negative
-> impact ?
+On 16 May 2007, at 08:13, Christoph Hellwig wrote:
 
-Yes:
-	- your device will not show up properly in sysfs (no
-	  device/driver binding ability from userspace, no good
-	  information so that udev can properly name the device, etc.)
-	- your driver will not work on any pci-hotplug type system (that
-	  includes expresscard and pccard and lots of high-end servers.
-	- your driver will not be notified if the system is being
-	  suspended or resumed or wanting to drop into a low power
-	  state.
-	- another driver can bind to your device without you ever
-	  knowing it.
+> Not even trying to support LE is a clear merge blocker.  Maybe  
+> Krzysztof
+> can't actually test it himself, which is fine - but not even  
+> pretending
+> to be endian clean is not what proper Linux drivers do.
 
-So in short, use pci_probe and just handle the fact that you need to be
-called for two PCI devices and bind to both of them.  It shouldn't be
-that hard...
+w.r.t this comment, a working implementation LE implementation can be  
+viewed here:
 
-thanks,
+http://www.hohnstaedt.de/ixp_npe/0.3.1/ixp4xx_npe_driver-0.3.1.diff
 
-greg k-h
+Search in this file for "swap the payload of the SKB" (it's in  
+mac_driver.c)
+
+Michael-Luke Jones
+
