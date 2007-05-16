@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXEPITS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbXEPIXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbXEPITS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbXEPITH
+	id S1759845AbXEPIXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbXEPIX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:19:07 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:1434 "EHLO
-	outbound1-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753066AbXEPITF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 04:19:05 -0400
-X-BigFish: V
-Content-class: urn:content-classes:message
+	Wed, 16 May 2007 04:23:26 -0400
+Received: from gw.goop.org ([64.81.55.164]:36413 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755779AbXEPIXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 04:23:25 -0400
+Message-ID: <464ABF7C.1000307@goop.org>
+Date: Wed, 16 May 2007 01:23:24 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-7"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.22-rc1-mm1: boot failure under qemu
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Subject: =?utf-7?B?UkU6ICtBRnMtUEFUQ0ggNC80K0FGMC0gQWRkIHRoZSBjb21iaW5lZA==?=
-	=?utf-7?B?IG1vZGUgZm9yIEFUSSBTQjcwMA==?=
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Wed, 16 May 2007 16:13:51 +0800
-Message-ID: <FFECF24D2A7F6D418B9511AF6F35860201A9F099@shacnexch2.atitech.com>
-In-Reply-To: <464AB979.2020107@garzik.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: =?utf-7?B?K0FGcy1QQVRDSCA0LzQrQUYwLSBBZGQgdGhlIGNvbWJpbmVkIG1vZA==?=
-	=?utf-7?B?ZSBmb3IgQVRJIFNCNzAw?=
-Thread-Index: AceXj/Z53k/XXOKcRR
-From: "Henry Su" <henry.su@amd.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>, <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>,
-       =?utf-7?B?Z21haWwrQUY4LWF0aQ==?= <henry.su.ati@gmail.com>
-X-OriginalArrivalTime: 16 May 2007 08:13:55.0157 (UTC) FILETIME=[25625850:01C79792]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi Jeff,
-this patch is used to set the SATA controller back to AHCI mode when ATI SB700 is set 
-as combined mode or legacy IDE mode by BIOS, without this patch, just like ATI SB600, 
-the SB700 SATA device will fail in these two modes.
+2.6.22-rc1-mm1 doesn't boot for me under qemu or kvm.  Under qemu it
+just hangs sullenly, but kvm gives a more useful dump:
 
-BRs,
-henry 
+(qemu) exception 13 (0)
+rax 000000004050ffff rbx 0000000000009000 rcx 0000000000000000 rdx 0000000000007b00
+rsi 000000000001fc05 rdi 0000000000040000 rsp 0000000000008f9a rbp 0000000000008100
+r8  0000000000000000 r9  0000000000000000 r10 0000000000000000 r11 0000000000000000
+r12 0000000000000000 r13 0000000000000000 r14 0000000000000000 r15 0000000000000000
+rip 0000000000001062 rflags 00033046
+cs 9000 (00090000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+ds 9000 (00090000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+es 8100 (00081000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+ss 9000 (00090000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+fs 9900 (00099000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+gs 9000 (00090000/0000ffff p 1 dpl 3 db 0 s 1 type 3 l 0 g 0 avl 0)
+tr 0000 (30850000/00002088 p 1 dpl 0 db 0 s 0 type b l 0 g 0 avl 0)
+ldt 0000 (00000000/0000ffff p 1 dpl 0 db 0 s 0 type 2 l 0 g 0 avl 0)
+gdt fa4e4/30
+idt 0/3ff
+cr0 60000010 cr2 0 cr3 0 cr4 0 cr8 0 efer 0
 
------Original Message-----
-From: Jeff Garzik +AFs-mailto:jeff+AEA-garzik.org+AF0- 
-Sent: Wednesday, May 16, 2007 3:58 PM
-To: Henry Su
-Cc: Bartlomiej Zolnierkiewicz+ADs- gregkh+AEA-suse.de+ADs- linux-kernel+AEA-vger.kernel.org+ADs- gmail+AF8-ati
-Subject: Re: +AFs-PATCH 4/4+AF0- Add the combined mode for ATI SB700
+rip/eip 0x1062 seems to correspond to:
 
-Henry Su wrote:
-+AD4- From: henry.su+AEA-amd.com
-+AD4- Besides those modes in ATI SB600 SATA controller, ATI SB700 supports one more mode:the combined mode.
-+AD4- 
-+AD4- The combined mode is a Legacy IDE mode used for compatibility with some old OS without AHCI driver, 
-+AD4- but now it is not necessary for Linux since the kernel has supported AHCI.
-
-hmmmm.  The patch looks OK, but your description seems to indicate that
-the patch is not needed?
-
-	Jeff
+        else
+                while (num != 0)
+                        tmp[i++] = digits[do_div(num, base)];
+    1050:       66 89 f0                mov    %esi,%eax
+    1053:       66 31 d2                xor    %edx,%edx
+    1056:       66 f7 f5                div    %ebp
+    1059:       66 89 c6                mov    %eax,%esi
+    105c:       67 66 8b 44 24 28       addr32 mov 0x28(%esp),%eax
+    1062:       67 8a 14 10             addr32 mov (%eax,%edx,1),%dl
+    1066:       67 66 8b 44 24 2c       addr32 mov 0x2c(%esp),%eax
+    106c:       67 88 54 04 3e          addr32 mov %dl,0x3e(%esp,%eax,1)
 
 
+0x1062 is in number (/home/jeremy/hg/xen/paravirt/linux/arch/i386/boot/printf.c:109).
+104             i = 0;
+105             if (num == 0)
+106                     tmp[i++] = '0';
+107             else
+108                     while (num != 0)
+109                             tmp[i++] = digits[do_div(num, base)];
+110             if (i > precision)
+111                     precision = i;
+112             size -= precision;
+113             if (!(type & (ZEROPAD + LEFT)))
 
 
+I haven't tried booting on real hardware, but this is a definite
+regression from the old setup code.
 
-
+    J
