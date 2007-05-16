@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbXEPHfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXEPHmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758845AbXEPHfW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbXEPHfH
+	id S1758205AbXEPHmR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 03:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbXEPHmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 03:35:07 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:52192 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756414AbXEPHfF (ORCPT
+	Wed, 16 May 2007 03:42:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:12410 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753066AbXEPHmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 03:35:05 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070516071300.GB14222@infradead.org>
-References: <464034CF.20700@wpkg.org> <20070516071300.GB14222@infradead.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6621E298-9B98-478F-AD6E-23559BCB4FF3@cam.ac.uk>
-Cc: Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
-       Krzysztof Halasa <khc@pm.waw.pl>
+	Wed, 16 May 2007 03:42:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JR8cGi93gLCs6nT/xTtHmHtNSclW8wov9nSUas1Yb0WMLbER8CZo50XGIk19jbnFFOLYUIGjWhGQiFAPQyWxAuETyFREDiuFh8SqmNbjn1bcnEX6QJbG6B+IOeMKsFoXsSD5d7TMYUwhVgfZAz1UGn8MPeI0rbLAJQYCD1zNtIs=
+Message-ID: <38b2ab8a0705160042o350d429ct72c43749ff6bcbb8@mail.gmail.com>
+Date: Wed, 16 May 2007 09:42:02 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: clockevent questions
+Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1179267014.12838.38.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-Date: Wed, 16 May 2007 08:35:01 +0100
-To: Christoph Hellwig <hch@infradead.org>
-X-Mailer: Apple Mail (2.752.2)
+Content-Disposition: inline
+References: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
+	 <1178982892.22481.183.camel@localhost.localdomain>
+	 <38b2ab8a0705121313k37be467cy55402b490101ac9c@mail.gmail.com>
+	 <1179001391.22481.216.camel@localhost.localdomain>
+	 <38b2ab8a0705150147s4ce72914qfa30d543ed8a4839@mail.gmail.com>
+	 <1179267014.12838.38.camel@chaos>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16 May 2007, at 08:13, Christoph Hellwig wrote:
+Hi Thomas,
 
-> Not even trying to support LE is a clear merge blocker.  Maybe  
-> Krzysztof
-> can't actually test it himself, which is fine - but not even  
-> pretending
-> to be endian clean is not what proper Linux drivers do.
+On 5/16/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Francis,
+>
+> On Tue, 2007-05-15 at 10:47 +0200, Francis Moreau wrote:
+> > My question is about the clock resolution field which is equal to 1ns.
+> > How is this possible since my timer's frequency is only 100Mhz ?
+>
+> you are right. It is a bit strange. The resolution info is not really
+> reflecting the clock event source capability. I look if there is a sane
+> solution for that.
+>
 
-w.r.t this comment, a working implementation LE implementation can be  
-viewed here:
+Doesn't that make hrtimer_get_res() and its callers buggy since they
+return this 1ns value which is not reflecting the correct clock event
+capability ?
 
-http://www.hohnstaedt.de/ixp_npe/0.3.1/ixp4xx_npe_driver-0.3.1.diff
+Another question about the output of '/proc/timer_list':
 
-Search in this file for "swap the payload of the SKB" (it's in  
-mac_driver.c)
+[...]
+active timers:
+ #0: <c03fde10>, tick_sched_timer, S:01
+ # expires at 64696546875000 nsecs [in 2514469 nsecs]
+ .expires_next   : 64696546875000 nsecs
+[...]
 
-Michael-Luke Jones
+Doesn't the 2 expire time lines give the same information ? If so,
+couldn't we merge them into : ".expires_next   : 64696546875000 nsecs
+[in 2514469 nsecs]" ?
 
+Thanks
+-- 
+Francis
