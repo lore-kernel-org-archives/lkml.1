@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbXEPNAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760160AbXEPNBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759757AbXEPNAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 09:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbXEPNAl
+	id S1760160AbXEPNBW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 09:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbXEPNBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 09:00:41 -0400
-Received: from verein.lst.de ([213.95.11.210]:43116 "EHLO mail.lst.de"
+	Wed, 16 May 2007 09:01:04 -0400
+Received: from pat.uio.no ([129.240.10.15]:60497 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752625AbXEPNAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 09:00:40 -0400
-Date: Wed, 16 May 2007 14:59:59 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] remove odd and misleading comments from uio.h
-Message-ID: <20070516125959.GB1322@lst.de>
+	id S1753000AbXEPNBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 09:01:03 -0400
+Subject: Re: (NFS) BUG: at page-writeback.c:829 [Was: 2.6.22-rc1-mm1]
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <464AFB81.5050109@yahoo.com.au>
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
+	 <464AF4A6.5060000@gmail.com>  <464AFB81.5050109@yahoo.com.au>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 09:00:57 -0400
+Message-Id: <1179320457.6521.16.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.143)
+X-UiO-Scanned: 1EB45BAE29DC6B6464CF288E1C91C8C2A2A123D1
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 25 total 1774783 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+On Wed, 2007-05-16 at 22:39 +1000, Nick Piggin wrote:
+> >  =======================
+> > BUG: at /local/xslaby/xxx/mm/page-writeback.c:829 __set_page_dirty_nobuffers()
+> >  [<c010531e>] dump_trace+0x1ce/0x200
+> >  [<c010536a>] show_trace_log_lvl+0x1a/0x30
+> >  [<c0106012>] show_trace+0x12/0x20
+> >  [<c0106086>] dump_stack+0x16/0x20
+> >  [<c015566d>] __set_page_dirty_nobuffers+0x11d/0x130
+> >  [<f8b1fc5b>] nfs_updatepage+0x7b/0x200 [nfs]
+> >  [<f8b156df>] nfs_commit_write+0x2f/0x50 [nfs]
+> >  [<c0150911>] generic_file_buffered_write+0x2a1/0x660
+> >  [<c0150f52>] __generic_file_aio_write_nolock+0x282/0x520
+> >  [<c0151252>] generic_file_aio_write+0x62/0xd0
+> >  [<f8b15def>] nfs_file_write+0xef/0x1c0 [nfs]
+> >  [<c01715e0>] do_sync_write+0xd0/0x110
+> >  [<c0171e04>] vfs_write+0x94/0x130
+> >  [<c017248d>] sys_write+0x3d/0x70
+> >  [<c01040e8>] syscall_call+0x7/0xb
+> >  [<b7eb7b3e>] 0xb7eb7b3e
+> >  =======================
+> 
+> This one is NFS, setting the page dirty while it is not uptodate. Trond,
+> is this because NFS keeps track of dirty regions of the page with private
+> data? It might make sense to avoid this warning if PagePrivate is set...
+> would that fix the NFS case?
 
-Index: linux-2.6/include/linux/uio.h
-===================================================================
---- linux-2.6.orig/include/linux/uio.h	2007-01-16 03:40:19.000000000 +0100
-+++ linux-2.6/include/linux/uio.h	2007-01-16 03:41:08.000000000 +0100
-@@ -13,10 +13,6 @@
-  *		2 of the License, or (at your option) any later version.
-  */
- 
--
--/* A word of warning: Our uio structure will clash with the C library one (which is now obsolete). Remove the C
--   library one from sys/uio.h if you have a very old library set */
--
- struct iovec
- {
- 	void __user *iov_base;	/* BSD uses caddr_t (1003.1g requires void *) */
-@@ -38,11 +34,6 @@
-  
- #define UIO_FASTIOV	8
- #define UIO_MAXIOV	1024
--#if 0
--#define UIO_MAXIOV	16	/* Maximum iovec's in one operation 
--				   16 matches BSD */
--                                /* Beg pardon: BSD has 1024 --ANK */
--#endif
- 
- /*
-  * Total number of bytes covered by an iovec.
+Ah... You put an extra WARN_ON(!PageUptodate(page)). err=-ENOCOFFEE, I
+missed that...
+
+
+So yes, in order to avoid having to read the page in when we just want
+to write data, NFS does this kind of tracking. I dunno if your fix to
+change it to !PagePrivate(page) && !PageUptodate(page) is right though.
+It will indeed fix the NFS case, but the block system uses PagePrivate()
+pretty extensively for its own nefarious ends (tracking page buffers).
+
+Trond
+
