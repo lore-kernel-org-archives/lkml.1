@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762980AbXEPXke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763410AbXEPXlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762980AbXEPXke (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757511AbXEPXk0
+	id S1763410AbXEPXlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbXEPXlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:40:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:36995 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757473AbXEPXk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:40:26 -0400
-Message-ID: <464B9664.2040200@goop.org>
-Date: Wed, 16 May 2007 16:40:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 16 May 2007 19:41:00 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53540 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757511AbXEPXlA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 19:41:00 -0400
+Date: Wed, 16 May 2007 16:40:59 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 1/2] scalable rw_mutex
+In-Reply-To: <20070516162829.23f9b1c4.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705161639010.12688@schroedinger.engr.sgi.com>
+References: <20070511131541.992688403@chello.nl> <20070511132321.895740140@chello.nl>
+ <20070511093108.495feb70.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705111006470.32716@schroedinger.engr.sgi.com>
+ <20070511110522.ed459635.akpm@linux-foundation.org> <p73odkpeusf.fsf@bingen.suse.de>
+ <20070512110624.9ac3aa44.akpm@linux-foundation.org>
+ <20070516162829.23f9b1c4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com
-Subject: Re: [2/3] 2.6.22-rc1: known regressions v2 - XFS
-References: <464B6743.9000607@googlemail.com> <464B6A2B.9020703@googlemail.com> <20070516233419.GP85884050@sgi.com>
-In-Reply-To: <20070516233419.GP85884050@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> Jeremy has tentatively indicated that the patch has fixed the problem.
-> Have you seen any more problems since applying the patch, Jeremy?
->   
+On Wed, 16 May 2007, Andrew Morton wrote:
 
-No, it continues to seem sound with casual use; I would have expected to
-see the problem reoccur by now.  I'd like to rerun the full set of tests
-I did before to be sure, but so far so good.  No other apparent
-regressions either.
+> (I hope.  Might have race windows in which the percpu_counter_sum() count is
+> inaccurate?)
 
-Also, the match between the observed symptoms and the bugfix is very
-good, which adds confidence (ie, no element of "it works now but we
-don't know why").  I guess the only remaining concern is whether there
-are any other paths which fail to dirty the inode.
-
-Did you manage to repro the problem?
-
-    J
+The question is how do these race windows affect the locking scheme?
