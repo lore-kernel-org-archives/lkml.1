@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbXEPWZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbXEPWol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933228AbXEPWZZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 18:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbXEPWZP
+	id S1760535AbXEPWol (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 18:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXEPWoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 18:25:15 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:56051 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755591AbXEPWZO (ORCPT
+	Wed, 16 May 2007 18:44:34 -0400
+Received: from alnrmhc11.comcast.net ([206.18.177.51]:46366 "EHLO
+	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754052AbXEPWod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 18:25:14 -0400
-Subject: Re: v2.6.21-rt2
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-In-Reply-To: <20070516220444.GA27081@elte.hu>
-References: <20070516180447.GA17922@elte.hu>
-	 <1179348842.20519.20.camel@imap.mvista.com>
-	 <20070516210104.GA17240@elte.hu>
-	 <1179350448.20519.25.camel@imap.mvista.com>
-	 <20070516213259.GC19850@elte.hu>
-	 <1179352036.20519.36.camel@imap.mvista.com>
-	 <20070516220444.GA27081@elte.hu>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 15:22:58 -0700
-Message-Id: <1179354178.20519.43.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 16 May 2007 18:44:33 -0400
+X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 18:44:33 EDT
+Message-ID: <464B8819.3050303@comcast.net>
+Date: Wed, 16 May 2007 18:39:21 -0400
+From: Ed Sweetman <safemode2@comcast.net>
+User-Agent: Icedove 1.5.0.10 (X11/20070328)
+MIME-Version: 1.0
+To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+CC: Daniel Drake <dsd@gentoo.org>, Duane Griffin <duaneg@dghda.com>,
+       Prakash Punnoor <prakash@punnoor.de>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
+ driver
+References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <464B63D8.2060501@gentoo.org> <20070516212736.GO15763@ifa.hawaii.edu>
+In-Reply-To: <20070516212736.GO15763@ifa.hawaii.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 00:04 +0200, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
-> 
-> > I don't know. irqs_off_preempt_count() could get used someplace else, 
-> > where you would want to flip the preempt_count() check .. It seems 
-> > sane to combine your patch with mine ..
-> > 
-> > irqs_off_preempt_count() (!__get_cpu_var(trace_cpu_idle) && 
-> > preempt_count())
-> > 
-> > You can't call __get_cpu_var() without the a positive preempt_count(), 
-> > so the check seems backwards regardless of the other factors ..
-> 
-> yeah. The whole trace_preempt_enter_idle() thing looks a bit suspect. 
-> Why cannot those architectures simply disable/enable preemption and get 
-> the same effect? It's not like we ever want to allow the preemption of 
-> the idle task.
+Joshua Hoblitt wrote:
+> On Wed, May 16, 2007 at 04:04:40PM -0400, Daniel Drake wrote:
+>   
+>> Duane Griffin wrote:
+>>     
+>>> On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
+>>>       
+>>>> Maybe you want to give a hint in the p states driver help text?
+>>>>         
+>>> I think a hint is the right thing to do, but in the PowerNow! driver
+>>> rather than the p states one. How about adding something like this to
+>>> the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
+>>>       
+>> Please hold off this patch until we've gained a more complete 
+>> understanding of the issues and workarounds (which will probably lead to 
+>> us writing a better patch anyway)
+>>     
+>
+> I agree - the issue is more complicated that I had thought.  I received
+> an off list message saying that this dependency isn't required on a
+> single-socket Athlon X2 system.  So it sounds like isn't an SMP setup
+> issue as much as it is a multi-socket or perhaps just an issue with my
+> vendor (Tyan).
+>
+> -J
+>
+> --
+>   
+Like i mentioned off list, the problem here is that cpu freq modules 
+dont depend (Kconfig) on CONFIG_ACPI_PROCESSOR, yet they do.  Even the 
+help text of CONFIG_ACPI_PROCESSOR says this.  I'm unsure as to why the 
+drivers that do, dont make the dependency known to Kconfig, since 
+obviously the writer of acpi_processor knew the dependency existed.
 
-They disable interrupts it looks like (i386, and x86_64), around the
-same area where those trace_preempt_enter_idle calls are placed .. I'm
-not up on the details of Steve's fix .. There's also a
-preempt_disable/preempt_enable ..
+Simple fix would be to just include the depends line for 
+CONFIG_ACPI_PROCESSOR for the powernow driver, and any others people 
+wonna test.   I suspect most people just compile in the acpi_processor 
+driver, never seeing this problem occur.
 
-I'm not up on the details of Steve's fix , but stuff looks a little
-odd ..
-
-Daniel
 
