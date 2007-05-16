@@ -1,76 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbXEPO5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbXEPO6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbXEPO5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 10:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbXEPO5I
+	id S1759072AbXEPO6n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 10:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbXEPO6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 10:57:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37590 "EHLO mx1.redhat.com"
+	Wed, 16 May 2007 10:58:34 -0400
+Received: from khc.piap.pl ([195.187.100.11]:36616 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754331AbXEPO5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 10:57:07 -0400
-Message-ID: <464B1B6A.8080304@redhat.com>
-Date: Wed, 16 May 2007 10:55:38 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1755222AbXEPO6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 10:58:33 -0400
+To: Rod Whitby <rod@whitby.id.au>
+Cc: Lennert Buytenhek <buytenh@wantstofly.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
+       Michael Jones <mlj28@cam.ac.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+References: <464034CF.20700@wpkg.org> <20070516071300.GB14222@infradead.org>
+	<20070516094100.GB16262@xi.wantstofly.org>
+	<464AE10E.7090606@whitby.id.au>
+	<20070516105626.GC16262@xi.wantstofly.org>
+	<464AEC76.7090000@whitby.id.au>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 16 May 2007 16:58:32 +0200
+In-Reply-To: <464AEC76.7090000@whitby.id.au> (Rod Whitby's message of "Wed, 16 May 2007 21:05:18 +0930")
+Message-ID: <m3r6pg95nr.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
-CC: LKML <linux-kernel@vger.kernel.org>, trivial@kernel.org,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
- driver
-References: <20070516011711.GE15763@ifa.hawaii.edu>
-In-Reply-To: <20070516011711.GE15763@ifa.hawaii.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Copying maintainer.]
+Rod Whitby <rod@whitby.id.au> writes:
 
-Joshua Hoblitt wrote:
-> Hello,
-> 
-> Below is a one line patch to possibly fix this bug:
-> 
-> http://bugs.gentoo.org/show_bug.cgi?id=178585
-> http://bugzilla.kernel.org/show_bug.cgi?id=8075
-> 
-> If the kernel is configured with:
-> 
-> CONFIG_X86_POWERNOW_K8=y
-> CONFIG_X86_ACPI_CPUFREQ=m
-> 
-> Which is currently an allowed configuration, the powernow-k8 driver on
-> an SMP system will fail with a warning like:
-> 
-> powernow-k8: Found 4 Dual Core AMD Opteron(tm) Processor 285 processors (version 2.00.00)
-> powernow-k8: MP systems not supported by PSB BIOS structure
-> powernow-k8: MP systems not supported by PSB BIOS structure
-> powernow-k8: MP systems not supported by PSB BIOS structure
-> powernow-k8: MP systems not supported by PSB BIOS structure
-> 
-> Which mimics that failure you get when powernow/cool'n'quiet is disabled
-> in the BIOS.  I don't know if this config combination is valid on a
-> uniprocessor system so this dependency may need to be enforced only if
-> SMP in enabled.  The other powernow-* drivers likely have the same
-> requirements as -k8 but I am unable to test them.
-> 
-> Signed-off-by: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
-> --
->  Kconfig |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- linux-2.6.21.1.orig/arch/i386/kernel/cpu/cpufreq/Kconfig    2007-04-27 11:49:26.000000000 -1000
-> +++ linux-2.6.21.1/arch/i386/kernel/cpu/cpufreq/Kconfig 2007-05-15 14:48:50.000000000 -1000
-> @@ -82,6 +82,7 @@ config X86_POWERNOW_K8
->         tristate "AMD Opteron/Athlon64 PowerNow!"
->         select CPU_FREQ_TABLE
->         depends on EXPERIMENTAL
-> +       depends on X86_ACPI_CPUFREQ
->         help
->           This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
-> 
-> 
+> Please let's just stop arguing about it.  If a patch appears before it
+> gets merged, then great.  If it doesn't then it will appear at a later date.
 
+Sure. The "swapping" patch is trivial and I can add it if needed
+at some point but I hope we can do that "data coherency mode" right.
+
+Personally I'd be pleased if I could run the board LE instead
+of BE, with no performance penalty.
+-- 
+Krzysztof Halasa
