@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbXEPExq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbXEPEyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761353AbXEPExq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 00:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXEPExk
+	id S1762157AbXEPEyu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 00:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXEPEym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 00:53:40 -0400
-Received: from mail.tnnet.fi ([217.112.240.26]:52044 "EHLO mail.tnnet.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752151AbXEPExj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 00:53:39 -0400
-Message-ID: <464A8E4B.74E1DB2E@users.sourceforge.net>
-Date: Wed, 16 May 2007 07:53:31 +0300
-From: Jari Ruusu <jariruusu@users.sourceforge.net>
-To: markus reichelt <ml@mareichelt.de>
-Cc: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
-Subject: Re: Announce loop-AES-v3.2a file/swap crypto package
-References: <4649F5DC.87043316@users.sourceforge.net> <20070515211642.GA1058@tatooine.rebelbase.local>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 00:54:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38843 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758612AbXEPEyl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 00:54:41 -0400
+Subject: Re: [PATCH] LogFS take three
+From: David Woodhouse <dwmw2@infradead.org>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
+Cc: John Stoffel <john@stoffel.org>, akpm@osdl.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070515191926.GB1220@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org>
+	 <17994.1241.436841.681216@stoffel.org>
+	 <20070515191926.GB1220@lazybastard.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 16 May 2007 12:54:14 +0800
+Message-Id: <1179291255.2859.195.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-markus reichelt wrote:
-> * Jari Ruusu <jariruusu@users.sourceforge.net> wrote:
-> > loop-AES changes since previous release:
-> > - loop_twofish.c loop_serpent.c loop_blowfish.c modules included.
-> >   They are not built by default. Add EXTRA_CIPHERS=y make parameter
-> >   to build them.
+On Tue, 2007-05-15 at 21:19 +0200, Jörn Engel wrote:
+> On Tue, 15 May 2007 15:07:05 -0400, John Stoffel wrote:
+> > 
+> > I've been semi watching this, and the only comment I really can give
+> > is that I hate the name.  To me, logfs implies a filesystem for
+> > logging purposes, not for Flash hardware with wear leveling issues to
+> > be taken into account.
 > 
-> Just curious, will the ciphers package also be continued/available
-> separately as before or is it merged from now on into the loop-aes
-> package?
+> Yeah, well, ...
+> 
+> Two years ago when I started all this, I was looking for a good name.
+> All I could come up with sounded stupid, so I picked "LogFS" as a code
+> name.  As soon as I find a better name, the code name should get
+> replaced.
+> 
+> By now I still don't have anything better.  All alternatives that were
+> proposed are just as bad - with the added disadvantage of being new and
+> not established yet.  My hope of ever finding a better name is nearly
+> zero. 
 
-Since loop-AES package now provides equivalent funtionality, it doesn't make
-sense to maintain second package providing redundant functionality. The
-merge was done because of difficulties getting versioned symbols to match
-between two separately compiled packages. Even if separate package were to
-be maintained (it won't be), it would not work well with versioned symbols.
-If you want to blame someone for that, then blame mainline linux kbuild
-guys.
-
-I forgot to clearly say following in loop-AES-v3.2a README:
-
-This command builds loop module with AES cipher integrated, as usual:
-
-    make KEYSCRUB=y LINUX_SOURCE=/some/path/here
-
-This command builds loop module with AES cipher integrated, and separate
-twofish, serpent, and blowfish loop cipher modules:
-
-    make KEYSCRUB=y EXTRA_CIPHERS=y LINUX_SOURCE=/some/path/here
-
-This command builds only twofish, serpent, and blowfish loop cipher modules.
-This assumes that kernel patch version of loop-AES is being used and is
-enabled in kernel configuration:
-
-    make EXTRA_CIPHERS=y BUILD_LOOP=n LINUX_SOURCE=/some/path/here
-
-Key scrubbing, as enabled by KEYSCRUB=y make command line parameter,
-currently only works for AES cipher. It has no effect on twofish, serpent,
-and blowfish ciphers.
+Personally I'd just go for 'JFFS3'. After all, it has a better claim to
+the name than either of its predecessors :)
 
 -- 
-Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
+dwmw2
+
