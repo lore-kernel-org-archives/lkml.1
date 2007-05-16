@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbXEPPgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbXEPPjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761642AbXEPPgr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 11:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbXEPPgl
+	id S1761011AbXEPPjc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 11:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbXEPPjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 11:36:41 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:3818 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757466AbXEPPgk (ORCPT
+	Wed, 16 May 2007 11:39:25 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:51590 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754723AbXEPPjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 11:36:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JJiKuElzBsIu0ml+UaMnZ6VNnRr14mjCPbbpwC2jm8ZPqiYE1jHvib2rBFuqPsjLMGxuVAQYeFvs/diToYexcspnS8ozKY4n27xcGWFRNuqHSCDWp4XwQPd9KPFYot1JbtOgZvEde+Xdp+dIYEHev45PJlxK1fSWATccMRFP/+8=
-Message-ID: <a781481a0705160836g8287b02p167de29ed9e715ed@mail.gmail.com>
-Date: Wed, 16 May 2007 21:06:39 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: How to force Kconfig tristate into range n..m?
-Cc: "Andi Kleen" <ak@suse.de>, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <464B1594.3050407@s5r6.in-berlin.de>
+	Wed, 16 May 2007 11:39:24 -0400
+Date: Wed, 16 May 2007 17:39:19 +0200
+From: Johann Lombardi <johann@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Clear PG_error before reading a page
+Message-ID: <20070516153919.GC2630@chiva>
+Mail-Followup-To: Johann Lombardi <johann@clusterfs.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070515143726.GC2160@chiva> <20070515101144.f7072476.akpm@linux-foundation.org> <20070515210124.GA23698@chiva> <20070515142339.4d9098f3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070515233002.GA9614@linux.vnet.ibm.com>
-	 <200705161418.49151.ak@suse.de> <464B1594.3050407@s5r6.in-berlin.de>
+In-Reply-To: <20070515142339.4d9098f3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> Andi Kleen wrote:
-> > One way is to use a separate symbol that is not user visible,
+On Tue, May 15, 2007 at 02:23:39PM -0700, Andrew Morton wrote:
+> > Yes, indeed. However, as soon as a call to get_block() fails,
+> > do_mpage_readpage() will call block_read_full_page() which will attach
+> > buffers to this page.
+> > Consequently, all subsequent reads will go through block_read_full_page().
+> 
+> hm, confused.  Why is get_block() failing?  That has to go and read
+> metadata. 
 
-Gargle ... gargle ...
+In fact, I am referring to the first part of my test case (i.e. mount the ext3
+fs, enable medium errors in scsi_debug and try to read a file from the fs).
 
-> > but depends on your main symbol
-> > and uses default m
+So, when I try to read a file, ext3_get_block() needs to read metadata from the
+disk. However, given that the SCSI disk simulated by scsi_debug reports medium
+errors, ext3_get_block() returns EIO to the caller (i.e. do_mpage_readpage()).
+That's why get_block() is failing.
 
-Aargh!
+Then, do_mpage_readpage() calls block_read_full_page() (via "goto confused").
+block_read_full_page() attaches buffers to this page and calls ext3_get_block()
+which fails for the same reason as before. Consequently, block_read_full_page()
+sets the PG_error flag.
+Moreover, all subsequent readpage calls will go through block_read_full_page()
+because the page has now buffers attached.
 
-Please don't recommend such a hack.
+Basically, my problem is that afterwards, when the device no longer returns
+any errors, the PG_error flag is never cleared and, as a result, I keep
+getting -EIO. That's the problem I'd like to address.
 
-[ Note to LKML archive readers: Andi never said this, you never read this. ]
+> If get_block() failed then we don't know what blocks to read to
+> bring this page uptodate, so the pagecache page should remain in state
+> !PageUptodate(), !PageError().  But then, we shouldn't have populated
+> pagecache at that offset at all.
 
-> > (similar to the now infamous CONFIG_SCSI_WAIT_SCAN)
->
-> Actually CONFIG_SCSI_WAIT_SCAN should be visible and restricted to m or
-> n. :-)
+Yes, indeed. do_generic_mapping_read() doesn't populate the pagecache if an
+error occurred.
+Still, __do_page_cache_readahead()->read_pages()->ext3_readpages()->mpage_readpages()
+does populate the pagecache even if the page reads failed.
 
-Actually, SCSI_WAIT_SCAN doesn't want to be a separate module in the
-first place :-)
+> I think I'm missing something here.  I suspect you're referring to a mix
+> of reading the blockdev via /dev/hda1 and then using the already-populated
+> pagecache as filesystem metadata, or something?
+
+I don't think so, unless I'm missing something.
+
+> Is the PageError page part of an S_ISREG file, or is it part of an S_ISBLK
+> file?
+
+The PageError pages are part of a regular file and have been read through
+readahead.
+
+Johann
