@@ -1,65 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbXEPIA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXEPIHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761069AbXEPIA0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbXEPIAQ
+	id S1759473AbXEPIHy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXEPIHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:00:16 -0400
-Received: from keetweej.vanheusden.com ([213.84.46.114]:53487 "EHLO
-	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756873AbXEPIAO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 04:00:14 -0400
-Date: Wed, 16 May 2007 10:00:12 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2.6.21.1] OOPS in timer stats code
-Message-ID: <20070516080011.GA3304@vanheusden.com>
-References: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl> <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com> <4649FDEA.2050703@redhat.com> <1179267292.12838.42.camel@chaos>
+	Wed, 16 May 2007 04:07:40 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:37955 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755414AbXEPIHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 04:07:38 -0400
+Date: Wed, 16 May 2007 10:06:01 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH 11/14] VFS whiteout handling
+In-Reply-To: <20070514094358.GM4139@in.ibm.com>
+Message-ID: <Pine.LNX.4.61.0705160957540.9570@yvahk01.tjqt.qr>
+References: <20070514093722.GB4139@in.ibm.com> <20070514094358.GM4139@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179267292.12838.42.camel@chaos>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Wed May 16 23:38:34 CEST 2007
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > >> Hi,
-> > >> After an uptime of, say, 4 hours I got an oops on my P4 with HT and
-> > >> 2GB ram.
-> > >> It has dynamic ticks enabled as well has timer stats. I cannot reboot the
-> > >> machine to give more details right now (19:00 gmt+1 i can).
-> > >> For now, this is the oops:
-> > >> [13092.479019] BUG: unable to handle kernel paging request at virtual
-> > >> address b9d0458f
-> > Timer hash list contains a user address.
+
+On May 14 2007 15:13, Bharata B Rao wrote:
 > 
-> Dammit. It's a HT enabled box again. I don't have one.
-> Folkert, does the problem go away when you disable HT
-> (CONFIG_SCHED_SMT) ?
+>+/*
+>+ * Dummy default file-operations:
+>+ * Never open a whiteout. This is always a bug.
+>+ */
+>+static int whiteout_no_open(struct inode *irrelevant, struct file *dontcare)
+>+{
+>+	printk("Attemp to open a whiteout!\n");
+>+	WARN_ON(1);
+>+	return -ENXIO;
+>+}
 
-Don't know but the last patch I got works fine it seems (10 hours up).
+Eww, really WARN_ON? ENXIO should be enough.
+(FWIW, spello fix -> "Attempted to open a whiteout")
+
+>+static int
+>+vfs_unlink_whiteout(struct inode *dir, struct dentry **dp)
+
+One line.
+
+>+static int
+>+__hash_one_len(const char *name, int len, struct qstr *this)
+>+{
+>+	unsigned long hash;
+>+	unsigned int c;
+
+I doubt it will make a difference - "unsigned char c";
+
+>+
+>+	hash = init_name_hash();
+>+	while (len--) {
+>+		c = *(const unsigned char *)name++;
+>+		if (c == '/' || c == '\0')
+>+			return -EINVAL;
+>+		hash = partial_name_hash(c, hash);
+>+	}
+>+	this->hash = end_name_hash(hash);
+>+	return 0;
+>+}
+>+
+>+static int do_unlink_whiteouts(struct dentry *dentry)
+>+{
+>[...]
+>+	if (!IS_DEADDIR(inode)) {
+>+		res = file->f_op->readdir(file, (void *)file->f_path.dentry,
+>+					  unlink_whiteouts_filldir);
+
+I think this cast can go.
+
+>--- a/fs/readdir.c
+>+++ b/fs/readdir.c
+>@@ -148,6 +148,11 @@ static int filldir(void * __buf, const c
+> 	unsigned long d_ino;
+> 	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 2, sizeof(long));
+> 
+>+#ifdef CONFIG_UNION_MOUNT
+>+	if (d_type == DT_WHT)
+>+		return 0;
+>+#endif /* CONFIG_UNION_MOUNT */
+>+
+
+DT_WHT is always available, is not it? In that case, would not it
+be simpler to get rid of the #if/#endif.
+
+>@@ -233,6 +238,11 @@ static int filldir64(void * __buf, const
+> 	struct getdents_callback64 * buf = (struct getdents_callback64 *) __buf;
+> 	int reclen = ALIGN(NAME_OFFSET(dirent) + namlen + 1, sizeof(u64));
+> 
+>+#ifdef CONFIG_UNION_MOUNT
+>+	if (d_type == DT_WHT)
+>+		return 0;
+>+#endif /* CONFIG_UNION_MOUNT */
+>+
+> 	buf->error = -EINVAL;	/* only used if we fail.. */
+> 	if (reclen > buf->count)
+> 		return -EINVAL;
+
+>--- a/fs/union.c
+>+++ b/fs/union.c
+> 
+> #define attach_mnt_union(mnt,nd) do { /* empty */ } while (0)
+>@@ -54,6 +58,8 @@ extern int union_relookup_topmost(struct
+> #define union_copy_file(dentry1,mnt1,dentry2,mnt2) ({ (0); })
+> #define union_copyup(x,y) ({ (0); })
+> #define union_relookup_topmost(x,y) ({ (0); })
+>+#define union_dir_is_empty(x) ({ (1); })
+>+#define present_in_lower(x, y)	({ (0); })
+
+These could just be
+  #define something  0
 
 
-Folkert van Heusden
-
+	Jan
 -- 
-MultiTail is a versatile tool for watching logfiles and output of
-commands. Filtering, coloring, merging, diff-view, etc.
-http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
