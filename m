@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbXEPQ4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbXEPQ5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759871AbXEPQ4h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXEPQ4a
+	id S1761974AbXEPQ5U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXEPQ5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:56:30 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:45532 "EHLO atlrel6.hp.com"
+	Wed, 16 May 2007 12:57:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49648 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbXEPQ43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:56:29 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [patch] early printk and boot console fixups.
-Date: Wed, 16 May 2007 10:56:26 -0600
-User-Agent: KMail/1.9.6
-Cc: "Gerd Hoffmann" <kraxel@redhat.com>, "Andi Kleen" <ak@suse.de>,
-       akpm@linux-foundation.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-References: <45D5C473.4010608@suse.de> <200705160959.12433.bjorn.helgaas@hp.com> <86802c440705160929t5cbec9d2me2b83db34a9c572f@mail.gmail.com>
-In-Reply-To: <86802c440705160929t5cbec9d2me2b83db34a9c572f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705161056.26386.bjorn.helgaas@hp.com>
+	id S1751006AbXEPQ5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 12:57:08 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <464B3209.4010003@yahoo.com.au>
+References: <464B3209.4010003@yahoo.com.au> <464B07EC.4050308@yahoo.com.au> <464AF3F3.30204@yahoo.com.au> <20070516100225.18685.51699.stgit@warthog.cambridge.redhat.com> <17173.1179321391@redhat.com> <19714.1179331928@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement shared-writable mmap [try #2]
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 16 May 2007 17:56:27 +0100
+Message-ID: <23262.1179334587@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 May 2007 10:29:11 am Yinghai Lu wrote:
-> On 5/16/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > On Tuesday 15 May 2007 10:17:50 pm Yinghai Lu wrote:
-> > > for early_uart_console, I have some ideas:
-> > > 1. merged that into early_serial_console in
-> > > arch/x86_64/kernel/early_printk.c, and
-> > > move early_printk.c to kernel/, --- make it understand
-> > >      earlyprintk=uart,io,0x3f8,9600n8
-> > >      earlyprintk=uart,mmio,0xff5e0000,115200n8
-> > > in addition to vga, ttyS, serial
-> >
-> > I would rather try to merge 8250_early and early_printk.
-> > "console=uart,io,0x3f8" is already pretty similar to
-> > "earlyprintk=serial", and it would be nice to have only one.
-> >
-> > "console=uart" does have the disadvantage that you have to know the
-> > port address.  But it has the advantage that it doesn't depend on
-> > compiled-in legacy serial port names.  If you need early console
-> > output, you're probably a developer and can come up with the address.
-> >
-> > I think it would be nice to have a "console=vga".  That could use
-> > the current "earlyprintk=vga" implementation, and automatically
-> > hand off to tty0.
-> >
-> > Then we could remove "earlyprintk=" and always use "console=uart"
-> > or "console=vga".
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> > I can't call invalidate_inode_pages() or similar because that might
+> > incorrectly kill one of B's writes (or someone else's writes); besides,
+> > the on-server file hasn't changed.
 > 
-> earlyprintk= is needed for seeting bootconsole, or setting CON_BOOT,
-> and it is could be loaded earlier with early_param than console_init.
+> Why would that kill anyone's writes?
 
-8250_early.c does basically the same thing as the serial part of
-early_printk.c, so we should be able to make it work just as early.
-I don't remember why I didn't use early_param() for 8250_early;
-I probably should have.  On ia64, it doesn't matter because we call
-early_serial_console_init() explicitly at about the time of
-parse_early_param().
+Because invalidate_inode_pages() forcibly removes the dirty flag from each page
+in the inode and then calls invalidatepage() - and thus they don't get written
+back, but some of those pages may contain writes from other processes.  The
+whole inode isn't owned by one user at a time.
 
-8250_early and early_printk are so similar, I just don't see the
-need for both.
+I hadn't considered invalidate_inode_pages_range(), but that suffers from the
+deadlock problem.
 
-Bjorn
+> > I can't as it can/would deadlock if called from prepare_write() in two
+> > different ways.
+> 
+> Which ways? Are you talking about prepare_write being called from
+> page_mkwrite, or anywhere?
+
+ (1) prepare_write() is called with the target page locked and does not release
+     the lock.  The truncation routines lock the page prior to invalidating it.
+     Any truncation routine that skips locked pages is of no use.
+
+ (2) Consider a run of pages that make up a single write by one user.  Two
+     other writes from other users may be attempting to overwrite that run at
+     the same time.  Each of them would need to invalidate the other's locked
+     page(s).
+
+Furthermore, the caller of prepare_write() probably won't take kindly to the
+page it's dealing with being evicted from the pagecache.
+
+> More generally it sounds like a nasty thing to have a writeback cache if it
+> can become incoherent (due to dirty pages that subsequently cannot be
+> written back) without notification. Have you tried doing a write-through
+> one?
+
+How do you do a write-through cache for shared-writable mmap?
+
+> You may be clearing PG_uptodate, but isn't there still an underlying problem
+> that you can have mappings to the page at that point? If that isn't a problem
+> for you, then I don't know why you would have to clear PG_uptodate at all.
+
+There might be, yes.  I guess I should ask the VM to nuke all PTEs to each of
+these pages too.
+
+David
