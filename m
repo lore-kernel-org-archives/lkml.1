@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbXEPRJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbXEPRJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762921AbXEPRJk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbXEPRJW
+	id S1762948AbXEPRJx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762637AbXEPRJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:09:22 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4031 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758324AbXEPRJV (ORCPT
+	Wed, 16 May 2007 13:09:40 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:24807 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762908AbXEPRJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:09:21 -0400
-Date: Wed, 16 May 2007 18:09:14 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-cc: Yinghai Lu <yhlu.kernel@gmail.com>, Gerd Hoffmann <kraxel@suse.de>,
-       Andi Kleen <ak@suse.de>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] early printk and boot console fixups.
-In-Reply-To: <200705160959.12433.bjorn.helgaas@hp.com>
-Message-ID: <Pine.LNX.4.64N.0705161803110.29569@blysk.ds.pg.gda.pl>
-References: <45D5C473.4010608@suse.de> <86802c440705152117o34325f1dw4a0cdf95241b3b42@mail.gmail.com>
- <200705160959.12433.bjorn.helgaas@hp.com>
+	Wed, 16 May 2007 13:09:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=FMGXM7Er0YYqE2VsLbQiOnabtgCNzUUCCKtn/QENVGjaRXTTMQq+8uRvPLhqz7Uiq246JTYXBjdn5qB8exbqGYsGHIsWIeO57jJ7bFR+STute6yq8hYaP+6kqC9K9uSsK9MTY7bv4A3f8hSHIlHFSdBp8cFiSjlMLSWdWSy1aiE=
+Message-ID: <464B3AC3.4090204@gmail.com>
+Date: Wed, 16 May 2007 19:09:23 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Tjenarvi Tjenarvi <tjenarvi@yahoo.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: no DRQ after issuing MULTWRITE_EXT AND PCI: Bus #0b (-#0e) is
+ hidden behind transparent bridge #0a (-#0a) (try 'pci=assign-busses')
+References: <466481.34138.qm@web58810.mail.re1.yahoo.com> <alpine.LFD.0.98.0705150819140.16401@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705150819140.16401@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, Bjorn Helgaas wrote:
-
-> > for early_uart_console, I have some ideas:
-> > 1. merged that into early_serial_console in
-> > arch/x86_64/kernel/early_printk.c, and
-> > move early_printk.c to kernel/, --- make it understand
-> >      earlyprintk=uart,io,0x3f8,9600n8
-> >      earlyprintk=uart,mmio,0xff5e0000,115200n8
-> > in addition to vga, ttyS, serial
+Linus Torvalds wrote:
+>> Someone got this link to patch this bug, 
+>> http://www.spinics.net/lists/linux-ide/msg04810.html.  Then I post 
+>> another thread in 
+>> http://www.linuxquestions.org/questions/showthread.php?t=551630
 > 
-> I would rather try to merge 8250_early and early_printk.
-> "console=uart,io,0x3f8" is already pretty similar to
-> "earlyprintk=serial", and it would be nice to have only one.
+> Have you tried it, and does that patch actually fix things for you?
 > 
-> "console=uart" does have the disadvantage that you have to know the
-> port address.  But it has the advantage that it doesn't depend on
-> compiled-in legacy serial port names.  If you need early console
-> output, you're probably a developer and can come up with the address.
+> That patch has not been merged, possibly because it got forgotten, but 
+> possibly because it had other problems. So if you can test it and send the 
+> results back to Tejun and Jeff (both Cc'd), please do.
 
- Given the generic name of "uart" I am assuming this will work with any 
-UART driver making use of the serial_core.c core -- am I correct?
+Those patch actually is merged.  It just looks different because the
+table got merged back into ich6m table after finding out ich6m has the
+same issue.  Also, the patch deals only with detection.
 
-  Maciej
+Can you boot 2.6.21.1 with only libata drivers compiled in and report
+the dmesg?  libata usually dumps more info than ide drivers so it's
+easier to find out what's going on.
+
+-- 
+tejun
