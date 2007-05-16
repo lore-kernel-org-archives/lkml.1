@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbXEPHmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbXEPHxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbXEPHmR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbXEPHmF
+	id S1758365AbXEPHxm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 03:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbXEPHxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 03:42:05 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:12410 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753066AbXEPHmD (ORCPT
+	Wed, 16 May 2007 03:53:36 -0400
+Received: from fest.stud.feec.vutbr.cz ([147.229.72.16]:53964 "EHLO
+	fest.stud.feec.vutbr.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753066AbXEPHxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 03:42:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JR8cGi93gLCs6nT/xTtHmHtNSclW8wov9nSUas1Yb0WMLbER8CZo50XGIk19jbnFFOLYUIGjWhGQiFAPQyWxAuETyFREDiuFh8SqmNbjn1bcnEX6QJbG6B+IOeMKsFoXsSD5d7TMYUwhVgfZAz1UGn8MPeI0rbLAJQYCD1zNtIs=
-Message-ID: <38b2ab8a0705160042o350d429ct72c43749ff6bcbb8@mail.gmail.com>
-Date: Wed, 16 May 2007 09:42:02 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: clockevent questions
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1179267014.12838.38.camel@chaos>
+	Wed, 16 May 2007 03:53:35 -0400
+Message-ID: <464AB84F.8060609@stud.feec.vutbr.cz>
+Date: Wed, 16 May 2007 09:52:47 +0200
+From: Schmidt Michal <xschmi00@stud.feec.vutbr.cz>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
-	 <1178982892.22481.183.camel@localhost.localdomain>
-	 <38b2ab8a0705121313k37be467cy55402b490101ac9c@mail.gmail.com>
-	 <1179001391.22481.216.camel@localhost.localdomain>
-	 <38b2ab8a0705150147s4ce72914qfa30d543ed8a4839@mail.gmail.com>
-	 <1179267014.12838.38.camel@chaos>
+To: Ondrej Zary <linux@rainbow-software.org>
+CC: Robert Hancock <hancockr@shaw.ca>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [announce] Intel announces the PowerTOP utility for Linux
+References: <fa.FTEkheuP0nHOUv0cCp0k8pBuoMU@ifi.uio.no> <4648FB1B.90208@shaw.ca> <200705151830.01891.linux@rainbow-software.org>
+In-Reply-To: <200705151830.01891.linux@rainbow-software.org>
+Content-Type: multipart/mixed;
+ boundary="------------010901040505060707060407"
+X-Spam-Score: -2.312 () BAYES_00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+This is a multi-part message in MIME format.
+--------------010901040505060707060407
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On 5/16/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Francis,
->
-> On Tue, 2007-05-15 at 10:47 +0200, Francis Moreau wrote:
-> > My question is about the clock resolution field which is equal to 1ns.
-> > How is this possible since my timer's frequency is only 100Mhz ?
->
-> you are right. It is a bit strange. The resolution info is not really
-> reflecting the clock event source capability. I look if there is a sane
-> solution for that.
->
+Ondrej Zary wrote:
+> On Tuesday 15 May 2007 02:13:15 Robert Hancock wrote:
+>> Looks like the radeon driver has the same problem as the i915 driver
+>> mentioned on the known problems page - I get 60 wakeups/sec from it on
+>> my Compaq X1000 laptop (Radeon 9000 graphics) while in X, which
+>> essentially prevents entry into C3.
+> 
+> And Rage 128 too.
+> 
 
-Doesn't that make hrtimer_get_res() and its callers buggy since they
-return this 1ns value which is not reflecting the correct clock event
-capability ?
+I have a Radeon 7500 in my laptop. The attached hack to disable the 
+VBLANK interrupt works for me. I don't know if it breaks 3D, I've only 
+tried 2D.
 
-Another question about the output of '/proc/timer_list':
+Michal
 
-[...]
-active timers:
- #0: <c03fde10>, tick_sched_timer, S:01
- # expires at 64696546875000 nsecs [in 2514469 nsecs]
- .expires_next   : 64696546875000 nsecs
-[...]
+--------------010901040505060707060407
+Content-Type: text/plain;
+ name="radeon-no-vblank-int.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="radeon-no-vblank-int.diff"
 
-Doesn't the 2 expire time lines give the same information ? If so,
-couldn't we merge them into : ".expires_next   : 64696546875000 nsecs
-[in 2514469 nsecs]" ?
+diff --git a/drivers/char/drm/radeon_irq.c b/drivers/char/drm/radeon_irq.c
+index 3ff0baa..a990bb6 100644
+--- a/drivers/char/drm/radeon_irq.c
++++ b/drivers/char/drm/radeon_irq.c
+@@ -227,9 +227,8 @@ void radeon_driver_irq_postinstall(drm_device_t * dev)
+ 	atomic_set(&dev_priv->swi_emitted, 0);
+ 	DRM_INIT_WAITQUEUE(&dev_priv->swi_queue);
+ 
+-	/* Turn on SW and VBL ints */
+-	RADEON_WRITE(RADEON_GEN_INT_CNTL,
+-		     RADEON_CRTC_VBLANK_MASK | RADEON_SW_INT_ENABLE);
++	/* Turn on the SW interrupt */
++	RADEON_WRITE(RADEON_GEN_INT_CNTL, RADEON_SW_INT_ENABLE);
+ }
+ 
+ void radeon_driver_irq_uninstall(drm_device_t * dev)
 
-Thanks
--- 
-Francis
+--------------010901040505060707060407--
