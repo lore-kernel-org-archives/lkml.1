@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933862AbXEPVV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762757AbXEPVWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933862AbXEPVV0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758910AbXEPVVS
+	id S1762757AbXEPVWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759984AbXEPVWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:21:18 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:40742 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758450AbXEPVVR (ORCPT
+	Wed, 16 May 2007 17:22:11 -0400
+Received: from moa.IfA.Hawaii.Edu ([128.171.168.48]:36134 "EHLO
+	moa.ifa.hawaii.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757812AbXEPVWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:21:17 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705161410220.11517@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-	 <20070514161224.GC11115@waste.org>
-	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-	 <1179164453.2942.26.camel@lappy>
-	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-	 <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins>
-	 <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
-	 <1179298771.7173.16.camel@twins>
-	 <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
-	 <1179343521.2912.20.camel@lappy>
-	 <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
-	 <1179346738.2912.39.camel@lappy>
-	 <Pine.LNX.4.64.0705161320020.11018@schroedinger.engr.sgi.com>
-	 <1179348039.2912.48.camel@lappy>
-	 <Pine.LNX.4.64.0705161343080.11234@schroedinger.engr.sgi.com>
-	 <1179348898.2912.57.camel@lappy>
-	 <Pine.LNX.4.64.0705161358030.11359@schroedinger.engr.sgi.com>
-	 <1179349494.2912.62.camel@lappy>
-	 <Pine.LNX.4.64.0705161410220.11517@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 23:20:33 +0200
-Message-Id: <1179350433.2912.66.camel@lappy>
+	Wed, 16 May 2007 17:22:11 -0400
+Date: Wed, 16 May 2007 11:27:36 -1000
+From: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: Duane Griffin <duaneg@dghda.com>, Prakash Punnoor <prakash@punnoor.de>,
+       LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
+Message-ID: <20070516212736.GO15763@ifa.hawaii.edu>
+References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <464B63D8.2060501@gentoo.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="tDYGg60iReQ7u8wj"
+Content-Disposition: inline
+In-Reply-To: <464B63D8.2060501@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 14:13 -0700, Christoph Lameter wrote:
-> On Wed, 16 May 2007, Peter Zijlstra wrote:
-> > > How we know that we are out of trouble? Just try another alloc and see? If 
-> > > that is the case then we may be failing allocations after the memory 
-> > > situation has cleared up.
-> > No, no, for each regular allocation we retry to populate ->cpu_slab with
-> > a new slab. If that works we're out of the woods and the ->reserve_slab
-> > is cleaned up.
-> 
-> Hmmm.. so we could simplify the scheme by storing the last rank 
-> somewheres.
 
-Not sure how that would help..
+--tDYGg60iReQ7u8wj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> If the alloc has less priority and we can extend the slab then
-> clear up the situation.
-> 
-> If we cannot extend the slab then the alloc must fail.
+On Wed, May 16, 2007 at 04:04:40PM -0400, Daniel Drake wrote:
+> Duane Griffin wrote:
+> >On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
+> >>Maybe you want to give a hint in the p states driver help text?
+> >
+> >I think a hint is the right thing to do, but in the PowerNow! driver
+> >rather than the p states one. How about adding something like this to
+> >the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
+>=20
+> Please hold off this patch until we've gained a more complete=20
+> understanding of the issues and workarounds (which will probably lead to=
+=20
+> us writing a better patch anyway)
 
-That is exactly what is done; and as mpm remarked the other day, its a
-binary system; we don't need full gfp fairness just ALLOC_NO_WATERMARKS.
+I agree - the issue is more complicated that I had thought.  I received
+an off list message saying that this dependency isn't required on a
+single-socket Athlon X2 system.  So it sounds like isn't an SMP setup
+issue as much as it is a multi-socket or perhaps just an issue with my
+vendor (Tyan).
 
-And that is already found in ->reserve_slab; if present the last
-allocation needed it; if not the last allocation was good.
+-J
 
-> Could you put the rank into the page flags? On 64 bit at least there 
-> should be enough space.
+--
 
-Current I stick the newly allocated page's rank in page->rank (yet
-another overload of page->index). I've not yet seen the need to keep it
-around longer.
+--tDYGg60iReQ7u8wj
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFGS3dIWa2BU+b7tU0RAn48AJ4/dhSKZy4t0yVtgTyhRSYB+EJPfwCcCq1a
+j7PP7ciLH7ly+oPLf69p6Mc=
+=K8bm
+-----END PGP SIGNATURE-----
+
+--tDYGg60iReQ7u8wj--
