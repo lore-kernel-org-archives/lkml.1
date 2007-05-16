@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762294AbXEPMzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbXEPM7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762294AbXEPMzq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759569AbXEPMzi
+	id S1761589AbXEPM7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759043AbXEPM7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:55:38 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:55088 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758871AbXEPMzh (ORCPT
+	Wed, 16 May 2007 08:59:37 -0400
+Received: from lazybastard.de ([212.112.238.170]:60619 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758722AbXEPM7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:55:37 -0400
-Date: Wed, 16 May 2007 08:53:41 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: David Howells <dhowells@redhat.com>, David Chinner <dgc@sgi.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
-Message-ID: <20070516125341.GS26766@think.oraclecorp.com>
-References: <20070318233008.GA32597093@melbourne.sgi.com> <18993.1179310769@redhat.com> <1179317360.2859.225.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 May 2007 08:59:36 -0400
+Date: Wed, 16 May 2007 14:55:01 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Jamie Lokier <jamie@shareable.org>, David Woodhouse <dwmw2@infradead.org>,
+       akpm@osdl.org, Albert Cahalan <acahalan@gmail.com>,
+       Greg KH <greg@kroah.com>, John Stoffel <john@stoffel.org>,
+       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516125501.GG5472@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org> <20070516122921.GA26297@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1179317360.2859.225.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070516122921.GA26297@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 08:09:19PM +0800, David Woodhouse wrote:
-> On Wed, 2007-05-16 at 11:19 +0100, David Howells wrote:
-> > The start and end points passed to block_prepare_write() delimit the region of
-> > the page that is going to be modified.  This means that prepare_write()
-> > doesn't need to fill it in if the page is not up to date. 
+On Wed, 16 May 2007 16:29:22 +0400, Evgeniy Polyakov wrote:
+> On Wed, May 16, 2007 at 01:50:03PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
+> > On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
+> > > 
+> > > But if akpm can't pronounce it, how about FFFS for faster flash
+> > > filesystem.... ;-)
+> > 
+> > How many of you have worked for IBM before?  Vowels are not evil. ;)
 > 
-> Really? Is it _really_ going to be modified? Even if the pointer
-> userspace gave to write() is bogus, and is going to fault half-way
-> through the copy_from_user()?
+> Do you think 'eieio' is a good set? IBM's work too...
 
-This is why there are so many variations on copy_from_user that zero on
-faults.  One way or another, the prepare_write/commit_write pair are
-responsible for filling it in.
+I will let someone else comment on that one.
 
--chris
+http://www.uwsg.iu.edu/hypermail/linux/kernel/0110.1/1294.html
 
+Jörn
+
+-- 
+There are two ways of constructing a software design: one way is to make
+it so simple that there are obviously no deficiencies, and the other is
+to make it so complicated that there are no obvious deficiencies.
+-- C. A. R. Hoare
