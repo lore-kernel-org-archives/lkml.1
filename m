@@ -1,86 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762642AbXEPF3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762814AbXEPFan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762642AbXEPF3l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 01:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760068AbXEPF3f
+	id S1762814AbXEPFan (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 01:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760617AbXEPFag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 01:29:35 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:35773
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757252AbXEPF3e (ORCPT
+	Wed, 16 May 2007 01:30:36 -0400
+Received: from hqemgate01.nvidia.com ([216.228.112.170]:17707 "EHLO
+	HQEMGATE01.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758781AbXEPFaf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 01:29:34 -0400
-From: Rob Landley <rob@landley.net>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-Date: Wed, 16 May 2007 01:29:15 -0400
-User-Agent: KMail/1.9.1
-Cc: Tejun Heo <htejun@gmail.com>, Francesco Pretto <ceztko@gmail.com>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <46489D3B.8050805@gmail.com> <20070515210804.GG25902@redhat.com>
-In-Reply-To: <20070515210804.GG25902@redhat.com>
+	Wed, 16 May 2007 01:30:35 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705160129.16048.rob@landley.net>
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] drivers/ata: correct a wrong free function for sata_nv driver
+Date: Wed, 16 May 2007 13:31:34 +0800
+Message-ID: <15F501D1A78BD343BE8F4D8DB854566B13DEF520@hkemmail01.nvidia.com>
+In-Reply-To: <464A94D7.30300@garzik.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] drivers/ata: correct a wrong free function for sata_nv driver
+Thread-Index: AceXek9fNVIiebYuSyehXcTkfOQflAAAMtLg
+References: <15F501D1A78BD343BE8F4D8DB854566B13CD8F45@hkemmail01.nvidia.com> <464A94D7.30300@garzik.org>
+From: "Peer Chen" <pchen@nvidia.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Cc: <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+X-OriginalArrivalTime: 16 May 2007 05:29:52.0949 (UTC) FILETIME=[3AF89650:01C7977B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 May 2007 5:08 pm, Dave Jones wrote:
-> On Mon, May 14, 2007 at 07:32:43PM +0200, Tejun Heo wrote:
->  > Francesco Pretto wrote:
->  > > 2007/5/4, Tejun Heo <htejun@gmail.com>:
->  > >> Yeap, the third iteration of the patch just got submitted.
->  > >>
->  > >>   http://thread.gmane.org/gmane.linux.ide/18485
->  > >>
->  > >> Unfortunately, there doesn't seem to be an easy way out.  We'll need
->  > >> userland shutdown(8) update.
->  > >>
->  > >> -- 
->  > >> tejun
->  > >>
->  > > 
->  > > Ok, i can't understand if the patch will be included in 2.6.22 (i
->  > > didn't see it in the Andrew Morton merge plan). However, if you can
->  > > confirm the inclusion, i can send bug reports for ubuntu and gentoo. I
->  > > can even send an email to Miquel van Smoorenburg, who should be the
->  > > mainstream sysvinit developer (and probably the last maintainer).
->  > 
->  > Okay, the patch made upstream and webpage posted.
->  > 
->  >  http://linux-ata.org/shutdown.html
+Sorry for posting a fault patch,following is the right one.
+
+Signed-off-by: Peer Chen <pchen@nvidia.com>
+
+===================================
+--- linux-2.6.22-rc1/drivers/ata/sata_nv.c.orig
++++ linux-2.6.22-rc1/drivers/ata/sata_nv.c
+@@ -1619,7 +1619,7 @@ static void nv_remove_one (struct pci_de
+ 	struct nv_host_priv *hpriv = host->private_data;
+ 
+ 	ata_pci_remove_one(pdev);
+-	kfree(hpriv);
++	devm_kfree(&pdev->dev, hpriv);
+ }
+ 
+ #ifdef CONFIG_PM
+
+============================= 
+
+
+BRs
+Peer Chen
+
+-----Original Message-----
+From: Jeff Garzik [mailto:jeff@garzik.org] 
+Sent: Wednesday, May 16, 2007 1:21 PM
+To: Peer Chen
+Cc: linux-kernel@vger.kernel.org; akpm@linux-foundation.org; IDE/ATA
+development list
+Subject: Re: [PATCH] drivers/ata: correct a wrong free function for
+sata_nv driver
+
+Peer Chen wrote:
+> For sata_nv driver in kernel 2.6.21 onward, Inside nv_init_one(),use
+> 'hpriv = devm_kzalloc(&pdev->dev, sizeof(*hpriv), GFP_KERNEL);' but
+> using the kfree(hpriv) to free that data struction in nv_remove_one(),
+> which will cause system hang when removing the sata_nv module.
 > 
-> There's a typo..
+> Change the 'kfree()' function to 'devm_kfree' will fix this bug.
 > 
-> "Check whether /sys/modules/libata/parameters/spindown_compat  exists. If it 
-does, write 0 to it."
+> The patch base on kernel 2.6.22-rc1.
 > 
-> should be /sys/module/libata/parameters/spindown_compat
-> 
-> (no 's' after module)
+> Signed-off-by: Peer Chen <pchen@nvidia.com>
+> =====================================
+> --- linux-2.6.22-rc1/drivers/ata/sata_nv.c.orig
+> +++ linux-2.6.22-rc1/drivers/ata/sata_nv.c
+> @@ -1619,7 +1619,7 @@ static void nv_remove_one (struct pci_de
+>  	struct nv_host_priv *hpriv = host->private_data;
+>  
+>  	ata_pci_remove_one(pdev);
+> -	kfree(hpriv);
+> +	devm_kfree(&pci_dev->dev, hpriv);
 
-Um, hang on.  So libata can't reliably turn the system off without data loss 
-and potential damage to hardware unless userspace goes through a special song 
-and dance?  And this is _not_ considered a defect in the kernel?
+This patch is complete crap.  It doesn't even compile.  There is no 
+variable "pci_dev" in this function at all.
 
-Why?
+It is highly discouraging that you cannot even bother to compile your 
+own submissions to the second (or third) most popular operating system 
+in the world.
 
-(Is there any other piece of hardware that needs userspace to quiesce it just 
-so the _off_switch_ can take effect?  Yes, I read both the gmane thread and 
-the linux-ata.org link.  I used to maintain the busybox halt/reboot/poweroff 
-commands, although I don't anymore.  That just called reboot(), and this 
-worked.)
+	Jeff
 
-Why on _earth_ does complicating software suspend add extra requirements to 
-actual shutdown?  Since when does the shutdown command have to enumerate 
-attached block devices?  If anything this would belong in umount -a, but that 
-doesn't care about the hardware of the underlying block devices and 
-SHOULDN'T...
 
-I'm confused.  Could someone please explain?
-
-Rob
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
