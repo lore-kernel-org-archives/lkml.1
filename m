@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbXEPLR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbXEPLUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759328AbXEPLR3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbXEPLRW
+	id S1760295AbXEPLUH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757613AbXEPLT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:17:22 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:56863 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbXEPLRV (ORCPT
+	Wed, 16 May 2007 07:19:58 -0400
+Received: from pils.linux-kernel.at ([213.129.242.82]:58550 "EHLO
+	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757552AbXEPLT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:17:21 -0400
-Date: Wed, 16 May 2007 13:17:20 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/19] scsi: convert to using sg helpers
-Message-ID: <20070516131720.4f9ed32a@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <11793043541476-git-send-email-jens.axboe@oracle.com>
-References: <11793043533744-git-send-email-jens.axboe@oracle.com>
-	<11793043541476-git-send-email-jens.axboe@oracle.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 May 2007 07:19:57 -0400
+Message-ID: <464AE8D1.5000500@linux-kernel.at>
+Date: Wed, 16 May 2007 13:19:45 +0200
+From: Oliver Falk <oliver@linux-kernel.at>
+Organization: Linux kernel Austria
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070419 Fedora/2.0.0.0-1.fc7 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, ac-admin@lists.anotherbloody.com
+Subject: Re: [patch] Missing defines in asm-alpha/unistd.h!?
+References: <464AC75D.1090701@linux-kernel.at> <464AD1DB.3050609@linux-kernel.at>
+In-Reply-To: <464AD1DB.3050609@linux-kernel.at>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-lkernAT-MailScanner-Information: Please contact the ISP for more information
+X-lkernAT-MailScanner: Found to be clean
+X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-3.009, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
+	PLING_QUERY 1.39)
+X-MailScanner-From: oliver@linux-kernel.at
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 10:32:19 +0200,
-Jens Axboe <jens.axboe@oracle.com> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> This converts the SCSI mid layer to using the sg helpers for looking up
-> sg elements, instead of doing it manually.
+On 05/16/2007 11:41 AM, Oliver Falk wrote:
+> On 05/16/2007 10:57 AM, Oliver Falk wrote:
+>> I believe this is missing... :-) I hope I understood NR_SYSCALLS
+>> correctly and it's the number of defined syscals - as I added 20 of
+>> them, I increased it by 20... Maybe someone can have a look if it's correct.
+> [ ... ]
 > 
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  drivers/scsi/scsi_lib.c |   20 +++++++++++---------
->  1 files changed, 11 insertions(+), 9 deletions(-)
+> Sorry, the patch was missing one hunk/file and also the tab stops where
+> wrong. Attached a new working version.
 
-This needs to include linux/scatterlist.h (other architectures seem to
-pull this header in via other routes, but e.g. s390 doesn't).
+But. The strange error that follows after patching:
+  ld  -static -N  -o .tmp_vmlinux1 -T arch/alpha/kernel/vmlinux.lds
+arch/alpha/kernel/head.o  init/built-in.o --start-group  usr/built-in.o
+ arch/alpha/kernel/built-in.o  arch/alpha/mm/built-in.o
+arch/alpha/math-emu/built-in.o  kernel/built-in.o  mm/built-in.o
+fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
+block/built-in.o  lib/lib.a  arch/alpha/lib/lib.a  lib/built-in.o
+arch/alpha/lib/built-in.o  drivers/built-in.o  sound/built-in.o
+net/built-in.o --end-group
+arch/alpha/kernel/built-in.o:(.data+0x2d60): undefined reference to
+`sys_pselect6'
+arch/alpha/kernel/built-in.o:(.data+0x2d68): undefined reference to
+`sys_ppoll'
 
----
- drivers/scsi/scsi_lib.c |    1 +
- 1 files changed, 1 insertion(+)
+I don't understand this... Any clue(s)?
 
---- linux.orig/drivers/scsi/scsi_lib.c
-+++ linux/drivers/scsi/scsi_lib.c
-@@ -17,6 +17,7 @@
- #include <linux/pci.h>
- #include <linux/delay.h>
- #include <linux/hardirq.h>
-+#include <linux/scatterlist.h>
- 
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
+- -of
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGSujRxWN5Ge8lKUMRAmHsAJ0fBvA+IWhxzAu+d93XCwpgYD6aPACgw2Y1
+/YjrC0BcDBUrSzrgXMzPJ2w=
+=NGM9
+-----END PGP SIGNATURE-----
