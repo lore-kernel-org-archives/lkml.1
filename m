@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762658AbXEPFF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbXEPFPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762658AbXEPFF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 01:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbXEPFFt
+	id S1762034AbXEPFPc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 01:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXEPFPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 01:05:49 -0400
-Received: from tuxrocks.com ([63.99.9.217]:44516 "EHLO tuxrocks.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754665AbXEPFFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 01:05:49 -0400
-Message-ID: <464A9077.1010403@tuxrocks.com>
-Date: Wed, 16 May 2007 00:02:47 -0500
-From: Frank Sorenson <frank@tuxrocks.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Frank Sorenson <frank@tuxrocks.com>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Alistair John Strachan <s0348365@sms.ed.ac.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v4
-References: <1178485128.31213.98.camel@localhost.localdomain>	 <200705142215.08910.s0348365@sms.ed.ac.uk> <1179180314.7074.36.camel@chaos>	 <200705142342.29994.s0348365@sms.ed.ac.uk> <1179217082.7074.47.camel@chaos>	  <4649BE4A.8000707@tuxrocks.com> <1179266013.12838.31.camel@chaos> <464A403A.3050202@tuxrocks.com>
-In-Reply-To: <464A403A.3050202@tuxrocks.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 01:15:25 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:48175 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754665AbXEPFPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 01:15:25 -0400
+Date: Wed, 16 May 2007 07:21:59 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
+       Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+Message-ID: <20070516052159.GA967@ff.dom.local>
+References: <20070511134714.GA191@tv-sign.ru> <46448965.7070500@gmail.com> <20070511145345.GA240@tv-sign.ru> <4645559D.4050602@gmail.com> <20070513192753.GA3014@tv-sign.ru> <46477239.9030007@gmail.com> <20070514194446.GA159@tv-sign.ru> <46496EC1.3090109@gmail.com> <20070515130904.GB3050@ff.dom.local> <20070515220812.GB615@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070515220812.GB615@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wed, May 16, 2007 at 02:08:12AM +0400, Oleg Nesterov wrote:
+> On 05/15, Jarek Poplawski wrote:
+> > 
+> > I've overheared somebody is talking about my favorite 2-nd bit!
+...
+> We already discussed this... Surely, we can do this. I believe
+> this will complicate (and _imho_ uglify) the code too much.
 
-Frank Sorenson wrote:
-> Thomas Gleixner wrote:
->> Frank,
-> 
->> On Tue, 2007-05-15 at 09:06 -0500, Frank Sorenson wrote:
->>> Hangs at boot here:
->>> 	Kernel alive
->>> 	Kernel direct mapping tables up to 100000000 @ 8000-d000
->>> (and that's it)
->>>
->>> This is a Dell Inspiron E1705 with a Core 2 Duo 2.16GHz
->>>
->>> highres-v3 also hung at the same point, but 2.6.21-git2-v2 worked
->>> 2.6.22-rc1 boots without problem
->> Can you please try the following three command line option addons ?
-> 
->> 1: highres=off nohz=off
->> 2: highres=off
->> 3: nohz=off
-> 
->> Thanks,
-> 
->> 	tglx
-> 
-> All 3 hang at the same point.
+Yes, but now I see you are about to change your mind about
+this bit...
 
-I have tracked down the offending patch in the series to
-x86-64-convert-to-clockevents.patch
+> May be I am wrong. Please provide a detailed description?
 
-Frank
-- --
-Frank Sorenson - KD7TZK
-Linux Systems Engineer, DSS Engineering, UBS AG
-frank@tuxrocks.com
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+I'll try too look more at your solution - maybe it's "not
+so bad". I've probably exaggerated yesterday about this
+overhead of setting the VALID bit.
 
-iD8DBQFGSpB2aI0dwg4A47wRAglRAJ4mJgbJClPd0hkXKp+YHq7G5VxQvgCgkVkv
-TtOjrSrjrwiHQPkNCqlq314=
-=lu8g
------END PGP SIGNATURE-----
+Cheers,
+Jarek P.
