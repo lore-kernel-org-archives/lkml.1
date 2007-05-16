@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbXEPNz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbXEPN6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbXEPNz2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 09:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbXEPNzW
+	id S1758841AbXEPN6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 09:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXEPN6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 09:55:22 -0400
-Received: from 125.14.124.24.cm.sunflower.com ([24.124.14.125]:7484 "EHLO
-	mail.atipa.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753549AbXEPNzV (ORCPT
+	Wed, 16 May 2007 09:58:09 -0400
+Received: from lazybastard.de ([212.112.238.170]:52284 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756039AbXEPN6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 09:55:21 -0400
-Message-ID: <464B0D47.6070509@atipa.com>
-Date: Wed, 16 May 2007 08:55:19 -0500
-From: Roger Heflin <rheflin@atipa.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
-MIME-Version: 1.0
-To: NFS <nfs@lists.sourceforge.net>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Kernel BUG at mm/slab.c:2380 on NFS server in nfsd (2.6.21.1)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 May 2007 13:57:55.0828 (UTC) FILETIME=[342ECB40:01C797C2]
+	Wed, 16 May 2007 09:58:07 -0400
+Date: Wed, 16 May 2007 15:53:19 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: John Stoffel <john@stoffel.org>
+Cc: Jamie Lokier <jamie@shareable.org>, David Woodhouse <dwmw2@infradead.org>,
+       akpm@osdl.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516135318.GK5472@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org> <17995.2550.581854.8393@stoffel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <17995.2550.581854.8393@stoffel.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Running bonnie over nfs on a RHEL4.4 client against a 2.6.21.1 server
-got me this crash after about 4 hours of running on the server:
+On Wed, 16 May 2007 09:41:10 -0400, John Stoffel wrote:
+> JÃ¶rn> On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
+> 
+> JÃ¶rn> How many of you have worked for IBM before?  Vowels are not
+> evil. ;)
+> 
+> Nope, they're not.  I just think that LogFS isn't descriptive enough,
+> or more accurately, is the *wrong* description of this filesystem.  
 
-This was running lvm -> ext3 -> nfs ---- nfsclient (RHEL4.4).
+That was the whole point.  JFFS2, the journaling flash filesystem, is a
+strictly log-structured filesystem.  LogFS has a journal.
 
-	Ideas?
+It is also the filesystem that tries to scale logarithmically, as Arnd
+has noted.  Maybe I should call it Log2 to emphesize this point.  Log1
+would be horrible scalability.
 
-                       Roger
+> flashfs works for me.  It's longer, but hey, that's ok.  Even flshfs
+> might work.  Oh wait, flesh?  flash?  flush?  Too confusing... :-)   
 
-May 15 21:10:31 vault1 kernel: ------------[ cut here ]------------
-May 15 21:10:31 vault1 kernel: kernel BUG at mm/slab.c:2380!
-May 15 21:10:31 vault1 kernel: invalid opcode: 0000 [1] SMP
-May 15 21:10:31 vault1 kernel: CPU 0
-May 15 21:10:31 vault1 kernel: Modules linked in: qla2xxx nfsd exportfs 
-lockd nfs_acl sunrpc hidp l2cap bluetooth ipv6 cpufreq_ondemand jfs 
-dm_mirror dm_multipath dm_mod video sbs i2c_ec dock button battery 
-asus_acpi ac lp snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy 
-snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device sg snd_pcm_oss 
-floppy snd_mixer_oss snd_pcm cfi_cmdset_0002 cfi_util mtdpart snd_timer 
-jedec_probe cfi_probe gen_probe snd ck804xrom sata_nv mtdcore chipreg 
-i2c_nforce2 soundcore map_funcs libata snd_page_alloc pcspkr i2c_core 
-k8temp hwmon forcedeth ohci1394 ieee1394 parport_pc ide_cd parport cdrom 
-serio_raw scsi_transport_fc shpchp megaraid_mbox sd_mod scsi_mod 
-megaraid_mm ext3 jbd ehci_hcd ohci_hcd uhci_hcd
-May 15 21:10:31 vault1 kernel: Pid: 4256, comm: nfsd Not tainted 2.6.21.1 #1
-May 15 21:10:31 vault1 kernel: RIP: 0010:[<ffffffff8025a710>] 
-[<ffffffff8025a710>] cache_alloc_refill+0xe6/0x1f3
-May 15 21:10:31 vault1 kernel: RSP: 0018:ffff81021dead6d0  EFLAGS: 00010002
-May 15 21:10:31 vault1 kernel: RAX: 0000000000000001 RBX: 
-ffff81012211d960 RCX: ffff810120013040
-May 15 21:10:31 vault1 kernel: RDX: 000000000000000e RSI: 
-ffff810139020000 RDI: ffff810120013040
+Maybe.  FFS or flash filesystem already exists.  And YAFFS, yet another
+flash filesystem, would be older than flashfs.
+
+My experience is that no matter which name I pick, people will complain
+anyway.  Previous suggestions included:
+jffs3
+jefs
+engelfs
+poofs
+crapfs
+sweetfs
+cutefs
+dynamic journaling fs - djofs
+tfsfkal - the file system formerly known as logfs
+
+Plus today:
+FFFS
+flashfs
+fredfs
+bob
+shizzle
+
+Imo they all suck.  LogFS also sucks, but it allows me to make a stupid
+joke and keep my logfs.org domain.
+
+Jörn
+
+-- 
+There are two ways of constructing a software design: one way is to make
+it so simple that there are obviously no deficiencies, and the other is
+to make it so complicated that there are no obvious deficiencies.
+-- C. A. R. Hoare
