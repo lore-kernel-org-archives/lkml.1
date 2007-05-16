@@ -1,98 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762435AbXEPV32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbXEPVd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762435AbXEPV32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbXEPV3W
+	id S1762856AbXEPVd0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758792AbXEPVdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:29:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:23042 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758990AbXEPV3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:29:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=MibFGJhssUmMx5aFil6C43wj1oQ3UUEPcOfC9Jg0GvS35fxjJJz0odY9GX8rE5OgTAmQIRUhxujIzpiRSr9OJBVCluCCh7Rf4K6Zsbmh+FtOwKofJWLfRcC74i4n3xrWl/pCtAItJ7eWXTG093Y4cItOfbY7RIEtBBPjf2QTlFQ=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: xfs-masters@oss.sgi.com
-Subject: [RFC][PATCH] XFS: memory leak in xfs_inactive() - is xfs_trans_free() enough or do we need xfs_trans_cancel() ?
-Date: Wed, 16 May 2007 23:31:16 +0200
-User-Agent: KMail/1.9.6
-Cc: xfs@oss.sgi.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 17:33:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39598 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754963AbXEPVdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 17:33:18 -0400
+Date: Wed, 16 May 2007 23:32:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: v2.6.21-rt2
+Message-ID: <20070516213259.GC19850@elte.hu>
+References: <20070516180447.GA17922@elte.hu> <1179348842.20519.20.camel@imap.mvista.com> <20070516210104.GA17240@elte.hu> <1179350448.20519.25.camel@imap.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705162331.16429.jesper.juhl@gmail.com>
+In-Reply-To: <1179350448.20519.25.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-The Coverity checker found a memory leak in xfs_inactive().
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-The offending code is this bit : 
+> > > http://lkml.org/lkml/2007/5/3/368
+> > 
+> > hm - trace_hardirqs_on() should never be called with irqs on - 
+> > lockdep could break for example. Could you try to fix the call site 
+> > instead?
+> 
+> If that's the case why check if they're enabled inside 
+> trace_hardirqs_on() ? If that check fails you still still get the 
+> warning in my original release ..
 
-1671 		tp = xfs_trans_alloc(mp, XFS_TRANS_INACTIVE);
+yeah, indeed you are right - it checks the soft flag. But even then, the 
+better fix is to check for hardirqs-off first and not to flip around the 
+preempt count check in irqs_off_preempt_count() - i.e. something like 
+the patch below. Does this solve the warning you've triggered with 
+irqsoff-tracing enabled?
 
-At conditional (1): "truncate != 0" taking true path
+	Ingo
 
-1672 		if (truncate) {
-1673 			/*
-1674 			 * Do the xfs_itruncate_start() call before
-1675 			 * reserving any log space because itruncate_start
-1676 			 * will call into the buffer cache and we can't
-1677 			 * do that within a transaction.
-1678 			 */
-1679 			xfs_ilock(ip, XFS_IOLOCK_EXCL);
-1680 	
-1681 			error = xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE, 0);
-
-At conditional (2): "error != 0" taking true path
-
-1682 			if (error) {
-1683 				xfs_iunlock(ip, XFS_IOLOCK_EXCL);
-
-Event leaked_storage: Returned without freeing storage "tp"
-Also see events: [alloc_fn][var_assign]
-
-1684 				return VN_INACTIVE_CACHE;
-1685 			}
-
-So, the code allocates a transaction, but in the case where 'truncate' is !=0 and xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE, 0); happens to return an error, we'll just return from the function without dealing with the memory allocated byxfs_trans_alloc() and assigned to 'tp', thus it'll be orphaned/leaked - not good.
-
-What I'm wondering is this; is it enough, at this point, to call xfs_trans_free(tp); (it would seem to me that would be OK, but I'm not intimite with this code) or do we need a full xfs_trans_cancel(tp, 0);  ???
-
-In case I'm right and xfs_trans_free(tp); is all we need, then please consider the patch below. Otherwise please NACK the patch and I'll cook up another one :-)
-
-
-Fix memory leak on error in xfs_inactive().
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
---- 
- fs/xfs/xfs_vnodeops.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/fs/xfs/xfs_vnodeops.c b/fs/xfs/xfs_vnodeops.c
-index de17aed..e0d3d51 100644
---- a/fs/xfs/xfs_vnodeops.c
-+++ b/fs/xfs/xfs_vnodeops.c
-@@ -1681,6 +1681,7 @@ xfs_inactive(
- 		error = xfs_itruncate_start(ip, XFS_ITRUNC_DEFINITE, 0);
- 		if (error) {
- 			xfs_iunlock(ip, XFS_IOLOCK_EXCL);
-+			xfs_trans_free(tp);
- 			return VN_INACTIVE_CACHE;
- 		}
+Index: linux-rt.q/kernel/latency_trace.c
+===================================================================
+--- linux-rt.q.orig/kernel/latency_trace.c
++++ linux-rt.q/kernel/latency_trace.c
+@@ -1963,7 +1963,7 @@ void notrace trace_hardirqs_on(void)
  
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
-
+ 	local_save_flags(flags);
+ 
+-	if (!irqs_off_preempt_count() && irqs_disabled_flags(flags))
++	if (irqs_disabled_flags(flags) && !irqs_off_preempt_count())
+ 		__stop_critical_timing(CALLER_ADDR0, 0 /* CALLER_ADDR1 */);
+ }
+ 
+@@ -1975,7 +1975,7 @@ void notrace trace_hardirqs_off(void)
+ 
+ 	local_save_flags(flags);
+ 
+-	if (!irqs_off_preempt_count() && irqs_disabled_flags(flags))
++	if (irqs_disabled_flags(flags) && !irqs_off_preempt_count())
+ 		__start_critical_timing(CALLER_ADDR0, 0 /* CALLER_ADDR1 */,
+ 					INTERRUPT_LATENCY);
+ }
+@@ -1989,7 +1989,7 @@ void notrace trace_hardirqs_on_caller(un
+ 
+ 	local_save_flags(flags);
+ 
+-	if (!irqs_off_preempt_count() && irqs_disabled_flags(flags))
++	if (irqs_disabled_flags(flags) && !irqs_off_preempt_count())
+ 		__stop_critical_timing(caller_addr, 0 /* CALLER_ADDR1 */);
+ }
+ 
+@@ -1999,7 +1999,7 @@ void notrace trace_hardirqs_off_caller(u
+ 
+ 	local_save_flags(flags);
+ 
+-	if (!irqs_off_preempt_count() && irqs_disabled_flags(flags))
++	if (irqs_disabled_flags(flags) && !irqs_off_preempt_count())
+ 		__start_critical_timing(caller_addr, 0 /* CALLER_ADDR1 */,
+ 					INTERRUPT_LATENCY);
+ }
