@@ -1,138 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762188AbXEPSc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759738AbXEPSjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762188AbXEPSc5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 14:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbXEPScu
+	id S1759738AbXEPSjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 14:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbXEPSjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 14:32:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41395 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755753AbXEPSct (ORCPT
+	Wed, 16 May 2007 14:39:06 -0400
+Received: from mail-in-09.arcor-online.net ([151.189.21.49]:41297 "EHLO
+	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755753AbXEPSjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 14:32:49 -0400
-Date: Wed, 16 May 2007 11:29:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Udo van den Heuvel <udovdh@xs4all.nl>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: BUG in kcryptd?
-Message-Id: <20070516112947.faf95c22.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.61.0705161751020.9570@yvahk01.tjqt.qr>
-References: <464B1F2B.3030009@xs4all.nl>
-	<Pine.LNX.4.61.0705161751020.9570@yvahk01.tjqt.qr>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 May 2007 14:39:05 -0400
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
+Date: Wed, 16 May 2007 20:38:58 +0200
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>, trivial@kernel.org
+References: <20070516011711.GE15763@ifa.hawaii.edu>
+In-Reply-To: <20070516011711.GE15763@ifa.hawaii.edu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3622395.dRHanFXsEW";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705162039.02379.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 17:52:09 +0200 (MEST)
-Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+--nextPart3622395.dRHanFXsEW
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> 
-> On May 16 2007 17:11, Udo van den Heuvel wrote:
-> >
-> >While opening an encrypted partition and trying to fsck it:
-> 
-> Yeah, somewhere is a bug in it, I also get an oops with
-> kcryptd in 2.6.20 on sparc64 after a few minutes (though,
-> it's a NULL dereference there).
+Am Mittwoch 16 Mai 2007 schrieb Joshua Hoblitt:
+> Hello,
+>
+> Below is a one line patch to possibly fix this bug:
+>
+> http://bugs.gentoo.org/show_bug.cgi?id=3D178585
+> http://bugzilla.kernel.org/show_bug.cgi?id=3D8075
+>
+> If the kernel is configured with:
+>
+> CONFIG_X86_POWERNOW_K8=3Dy
+> CONFIG_X86_ACPI_CPUFREQ=3Dm
+>
+> Which is currently an allowed configuration, the powernow-k8 driver on
+> an SMP system will fail with a warning like:
 
-guys, please do try to copy the appropriate mailing list on bug reports,
-thanks.
+NAK. I have an Athlon X2 and it works for me w/o the P states driver compil=
+ed=20
+in.
 
-> >May 16 17:05:53 epia kernel: BUG: unable to handle kernel paging request
-> >at virtual address 6b6b6b97
-> >May 16 17:05:53 epia kernel:  printing eip:
-> >May 16 17:05:53 epia kernel: c013cfe4
-> >May 16 17:05:53 epia kernel: *pde = 00000000
-> >May 16 17:05:53 epia kernel: Oops: 0000 [#1]
-> >May 16 17:05:53 epia kernel: PREEMPT
-> >May 16 17:05:53 epia kernel: Modules linked in: sha256 pwc sch_tbf
-> >ipt_recent xt_string xt_MARK xt_length xt_tcpmss xt_mac xt_mark w83627hf
-> >hwmon_vid eeprom i2c_isa sit nf_nat_h323 nf_conntrack_h323 nf_nat_ftp
-> >nf_conntrack_ftp ipt_tos ipt_REDIRECT nf_nat_irc nf_conntrack_irc
-> >ipt_owner ipt_ttl ipv6 ipt_MASQUERADE iptable_nat nf_nat xt_NOTRACK
-> >iptable_raw ipt_TOS iptable_mangle ipt_LOG ipt_TCPMSS xt_limit xt_state
-> >ipt_TARPIT ipt_REJECT iptable_filter binfmt_misc parport_pc lp parport
-> >nvram snd_via82xx snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss
-> >snd_seq_midi_event snd_seq snd_pcm_oss snd_mixer_oss snd_pcm snd_timer
-> >snd_page_alloc snd_mpu401_uart snd_rawmidi snd_seq_device snd i2c_viapro
-> >usblp compat_ioctl32 videodev v4l2_common v4l1_compat uhci_hcd
-> >May 16 17:05:53 epia kernel: CPU:    0
-> >May 16 17:05:53 epia kernel: EIP:    0060:[mempool_free+13/106]    Not
-> >tainted VLI
-> >May 16 17:05:53 epia kernel: EIP:    0060:[<c013cfe4>]    Not tainted VLI
-> >May 16 17:05:53 epia kernel: EFLAGS: 00010286   (2.6.20.7t #15)
-> >May 16 17:05:53 epia kernel: EIP is at mempool_free+0xd/0x6a
-> >May 16 17:05:53 epia kernel: eax: c3955404   ebx: 6b6b6b6b   ecx:
-> >c0307fac   edx: 6b6b6b6b
-> >May 16 17:05:53 epia kernel: esi: c3955404   edi: c3955404   ebp:
-> >ddeb3e60   esp: ddeb3e50
-> >May 16 17:05:53 epia kernel: ds: 007b   es: 007b   ss: 0068
-> >May 16 17:05:53 epia kernel: Process kcryptd/0 (pid: 297, ti=ddeb2000
-> >task=ddf26b10 task.ti=ddeb2000)
-> >May 16 17:05:53 epia kernel: Stack: 00000003 c62c392c c3955404 00000000
-> >ddeb3e84 c02747d8 00000000 00000000
-> >May 16 17:05:53 epia kernel:        00000000 000d4401 00000000 00000000
-> >c357fd80 ddeb3eb0 c0274915 00000200
-> >May 16 17:05:53 epia kernel:        ddeb3f2c dea18020 c49d8388 c62c392c
-> >00000000 c357fd80 c0274878 00000000
-> >May 16 17:05:53 epia kernel: Call Trace:
-> >May 16 17:05:53 epia kernel:  [show_trace_log_lvl+26/47]
-> >show_trace_log_lvl+0x1a/0x2f
-> >May 16 17:05:53 epia kernel:  [<c0104013>] show_trace_log_lvl+0x1a/0x2f
-> >May 16 17:05:53 epia kernel:  [show_stack_log_lvl+157/165]
-> >show_stack_log_lvl+0x9d/0xa5
-> >May 16 17:05:53 epia kernel:  [<c01040c5>] show_stack_log_lvl+0x9d/0xa5
-> >May 16 17:05:53 epia kernel:  [show_registers+419/702]
-> >show_registers+0x1a3/0x2be
-> >May 16 17:05:53 epia kernel:  [<c0104270>] show_registers+0x1a3/0x2be
-> >May 16 17:05:53 epia kernel:  [die+263/521] die+0x107/0x209
-> >May 16 17:05:53 epia kernel:  [<c0104492>] die+0x107/0x209
-> >May 16 17:05:53 epia kernel:  [do_page_fault+1096/1315]
-> >do_page_fault+0x448/0x523
-> >May 16 17:05:53 epia kernel:  [<c010f4f5>] do_page_fault+0x448/0x523
-> >May 16 17:05:53 epia kernel:  [error_code+116/128] error_code+0x74/0x80
-> >May 16 17:05:53 epia kernel:  [<c0308214>] error_code+0x74/0x80
-> >May 16 17:05:53 epia kernel:  [dec_pending+349/357] dec_pending+0x15d/0x165
-> >May 16 17:05:53 epia kernel:  [<c02747d8>] dec_pending+0x15d/0x165
-> >May 16 17:05:53 epia kernel:  [clone_endio+157/203] clone_endio+0x9d/0xcb
-> >May 16 17:05:53 epia kernel:  [<c0274915>] clone_endio+0x9d/0xcb
-> >May 16 17:05:53 epia kernel:  [bio_endio+83/91] bio_endio+0x53/0x5b
-> >May 16 17:05:54 epia kernel:  [<c0173947>] bio_endio+0x53/0x5b
-> >May 16 17:05:54 epia kernel:  [dec_pending+55/69] dec_pending+0x37/0x45
-> >May 16 17:05:54 epia kernel:  [<c027a07e>] dec_pending+0x37/0x45
-> >May 16 17:05:54 epia kernel:  [kcryptd_do_work+158/830]
-> >kcryptd_do_work+0x9e/0x33e
-> >May 16 17:05:54 epia kernel:  [<c027a241>] kcryptd_do_work+0x9e/0x33e
-> >May 16 17:05:54 epia kernel:  [run_workqueue+142/341]
-> >run_workqueue+0x8e/0x155
-> >May 16 17:05:54 epia kernel:  [<c01218e1>] run_workqueue+0x8e/0x155
-> >May 16 17:05:54 epia kernel:  [worker_thread+260/302]
-> >worker_thread+0x104/0x12e
-> >May 16 17:05:54 epia kernel:  [<c0121f59>] worker_thread+0x104/0x12e
-> >May 16 17:05:54 epia kernel:  [kthread+163/206] kthread+0xa3/0xce
-> >May 16 17:05:54 epia kernel:  [<c012452d>] kthread+0xa3/0xce
-> >May 16 17:05:54 epia kernel:  [kernel_thread_helper+7/16]
-> >kernel_thread_helper+0x7/0x10
-> >May 16 17:05:54 epia kernel:  [<c0103cb7>] kernel_thread_helper+0x7/0x10
-> >May 16 17:05:54 epia kernel:  =======================
-> >May 16 17:05:54 epia kernel: Code: 89 c2 55 89 c8 89 e5 e8 da 49 01 00
-> >5d c3 89 d1 89 c2 55 89 c8 89 e5 e8 df 3e 01 00 5d c3 55 89 e5 57 89 c7
-> >56 53 89 d3 83 ec 04 <8b> 42 2c 3b 42 28 7d 47 89 d0 e8 77 a8 1c 00 89
-> >c6 8b 43 2c 3b
-> >May 16 17:05:54 epia kernel: EIP: [mempool_free+13/106]
-> >mempool_free+0xd/0x6a SS:ESP 0068:ddeb3e50
-> >May 16 17:05:54 epia kernel: EIP: [<c013cfe4>] mempool_free+0xd/0x6a
-> >SS:ESP 0068:ddeb3e50
-> 
-> 
-> 	Jan
-> -- 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+YOu probably should ask the vendor to fix the bios or simply compile in the=
+ p=20
+states driver additionally w/o forcing the user to do it.
+
+Maybe you want to give a hint in the p states driver help text?
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
+
+--nextPart3622395.dRHanFXsEW
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQBGS0/GxU2n/+9+t5gRAsFdAJ40qlZZ2UuFiSJwgQeaJeLmWFbI6gCg1aq2
+DSmoDj+u4RycWpE8+E3PrEY=
+=bEmm
+-----END PGP SIGNATURE-----
+
+--nextPart3622395.dRHanFXsEW--
