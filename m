@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759462AbXEPNOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbXEPNQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759462AbXEPNOP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 09:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbXEPNOA
+	id S1758875AbXEPNQP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 09:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXEPNQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 09:14:00 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48185 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbXEPNN7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 09:13:59 -0400
-Date: Wed, 16 May 2007 09:10:25 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: David Woodhouse <dwmw2@infradead.org>, David Howells <dhowells@redhat.com>,
-       David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
-Message-ID: <20070516131025.GU26766@think.oraclecorp.com>
-References: <20070318233008.GA32597093@melbourne.sgi.com> <18993.1179310769@redhat.com> <1179317360.2859.225.camel@shinybook.infradead.org> <20070516125341.GS26766@think.oraclecorp.com> <464B014B.20109@yahoo.com.au>
+	Wed, 16 May 2007 09:16:01 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:55058 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752203AbXEPNQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 09:16:00 -0400
+Subject: Re: [BUG] (regression) AMD k6-III/450 won't boot w/2.6.22-rc1
+In-Reply-To: <Pine.LNX.4.61.0705160903130.9570@yvahk01.tjqt.qr>
+ "from Jan Engelhardt at May 16, 2007 09:03:43 am"
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Date: Wed, 16 May 2007 08:15:58 -0500 (CDT)
+CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464B014B.20109@yahoo.com.au>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070516131558.E15BFDBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 11:04:11PM +1000, Nick Piggin wrote:
-> Chris Mason wrote:
-> >On Wed, May 16, 2007 at 08:09:19PM +0800, David Woodhouse wrote:
+Jan Engelhardt wrote:
+> >On Tue, 15 May 2007 22:13:14 -0500 (CDT) Bob Tracy wrote:
 > >
-> >>On Wed, 2007-05-16 at 11:19 +0100, David Howells wrote:
-> >>
-> >>>The start and end points passed to block_prepare_write() delimit the 
-> >>>region of
-> >>>the page that is going to be modified.  This means that prepare_write()
-> >>>doesn't need to fill it in if the page is not up to date. 
-> >>
-> >>Really? Is it _really_ going to be modified? Even if the pointer
-> >>userspace gave to write() is bogus, and is going to fault half-way
-> >>through the copy_from_user()?
-> >
-> >
-> >This is why there are so many variations on copy_from_user that zero on
-> >faults.  One way or another, the prepare_write/commit_write pair are
-> >responsible for filling it in.
+> >> The 2.6.22-rc1 boot panics early in amd_mcheck_init() with my k6-III/450.
 > 
-> I'll add to David's question about David's comment on David's patch, yes
-> it will be modified but in that case it would be zero-filled as Chris
-> says. However I believe this is incorrect behaviour.
-> 
-> It is possible to easily fix that so it would only happen via a tiny race
-> window (where the source memory gets unmapped at just the right time)
-> however nobody seemed to interested (just by checking the return value of
-> fault_in_pages_readable).
-> 
-> The buffered write patches I'm working on fix that (among other things) of
-> course. But they do away with prepare_write and introduce new aops, and
-> they indeed must not expect the full range to have been written to.
+> In short, boot with vga=6 (80x50), or even vga=ask, selecting something with
+> lots of chars (132x60 for example)
 
-I was also wrong to say prepare_write and commit_write are
-responsible, they work together with their callers to make the right
-things happen.  Oh well, so much for trying to give a short answer for a
-chunk of code full of corner cases ;)
+That did it...
 
--chris
+(...)
+CPU: L1 I Cache: (...)
+CPU: L2 Cache: (...)
+Intel machine check architecture supported.
+general protection fault: 0000 [#1]
+PREEMPT
+Modules linked in:
+CPU:   0
+EIP: 0060:[<c01079f4>]  Not tainted VLI
+EFLAGS: 00010286   (2.6.22-rc1 #1)
+EIP is at amd_mcheck_init+0x2b/0xc3
+eax: 0000002f  ebx: 00000000  ecx: 00000179  edx: 00000001
+esi: 000a0b00  edi: c03c1000  ebp: 00843007  esp: c03c7fb0
+ds:007b  es:007b  fs:0000  gs:0000  ss:0068
+Process swapper (pid:0, ti=c03c6000 task=c0399a20 task.ti=c03c6000)
+Stack: c03569fc 00000000 00843007 c0189398 ffffffff 00000000 000a0600 c03cb34f
+       00000002 c03a2b40 00000000 c03cb79c 00040000 00000000 00000000 c03c8842
+       00000054 c03c8388 c03dfb40 00000000
+Call Trace:
+ [<c0189398>] proc_register+0x3b/0xb7
+ [<c03cb34f>] identify_boot_cpu+0xd/0x1f
+ [<c03cb79c>] check_bugs+0x8/0x4e
+ [<c03c8842>] start_kernel+0x19a/0x1a3
+ [<c03c8388>] unknown_bootoption+0x0/0x191
+==========================================
+Code: 56 53 83 ec 14 c7 05 08 f1 39 c0 3c 78 10 c0 8b 40 0c a8 80 0f 84 a0 00 00 00 c7 04 24 fc 69 35 c0 e8 79 f3 00 00 b9 79 01 00 00 <0f> 32 f6 c4 01 89 c3 74 0a b1 7b 83 c8 ff 83 ca ff 0f 30 0f b6
+EIP:[<c01079f4>] amd_mcheck_init+0x2b/0xc3 SS:ESP 0068:c03c7fb0
+Kernel panic - not syncing: Attempted to kill the idle task!
 
+-- 
+-----------------------------------------------------------------------
+Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
+rct@frus.com
+-----------------------------------------------------------------------
