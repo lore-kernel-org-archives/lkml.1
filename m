@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbXEPLqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbXEPLuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760601AbXEPLqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757079AbXEPLqL
+	id S1760237AbXEPLuu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbXEPLum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:46:11 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:53153 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756321AbXEPLqK (ORCPT
+	Wed, 16 May 2007 07:50:42 -0400
+Received: from mail.shareable.org ([81.29.64.88]:36030 "EHLO
+	mail.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756321AbXEPLul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:46:10 -0400
-Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
-	at net/core/sock.c:1523
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Jiri Kosina <jikos@jikos.cz>, Greg KH <gregkh@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, maxk@qualcomm.com,
-       bluez-devel@lists.sourceforge.net, Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com>
-References: <462D1B09.9050005@goop.org>
-	 <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
-	 <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
-	 <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
-	 <Pine.LNX.4.64.0705161124030.25986@twin.jikos.cz>
-	 <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 13:45:04 +0200
-Message-Id: <1179315904.10069.67.camel@violet>
+	Wed, 16 May 2007 07:50:41 -0400
+Date: Wed, 16 May 2007 12:18:40 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>, akpm@osdl.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516111840.GB20482@mail.shareable.org>
+References: <20070515151919.GA32510@lazybastard.org> <787b0d920705151626x3a11b81csf0f3747a695131b0@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <787b0d920705151626x3a11b81csf0f3747a695131b0@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Satayam,
-
-> > > (later)
-> > > I Googled a bit to see if this problem was faced elsewhere in the kernel
-> > > too. Saw the following commit by Ingo Molnar
-> > > (9883a13c72dbf8c518814b6091019643cdb34429):
-> > > -     lock_sock(sock->sk);
-> > > +     local_bh_disable();
-> > > +     bh_lock_sock_nested(sock->sk);
-> > >       rc = selinux_netlbl_socket_setsid(sock, sksec->sid);
-> > > -     release_sock(sock->sk);
-> > > +     bh_unlock_sock(sock->sk);
-> > > +     local_bh_enable();
-> > > Is it _really_ *this* simple?
-> > [...]
-> > actually this *seems* to be proper solution also for our case, thanks for
-> > pointing this out. I will think about it once again, do some more tests
-> > with this locking scheme, and will let you know.
+Albert Cahalan wrote:
+> Please don't forget the immutable bit. ("man lsattr")
+> Having both, BSD-style, would be even better.
+> The immutable bit is important for working around
+> software bugs and "features" that damage files.
 > 
-> Yes, I can almost confirm that this (open-coding of spin_lock_bh,
-> effectively) is the proper solution (Rusty's unreliable guide to
-> kernel-locking needs to be next to every developer's keyboard :-)
-> I also came across this idiom in other places in the networking code
-> so it seems to be pretty much the standard way. I wish I owned
-> bluetooth hardware, could've tested this for you myself.
+> I also can't find xattr support.
 
-does this mean we should revert previous changes to the locking or only
-apply this on top of it?
+Imho,
 
-Regards
+Given that the filesystem is still 'experimental', I'd concentrate on
+getting it stable before worrying about immutable and xattrs unless
+they are easy.  (Immutable is easy).
 
-Marcel
+In 13 years of using Linux in all sorts of ways I've never yet to use
+either feature.  They would be good to have, but stability in a
+filesystem is much more useful.
 
+I'm biased of course: if LogFS were stable and well tested, I'd be
+using it right now in my embedded thingy - and that doesn't even
+bother with uids :-)
 
+-- Jamie
