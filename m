@@ -1,173 +1,392 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763858AbXEPIk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbXEPIld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763858AbXEPIk7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762386AbXEPIeY
+	id S1763288AbXEPIld (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762533AbXEPIe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:34:24 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6625 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:34:26 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6618 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761490AbXEPIeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 04:34:08 -0400
+	id S1762401AbXEPIeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 04:34:09 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 12/19] IA64: sg chaining support
-Date: Wed, 16 May 2007 10:32:26 +0200
-Message-Id: <1179304354658-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 15/19] SPARC64: sg chaining support
+Date: Wed, 16 May 2007 10:32:29 +0200
+Message-Id: <1179304354606-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11793043533744-git-send-email-jens.axboe@oracle.com>
 References: <11793043533744-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This updates the ia64 iommu/pci dma mappers to sg chaining.
+This updates the sparc64 iommu/pci dma mappers to sg chaining.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- arch/ia64/hp/common/sba_iommu.c |   14 +++++++-------
- arch/ia64/sn/pci/pci_dma.c      |   11 ++++++-----
- include/asm-ia64/dma-mapping.h  |    1 +
- include/asm-ia64/scatterlist.h  |    2 ++
- 4 files changed, 16 insertions(+), 12 deletions(-)
+ arch/sparc64/kernel/pci_iommu.c   |   39 +++++++++++++++++++++-----------
+ arch/sparc64/kernel/pci_sun4v.c   |   32 ++++++++++++++++-----------
+ arch/sparc64/kernel/sbus.c        |   44 ++++++++++++++++++++++--------------
+ include/asm-sparc64/scatterlist.h |    2 +
+ 4 files changed, 73 insertions(+), 44 deletions(-)
 
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index c1dca22..f6d15cf 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -393,7 +393,7 @@ sba_dump_sg( struct ioc *ioc, struct scatterlist *startsg, int nents)
- 		printk(KERN_DEBUG " %d : DMA %08lx/%05x CPU %p\n", nents,
- 		       startsg->dma_address, startsg->dma_length,
- 		       sba_sg_address(startsg));
--		startsg++;
-+		startsg = sg_next(startsg);
- 	}
- }
- 
-@@ -406,7 +406,7 @@ sba_check_sg( struct ioc *ioc, struct scatterlist *startsg, int nents)
- 	while (the_nents-- > 0) {
- 		if (sba_sg_address(the_sg) == 0x0UL)
- 			sba_dump_sg(NULL, startsg, nents);
--		the_sg++;
-+		the_sg = sg_next(the_sg);
- 	}
- }
- 
-@@ -1198,7 +1198,7 @@ sba_fill_pdir(
- 			u32 pide = startsg->dma_address & ~PIDE_FLAG;
- 			dma_offset = (unsigned long) pide & ~iovp_mask;
- 			startsg->dma_address = 0;
--			dma_sg++;
-+			dma_sg = sg_next(dma_sg);
- 			dma_sg->dma_address = pide | ioc->ibase;
- 			pdirp = &(ioc->pdir_base[pide >> iovp_shift]);
- 			n_mappings++;
-@@ -1225,7 +1225,7 @@ sba_fill_pdir(
- 				pdirp++;
- 			} while (cnt > 0);
- 		}
--		startsg++;
-+		startsg = sg_next(startsg);
- 	}
- 	/* force pdir update */
- 	wmb();
-@@ -1294,7 +1294,7 @@ sba_coalesce_chunks( struct ioc *ioc,
- 		while (--nents > 0) {
- 			unsigned long vaddr;	/* tmp */
- 
--			startsg++;
-+			startsg = sg_next(startsg);
- 
- 			/* PARANOID */
- 			startsg->dma_address = startsg->dma_length = 0;
-@@ -1404,7 +1404,7 @@ int sba_map_sg(struct device *dev, struct scatterlist *sglist, int nents, int di
- #ifdef ALLOW_IOV_BYPASS_SG
- 	ASSERT(to_pci_dev(dev)->dma_mask);
- 	if (likely((ioc->dma_mask & ~to_pci_dev(dev)->dma_mask) == 0)) {
--		for (sg = sglist ; filled < nents ; filled++, sg++){
-+		for_each_sg(sglist, sg, nents, filled) {
- 			sg->dma_length = sg->length;
- 			sg->dma_address = virt_to_phys(sba_sg_address(sg));
- 		}
-@@ -1498,7 +1498,7 @@ void sba_unmap_sg (struct device *dev, struct scatterlist *sglist, int nents, in
- 	while (nents && sglist->dma_length) {
- 
- 		sba_unmap_single(dev, sglist->dma_address, sglist->dma_length, dir);
--		sglist++;
-+		sglist = sg_next(sglist);
- 		nents--;
- 	}
- 
-diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
-index 7a291a2..fde6073 100644
---- a/arch/ia64/sn/pci/pci_dma.c
-+++ b/arch/ia64/sn/pci/pci_dma.c
-@@ -218,16 +218,17 @@ EXPORT_SYMBOL(sn_dma_unmap_single);
-  *
-  * Unmap a set of streaming mode DMA translations.
-  */
--void sn_dma_unmap_sg(struct device *dev, struct scatterlist *sg,
-+void sn_dma_unmap_sg(struct device *dev, struct scatterlist *sgl,
- 		     int nhwentries, int direction)
- {
- 	int i;
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
-+	struct scatterlist *sg;
- 
- 	BUG_ON(dev->bus != &pci_bus_type);
- 
--	for (i = 0; i < nhwentries; i++, sg++) {
-+	for_each_sg(sgl, sg, nhwentries, i) {
- 		provider->dma_unmap(pdev, sg->dma_address, direction);
- 		sg->dma_address = (dma_addr_t) NULL;
- 		sg->dma_length = 0;
-@@ -244,11 +245,11 @@ EXPORT_SYMBOL(sn_dma_unmap_sg);
-  *
-  * Maps each entry of @sg for DMA.
-  */
--int sn_dma_map_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
-+int sn_dma_map_sg(struct device *dev, struct scatterlist *sgl, int nhwentries,
- 		  int direction)
- {
- 	unsigned long phys_addr;
--	struct scatterlist *saved_sg = sg;
-+	struct scatterlist *saved_sg = sgl, *sg;
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
- 	int i;
-@@ -258,7 +259,7 @@ int sn_dma_map_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
- 	/*
- 	 * Setup a DMA address for each entry in the scatterlist.
- 	 */
--	for (i = 0; i < nhwentries; i++, sg++) {
-+	for_each_sg(sgl, sg, nhwentries, i) {
- 		phys_addr = SG_ENT_PHYS_ADDRESS(sg);
- 		sg->dma_address = provider->dma_map(pdev,
- 						    phys_addr, sg->length,
-diff --git a/include/asm-ia64/dma-mapping.h b/include/asm-ia64/dma-mapping.h
-index 6299b51..aeba8da 100644
---- a/include/asm-ia64/dma-mapping.h
-+++ b/include/asm-ia64/dma-mapping.h
-@@ -5,6 +5,7 @@
-  * Copyright (C) 2003-2004 Hewlett-Packard Co
-  *	David Mosberger-Tang <davidm@hpl.hp.com>
-  */
+diff --git a/arch/sparc64/kernel/pci_iommu.c b/arch/sparc64/kernel/pci_iommu.c
+index 70d2364..2118a4d 100644
+--- a/arch/sparc64/kernel/pci_iommu.c
++++ b/arch/sparc64/kernel/pci_iommu.c
+@@ -9,6 +9,7 @@
+ #include <linux/mm.h>
+ #include <linux/delay.h>
+ #include <linux/pci.h>
 +#include <linux/scatterlist.h>
- #include <asm/machvec.h>
  
- #define dma_alloc_coherent	platform_dma_alloc_coherent
-diff --git a/include/asm-ia64/scatterlist.h b/include/asm-ia64/scatterlist.h
-index a452ea2..7d5234d 100644
---- a/include/asm-ia64/scatterlist.h
-+++ b/include/asm-ia64/scatterlist.h
-@@ -30,4 +30,6 @@ struct scatterlist {
- #define sg_dma_len(sg)		((sg)->dma_length)
- #define sg_dma_address(sg)	((sg)->dma_address)
+ #include <asm/oplib.h>
  
-+#define	ARCH_HAS_SG_CHAIN
+@@ -470,7 +471,7 @@ static inline void fill_sg(iopte_t *iopte, struct scatterlist *sg,
+ 			   int nused, int nelems, unsigned long iopte_protection)
+ {
+ 	struct scatterlist *dma_sg = sg;
+-	struct scatterlist *sg_end = sg + nelems;
++	struct scatterlist *sg_end = sg_last(sg, nelems);
+ 	int i;
+ 
+ 	for (i = 0; i < nused; i++) {
+@@ -505,7 +506,7 @@ static inline void fill_sg(iopte_t *iopte, struct scatterlist *sg,
+ 					len -= (IO_PAGE_SIZE - (tmp & (IO_PAGE_SIZE - 1UL)));
+ 					break;
+ 				}
+-				sg++;
++				sg = sg_next(sg);
+ 			}
+ 
+ 			pteval = iopte_protection | (pteval & IOPTE_PAGE);
+@@ -518,7 +519,7 @@ static inline void fill_sg(iopte_t *iopte, struct scatterlist *sg,
+ 			}
+ 
+ 			pteval = (pteval & IOPTE_PAGE) + len;
+-			sg++;
++			sg = sg_next(sg);
+ 
+ 			/* Skip over any tail mappings we've fully mapped,
+ 			 * adjusting pteval along the way.  Stop when we
+@@ -530,12 +531,12 @@ static inline void fill_sg(iopte_t *iopte, struct scatterlist *sg,
+ 			       ((pteval ^
+ 				 (SG_ENT_PHYS_ADDRESS(sg) + sg->length - 1UL)) >> IO_PAGE_SHIFT) == 0UL) {
+ 				pteval += sg->length;
+-				sg++;
++				sg = sg_next(sg);
+ 			}
+ 			if ((pteval << (64 - IO_PAGE_SHIFT)) == 0UL)
+ 				pteval = ~0UL;
+ 		} while (dma_npages != 0);
+-		dma_sg++;
++		dma_sg = sg_next(dma_sg);
+ 	}
+ }
+ 
+@@ -599,7 +600,7 @@ static int pci_4u_map_sg(struct pci_dev *pdev, struct scatterlist *sglist, int n
+ 	sgtmp = sglist;
+ 	while (used && sgtmp->dma_length) {
+ 		sgtmp->dma_address += dma_base;
+-		sgtmp++;
++		sgtmp = sg_next(sgtmp);
+ 		used--;
+ 	}
+ 	used = nelems - used;
+@@ -635,6 +636,7 @@ static void pci_4u_unmap_sg(struct pci_dev *pdev, struct scatterlist *sglist, in
+ 	struct strbuf *strbuf;
+ 	iopte_t *base;
+ 	unsigned long flags, ctx, i, npages;
++	struct scatterlist *sg, *sgprv;
+ 	u32 bus_addr;
+ 
+ 	if (unlikely(direction == PCI_DMA_NONE)) {
+@@ -647,11 +649,15 @@ static void pci_4u_unmap_sg(struct pci_dev *pdev, struct scatterlist *sglist, in
+ 	
+ 	bus_addr = sglist->dma_address & IO_PAGE_MASK;
+ 
+-	for (i = 1; i < nelems; i++)
+-		if (sglist[i].dma_length == 0)
++	sgprv = NULL;
++	for_each_sg(sglist, sg, nelems, i) {
++		if (sg->dma_length == 0)
+ 			break;
+-	i--;
+-	npages = (IO_PAGE_ALIGN(sglist[i].dma_address + sglist[i].dma_length) -
 +
- #endif /* _ASM_IA64_SCATTERLIST_H */
++		sgprv = sg;
++	}
++
++	npages = (IO_PAGE_ALIGN(sgprv->dma_address + sgprv->dma_length) -
+ 		  bus_addr) >> IO_PAGE_SHIFT;
+ 
+ 	base = iommu->page_table +
+@@ -730,6 +736,7 @@ static void pci_4u_dma_sync_sg_for_cpu(struct pci_dev *pdev, struct scatterlist
+ 	struct iommu *iommu;
+ 	struct strbuf *strbuf;
+ 	unsigned long flags, ctx, npages, i;
++	struct scatterlist *sg, *sgprv;
+ 	u32 bus_addr;
+ 
+ 	iommu = pdev->dev.archdata.iommu;
+@@ -753,11 +760,15 @@ static void pci_4u_dma_sync_sg_for_cpu(struct pci_dev *pdev, struct scatterlist
+ 
+ 	/* Step 2: Kick data out of streaming buffers. */
+ 	bus_addr = sglist[0].dma_address & IO_PAGE_MASK;
+-	for(i = 1; i < nelems; i++)
+-		if (!sglist[i].dma_length)
++	sgprv = NULL;
++	for_each_sg(sglist, sg, nelems, i) {
++		if (sg->dma_length == 0)
+ 			break;
+-	i--;
+-	npages = (IO_PAGE_ALIGN(sglist[i].dma_address + sglist[i].dma_length)
++
++		sgprv = sg;
++	}
++
++	npages = (IO_PAGE_ALIGN(sgprv->dma_address + sgprv->dma_length)
+ 		  - bus_addr) >> IO_PAGE_SHIFT;
+ 	pci_strbuf_flush(strbuf, iommu, bus_addr, ctx, npages, direction);
+ 
+diff --git a/arch/sparc64/kernel/pci_sun4v.c b/arch/sparc64/kernel/pci_sun4v.c
+index 044e8ec..c385704 100644
+--- a/arch/sparc64/kernel/pci_sun4v.c
++++ b/arch/sparc64/kernel/pci_sun4v.c
+@@ -12,6 +12,7 @@
+ #include <linux/percpu.h>
+ #include <linux/irq.h>
+ #include <linux/msi.h>
++#include <linux/scatterlist.h>
+ 
+ #include <asm/iommu.h>
+ #include <asm/irq.h>
+@@ -364,7 +365,7 @@ static inline long fill_sg(long entry, struct pci_dev *pdev,
+ 			   int nused, int nelems, unsigned long prot)
+ {
+ 	struct scatterlist *dma_sg = sg;
+-	struct scatterlist *sg_end = sg + nelems;
++	struct scatterlist *sg_end = sg_last(sg, nelems);
+ 	unsigned long flags;
+ 	int i;
+ 
+@@ -404,7 +405,7 @@ static inline long fill_sg(long entry, struct pci_dev *pdev,
+ 					len -= (IO_PAGE_SIZE - (tmp & (IO_PAGE_SIZE - 1UL)));
+ 					break;
+ 				}
+-				sg++;
++				sg = sg_next(sg);
+ 			}
+ 
+ 			pteval = (pteval & IOPTE_PAGE);
+@@ -422,24 +423,25 @@ static inline long fill_sg(long entry, struct pci_dev *pdev,
+ 			}
+ 
+ 			pteval = (pteval & IOPTE_PAGE) + len;
+-			sg++;
++			sg = sg_next(sg);
+ 
+ 			/* Skip over any tail mappings we've fully mapped,
+ 			 * adjusting pteval along the way.  Stop when we
+ 			 * detect a page crossing event.
+ 			 */
+-			while (sg < sg_end &&
+-			       (pteval << (64 - IO_PAGE_SHIFT)) != 0UL &&
++			while ((pteval << (64 - IO_PAGE_SHIFT)) != 0UL &&
+ 			       (pteval == SG_ENT_PHYS_ADDRESS(sg)) &&
+ 			       ((pteval ^
+ 				 (SG_ENT_PHYS_ADDRESS(sg) + sg->length - 1UL)) >> IO_PAGE_SHIFT) == 0UL) {
+ 				pteval += sg->length;
+-				sg++;
++				if (sg == sg_end)
++					break;
++				sg = sg_next(sg);
+ 			}
+ 			if ((pteval << (64 - IO_PAGE_SHIFT)) == 0UL)
+ 				pteval = ~0UL;
+ 		} while (dma_npages != 0);
+-		dma_sg++;
++		dma_sg = sg_next(dma_sg);
+ 	}
+ 
+ 	if (unlikely(pci_iommu_batch_end() < 0L))
+@@ -499,7 +501,7 @@ static int pci_4v_map_sg(struct pci_dev *pdev, struct scatterlist *sglist, int n
+ 	sgtmp = sglist;
+ 	while (used && sgtmp->dma_length) {
+ 		sgtmp->dma_address += dma_base;
+-		sgtmp++;
++		sgtmp = sg_next(sgtmp);
+ 		used--;
+ 	}
+ 	used = nelems - used;
+@@ -533,6 +535,7 @@ static void pci_4v_unmap_sg(struct pci_dev *pdev, struct scatterlist *sglist, in
+ 	struct pci_pbm_info *pbm;
+ 	struct iommu *iommu;
+ 	unsigned long flags, i, npages;
++	struct scatterlist *sg, *sgprv;
+ 	long entry;
+ 	u32 devhandle, bus_addr;
+ 
+@@ -546,12 +549,15 @@ static void pci_4v_unmap_sg(struct pci_dev *pdev, struct scatterlist *sglist, in
+ 	devhandle = pbm->devhandle;
+ 	
+ 	bus_addr = sglist->dma_address & IO_PAGE_MASK;
+-
+-	for (i = 1; i < nelems; i++)
+-		if (sglist[i].dma_length == 0)
++	sgprv = NULL;
++	for_each_sg(sglist, sg, nelems, i) {
++		if (sg->dma_length == 0)
+ 			break;
+-	i--;
+-	npages = (IO_PAGE_ALIGN(sglist[i].dma_address + sglist[i].dma_length) -
++
++		sgprv = sg;
++	}
++
++	npages = (IO_PAGE_ALIGN(sgprv->dma_address + sgprv->dma_length) -
+ 		  bus_addr) >> IO_PAGE_SHIFT;
+ 
+ 	entry = ((bus_addr - iommu->page_table_map_base) >> IO_PAGE_SHIFT);
+diff --git a/arch/sparc64/kernel/sbus.c b/arch/sparc64/kernel/sbus.c
+index 91f6e2a..125c0d7 100644
+--- a/arch/sparc64/kernel/sbus.c
++++ b/arch/sparc64/kernel/sbus.c
+@@ -11,6 +11,7 @@
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
++#include <linux/scatterlist.h>
+ 
+ #include <asm/page.h>
+ #include <asm/sbus.h>
+@@ -348,7 +349,7 @@ static inline void fill_sg(iopte_t *iopte, struct scatterlist *sg,
+ 			   int nused, int nelems, unsigned long iopte_protection)
+ {
+ 	struct scatterlist *dma_sg = sg;
+-	struct scatterlist *sg_end = sg + nelems;
++	struct scatterlist *sg_end = sg_last(sg, nelems);
+ 	int i;
+ 
+ 	for (i = 0; i < nused; i++) {
+@@ -383,7 +384,7 @@ static inline void fill_sg(iopte_t *iopte, struct scatterlist *sg,
+ 					len -= (IO_PAGE_SIZE - (tmp & (IO_PAGE_SIZE - 1UL)));
+ 					break;
+ 				}
+-				sg++;
++				sg = sg_next(sg);
+ 			}
+ 
+ 			pteval = iopte_protection | (pteval & IOPTE_PAGE);
+@@ -396,24 +397,25 @@ static inline void fill_sg(iopte_t *iopte, struct scatterlist *sg,
+ 			}
+ 
+ 			pteval = (pteval & IOPTE_PAGE) + len;
+-			sg++;
++			sg = sg_next(sg);
+ 
+ 			/* Skip over any tail mappings we've fully mapped,
+ 			 * adjusting pteval along the way.  Stop when we
+ 			 * detect a page crossing event.
+ 			 */
+-			while (sg < sg_end &&
+-			       (pteval << (64 - IO_PAGE_SHIFT)) != 0UL &&
++			while ((pteval << (64 - IO_PAGE_SHIFT)) != 0UL &&
+ 			       (pteval == SG_ENT_PHYS_ADDRESS(sg)) &&
+ 			       ((pteval ^
+ 				 (SG_ENT_PHYS_ADDRESS(sg) + sg->length - 1UL)) >> IO_PAGE_SHIFT) == 0UL) {
+ 				pteval += sg->length;
+-				sg++;
++				if (sg == sg_end)
++					break;
++				sg = sg_next(sg);
+ 			}
+ 			if ((pteval << (64 - IO_PAGE_SHIFT)) == 0UL)
+ 				pteval = ~0UL;
+ 		} while (dma_npages != 0);
+-		dma_sg++;
++		dma_sg = sg_next(dma_sg);
+ 	}
+ }
+ 
+@@ -461,7 +463,7 @@ int sbus_map_sg(struct sbus_dev *sdev, struct scatterlist *sglist, int nelems, i
+ 	sgtmp = sglist;
+ 	while (used && sgtmp->dma_length) {
+ 		sgtmp->dma_address += dma_base;
+-		sgtmp++;
++		sgtmp = sg_next(sgtmp);
+ 		used--;
+ 	}
+ 	used = nelems - used;
+@@ -486,6 +488,7 @@ void sbus_unmap_sg(struct sbus_dev *sdev, struct scatterlist *sglist, int nelems
+ 	struct strbuf *strbuf;
+ 	iopte_t *base;
+ 	unsigned long flags, i, npages;
++	struct scatterlist *sg, *sgprv;
+ 	u32 bus_addr;
+ 
+ 	if (unlikely(direction == SBUS_DMA_NONE))
+@@ -496,12 +499,15 @@ void sbus_unmap_sg(struct sbus_dev *sdev, struct scatterlist *sglist, int nelems
+ 	strbuf = &info->strbuf;
+ 
+ 	bus_addr = sglist->dma_address & IO_PAGE_MASK;
+-
+-	for (i = 1; i < nelems; i++)
+-		if (sglist[i].dma_length == 0)
++	sgprv = NULL;
++	for_each_sg(sglist, sg, nelems, i) {
++		if (sg->dma_length == 0)
+ 			break;
+-	i--;
+-	npages = (IO_PAGE_ALIGN(sglist[i].dma_address + sglist[i].dma_length) -
++
++		sgprv = sg;
++	}
++
++	npages = (IO_PAGE_ALIGN(sgprv->dma_address + sgprv->dma_length) -
+ 		  bus_addr) >> IO_PAGE_SHIFT;
+ 
+ 	base = iommu->page_table +
+@@ -545,6 +551,7 @@ void sbus_dma_sync_sg_for_cpu(struct sbus_dev *sdev, struct scatterlist *sglist,
+ 	struct iommu *iommu;
+ 	struct strbuf *strbuf;
+ 	unsigned long flags, npages, i;
++	struct scatterlist *sg, *sgprv;
+ 	u32 bus_addr;
+ 
+ 	info = sdev->bus->iommu;
+@@ -552,12 +559,15 @@ void sbus_dma_sync_sg_for_cpu(struct sbus_dev *sdev, struct scatterlist *sglist,
+ 	strbuf = &info->strbuf;
+ 
+ 	bus_addr = sglist[0].dma_address & IO_PAGE_MASK;
+-	for (i = 0; i < nelems; i++) {
+-		if (!sglist[i].dma_length)
++	sgprv = NULL;
++	for_each_sg(sglist, sg, nelems, i) {
++		if (sg->dma_length == 0)
+ 			break;
++
++		sgprv = sg;
+ 	}
+-	i--;
+-	npages = (IO_PAGE_ALIGN(sglist[i].dma_address + sglist[i].dma_length)
++
++	npages = (IO_PAGE_ALIGN(sgprv->dma_address + sgprv->dma_length)
+ 		  - bus_addr) >> IO_PAGE_SHIFT;
+ 
+ 	spin_lock_irqsave(&iommu->lock, flags);
+diff --git a/include/asm-sparc64/scatterlist.h b/include/asm-sparc64/scatterlist.h
+index 048fdb4..703c5bb 100644
+--- a/include/asm-sparc64/scatterlist.h
++++ b/include/asm-sparc64/scatterlist.h
+@@ -20,4 +20,6 @@ struct scatterlist {
+ 
+ #define ISA_DMA_THRESHOLD	(~0UL)
+ 
++#define ARCH_HAS_SG_CHAIN
++
+ #endif /* !(_SPARC64_SCATTERLIST_H) */
 -- 
 1.5.2.rc1
 
