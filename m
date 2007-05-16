@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbXEPVkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXEPVmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbXEPVkk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759818AbXEPVkd
+	id S932117AbXEPVmo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760381AbXEPVmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:40:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46107 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759572AbXEPVkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:40:32 -0400
-Date: Wed, 16 May 2007 22:39:47 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Udo van den Heuvel <udovdh@xs4all.nl>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-Subject: Re: [dm-devel] Re: BUG in kcryptd?
-Message-ID: <20070516213946.GS6509@agk.fab.redhat.com>
-Mail-Followup-To: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	Udo van den Heuvel <udovdh@xs4all.nl>,
-	device-mapper development <dm-devel@redhat.com>,
-	linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-References: <464B1F2B.3030009@xs4all.nl> <Pine.LNX.4.61.0705161751020.9570@yvahk01.tjqt.qr> <20070516112947.faf95c22.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516112947.faf95c22.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+	Wed, 16 May 2007 17:42:36 -0400
+Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:62021 "EHLO
+	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759818AbXEPVmf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 17:42:35 -0400
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
+Date: Thu, 17 May 2007 09:42:33 +1200
+Message-ID: <659F626D666070439A4A5965CD6EBF406B3324@gazelle.ad.endace.com>
+In-Reply-To: <Pine.LNX.4.61.0705162016060.9019@yvahk01.tjqt.qr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
+Thread-Index: AceX5sBqavNueZvmT42IsTccYenyHQAHDAXA
+References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com> <20070516140452.GC5286@schatzie.adilger.int> <Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm> <Pine.LNX.4.61.0705162016060.9019@yvahk01.tjqt.qr>
+From: "Jeff Zheng" <Jeff.Zheng@endace.com>
+To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>, <david@lang.hm>
+Cc: "Andreas Dilger" <adilger@clusterfs.com>, <linux-kernel@vger.kernel.org>,
+       <linux-fsdevel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 11:29:47AM -0700, Andrew Morton wrote:
-> On Wed, 16 May 2007 17:52:09 +0200 (MEST)
-> Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> > On May 16 2007 17:11, Udo van den Heuvel wrote:
-> > >While opening an encrypted partition and trying to fsck it:
-> > Yeah, somewhere is a bug in it, I also get an oops with
-> > kcryptd in 2.6.20 on sparc64 after a few minutes (though,
-> > it's a NULL dereference there).
-> guys, please do try to copy the appropriate mailing list on bug reports,
-> thanks.
- 
-Please test against 2.6.22-rc1 which includes relevant patches like
-dm-crypt-fix-call-to-clone_init.patch
+Problem is that is only happens when you actually write data to the
+raid. You need the actual space to reproduce the problem.
 
-Alasdair
+Jeff 
+
+-----Original Message-----
+From: Jan Engelhardt [mailto:jengelh@linux01.gwdg.de] 
+Sent: Thursday, 17 May 2007 6:17 a.m.
+To: david@lang.hm
+Cc: Andreas Dilger; Jeff Zheng; linux-kernel@vger.kernel.org;
+linux-fsdevel@vger.kernel.org
+Subject: Re: Software raid0 will crash the file-system, when each disk
+is 5TB
+
+
+On May 16 2007 11:04, david@lang.hm wrote:
+>
+> I'm getting ready to setup a similar machine that will have 3x10TB (3 
+> 15 disk arrays with 750G drives), but won't be ready to try this for a
+few more days.
+
+You could emulate it with VMware. Big disks are quite "cheap" when they
+are not allocated.
+
+
+	Jan
 -- 
-agk@redhat.com
