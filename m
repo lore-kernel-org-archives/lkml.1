@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbXEPANd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761206AbXEPAOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760765AbXEPANd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 20:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbXEPANZ
+	id S1761206AbXEPAOt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 20:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758961AbXEPAOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 20:13:25 -0400
-Received: from lazybastard.de ([212.112.238.170]:50755 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757053AbXEPANY (ORCPT
+	Tue, 15 May 2007 20:14:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33303
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757053AbXEPAOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 20:13:24 -0400
-Date: Wed, 16 May 2007 02:09:05 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070516000905.GE1220@lazybastard.org>
-References: <20070515151919.GA32510@lazybastard.org> <787b0d920705151626x3a11b81csf0f3747a695131b0@mail.gmail.com>
+	Tue, 15 May 2007 20:14:41 -0400
+Date: Tue, 15 May 2007 17:14:47 -0700 (PDT)
+Message-Id: <20070515.171447.83623268.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: clameter@sgi.com, mroos@linux.ee, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: slab hang on boot
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070515165636.5057456e.akpm@linux-foundation.org>
+References: <20070515163321.744e2388.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705151642530.3886@schroedinger.engr.sgi.com>
+	<20070515165636.5057456e.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <787b0d920705151626x3a11b81csf0f3747a695131b0@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 19:26:17 -0400, Albert Cahalan wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 15 May 2007 16:56:36 -0700
+
+> On Tue, 15 May 2007 16:45:22 -0700 (PDT)
+> Christoph Lameter <clameter@sgi.com> wrote:
 > 
-> Please don't forget the immutable bit. ("man lsattr")
-> Having both, BSD-style, would be even better.
-> The immutable bit is important for working around
-> software bugs and "features" that damage files.
+> > KMALLOC_SHIFT_HIGH is not a constant but may be less than 25.
 > 
-> I also can't find xattr support.
+> It darn well better be a compile-time constant.
 
-Not forgotten, just on a different list.  Bugs beat features. :)
+Try to define a compile-time array size with it smarty
+pants :-)
 
-Jörn
+That's what we did initially and it doesn't work.
 
--- 
-Data expands to fill the space available for storage.
--- Parkinson's Law
