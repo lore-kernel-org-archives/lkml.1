@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762521AbXEPMbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761870AbXEPMdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762521AbXEPMbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758652AbXEPMbf
+	id S1761870AbXEPMdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758880AbXEPMdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:31:35 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:46786 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758159AbXEPMbd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:31:33 -0400
-Date: Wed, 16 May 2007 18:01:24 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
-Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64 and powerpc
-Message-ID: <20070516123124.GA24299@amitarora.in.ibm.com>
-References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070515193722.GA3487@amitarora.in.ibm.com> <20070515195421.GA2948@amitarora.in.ibm.com> <20070515200359.GA5834@amitarora.in.ibm.com> <1179276167.4819.22.camel@dyn9047017103.beaverton.ibm.com>
+	Wed, 16 May 2007 08:33:07 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:48714 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758437AbXEPMdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 08:33:06 -0400
+Date: Wed, 16 May 2007 16:29:22 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+Cc: Jamie Lokier <jamie@shareable.org>, David Woodhouse <dwmw2@infradead.org>,
+       akpm@osdl.org, Albert Cahalan <acahalan@gmail.com>,
+       Greg KH <greg@kroah.com>, John Stoffel <john@stoffel.org>,
+       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516122921.GA26297@2ka.mipt.ru>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1179276167.4819.22.camel@dyn9047017103.beaverton.ibm.com>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070516115003.GD5472@lazybastard.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 16 May 2007 16:29:37 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 at 05:42:46PM -0700, Mingming Cao wrote:
-> On Wed, 2007-05-16 at 01:33 +0530, Amit K. Arora wrote:
-> > This patch implements sys_fallocate() and adds support on i386, x86_64
-> > and powerpc platforms.
+On Wed, May 16, 2007 at 01:50:03PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
+> On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
+> > 
+> > But if akpm can't pronounce it, how about FFFS for faster flash
+> > filesystem.... ;-)
 > 
-> > @@ -1137,6 +1148,8 @@ struct inode_operations {
-> >  	ssize_t (*listxattr) (struct dentry *, char *, size_t);
-> >  	int (*removexattr) (struct dentry *, const char *);
-> >  	void (*truncate_range)(struct inode *, loff_t, loff_t);
-> > +	long (*fallocate)(struct inode *inode, int mode, loff_t offset,
-> > +			  loff_t len);
-> >  };
-> 
-> Does the return value from fallocate inode operation has to be *long*?
-> It's not consistent with the ext4_fallocate() define in patch 4/5, 
+> How many of you have worked for IBM before?  Vowels are not evil. ;)
 
-I think ->fallocate() should return a "long", since sys_fallocate() has
-to return what ->fallocate() returns and hence their return type should
-ideally match.
- 
-> +int ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t
-> len)
+Do you think 'eieio' is a good set? IBM's work too...
 
-I will change the ext4_fallocate() to return a "long" (in patch 4/5)
-in the next post.
+We do not get new filesystem each couple of month, so stealing so good
+name as 'logfs' is not that bad I think.
 
-Agree ?
-
-Thanks!
---
-Regards,
-Amit Arora
-
-> 
-> thus cause compile warnings.
-> 
-> 
-> 
-> Mingming
+-- 
+	Evgeniy Polyakov
