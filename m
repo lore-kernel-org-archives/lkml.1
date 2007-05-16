@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965880AbXEPVoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934090AbXEPVtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965880AbXEPVoY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbXEPVoO
+	id S934090AbXEPVtj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbXEPVtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:44:14 -0400
-Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:62173 "EHLO
-	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965158AbXEPVoN convert rfc822-to-8bit (ORCPT
+	Wed, 16 May 2007 17:49:32 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:41339 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754963AbXEPVtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:44:13 -0400
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
-Date: Thu, 17 May 2007 09:44:10 +1200
-Message-ID: <659F626D666070439A4A5965CD6EBF406B3327@gazelle.ad.endace.com>
-In-Reply-To: <Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
-Thread-Index: AceX5Uc3Dy9Im9CNRnOxD/rModHfwAAHd86w
-References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com> <20070516140452.GC5286@schatzie.adilger.int> <Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm>
-From: "Jeff Zheng" <Jeff.Zheng@endace.com>
-To: <david@lang.hm>, "Andreas Dilger" <adilger@clusterfs.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>
+	Wed, 16 May 2007 17:49:32 -0400
+Subject: Re: v2.6.21-rt2
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20070516213259.GC19850@elte.hu>
+References: <20070516180447.GA17922@elte.hu>
+	 <1179348842.20519.20.camel@imap.mvista.com>
+	 <20070516210104.GA17240@elte.hu>
+	 <1179350448.20519.25.camel@imap.mvista.com>
+	 <20070516213259.GC19850@elte.hu>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 14:47:16 -0700
+Message-Id: <1179352036.20519.36.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-You will definitely meet the same problem. As very large hardware disk
-becomes more and more popular, this will become a big issue for software
-raid. 
+On Wed, 2007-05-16 at 23:32 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > > > http://lkml.org/lkml/2007/5/3/368
+> > > 
+> > > hm - trace_hardirqs_on() should never be called with irqs on - 
+> > > lockdep could break for example. Could you try to fix the call site 
+> > > instead?
+> > 
+> > If that's the case why check if they're enabled inside 
+> > trace_hardirqs_on() ? If that check fails you still still get the 
+> > warning in my original release ..
+> 
+> yeah, indeed you are right - it checks the soft flag. But even then, the 
+> better fix is to check for hardirqs-off first and not to flip around the 
+> preempt count check in irqs_off_preempt_count() - i.e. something like 
+> the patch below. Does this solve the warning you've triggered with 
+> irqsoff-tracing enabled?
+
+I don't know. irqs_off_preempt_count() could get used someplace else,
+where you would want to flip the preempt_count() check .. It seems sane
+to combine your patch with mine ..
+
+irqs_off_preempt_count() (!__get_cpu_var(trace_cpu_idle) && preempt_count())
+
+You can't call __get_cpu_var() without the a positive preempt_count(),
+so the check seems backwards regardless of the other factors ..
+
+Daniel
 
 
-Jeff
 
------Original Message-----
-From: david@lang.hm [mailto:david@lang.hm] 
-Sent: Thursday, 17 May 2007 6:04 a.m.
-To: Andreas Dilger
-Cc: Jeff Zheng; linux-kernel@vger.kernel.org;
-linux-fsdevel@vger.kernel.org
-Subject: Re: Software raid0 will crash the file-system, when each disk
-is 5TB
-
-
-my experiance is taht if you don't have CONFIG_LBD enabled then the
-kernel will report the larger disk as 2G and everything will work, you
-just won't get all the space.
-
-plus he seems to be crashing around 500G of data
-
-and finally (if I am reading the post correctly) if he configures the
-drives as 4x2.2TB=11TB instead of 2x5.5TB=11TB he doesn't have the same
-problem.
-
-I'm getting ready to setup a similar machine that will have 3x10TB (3 15
-disk arrays with 750G drives), but won't be ready to try this for a few
-more days.
-
-David Lang
