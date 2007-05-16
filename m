@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761353AbXEPL7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbXEPMAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761353AbXEPL7p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757862AbXEPL7g
+	id S1761939AbXEPMAg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758806AbXEPMAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:59:36 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:14508 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757334AbXEPL7f (ORCPT
+	Wed, 16 May 2007 08:00:25 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:40353 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757862AbXEPMAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:59:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Pdce6j2MpzCE7EI6+Vg3d3WOd8RGMUXRAauEjzfRhe2kGJZ3uXiBMCcSqaPUMuWqFSd4nENKMDGjNejVCPdggOJz5d0t/xMlz6PqUlLRUInt57IWV36Q4aE8wi7mwgwPmvR4yVMGxRxy2pVs18G2Zt7ZyE7wpdiH+LwCgH4QOIg=
-Message-ID: <a781481a0705160459p2d538d7fu8096bd594d6df2f9@mail.gmail.com>
-Date: Wed, 16 May 2007 17:29:34 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Marcel Holtmann" <marcel@holtmann.org>
-Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context at net/core/sock.c:1523
-Cc: "Jiri Kosina" <jikos@jikos.cz>, "Greg KH" <gregkh@suse.de>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>, maxk@qualcomm.com,
-       bluez-devel@lists.sourceforge.net, "Cedric Le Goater" <clg@fr.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <a781481a0705160456q778cfb4dk67d754317d57e9bb@mail.gmail.com>
+	Wed, 16 May 2007 08:00:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=ILAyxrI/iIHKn8KZ0HqHV+fB6hV0DPk8E56hXXNkJ4KAuAXYvBZc41wi4SFr8HIIuya7OZ4myG3JMdtCMTirE9i7aDlEXkbz48s36uE9X1h6WCTo2I5uB7PdaD05PClTHashNcxBR2LKo8nJO5JyrUv3LxtHuVDYLcWaBgS4Akk=  ;
+X-YMail-OSG: e.BPOsEVM1mRdtZz.TPpayqrLavklJC9pql7htldA5VXM3CIFn6e3Jl4boVT6JTRMnjwpzptAQ--
+Message-ID: <464AF224.30105@yahoo.com.au>
+Date: Wed, 16 May 2007 21:59:32 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Howells <dhowells@redhat.com>
+CC: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
+References: <20070318233008.GA32597093@melbourne.sgi.com> <18993.1179310769@redhat.com>
+In-Reply-To: <18993.1179310769@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <462D1B09.9050005@goop.org>
-	 <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
-	 <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
-	 <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
-	 <Pine.LNX.4.64.0705161124030.25986@twin.jikos.cz>
-	 <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com>
-	 <1179315904.10069.67.camel@violet>
-	 <a781481a0705160456q778cfb4dk67d754317d57e9bb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> Hi Marcel,
-> [...]
-> > > > > (later)
-> > > > > I Googled a bit to see if this problem was faced elsewhere in the kernel
-> > > > > too. Saw the following commit by Ingo Molnar
-> > > > > (9883a13c72dbf8c518814b6091019643cdb34429):
-> > > > > -     lock_sock(sock->sk);
-> > > > > +     local_bh_disable();
-> > > > > +     bh_lock_sock_nested(sock->sk);
-> > > > >       rc = selinux_netlbl_socket_setsid(sock, sksec->sid);
-> > > > > -     release_sock(sock->sk);
-> > > > > +     bh_unlock_sock(sock->sk);
-> > > > > +     local_bh_enable();
-> > > > > Is it _really_ *this* simple?
-> > > > [...]
-> > > > actually this *seems* to be proper solution also for our case, thanks for
-> > > > pointing this out. I will think about it once again, do some more tests
-> > > > with this locking scheme, and will let you know.
-> > >
-> > > Yes, I can almost confirm that this (open-coding of spin_lock_bh,
-> > > effectively) is the proper solution (Rusty's unreliable guide to
-> > > kernel-locking needs to be next to every developer's keyboard :-)
-> > > I also came across this idiom in other places in the networking code
-> > > so it seems to be pretty much the standard way. I wish I owned
-> > > bluetooth hardware, could've tested this for you myself.
-> >
-> > does this mean we should revert previous changes to the locking or only
-> > apply this on top of it?
->
-> I've fixed a simple patch on top of 2.6.22-rc1 below.
+David Howells wrote:
+> David Chinner <dgc@sgi.com> wrote:
+> 
+> 
+>>+	ret = block_prepare_write(page, 0, end, get_block);
+> 
+> 
+> As I understand the way prepare_write() works, this is incorrect.
 
-Eek, please ignore previous one. This one's correct.
+I think it is actually OK.
 
-Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-diff -ruNp a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
---- a/net/bluetooth/hci_sock.c	2007-05-16 17:31:06.000000000 +0530
-+++ b/net/bluetooth/hci_sock.c	2007-05-16 17:38:35.000000000 +0530
-@@ -665,7 +665,8 @@ static int hci_sock_dev_event(struct not
- 		/* Detach sockets from device */
- 		read_lock(&hci_sk_list.lock);
- 		sk_for_each(sk, node, &hci_sk_list.head) {
--			lock_sock(sk);
-+			local_bh_disable();
-+			bh_lock_sock_nested(sk);
- 			if (hci_pi(sk)->hdev == hdev) {
- 				hci_pi(sk)->hdev = NULL;
- 				sk->sk_err = EPIPE;
-@@ -674,7 +675,8 @@ static int hci_sock_dev_event(struct not
+> The start and end points passed to block_prepare_write() delimit the region of
+> the page that is going to be modified.  This means that prepare_write()
+> doesn't need to fill it in if the page is not up to date.  It does, however,
+> need to fill in the region before (if present) and the region after (if
+> present).  Look at it like this:
+> 
+> 		+---------------+
+> 		|               |
+> 		|               |	<-- Filled in by prepare_write()
+> 		|               |
+> 	to->	|:::::::::::::::|
+> 		|               |
+> 		|               |	<-- Filled in by caller
+> 		|               |
+> 	offset->|:::::::::::::::|
+> 		|               |
+> 		|               |	<-- Filled in by prepare_write()
+> 		|               |
+> 	page->	+---------------+
+> 
+> However, page_mkwrite() isn't told which bit of the page is going to be
+> written to.  This means it has to ask prepare_write() to make sure the whole
+> page is filled in.  In other words, offset and to must be equal (in AFS I set
+> them both to 0).
 
- 				hci_dev_put(hdev);
- 			}
--			release_sock(sk);
-+			bh_unlock_sock(sk);
-+			local_bh_enable();
- 		}
- 		read_unlock(&hci_sk_list.lock);
- 	}
+Dave is using prepare_write here to ensure blocks are allocated in the
+given range. The filesystem's ->nopage function must ensure it is uptodate
+before allowing it to be mapped.
+
+
+> With what you've got, if, say, 'offset' is 0 and 'to' is calculated at
+> PAGE_SIZE, then if the page is not up to date for any reason, then none of the
+> page will be updated before the page is written on by the faulting code.
+
+Consider that the code currently works OK today _without_ page_mkwrite.
+page_mkwrite is being added to do block allocation / reservation.
+
+
+> You probably get away with this in a blockdev-based filesystem because it's
+> unlikely that the page will cease to be up to date.
+> 
+> However, if someone adds a syscall to punch holes in files, this may change...
+
+We have one. Strangely enough, it is done with madvise(MADV_REMOVE).
+
+-- 
+SUSE Labs, Novell Inc.
