@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbXEPQNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbXEPQNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758875AbXEPQNQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbXEPQNA
+	id S1762157AbXEPQNo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbXEPQNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:13:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35738 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbXEPQM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:12:59 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <464B07EC.4050308@yahoo.com.au>
-References: <464B07EC.4050308@yahoo.com.au> <464AF3F3.30204@yahoo.com.au> <20070516100225.18685.51699.stgit@warthog.cambridge.redhat.com> <17173.1179321391@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] AFS: Implement shared-writable mmap [try #2]
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 16 May 2007 17:12:08 +0100
-Message-ID: <19714.1179331928@redhat.com>
+	Wed, 16 May 2007 12:13:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47559 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756132AbXEPQNg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 12:13:36 -0400
+Date: Wed, 16 May 2007 09:12:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Johann Lombardi <johann@clusterfs.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Clear PG_error before reading a page
+Message-Id: <20070516091217.b9bb5797.akpm@linux-foundation.org>
+In-Reply-To: <20070516153919.GC2630@chiva>
+References: <20070515143726.GC2160@chiva>
+	<20070515101144.f7072476.akpm@linux-foundation.org>
+	<20070515210124.GA23698@chiva>
+	<20070515142339.4d9098f3.akpm@linux-foundation.org>
+	<20070516153919.GC2630@chiva>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Wed, 16 May 2007 17:39:19 +0200 Johann Lombardi <johann@clusterfs.com> wrote:
 
-> In general (modulo bugs and crazy filesystems), you're not allowed to have
-> !uptodate pages mapped into user addresses because that implies the user
-> would be allowed to see garbage.
-
-Ths situation I have to deal with is a tricky one.  Consider:
-
- (1) User A modifies a page with his key.  This change gets made in the
-     pagecache, but is not written back immediately.
-
- (2) User B then wants to modify the same page, but with a different key.
-     This means that afs_prepare_write() has to flush A's writes back to the
-     server before B is permitted to write.
-
- (3) The flush fails because A is no longer permitted to write to that file.
-     This means that the change in the page cache is now stale.  We can't just
-     write it back as B because B didn't make the change.
-
-What I've made afs_prepare_write() do in this situation is to nuke A's entire
-write.  We can't write any of it back.  I can't call invalidate_inode_pages()
-or similar because that might incorrectly kill one of B's writes (or someone
-else's writes); besides, the on-server file hasn't changed.
-
-To nuke A's write, each page that makes up that write is marked non-uptodate
-and then reloaded.  Whilst I might wish to call invalidate_inode_pages_range(),
-I can't as it can/would deadlock if called from prepare_write() in two
-different ways.
-
-> >>Minor issue: you can just check for `if (!page->mapping)` for truncation,
-> >>which is the usual signal to tell the reader you're checking for truncate.
-> >
-> >
-> > That's inconsistent with other core code, truncate_complete_page() for
-> > example.
+> On Tue, May 15, 2007 at 02:23:39PM -0700, Andrew Morton wrote:
+> > > Yes, indeed. However, as soon as a call to get_block() fails,
+> > > do_mpage_readpage() will call block_read_full_page() which will attach
+> > > buffers to this page.
+> > > Consequently, all subsequent reads will go through block_read_full_page().
+> > 
+> > hm, confused.  Why is get_block() failing?  That has to go and read
+> > metadata. 
 > 
-> Your filesystem internally moves pages between mappings like tmpfs?
+> In fact, I am referring to the first part of my test case (i.e. mount the ext3
+> fs, enable medium errors in scsi_debug and try to read a file from the fs).
+> 
+> So, when I try to read a file, ext3_get_block() needs to read metadata from the
+> disk. However, given that the SCSI disk simulated by scsi_debug reports medium
+> errors, ext3_get_block() returns EIO to the caller (i.e. do_mpage_readpage()).
+> That's why get_block() is failing.
+> 
+> Then, do_mpage_readpage() calls block_read_full_page() (via "goto confused").
+> block_read_full_page() attaches buffers to this page and calls ext3_get_block()
+> which fails for the same reason as before. Consequently, block_read_full_page()
+> sets the PG_error flag.
+> Moreover, all subsequent readpage calls will go through block_read_full_page()
+> because the page has now buffers attached.
+> 
+> Basically, my problem is that afterwards, when the device no longer returns
+> any errors, the PG_error flag is never cleared and, as a result, I keep
+> getting -EIO. That's the problem I'd like to address.
+> 
 
-You misunderstand me.  truncate_complete_page() uses this:
+hm, OK.  So, where are we up to?
 
-	if (page->mapping != mapping)
+I still worry about the fact that changes in this area could cause the
+kernel to do a *lot* more IO attempts against failed devices, or failed
+sectors.  We already have a few problems in that area.
 
-not this:
-
-	if (!page->mapping)
-
-I think that both cases should work in page_mkwrite().  But !page->mapping does
-not appear to be the "usual signal" from what I've seen.
-
-However, that's a minor matter.
-
-David
+What is the actual real-world operational scenario here?  Would it be a
+hotplugged disk?  A transient network failure in a SAN?  IOW, is it
+something from which the kernel should automatically recover, or it is a
+situation in which manual intervention would be better?
