@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762736AbXEPSTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763448AbXEPST3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762736AbXEPSTQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 14:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933473AbXEPSSz
+	id S1763448AbXEPST3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 14:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934011AbXEPSTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 14:18:55 -0400
-Received: from mx1.suse.de ([195.135.220.2]:50674 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933277AbXEPSSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 14:18:53 -0400
-Date: Wed, 16 May 2007 20:18:47 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [rfc] optimise unlock_page
-Message-ID: <20070516181847.GD5883@wotan.suse.de>
-References: <20070508225012.GF20174@wotan.suse.de> <Pine.LNX.4.64.0705091950080.2909@blonde.wat.veritas.com> <20070510033736.GA19196@wotan.suse.de> <Pine.LNX.4.64.0705101935590.18496@blonde.wat.veritas.com> <20070511085424.GA15352@wotan.suse.de> <Pine.LNX.4.64.0705111357120.3350@blonde.wat.veritas.com> <20070513033210.GA3667@wotan.suse.de> <Pine.LNX.4.64.0705130535410.3015@blonde.wat.veritas.com> <20070513065246.GA15071@wotan.suse.de> <Pine.LNX.4.64.0705161838080.16762@blonde.wat.veritas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705161838080.16762@blonde.wat.veritas.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 16 May 2007 14:19:12 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2504 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933958AbXEPSTK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 14:19:10 -0400
+Message-ID: <464B4AF6.5090604@shadowen.org>
+Date: Wed, 16 May 2007 19:18:30 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Steve Fox <drfickle@us.ibm.com>
+Subject: Re: 2.6.22-rc1-mm1
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com> <20070516174046.GE10225@skynet.ie> <464B458C.1030805@zytor.com>
+In-Reply-To: <464B458C.1030805@zytor.com>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 06:54:15PM +0100, Hugh Dickins wrote:
-> On Sun, 13 May 2007, Nick Piggin wrote:
-> > On Sun, May 13, 2007 at 05:39:03AM +0100, Hugh Dickins wrote:
-> > > On Sun, 13 May 2007, Nick Piggin wrote:
-> > > > On Fri, May 11, 2007 at 02:15:03PM +0100, Hugh Dickins wrote:
-> > > > 
-> > > > > Hmm, well, I think that's fairly horrid, and would it even be
-> > > > > guaranteed to work on all architectures?  Playing with one char
-> > > > > of an unsigned long in one way, while playing with the whole of
-> > > > > the unsigned long in another way (bitops) sounds very dodgy to me.
-> > > > 
-> > > > Of course not, but they can just use a regular atomic word sized
-> > > > bitop. The problem with i386 is that its atomic ops also imply
-> > > > memory barriers that you obviously don't need on unlock.
-> > > 
-> > > But is it even a valid procedure on i386?
-> > 
-> > Well I think so, but not completely sure.
+H. Peter Anvin wrote:
+> Mel Gorman wrote:
+>> On (16/05/07 08:16), H. Peter Anvin didst pronounce:
+>>> Andy Whitcroft wrote:
+>>>> Getting this on both x86 and x86_64 boxes, they are the older boxen so
+>>>> likely older compilers:
+>>> Please give the gcc version number.
+>    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SOrry, had to wait for the machine to come idle:
+
+elm3b132:~# gcc -v
+Reading specs from /usr/lib/gcc-lib/i486-linux/3.3.4/specs
+Configured with: ../src/configure -v
+--enable-languages=c,c++,java,f77,pascal,objc,ada,treelang --prefix=/usr
+--mandir=/usr/share/man --infodir=/usr/share/info
+--with-gxx-include-dir=/usr/include/c++/3.3 --enable-shared
+--with-system-zlib --enable-nls --without-included-gettext
+--enable-__cxa_atexit --enable-clocale=gnu --enable-debug
+--enable-java-gc=boehm --enable-java-awt=xlib --enable-objc-gc i486-linux
+Thread model: posix
+gcc version 3.3.4 (Debian 1:3.3.4-3)
+elm3b132:~# dpkg -l | grep binutil
+ii  binutils       2.14.90.0.7-8  The GNU assembler, linker and binary
+utiliti
+elm3b132:~#
+
 > 
-> That's not quite enough to convince me!
+> ... as well as binutils version number (it appears that your version of
+> ld doesn't support the "ASSERT" statement?)
+> 
+>> ld:arch/i386/boot/setup.ld:47: syntax error
+>> make[1]: *** [arch/i386/boot/setup.elf] Error 1
+> 
+> 	-hpa
 
-I did ask Linus, and he was very sure it works.
-
-
-> I do retract my "fairly horrid" remark, that was a kneejerk reaction
-> to cleverness; it's quite nice, if it can be guaranteed to work (and
-> if lowering FLAGS_RESERVED from 9 to 7 doesn't upset whoever carefully
-> chose 9).
-
-Hmm, it is a _little_ bit horrid ;) Maybe slightly clever, but definitely
-slightly horrid as well!
-
-Not so much from a high level view (although it does put more constraints
-on the flags layout), but from a CPU level... the way we intermix different
-sized loads and stores can run into store forwarding issues[*] which might
-be expensive as well. Not to mention that we can't do the non-atomic
-unlock on all architectures.
-
-OTOH, it did _seem_ to eliminate the pagefault regression on my P4 Xeon
-here, in one round of tests.
-
-The other option of moving the bit into ->mapping hopefully avoids all
-the issues, and would probably be a little faster again on the P4, at the
-expense of being a more intrusive (but it doesn't look too bad, at first
-glance)...
-
-[*] I did mention to Linus that we might be able to avoid the store
-forwarding stall by loading just a single byte to test PG_waiters after
-the byte store to clear PG_locked. At this point he puked. We decided
-that using another field altogether might be better.
-
-
-> Please seek out those guarantees.  Like you, I can't really see how
-> it would go wrong (how could moving in the unlocked char mess with
-> the flag bits in the rest of the long? how could atomically modifying
-> the long have a chance of undoing that move?), but it feels like it
-> might take us into errata territory.
-
-I think we can just rely on the cache coherency protocol taking care of
-it for us, on x86. movb would not affect other data other than the dest.
-A non-atomic op _could_ of course undo the movb, but it could likewise
-undo any other store to the word or byte. An atomic op on the flags does
-not modify the movb byte so the movb before/after possibilities should
-look exactly the same regardless of the atomic operations happening.
-
+-apw
