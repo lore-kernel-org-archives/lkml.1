@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbXEPUzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934193AbXEPU41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbXEPUzu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760548AbXEPUzm
+	id S934193AbXEPU41 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760861AbXEPU4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:55:42 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:56067 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760059AbXEPUzm (ORCPT
+	Wed, 16 May 2007 16:56:19 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:18674 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759473AbXEPU4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:55:42 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705161343080.11234@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-	 <20070514161224.GC11115@waste.org>
-	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-	 <1179164453.2942.26.camel@lappy>
-	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-	 <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins>
-	 <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
-	 <1179298771.7173.16.camel@twins>
-	 <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
-	 <1179343521.2912.20.camel@lappy>
-	 <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
-	 <1179346738.2912.39.camel@lappy>
-	 <Pine.LNX.4.64.0705161320020.11018@schroedinger.engr.sgi.com>
-	 <1179348039.2912.48.camel@lappy>
-	 <Pine.LNX.4.64.0705161343080.11234@schroedinger.engr.sgi.com>
+	Wed, 16 May 2007 16:56:18 -0400
+Subject: Re: v2.6.21-rt2
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20070516180447.GA17922@elte.hu>
+References: <20070516180447.GA17922@elte.hu>
 Content-Type: text/plain
-Date: Wed, 16 May 2007 22:54:58 +0200
-Message-Id: <1179348898.2912.57.camel@lappy>
+Date: Wed, 16 May 2007 13:54:02 -0700
+Message-Id: <1179348842.20519.20.camel@imap.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 13:44 -0700, Christoph Lameter wrote:
-> On Wed, 16 May 2007, Peter Zijlstra wrote:
+On Wed, 2007-05-16 at 20:04 +0200, Ingo Molnar wrote:
+> i'm pleased to announce the v2.6.20-rt2 kernel, which can be downloaded 
+> from the usual place:
+
+2.6.21-rt2 ?
+
+>     http://redhat.com/~mingo/realtime-preempt/
+>                                    
+> more info about the -rt patchset can be found in the RT wiki:
+>  
+>     http://rt.wiki.kernel.org
 > 
-> > > How does all of this interact with
-> > > 
-> > > 1. cpusets
-> > > 
-> > > 2. dma allocations and highmem?
-> > > 
-> > > 3. Containers?
-> > 
-> > Much like the normal kmem_cache would do; I'm not changing any of the
-> > page allocation semantics.
+> This is a fixes-mostly release and has been assembled by Thomas 
+> Gleixner. Thanks Thomas! Here are the various changes:
 > 
-> So if we run out of memory on a cpuset then network I/O will still fail?
+>   - ppc fixes from Tsutomu OWA
 > 
-> I do not see any distinction between DMA and regular memory. If we need 
-> DMA memory to complete the transaction then this wont work?
-
-If network relies on slabs that are cpuset constrained and the page
-allocator reserves do not match that, then yes, it goes bang.
-
-> > But its wanted to try the normal cpu_slab path first to detect that the
-> > situation has subsided and we can resume normal operation.
+>   - new sh -rt port from Paul Mundt & Co
 > 
-> Is there some indicator somewhere that indicates that we are in trouble? I 
-> just see the ranks.
+>   - fixes for various problems by Steven Rostedt and Clark Williams
 
-Yes, and page->rank will only ever be 0 if the page was allocated with
-ALLOC_NO_WATERMARKS, and that only ever happens if we're in dire
-straights and entitled to it.
+I think you missed the fix I submitted for one of Steve's changes.
 
-Otherwise it'll be ALLOC_WMARK_MIN or somesuch.
+http://lkml.org/lkml/2007/5/3/368
 
-
+Daniel
 
