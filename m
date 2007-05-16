@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760223AbXEPK4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbXEPLDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760223AbXEPK4k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 06:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757530AbXEPK4b
+	id S1760405AbXEPLDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbXEPLDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 06:56:31 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:33553 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756477AbXEPK4a (ORCPT
+	Wed, 16 May 2007 07:03:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51307 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757408AbXEPLDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 06:56:30 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=OFhTnwaM0CGDF9qB0G5VXfzaPR2sa1udPe/P+U73E3M3kJ9a7+Z4NG1dxeO/v
-	LKDTMohOS2Z0amvVmfLCoiKVg==
-Date: Wed, 16 May 2007 12:56:26 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Rod Whitby <rod@whitby.id.au>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
-       Michael Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-Message-ID: <20070516105626.GC16262@xi.wantstofly.org>
-References: <464034CF.20700@wpkg.org> <20070516071300.GB14222@infradead.org> <20070516094100.GB16262@xi.wantstofly.org> <464AE10E.7090606@whitby.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464AE10E.7090606@whitby.id.au>
-User-Agent: Mutt/1.4.1i
+	Wed, 16 May 2007 07:03:09 -0400
+Date: Wed, 16 May 2007 12:02:38 +0100 (BST)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: Manu Abraham <abraham.manu@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] em28xx and ivtv should depend on PCI
+In-Reply-To: <20070516012254.GF4095@ftp.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0705161144520.19892@pentafluge.infradead.org>
+References: <E1Ho2p6-0003Tt-B7@ZenIV.linux.org.uk> <464A4163.7090509@gmail.com>
+ <20070516012254.GF4095@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 08:16:38PM +0930, Rod Whitby wrote:
 
-> So, if the author of these patches wishes to concentrate on big-endian
-> support first, then we will not say (and have not said) anything which
-> will block inclusion of a big-endian only version of this driver.
+On Wed, 16 May 2007, Al Viro wrote:
 
-The NSLU2 people are the ones here that are saying that the driver
-should really support LE (because that is what they happen to be
-using, the rest of the world runs the ixp4xx in BE), and they keep
-saying that it would be so easy to make a patch to add LE support,
-but so far they haven't produced such a patch.
+>>> +	depends on VIDEO_V4L1 && I2C && PCI
+>>
+>> Err .. why would a USB device need to be depend on PCI ?
+>
+> Because video-buf.c does.  And VIDEO_EM28XX selects it.
 
-Please just write the patch and let's get this over with.
+There are already two patches fixing the broken dependencies for ivtv and 
+em28xx on my -git tree:
+
+http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=1cf15bd2c8606e232d4c29273f8d05fcd47cc0fd
+http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=42aadebe90d9bc18a6753be45ed878b07de4c560
+
+I've already asked Linus to pull it:
+
+http://lkml.org/lkml/2007/5/13/100
+
+
+-- 
+Cheers,
+Mauro Carvalho Chehab
+http://linuxtv.org
+mchehab@infradead.org
