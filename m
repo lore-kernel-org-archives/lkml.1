@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761652AbXEPRXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbXEPRYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761652AbXEPRXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbXEPRXH
+	id S932097AbXEPRYc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757318AbXEPRYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:23:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50442 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757175AbXEPRXG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:23:06 -0400
-Date: Wed, 16 May 2007 10:15:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?B?SvZybg==?= Engel <joern@lazybastard.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>,
-       Anton Altaparmakov <aia21@cam.ac.uk>, Al Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH resend] introduce I_SYNC
-Message-Id: <20070516101535.94e44b3b.akpm@linux-foundation.org>
-In-Reply-To: <20070516170110.GC8113@lazybastard.org>
-References: <20070516170110.GC8113@lazybastard.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 16 May 2007 13:24:25 -0400
+Received: from smtp.cce.hp.com ([161.114.21.22]:3522 "EHLO
+	ccerelrim01.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756283AbXEPRYZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 13:24:25 -0400
+From: "Bob Picco" <bob.picco@hp.com>
+Date: Wed, 16 May 2007 13:24:21 -0400
+To: Olof Johansson <olof@lixom.net>
+Cc: Linas Vepstas <linas@austin.ibm.com>, Bob Picco <bob.picco@hp.com>,
+       johnrose@us.ibm.com, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: your mail
+Message-ID: <20070516172421.GC25792@localhost>
+References: <20070516133046.GB25792@localhost> <20070516164341.GA7008@austin.ibm.com> <20070516171100.GA25056@lixom.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070516171100.GA25056@lixom.net>
+User-Agent: Mutt/1.5.11
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.5.16.101035
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 19:01:14 +0200 Jörn Engel <joern@lazybastard.org> wrote:
+Olof Johansson wrote:	[Wed May 16 2007, 01:11:00PM EDT]
+> On Wed, May 16, 2007 at 11:43:41AM -0500, Linas Vepstas wrote:
+> > On Wed, May 16, 2007 at 09:30:46AM -0400, Bob Picco wrote:
+> > > Subject: Re: 2.6.22-rc1-mm1 powerpc build breakage
+> > > 
+> > > /usr/src/linux-2.6.22-rc1-mm1/drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field `subsys' specified in initializer
+> > > /usr/src/linux-2.6.22-rc1-mm1/drivers/pci/hotplug/rpadlpar_sysfs.c:132: warning: initialization from incompatible pointer type
+> > > make[4]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
+> > > make[3]: *** [drivers/pci/hotplug] Error 2
+> > > make[2]: *** [drivers/pci] Error 2
+> > > make[1]: *** [drivers] Error 2
+> > > make: *** [_all] Error 2
+> > 
+> > John Rose is working to fix this "real soon now".
+> 
+> Do you mean the fix Al Viro posted yesterday?
+> 
+> http://patchwork.ozlabs.org/linuxppc/patch?id=11177
+> 
+> 
+> -Olof
+Missed that patch.
 
-> This patch introduces a new flag, I_SYNC and seperates out all sync()
-> users of I_LOCK to use the new flag instead.
+thanks,
 
-gack, you like sticking your head in dark and dusty holes.
-
-If we're going to do this then please let's get some exhaustive commentary
-in there so that others have a chance of understanding these flags without
-having to do the amount of reverse-engineering which you've been put through.
+bob
