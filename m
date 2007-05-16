@@ -1,301 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763309AbXEPUaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762935AbXEPUcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763309AbXEPUaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758770AbXEPUaX
+	id S1762935AbXEPUcA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758770AbXEPUbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:30:23 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:47724 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758281AbXEPUaW (ORCPT
+	Wed, 16 May 2007 16:31:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:17154 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756942AbXEPUbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:30:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:user-agent:from;
-	b=PyBpBr49DAz5cNIU7+jLA3gK5JgMw03gsDGZ4uiptuBu/fwyK+LkFHj+Gu9P+6NW5
-	76odBB6X38QDXUvnWzfog==
-Date: Wed, 16 May 2007 13:29:56 -0700
-To: ak@suse.de, vojtech@suse.cz
-Cc: akpm@google.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64: mcelog tolerant level cleanup
-Message-ID: <20070516202956.GA27184@google.com>
+	Wed, 16 May 2007 16:31:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=LRKN4eA1uHg6i1k33uuLABsM6g6f54GXijg4Ucjqqe4KGTByOjYUSoVqJUqu5iKcOR2RSRbhs41nj8HQBvZFlUVQZHc9PDIIdmM7J6EWE8WK6PaiNDW87VNTw/HX3FtckaQaqo4SnQvg02VDMjJ0cLJEJyZHMqj0qbOdlttskYE=
+Message-ID: <464B6A2B.9020703@googlemail.com>
+Date: Wed, 16 May 2007 22:31:39 +0200
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: thockin@google.com (Tim Hockin)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com,
+       David Chinner <dgc@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       Christoph Lameter <clameter@sgi.com>, Dave Airlie <airlied@linux.ie>,
+       linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [2/3] 2.6.22-rc1: known regressions v2
+References: <464B6743.9000607@googlemail.com>
+In-Reply-To: <464B6743.9000607@googlemail.com>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tim Hockin <thockin@google.com>
+Hi all,
 
-Background:
- The MCE handler has several paths that it can take, depending on various
- conditions of the MCE status and the value of the 'tolerant' knob.  The
- exact semantics are not well defined and the code is a bit twisty.
+Here is a list of some known regressions in 2.6.22-rc1.
 
-Description:
- This patch makes the MCE handler's behavior more clear by documenting the
- behavior for various 'tolerant' levels.  It also fixes or enhances
- several small things in the handler.  Specifically:
-     * If RIPV is set it is not safe to restart, so set the 'no way out'
-       flag rather than the 'kill it' flag.
-     * Don't panic() on correctable MCEs.
-     * If the _OVER bit is set *and* the _UC bit is set (meaning possibly
-       dropped uncorrected errors), set the 'no way out' flag.
-     * Use EIPV for testing whether an app can be killed (SIGBUS) rather
-       than RIPV.  According to docs, EIPV indicates that the error is
-       related to the IP, while RIPV simply means the IP is valid to
-       restart from.
-     * Don't clear the MCi_STATUS registers until after the panic() path.
-       This leaves the status bits set after the panic() so clever BIOSes
-       can find them (and dumb BIOSes can do nothing).
-
- This patch also calls nonseekable_open() in mce_open (as suggested by akpm).
-
-Result:
- Tolerant levels behave almost identically to how they always have, but
- not it's well defined.  There's a slightly higher chance of panic()ing
- when multiple errors happen (a good thing, IMHO).  If you take an MBE and
- panic(), the error status bits are not cleared.
-
-Alternatives:
- None.
-
-Testing:
- I used software to inject correctable and uncorrectable errors.  With
- tolerant = 3, the system usually survives.  With tolerant = 2, the system
- usually panic()s (PCC) but not always.  With tolerant = 1, the system
- always panic()s.  When the system panic()s, the BIOS is able to detect
- that the cause of death was an MC4.  I was not able to reproduce the
- case of a non-PCC error in userspace, with EIPV, with (tolerant < 3).
- That will be rare at best.
-
-Patch:
- This patch is against 2.6.21-mm.
-
-Signed-off-by: Tim Hockin <thockin@google.com>
-
----
-
-This is the first version of this patch.
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
 
-diff -pruN linux-2.6.21+01+02+03/Documentation/x86_64/boot-options.txt linux-2.6.21+04/Documentation/x86_64/boot-options.txt
---- linux-2.6.21+01+02+03/Documentation/x86_64/boot-options.txt	2007-04-25 20:08:32.000000000 -0700
-+++ linux-2.6.21+04/Documentation/x86_64/boot-options.txt	2007-05-09 23:29:01.000000000 -0700
-@@ -14,9 +14,11 @@ Machine check
-    mce=nobootlog
- 		Disable boot machine check logging.
-    mce=tolerancelevel (number)
--		0: always panic, 1: panic if deadlock possible,
--		2: try to avoid panic, 3: never panic or exit (for testing)
--		default is 1
-+		0: always panic on uncorrected errors, log corrected errors
-+		1: panic or SIGBUS on uncorrected errors, log corrected errors
-+		2: SIGBUS or log uncorrected errors, log corrected errors
-+		3: never panic or SIGBUS, log all errors (for testing only)
-+		Default is 1
- 		Can be also set using sysfs which is preferable.
- 
-    nomce (for compatibility with i386): same as mce=off
-diff -pruN linux-2.6.21+01+02+03/Documentation/x86_64/machinecheck linux-2.6.21+04/Documentation/x86_64/machinecheck
---- linux-2.6.21+01+02+03/Documentation/x86_64/machinecheck	2007-05-07 12:08:26.000000000 -0700
-+++ linux-2.6.21+04/Documentation/x86_64/machinecheck	2007-05-09 23:29:16.000000000 -0700
-@@ -49,12 +49,14 @@ tolerant
- 	Since machine check exceptions can happen any time it is sometimes
- 	risky for the kernel to kill a process because it defies
- 	normal kernel locking rules. The tolerance level configures
--	how hard the kernel tries to recover even at some risk of deadlock.
--
--	0: always panic,
--	1: panic if deadlock possible,
--	2: try to avoid panic,
--   	3: never panic or exit (for testing only)
-+	how hard the kernel tries to recover even at some risk of
-+	deadlock.  Higher tolerant values trade potentially better uptime
-+	with the risk of a crash or even corruption (for tolerant >= 3).
-+
-+	0: always panic on uncorrected errors, log corrected errors
-+	1: panic or SIGBUS on uncorrected errors, log corrected errors
-+	2: SIGBUS or log uncorrected errors, log corrected errors
-+	3: never panic or SIGBUS, log all errors (for testing only)
- 
- 	Default: 1
- 
-diff -pruN linux-2.6.21+01+02+03/arch/x86_64/kernel/mce.c linux-2.6.21+04/arch/x86_64/kernel/mce.c
---- linux-2.6.21+01+02+03/arch/x86_64/kernel/mce.c	2007-05-09 22:05:48.000000000 -0700
-+++ linux-2.6.21+04/arch/x86_64/kernel/mce.c	2007-05-11 21:02:12.000000000 -0700
-@@ -37,8 +37,13 @@ atomic_t mce_entry;
- 
- static int mce_dont_init;
- 
--/* 0: always panic, 1: panic if deadlock possible, 2: try to avoid panic,
--   3: never panic or exit (for testing only) */
-+/*
-+ * Tolerant levels:
-+ *   0: always panic on uncorrected errors, log corrected errors
-+ *   1: panic or SIGBUS on uncorrected errors, log corrected errors
-+ *   2: SIGBUS or log uncorrected errors (if possible), log corrected errors
-+ *   3: never panic or SIGBUS, log all errors (for testing only)
-+ */
- static int tolerant = 1;
- static int banks;
- static unsigned long bank[NR_BANKS] = { [0 ... NR_BANKS-1] = ~0UL };
-@@ -132,9 +137,6 @@ static void mce_panic(char *msg, struct 
- { 
- 	int i;
- 
--	if (tolerant >= 3)
--		return;
--
- 	oops_begin();
- 	for (i = 0; i < MCE_LOG_LEN; i++) {
- 		unsigned long tsc = mcelog.entry[i].tsc;
-@@ -178,11 +180,19 @@ static inline void mce_get_rip(struct mc
- void do_machine_check(struct pt_regs * regs, long error_code)
- {
- 	struct mce m, panicm;
--	int nowayout = (tolerant < 1); 
--	int kill_it = 0;
- 	u64 mcestart = 0;
- 	int i;
- 	int panicm_found = 0;
-+	/*
-+	 * If no_way_out gets set, there is no safe way to recover from this
-+	 * MCE.  If tolerant is cranked up, we'll try anyway.
-+	 */
-+	int no_way_out = 0;
-+	/*
-+	 * If kill_it gets set, there might be a way to recover from this
-+	 * error.
-+	 */
-+	int kill_it = 0;
- 
- 	atomic_inc(&mce_entry);
- 
-@@ -194,8 +204,9 @@ void do_machine_check(struct pt_regs * r
- 	memset(&m, 0, sizeof(struct mce));
- 	m.cpu = smp_processor_id();
- 	rdmsrl(MSR_IA32_MCG_STATUS, m.mcgstatus);
-+	/* if the restart IP is not valid, we're done for */
- 	if (!(m.mcgstatus & MCG_STATUS_RIPV))
--		kill_it = 1;
-+		no_way_out = 1;
- 	
- 	rdtscll(mcestart);
- 	barrier();
-@@ -214,10 +225,18 @@ void do_machine_check(struct pt_regs * r
- 			continue;
- 
- 		if (m.status & MCI_STATUS_EN) {
--			/* In theory _OVER could be a nowayout too, but
--			   assume any overflowed errors were no fatal. */
--			nowayout |= !!(m.status & MCI_STATUS_PCC);
--			kill_it |= !!(m.status & MCI_STATUS_UC);
-+			/* if PCC was set, there's no way out */
-+			no_way_out |= !!(m.status & MCI_STATUS_PCC);
-+			/*
-+			 * If this error was uncorrectable and there was
-+			 * an overflow, we're in trouble.  If no overflow,
-+			 * we might get away with just killing a task.
-+			 */
-+			if (m.status & MCI_STATUS_UC) {
-+				if (tolerant < 1 || m.status & MCI_STATUS_OVER)
-+					no_way_out = 1;
-+				kill_it = 1;
-+			}
- 		}
- 
- 		if (m.status & MCI_STATUS_MISCV)
-@@ -228,7 +247,6 @@ void do_machine_check(struct pt_regs * r
- 		mce_get_rip(&m, regs);
- 		if (error_code >= 0)
- 			rdtscll(m.tsc);
--		wrmsrl(MSR_IA32_MC0_STATUS + i*4, 0);
- 		if (error_code != -2)
- 			mce_log(&m);
- 
-@@ -251,37 +269,52 @@ void do_machine_check(struct pt_regs * r
- 	   the last one (shouldn't happen, just being safe). */
- 	if (!panicm_found)
- 		panicm = m;
--	if (nowayout)
-+
-+	/*
-+	 * If we have decided that we just CAN'T continue, and the user
-+	 *  has not set tolerant to an insane level, give up and die.
-+	 */
-+	if (no_way_out && tolerant < 3)
- 		mce_panic("Machine check", &panicm, mcestart);
--	if (kill_it) {
-+
-+	/*
-+	 * If the error seems to be unrecoverable, something should be
-+	 * done.  Try to kill as little as possible.  If we can kill just
-+	 * one task, do that.  If the user has set the tolerance very
-+	 * high, don't try to do anything at all.
-+	 */
-+	if (kill_it && tolerant < 3) {
- 		int user_space = 0;
- 
--		if (m.mcgstatus & MCG_STATUS_RIPV)
-+		/*
-+		 * If the EIPV bit is set, it means the saved IP is the
-+		 * instruction which caused the MCE.
-+		 */
-+		if (m.mcgstatus & MCG_STATUS_EIPV)
- 			user_space = panicm.rip && (panicm.cs & 3);
--		
--		/* When the machine was in user space and the CPU didn't get
--		   confused it's normally not necessary to panic, unless you 
--		   are paranoid (tolerant == 0)
--
--		   RED-PEN could be more tolerant for MCEs in idle,
--		   but most likely they occur at boot anyways, where
--		   it is best to just halt the machine. */
--		if ((!user_space && (panic_on_oops || tolerant < 2)) ||
--		    (unsigned)current->pid <= 1)
--			mce_panic("Uncorrected machine check", &panicm, mcestart);
--
--		/* do_exit takes an awful lot of locks and has as
--		   slight risk of deadlocking. If you don't want that
--		   don't set tolerant >= 2 */
--		if (tolerant < 3)
-+
-+		/*
-+		 * If we know that the error was in user space, send a
-+		 * SIGBUS.  Otherwise, panic if tolerance is low.
-+		 *
-+		 * do_exit() takes an awful lot of locks and has a slight
-+		 * risk of deadlocking.
-+		 */
-+		if (user_space) {
- 			do_exit(SIGBUS);
-+		} else if (panic_on_oops || tolerant < 2) {
-+			mce_panic("Uncorrected machine check",
-+				&panicm, mcestart);
-+		}
- 	}
- 
- 	/* notify userspace ASAP */
- 	set_thread_flag(TIF_MCE_NOTIFY);
- 
-  out:
--	/* Last thing done in the machine check exception to clear state. */
-+	/* the last thing we do is clear state */
-+	for (i = 0; i < banks; i++)
-+		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
- 	wrmsrl(MSR_IA32_MCG_STATUS, 0);
-  out2:
- 	atomic_dec(&mce_entry);
-@@ -505,7 +538,7 @@ static int mce_open(struct inode *inode,
- 
- 	spin_unlock(&mce_state_lock);
- 
--	return 0;
-+	return nonseekable_open(inode, file);
- }
- 
- static int mce_release(struct inode *inode, struct file *file)
+
+File systems
+
+Subject    : 2.6.21-git10/11: files getting truncated on xfs
+References : http://lkml.org/lkml/2007/5/9/410
+Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
+Handled-By : David Chinner <dgc@sgi.com>
+Patch      : http://lkml.org/lkml/2007/5/12/93
+Status     : patch was suggested
+
+
+
+Memory management
+
+Subject    : kernel BUG at include/linux/slub_def.h:88 kmalloc_index()
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8476
+Submitter  : Cherwin R. Nooitmeer <cherwin@gmail.com>
+Status     : Unknown
+
+
+
+SATA/PATA
+
+Subject    : libata crash on halt
+References : http://marc.info/?l=linux-ide&m=117899827710565&w=2
+Submitter  : Andrew Morton <akpm@linux-foundation.org>
+Caused-By  : Tejun Heo <htejun@gmail.com>
+             commit 920a4b1038e442700a1cfac77ea7e20bd615a2c3
+Status     : problem is being debugged
+
+Subject    : libata reset-seq merge broke sata_sil on sh
+References : http://lkml.org/lkml/2007/5/10/63
+Submitter  : Paul Mundt <lethal@linux-sh.org>
+Handled-By : Tejun Heo <htejun@gmail.com>
+Caused-By  : commit 4750def52cb2c21732dda9aa1d43a07db37b0186
+Status     : problem is being debugged
+
+
+
+Suspend
+
+Subject    : Broken suspend on SMP with tifm
+References : http://lkml.org/lkml/2007/5/13/161
+Submitter  : Rafael J. Wysocki <rjw@sisk.pl>
+Status     : patch was suggested
+
+
+
+Regards,
+Michal
+
+--
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
