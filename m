@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762543AbXEPIgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbXEPIh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762543AbXEPIgz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758695AbXEPIeH
+	id S1758960AbXEPIh0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758191AbXEPIeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:34:07 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6599 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:34:09 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6605 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762335AbXEPIeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762344AbXEPIeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 May 2007 04:34:04 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 2/19] Add sg helpers for iterating over a scatterlist table
-Date: Wed, 16 May 2007 10:32:16 +0200
-Message-Id: <11793043533803-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 1/19] crypto: don't pollute the global namespace with sg_next()
+Date: Wed, 16 May 2007 10:32:15 +0200
+Message-Id: <11793043532702-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11793043533744-git-send-email-jens.axboe@oracle.com>
 References: <11793043533744-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First step to being able to change the scatterlist setup without
-having to modify drivers (a lot :-)
+It's a subsystem function, prefix it as such.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- include/linux/scatterlist.h |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ crypto/digest.c      |    2 +-
+ crypto/scatterwalk.c |    2 +-
+ crypto/scatterwalk.h |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
-index 4efbd9c..bed5ab4 100644
---- a/include/linux/scatterlist.h
-+++ b/include/linux/scatterlist.h
-@@ -20,4 +20,13 @@ static inline void sg_init_one(struct scatterlist *sg, const void *buf,
- 	sg_set_buf(sg, buf, buflen);
+diff --git a/crypto/digest.c b/crypto/digest.c
+index 1bf7414..e56de67 100644
+--- a/crypto/digest.c
++++ b/crypto/digest.c
+@@ -77,7 +77,7 @@ static int update2(struct hash_desc *desc,
+ 
+ 		if (!nbytes)
+ 			break;
+-		sg = sg_next(sg);
++		sg = scatterwalk_sg_next(sg);
+ 	}
+ 
+ 	return 0;
+diff --git a/crypto/scatterwalk.c b/crypto/scatterwalk.c
+index 81afd17..2e51f82 100644
+--- a/crypto/scatterwalk.c
++++ b/crypto/scatterwalk.c
+@@ -70,7 +70,7 @@ static void scatterwalk_pagedone(struct scatter_walk *walk, int out,
+ 		walk->offset += PAGE_SIZE - 1;
+ 		walk->offset &= PAGE_MASK;
+ 		if (walk->offset >= walk->sg->offset + walk->sg->length)
+-			scatterwalk_start(walk, sg_next(walk->sg));
++			scatterwalk_start(walk, scatterwalk_sg_next(walk->sg));
+ 	}
  }
  
-+#define sg_next(sg)		((sg) + 1)
-+#define sg_last(sg, nents)	(&(sg[(nents) - 1]))
-+
-+/*
-+ * Loop over each sg element, following the pointer to a new list if necessary
-+ */
-+#define for_each_sg(sglist, sg, nr, __i)	\
-+	for (__i = 0, sg = (sglist); __i < (nr); __i++, sg = sg_next(sg))
-+
- #endif /* _LINUX_SCATTERLIST_H */
+diff --git a/crypto/scatterwalk.h b/crypto/scatterwalk.h
+index f1592cc..e049c62 100644
+--- a/crypto/scatterwalk.h
++++ b/crypto/scatterwalk.h
+@@ -20,7 +20,7 @@
+ 
+ #include "internal.h"
+ 
+-static inline struct scatterlist *sg_next(struct scatterlist *sg)
++static inline struct scatterlist *scatterwalk_sg_next(struct scatterlist *sg)
+ {
+ 	return (++sg)->length ? sg : (void *)sg->page;
+ }
 -- 
 1.5.2.rc1
 
