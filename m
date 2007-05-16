@@ -1,84 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbXEPIkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763858AbXEPIk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760794AbXEPIkp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:40:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761005AbXEPIeX
+	id S1763858AbXEPIk7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762386AbXEPIeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:34:23 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6621 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:34:24 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6625 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762386AbXEPIeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761490AbXEPIeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 May 2007 04:34:08 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 18/19] ll_rw_blk: temporarily enable max_segments tweaking
-Date: Wed, 16 May 2007 10:32:32 +0200
-Message-Id: <11793043542858-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 12/19] IA64: sg chaining support
+Date: Wed, 16 May 2007 10:32:26 +0200
+Message-Id: <1179304354658-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11793043533744-git-send-email-jens.axboe@oracle.com>
 References: <11793043533744-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose this setting for now, so that users can play with enabling
-large commands without defaulting it to on globally. This is a debug
-patch, it will be dropped for the final versions.
+This updates the ia64 iommu/pci dma mappers to sg chaining.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/ll_rw_blk.c |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
+ arch/ia64/hp/common/sba_iommu.c |   14 +++++++-------
+ arch/ia64/sn/pci/pci_dma.c      |   11 ++++++-----
+ include/asm-ia64/dma-mapping.h  |    1 +
+ include/asm-ia64/scatterlist.h  |    2 ++
+ 4 files changed, 16 insertions(+), 12 deletions(-)
 
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 7d801cf..b085d0e 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -3980,7 +3980,23 @@ static ssize_t queue_max_hw_sectors_show(struct request_queue *q, char *page)
- 	return queue_var_show(max_hw_sectors_kb, (page));
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index c1dca22..f6d15cf 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -393,7 +393,7 @@ sba_dump_sg( struct ioc *ioc, struct scatterlist *startsg, int nents)
+ 		printk(KERN_DEBUG " %d : DMA %08lx/%05x CPU %p\n", nents,
+ 		       startsg->dma_address, startsg->dma_length,
+ 		       sba_sg_address(startsg));
+-		startsg++;
++		startsg = sg_next(startsg);
+ 	}
  }
  
-+static ssize_t queue_max_segments_show(struct request_queue *q, char *page)
-+{
-+	return queue_var_show(q->max_phys_segments, page);
-+}
-+
-+static ssize_t queue_max_segments_store(struct request_queue *q,
-+					const char *page, size_t count)
-+{
-+	unsigned long segments;
-+	ssize_t ret = queue_var_store(&segments, page, count);
+@@ -406,7 +406,7 @@ sba_check_sg( struct ioc *ioc, struct scatterlist *startsg, int nents)
+ 	while (the_nents-- > 0) {
+ 		if (sba_sg_address(the_sg) == 0x0UL)
+ 			sba_dump_sg(NULL, startsg, nents);
+-		the_sg++;
++		the_sg = sg_next(the_sg);
+ 	}
+ }
  
-+	spin_lock_irq(q->queue_lock);
-+	q->max_phys_segments = segments;
-+	spin_unlock_irq(q->queue_lock);
-+
-+	return ret;
-+}
- static struct queue_sysfs_entry queue_requests_entry = {
- 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
- 	.show = queue_requests_show,
-@@ -4004,6 +4020,12 @@ static struct queue_sysfs_entry queue_max_hw_sectors_entry = {
- 	.show = queue_max_hw_sectors_show,
- };
+@@ -1198,7 +1198,7 @@ sba_fill_pdir(
+ 			u32 pide = startsg->dma_address & ~PIDE_FLAG;
+ 			dma_offset = (unsigned long) pide & ~iovp_mask;
+ 			startsg->dma_address = 0;
+-			dma_sg++;
++			dma_sg = sg_next(dma_sg);
+ 			dma_sg->dma_address = pide | ioc->ibase;
+ 			pdirp = &(ioc->pdir_base[pide >> iovp_shift]);
+ 			n_mappings++;
+@@ -1225,7 +1225,7 @@ sba_fill_pdir(
+ 				pdirp++;
+ 			} while (cnt > 0);
+ 		}
+-		startsg++;
++		startsg = sg_next(startsg);
+ 	}
+ 	/* force pdir update */
+ 	wmb();
+@@ -1294,7 +1294,7 @@ sba_coalesce_chunks( struct ioc *ioc,
+ 		while (--nents > 0) {
+ 			unsigned long vaddr;	/* tmp */
  
-+static struct queue_sysfs_entry queue_max_segments_entry = {
-+	.attr = {.name = "max_segments", .mode = S_IRUGO | S_IWUSR },
-+	.show = queue_max_segments_show,
-+	.store = queue_max_segments_store,
-+};
+-			startsg++;
++			startsg = sg_next(startsg);
+ 
+ 			/* PARANOID */
+ 			startsg->dma_address = startsg->dma_length = 0;
+@@ -1404,7 +1404,7 @@ int sba_map_sg(struct device *dev, struct scatterlist *sglist, int nents, int di
+ #ifdef ALLOW_IOV_BYPASS_SG
+ 	ASSERT(to_pci_dev(dev)->dma_mask);
+ 	if (likely((ioc->dma_mask & ~to_pci_dev(dev)->dma_mask) == 0)) {
+-		for (sg = sglist ; filled < nents ; filled++, sg++){
++		for_each_sg(sglist, sg, nents, filled) {
+ 			sg->dma_length = sg->length;
+ 			sg->dma_address = virt_to_phys(sba_sg_address(sg));
+ 		}
+@@ -1498,7 +1498,7 @@ void sba_unmap_sg (struct device *dev, struct scatterlist *sglist, int nents, in
+ 	while (nents && sglist->dma_length) {
+ 
+ 		sba_unmap_single(dev, sglist->dma_address, sglist->dma_length, dir);
+-		sglist++;
++		sglist = sg_next(sglist);
+ 		nents--;
+ 	}
+ 
+diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
+index 7a291a2..fde6073 100644
+--- a/arch/ia64/sn/pci/pci_dma.c
++++ b/arch/ia64/sn/pci/pci_dma.c
+@@ -218,16 +218,17 @@ EXPORT_SYMBOL(sn_dma_unmap_single);
+  *
+  * Unmap a set of streaming mode DMA translations.
+  */
+-void sn_dma_unmap_sg(struct device *dev, struct scatterlist *sg,
++void sn_dma_unmap_sg(struct device *dev, struct scatterlist *sgl,
+ 		     int nhwentries, int direction)
+ {
+ 	int i;
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
++	struct scatterlist *sg;
+ 
+ 	BUG_ON(dev->bus != &pci_bus_type);
+ 
+-	for (i = 0; i < nhwentries; i++, sg++) {
++	for_each_sg(sgl, sg, nhwentries, i) {
+ 		provider->dma_unmap(pdev, sg->dma_address, direction);
+ 		sg->dma_address = (dma_addr_t) NULL;
+ 		sg->dma_length = 0;
+@@ -244,11 +245,11 @@ EXPORT_SYMBOL(sn_dma_unmap_sg);
+  *
+  * Maps each entry of @sg for DMA.
+  */
+-int sn_dma_map_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
++int sn_dma_map_sg(struct device *dev, struct scatterlist *sgl, int nhwentries,
+ 		  int direction)
+ {
+ 	unsigned long phys_addr;
+-	struct scatterlist *saved_sg = sg;
++	struct scatterlist *saved_sg = sgl, *sg;
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
+ 	int i;
+@@ -258,7 +259,7 @@ int sn_dma_map_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
+ 	/*
+ 	 * Setup a DMA address for each entry in the scatterlist.
+ 	 */
+-	for (i = 0; i < nhwentries; i++, sg++) {
++	for_each_sg(sgl, sg, nhwentries, i) {
+ 		phys_addr = SG_ENT_PHYS_ADDRESS(sg);
+ 		sg->dma_address = provider->dma_map(pdev,
+ 						    phys_addr, sg->length,
+diff --git a/include/asm-ia64/dma-mapping.h b/include/asm-ia64/dma-mapping.h
+index 6299b51..aeba8da 100644
+--- a/include/asm-ia64/dma-mapping.h
++++ b/include/asm-ia64/dma-mapping.h
+@@ -5,6 +5,7 @@
+  * Copyright (C) 2003-2004 Hewlett-Packard Co
+  *	David Mosberger-Tang <davidm@hpl.hp.com>
+  */
++#include <linux/scatterlist.h>
+ #include <asm/machvec.h>
+ 
+ #define dma_alloc_coherent	platform_dma_alloc_coherent
+diff --git a/include/asm-ia64/scatterlist.h b/include/asm-ia64/scatterlist.h
+index a452ea2..7d5234d 100644
+--- a/include/asm-ia64/scatterlist.h
++++ b/include/asm-ia64/scatterlist.h
+@@ -30,4 +30,6 @@ struct scatterlist {
+ #define sg_dma_len(sg)		((sg)->dma_length)
+ #define sg_dma_address(sg)	((sg)->dma_address)
+ 
++#define	ARCH_HAS_SG_CHAIN
 +
- static struct queue_sysfs_entry queue_iosched_entry = {
- 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
- 	.show = elv_iosched_show,
-@@ -4015,6 +4037,7 @@ static struct attribute *default_attrs[] = {
- 	&queue_ra_entry.attr,
- 	&queue_max_hw_sectors_entry.attr,
- 	&queue_max_sectors_entry.attr,
-+	&queue_max_segments_entry.attr,
- 	&queue_iosched_entry.attr,
- 	NULL,
- };
+ #endif /* _ASM_IA64_SCATTERLIST_H */
 -- 
 1.5.2.rc1
 
