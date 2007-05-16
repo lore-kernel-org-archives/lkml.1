@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763130AbXEPXUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933617AbXEPX3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763130AbXEPXUg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758905AbXEPXU2
+	id S933617AbXEPX3T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757382AbXEPX3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:20:28 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:41982 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757335AbXEPXU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:20:27 -0400
-Date: Thu, 17 May 2007 01:20:03 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: David Miller <davem@davemloft.net>
-cc: satyam.sharma@gmail.com, Marcel Holtmann <marcel@holtmann.org>,
-       Greg KH <gregkh@suse.de>, jeremy@goop.org, maxk@qualcomm.com,
-       bluez-devel@lists.sourceforge.net, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
- at net/core/sock.c:1523
-In-Reply-To: <20070516.161609.108116976.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0705170116260.13706@twin.jikos.cz>
-References: <1179317775.10069.77.camel@violet> <Pine.LNX.4.64.0705161418250.25986@twin.jikos.cz>
- <Pine.LNX.4.64.0705170102290.13706@twin.jikos.cz> <20070516.161609.108116976.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 May 2007 19:29:04 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35334 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757473AbXEPX3D (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 19:29:03 -0400
+Date: Thu, 17 May 2007 09:28:50 +1000
+From: David Chinner <dgc@sgi.com>
+To: David Howells <dhowells@redhat.com>
+Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
+Message-ID: <20070516232850.GO85884050@sgi.com>
+References: <20070318233008.GA32597093@melbourne.sgi.com> <18993.1179310769@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18993.1179310769@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, David Miller wrote:
+On Wed, May 16, 2007 at 11:19:29AM +0100, David Howells wrote:
+> 
+> However, page_mkwrite() isn't told which bit of the page is going to be
+> written to.  This means it has to ask prepare_write() to make sure the whole
+> page is filled in.  In other words, offset and to must be equal (in AFS I set
+> them both to 0).
 
-> > I have just verified that this locking scheme is indeed correct. So you 
-> > can add
-> > 
-> > 	Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> > 
-> > if you wish to, and submit the patch to Andrew.
-> I guess I don't get sent networking patches any more?
-> :-)
+The assumption is the page is already up to date and we are writing
+the whole page unless EOF lands inside the page. AFAICT, we can't
+get called with a page that is not uptodate and so page filling is
+not something we should be doing (or want to be doing) here. All we
+want to do is to be able to change the mapping from a read to a
+write mapping (e.g. a read mapping of a hole needs to be changed on
+write) and do the relevant space reservation/allocation and buffer
+mapping needed for this change.
 
-Well, this is bluetooth-specific, but it seemed to me that Marcel wasn't 
-going to send pull requests to Linus any time soon, therefore I thought 
-going through akpm is a thing to do.
+> However, if someone adds a syscall to punch holes in files, this may change...
 
-Honestly, I really don't care through which tree this goes in, so sorry if 
-any offence was caused here :)
+We already have them - ioctl(XFS_IOC_UNRESVSP) and
+madvise(MADV_REMOVE) - and another - fallocate(FA_DEALLOCATE) - is
+on it's way. Racing with truncates should already be handled by the
+truncate code (i.e. partial page truncation does the zero filling).
 
+/me makes note to implement ->truncate_range() in XFS for MADV_REMOVE.
+
+Cheers,
+
+Dave.
 -- 
-Jiri Kosina
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
