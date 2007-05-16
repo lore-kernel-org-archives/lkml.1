@@ -1,85 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762600AbXEPMKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760380AbXEPMQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762600AbXEPMKI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759187AbXEPMJ4
+	id S1760380AbXEPMQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbXEPMQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:09:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:27296 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757507AbXEPMJz (ORCPT
+	Wed, 16 May 2007 08:16:05 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:53233 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756240AbXEPMQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:09:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=X2ZOaS4Q7Tj323rlQLvKG9g9hogZ62/8pvo8ew9w6SdouWqp/2tNXyR9/pQRbrD8TQa30uW2bxBDuGVs9voomgIOTjD4mjgr90oO9uICxvZMlYrY8Oock4R1DzAMUgXKuIHww13fbJ675SHQVkMyfjiafyNvpp1tv6TM/S0O2mY=
-Message-ID: <464AF4A6.5060000@gmail.com>
-Date: Wed, 16 May 2007 14:10:14 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: (NFS) BUG: at page-writeback.c:829 [Was: 2.6.22-rc1-mm1]
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
-In-Reply-To: <20070515201914.16944e04.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 16 May 2007 08:16:04 -0400
+Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
+	at net/core/sock.c:1523
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Jiri Kosina <jikos@jikos.cz>, Greg KH <gregkh@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <a781481a0705160459p2d538d7fu8096bd594d6df2f9@mail.gmail.com>
+References: <462D1B09.9050005@goop.org>
+	 <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
+	 <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
+	 <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
+	 <Pine.LNX.4.64.0705161124030.25986@twin.jikos.cz>
+	 <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com>
+	 <1179315904.10069.67.camel@violet>
+	 <a781481a0705160456q778cfb4dk67d754317d57e9bb@mail.gmail.com>
+	 <a781481a0705160459p2d538d7fu8096bd594d6df2f9@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 14:16:15 +0200
+Message-Id: <1179317775.10069.77.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
+Hi Satyam,
 
-I've got this in dmesg:
+> > > > > > (later)
+> > > > > > I Googled a bit to see if this problem was faced elsewhere in the kernel
+> > > > > > too. Saw the following commit by Ingo Molnar
+> > > > > > (9883a13c72dbf8c518814b6091019643cdb34429):
+> > > > > > -     lock_sock(sock->sk);
+> > > > > > +     local_bh_disable();
+> > > > > > +     bh_lock_sock_nested(sock->sk);
+> > > > > >       rc = selinux_netlbl_socket_setsid(sock, sksec->sid);
+> > > > > > -     release_sock(sock->sk);
+> > > > > > +     bh_unlock_sock(sock->sk);
+> > > > > > +     local_bh_enable();
+> > > > > > Is it _really_ *this* simple?
+> > > > > [...]
+> > > > > actually this *seems* to be proper solution also for our case, thanks for
+> > > > > pointing this out. I will think about it once again, do some more tests
+> > > > > with this locking scheme, and will let you know.
+> > > >
+> > > > Yes, I can almost confirm that this (open-coding of spin_lock_bh,
+> > > > effectively) is the proper solution (Rusty's unreliable guide to
+> > > > kernel-locking needs to be next to every developer's keyboard :-)
+> > > > I also came across this idiom in other places in the networking code
+> > > > so it seems to be pretty much the standard way. I wish I owned
+> > > > bluetooth hardware, could've tested this for you myself.
+> > >
+> > > does this mean we should revert previous changes to the locking or only
+> > > apply this on top of it?
+> >
+> > I've fixed a simple patch on top of 2.6.22-rc1 below.
+> 
+> Eek, please ignore previous one. This one's correct.
+> 
+> Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> 
+> diff -ruNp a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
+> --- a/net/bluetooth/hci_sock.c	2007-05-16 17:31:06.000000000 +0530
+> +++ b/net/bluetooth/hci_sock.c	2007-05-16 17:38:35.000000000 +0530
+> @@ -665,7 +665,8 @@ static int hci_sock_dev_event(struct not
+>  		/* Detach sockets from device */
+>  		read_lock(&hci_sk_list.lock);
+>  		sk_for_each(sk, node, &hci_sk_list.head) {
+> -			lock_sock(sk);
+> +			local_bh_disable();
+> +			bh_lock_sock_nested(sk);
+>  			if (hci_pi(sk)->hdev == hdev) {
+>  				hci_pi(sk)->hdev = NULL;
+>  				sk->sk_err = EPIPE;
+> @@ -674,7 +675,8 @@ static int hci_sock_dev_event(struct not
+> 
+>  				hci_dev_put(hdev);
+>  			}
+> -			release_sock(sk);
+> +			bh_unlock_sock(sk);
+> +			local_bh_enable();
+>  		}
+>  		read_unlock(&hci_sk_list.lock);
+>  	}
 
-BUG: at /local/xslaby/xxx/mm/page-writeback.c:829 __set_page_dirty_nobuffers()
- [<c010531e>] dump_trace+0x1ce/0x200
- [<c010536a>] show_trace_log_lvl+0x1a/0x30
- [<c0106012>] show_trace+0x12/0x20
- [<c0106086>] dump_stack+0x16/0x20
- [<c015566d>] __set_page_dirty_nobuffers+0x11d/0x130
- [<c0155690>] redirty_page_for_writepage+0x10/0x20
- [<c01938fc>] __block_write_full_page+0x20c/0x330
- [<c0193b0a>] block_write_full_page+0xea/0x100
- [<c0196c82>] blkdev_writepage+0x12/0x20
- [<c015539e>] __writepage+0xe/0x30
- [<c01558c2>] write_cache_pages+0x222/0x340
- [<c0155a03>] generic_writepages+0x23/0x30
- [<c0155a3e>] do_writepages+0x2e/0x50
- [<c018decb>] __writeback_single_inode+0x8b/0x470
- [<c018e75b>] generic_sync_sb_inodes+0x24b/0x470
- [<c018e9a7>] sync_sb_inodes+0x27/0x30
- [<c018ec33>] writeback_inodes+0xb3/0xe0
- [<c01560f2>] wb_kupdate+0x82/0xf0
- [<c015660b>] pdflush+0xeb/0x1b0
- [<c0132e72>] kthread+0x42/0x70
- [<c0104d4b>] kernel_thread_helper+0x7/0x1c
- =======================
-BUG: at /local/xslaby/xxx/mm/page-writeback.c:829 __set_page_dirty_nobuffers()
- [<c010531e>] dump_trace+0x1ce/0x200
- [<c010536a>] show_trace_log_lvl+0x1a/0x30
- [<c0106012>] show_trace+0x12/0x20
- [<c0106086>] dump_stack+0x16/0x20
- [<c015566d>] __set_page_dirty_nobuffers+0x11d/0x130
- [<f8b1fc5b>] nfs_updatepage+0x7b/0x200 [nfs]
- [<f8b156df>] nfs_commit_write+0x2f/0x50 [nfs]
- [<c0150911>] generic_file_buffered_write+0x2a1/0x660
- [<c0150f52>] __generic_file_aio_write_nolock+0x282/0x520
- [<c0151252>] generic_file_aio_write+0x62/0xd0
- [<f8b15def>] nfs_file_write+0xef/0x1c0 [nfs]
- [<c01715e0>] do_sync_write+0xd0/0x110
- [<c0171e04>] vfs_write+0x94/0x130
- [<c017248d>] sys_write+0x3d/0x70
- [<c01040e8>] syscall_call+0x7/0xb
- [<b7eb7b3e>] 0xb7eb7b3e
- =======================
+since Jiri has a good test case for it, I leave it to him for testing.
+If he confirms that this fixes the locking issues, then this is
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+
+Regards
+
+Marcel
+
+
