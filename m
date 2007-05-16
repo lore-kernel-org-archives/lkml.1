@@ -1,39 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759638AbXEPQBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbXEPQG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759638AbXEPQBt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbXEPQBn
+	id S1759794AbXEPQG3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756439AbXEPQGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:01:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60318 "EHLO mx1.redhat.com"
+	Wed, 16 May 2007 12:06:22 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:51189 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755383AbXEPQBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:01:42 -0400
-Message-ID: <464B2AC2.10206@redhat.com>
-Date: Wed, 16 May 2007 12:01:06 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1756413AbXEPQGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 12:06:21 -0400
+Date: Wed, 16 May 2007 18:04:45 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: ark3116_driver@auctionant.de
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: ark3116: receive returns negative
+Message-ID: <Pine.LNX.4.61.0705161743250.9570@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: filesystem benchmarking fun
-References: <20070516144205.GV26766@think.oraclecorp.com>
-In-Reply-To: <20070516144205.GV26766@think.oraclecorp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> For example, I'll pick on xfs for a minute.  compilebench shows the
-> default FS you get from mkfs.xfs is pretty slow for untarring a bunch of
-> kernel trees.  Dave Chinner gave me some mount options that make it
-> dramatically better, but it still writes at 10MB/s on a sata drive that
-> can do 80MB/s.  Ext3 is better, but still only 20MB/s. 
-> 
+Hello,
 
-Now try JFS. My lawn grows faster than it can write a new kernel tree.
 
-What we need is a tool that shows *why* this stuff happens...
+I seem to have problems with the ark3116 driver from 2.6.18.8. This is a 
+USB-RS232 cable. Just opening the /dev/ttyUSB0 device 
+gives (this is the 
+debug output enabled by `modprobe ark3116 debug=1`).
 
+The lines that look suspicious are
+/serial/ark3116.c: 124 < 1 bytes [0xFFFFFFB0]
+and
+/serial/ark3116.c: ark3116_ioctl cmd 0x5401 not supported
+
+I have also seen things like "id here < -62 [0x10]", which would 
+indicate that usb_control_msg() returned something very negative 
+(-ETIME!?).
+
+Issuing a write() on an open fd to ttyUSB does not generate any further 
+debug output. Is the driver even complete/functional?
+I do not know where to go from here, please advise.
+
+
+Full output:
+/serial/ark3116.c: ark3116_open - port 0
+/serial/ark3116.c: 111 < 1 bytes [0x03]
+/serial/ark3116.c: 112 > ok
+/serial/ark3116.c: 113 > ok
+/serial/ark3116.c: 114 > ok
+/serial/ark3116.c: 115 > ok
+/serial/ark3116.c: 116 < 1 bytes [0x03]
+/serial/ark3116.c: 117 > ok
+/serial/ark3116.c: 118 < 1 bytes [0x02]
+/serial/ark3116.c: 119 > ok
+/serial/ark3116.c: 120 < 1 bytes [0x00]
+/serial/ark3116.c: 121 > ok
+/serial/ark3116.c: 122 < 1 bytes [0x01]
+/serial/ark3116.c: 123 > ok
+/serial/ark3116.c: 124 < 1 bytes [0xFFFFFFB0]
+/serial/ark3116.c: ark3116_set_termios - port 0
+/serial/ark3116.c: setting CS8
+/serial/ark3116.c: setting parity to NONE
+/serial/ark3116.c: setting 1 stop bit
+/serial/ark3116.c: 000 < 1 bytes [0x02]
+/serial/ark3116.c: setting baudrate to 9600 (->reg=312)
+/serial/ark3116.c: 147 > ok
+/serial/ark3116.c: 148 > ok
+/serial/ark3116.c: 149 > ok
+/serial/ark3116.c: 150 > ok
+/serial/ark3116.c: 151 < 1 bytes [0x03]
+/serial/ark3116.c: 152 > ok
+/serial/ark3116.c: updating bit count, stop bit or parity (cfg=0x03)
+/serial/ark3116.c: 153 < 1 bytes [0x00]
+/serial/ark3116.c: 154 > ok
+/serial/ark3116.c: ark3116_ioctl cmd 0x5401 not supported
+
+
+	Jan
+-- 
