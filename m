@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbXEPGmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762681AbXEPGno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762333AbXEPGmr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 02:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbXEPGmk
+	id S1762681AbXEPGno (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 02:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760257AbXEPGnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 02:42:40 -0400
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:45520 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755005AbXEPGmk (ORCPT
+	Wed, 16 May 2007 02:43:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46153
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1760032AbXEPGng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 02:42:40 -0400
-Message-ID: <464AA7D7.2040602@kernel.org>
-Date: Tue, 15 May 2007 23:42:31 -0700
-From: Josh Triplett <josh@kernel.org>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, ak@suse.de, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, randy.dunlap@oracle.com
-Subject: Re: [PATCH] prohibit rcutorture from being compiled into the kernel
-References: <20070516002720.GA22379@linux.vnet.ibm.com>
-In-Reply-To: <20070516002720.GA22379@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 May 2007 02:43:36 -0400
+Date: Tue, 15 May 2007 23:43:43 -0700 (PDT)
+Message-Id: <20070515.234343.74747977.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: akpm@linux-foundation.org, mroos@linux.ee, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: slab hang on boot
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070515.180316.41635662.davem@davemloft.net>
+References: <20070515.173820.101498227.davem@davemloft.net>
+	<Pine.LNX.4.64.0705151759420.4399@schroedinger.engr.sgi.com>
+	<20070515.180316.41635662.davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> There have been a number of instances where people have accidentally
-> compiled rcutorture into the kernel (CONFIG_RCU_TORTURE_TEST=y), which
-> has never been useful, and has often resulted in great frustration.  The
-> attached patch prohibits rcutorture from being compiled into the kernel.
-> It may be excluded altogether or compiled as a module.  People wishing
-> to have rcutorture hammer their machine immediately upon boot are free
-> to hand-edit lib/Kconfig.debug to remove the "depends on m" line.
+From: David Miller <davem@davemloft.net>
+Date: Tue, 15 May 2007 18:03:16 -0700 (PDT)
+
+> From: Christoph Lameter <clameter@sgi.com>
+> Date: Tue, 15 May 2007 18:00:23 -0700 (PDT)
 > 
-> Thanks to Randy Dunlap for the trick that makes this work.
+> > Slab allocators: Define common size limitations
 > 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Thanks for doing this work Christoph, I'll test this patch out on all
+> my sparc64 boxes, with both SLAB and SLUB, later this evening.
 
-This seems reasonable to me.  I can imagine legitimate reasons to want to
-have rcutorture running as early as possible, but as you said, anyone
-wishing to do so can hand-edit lib/Kconfig.debug easily enough.
+SLAB works properly again on sparc64 with this patch, thanks
+Christophe.
 
-Acked-by: Josh Triplett <josh@kernel.org>
-
-- Josh Triplett
-
+Signed-off-by: David S. Miller <davem@davemloft.net>
