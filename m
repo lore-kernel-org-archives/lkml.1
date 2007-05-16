@@ -1,54 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbXEPLy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbXEPL4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760291AbXEPLy4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757552AbXEPLyt
+	id S1761293AbXEPL4u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757862AbXEPL4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:54:49 -0400
-Received: from lazybastard.de ([212.112.238.170]:35221 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757079AbXEPLys (ORCPT
+	Wed, 16 May 2007 07:56:40 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:10957 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756374AbXEPL4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:54:48 -0400
-Date: Wed, 16 May 2007 13:50:03 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070516115003.GD5472@lazybastard.org>
-References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 16 May 2007 07:56:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EPSTekySB0yvyMmUdsUWtfWiuoEaVmFyB32EnYHpoW6gi5pUjspN+uL9cDxPEt6dnilv0c83SuEIXmUSIXfmpJubQ8//ry7CvP6HZ1q6Yq5NVypYGUSJCVAQO8JulKEBLOWUfLg3r+NLsqDWizHfmNX20ocPxsfIeeYArO1pd6Q=
+Message-ID: <a781481a0705160456q778cfb4dk67d754317d57e9bb@mail.gmail.com>
+Date: Wed, 16 May 2007 17:26:38 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Marcel Holtmann" <marcel@holtmann.org>
+Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context at net/core/sock.c:1523
+Cc: "Jiri Kosina" <jikos@jikos.cz>, "Greg KH" <gregkh@suse.de>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, "Cedric Le Goater" <clg@fr.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <1179315904.10069.67.camel@violet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070516113434.GC20482@mail.shareable.org>
-User-Agent: Mutt/1.5.9i
+References: <462D1B09.9050005@goop.org>
+	 <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
+	 <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
+	 <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
+	 <Pine.LNX.4.64.0705161124030.25986@twin.jikos.cz>
+	 <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com>
+	 <1179315904.10069.67.camel@violet>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
-> 
-> But if akpm can't pronounce it, how about FFFS for faster flash
-> filesystem.... ;-)
+Hi Marcel,
 
-How many of you have worked for IBM before?  Vowels are not evil. ;)
+On 5/16/07, Marcel Holtmann <marcel@holtmann.org> wrote:
+> Hi Satayam,
+>
+> > > > (later)
+> > > > I Googled a bit to see if this problem was faced elsewhere in the kernel
+> > > > too. Saw the following commit by Ingo Molnar
+> > > > (9883a13c72dbf8c518814b6091019643cdb34429):
+> > > > -     lock_sock(sock->sk);
+> > > > +     local_bh_disable();
+> > > > +     bh_lock_sock_nested(sock->sk);
+> > > >       rc = selinux_netlbl_socket_setsid(sock, sksec->sid);
+> > > > -     release_sock(sock->sk);
+> > > > +     bh_unlock_sock(sock->sk);
+> > > > +     local_bh_enable();
+> > > > Is it _really_ *this* simple?
+> > > [...]
+> > > actually this *seems* to be proper solution also for our case, thanks for
+> > > pointing this out. I will think about it once again, do some more tests
+> > > with this locking scheme, and will let you know.
+> >
+> > Yes, I can almost confirm that this (open-coding of spin_lock_bh,
+> > effectively) is the proper solution (Rusty's unreliable guide to
+> > kernel-locking needs to be next to every developer's keyboard :-)
+> > I also came across this idiom in other places in the networking code
+> > so it seems to be pretty much the standard way. I wish I owned
+> > bluetooth hardware, could've tested this for you myself.
+>
+> does this mean we should revert previous changes to the locking or only
+> apply this on top of it?
 
-Grouping four or more consonants to name anything will cause similar
-expressions on people's faces.  Numbers don't help much either.
+I've fixed a simple patch on top of 2.6.22-rc1 below.
 
-Ext2 is a great name, because "ext" actually is a pronouncable syllable.
-MinixFS, ChunkFS, TileFS are great too.  XFS and JFS are ok, at least
-they only have three consonants.  But FFS exists, so I'd rather go for a
-syllable.
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-Jörn
+diff -ruNp a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
+--- a/net/bluetooth/hci_sock.c	2007-05-16 17:31:06.000000000 +0530
++++ b/net/bluetooth/hci_sock.c	2007-05-16 17:33:36.000000000 +0530
+@@ -665,7 +665,8 @@ static int hci_sock_dev_event(struct not
+ 		/* Detach sockets from device */
+ 		read_lock(&hci_sk_list.lock);
+ 		sk_for_each(sk, node, &hci_sk_list.head) {
+-			lock_sock(sk);
++			local_bh_disable();
++			bh_lock_sock_nested(sk);
+ 			if (hci_pi(sk)->hdev == hdev) {
+ 				hci_pi(sk)->hdev = NULL;
+ 				sk->sk_err = EPIPE;
+@@ -674,6 +675,8 @@ static int hci_sock_dev_event(struct not
 
--- 
-Joern's library part 5:
-http://www.faqs.org/faqs/compression-faq/part2/section-9.html
+ 				hci_dev_put(hdev);
+ 			}
++			bh_unlock_sock(sk);
++			local_bh_enable();
+ 			release_sock(sk);
+ 		}
+ 		read_unlock(&hci_sk_list.lock);
