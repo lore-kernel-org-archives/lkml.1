@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762083AbXEPXcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934110AbXEPXct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762083AbXEPXcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbXEPXcM
+	id S934110AbXEPXct (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbXEPXck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:32:12 -0400
-Received: from serverina.hacknight.org ([80.68.90.101]:1509 "EHLO
-	serverina.hacknight.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757474AbXEPXcL (ORCPT
+	Wed, 16 May 2007 19:32:40 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:44180 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756728AbXEPXcj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:32:11 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: v2.6.21-rt2
-References: <20070516180447.GA17922@elte.hu>
-From: Free Ekanayaka <free@64studio.com>
-Organization: 64 Studio
-Date: Thu, 17 May 2007 01:32:02 +0200
-In-Reply-To: <20070516180447.GA17922@elte.hu> (Ingo Molnar's message of "Wed, 16 May 2007 20:04:47 +0200")
-Message-ID: <87fy5wny4t.fsf@64studio.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Wed, 16 May 2007 19:32:39 -0400
+Message-ID: <464B9427.1010204@freescale.com>
+Date: Wed, 16 May 2007 18:30:47 -0500
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
+       kbuild-devel@lists.sourceforge.net
+Subject: Re: [RFC] select and dependencies in Kconfig
+References: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk> <20070516033335.GH4095@ftp.linux.org.uk> <464B141E.3020400@s5r6.in-berlin.de>
+In-Reply-To: <464B141E.3020400@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Stefan Richter wrote:
 
-|--==> Ingo Molnar writes:
+> "A... select B" is just a flavor of "A... depends on B", with the
+> additional instruction to the Kconfig UIs:  Don't hide A if you can
+> silently switch on B.
 
-  IM> i'm pleased to announce the v2.6.20-rt2 kernel, which can be downloaded 
-  IM> from the usual place:
+I think you mean "A... select B" is just a flavor of "B... depends on A".  There is one 
+minor difference between the two.
 
-  IM>     http://redhat.com/~mingo/realtime-preempt/
+If A is a driver and B is a library, then it's more intuitive to update the Kconfig option 
+for A then it is to update the Kconfig option for B.  For example, if I want to add a new 
+driver C that uses library B, I can just add this:
 
-This new version of the patch solves the amd64/udev bug I reported
-against previous releases:
+C
+	select B
 
-http://www.mail-archive.com/linux-rt-users@vger.kernel.org/msg00353.html
+If I have to use "depends on", then I would have to change the Kconfig option for B like this:
 
-I'm going to test the patch on other amd64 machines as well, thanks a
-lot and keep up goo the work!
+B
+	depends on A || C
 
-Ciao,
+And every time I create a new driver that depends on library B, I have to update that 
+"depends on" line *in addition to* creating the Kconfig line for the new driver.  If 10 
+drivers use library B, you'll have this:
 
-Free
+B
+	depends on A || C || D || E || F || G || H || I || J || K
+
+> How about throwing "select" out of the Kconfig language and improving
+> the UIs instead, so that users find what they want and need?
+
+I know a lot of people don't like 'select', but I prefer it over 'depends on'.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
