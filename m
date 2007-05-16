@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762963AbXEPIg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763022AbXEPIgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762963AbXEPIg0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760821AbXEPIdT
+	id S1763022AbXEPIgl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762387AbXEPIeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:33:19 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:7097 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:34:05 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6603 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758102AbXEPIdM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 04:33:12 -0400
+	id S1762346AbXEPIeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 04:34:04 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 10/10] ll_rw_blk: temporarily enable max_segments tweaking
-Date: Wed, 16 May 2007 10:31:40 +0200
-Message-Id: <11793043001390-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 4/19] block: convert to using sg helpers
+Date: Wed, 16 May 2007 10:32:18 +0200
+Message-Id: <11793043541837-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
-In-Reply-To: <1179304300358-git-send-email-jens.axboe@oracle.com>
-References: <1179304300358-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <11793043533744-git-send-email-jens.axboe@oracle.com>
+References: <11793043533744-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose this setting for now, so that users can play with enabling
-large commands without defaulting it to on globally.
+Convert the main rq mapper (blk_rq_map_sg()) to the sg helper setup.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/ll_rw_blk.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ block/ll_rw_blk.c |   19 ++++++++++++-------
+ 1 files changed, 12 insertions(+), 7 deletions(-)
 
 diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 0ad4c34..0adcbed 100644
+index 6b5173a..7d801cf 100644
 --- a/block/ll_rw_blk.c
 +++ b/block/ll_rw_blk.c
-@@ -3931,7 +3931,22 @@ static ssize_t queue_max_hw_sectors_show(struct request_queue *q, char *page)
- 	return queue_var_show(max_hw_sectors_kb, (page));
- }
+@@ -30,6 +30,7 @@
+ #include <linux/cpu.h>
+ #include <linux/blktrace_api.h>
+ #include <linux/fault-inject.h>
++#include <linux/scatterlist.h>
  
-+static ssize_t queue_max_segments_show(struct request_queue *q, char *page)
-+{
-+	return queue_var_show(q->max_phys_segments, page);
-+}
-+
-+static ssize_t queue_max_segments_store(struct request_queue *q, const char *page, size_t count)
-+{
-+	unsigned long segments;
-+	ssize_t ret = queue_var_store(&segments, page, count);
+ /*
+  * for max sense size
+@@ -1307,9 +1308,11 @@ static int blk_hw_contig_segment(request_queue_t *q, struct bio *bio,
+  * map a request to scatterlist, return number of sg entries setup. Caller
+  * must make sure sg can hold rq->nr_phys_segments entries
+  */
+-int blk_rq_map_sg(request_queue_t *q, struct request *rq, struct scatterlist *sg)
++int blk_rq_map_sg(request_queue_t *q, struct request *rq,
++		  struct scatterlist *sglist)
+ {
+ 	struct bio_vec *bvec, *bvprv;
++	struct scatterlist *next_sg, *sg;
+ 	struct bio *bio;
+ 	int nsegs, i, cluster;
  
-+	spin_lock_irq(q->queue_lock);
-+	q->max_phys_segments = segments;
-+	spin_unlock_irq(q->queue_lock);
-+
-+	return ret;
-+}
- static struct queue_sysfs_entry queue_requests_entry = {
- 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
- 	.show = queue_requests_show,
-@@ -3955,6 +3970,12 @@ static struct queue_sysfs_entry queue_max_hw_sectors_entry = {
- 	.show = queue_max_hw_sectors_show,
- };
+@@ -1320,6 +1323,7 @@ int blk_rq_map_sg(request_queue_t *q, struct request *rq, struct scatterlist *sg
+ 	 * for each bio in rq
+ 	 */
+ 	bvprv = NULL;
++	sg = next_sg = &sglist[0];
+ 	rq_for_each_bio(bio, rq) {
+ 		/*
+ 		 * for each segment in bio
+@@ -1328,7 +1332,7 @@ int blk_rq_map_sg(request_queue_t *q, struct request *rq, struct scatterlist *sg
+ 			int nbytes = bvec->bv_len;
  
-+static struct queue_sysfs_entry queue_max_segments_entry = {
-+	.attr = {.name = "max_segments", .mode = S_IRUGO |S_IWUSR },
-+	.show = queue_max_segments_show,
-+	.store = queue_max_segments_store,
-+};
-+
- static struct queue_sysfs_entry queue_iosched_entry = {
- 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
- 	.show = elv_iosched_show,
-@@ -3966,6 +3987,7 @@ static struct attribute *default_attrs[] = {
- 	&queue_ra_entry.attr,
- 	&queue_max_hw_sectors_entry.attr,
- 	&queue_max_sectors_entry.attr,
-+	&queue_max_segments_entry.attr,
- 	&queue_iosched_entry.attr,
- 	NULL,
- };
+ 			if (bvprv && cluster) {
+-				if (sg[nsegs - 1].length + nbytes > q->max_segment_size)
++				if (sg->length + nbytes > q->max_segment_size)
+ 					goto new_segment;
+ 
+ 				if (!BIOVEC_PHYS_MERGEABLE(bvprv, bvec))
+@@ -1336,14 +1340,15 @@ int blk_rq_map_sg(request_queue_t *q, struct request *rq, struct scatterlist *sg
+ 				if (!BIOVEC_SEG_BOUNDARY(q, bvprv, bvec))
+ 					goto new_segment;
+ 
+-				sg[nsegs - 1].length += nbytes;
++				sg->length += nbytes;
+ 			} else {
+ new_segment:
+-				memset(&sg[nsegs],0,sizeof(struct scatterlist));
+-				sg[nsegs].page = bvec->bv_page;
+-				sg[nsegs].length = nbytes;
+-				sg[nsegs].offset = bvec->bv_offset;
++				sg = next_sg;
++				next_sg = sg_next(sg);
+ 
++				sg->page = bvec->bv_page;
++				sg->length = nbytes;
++				sg->offset = bvec->bv_offset;
+ 				nsegs++;
+ 			}
+ 			bvprv = bvec;
 -- 
 1.5.2.rc1
 
