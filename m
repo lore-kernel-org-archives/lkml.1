@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762037AbXEPLkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762269AbXEPLlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762037AbXEPLkq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbXEPLkg
+	id S1762269AbXEPLlc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758652AbXEPLlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:40:36 -0400
-Received: from smtp.nokia.com ([131.228.20.171]:64569 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758212AbXEPLkf convert rfc822-to-8bit (ORCPT
+	Wed, 16 May 2007 07:41:25 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:30220 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758236AbXEPLlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:40:35 -0400
-Subject: Re: [PATCH] LogFS take three
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Jamie Lokier <jamie@shareable.org>
-Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>, akpm@osdl.org,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20070516113434.GC20482@mail.shareable.org>
-References: <20070515151919.GA32510@lazybastard.org>
-	 <17994.1241.436841.681216@stoffel.org>
-	 <20070515191926.GB1220@lazybastard.org>
-	 <1179291255.2859.195.camel@shinybook.infradead.org>
-	 <20070516110933.GA5472@lazybastard.org>
-	 <20070516113434.GC20482@mail.shareable.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 16 May 2007 14:38:18 +0300
-Message-Id: <1179315498.3642.19.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 16 May 2007 11:38:18.0784 (UTC) FILETIME=[B3135200:01C797AE]
-X-Nokia-AV: Clean
+	Wed, 16 May 2007 07:41:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=gHk/vxVa6qg/ohsIOvaiFLKLb+V+czw7Of/RFqiU1cYNJ0dQrUtxyXtd53vWS4qNcVEkqMr+bNARmyr4//u02MST0iW7zaHKat0EUmketSVR0hmTUe5rnyvXatcUg1xehuo43sSiRu74B8oio4B5WzxUOtoe/txW13ttuLFajQ8=
+Message-ID: <464AEDD0.3090304@gmail.com>
+Date: Wed, 16 May 2007 13:41:04 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Rob Landley <rob@landley.net>
+CC: Dave Jones <davej@redhat.com>, Francesco Pretto <ceztko@gmail.com>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <46489D3B.8050805@gmail.com> <20070515210804.GG25902@redhat.com> <200705160129.16048.rob@landley.net>
+In-Reply-To: <200705160129.16048.rob@landley.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 12:34 +0100, Jamie Lokier wrote:
-> Jörn Engel wrote:
-> > On Wed, 16 May 2007 12:54:14 +0800, David Woodhouse wrote:
-> > > Personally I'd just go for 'JFFS3'. After all, it has a better claim to
-> > > the name than either of its predecessors :)
-> > 
-> > Did you ever see akpm's facial expression when he tried to pronounce
-> > "JFFS2"?  ;)
-> 
-> JFFS3 is a good, meaningful name to anyone familiar with JFFS2.
-> 
-> But if akpm can't pronounce it, how about FFFS for faster flash
-> filesystem.... ;-)
+Hello,
 
-The problem is that JFFS2 will always be faster in terms of I/O speed
-anyway, just because it does not have to maintain on-flash indexing
-data structures. But yes, it is slow in mount and in building big
-inodes, so the "faster" is confusing.
+Rob Landley wrote:
+> Um, hang on.  So libata can't reliably turn the system off without data loss 
+> and potential damage to hardware unless userspace goes through a special song 
+> and dance?  And this is _not_ considered a defect in the kernel?
+
+Yeap, definitely a bug in the kernel and we're trying to fix it.  Just
+for the record, we have _always_ issued FLUSH CACHE, so there hasn't
+been and won't be any data loss problem.  The data loss problem was
+mentioned as why we can't do things completely inside kernel without
+updating userland shutdown(8) which issues STANDBYNOW.
 
 -- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+tejun
