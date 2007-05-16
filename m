@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933133AbXEPTlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762459AbXEPTnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933133AbXEPTlw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 15:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbXEPTlq
+	id S1762459AbXEPTnl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 15:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXEPTne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 15:41:46 -0400
-Received: from Mail.MNSU.EDU ([134.29.1.12]:42804 "EHLO mail.mnsu.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753152AbXEPTlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 15:41:45 -0400
-X-Greylist: delayed 1461 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 15:41:45 EDT
-Message-ID: <464B58A2.6010202@mnsu.edu>
-Date: Wed, 16 May 2007 14:16:50 -0500
-From: Jeffrey Hundstad <jeffrey.hundstad@mnsu.edu>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Wed, 16 May 2007 15:43:34 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:36503 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753152AbXEPTnd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 15:43:33 -0400
+Date: Wed, 16 May 2007 21:43:32 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Bhutani Meeta-W19091 <Meeta.Bhutani@motorola.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Contributor Agreement/Copyright Assignment
+Message-ID: <20070516194332.GB4086@stusta.de>
+References: <7376BC9FD0C11A4CA373508199DEED1802E35A76@de01exm65.ds.mot.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: filesystem benchmarking fun
-References: <20070516144205.GV26766@think.oraclecorp.com> <Pine.LNX.4.61.0705162010370.9019@yvahk01.tjqt.qr> <464B57B7.7090404@garzik.org>
-In-Reply-To: <464B57B7.7090404@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <7376BC9FD0C11A4CA373508199DEED1802E35A76@de01exm65.ds.mot.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Jan Engelhardt wrote:
->> On May 16 2007 10:42, Chris Mason wrote:
->>> For example, I'll pick on xfs for a minute.  compilebench shows the
->>> default FS you get from mkfs.xfs is pretty slow for untarring a 
->>> bunch of
->>> kernel trees.
->>
->> I suppose you used 'nobarrier'? [ http://lkml.org/lkml/2006/5/19/33 ]
->
-> Shouldn't that option be renamed to 'corrupt_my_data'?  ;-)
+On Wed, May 16, 2007 at 10:59:49AM -0400, Bhutani Meeta-W19091 wrote:
+>  
+> Motorola would like to understand if kernel.org has a contributor
+> agreement (or a copyright assignment agreement) that is posted somewhere
+> ? We are investigating what would be needed from a legal standpoint to
+> possibly contribute in the future.
 
-Perhaps maybe "my_power_never_fails".
->
->     Jeff
->
->
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>From a legal standpoint, all Motorola has to do is to release the code 
+under the terms of the GPL version 2.
+
+Motorola (or whoever else has it) retains the copyright of the code and 
+can even licence this code to other people under different terms. [1]
+
+The mentioned "Developer's Certificate of Origin" only describes a 
+formalized way to express that the code is available under the terms of 
+the GPL and that you agree that the metadata will be stored 
+indefinitely. Nothing interesting from a standpoint, and since you'll 
+hopefully read Documentation/SubmittingPatches before submitting your 
+code, you'll anyway see it when you need it.
+
+> Thanks & Regards
+> Meeta Bhutani
+
+Hope this helps, and thanks in advance for your contributions
+Adrian
+
+[1] but after published under the GPL, it will be available under the 
+    terms of the GPL forever for both the Linux kernel and other 
+    projects
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
