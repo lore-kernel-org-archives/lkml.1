@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762149AbXEPMHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762398AbXEPMI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762149AbXEPMHv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760040AbXEPMHj
+	id S1762398AbXEPMI0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757876AbXEPMIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:07:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48155 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759498AbXEPMHh (ORCPT
+	Wed, 16 May 2007 08:08:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:19453 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757671AbXEPMIQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:07:37 -0400
+	Wed, 16 May 2007 08:08:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=eTlOyJeHu3PT3AK2Ugnqqbb1+VD+5JW349mQI2iXZue3B+zB/nD5RQ1X3IDLLIkLn/IquRKLBgQ7AaZyZFAWeNFQxKmBtuQ05F72ztz9GXAH0G4of8+QKM4W+BDT5a83frO491/FQ8WwiZ4ETmgULlcN1JMF0qgJHP5JUZd/u4Q=
+Message-ID: <84144f020705160508t275cb379k71bdd21c9e7d3d6e@mail.gmail.com>
+Date: Wed, 16 May 2007 15:08:15 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Jamie Lokier" <jamie@shareable.org>
 Subject: Re: [PATCH] LogFS take three
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-In-Reply-To: <20070515133759.9ee434a2.akpm@linux-foundation.org>
+Cc: "Albert Cahalan" <acahalan@gmail.com>,
+       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@lazybastard.org>, akpm@osdl.org,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, "Ingo Oeser" <ioe-lkml@rameria.de>,
+       linux-mtd@lists.infradead.org,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       linux-fsdevel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20070516111840.GB20482@mail.shareable.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 References: <20070515151919.GA32510@lazybastard.org>
-	 <20070515133759.9ee434a2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 16 May 2007 20:07:18 +0800
-Message-Id: <1179317240.2859.222.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	 <787b0d920705151626x3a11b81csf0f3747a695131b0@mail.gmail.com>
+	 <20070516111840.GB20482@mail.shareable.org>
+X-Google-Sender-Auth: 1c38ad5d0aa77850
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-15 at 13:37 -0700, Andrew Morton wrote:
-> But it includes an MTD header file.
-> 
-> Can this code be tested by people who don't have MTD hardware?  We used to
-> ahve a fake-mtd-on-a-blockdev thing, whcih was in a state of some
-> disrepair.  Maybe it got repaired.  Or removed.  I can't immediately locate
-> it...
+On 5/16/07, Jamie Lokier <jamie@shareable.org> wrote:
+> Given that the filesystem is still 'experimental', I'd concentrate on
+> getting it stable before worrying about immutable and xattrs unless
+> they are easy.
 
-There's block2mtd, as Jörn pointed out. There's also 'nandsim' and
-'mtdram', which will vmalloc some space and use that to emulate NAND or
-NOR flash, respectively.
-
-> It's strange and a bit regrettable that an fs would have dependency on MTD,
-> really.
-
-Why? Other file systems has dependencies on BLOCK or on NET. It seems
-entirely normal to me.
-
--- 
-dwmw2
-
+We will run into trouble if the on-disk format is not flexible enough
+to accommodate xattrs (think reiser3 here). So I'd worry about it
+before merging to mainline.
