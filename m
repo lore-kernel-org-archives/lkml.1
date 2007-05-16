@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965301AbXEPTxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030346AbXEPTyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965301AbXEPTxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 15:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762309AbXEPTxQ
+	id S1030346AbXEPTyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 15:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758968AbXEPTyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 15:53:16 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:23845 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761427AbXEPTxP (ORCPT
+	Wed, 16 May 2007 15:54:14 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:57123
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758770AbXEPTyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 15:53:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=mjGHUohtu3aAktdPfN9mHyFOIqXMyBd4TEl+qCTPz75I2CvNAM6/mdVBRAfFk/kQIaNI9SYYRd9P2YMqh87g9sfE6bXyqsWIk3i0aTXHZRk0X9YcFfw+EhCR1VbNN9pIx4Xq63FYPylVwGjJpi/Zgj2hAYVcjlLBHAjv3RSkecc=
-Message-ID: <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com>
-Date: Wed, 16 May 2007 20:53:13 +0100
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Prakash Punnoor" <prakash@punnoor.de>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
-Cc: "Joshua Hoblitt" <jhoblitt@ifa.hawaii.edu>,
-       LKML <linux-kernel@vger.kernel.org>, "Dave Jones" <davej@redhat.com>,
-       "Daniel Drake" <dsd@gentoo.org>
-In-Reply-To: <200705162039.02379.prakash@punnoor.de>
+	Wed, 16 May 2007 15:54:12 -0400
+Date: Wed, 16 May 2007 12:49:42 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Schwartz <davids@webmaster.com>
+cc: linux-kernel@vger.kernel.org
+Subject: RE: scheduling oddity on 2.6.20.3 stock
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEJKDIAC.davids@webmaster.com>
+Message-ID: <Pine.LNX.4.64.0705161247490.1280@asgard.lang.hm>
+References: <MDEHLPKNGKAHNMBLJOLKIEJKDIAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070516011711.GE15763@ifa.hawaii.edu>
-	 <200705162039.02379.prakash@punnoor.de>
-X-Google-Sender-Auth: 9d1f0648ab30039f
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
-> Maybe you want to give a hint in the p states driver help text?
+On Thu, 3 May 2007, David Schwartz wrote:
 
-I think a hint is the right thing to do, but in the PowerNow! driver
-rather than the p states one. How about adding something like this to
-the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
+>> I needed to recompress some files from .bz2 to .gz so I setup a script to
+>> do
+>>
+>> bunzip2 -c $file.bz2 |gzip -9 >$file.gz
+>>
+>> I expected that the two CPU heavy processes would end up on different
+>> cpu's and spend a little time shuffling data between the two cpu's on a
+>> system (dual core opteron)
+>>
+>> however, instead what I find is that each process is getting 50% of one
+>> cpu while the other cpu is 97% idle.
+>
+> That would only be possible if the compression/decompression block size is
+> small compared to the maximum pipe buffer size. I suspect the reverse is the
+> case.
 
-"ACPI support is required for non-UP systems and requires ACPI_PROCESSOR
- to be selected. If ACPI_PROCESSOR is compiled as a module then this
- option must be too in order for ACPI support to be available."
+I'm still running into this problem in various forms
 
-Cheers,
-Duane.
+is there an easy way to change the maximum pipe buffer size? (including a 
+simple change to the kernel source, I do compile my own kernels)
 
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+> It would be interesting to write an intermediate process that basically
+> enlarged the pipe buffers and see if that changed anything. Basically, the
+> intermediate process would allocate a large buffer (16MB or so) and fill it
+> from 'bunzip2' while draining it to 'gzip' in a non-blocking way (unless the
+> buffer was full/empty, of course).
