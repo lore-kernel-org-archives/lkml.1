@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762277AbXEPXT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763130AbXEPXUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762277AbXEPXT5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbXEPXTv
+	id S1763130AbXEPXUg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758905AbXEPXU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:19:51 -0400
-Received: from smtp121.iad.emailsrvr.com ([207.97.245.121]:59136 "EHLO
-	smtp121.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757382AbXEPXTu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:19:50 -0400
-Message-ID: <464B9155.7070705@gentoo.org>
-Date: Wed, 16 May 2007 19:18:45 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 16 May 2007 19:20:28 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:41982 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757335AbXEPXU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 19:20:27 -0400
+Date: Thu, 17 May 2007 01:20:03 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: David Miller <davem@davemloft.net>
+cc: satyam.sharma@gmail.com, Marcel Holtmann <marcel@holtmann.org>,
+       Greg KH <gregkh@suse.de>, jeremy@goop.org, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
+ at net/core/sock.c:1523
+In-Reply-To: <20070516.161609.108116976.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0705170116260.13706@twin.jikos.cz>
+References: <1179317775.10069.77.camel@violet> <Pine.LNX.4.64.0705161418250.25986@twin.jikos.cz>
+ <Pine.LNX.4.64.0705170102290.13706@twin.jikos.cz> <20070516.161609.108116976.davem@davemloft.net>
 MIME-Version: 1.0
-To: Ed Sweetman <safemode2@comcast.net>
-CC: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>, Duane Griffin <duaneg@dghda.com>,
-       Prakash Punnoor <prakash@punnoor.de>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
- driver
-References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <464B63D8.2060501@gentoo.org> <20070516212736.GO15763@ifa.hawaii.edu> <464B8819.3050303@comcast.net>
-In-Reply-To: <464B8819.3050303@comcast.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ed Sweetman wrote:
-> Like i mentioned off list, the problem here is that cpu freq modules 
-> dont depend (Kconfig) on CONFIG_ACPI_PROCESSOR, yet they do.
+On Wed, 16 May 2007, David Miller wrote:
 
-Not really. Firstly, some of the cpufreq modules *do* depend on 
-CONFIG_ACPI_PROCESSOR. Secondly, the ones that don't have an existing 
-dependency do not actually depend on ACPI_PROCESSOR in some/most 
-configurations.
+> > I have just verified that this locking scheme is indeed correct. So you 
+> > can add
+> > 
+> > 	Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> > 
+> > if you wish to, and submit the patch to Andrew.
+> I guess I don't get sent networking patches any more?
+> :-)
 
-I'll send in a patch to fix the real problem soon.
+Well, this is bluetooth-specific, but it seemed to me that Marcel wasn't 
+going to send pull requests to Linus any time soon, therefore I thought 
+going through akpm is a thing to do.
 
-Daniel
+Honestly, I really don't care through which tree this goes in, so sorry if 
+any offence was caused here :)
+
+-- 
+Jiri Kosina
