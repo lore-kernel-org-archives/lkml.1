@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762167AbXEPRJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbXEPRJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762167AbXEPRJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756943AbXEPRJT
+	id S1762921AbXEPRJk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbXEPRJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:09:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44101 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756247AbXEPRJT (ORCPT
+	Wed, 16 May 2007 13:09:22 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4031 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758324AbXEPRJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:09:19 -0400
-Date: Wed, 16 May 2007 10:06:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Richard Purdie <rpurdie@openedhand.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc1-mm1
-Message-Id: <20070516100632.391f5459.akpm@linux-foundation.org>
-In-Reply-To: <1179334843.5854.28.camel@localhost.localdomain>
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
-	<20070516095018.6f0048bc.randy.dunlap@oracle.com>
-	<1179334843.5854.28.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 13:09:21 -0400
+Date: Wed, 16 May 2007 18:09:14 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>, Gerd Hoffmann <kraxel@suse.de>,
+       Andi Kleen <ak@suse.de>, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] early printk and boot console fixups.
+In-Reply-To: <200705160959.12433.bjorn.helgaas@hp.com>
+Message-ID: <Pine.LNX.4.64N.0705161803110.29569@blysk.ds.pg.gda.pl>
+References: <45D5C473.4010608@suse.de> <86802c440705152117o34325f1dw4a0cdf95241b3b42@mail.gmail.com>
+ <200705160959.12433.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 18:00:43 +0100 Richard Purdie <rpurdie@openedhand.com> wrote:
+On Wed, 16 May 2007, Bjorn Helgaas wrote:
 
-> On Wed, 2007-05-16 at 09:50 -0700, Randy Dunlap wrote:
-> > On Tue, 15 May 2007 20:19:14 -0700 Andrew Morton wrote:
-> > 
-> > > 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
-> > 
-> > LZO build fails on allyesconfig:
-> > 
-> > lib/built-in.o: In function `lzo1x_1_compress':
-> > lib/lzo/minilzo.c:724: multiple definition of `lzo1x_1_compress'                           fs/built-in.o:fs/reiser4/plugin/compress/minilzo.c:1307: first defined here
-> > ld: Warning: size of symbol `lzo1x_1_compress' changed from 1541 in fs/built-in.o to 244 in lib/built-in.o
-> > lib/built-in.o: In function `lzo1x_decompress':                                            lib/lzo/minilzo.c:885: multiple definition of `lzo1x_decompress'
-> > fs/built-in.o:fs/reiser4/plugin/compress/minilzo.c:1466: first defined here                ld: Warning: size of symbol `lzo1x_decompress' changed from 1047 in fs/built-in.o to 678 in lib/built-in.o
-> > make: *** [.tmp_vmlinux1] Error 1
-> > make: Target `all' not remade because of errors.
+> > for early_uart_console, I have some ideas:
+> > 1. merged that into early_serial_console in
+> > arch/x86_64/kernel/early_printk.c, and
+> > move early_printk.c to kernel/, --- make it understand
+> >      earlyprintk=uart,io,0x3f8,9600n8
+> >      earlyprintk=uart,mmio,0xff5e0000,115200n8
+> > in addition to vga, ttyS, serial
 > 
-> Looks like reiser4 contains a copy of minilzo used as some kind of
-> compression plugin. It can be dropped in favour of the version in
-> lib/lzo/, they'll be compatible.
+> I would rather try to merge 8250_early and early_printk.
+> "console=uart,io,0x3f8" is already pretty similar to
+> "earlyprintk=serial", and it would be nice to have only one.
 > 
-> Andrew: Do you want a patch to remove it from reiser4?
-> 
+> "console=uart" does have the disadvantage that you have to know the
+> port address.  But it has the advantage that it doesn't depend on
+> compiled-in legacy serial port names.  If you need early console
+> output, you're probably a developer and can come up with the address.
 
-yes please.
+ Given the generic name of "uart" I am assuming this will work with any 
+UART driver making use of the serial_core.c core -- am I correct?
+
+  Maciej
