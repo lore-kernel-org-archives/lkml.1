@@ -1,101 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763927AbXEPIlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbXEPImL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763927AbXEPIlv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762323AbXEPIe2
+	id S1763585AbXEPImL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762540AbXEPIe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:34:28 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6629 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:34:29 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6628 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761461AbXEPIeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762405AbXEPIeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 May 2007 04:34:09 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 16/19] scsi: simplify scsi_free_sgtable()
-Date: Wed, 16 May 2007 10:32:30 +0200
-Message-Id: <11793043544050-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 14/19] SPARC: sg chaining support
+Date: Wed, 16 May 2007 10:32:28 +0200
+Message-Id: <1179304354393-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11793043533744-git-send-email-jens.axboe@oracle.com>
 References: <11793043533744-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just pass in the command, no point in passing in the scatterlist
-and scatterlist pool index seperately.
+This updates the sparc iommu/pci dma mappers to sg chaining.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- drivers/scsi/scsi_lib.c     |    9 +++++----
- drivers/scsi/scsi_tgt_lib.c |    4 ++--
- include/scsi/scsi_cmnd.h    |    2 +-
- 3 files changed, 8 insertions(+), 7 deletions(-)
+ arch/sparc/kernel/ioport.c      |   25 +++++++++++++------------
+ arch/sparc/mm/io-unit.c         |   12 +++++++-----
+ arch/sparc/mm/iommu.c           |   10 +++++-----
+ arch/sparc/mm/sun4c.c           |   10 ++++++----
+ include/asm-sparc/scatterlist.h |    2 ++
+ 5 files changed, 33 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index f944690..26236b1 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -745,13 +745,14 @@ struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *cmd, gfp_t gfp_mask)
+diff --git a/arch/sparc/kernel/ioport.c b/arch/sparc/kernel/ioport.c
+index 62182d2..9c3ed88 100644
+--- a/arch/sparc/kernel/ioport.c
++++ b/arch/sparc/kernel/ioport.c
+@@ -35,6 +35,7 @@
+ #include <linux/slab.h>
+ #include <linux/pci.h>		/* struct pci_dev */
+ #include <linux/proc_fs.h>
++#include <linux/scatterlist.h>
  
- EXPORT_SYMBOL(scsi_alloc_sgtable);
- 
--void scsi_free_sgtable(struct scatterlist *sgl, int index)
-+void scsi_free_sgtable(struct scsi_cmnd *cmd)
+ #include <asm/io.h>
+ #include <asm/vaddrs.h>
+@@ -717,19 +718,19 @@ void pci_unmap_page(struct pci_dev *hwdev,
+  * Device ownership issues as mentioned above for pci_map_single are
+  * the same here.
+  */
+-int pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg, int nents,
++int pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sgl, int nents,
+     int direction)
  {
-+	struct scatterlist *sgl = cmd->request_buffer;
- 	struct scsi_host_sg_pool *sgp;
++	struct scatterlist *sg;
+ 	int n;
  
--	BUG_ON(index >= SG_MEMPOOL_NR);
-+	BUG_ON(cmd->sglist_len >= SG_MEMPOOL_NR);
- 
--	sgp = scsi_sg_pools + index;
-+	sgp = scsi_sg_pools + cmd->sglist_len;
- 	mempool_free(sgl, sgp->pool);
- }
- 
-@@ -777,7 +778,7 @@ EXPORT_SYMBOL(scsi_free_sgtable);
- static void scsi_release_buffers(struct scsi_cmnd *cmd)
- {
- 	if (cmd->use_sg)
--		scsi_free_sgtable(cmd->request_buffer, cmd->sglist_len);
-+		scsi_free_sgtable(cmd);
- 
- 	/*
- 	 * Zero these out.  They now point to freed memory, and it is
-diff --git a/drivers/scsi/scsi_tgt_lib.c b/drivers/scsi/scsi_tgt_lib.c
-index 2570f48..d6e58e5 100644
---- a/drivers/scsi/scsi_tgt_lib.c
-+++ b/drivers/scsi/scsi_tgt_lib.c
-@@ -329,7 +329,7 @@ static void scsi_tgt_cmd_done(struct scsi_cmnd *cmd)
- 	scsi_tgt_uspace_send_status(cmd, tcmd->tag);
- 
- 	if (cmd->request_buffer)
--		scsi_free_sgtable(cmd->request_buffer, cmd->sglist_len);
-+		scsi_free_sgtable(cmd);
- 
- 	queue_work(scsi_tgtd, &tcmd->work);
- }
-@@ -370,7 +370,7 @@ static int scsi_tgt_init_cmd(struct scsi_cmnd *cmd, gfp_t gfp_mask)
+ 	BUG_ON(direction == PCI_DMA_NONE);
+ 	/* IIep is write-through, not flushing. */
+-	for (n = 0; n < nents; n++) {
++	for_each_sg(sgl, sg, nents, n) {
+ 		BUG_ON(page_address(sg->page) == NULL);
+ 		sg->dvma_address =
+ 			virt_to_phys(page_address(sg->page)) + sg->offset;
+ 		sg->dvma_length = sg->length;
+-		sg++;
  	}
+ 	return nents;
+ }
+@@ -738,19 +739,19 @@ int pci_map_sg(struct pci_dev *hwdev, struct scatterlist *sg, int nents,
+  * Again, cpu read rules concerning calls here are the same as for
+  * pci_unmap_single() above.
+  */
+-void pci_unmap_sg(struct pci_dev *hwdev, struct scatterlist *sg, int nents,
++void pci_unmap_sg(struct pci_dev *hwdev, struct scatterlist *sgl, int nents,
+     int direction)
+ {
++	struct scatterlist *sg;
+ 	int n;
  
- 	eprintk("cmd %p cnt %d\n", cmd, cmd->use_sg);
--	scsi_free_sgtable(cmd->request_buffer, cmd->sglist_len);
-+	scsi_free_sgtable(cmd);
- 	return -EINVAL;
+ 	BUG_ON(direction == PCI_DMA_NONE);
+ 	if (direction != PCI_DMA_TODEVICE) {
+-		for (n = 0; n < nents; n++) {
++		for_each_sg(sgl, sg, nents, n) {
+ 			BUG_ON(page_address(sg->page) == NULL);
+ 			mmu_inval_dma_area(
+ 			    (unsigned long) page_address(sg->page),
+ 			    (sg->length + PAGE_SIZE-1) & PAGE_MASK);
+-			sg++;
+ 		}
+ 	}
+ }
+@@ -789,34 +790,34 @@ void pci_dma_sync_single_for_device(struct pci_dev *hwdev, dma_addr_t ba, size_t
+  * The same as pci_dma_sync_single_* but for a scatter-gather list,
+  * same rules and usage.
+  */
+-void pci_dma_sync_sg_for_cpu(struct pci_dev *hwdev, struct scatterlist *sg, int nents, int direction)
++void pci_dma_sync_sg_for_cpu(struct pci_dev *hwdev, struct scatterlist *sgl, int nents, int direction)
+ {
++	struct scatterlist *sg;
+ 	int n;
+ 
+ 	BUG_ON(direction == PCI_DMA_NONE);
+ 	if (direction != PCI_DMA_TODEVICE) {
+-		for (n = 0; n < nents; n++) {
++		for_each_sg(sgl, sg, nents, n) {
+ 			BUG_ON(page_address(sg->page) == NULL);
+ 			mmu_inval_dma_area(
+ 			    (unsigned long) page_address(sg->page),
+ 			    (sg->length + PAGE_SIZE-1) & PAGE_MASK);
+-			sg++;
+ 		}
+ 	}
  }
  
-diff --git a/include/scsi/scsi_cmnd.h b/include/scsi/scsi_cmnd.h
-index a2e0c10..d7db992 100644
---- a/include/scsi/scsi_cmnd.h
-+++ b/include/scsi/scsi_cmnd.h
-@@ -133,6 +133,6 @@ extern void *scsi_kmap_atomic_sg(struct scatterlist *sg, int sg_count,
- extern void scsi_kunmap_atomic_sg(void *virt);
+-void pci_dma_sync_sg_for_device(struct pci_dev *hwdev, struct scatterlist *sg, int nents, int direction)
++void pci_dma_sync_sg_for_device(struct pci_dev *hwdev, struct scatterlist *sgl, int nents, int direction)
+ {
++	struct scatterlist *sg;
+ 	int n;
  
- extern struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *, gfp_t);
--extern void scsi_free_sgtable(struct scatterlist *, int);
-+extern void scsi_free_sgtable(struct scsi_cmnd *);
+ 	BUG_ON(direction == PCI_DMA_NONE);
+ 	if (direction != PCI_DMA_TODEVICE) {
+-		for (n = 0; n < nents; n++) {
++		for_each_sg(sgl, sg, nents, n) {
+ 			BUG_ON(page_address(sg->page) == NULL);
+ 			mmu_inval_dma_area(
+ 			    (unsigned long) page_address(sg->page),
+ 			    (sg->length + PAGE_SIZE-1) & PAGE_MASK);
+-			sg++;
+ 		}
+ 	}
+ }
+diff --git a/arch/sparc/mm/io-unit.c b/arch/sparc/mm/io-unit.c
+index 4ccda77..71442fe 100644
+--- a/arch/sparc/mm/io-unit.c
++++ b/arch/sparc/mm/io-unit.c
+@@ -11,8 +11,8 @@
+ #include <linux/mm.h>
+ #include <linux/highmem.h>	/* pte_offset_map => kmap_atomic */
+ #include <linux/bitops.h>
++#include <linux/scatterlist.h>
  
- #endif /* _SCSI_SCSI_CMND_H */
+-#include <asm/scatterlist.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+ #include <asm/sbus.h>
+@@ -144,8 +144,9 @@ static void iounit_get_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_bus
+ 	spin_lock_irqsave(&iounit->lock, flags);
+ 	while (sz != 0) {
+ 		--sz;
+-		sg[sz].dvma_address = iounit_get_area(iounit, (unsigned long)page_address(sg[sz].page) + sg[sz].offset, sg[sz].length);
+-		sg[sz].dvma_length = sg[sz].length;
++		sg->dvma_address = iounit_get_area(iounit, (unsigned long)page_address(sg->page) + sg->offset, sg->length);
++		sg->dvma_length = sg->length;
++		sg = sg_next(sg);
+ 	}
+ 	spin_unlock_irqrestore(&iounit->lock, flags);
+ }
+@@ -173,11 +174,12 @@ static void iounit_release_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_
+ 	spin_lock_irqsave(&iounit->lock, flags);
+ 	while (sz != 0) {
+ 		--sz;
+-		len = ((sg[sz].dvma_address & ~PAGE_MASK) + sg[sz].length + (PAGE_SIZE-1)) >> PAGE_SHIFT;
+-		vaddr = (sg[sz].dvma_address - IOUNIT_DMA_BASE) >> PAGE_SHIFT;
++		len = ((sg->dvma_address & ~PAGE_MASK) + sg->length + (PAGE_SIZE-1)) >> PAGE_SHIFT;
++		vaddr = (sg->dvma_address - IOUNIT_DMA_BASE) >> PAGE_SHIFT;
+ 		IOD(("iounit_release %08lx-%08lx\n", (long)vaddr, (long)len+vaddr));
+ 		for (len += vaddr; vaddr < len; vaddr++)
+ 			clear_bit(vaddr, iounit->bmap);
++		sg = sg_next(sg);
+ 	}
+ 	spin_unlock_irqrestore(&iounit->lock, flags);
+ }
+diff --git a/arch/sparc/mm/iommu.c b/arch/sparc/mm/iommu.c
+index be042ef..0534cd0 100644
+--- a/arch/sparc/mm/iommu.c
++++ b/arch/sparc/mm/iommu.c
+@@ -12,8 +12,8 @@
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+ #include <linux/highmem.h>	/* pte_offset_map => kmap_atomic */
++#include <linux/scatterlist.h>
+ 
+-#include <asm/scatterlist.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+ #include <asm/sbus.h>
+@@ -240,7 +240,7 @@ static void iommu_get_scsi_sgl_noflush(struct scatterlist *sg, int sz, struct sb
+ 		n = (sg->length + sg->offset + PAGE_SIZE-1) >> PAGE_SHIFT;
+ 		sg->dvma_address = iommu_get_one(sg->page, n, sbus) + sg->offset;
+ 		sg->dvma_length = (__u32) sg->length;
+-		sg++;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+@@ -254,7 +254,7 @@ static void iommu_get_scsi_sgl_gflush(struct scatterlist *sg, int sz, struct sbu
+ 		n = (sg->length + sg->offset + PAGE_SIZE-1) >> PAGE_SHIFT;
+ 		sg->dvma_address = iommu_get_one(sg->page, n, sbus) + sg->offset;
+ 		sg->dvma_length = (__u32) sg->length;
+-		sg++;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+@@ -285,7 +285,7 @@ static void iommu_get_scsi_sgl_pflush(struct scatterlist *sg, int sz, struct sbu
+ 
+ 		sg->dvma_address = iommu_get_one(sg->page, n, sbus) + sg->offset;
+ 		sg->dvma_length = (__u32) sg->length;
+-		sg++;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+@@ -325,7 +325,7 @@ static void iommu_release_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_b
+ 		n = (sg->length + sg->offset + PAGE_SIZE-1) >> PAGE_SHIFT;
+ 		iommu_release_one(sg->dvma_address & PAGE_MASK, n, sbus);
+ 		sg->dvma_address = 0x21212121;
+-		sg++;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+diff --git a/arch/sparc/mm/sun4c.c b/arch/sparc/mm/sun4c.c
+index 436021c..e5c703b 100644
+--- a/arch/sparc/mm/sun4c.c
++++ b/arch/sparc/mm/sun4c.c
+@@ -17,8 +17,8 @@
+ #include <linux/highmem.h>
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
++#include <linux/scatterlist.h>
+ 
+-#include <asm/scatterlist.h>
+ #include <asm/page.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+@@ -1229,8 +1229,9 @@ static void sun4c_get_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_bus *
+ {
+ 	while (sz != 0) {
+ 		--sz;
+-		sg[sz].dvma_address = (__u32)sun4c_lockarea(page_address(sg[sz].page) + sg[sz].offset, sg[sz].length);
+-		sg[sz].dvma_length = sg[sz].length;
++		sg->dvma_address = (__u32)sun4c_lockarea(page_address(sg->page) + sg->offset, sg->length);
++		sg->dvma_length = sg->length;
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+@@ -1245,7 +1246,8 @@ static void sun4c_release_scsi_sgl(struct scatterlist *sg, int sz, struct sbus_b
+ {
+ 	while (sz != 0) {
+ 		--sz;
+-		sun4c_unlockarea((char *)sg[sz].dvma_address, sg[sz].length);
++		sun4c_unlockarea((char *)sg->dvma_address, sg->length);
++		sg = sg_next(sg);
+ 	}
+ }
+ 
+diff --git a/include/asm-sparc/scatterlist.h b/include/asm-sparc/scatterlist.h
+index a4fcf9a..4055af9 100644
+--- a/include/asm-sparc/scatterlist.h
++++ b/include/asm-sparc/scatterlist.h
+@@ -19,4 +19,6 @@ struct scatterlist {
+ 
+ #define ISA_DMA_THRESHOLD (~0UL)
+ 
++#define ARCH_HAS_SG_CHAIN
++
+ #endif /* !(_SPARC_SCATTERLIST_H) */
 -- 
 1.5.2.rc1
 
