@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbXEPM7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbXEPNAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761589AbXEPM7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759043AbXEPM7h
+	id S1759757AbXEPNAs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 09:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbXEPNAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:59:37 -0400
-Received: from lazybastard.de ([212.112.238.170]:60619 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758722AbXEPM7g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:59:36 -0400
-Date: Wed, 16 May 2007 14:55:01 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Jamie Lokier <jamie@shareable.org>, David Woodhouse <dwmw2@infradead.org>,
-       akpm@osdl.org, Albert Cahalan <acahalan@gmail.com>,
-       Greg KH <greg@kroah.com>, John Stoffel <john@stoffel.org>,
-       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070516125501.GG5472@lazybastard.org>
-References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org> <20070516122921.GA26297@2ka.mipt.ru>
+	Wed, 16 May 2007 09:00:41 -0400
+Received: from verein.lst.de ([213.95.11.210]:43116 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752625AbXEPNAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 09:00:40 -0400
+Date: Wed, 16 May 2007 14:59:59 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] remove odd and misleading comments from uio.h
+Message-ID: <20070516125959.GB1322@lst.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070516122921.GA26297@2ka.mipt.ru>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 16:29:22 +0400, Evgeniy Polyakov wrote:
-> On Wed, May 16, 2007 at 01:50:03PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
-> > On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
-> > > 
-> > > But if akpm can't pronounce it, how about FFFS for faster flash
-> > > filesystem.... ;-)
-> > 
-> > How many of you have worked for IBM before?  Vowels are not evil. ;)
-> 
-> Do you think 'eieio' is a good set? IBM's work too...
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-I will let someone else comment on that one.
-
-http://www.uwsg.iu.edu/hypermail/linux/kernel/0110.1/1294.html
-
-Jörn
-
--- 
-There are two ways of constructing a software design: one way is to make
-it so simple that there are obviously no deficiencies, and the other is
-to make it so complicated that there are no obvious deficiencies.
--- C. A. R. Hoare
+Index: linux-2.6/include/linux/uio.h
+===================================================================
+--- linux-2.6.orig/include/linux/uio.h	2007-01-16 03:40:19.000000000 +0100
++++ linux-2.6/include/linux/uio.h	2007-01-16 03:41:08.000000000 +0100
+@@ -13,10 +13,6 @@
+  *		2 of the License, or (at your option) any later version.
+  */
+ 
+-
+-/* A word of warning: Our uio structure will clash with the C library one (which is now obsolete). Remove the C
+-   library one from sys/uio.h if you have a very old library set */
+-
+ struct iovec
+ {
+ 	void __user *iov_base;	/* BSD uses caddr_t (1003.1g requires void *) */
+@@ -38,11 +34,6 @@
+  
+ #define UIO_FASTIOV	8
+ #define UIO_MAXIOV	1024
+-#if 0
+-#define UIO_MAXIOV	16	/* Maximum iovec's in one operation 
+-				   16 matches BSD */
+-                                /* Beg pardon: BSD has 1024 --ANK */
+-#endif
+ 
+ /*
+  * Total number of bytes covered by an iovec.
