@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbXEPWuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759697AbXEPWvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762662AbXEPWuu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 18:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759906AbXEPWsj
+	id S1759697AbXEPWvI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 18:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760072AbXEPWsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 18:48:39 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:50151 "HELO ustc.edu.cn"
+	Wed, 16 May 2007 18:48:40 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:50152 "HELO ustc.edu.cn"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1758506AbXEPWsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758534AbXEPWsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 May 2007 18:48:33 -0400
-Message-ID: <379355696.93198@ustc.edu.cn>
+Message-ID: <379355696.96896@ustc.edu.cn>
 X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Message-Id: <20070516224819.131727893@mail.ustc.edu.cn>
+Message-Id: <20070516224819.281192313@mail.ustc.edu.cn>
 References: <20070516224752.500812933@mail.ustc.edu.cn>
 User-Agent: quilt/0.45-1
-Date: Thu, 17 May 2007 06:47:59 +0800
+Date: Thu, 17 May 2007 06:48:00 +0800
 From: Fengguang Wu <wfg@mail.ustc.edu.cn>
 To: Andrew Morton <akpm@osdl.org>
 Cc: linux-kernel@vger.kernel.org
@@ -23,65 +23,70 @@ Cc: Jens Axboe <jens.axboe@oracle.com>
 Cc: Oleg Nesterov <oleg@tv-sign.ru>
 Cc: Steven Pratt <slpratt@austin.ibm.com>
 Cc: Ram Pai <linuxram@us.ibm.com>
-Subject: [PATCH 7/9] readahead: convert splice invocations
-Content-Disposition: inline; filename=readahead-invocations-splice.patch
+Subject: [PATCH 8/9] readahead: convert ext3/ext4 invocations
+Content-Disposition: inline; filename=readahead-invocations-dir.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert splice reads to use on-demand readahead.
+Convert ext3/ext4 dir reads to use on-demand readahead.
+
+Readahead for dirs operates _not_ on file level, but on blockdev level.
+This makes a difference when the data blocks are not continuous.
+And the read routine is somehow opaque: there's no handy info about the status
+of current page. So a simplified call scheme is employed: to call into
+readahead whenever the current page falls out of readahead windows.
 
 Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
 ---
- fs/splice.c |   18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ fs/ext3/dir.c |   14 ++++++++------
+ fs/ext4/dir.c |   14 ++++++++------
+ 2 files changed, 16 insertions(+), 12 deletions(-)
 
---- linux-2.6.22-rc1-mm1.orig/fs/splice.c
-+++ linux-2.6.22-rc1-mm1/fs/splice.c
-@@ -289,12 +289,6 @@ __generic_file_splice_read(struct file *
- 		nr_pages = PIPE_BUFFERS;
+--- linux-2.6.22-rc1-mm1.orig/fs/ext3/dir.c
++++ linux-2.6.22-rc1-mm1/fs/ext3/dir.c
+@@ -136,12 +136,14 @@ static int ext3_readdir(struct file * fi
+ 		err = ext3_get_blocks_handle(NULL, inode, blk, 1,
+ 						&map_bh, 0, 0);
+ 		if (err > 0) {
+-			page_cache_readahead(sb->s_bdev->bd_inode->i_mapping,
+-				&filp->f_ra,
+-				filp,
+-				map_bh.b_blocknr >>
+-					(PAGE_CACHE_SHIFT - inode->i_blkbits),
+-				1);
++			pgoff_t index = map_bh.b_blocknr >>
++					(PAGE_CACHE_SHIFT - inode->i_blkbits);
++			if (!ra_has_index(&filp->f_ra, index))
++				page_cache_readahead_ondemand(
++					sb->s_bdev->bd_inode->i_mapping,
++					&filp->f_ra, filp,
++					NULL, index, 1);
++			filp->f_ra.prev_index = index;
+ 			bh = ext3_bread(NULL, inode, blk, 0, &err);
+ 		}
  
- 	/*
--	 * Don't try to 2nd guess the read-ahead logic, call into
--	 * page_cache_readahead() like the page cache reads would do.
--	 */
--	page_cache_readahead(mapping, &in->f_ra, in, index, nr_pages);
--
--	/*
- 	 * Now fill in the holes:
- 	 */
- 	error = 0;
-@@ -317,11 +311,8 @@ __generic_file_splice_read(struct file *
- 		 */
- 		page = find_get_page(mapping, index);
- 		if (!page) {
--			/*
--			 * Make sure the read-ahead engine is notified
--			 * about this failure.
--			 */
--			handle_ra_miss(mapping, &in->f_ra, index);
-+			page_cache_readahead_ondemand(mapping, &in->f_ra, in,
-+					NULL, index, nr_pages - spd.nr_pages);
+--- linux-2.6.22-rc1-mm1.orig/fs/ext4/dir.c
++++ linux-2.6.22-rc1-mm1/fs/ext4/dir.c
+@@ -135,12 +135,14 @@ static int ext4_readdir(struct file * fi
+ 		map_bh.b_state = 0;
+ 		err = ext4_get_blocks_wrap(NULL, inode, blk, 1, &map_bh, 0, 0);
+ 		if (err > 0) {
+-			page_cache_readahead(sb->s_bdev->bd_inode->i_mapping,
+-				&filp->f_ra,
+-				filp,
+-				map_bh.b_blocknr >>
+-					(PAGE_CACHE_SHIFT - inode->i_blkbits),
+-				1);
++			pgoff_t index = map_bh.b_blocknr >>
++					(PAGE_CACHE_SHIFT - inode->i_blkbits);
++			if (!ra_has_index(&filp->f_ra, index))
++				page_cache_readahead_ondemand(
++					sb->s_bdev->bd_inode->i_mapping,
++					&filp->f_ra, filp,
++					NULL, index, 1);
++			filp->f_ra.prev_index = index;
+ 			bh = ext4_bread(NULL, inode, blk, 0, &err);
+ 		}
  
- 			/*
- 			 * page didn't exist, allocate one.
-@@ -368,6 +359,10 @@ __generic_file_splice_read(struct file *
- 		this_len = min_t(unsigned long, len, PAGE_CACHE_SIZE - loff);
- 		page = pages[page_nr];
- 
-+		if (PageReadahead(page))
-+			page_cache_readahead_ondemand(mapping, &in->f_ra, in,
-+					page, index, nr_pages - page_nr);
-+
- 		/*
- 		 * If the page isn't uptodate, we may need to start io on it
- 		 */
-@@ -456,6 +451,7 @@ fill_it:
- 	 */
- 	while (page_nr < nr_pages)
- 		page_cache_release(pages[page_nr++]);
-+	in->f_ra.prev_index = index;
- 
- 	if (spd.nr_pages)
- 		return splice_to_pipe(pipe, &spd);
 
 --
