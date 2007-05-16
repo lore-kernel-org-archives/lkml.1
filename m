@@ -1,78 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbXEPH5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760805AbXEPH6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759803AbXEPH5w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbXEPH5p
+	id S1760805AbXEPH6K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 03:58:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759533AbXEPH5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 03:57:45 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:54500 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756129AbXEPH5n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 03:57:43 -0400
-Date: Wed, 16 May 2007 09:57:40 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
-       NeilBrown <neilb@suse.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-s390 <linux-s390@vger.kernel.org>
-Subject: Re: 2.6.22-rc1-mm1 - s390 vs. md
-Message-ID: <20070516095740.0f123058@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070515201914.16944e04.akpm@linux-foundation.org>
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 May 2007 03:57:50 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54494 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758379AbXEPH5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 03:57:50 -0400
+Message-ID: <464AB979.2020107@garzik.org>
+Date: Wed, 16 May 2007 03:57:45 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Henry Su <henry.su@amd.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, gmail_ati <henry.su.ati@gmail.com>
+Subject: Re: [PATCH 4/4] Add the combined mode for ATI SB700
+References: <FFECF24D2A7F6D418B9511AF6F35860201A4D662@shacnexch2.atitech.com>
+In-Reply-To: <FFECF24D2A7F6D418B9511AF6F35860201A4D662@shacnexch2.atitech.com>
+Content-Type: text/plain; charset=UTF-7
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 20:19:14 -0700,
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Henry Su wrote:
+> From: henry.su@amd.com
+> Besides those modes in ATI SB600 SATA controller, ATI SB700 supports one more mode:the combined mode.
+> 
+> The combined mode is a Legacy IDE mode used for compatibility with some old OS without AHCI driver, 
+> but now it is not necessary for Linux since the kernel has supported AHCI.
 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
+hmmmm.  The patch looks OK, but your description seems to indicate that
+the patch is not needed?
 
-Doesn't build on s390 when selecting the md menu:
+	Jeff
 
-drivers/built-in.o(.text+0x438ae): In function `async_xor':
-: undefined reference to `dma_map_page'
-drivers/built-in.o(.text+0x43aac): In function `async_xor':
-: undefined reference to `dma_map_page'
-drivers/built-in.o(.text+0x43d2e): In function `async_xor_zero_sum':
-: undefined reference to `dma_map_page'
-drivers/built-in.o(.text+0x43f50): In function `async_memcpy':
-: undefined reference to `dma_map_page'
-drivers/built-in.o(.text+0x43f90): In function `async_memcpy':
-: undefined reference to `dma_map_page'
-drivers/built-in.o(.text+0x4423e): more undefined references to
-`dma_map_page' follow
 
-This is caused by the following in drivers/md/Kconfig:
 
-menuconfig MD
-        bool "Multiple devices driver support (RAID and LVM)"
-        depends on BLOCK
-        select ASYNC_TX_DMA
-        help
-          Support multiple physical spindles through a single logical device.
-          Required for RAID and logical volume management.
-
-ASYNC_TX_DMA is defined in drivers/dma/Kconfig, which has
-
-menu "DMA Engine support"
-        depends on !S390
-
-but unfortunately ASYNC_TX_DMA depends neither on the menu nor
-on !S390. (I think it was just an unknown symbol on s390 before
-Martin's Kconfig rework, so I could build older -mm kernels.)
-
-Currently, the only md stuff depending on ASYNC_TX_DMA is MD_RAID456
-(which means it doesn't work on s390 anymore, which is bad enough).
-With the select statement, no md stuff can be build on s390 at all (and
-I really don't see why ASYNC_TX_DMA should be forced upon all md
-users)...
