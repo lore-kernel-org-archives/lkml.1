@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762682AbXEPTPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762893AbXEPTRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762682AbXEPTPV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 15:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbXEPTPK
+	id S1762893AbXEPTRg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 15:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758990AbXEPTRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 15:15:10 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:5956 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753152AbXEPTPJ (ORCPT
+	Wed, 16 May 2007 15:17:30 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:13199 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758808AbXEPTRa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 15:15:09 -0400
-Message-ID: <464B5827.60905@interia.pl>
-Date: Wed, 16 May 2007 21:14:47 +0200
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+	Wed, 16 May 2007 15:17:30 -0400
+Date: Wed, 16 May 2007 15:13:39 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Message-ID: <20070516191339.GA26766@think.oraclecorp.com>
+References: <20070516144205.GV26766@think.oraclecorp.com> <464B2AC2.10206@redhat.com> <20070516171156.GY26766@think.oraclecorp.com> <20070516112515.b6f247b2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Problem with 82365SL driver in 2.6.21.1
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-X-EMID: 6071eacc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070516112515.b6f247b2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, May 16, 2007 at 11:25:15AM -0700, Andrew Morton wrote:
+> On Wed, 16 May 2007 13:11:56 -0400
+> Chris Mason <chris.mason@oracle.com> wrote:
+> 
+> > At least on ext3, it may help to sort the blocks under io for
+> > flushing...it may not.  A bigger log would definitely help, but I would
+> > say the mkfs defaults should be reasonable for a workload this simple.
+> > 
+> > (data=writeback was used for my ext3 numbers).
+> 
+> When ext3 runs out of journal space it needs to sync lots of metadata out
+> to the fs so that its space in the journal can be reclaimed.  That metadata
+> is of course splattered all over the place so it's seekstorm time.
+> 
+> The filesystem does take some care to place the metadata blocks "close" to
+> the data blocks.  But of course if we're writing all the pagecache and then
+> we later separately go back and write the metadata then that would screw
+> things up.
 
-I have problem with PC card slot in Wyse 3360SE terminal. 
-Card insertion or removal is detected, but nothing more. 
-I tried two different cards. Same behaviour.
+Just to clarify, in the initial stage where kernel trees are created,
+benchmark doesn't call sync.  So all the writeback is through the normal
+async mechanisms.
 
-Hardware is:
-> Intel ISA PCIC probe:
->   Intel i82365sl A step ISA-to-PCMCIA at port 0x3e0 ofs 0x00, 1 socket
->     host opts [0]: none
->     ISA irqs (default) = 3,4,5,7,9,10,11,12,14,15 polling interval = 1000 ms
-Dmesg after inserting card:
-> pccard: PCMCIA card inserted into slot 0
+> 
+> I put some code in there which will place indirect blocks under I/O at
+> the same time as their data blocks, so everything _should_ go out in a
+> nice slurp (see write_boundary_block()).  The first thing to do here
+> is to check that write_boundary_block() didn't get broken.
 
-I have similar hardware in other machine:
->  Intel i82365sl B step ISA-to-PCMCIA at port 0x3e0 ofs 0x00, 2 sockets
->    host opts [0]: none
->    host opts [1]: none
->    ISA irqs (scanned) = 3,4,7,9,11,12 status change on irq 11
-Which is working:
-> pccard: PCMCIA card inserted into slot 0
-> cs: memory probe 0x0d0000-0x0dffff: excluding 0xd0000-0xd1fff
-> cs: memory probe 0x0e0000-0x0effff: clean.
-> pcmcia: registering new device pcmcia0.0
+write_boundary_block should get called from pdflush and the IO done by
+pdflush seems to be pretty sequential.  But, in this phase the
+vast majority of the files are small (95% are less than 46k).
+> 
+> If that's still working then the problem will _probably_ be directory
+> writeout.  Possibly inodes, but they should be well-laid-out.
+> 
+> Were you using dir_index?  That might be screwing things up.
 
-I checked 82365 registers. Wyse has 0x82 at offset 0 and 0 at 
-offset 6. In working case it is 0x83 at offset 0 and 1 at offset 6. 
-Next differences at and above 0x10 offset.
+Yes, dir_index.  A quick test of mkfs.ext3 -O ^dir_index seems to still
+have the problem.  Even though the inodes are well laid out, is the
+order they get written sane?  Looks like ext3 is just walking a list of
+bh/jh, maybe we can just sort the silly thing?
 
-I tried all "pccardctl" options. No change. Please point me direction 
-in which I should search for solution. I don't know if it is important: 
-after reboot 82365 isn't detected at all on Wyse.
-
-Please CC me.
-
-Thank You
-Rafa³
-
-----------------------------------------------------------------------
-Daj ogloszenie za darmo do nowego serwisu Populada >>>http://link.interia.pl/f1a89
+-chris
 
