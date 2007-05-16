@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762010AbXEPOov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbXEPO5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762010AbXEPOov (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 10:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759457AbXEPOoc
+	id S1754761AbXEPO5R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 10:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbXEPO5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 10:44:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:62638 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756959AbXEPOoa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 10:44:30 -0400
-Message-ID: <11f674920705160717m3376779eqeb79e45ecef233e0@mail.gmail.com>
-Date: Wed, 16 May 2007 07:17:02 -0700
-From: "Kevin Bowling" <lkml@kev009.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH] LogFS take three
-In-Reply-To: <1179324273.2859.230.camel@shinybook.infradead.org>
+	Wed, 16 May 2007 10:57:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37590 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754331AbXEPO5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 10:57:07 -0400
+Message-ID: <464B1B6A.8080304@redhat.com>
+Date: Wed, 16 May 2007 10:55:38 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20070515151919.GA32510@lazybastard.org>
-	 <17994.1241.436841.681216@stoffel.org>
-	 <20070515191926.GB1220@lazybastard.org>
-	 <1179291255.2859.195.camel@shinybook.infradead.org>
-	 <20070516110933.GA5472@lazybastard.org>
-	 <20070516113434.GC20482@mail.shareable.org>
-	 <20070516115003.GD5472@lazybastard.org>
-	 <17995.2550.581854.8393@stoffel.org>
-	 <20070516135318.GK5472@lazybastard.org>
-	 <1179324273.2859.230.camel@shinybook.infradead.org>
+To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+CC: LKML <linux-kernel@vger.kernel.org>, trivial@kernel.org,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
+ driver
+References: <20070516011711.GE15763@ifa.hawaii.edu>
+In-Reply-To: <20070516011711.GE15763@ifa.hawaii.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, David Woodhouse <dwmw2@infradead.org> wrote:
-> On Wed, 2007-05-16 at 15:53 +0200, Jörn Engel wrote:
-> >
-> > My experience is that no matter which name I pick, people will
-> > complain
-> > anyway.  Previous suggestions included:
-> > jffs3
-> > jefs
-> > engelfs
-> > poofs
-> > crapfs
-> > sweetfs
-> > cutefs
-> > dynamic journaling fs - djofs
-> > tfsfkal - the file system formerly known as logfs
->
-> Can we call it jörnfs? :)
+[Copying maintainer.]
 
-However if Jörn is accused of murder, it will have little chance of
-being merged :-).
+Joshua Hoblitt wrote:
+> Hello,
+> 
+> Below is a one line patch to possibly fix this bug:
+> 
+> http://bugs.gentoo.org/show_bug.cgi?id=178585
+> http://bugzilla.kernel.org/show_bug.cgi?id=8075
+> 
+> If the kernel is configured with:
+> 
+> CONFIG_X86_POWERNOW_K8=y
+> CONFIG_X86_ACPI_CPUFREQ=m
+> 
+> Which is currently an allowed configuration, the powernow-k8 driver on
+> an SMP system will fail with a warning like:
+> 
+> powernow-k8: Found 4 Dual Core AMD Opteron(tm) Processor 285 processors (version 2.00.00)
+> powernow-k8: MP systems not supported by PSB BIOS structure
+> powernow-k8: MP systems not supported by PSB BIOS structure
+> powernow-k8: MP systems not supported by PSB BIOS structure
+> powernow-k8: MP systems not supported by PSB BIOS structure
+> 
+> Which mimics that failure you get when powernow/cool'n'quiet is disabled
+> in the BIOS.  I don't know if this config combination is valid on a
+> uniprocessor system so this dependency may need to be enforced only if
+> SMP in enabled.  The other powernow-* drivers likely have the same
+> requirements as -k8 but I am unable to test them.
+> 
+> Signed-off-by: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+> --
+>  Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linux-2.6.21.1.orig/arch/i386/kernel/cpu/cpufreq/Kconfig    2007-04-27 11:49:26.000000000 -1000
+> +++ linux-2.6.21.1/arch/i386/kernel/cpu/cpufreq/Kconfig 2007-05-15 14:48:50.000000000 -1000
+> @@ -82,6 +82,7 @@ config X86_POWERNOW_K8
+>         tristate "AMD Opteron/Athlon64 PowerNow!"
+>         select CPU_FREQ_TABLE
+>         depends on EXPERIMENTAL
+> +       depends on X86_ACPI_CPUFREQ
+>         help
+>           This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
+> 
+> 
+
