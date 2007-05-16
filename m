@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758412AbXEPHNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbXEPHRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758412AbXEPHNT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbXEPHNF
+	id S1759411AbXEPHRa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 03:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbXEPHRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 03:13:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44239 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbXEPHNC (ORCPT
+	Wed, 16 May 2007 03:17:22 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:42708 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755695AbXEPHRV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 03:13:02 -0400
-Date: Wed, 16 May 2007 08:13:01 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       netdev@vger.kernel.org, Michael Jones <mlj28@cam.ac.uk>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-Message-ID: <20070516071300.GB14222@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
-	Michael Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>
-References: <464034CF.20700@wpkg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464034CF.20700@wpkg.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 16 May 2007 03:17:21 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=YVW+A99jQqanMZoHTZ4oSly6eJEMVSrYTqANQmKnY0pmxFNoIFPA2STaAMjWa5+2A0BNDvhG+p6VcKFyIVyVusAl9wzkumXg+VdJFwWjgIfunQJd2fdzXkkh+rxwPm1P+WOfZVapLNpeFHyo7teCF6ZqbOnSPMQE3DH4zBKoUzs=  ;
+X-YMail-OSG: r8ICYc8VM1m_EL.th1e8DeFezfv4OUo4ybpOBDC5hFzS4LIiDCRkZaTVYl.ghDmFEZtKeaWV7A--
+Message-ID: <464AAFF5.2040308@yahoo.com.au>
+Date: Wed, 16 May 2007 17:17:09 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: David Howells <dhowells@redhat.com>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dchinner@sgi.com
+Subject: Re: [PATCH 2/2] AFS: Implement shared-writable mmap
+References: <20070515155224.29345.22719.stgit@warthog.cambridge.redhat.com> <20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com> <20070516071054.GA14222@infradead.org>
+In-Reply-To: <20070516071054.GA14222@infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 10:29:03AM +0200, Tomasz Chmielewski wrote:
-> Michael Jones wrote:
+Christoph Hellwig wrote:
+> On Tue, May 15, 2007 at 04:52:31PM +0100, David Howells wrote:
 > 
-> >>+#ifndef __ARMEB__
-> >>+#warning Little endian mode not supported
-> >>+#endif
-> >
-> >Personally I'm less fussed about WAN / LE support. Anyone with any  
-> >sense will run ixp4xx boards doing such a specialised network  
-> >operation as BE. Also, NSLU2-Linux can't test this functionality with  
-> >our LE setup as we don't have this hardware on-board. You may just  
-> >want to declare a depends on ARMEB in Kconfig (with or without OR  
-> >(ARM || BROKEN) ) and have done with it - it's up to you.
+>>+int afs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+>>+{
+>>+	struct afs_vnode *vnode = AFS_FS_I(vma->vm_file->f_mapping->host);
+>>+	struct key *key = vma->vm_file->private_data;
+>>+	int ret;
+>>+
+>>+	_enter("{{%x:%u},%x},{%lx}",
+>>+	       vnode->fid.vid, vnode->fid.vnode, key_serial(key), page->index);
+>>+
+>>+	lock_page(page);
+>>+	ret = afs_prepare_write(vma->vm_file, page, 0, 0);
+>>+	unlock_page(page);
+>>+
+>>+	_leave(" = %d", ret);
+>>+	return ret;
+>>+}
 > 
-> Christian Hohnstaedt's work did support LE though.
 > 
-> Not all ixp4xx boards are by definition "doing such a specialised 
-> network operation".
-> 
-> 
-> Krzysztof, why is LE not supported?
-> 
-> Do you need access to ixp4xx that starts in LE mode?
+> It looks like you really want Dave's generic page_mkwrite.
 
-Not even trying to support LE is a clear merge blocker.  Maybe Krzysztof
-can't actually test it himself, which is fine - but not even pretending
-to be endian clean is not what proper Linux drivers do.
+Is that appropriate for a non buffer based filesystem?
+
+
+> And we should
+> really get that one merged for 2.6.22.
+
+Dave asked me about that the other day (in relation to the ->fault ops)...
+I have no problem merging it for 2.6.22 and rebasing my patches on top.
+
+-- 
+SUSE Labs, Novell Inc.
