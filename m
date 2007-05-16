@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761547AbXEPAls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761679AbXEPAnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761547AbXEPAls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 20:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbXEPAlk
+	id S1761679AbXEPAnB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 20:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760158AbXEPAmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 20:41:40 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:37435 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757461AbXEPAlk (ORCPT
+	Tue, 15 May 2007 20:42:52 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:34077 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759664AbXEPAmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 20:41:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=qyFsOftAoJRangcwCGRxMFPlXRbZE38IcGolhi5eLJjCbTgIVUyIUpC0mOyKqfqnbTGgcQ5CfhukH6LvUzs9ycC0nkkHz3PBpcP36QPt7x84Ofu0zQxgN2633vIOs4qJDtOhO+9ZbKlbvr1nVHixTFHlAKwraf7DkGuEWeB2e1k=  ;
-X-YMail-OSG: oDnJPW4VM1mVVFkJVqh8SSGhC3xV4ne7IuFPhUa3hhrj.3fjw__ahCH6tzG6jcMwQHCiMVDLzw--
-Message-ID: <464A533B.8040507@yahoo.com.au>
-Date: Wed, 16 May 2007 10:41:31 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 2/2] AFS: Implement shared-writable mmap
-References: <20070515155224.29345.22719.stgit@warthog.cambridge.redhat.com>	<20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com> <20070515144007.f87d9be5.akpm@linux-foundation.org>
-In-Reply-To: <20070515144007.f87d9be5.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 15 May 2007 20:42:50 -0400
+Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64
+	and powerpc
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
+In-Reply-To: <20070515200359.GA5834@amitarora.in.ibm.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
+	 <20070330071417.GI355@devserv.devel.redhat.com>
+	 <20070417125514.GA7574@amitarora.in.ibm.com>
+	 <20070418130600.GW5967@schatzie.adilger.int>
+	 <20070420135146.GA21352@amitarora.in.ibm.com>
+	 <20070420145918.GY355@devserv.devel.redhat.com>
+	 <20070424121632.GA10136@amitarora.in.ibm.com>
+	 <20070426175056.GA25321@amitarora.in.ibm.com>
+	 <20070515193722.GA3487@amitarora.in.ibm.com>
+	 <20070515195421.GA2948@amitarora.in.ibm.com>
+	 <20070515200359.GA5834@amitarora.in.ibm.com>
+Content-Type: text/plain
+Organization: IBM LTC
+Date: Tue, 15 May 2007 17:42:46 -0700
+Message-Id: <1179276167.4819.22.camel@dyn9047017103.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 15 May 2007 16:52:31 +0100
-> David Howells <dhowells@redhat.com> wrote:
-> 
-> 
->>Implement shared-writable mmap for AFS.
-> 
-> 
-> This blows up in -mm:
-> 
-> fs/afs/file.c:59: error: 'filemap_nopage' undeclared here (not in a function)
-> fs/afs/file.c:60: error: unknown field 'populate' specified in initializer
-> fs/afs/file.c:60: error: 'filemap_populate' undeclared here (not in a function)
-> 
-> because Nick went and renamed half the VM and deleted the other half.
+On Wed, 2007-05-16 at 01:33 +0530, Amit K. Arora wrote:
+> This patch implements sys_fallocate() and adds support on i386, x86_64
+> and powerpc platforms.
 
-And page_mkwrite is next ;)
+> @@ -1137,6 +1148,8 @@ struct inode_operations {
+>  	ssize_t (*listxattr) (struct dentry *, char *, size_t);
+>  	int (*removexattr) (struct dentry *, const char *);
+>  	void (*truncate_range)(struct inode *, loff_t, loff_t);
+> +	long (*fallocate)(struct inode *inode, int mode, loff_t offset,
+> +			  loff_t len);
+>  };
+
+Does the return value from fallocate inode operation has to be *long*?
+It's not consistent with the ext4_fallocate() define in patch 4/5, 
+
++int ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t
+len)
+
+thus cause compile warnings.
 
 
-> I need to work out what to do with
-> 
-> mm-fix-fault-vs-invalidate-race-for-linear-mappings.patch
-> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
-> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear-doc-fix.patch
-> mm-merge-populate-and-nopage-into-fault-fixes-nonlinear-fix.patch
-> mm-merge-nopfn-into-fault.patch
-> convert-hugetlbfs-to-use-vm_ops-fault.patch
-> mm-remove-legacy-cruft.patch
-> mm-debug-check-for-the-fault-vs-invalidate-race.patch
-> mm-fix-clear_page_dirty_for_io-vs-fault-race.patch
-> 
-> Probably merge them, I guess.  Hugh had concerns, I think over small
-> additional overhead from the lock_page()?
 
-Yes he did. It seems to only be noticable in microbenchmarks. In my opinion
-not enough to withhold pagecache corruption bug fixes.
+Mingming
 
-Still, I have some lock_page speedup work that eliminates that regression
-anyway.
-
-However, Hugh hasn't exactly said yes or no yet...
-
--- 
-SUSE Labs, Novell Inc.
