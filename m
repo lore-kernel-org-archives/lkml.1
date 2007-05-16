@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762615AbXEPDwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762688AbXEPDxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762615AbXEPDwu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 23:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758968AbXEPDwo
+	id S1762688AbXEPDxx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 23:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbXEPDxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 23:52:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39340 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758059AbXEPDwn (ORCPT
+	Tue, 15 May 2007 23:53:47 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:47730 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758968AbXEPDxq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 23:52:43 -0400
-Date: Tue, 15 May 2007 20:48:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
-       kbuild-devel@lists.sourceforge.net
-Subject: Re: [RFC] select and dependencies in Kconfig
-In-Reply-To: <20070516033335.GH4095@ftp.linux.org.uk>
-Message-ID: <alpine.LFD.0.98.0705152046070.3890@woody.linux-foundation.org>
-References: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk>
- <20070516033335.GH4095@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 15 May 2007 23:53:46 -0400
+Subject: [PATCH -stable] JFS: Fix race waking up jfsIO kernel thread
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: stable@kernel.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 15 May 2007 22:53:36 -0500
+Message-Id: <1179287616.8339.8.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch fixes a deadlock that has been reported by three different
+users on recent kernels.  The problem exists on mainline kernels since
+2.6.18.  It is included in linux-2.6.22-rc1.
 
+JFS: Fix race waking up jfsIO kernel thread
 
-On Wed, 16 May 2007, Al Viro wrote:
-> 
-> BTW, this kind of situation happens often enough, so how about doing
-> the following: teach kconfig that if FOO selects BAR and BAR depends
-> on <expr>, we should act as if FOO had explicit depends on <expr>.
+It's possible for a journal I/O request to be added to the log_redrive
+queue and the jfsIO thread to be awakened after the thread releases
+log_redrive_lock but before it sets its state to TASK_INTERRUPTIBLE.
 
-Sounds sane. I wonder if there are any non-obvious gotchas, and I worry 
-that the indirect dependency ends up getting really confusing at times, 
-but I don't think the notion is broken - just worrying about how to *show* 
-this to explain what is going on when people say "why can't I select X".
+The jfsIO thread should set the state before giving up the spinlock, so
+the waking thread will really wake it.
 
-		Linus
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+diff -Nurp linux-2.6.21.1/fs/jfs/jfs_logmgr.c linux/fs/jfs/jfs_logmgr.c
+--- linux-2.6.21.1/fs/jfs/jfs_logmgr.c	2007-04-27 16:49:26.000000000 -0500
++++ linux/fs/jfs/jfs_logmgr.c	2007-05-15 22:39:31.000000000 -0500
+@@ -2354,12 +2354,13 @@ int jfsIOWait(void *arg)
+ 			lbmStartIO(bp);
+ 			spin_lock_irq(&log_redrive_lock);
+ 		}
+-		spin_unlock_irq(&log_redrive_lock);
+ 
+ 		if (freezing(current)) {
++			spin_unlock_irq(&log_redrive_lock);
+ 			refrigerator();
+ 		} else {
+ 			set_current_state(TASK_INTERRUPTIBLE);
++			spin_unlock_irq(&log_redrive_lock);
+ 			schedule();
+ 			current->state = TASK_RUNNING;
+ 		}
+
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
