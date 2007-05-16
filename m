@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760965AbXEPLFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761715AbXEPLGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760965AbXEPLFo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbXEPLFi
+	id S1761715AbXEPLGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbXEPLGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:05:38 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:17532 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757465AbXEPLFh (ORCPT
+	Wed, 16 May 2007 07:06:09 -0400
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:8930 "EHLO
+	outbound1-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758695AbXEPLGH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:05:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=IooR3BT2oSmeHn3XcvGGucaKZH3LsLNHk0emIgrGXALLaD4IjNv0nQIJwwd9Y+h9540ZMIvK+VoZHcXAuTFvShsQX8S8lJLOYNdxueJmtDPsBI5jvPTxhcU+mOowjWD/mqfYp+hto+OyVd3aOgtj5BtD32Co0a+sRMIdJ9WFcVM=
-Message-ID: <464AE56F.3040101@gmail.com>
-Date: Wed, 16 May 2007 13:05:19 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 16 May 2007 07:06:07 -0400
+X-BigFish: VP
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+From: "Peter Oruba" <peter.oruba@amd.com>
+Organization: AMD
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/2] PCI-X/PCI-Express read control interfaces
+Date: Wed, 16 May 2007 13:05:51 +0200
+User-Agent: KMail/1.9.6
+cc: gregkh@suse.de, cramerj@intel.com, john.ronciak@intel.com,
+       jesse.brandeburg@intel.com, jeffrey.t.kirsher@intel.com,
+       auke-jan.h.kok@intel.com, rolandd@cisco.com, halr@voltaire.com,
+       linux-driver@qlogic.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>
+References: <200705151350.28330.peter.oruba@amd.com>
+ <20070515123721.1bfb02a3.akpm@linux-foundation.org>
+In-Reply-To: <20070515123721.1bfb02a3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Clemens Schwaighofer <cs@tequila.co.jp>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maneesh Soni <maneesh@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Greg KH <greg@kroah.com>
-Subject: Re: Oops and Panics in 2.6.21.1, 2.6.20.6 and 2.6.19.2
-References: <464A4F56.6080108@tequila.co.jp> <20070515185350.2e77bf21.akpm@linux-foundation.org>
-In-Reply-To: <20070515185350.2e77bf21.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <200705161305.52398.peter.oruba@amd.com>
+X-OriginalArrivalTime: 16 May 2007 11:05:10.0633 (UTC)
+ FILETIME=[120B8D90:01C797AA]
+X-WSS-ID: 6A543A1E20G2436357-01-01
+Content-Type: text/plain;
+ charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Am Dienstag, 15. Mai 2007 21:37:21 schrieb Andrew Morton:
+> On Tue, 15 May 2007 13:50:27 +0200
+>
+> "Peter Oruba" <peter.oruba@amd.com> wrote:
+> > This patch set introduces a PCI-X / PCI-Express read byte count control
+> > interface. Instead of letting every driver to directly read/write to PCI
+> > config space for that, an interface is provided. The interface functions
+> > then can be used for quirks since some PCI bridges require that read byte
+> > count values are set by the BIOS and left unchanged by device drivers.
+>
+> Some of the patches were wordwrapped, which I fixed.
+>
+> The way we would merge a feature like this is
+>
+> - get maintainers to review-and-ack the change
+>
+> - merge the core patch into Greg's PCI tree and later into
+>   mainline.
+>
+> - Once the base infrastructure is in mainline, feed the per-driver
+>   changes into the tree via the appropriate maintainers.
+>
+> This takes, umm, months and consumes quite a bit of my time.  I'm becoming
+> inclined just to slam stuff like this straight in as you've proposed, but
+> for now, let's play the game - I split the patches up appropriately.  I
+> don't think there's any particular urgency behind this, is there?
 
-Andrew Morton wrote:
-> On Wed, 16 May 2007 09:24:54 +0900 Clemens Schwaighofer <cs@tequila.co.jp> wrote:
-> 
->> I have re-occurring oopses and panics in those above kernels. The error
->> is always the same. I have the last Kernel Panic as a picture here:
->>
->> http://dev.tequila.jp/clemens/R0010172.JPG
->>
->> The oops have the same error style like this Panic. I tried to capture
->> one, but right after copying it into vim, I got a Panic. So next time I
->> try to.
->>
->> I think it started with 2.6.19.2, I cannot remember I had any of those
->> problems before. The box can work fine for about a week or more, or it
->> looks up several times a day. I run a memtest for 10 h, but I had no errors.
-> 
-> shrink_dcache_memory->...sysfs_d_iput->BUG
-> 
->                 BUG_ON(sd->s_dentry != dentry);
-> 
-> a number of people have hit that, on and off.
+I cannot tell how common AM8131 based systems in combination with one of these 
+three devices actually are. However, this patch set is essential for those 
+systems.
 
-Yeah, I've been seeing that one.  It should have been fixed with the big
-fat patchset.
-
-> We were close to having a fix, I think, but then we decided that great
-> chunks of sysfs needed rewriting and I believe that we believe that this
-> great rewrite will fix this bug.
-
-How were we gonna fix it?  If it isn't too complex, I can cook up a
-patch for -stable series.  The safest approach I can think of is making
-dentries for attributes unreclaimable but those are made reclaimable for
-good reasons.  :-(
-
-Thanks.
 
 -- 
-tejun
+AMD Saxony Limited Liability Company & Co. KG
+Operating System Research Center
+Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+Register Court Dresden: HRA 4896
+General Partner authorized to represent:
+AMD Saxony LLC (Wilmington, Delaware, US)
+General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
