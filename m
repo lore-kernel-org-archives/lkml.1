@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbXEPNKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbXEPNLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbXEPNKO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 09:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXEPNKE
+	id S1760082AbXEPNLA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 09:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXEPNKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 09:10:04 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:39855 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbXEPNKB (ORCPT
+	Wed, 16 May 2007 09:10:53 -0400
+Received: from pils.linux-kernel.at ([213.129.242.82]:30027 "EHLO
+	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbXEPNKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 09:10:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mXkeF2FDsugZMEC1teSVfEIFME/AyEnYpWjmICZkLNkcSteZNrxacdXJn46thJBpt036TvVA++pkXcpwKdnMzevBb3ZbDJRARToqLMxM3h5XwDdpXCXlGaTF0F+RO0ZhAfsNZjWgLDlkURniX6L7mjNSxojinGf/7mdS4w97FXQ=
-Message-ID: <6278d2220705160609x5c8462b6i25935a449352bf12@mail.gmail.com>
-Date: Wed, 16 May 2007 14:09:59 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Zoltan Menyhart" <Zoltan.Menyhart@bull.net>
-Subject: Re: copy_one_pte()
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <461209BE.6010905@bull.net>
+	Wed, 16 May 2007 09:10:52 -0400
+Message-ID: <464B02BC.1040101@linux-kernel.at>
+Date: Wed, 16 May 2007 15:10:20 +0200
+From: Oliver Falk <oliver@linux-kernel.at>
+Organization: Linux kernel Austria
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070419 Fedora/2.0.0.0-1.fc7 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org, ac-admin@lists.anotherbloody.com
+Subject: Re: [patch] Missing defines in asm-alpha/unistd.h!?
+References: <464AC75D.1090701@linux-kernel.at> <464AD1DB.3050609@linux-kernel.at> <464AE8D1.5000500@linux-kernel.at>
+In-Reply-To: <464AE8D1.5000500@linux-kernel.at>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6278d2220704020917h69d7c0d1t7ac61a544ec23f4@mail.gmail.com>
-	 <461209BE.6010905@bull.net>
+X-lkernAT-MailScanner-Information: Please contact the ISP for more information
+X-lkernAT-MailScanner: Found to be clean
+X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-3.009, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
+	PLING_QUERY 1.39)
+X-MailScanner-From: oliver@linux-kernel.at
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/04/07, Zoltan Menyhart <Zoltan.Menyhart@bull.net> wrote:
-> Daniel J Blueman wrote:
-> > On 13 Mar, 20:20, Zoltan Menyhart <Zoltan.Menyh...@free.fr> wrote:
-> >
-> >> I had a look at copy_one_pte().
-> >> I cannot see any ioproc_update_page() call, not even for the COW pages.
-> >> Is it intentional?
-> >
-> > There could be an ioproc_update_range() call in
-> > memory.c:copy_pte_range(), after the pte_unmap_unlock(), and this
-> > would be an optimisation, since explicitly updating the mappings in
-> > the Quadrics RDMA NIC avoids the need for the NIC to trap and update
-> > it's MMU later.
->
-> I can agree that this optimization is a good idea.
->
-> Can you please confirm that cp->update_range() understands the concept of
-> the COW? (I.e. the card should not write anything into the COW pages.)
->
-> > The code which implements [1] this takes the pagetable locks with
-> > pte_offset_map_lock(), and uses one of the kmap_atomic slots, so has
-> > to be after the pagetables are unlocked. The
-> > ioproc_invalidate_page/range() calls are different and can't live with
-> > this race, so have to be used with the pagetable locks held.
->
-> I can see two issues here:
->
-> - Performance problem: page_table_lock is more expensive than a split lock,
->   and taking page_table_lock after the split lock released is even worse.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-I have introduced an ioproc_update_page_locked() call for this and
-related paths, and updated the kernel patches; this avoids a race
-condition I was seeing in multi-threaded processes taking concurrent
-page faults under the split locks. The split lock is now acquired
-once, and the changes allowed me to do other some optimisations on
-this path too.
+On 05/16/2007 01:19 PM, Oliver Falk wrote:
+> On 05/16/2007 11:41 AM, Oliver Falk wrote:
+>> On 05/16/2007 10:57 AM, Oliver Falk wrote:
+>>> I believe this is missing... :-) I hope I understood NR_SYSCALLS
+>>> correctly and it's the number of defined syscals - as I added 20 of
+>>> them, I increased it by 20... Maybe someone can have a look if it's correct.
+>> [ ... ]
+> 
+>> Sorry, the patch was missing one hunk/file and also the tab stops where
+>> wrong. Attached a new working version.
+> 
+> But. The strange error that follows after patching:
+>   ld  -static -N  -o .tmp_vmlinux1 -T arch/alpha/kernel/vmlinux.lds
+> arch/alpha/kernel/head.o  init/built-in.o --start-group  usr/built-in.o
+>  arch/alpha/kernel/built-in.o  arch/alpha/mm/built-in.o
+> arch/alpha/math-emu/built-in.o  kernel/built-in.o  mm/built-in.o
+> fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
+> block/built-in.o  lib/lib.a  arch/alpha/lib/lib.a  lib/built-in.o
+> arch/alpha/lib/built-in.o  drivers/built-in.o  sound/built-in.o
+> net/built-in.o --end-group
+> arch/alpha/kernel/built-in.o:(.data+0x2d60): undefined reference to
+> `sys_pselect6'
+> arch/alpha/kernel/built-in.o:(.data+0x2d68): undefined reference to
+> `sys_ppoll'
+> 
+> I don't understand this... Any clue(s)?
 
-> - Synchronization problem: do_wp_page() is protected by the appropriate
->   split lock, i.e. the COW page can be broken up while you are inside
->   cp->update_range() under the protection of page_table_lock.
+Needed to replace sys_pselect6 and sys_ppoll with alpha_ni_syscall... If
+this is very correct way to fix it!? :-/
 
-The split locks were used previously via pte_offset_map_lock(), so
-this race wasn't possible previously.
+Can someone please have a look and correct me!?
 
-> I think the PTE modification and the cp->update_xxx() should be protected
-> by the very same lock, without releasing it between the two operations.
-> I think the PTE modification and the cp->update_xxx() should be an
-> atomic operation with respect to the VMM activity.
+- -of
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-This does make most sense and is now the case, although atomiticity
-wasn't a problem, since it's fine to use ioproc_update_page/range()
-speculatively.
-
-Dan
-
-> Thanks,
->
-> Zoltan
--- 
-Daniel J Blueman
+iD8DBQFGSwK8xWN5Ge8lKUMRAtlmAKCCnPVI/RwU8l7gLHXy3PdQcfh3FACgijin
+V1vWFNgNB+7y6llUVqKzIis=
+=+BlN
+-----END PGP SIGNATURE-----
