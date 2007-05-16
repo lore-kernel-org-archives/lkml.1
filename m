@@ -1,99 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763344AbXEPRxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763295AbXEPRys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763344AbXEPRxz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758715AbXEPRxr
+	id S1763295AbXEPRys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759987AbXEPRyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:53:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:28288 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757979AbXEPRxq (ORCPT
+	Wed, 16 May 2007 13:54:40 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:56939 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759882AbXEPRyh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=cDhm/8Oq5H3xu+H7zGWaz+k7rQ2HXDxDi+DZajuS4jDe1h/VPUNoD/BZxTW/cdmITenkRLYVWKdqL1QBnPpouwFcTfHcRZHGGRZC7e/q5kYUk1hjirKU7oneuX12hJonNb1fH0yj0QY81LyqX8lZXxAfFR7t+Djx6k9iN1IJqc0=
-Date: Wed, 16 May 2007 21:52:57 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-Subject: Re: [PATCH] UDF: check for allocated memory for inode data
-Message-ID: <20070516175257.GA14076@cvg>
-References: <20070510140000.GA12399@cvg> <20070510154640.c0299a52.akpm@linux-foundation.org> <20070511072939.GA25727@infradead.org> <20070511090127.GD9444@cvg> <20070511103956.GA30896@infradead.org> <20070511110920.GA11898@cvg> <20070513210126.GB14030@infradead.org> <20070516143308.GA8327@cvg> <20070516173852.GC29602@atrey.karlin.mff.cuni.cz>
+	Wed, 16 May 2007 13:54:37 -0400
+Date: Wed, 16 May 2007 18:54:15 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] optimise unlock_page
+In-Reply-To: <20070513065246.GA15071@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0705161838080.16762@blonde.wat.veritas.com>
+References: <1178659827.14928.85.camel@localhost.localdomain>
+ <20070508224124.GD20174@wotan.suse.de> <20070508225012.GF20174@wotan.suse.de>
+ <Pine.LNX.4.64.0705091950080.2909@blonde.wat.veritas.com>
+ <20070510033736.GA19196@wotan.suse.de> <Pine.LNX.4.64.0705101935590.18496@blonde.wat.veritas.com>
+ <20070511085424.GA15352@wotan.suse.de> <Pine.LNX.4.64.0705111357120.3350@blonde.wat.veritas.com>
+ <20070513033210.GA3667@wotan.suse.de> <Pine.LNX.4.64.0705130535410.3015@blonde.wat.veritas.com>
+ <20070513065246.GA15071@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516173852.GC29602@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 16 May 2007 17:54:36.0522 (UTC) FILETIME=[4474BCA0:01C797E3]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AG5waWdnaW5Ac3VzZS5kZQBsaW51eC1hcmNoQHZnZXIua2VybmVsLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jan Kara - Wed, May 16, 2007 at 07:38:52PM +0200]
-| > [Christoph Hellwig - Sun, May 13, 2007 at 10:01:26PM +0100]
-| > | On Fri, May 11, 2007 at 03:09:20PM +0400, Cyrill Gorcunov wrote:
-| > | > | > | And please get rid of the UDF_I_* macro for everything you touch, just
-| > | > | > | put a
-| > | > | > | 
-| > | > | > | 	struct udf_inode_info *uip = UDF_I(inode);
-| > | > | > | 
-| > | > | > | at the beginning of the function and use the fields directly.
-| > | > | > | 
-| > | > | > 
-| > | > | > Actually to properly remove UDF_I* and UDF_SB_* macroses in the
-| > | > | > whole UDF subsystem - is _lot_ of work. I'm going to make it but
-| > | > | > not now (too busy).
-| > | > | 
-| > | > | Doing it completely is a lot of work, yes.  I was more thinking of
-| > | > | converting a piece of code once you do major changes.  But if you
-| > | > | want to convert all the code as a separate patch I'm more than happy
-| > | > | aswell.
-| > | > | 
-| > | > 
-| > | > Christoph, my only argue against getting rid of UDF_I_* macro in
-| > | > my patch is UDF coding style, I don't want to damage it. I think
-| > | > we may leave it as is (including my patch). So just review the patch
-| > | > I sent (second version) and Ack it then so Andrew could include it
-| > | > into mm tree. Meantime I'm rewritting the whole UDF subsystem to
-| > | > get rid of that macroses (it will be a long way ;)
-| > | 
-| > | The UDF style is horrible and very unlike other kernel code.  Given
-| > | that udf has been pretty much unmtained for a while there should be
-| > | nothing in the way of fixing it.
-| > | 
-| > | Anyway, the patch is technically correct so you'll get my ACK (not
-| > | that you should need it).
-| > | 
-| > 
-| > you know I've read UDF sources. As I understand all UDF_I_ macroses
-| > could be converted without breaking UDF state but... as you exactly
-| > mentoined it's style is horrible and I'm thinking about rewritting the
-| > whole UDF system. Unfortunelly I'm not _mature_ kernel developer (I'm kernel
-| > newbie) and it could take a long time for this (I think something like
-| > ~ 3 month or more ;). Actually I'm ready to spend my free time for
-| > this. So how do you think could it be reasonable?
-|   I've spent some time hunting bugs in UDF recently so I'll warn you a
-| bit :). Definitely rewriting that ... code would be a good thing to do
-| (reading that code I had urges to do it several times). The hard thing
-| is that there is no reasonable spec you could use - there are two
-| documents which define how UDF should look like but they are really hard
-| to read (they have like hundred pages each and one does not make sence
-| without the other). And reading the code and learning how the filesystem is
-| supposed to work isn't too helpful either. Just a friendly warning ;)
-| 
-| 								Honza
-| -- 
-| Jan Kara <jack@suse.cz>
-| SuSE CR Labs
-| 
+On Sun, 13 May 2007, Nick Piggin wrote:
+> On Sun, May 13, 2007 at 05:39:03AM +0100, Hugh Dickins wrote:
+> > On Sun, 13 May 2007, Nick Piggin wrote:
+> > > On Fri, May 11, 2007 at 02:15:03PM +0100, Hugh Dickins wrote:
+> > > 
+> > > > Hmm, well, I think that's fairly horrid, and would it even be
+> > > > guaranteed to work on all architectures?  Playing with one char
+> > > > of an unsigned long in one way, while playing with the whole of
+> > > > the unsigned long in another way (bitops) sounds very dodgy to me.
+> > > 
+> > > Of course not, but they can just use a regular atomic word sized
+> > > bitop. The problem with i386 is that its atomic ops also imply
+> > > memory barriers that you obviously don't need on unlock.
+> > 
+> > But is it even a valid procedure on i386?
+> 
+> Well I think so, but not completely sure.
 
-I've that documants even printed ;) Actually they are _very-very_ big
-indeed. I don't know may be just try to bring this code into Linux
-codying style?
+That's not quite enough to convince me!
 
-		Cyrill
+I do retract my "fairly horrid" remark, that was a kneejerk reaction
+to cleverness; it's quite nice, if it can be guaranteed to work (and
+if lowering FLAGS_RESERVED from 9 to 7 doesn't upset whoever carefully
+chose 9).
 
+Please seek out those guarantees.  Like you, I can't really see how
+it would go wrong (how could moving in the unlocked char mess with
+the flag bits in the rest of the long? how could atomically modifying
+the long have a chance of undoing that move?), but it feels like it
+might take us into errata territory.
+
+Hugh
+
+> OTOH, I admit this is one
+> of the more contentious speedups ;) It is likely to be vary a lot by
+> the arch (I think the P4 is infamous for expensive locked ops, others
+> may prefer not to mix the byte sized ops with word length ones).
