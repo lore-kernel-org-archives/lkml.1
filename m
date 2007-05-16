@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbXEPIdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbXEPIdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760925AbXEPIdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXEPIdK
+	id S1760861AbXEPIdc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbXEPIdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:33:10 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:7086 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:33:11 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:7089 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755414AbXEPIdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 04:33:08 -0400
+	id S1755414AbXEPIdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 04:33:10 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 2/10] Add sg helpers for iterating over a scatterlist table
-Date: Wed, 16 May 2007 10:31:32 +0200
-Message-Id: <11793043001618-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 5/10] scsi: convert to using sg helpers
+Date: Wed, 16 May 2007 10:31:35 +0200
+Message-Id: <11793043003915-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <1179304300358-git-send-email-jens.axboe@oracle.com>
 References: <1179304300358-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First step to being able to change the scatterlist setup without
-having to modify drivers (a lot :-)
+This converts the SCSI mid layer to using the sg helpers for looking up
+sg elements, instead of doing it manually.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- include/linux/scatterlist.h |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ drivers/scsi/scsi_lib.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
-index 4efbd9c..c5bffde 100644
---- a/include/linux/scatterlist.h
-+++ b/include/linux/scatterlist.h
-@@ -20,4 +20,13 @@ static inline void sg_init_one(struct scatterlist *sg, const void *buf,
- 	sg_set_buf(sg, buf, buflen);
- }
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 61fbcdc..9355c5b 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -302,14 +302,15 @@ static int scsi_req_map_sg(struct request *rq, struct scatterlist *sgl,
+ 	struct request_queue *q = rq->q;
+ 	int nr_pages = (bufflen + sgl[0].offset + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 	unsigned int data_len = 0, len, bytes, off;
++	struct scatterlist *sg;
+ 	struct page *page;
+ 	struct bio *bio = NULL;
+ 	int i, err, nr_vecs = 0;
  
-+#define sg_next(sg)		((sg) + 1)
-+#define sg_last(sg, nents)	(&(sg[nents - 1]))
-+
-+/*
-+ * Loop over each sg element, following the pointer to a new list if necessary
-+ */
-+#define for_each_sg(sglist, sg, nr, __i)	\
-+	for (__i = 0, sg = (sglist); __i < nr; __i++, sg = sg_next(sg))
-+
- #endif /* _LINUX_SCATTERLIST_H */
+-	for (i = 0; i < nsegs; i++) {
+-		page = sgl[i].page;
+-		off = sgl[i].offset;
+-		len = sgl[i].length;
++	for_each_sg(sgl, sg, nsegs, i) {
++		page = sg->page;
++		off = sg->offset;
++		len = sg->length;
+ 		data_len += len;
+ 
+ 		while (len > 0) {
 -- 
 1.5.2.rc1
 
