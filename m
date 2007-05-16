@@ -1,113 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbXEPPLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbXEPPNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758880AbXEPPLt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 11:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbXEPPLn
+	id S1759979AbXEPPNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 11:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300AbXEPPN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 11:11:43 -0400
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:4772 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755123AbXEPPLm (ORCPT
+	Wed, 16 May 2007 11:13:28 -0400
+Received: from orion2.pixelized.ch ([195.190.190.13]:41844 "EHLO
+	mail.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754605AbXEPPN1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 11:11:42 -0400
-Message-ID: <464B1F2B.3030009@xs4all.nl>
-Date: Wed, 16 May 2007 17:11:39 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 16 May 2007 11:13:27 -0400
+Message-ID: <464B1F8D.1000500@cateee.net>
+Date: Wed, 16 May 2007 17:13:17 +0200
+From: "Giacomo A. Catenazzi" <cate@cateee.net>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: BUG in kcryptd?
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bhutani Meeta-W19091 <Meeta.Bhutani@motorola.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Contributor Agreement/Copyright Assignment
+References: <7376BC9FD0C11A4CA373508199DEED1802E35A76@de01exm65.ds.mot.com>
+In-Reply-To: <7376BC9FD0C11A4CA373508199DEED1802E35A76@de01exm65.ds.mot.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While opening an encrypted partition and trying to fsck it:
+Bhutani Meeta-W19091 wrote:
+>  
+> Motorola would like to understand if kernel.org has a contributor
+> agreement (or a copyright assignment agreement) that is posted somewhere
+> ? We are investigating what would be needed from a legal standpoint to
+> possibly contribute in the future.
 
-May 16 17:05:53 epia kernel: BUG: unable to handle kernel paging request
-at virtual address 6b6b6b97
-May 16 17:05:53 epia kernel:  printing eip:
-May 16 17:05:53 epia kernel: c013cfe4
-May 16 17:05:53 epia kernel: *pde = 00000000
-May 16 17:05:53 epia kernel: Oops: 0000 [#1]
-May 16 17:05:53 epia kernel: PREEMPT
-May 16 17:05:53 epia kernel: Modules linked in: sha256 pwc sch_tbf
-ipt_recent xt_string xt_MARK xt_length xt_tcpmss xt_mac xt_mark w83627hf
-hwmon_vid eeprom i2c_isa sit nf_nat_h323 nf_conntrack_h323 nf_nat_ftp
-nf_conntrack_ftp ipt_tos ipt_REDIRECT nf_nat_irc nf_conntrack_irc
-ipt_owner ipt_ttl ipv6 ipt_MASQUERADE iptable_nat nf_nat xt_NOTRACK
-iptable_raw ipt_TOS iptable_mangle ipt_LOG ipt_TCPMSS xt_limit xt_state
-ipt_TARPIT ipt_REJECT iptable_filter binfmt_misc parport_pc lp parport
-nvram snd_via82xx snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss
-snd_seq_midi_event snd_seq snd_pcm_oss snd_mixer_oss snd_pcm snd_timer
-snd_page_alloc snd_mpu401_uart snd_rawmidi snd_seq_device snd i2c_viapro
-usblp compat_ioctl32 videodev v4l2_common v4l1_compat uhci_hcd
-May 16 17:05:53 epia kernel: CPU:    0
-May 16 17:05:53 epia kernel: EIP:    0060:[mempool_free+13/106]    Not
-tainted VLI
-May 16 17:05:53 epia kernel: EIP:    0060:[<c013cfe4>]    Not tainted VLI
-May 16 17:05:53 epia kernel: EFLAGS: 00010286   (2.6.20.7t #15)
-May 16 17:05:53 epia kernel: EIP is at mempool_free+0xd/0x6a
-May 16 17:05:53 epia kernel: eax: c3955404   ebx: 6b6b6b6b   ecx:
-c0307fac   edx: 6b6b6b6b
-May 16 17:05:53 epia kernel: esi: c3955404   edi: c3955404   ebp:
-ddeb3e60   esp: ddeb3e50
-May 16 17:05:53 epia kernel: ds: 007b   es: 007b   ss: 0068
-May 16 17:05:53 epia kernel: Process kcryptd/0 (pid: 297, ti=ddeb2000
-task=ddf26b10 task.ti=ddeb2000)
-May 16 17:05:53 epia kernel: Stack: 00000003 c62c392c c3955404 00000000
-ddeb3e84 c02747d8 00000000 00000000
-May 16 17:05:53 epia kernel:        00000000 000d4401 00000000 00000000
-c357fd80 ddeb3eb0 c0274915 00000200
-May 16 17:05:53 epia kernel:        ddeb3f2c dea18020 c49d8388 c62c392c
-00000000 c357fd80 c0274878 00000000
-May 16 17:05:53 epia kernel: Call Trace:
-May 16 17:05:53 epia kernel:  [show_trace_log_lvl+26/47]
-show_trace_log_lvl+0x1a/0x2f
-May 16 17:05:53 epia kernel:  [<c0104013>] show_trace_log_lvl+0x1a/0x2f
-May 16 17:05:53 epia kernel:  [show_stack_log_lvl+157/165]
-show_stack_log_lvl+0x9d/0xa5
-May 16 17:05:53 epia kernel:  [<c01040c5>] show_stack_log_lvl+0x9d/0xa5
-May 16 17:05:53 epia kernel:  [show_registers+419/702]
-show_registers+0x1a3/0x2be
-May 16 17:05:53 epia kernel:  [<c0104270>] show_registers+0x1a3/0x2be
-May 16 17:05:53 epia kernel:  [die+263/521] die+0x107/0x209
-May 16 17:05:53 epia kernel:  [<c0104492>] die+0x107/0x209
-May 16 17:05:53 epia kernel:  [do_page_fault+1096/1315]
-do_page_fault+0x448/0x523
-May 16 17:05:53 epia kernel:  [<c010f4f5>] do_page_fault+0x448/0x523
-May 16 17:05:53 epia kernel:  [error_code+116/128] error_code+0x74/0x80
-May 16 17:05:53 epia kernel:  [<c0308214>] error_code+0x74/0x80
-May 16 17:05:53 epia kernel:  [dec_pending+349/357] dec_pending+0x15d/0x165
-May 16 17:05:53 epia kernel:  [<c02747d8>] dec_pending+0x15d/0x165
-May 16 17:05:53 epia kernel:  [clone_endio+157/203] clone_endio+0x9d/0xcb
-May 16 17:05:53 epia kernel:  [<c0274915>] clone_endio+0x9d/0xcb
-May 16 17:05:53 epia kernel:  [bio_endio+83/91] bio_endio+0x53/0x5b
-May 16 17:05:54 epia kernel:  [<c0173947>] bio_endio+0x53/0x5b
-May 16 17:05:54 epia kernel:  [dec_pending+55/69] dec_pending+0x37/0x45
-May 16 17:05:54 epia kernel:  [<c027a07e>] dec_pending+0x37/0x45
-May 16 17:05:54 epia kernel:  [kcryptd_do_work+158/830]
-kcryptd_do_work+0x9e/0x33e
-May 16 17:05:54 epia kernel:  [<c027a241>] kcryptd_do_work+0x9e/0x33e
-May 16 17:05:54 epia kernel:  [run_workqueue+142/341]
-run_workqueue+0x8e/0x155
-May 16 17:05:54 epia kernel:  [<c01218e1>] run_workqueue+0x8e/0x155
-May 16 17:05:54 epia kernel:  [worker_thread+260/302]
-worker_thread+0x104/0x12e
-May 16 17:05:54 epia kernel:  [<c0121f59>] worker_thread+0x104/0x12e
-May 16 17:05:54 epia kernel:  [kthread+163/206] kthread+0xa3/0xce
-May 16 17:05:54 epia kernel:  [<c012452d>] kthread+0xa3/0xce
-May 16 17:05:54 epia kernel:  [kernel_thread_helper+7/16]
-kernel_thread_helper+0x7/0x10
-May 16 17:05:54 epia kernel:  [<c0103cb7>] kernel_thread_helper+0x7/0x10
-May 16 17:05:54 epia kernel:  =======================
-May 16 17:05:54 epia kernel: Code: 89 c2 55 89 c8 89 e5 e8 da 49 01 00
-5d c3 89 d1 89 c2 55 89 c8 89 e5 e8 df 3e 01 00 5d c3 55 89 e5 57 89 c7
-56 53 89 d3 83 ec 04 <8b> 42 2c 3b 42 28 7d 47 89 d0 e8 77 a8 1c 00 89
-c6 8b 43 2c 3b
-May 16 17:05:54 epia kernel: EIP: [mempool_free+13/106]
-mempool_free+0xd/0x6a SS:ESP 0068:ddeb3e50
-May 16 17:05:54 epia kernel: EIP: [<c013cfe4>] mempool_free+0xd/0x6a
-SS:ESP 0068:ddeb3e50
+For "kernel.org" you mean linux kernel?
+
+In this case: no copyright assignment is required.
+
+The changes should be compatible with GPL v2
+(as you will find i.e. in http://lxr.linux.no/source/COPYING )
+
+You should confirm the:
+"Developer's Certificate of Origin 1.1".
+This is in Documentation/SubmittingPatches
+( http://lxr.linux.no/source/Documentation/SubmittingPatches )
+
+Note: IANAL, and I don't speak for other contributors ;-)
+
+ciao
+	cate
+
+PS: there is already a copyrighted file by motorola:
+include/net/sctp/constants.h
+( http://lxr.linux.no/source/include/net/sctp/constants.h )
