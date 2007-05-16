@@ -1,44 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761891AbXEPLjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbXEPLjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761891AbXEPLjU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758328AbXEPLjL
+	id S1762127AbXEPLjv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758841AbXEPLjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:39:11 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:54885 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758359AbXEPLjJ (ORCPT
+	Wed, 16 May 2007 07:39:43 -0400
+Received: from lazybastard.de ([212.112.238.170]:48278 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758328AbXEPLjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:39:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Xna+Nk1k+zq5tZ+DatSixdYpO0q2RNIVJR6wxpJ625S0xnOoIW629mh2hjarJlmJgMJNdc+q8oGTMMKuPNv2mpQQ6dkVglz+7cIVY+Cj6WZGMPHET7PSpELdavxb3U5YktKcbfbBXPjvb5dnmn0i6fFzaMKO+pegkorTz22ajpo=
-Message-ID: <464AED48.30200@gmail.com>
-Date: Wed, 16 May 2007 13:38:48 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Tejun Heo <htejun@gmail.com>,
-       Francesco Pretto <ceztko@gmail.com>, Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca> <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com> <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com> <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com> <46489D3B.8050805@gmail.com> <20070515210804.GG25902@redhat.com>
-In-Reply-To: <20070515210804.GG25902@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 07:39:42 -0400
+Date: Wed, 16 May 2007 13:35:20 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516113519.GC5472@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <adar6pho5n3.fsf@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <adar6pho5n3.fsf@cisco.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> There's a typo..
+On Tue, 15 May 2007 19:37:36 -0700, Roland Dreier wrote:
 > 
-> "Check whether /sys/modules/libata/parameters/spindown_compat  exists. If it does, write 0 to it."
+> There are rather a lot of of FIXME comments, including scary stuff like
 > 
-> should be /sys/module/libata/parameters/spindown_compat
+>  > +	/*
+>  > +	 * FIXME: this cannot be right but it does "fix" a bug of i_count
+>  > +	 * dropping too low.  Needs more thought.
+>  > +	 */
+>  > +	atomic_inc(&old_dentry->d_inode->i_count);
 
-Right, thanks.
+Any thoughts on this would be appreciated.
+
+> and
+> 
+>  > +int __logfs_write_inode(struct inode *inode)
+>  > +{
+>  > +	/*
+>  > +	 * FIXME: Those two inodes are 512 bytes in total.  Not good to
+>  > +	 * have on the stack.  Possibly the best solution would be to bite
+>  > +	 * the bullet and do another format change before release and
+>  > +	 * shrink the inodes.
+>  > +	 */
+>  > +	struct logfs_disk_inode old, new;
+> 
+> are you going to change the format?  or fix this some other way?
+
+I would love to put my inodes on a diet.  It is just a matter of time
+and priorities.  To me the 512 bytes on the stack are unfortunate, but
+not a show stopper.  Crash behaviour is, so that has priority.
+
+> I think a sweep through the code searching for FIXME and at least
+> rewriting all such comments to look like stuff that can be deferred
+> would be warranted ;)
+
+Are you asking me to hide known problems under a rug? ;)
+
+Will see if I can easily fix some of these.  In particular the
+eat-your-data FIXME that can cause LogFS to not survive a crash.
+
+Jörn
 
 -- 
-tejun
+Correctness comes second.
+Features come third.
+Performance comes last.
+Maintainability is easily forgotten.
