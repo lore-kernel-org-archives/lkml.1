@@ -1,94 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760667AbXEPCqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbXEPCvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760667AbXEPCqR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 22:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXEPCqG
+	id S1761647AbXEPCvd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 22:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbXEPCvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 22:46:06 -0400
-Received: from nabe-new.tequila.jp ([211.14.136.194]:36569 "EHLO
-	nabe-new.tequila.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbXEPCqF (ORCPT
+	Tue, 15 May 2007 22:51:24 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56197 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753678AbXEPCvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 22:46:05 -0400
-Message-ID: <464A7068.3080107@tequila.co.jp>
-Date: Wed, 16 May 2007 11:46:00 +0900
-From: Clemens Schwaighofer <cs@tequila.co.jp>
-Organization: TEQUILA\Japan
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	Tue, 15 May 2007 22:51:23 -0400
+Date: Tue, 15 May 2007 20:51:21 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: Asynchronous scsi scanning
+Message-ID: <20070516025121.GK10562@parisc-linux.org>
+References: <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com> <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com> <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com> <1179153096.3703.23.camel@mulgrave.il.steeleye.com> <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk> <20070515172905.GJ10562@parisc-linux.org> <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Maneesh Soni <maneesh@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Tejun Heo <htejun@gmail.com>, Greg KH <greg@kroah.com>
-Subject: Re: Oops and Panics in 2.6.21.1, 2.6.20.6 and 2.6.19.2
-References: <464A4F56.6080108@tequila.co.jp> <20070515185350.2e77bf21.akpm@linux-foundation.org>
-In-Reply-To: <20070515185350.2e77bf21.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCC94B8206F9B1D4871AD3403"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCC94B8206F9B1D4871AD3403
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, May 16, 2007 at 04:57:52AM +0530, Satyam Sharma wrote:
+> [ I appreciate you forked the thread and gave it a better subject name,
+> it would be better still if you could maintain the original CC list, 
+> thanks. ]
 
-On 05/16/2007 10:53 AM, Andrew Morton wrote:
+I removed the people I didn't think needed to be on the Cc list any more,
+since I was changing the direction of the thread.
 
-> How frequently do you see these failures?  If it's repeatable with any =
-reliability
-> then it'd be great if you could test a patchset for us.  It's at:
->=20
-> http://userweb.kernel.org/~akpm/cs.gz
->=20
-> that's a single patch against 2.6.21-rc1, containing the following patc=
-hes, which=20
-> are from the forthcoming 2.6.21-rc1-mm1 lineup:
+> On 5/15/07, Matthew Wilcox <matthew@wil.cx> wrote:
+> >> >It's easy to suggest a sysfs attribute.  What you've failed to do is
+> >> >suggest the pathname of the sysfs attribute,
+> 
+> /sys/module/scsi_mod/parameters/wait_for_async_scans (?)
+> Doesn't really matter, but perhaps who created the sysfs namespace
+> for scsi in /sys/module/scsi_mod/... could be the best person to suggest.
 
-(and those above are 2.6.22-rc1 of course)
+No, it does matter.  Your suggestion doesn't work, because
+/sys/module/scsi_mod/parameters/ belongs to the module code.  To create
+a new attribute there, you use the module_param() code -- and there's
+no way to have code called when your parameter is changed.
 
-well, I tried to apply those patches and when I compile I get this error:=
+> >Why?  You're not forced to load the module.  In what way does it
+> >inconvenience you?  Nobody's making you run 'make modules_install'.
+> >I often forget to myself.
+> 
+> OK, I'll get really silly here myself. I don't want even that half a second 
+> of
+> overhead when that module is being _built_ (during make modules), not
+> the overhead of copying / installing at modules_install time.
 
+You're claiming that 0.7 second (I just timed it on a 3 year old
+laptop) *inconveniences* you?
 
-  CC      net/ipv6/exthdrs.o
-net/ipv6/exthdrs.c: In function =E2=80=98ipv6_rthdr_rcv=E2=80=99:
-net/ipv6/exthdrs.c:390: error: =E2=80=98struct sk_buff=E2=80=99 has no me=
-mber named =E2=80=98h=E2=80=99
-net/ipv6/exthdrs.c:391: error: =E2=80=98struct sk_buff=E2=80=99 has no me=
-mber named =E2=80=98h=E2=80=99
-net/ipv6/exthdrs.c:391: error: =E2=80=98struct sk_buff=E2=80=99 has no me=
-mber named =E2=80=98h=E2=80=99
-net/ipv6/exthdrs.c:398: error: =E2=80=98struct sk_buff=E2=80=99 has no me=
-mber named =E2=80=98h=E2=80=99
-make[2]: *** [net/ipv6/exthdrs.o] Error 1
-make[1]: *** [net/ipv6] Error 2
-make: *** [net] Error 2
+> I apologize if I sounded impolite, and I certainly don't want to act
+> demanding / difficult or anything, but it's just that doing this via a sysfs
+> attribute (or hey, anything else!) sounds a better way to tackle this than
+> this module thing. IMHO, at least.
 
-It's probably totally unrelated but sadly a showstopper for testing the
-new sysfs patches,
-
---=20
-[ Clemens Schwaighofer                      -----=3D=3D=3D=3D=3D:::::~ ]
-[ TEQUILA\ Japan IT Group                                    ]
-[                6-17-2 Ginza Chuo-ku, Tokyo 104-8167, JAPAN ]
-[ Tel: +81-(0)3-3545-7703            Fax: +81-(0)3-3545-7343 ]
-[ http://www.tequila.co.jp                                   ]
-
-
---------------enigCC94B8206F9B1D4871AD3403
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGSnBqjBz/yQjBxz8RAviCAJ9HEl6J8GMvXkZag5660Ha1DolIxACfYxx7
-tT0jxTdJlwPUzG3+aV2k5Ss=
-=X8LF
------END PGP SIGNATURE-----
-
---------------enigCC94B8206F9B1D4871AD3403--
+This whole thing is such a tempest in a teapot.  I really don't
+understand why you care so much.
