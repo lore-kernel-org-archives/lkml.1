@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933617AbXEPUpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXEPUsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933617AbXEPUpO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbXEPUpD
+	id S933760AbXEPUsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757979AbXEPUso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:45:03 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43745 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754561AbXEPUpB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:45:01 -0400
-Date: Wed, 16 May 2007 13:44:59 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179348039.2912.48.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0705161343080.11234@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> 
- <20070514161224.GC11115@waste.org>  <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-  <1179164453.2942.26.camel@lappy>  <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-  <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins> 
- <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com> 
- <1179298771.7173.16.camel@twins>  <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
-  <1179343521.2912.20.camel@lappy>  <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
-  <1179346738.2912.39.camel@lappy>  <Pine.LNX.4.64.0705161320020.11018@schroedinger.engr.sgi.com>
- <1179348039.2912.48.camel@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 16 May 2007 16:48:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34510 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756641AbXEPUsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 16:48:43 -0400
+Date: Wed, 16 May 2007 16:48:07 -0400
+From: Dave Jones <davej@redhat.com>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: Prakash Punnoor <prakash@punnoor.de>,
+       Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
+Message-ID: <20070516204807.GA23751@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Duane Griffin <duaneg@dghda.com>,
+	Prakash Punnoor <prakash@punnoor.de>,
+	Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>,
+	LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>
+References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, Peter Zijlstra wrote:
+On Wed, May 16, 2007 at 08:53:13PM +0100, Duane Griffin wrote:
+ > On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
+ > > Maybe you want to give a hint in the p states driver help text?
+ > 
+ > I think a hint is the right thing to do, but in the PowerNow! driver
+ > rather than the p states one. How about adding something like this to
+ > the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
 
-> > How does all of this interact with
-> > 
-> > 1. cpusets
-> > 
-> > 2. dma allocations and highmem?
-> > 
-> > 3. Containers?
-> 
-> Much like the normal kmem_cache would do; I'm not changing any of the
-> page allocation semantics.
+The mobile K7s which had powernow support weren't SMP capable, so they're
+irrelevant.
 
-So if we run out of memory on a cpuset then network I/O will still fail?
+ > "ACPI support is required for non-UP systems and requires ACPI_PROCESSOR
+ >  to be selected. If ACPI_PROCESSOR is compiled as a module then this
+ >  option must be too in order for ACPI support to be available."
 
-I do not see any distinction between DMA and regular memory. If we need 
-DMA memory to complete the transaction then this wont work?
+X86_POWERNOW_K8_ACPI is already 'default y'. I think the problem lies in
+that people aren't enabling its dependancy, ACPI_PROCESSOR.
+
+We want something along the lines of..
+
+config X86_POWERNOW_K8_ACPI
+	bool
+	if SMP & X86_POWERNOW_K8_ACPI
+	  select ACPI_PROCESSOR
+
+kconfig language quirks aside..
 
 
-> But its wanted to try the normal cpu_slab path first to detect that the
-> situation has subsided and we can resume normal operation.
+	Dave
 
-Is there some indicator somewhere that indicates that we are in trouble? I 
-just see the ranks.
-
+-- 
+http://www.codemonkey.org.uk
