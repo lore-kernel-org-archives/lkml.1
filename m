@@ -1,90 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762167AbXEPQKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbXEPQNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762167AbXEPQKa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbXEPQKX
+	id S1758875AbXEPQNQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbXEPQNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:10:23 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:23336 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbXEPQKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:10:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:user-agent;
-	b=afctwYAxmzabYHAy6fHU+GPUuI7/N5YR0XyU3sK7W8YiCeYz5WIVIk3v5sLCTY6Ww
-	DOeiEIAgY0OkTuspDma7w==
-Date: Wed, 16 May 2007 09:09:11 -0700
-From: Aaron Durbin <adurbin@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org, len.brown@intel.com
-Subject: [PATCH] acpi: Fix potential call to a freed memory section.
-Message-ID: <20070516160911.GA15066@google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Wed, 16 May 2007 12:13:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35738 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751006AbXEPQM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 12:12:59 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <464B07EC.4050308@yahoo.com.au>
+References: <464B07EC.4050308@yahoo.com.au> <464AF3F3.30204@yahoo.com.au> <20070516100225.18685.51699.stgit@warthog.cambridge.redhat.com> <17173.1179321391@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement shared-writable mmap [try #2]
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 16 May 2007 17:12:08 +0100
+Message-ID: <19714.1179331928@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Strip __cpuinit[data] from Node <-> PXM routines and supporting data structures.
-Also make pxm_to_node_map and node_to_pxm_map local to the numa acpi module.
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-This fixes a bug triggered by the following conditions:
-- boot on a machine with a SLIT table defined
-- kernel is configured w/ CONFIG_HOTPLUG_CPU=n
-- cat /sys/devices/system/node/node*/distance
-This will cause an oops by calling into a freed memory section.
+> In general (modulo bugs and crazy filesystems), you're not allowed to have
+> !uptodate pages mapped into user addresses because that implies the user
+> would be allowed to see garbage.
 
-In particular, on x86_64, __node_distance calls node_to_pxm().
+Ths situation I have to deal with is a tricky one.  Consider:
 
-Signed-off-by: Aaron Durbin <adurbin@google.com>
----
+ (1) User A modifies a page with his key.  This change gets made in the
+     pagecache, but is not written back immediately.
 
-diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
-index 8fcd6a1..a2efae8 100644
---- a/drivers/acpi/numa.c
-+++ b/drivers/acpi/numa.c
-@@ -40,19 +40,19 @@ #define PXM_INVAL	-1
- #define NID_INVAL	-1
- 
- /* maps to convert between proximity domain and logical node ID */
--int __cpuinitdata pxm_to_node_map[MAX_PXM_DOMAINS]
-+static int pxm_to_node_map[MAX_PXM_DOMAINS]
- 				= { [0 ... MAX_PXM_DOMAINS - 1] = NID_INVAL };
--int __cpuinitdata node_to_pxm_map[MAX_NUMNODES]
-+static int node_to_pxm_map[MAX_NUMNODES]
- 				= { [0 ... MAX_NUMNODES - 1] = PXM_INVAL };
- 
--int __cpuinit pxm_to_node(int pxm)
-+int pxm_to_node(int pxm)
- {
- 	if (pxm < 0)
- 		return NID_INVAL;
- 	return pxm_to_node_map[pxm];
- }
- 
--int __cpuinit node_to_pxm(int node)
-+int node_to_pxm(int node)
- {
- 	if (node < 0)
- 		return PXM_INVAL;
-diff --git a/include/acpi/acpi_numa.h b/include/acpi/acpi_numa.h
-index f9d2bde..b62cd36 100644
---- a/include/acpi/acpi_numa.h
-+++ b/include/acpi/acpi_numa.h
-@@ -11,11 +11,8 @@ #else
- #define MAX_PXM_DOMAINS (256)	/* Old pxm spec is defined 8 bit */
- #endif
- 
--extern int __cpuinitdata pxm_to_node_map[MAX_PXM_DOMAINS];
--extern int __cpuinitdata node_to_pxm_map[MAX_NUMNODES];
--
--extern int __cpuinit pxm_to_node(int);
--extern int __cpuinit node_to_pxm(int);
-+extern int pxm_to_node(int);
-+extern int node_to_pxm(int);
- extern int __cpuinit acpi_map_pxm_to_node(int);
- extern void __cpuinit acpi_unmap_pxm_to_node(int);
- 
+ (2) User B then wants to modify the same page, but with a different key.
+     This means that afs_prepare_write() has to flush A's writes back to the
+     server before B is permitted to write.
+
+ (3) The flush fails because A is no longer permitted to write to that file.
+     This means that the change in the page cache is now stale.  We can't just
+     write it back as B because B didn't make the change.
+
+What I've made afs_prepare_write() do in this situation is to nuke A's entire
+write.  We can't write any of it back.  I can't call invalidate_inode_pages()
+or similar because that might incorrectly kill one of B's writes (or someone
+else's writes); besides, the on-server file hasn't changed.
+
+To nuke A's write, each page that makes up that write is marked non-uptodate
+and then reloaded.  Whilst I might wish to call invalidate_inode_pages_range(),
+I can't as it can/would deadlock if called from prepare_write() in two
+different ways.
+
+> >>Minor issue: you can just check for `if (!page->mapping)` for truncation,
+> >>which is the usual signal to tell the reader you're checking for truncate.
+> >
+> >
+> > That's inconsistent with other core code, truncate_complete_page() for
+> > example.
+> 
+> Your filesystem internally moves pages between mappings like tmpfs?
+
+You misunderstand me.  truncate_complete_page() uses this:
+
+	if (page->mapping != mapping)
+
+not this:
+
+	if (!page->mapping)
+
+I think that both cases should work in page_mkwrite().  But !page->mapping does
+not appear to be the "usual signal" from what I've seen.
+
+However, that's a minor matter.
+
+David
