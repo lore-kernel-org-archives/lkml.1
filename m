@@ -1,102 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbXEPTzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763148AbXEPT4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763267AbXEPTzU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 15:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759555AbXEPTzF
+	id S1763148AbXEPT4a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 15:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759293AbXEPT4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 15:55:05 -0400
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:42076 "HELO
-	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759169AbXEPTzD (ORCPT
+	Wed, 16 May 2007 15:56:23 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:58483 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757979AbXEPT4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 15:55:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=hHTPoyU/i+DvgKmnrkaBQK5uIRbhPcSgBh/R7pXQ3ad7VdFwKDUmvM7GRjwsspxVdKg3e8dUkZdBZSfp36wqVwqTnmwN93Fu28p8Snw3p9RiMJvnxsFjl7PzIMUNTR/kglvnEttJJ4xUUlzgZdavpHxgfEpBKwYO1i9+xLFAyNw=  ;
-X-YMail-OSG: B7pc4AgVM1k1uen18.S9GgW1McV_NHAs03sv6JifL439Zx0lon7JeSGz92BQf_6jQATaKpPL9Q--
-From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH] atmel_spi: Pass correct DMA address to controller
-Date: Wed, 16 May 2007 12:54:59 -0700
-User-Agent: KMail/1.9.6
-Cc: wux@landicorp.com, linux-kernel@vger.kernel.org
-References: <11793107892086-git-send-email-hskinnemoen@atmel.com>
-In-Reply-To: <11793107892086-git-send-email-hskinnemoen@atmel.com>
+	Wed, 16 May 2007 15:56:22 -0400
+Date: Wed, 16 May 2007 15:53:59 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Message-ID: <20070516195359.GE26766@think.oraclecorp.com>
+References: <20070516144205.GV26766@think.oraclecorp.com> <464B2AC2.10206@redhat.com> <20070516171156.GY26766@think.oraclecorp.com> <20070516112515.b6f247b2.akpm@linux-foundation.org> <20070516191339.GA26766@think.oraclecorp.com> <20070516123342.714a11d8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705161254.59308.david-b@pacbell.net>
+In-Reply-To: <20070516123342.714a11d8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 May 2007, Haavard Skinnemoen wrote:
-> When either rx_buf or tx_buf is not being used, i.e. for plain read-
-> or write operations, the atmel_spi uses a fixed-size DMA buffer
-> instead. If the transfer is longer than the size of this buffer, it is
-> split into multiple DMA transfers.
+On Wed, May 16, 2007 at 12:33:42PM -0700, Andrew Morton wrote:
+> On Wed, 16 May 2007 15:13:39 -0400
+> Chris Mason <chris.mason@oracle.com> wrote:
 > 
-> When the transfer is split like this, the atmel_spi driver ends up
-> using the same DMA address again and again even for the buffer that
-> came from the user, which is of course wrong.
-
-Yes, and needs fixing.  This is almost right, see below.
-
-
-> Fix this by adding the 
-> number of bytes already transferred to the DMA address so that the
-> data ends up in the right place.
+> > > 
+> > > If that's still working then the problem will _probably_ be directory
+> > > writeout.  Possibly inodes, but they should be well-laid-out.
+> > > 
+> > > Were you using dir_index?  That might be screwing things up.
+> > 
+> > Yes, dir_index.  A quick test of mkfs.ext3 -O ^dir_index seems to still
+> > have the problem.  Even though the inodes are well laid out, is the
+> > order they get written sane?
 > 
-> Thanks to Wu Xuan for discovering this bug.
+> Should be: it uses first-fit.
 > 
-> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
-> ---
->  drivers/spi/atmel_spi.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
+> >  Looks like ext3 is just walking a list of
+> > bh/jh, maybe we can just sort the silly thing?
 > 
-> diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
-> index 1d8a2f6..8b2601d 100644
-> --- a/drivers/spi/atmel_spi.c
-> +++ b/drivers/spi/atmel_spi.c
-> @@ -113,16 +113,16 @@ static void atmel_spi_next_xfer(struct spi_master *master,
->  
->  	len = as->remaining_bytes;
->  
-> -	tx_dma = xfer->tx_dma;
-> -	rx_dma = xfer->rx_dma;
-> +	tx_dma = xfer->tx_dma + xfer->len - len;
-> +	rx_dma = xfer->rx_dma + xfer->len - len;
->  
->  	/* use scratch buffer only when rx or tx data is unspecified */
-> -	if (rx_dma == INVALID_DMA_ADDRESS) {
-> +	if (!xfer->rx_buf) {
-
-This test ...
-
->  		rx_dma = as->buffer_dma;
->  		if (len > BUFFER_SIZE)
->  			len = BUFFER_SIZE;
->  	}
-> -	if (tx_dma == INVALID_DMA_ADDRESS) {
-> +	if (!xfer->tx_buf) {
-
-... and this one must not assume that the relevant buffer
-is always NULL when the tx_dma has been set up.  Keep the
-test against INVALID_DMA_ADDRESS, but fetch the address
-from the spi_transfer.
-
-It's legit to set up cpu-virtual (for PIO) and dma addresses
-for each buffer, since the upper layer driver has no way to
-know if the underlying controller driver is DMA-capable, or
-for that matter PIO-capable.
-
->  		tx_dma = as->buffer_dma;
->  		if (len > BUFFER_SIZE)
->  			len = BUFFER_SIZE;
-> -- 
-> 1.4.4.4
+> The IO scheduler is supposed to do that.
 > 
+> But I don't know what's causing this.
 
+I had high hopes of blaming cfq, but deadline gives the same results:
+
+create dir kernel-0 222MB in 5.38 seconds (41.33 MB/s)
+... [ ~30MB/s here ] ...
+create dir kernel-7 222MB in 8.11 seconds (27.42 MB/s)
+create dir kernel-8 222MB in 18.39 seconds (12.09 MB/s)
+create dir kernel-9 222MB in 6.91 seconds (32.18 MB/s)
+create dir kernel-10 222MB in 24.32 seconds (9.14 MB/s)
+create dir kernel-11 222MB in 12.06 seconds (18.44 MB/s)
+create dir kernel-12 222MB in 10.95 seconds (20.31 MB/s)
+
+The good news is that if you let it run long enough, the times
+stabilize.  The bad news is:
+
+create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
+create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
+create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
+create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
+
+echo 2048 > /sys/block/..../nr_requests didn't do it either.
+
+I guess I'll have systemtap tell me more about the log flushing.
+
+-chris
 
