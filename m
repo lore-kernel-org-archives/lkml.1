@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbXEPIb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbXEPIdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759592AbXEPIb5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbXEPIbu
+	id S1760925AbXEPIdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXEPIdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:31:50 -0400
-Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:14912 "EHLO
-	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756634AbXEPIbu convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 04:31:50 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=uJEMU1iTlxATwz3+Tm/jCwZItphcgl8iZn02/Gjv0i+NTscJXNdGzX/76Yqw9Eaf2j4FcNYjx/yFEvAo6JLzLMrZb4ITyOisqqiPHNw03lJ9ZmBwjzxNspZhsQ5rUIN8;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.14,541,1170630000"; 
-   d="scan'208";a="68895616"
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: How to guarantee that kmalloc returns an address below 4GB
-Date: Wed, 16 May 2007 10:30:29 +0200
-Message-ID: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF054F922A@ABGEX01E.abg.fsc.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: How to guarantee that kmalloc returns an address below 4GB
-Thread-Index: AceXlHYH+2wZSrZfTOGaX9KELWM7EA==
-From: "Cestonaro, Thilo \(external\)" 
-	<Thilo.Cestonaro.external@fujitsu-siemens.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 16 May 2007 08:31:33.0097 (UTC) FILETIME=[9BF72D90:01C79794]
+	Wed, 16 May 2007 04:33:10 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:7086 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755414AbXEPIdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 04:33:08 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 2/10] Add sg helpers for iterating over a scatterlist table
+Date: Wed, 16 May 2007 10:31:32 +0200
+Message-Id: <11793043001618-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.5.2.rc1
+In-Reply-To: <1179304300358-git-send-email-jens.axboe@oracle.com>
+References: <1179304300358-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+First step to being able to change the scatterlist setup without
+having to modify drivers (a lot :-)
 
-is there an option for kmalloc, which I can use to allocate a buffer which is in physical memory placed below 4GB?
-Not in a remapped area.
-The only way I found is to use GFP_DMA, but this says the first 16MB isn't it?
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ include/linux/scatterlist.h |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-Ciao Thilo
+diff --git a/include/linux/scatterlist.h b/include/linux/scatterlist.h
+index 4efbd9c..c5bffde 100644
+--- a/include/linux/scatterlist.h
++++ b/include/linux/scatterlist.h
+@@ -20,4 +20,13 @@ static inline void sg_init_one(struct scatterlist *sg, const void *buf,
+ 	sg_set_buf(sg, buf, buflen);
+ }
+ 
++#define sg_next(sg)		((sg) + 1)
++#define sg_last(sg, nents)	(&(sg[nents - 1]))
++
++/*
++ * Loop over each sg element, following the pointer to a new list if necessary
++ */
++#define for_each_sg(sglist, sg, nr, __i)	\
++	for (__i = 0, sg = (sglist); __i < nr; __i++, sg = sg_next(sg))
++
+ #endif /* _LINUX_SCATTERLIST_H */
+-- 
+1.5.2.rc1
+
