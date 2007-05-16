@@ -1,109 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbXEPB4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762091AbXEPB6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761651AbXEPB4q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 21:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXEPB4i
+	id S1762091AbXEPB6d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 21:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXEPB61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 21:56:38 -0400
-Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:3542 "EHLO
-	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754287AbXEPB4h convert rfc822-to-8bit (ORCPT
+	Tue, 15 May 2007 21:58:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47930 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754467AbXEPB60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 21:56:37 -0400
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
-Date: Wed, 16 May 2007 13:56:35 +1200
-Message-ID: <659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com>
-In-Reply-To: <17994.19043.771733.453896@notabene.brown>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
-Thread-Index: AceXTcFW+KmsvQXxRgmH+yvfHOe65QAD6oaQ
-References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com><6bffcb0e0705151629j78920ca2r9337dccdfc1bb6a9@mail.gmail.com> <17994.19043.771733.453896@notabene.brown>
-From: "Jeff Zheng" <Jeff.Zheng@endace.com>
-To: "Neil Brown" <neilb@suse.de>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-raid@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>
+	Tue, 15 May 2007 21:58:26 -0400
+Date: Tue, 15 May 2007 18:53:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Clemens Schwaighofer <cs@tequila.co.jp>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Maneesh Soni <maneesh@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Tejun Heo <htejun@gmail.com>, Greg KH <greg@kroah.com>
+Subject: Re: Oops and Panics in 2.6.21.1, 2.6.20.6 and 2.6.19.2
+Message-Id: <20070515185350.2e77bf21.akpm@linux-foundation.org>
+In-Reply-To: <464A4F56.6080108@tequila.co.jp>
+References: <464A4F56.6080108@tequila.co.jp>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the information of the created raid0. Hope it is enough.
+On Wed, 16 May 2007 09:24:54 +0900 Clemens Schwaighofer <cs@tequila.co.jp> wrote:
 
-Jeff
+> I have re-occurring oopses and panics in those above kernels. The error
+> is always the same. I have the last Kernel Panic as a picture here:
+> 
+> http://dev.tequila.jp/clemens/R0010172.JPG
+> 
+> The oops have the same error style like this Panic. I tried to capture
+> one, but right after copying it into vim, I got a Panic. So next time I
+> try to.
+> 
+> I think it started with 2.6.19.2, I cannot remember I had any of those
+> problems before. The box can work fine for about a week or more, or it
+> looks up several times a day. I run a memtest for 10 h, but I had no errors.
 
-The crashing one:
-md: bind<sdd>
-md: bind<sde>
-md: raid0 personality registered for level 0
-md0: setting max_sectors to 4096, segment boundary to 1048575
-raid0: looking at sde
-raid0:   comparing sde(5859284992) with sde(5859284992)
-raid0:   END
-raid0:   ==> UNIQUE
-raid0: 1 zones
-raid0: looking at sdd
-raid0:   comparing sdd(5859284992) with sde(5859284992)
-raid0:   EQUAL
-raid0: FINAL 1 zones
-raid0: done.
-raid0 : md_size is 11718569984 blocks.
-raid0 : conf->hash_spacing is 11718569984 blocks.
-raid0 : nb_zone is 2.
-raid0 : Allocating 8 bytes for hash.
-JFS: nTxBlock = 8192, nTxLock = 65536
+shrink_dcache_memory->...sysfs_d_iput->BUG
 
-The working one:
-md: bind<sde>
-md: bind<sdf>
-md: bind<sdg>
-md: bind<sdd>
-md0: setting max_sectors to 4096, segment boundary to 1048575
-raid0: looking at sdd
-raid0:   comparing sdd(2929641472) with sdd(2929641472)
-raid0:   END
-raid0:   ==> UNIQUE
-raid0: 1 zones
-raid0: looking at sdg
-raid0:   comparing sdg(2929641472) with sdd(2929641472)
-raid0:   EQUAL
-raid0: looking at sdf
-raid0:   comparing sdf(2929641472) with sdd(2929641472)
-raid0:   EQUAL
-raid0: looking at sde
-raid0:   comparing sde(2929641472) with sdd(2929641472)
-raid0:   EQUAL
-raid0: FINAL 1 zones
-raid0: done.
-raid0 : md_size is 11718565888 blocks.
-raid0 : conf->hash_spacing is 11718565888 blocks.
-raid0 : nb_zone is 2.
-raid0 : Allocating 8 bytes for hash.
-JFS: nTxBlock = 8192, nTxLock = 65536
+                BUG_ON(sd->s_dentry != dentry);
 
------Original Message-----
-From: Neil Brown [mailto:neilb@suse.de] 
-Sent: Wednesday, 16 May 2007 12:04 p.m.
-To: Michal Piotrowski
-Cc: Jeff Zheng; Ingo Molnar; linux-raid@vger.kernel.org;
-linux-kernel@vger.kernel.org; linux-fsdevel@vger.kernel.org
-Subject: Re: Software raid0 will crash the file-system, when each disk
-is 5TB
+a number of people have hit that, on and off.
 
-On Wednesday May 16, michal.k.k.piotrowski@gmail.com wrote:
-> >
-> > Anybody have a clue?
-> >
+We were close to having a fix, I think, but then we decided that great
+chunks of sysfs needed rewriting and I believe that we believe that this
+great rewrite will fix this bug.
 
-No...
-When a raid0 array is assemble, quite a lot of message get printed
-about number of zones and hash_spacing etc.  Can you collect and post
-those.  Both for the failing case (2*5.5T) and the working case
-(4*2.55T) is possible.
+But alas, it's all too late for 2.6.22.
 
-NeilBrown
+How frequently do you see these failures?  If it's repeatable with any reliability
+then it'd be great if you could test a patchset for us.  It's at:
+
+http://userweb.kernel.org/~akpm/cs.gz
+
+that's a single patch against 2.6.21-rc1, containing the following patches, which 
+are from the forthcoming 2.6.21-rc1-mm1 lineup:
+
+origin
+gregkh-driver-uio
+gregkh-driver-uio-documentation
+gregkh-driver-uio-hilscher-cif-card-driver
+gregkh-driver-idr-fix-obscure-bug-in-allocation-path
+gregkh-driver-idr-separate-out-idr_mark_full
+gregkh-driver-ida-implement-idr-based-id-allocator
+gregkh-driver-sysfs-move-release_sysfs_dirent-to-dirc
+gregkh-driver-sysfs-allocate-inode-number-using-ida
+gregkh-driver-sysfs-make-sysfs_put-ignore-null-sd
+gregkh-driver-sysfs-fix-error-handling-in-binattr-write
+gregkh-driver-sysfs-flatten-cleanup-paths-in-sysfs_add_link-and-create_dir
+gregkh-driver-sysfs-flatten-and-fix-sysfs_rename_dir-error-handling
+gregkh-driver-sysfs-consolidate-sysfs_dirent-creation-functions
+gregkh-driver-sysfs-add-sysfs_dirent-s_parent
+gregkh-driver-sysfs-add-sysfs_dirent-s_name
+gregkh-driver-sysfs-make-sysfs_dirent-s_element-a-union
+gregkh-driver-sysfs-implement-kobj_sysfs_assoc_lock
+gregkh-driver-sysfs-reimplement-symlink-using-sysfs_dirent-tree
+gregkh-driver-sysfs-implement-bin_buffer
+gregkh-driver-sysfs-implement-sysfs_dirent-active-reference-and-immediate-disconnect
+gregkh-driver-sysfs-kill-attribute-file-orphaning
+gregkh-driver-sysfs-separate-out-sysfs_attach_dentry
+gregkh-driver-sysfs-reimplement-syfs_drop_dentry
+gregkh-driver-sysfs-kill-unnecessary-attribute-owner
+gregkh-driver-driver-core-make-devt_attr-and-uevent_attr-static
+gregkh-driver-put_device-might_sleep
+gregkh-driver-kobject-warn
+gregkh-driver-warn-when-statically-allocated-kobjects-are-used
+gregkh-driver-nozomi
+fix-gregkh-driver-sysfs-fix-error-handling-in-binattr-write
+
+Thanks.
