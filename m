@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031287AbXEPVJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934135AbXEPVNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031287AbXEPVJl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031136AbXEPVJc
+	id S934135AbXEPVNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXEPVNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:09:32 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:47138 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031180AbXEPVJb (ORCPT
+	Wed, 16 May 2007 17:13:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45491 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761178AbXEPVNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:09:31 -0400
-Date: Thu, 17 May 2007 00:09:22 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] allow kernel module exclusion on load
-Message-ID: <20070516210922.GA24231@localdomain>
-References: <20070513132517.GA14038@localdomain> <20070513092352.18cd80de@freepuppy> <20070513182035.GA10207@infradead.org> <20070515082311.GA6816@ucw.cz> <20070516165107.GA13190@localdomain> <20070516193321.GA5156@ucw.cz>
+	Wed, 16 May 2007 17:13:06 -0400
+Date: Wed, 16 May 2007 14:13:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 0/5] make slab gfp fair
+In-Reply-To: <1179349494.2912.62.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0705161410220.11517@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl> 
+ <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> 
+ <20070514161224.GC11115@waste.org>  <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
+  <1179164453.2942.26.camel@lappy>  <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
+  <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins> 
+ <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com> 
+ <1179298771.7173.16.camel@twins>  <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
+  <1179343521.2912.20.camel@lappy>  <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
+  <1179346738.2912.39.camel@lappy>  <Pine.LNX.4.64.0705161320020.11018@schroedinger.engr.sgi.com>
+  <1179348039.2912.48.camel@lappy>  <Pine.LNX.4.64.0705161343080.11234@schroedinger.engr.sgi.com>
+  <1179348898.2912.57.camel@lappy>  <Pine.LNX.4.64.0705161358030.11359@schroedinger.engr.sgi.com>
+ <1179349494.2912.62.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516193321.GA5156@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 07:33:21PM +0000, Pavel Machek wrote:
-> On Wed 2007-05-16 19:51:07, Dan Aloni wrote:
-> > On Tue, May 15, 2007 at 08:23:11AM +0000, Pavel Machek wrote:
-> > > On Sun 2007-05-13 19:20:35, Christoph Hellwig wrote:
-> > > > On Sun, May 13, 2007 at 09:23:52AM -0700, Stephen Hemminger wrote:
-> > > > > On Sun, 13 May 2007 16:25:17 +0300
-> > > > > Dan Aloni <da-x@monatomic.org> wrote:
-> > > > > 
-> > > > > > Kernel developers might find it useful for quickly getting out from some 
-> > > > > > rough debugging scenarios.
-> > > > > > 
-> > > > > > Signed-off-by: Dan Aloni <da-x@monatomic.org>
-> > > > > > 
-> > > > > 
-> > > > > There is already the modprobe blacklist ability in user space.
-> > > > 
-> > > > doesn't really help if hotplug loads a broken module before you're getting
-> > > > a login prompt.  So while this is a bit of a hack I'm all in favour of this.
-> > > > (Especially as I got hit by this issue again yesterday)
-> > > 
-> > > It is quite a bick hack. Unknown kernel parameters are passed to init,
-> > > can we just make modprobe parse that?
-> > 
-> > We can, and then we also have to patch busybox's own fork of modprobe
-> > and every other code out there that does the same thing (not so much, 
-> > but still).
-> 
-> Too lazy to fix userspace so lets break kernel?
-> 
-> No, thanks.
+On Wed, 16 May 2007, Peter Zijlstra wrote:
+> > How we know that we are out of trouble? Just try another alloc and see? If 
+> > that is the case then we may be failing allocations after the memory 
+> > situation has cleared up.
+> No, no, for each regular allocation we retry to populate ->cpu_slab with
+> a new slab. If that works we're out of the woods and the ->reserve_slab
+> is cleaned up.
 
-I wouldn't consider it breaking, more like extending. But regardless 
-of userspace, in the future we can also use this same interface in 
-order to disable _built-in_ kernel modules and functionlity (e.g.
-'nousb' could turn into something more canonical). This can be useful 
-for people working in the embedded who compile module-less kernels (if 
-module-less kernels are considered bad practicle these days, I'd like
-to know more).
+Hmmm.. so we could simplify the scheme by storing the last rank 
+somewheres.
 
-Just a thought..
+If the alloc has less priority and we can extend the slab then
+clear up the situation.
 
-One can even come up with a kernel parameter that allows a developer 
-to skip a call to one or more of the initcall functions based on 
-its name only even with !CONFIG_KALLSYMS (looks like that except 
-for crypto/, almost all initcalls have unique names these days).
+If we cannot extend the slab then the alloc must fail.
 
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+Could you put the rank into the page flags? On 64 bit at least there 
+should be enough space.
