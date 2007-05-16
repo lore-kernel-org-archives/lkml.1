@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761991AbXEPBjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbXEPBvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761991AbXEPBjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 21:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760886AbXEPBjs
+	id S1761391AbXEPBvy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 21:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbXEPBvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 21:39:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:33609 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759688AbXEPBjr (ORCPT
+	Tue, 15 May 2007 21:51:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51761 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754287AbXEPBvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 21:39:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fo88EYhQrKCxxU+as1X1C4QSV7XPp9cOMtZW10qaVA3vCP+e5XK5DP/COaHJ40xmquwKnVIReap0AHFHWFc06cWjyhXfXAcM5yAE11hmajnZ/nI1z1jcYs91pltA6Xj8dsO3KmRIzTaC6vwqijr4LJfHAV4lUt9PSsAQ+nwgpKg=
-Message-ID: <a781481a0705151839l65ea7ee0yb61bf7c911a0c2f8@mail.gmail.com>
-Date: Wed, 16 May 2007 07:09:46 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Tilman Schmidt" <tilman@imap.cc>
-Subject: Re: Linux 2.6.22-rc1
-Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-In-Reply-To: <46498EE3.8010907@imap.cc>
+	Tue, 15 May 2007 21:51:44 -0400
+Date: Tue, 15 May 2007 18:49:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] IDE updates/fixes
+In-Reply-To: <200705160127.55430.bzolnier@gmail.com>
+Message-ID: <alpine.LFD.0.98.0705151847160.3890@woody.linux-foundation.org>
+References: <200705160127.55430.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
-	 <4647569D.7010709@imap.cc>
-	 <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>
-	 <4648A3DF.7040004@imap.cc>
-	 <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>
-	 <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>
-	 <46498EE3.8010907@imap.cc>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/15/07, Tilman Schmidt <tilman@imap.cc> wrote:
-> [...]
-> > I do agree that anything non-essential (even if it's just a presentation
-> > menu that doesn't affect builds) must be default n.
->
-> It's tricky for "make oldconfig" when introducing a new "menuconfig"
-> around some previously existing "config"s, because just accepting
-> the default for the new option then causes previously selected
-> ones to be silently dropped. But I don't know a perfect solution
-> for that. Perhaps we'll just have to live with it. Or perhaps a
-> warning message along the line of "deselecting option xxx" would
-> be in order.
-> [...]
-> It's actually the other way around, all those options now tucked
-> underneath the menuconfig were previously directly visible, so
-> selecting "y" (either explicitly or by default) makes everything
-> work as before while "n" very conveniently skips them all.
 
-Jan did mention this in the previous thread, but as Jens said,
-these problems would occur only the _first_ time someone
-transitions from the old .config's to the new scheme. But those
-"default y"s for all the various "configmenu"s (let's please call
-them that) that got introduced in the Kconfig files would cause
-unnecessary annoyance to users of make oldconfig _for ever_.
+
+On Wed, 16 May 2007, Bartlomiej Zolnierkiewicz wrote:
+> 
+> * host driver fixes:
+>   - pdc202xx_old: mode programming rewrite (a lot of bugs fixed)
+>   - serverworks/sis5513: PIO mode setup fixes
+>   - sl82c105: MWDMA0/1 support by Sergei
+>   - cs5530/sc1200/sl82c105: ->speedproc support ("hdparm -X")
+
+> * 2nd part of cleanups basing on DMA tuning rework (which was merged
+>   in the previous IDE update) - quite straightforward code re-factoring
+>   (no functionality changes) and removal of no longer needed functions.
+> 
+>   This results in simpler, more generic code and in ~300 LOCs gone.
+> 
+> * some misc fixes/updates
+
+Bartlomiej, this really was too late for the 2.6.22 merge window. I'm 
+going to pull it, since it seems borderline mostly fixes and the 
+refactoring should hopefully not change any functionality, but I really 
+don't enjoy it. Please don't do this again.
+
+		Linus
