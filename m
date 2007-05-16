@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762863AbXEPTdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933884AbXEPTfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762863AbXEPTdl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 15:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758383AbXEPTde
+	id S933884AbXEPTfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 15:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbXEPTew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 15:33:34 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4813 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754561AbXEPTde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 15:33:34 -0400
-Date: Wed, 16 May 2007 19:33:21 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] allow kernel module exclusion on load
-Message-ID: <20070516193321.GA5156@ucw.cz>
-References: <20070513132517.GA14038@localdomain> <20070513092352.18cd80de@freepuppy> <20070513182035.GA10207@infradead.org> <20070515082311.GA6816@ucw.cz> <20070516165107.GA13190@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516165107.GA13190@localdomain>
-User-Agent: Mutt/1.5.9i
+	Wed, 16 May 2007 15:34:52 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:56680 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756332AbXEPTev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 15:34:51 -0400
+Date: Wed, 16 May 2007 21:28:07 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  8/14] Union-mount lookup
+In-Reply-To: <20070516050851.GB4403@in.ibm.com>
+Message-ID: <Pine.LNX.4.61.0705162127080.9019@yvahk01.tjqt.qr>
+References: <20070514093722.GB4139@in.ibm.com> <20070514094218.GJ4139@in.ibm.com>
+ <Pine.LNX.4.61.0705150937590.9570@yvahk01.tjqt.qr> <20070516050851.GB4403@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2007-05-16 19:51:07, Dan Aloni wrote:
-> On Tue, May 15, 2007 at 08:23:11AM +0000, Pavel Machek wrote:
-> > On Sun 2007-05-13 19:20:35, Christoph Hellwig wrote:
-> > > On Sun, May 13, 2007 at 09:23:52AM -0700, Stephen Hemminger wrote:
-> > > > On Sun, 13 May 2007 16:25:17 +0300
-> > > > Dan Aloni <da-x@monatomic.org> wrote:
-> > > > 
-> > > > > Kernel developers might find it useful for quickly getting out from some 
-> > > > > rough debugging scenarios.
-> > > > > 
-> > > > > Signed-off-by: Dan Aloni <da-x@monatomic.org>
-> > > > > 
-> > > > 
-> > > > There is already the modprobe blacklist ability in user space.
-> > > 
-> > > doesn't really help if hotplug loads a broken module before you're getting
-> > > a login prompt.  So while this is a bit of a hack I'm all in favour of this.
-> > > (Especially as I got hit by this issue again yesterday)
-> > 
-> > It is quite a bick hack. Unknown kernel parameters are passed to init,
-> > can we just make modprobe parse that?
-> 
-> We can, and then we also have to patch busybox's own fork of modprobe
-> and every other code out there that does the same thing (not so much, 
-> but still).
 
-Too lazy to fix userspace so lets break kernel?
+On May 16 2007 10:38, Bharata B Rao wrote:
+>> 
+>> >+lookup_union:
+>> >+	do {
+>> >+		struct vfsmount *mnt = find_mnt(topmost);
+>> >+		UM_DEBUG_DCACHE("name=\"%s\", inode=%p, device=%s\n",
+>> >+				topmost->d_name.name, topmost->d_inode,
+>> >+				mnt->mnt_devname);
+>> >+		mntput(mnt);
+>> >+	} while (0);
+>> 
+>> Why the extra do{}while? [elsewhere too]
+>
+>Not sure, may be to get a scope to define 'mnt' here. Jan ?
 
-No, thanks.
-							Pavel
+What I was implicitly suggesting that mnt could be moved into the
+normal 'function scope'.
+
+
+	Jan
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
