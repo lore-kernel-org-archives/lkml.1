@@ -1,94 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763372AbXEPIiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762700AbXEPIih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763372AbXEPIiX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758792AbXEPIeN
+	id S1762700AbXEPIih (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761441AbXEPIeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:34:13 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6618 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:34:15 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6621 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761411AbXEPIeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761435AbXEPIeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 May 2007 04:34:06 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 5/19] scsi: convert to using sg helpers
-Date: Wed, 16 May 2007 10:32:19 +0200
-Message-Id: <11793043541476-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 8/19] i386: enable sg chaining
+Date: Wed, 16 May 2007 10:32:22 +0200
+Message-Id: <11793043542485-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11793043533744-git-send-email-jens.axboe@oracle.com>
 References: <11793043533744-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This converts the SCSI mid layer to using the sg helpers for looking up
-sg elements, instead of doing it manually.
+We don't need to do more on x86, there's no iommu to be worried about.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- drivers/scsi/scsi_lib.c |   20 +++++++++++---------
- 1 files changed, 11 insertions(+), 9 deletions(-)
+ include/asm-i386/scatterlist.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 1f5a07b..f944690 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -302,14 +302,15 @@ static int scsi_req_map_sg(struct request *rq, struct scatterlist *sgl,
- 	struct request_queue *q = rq->q;
- 	int nr_pages = (bufflen + sgl[0].offset + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 	unsigned int data_len = 0, len, bytes, off;
-+	struct scatterlist *sg;
- 	struct page *page;
- 	struct bio *bio = NULL;
- 	int i, err, nr_vecs = 0;
+diff --git a/include/asm-i386/scatterlist.h b/include/asm-i386/scatterlist.h
+index d7e45a8..bd5164a 100644
+--- a/include/asm-i386/scatterlist.h
++++ b/include/asm-i386/scatterlist.h
+@@ -10,6 +10,8 @@ struct scatterlist {
+     unsigned int	length;
+ };
  
--	for (i = 0; i < nsegs; i++) {
--		page = sgl[i].page;
--		off = sgl[i].offset;
--		len = sgl[i].length;
-+	for_each_sg(sgl, sg, nsegs, i) {
-+		page = sg->page;
-+		off = sg->offset;
-+		len = sg->length;
- 		data_len += len;
- 
- 		while (len > 0) {
-@@ -2240,18 +2241,19 @@ EXPORT_SYMBOL_GPL(scsi_target_unblock);
-  *
-  * Returns virtual address of the start of the mapped page
-  */
--void *scsi_kmap_atomic_sg(struct scatterlist *sg, int sg_count,
-+void *scsi_kmap_atomic_sg(struct scatterlist *sgl, int sg_count,
- 			  size_t *offset, size_t *len)
- {
- 	int i;
- 	size_t sg_len = 0, len_complete = 0;
-+	struct scatterlist *sg;
- 	struct page *page;
- 
- 	WARN_ON(!irqs_disabled());
- 
--	for (i = 0; i < sg_count; i++) {
-+	for_each_sg(sgl, sg, sg_count, i) {
- 		len_complete = sg_len; /* Complete sg-entries */
--		sg_len += sg[i].length;
-+		sg_len += sg->length;
- 		if (sg_len > *offset)
- 			break;
- 	}
-@@ -2265,10 +2267,10 @@ void *scsi_kmap_atomic_sg(struct scatterlist *sg, int sg_count,
- 	}
- 
- 	/* Offset starting from the beginning of first page in this sg-entry */
--	*offset = *offset - len_complete + sg[i].offset;
-+	*offset = *offset - len_complete + sg->offset;
- 
- 	/* Assumption: contiguous pages can be accessed as "page + i" */
--	page = nth_page(sg[i].page, (*offset >> PAGE_SHIFT));
-+	page = nth_page(sg->page, (*offset >> PAGE_SHIFT));
- 	*offset &= ~PAGE_MASK;
- 
- 	/* Bytes in this sg-entry from *offset to the end of the page */
++#define ARCH_HAS_SG_CHAIN
++
+ /* These macros should be used after a pci_map_sg call has been done
+  * to get bus addresses of each of the SG entries and their lengths.
+  * You should only work with the number of sg entries pci_map_sg
 -- 
 1.5.2.rc1
 
