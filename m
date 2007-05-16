@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761912AbXEPKU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762243AbXEPKUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761912AbXEPKU3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 06:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758202AbXEPKUO
+	id S1762243AbXEPKUl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 06:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759033AbXEPKUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 06:20:14 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:39925 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757714AbXEPKUM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 06:20:12 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070516094100.GB16262@xi.wantstofly.org>
-References: <464034CF.20700@wpkg.org> <20070516071300.GB14222@infradead.org> <20070516094100.GB16262@xi.wantstofly.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D85F3D39-A8C9-4A1A-B88F-9500355B4747@cam.ac.uk>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-Date: Wed, 16 May 2007 11:20:10 +0100
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-X-Mailer: Apple Mail (2.752.2)
+	Wed, 16 May 2007 06:20:18 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:63637 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758549AbXEPKUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 06:20:16 -0400
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: wux@landicorp.com, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] atmel_spi: Pass correct DMA address to controller
+Date: Wed, 16 May 2007 12:19:49 +0200
+Message-Id: <11793107892086-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: git-send-email 1.4.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16 May 2007, at 10:41, Lennert Buytenhek wrote:
-> Making a driver work in both modes
-> of operation is generally not just an issue of adding a couple of
-> be32_to_cpu()s in the right places.
+When either rx_buf or tx_buf is not being used, i.e. for plain read-
+or write operations, the atmel_spi uses a fixed-size DMA buffer
+instead. If the transfer is longer than the size of this buffer, it is
+split into multiple DMA transfers.
 
-While this comment is technically correct, Christian's driver  
-achieves endian agnostic operation with only 10 additional lines of  
-code [1].
+When the transfer is split like this, the atmel_spi driver ends up
+using the same DMA address again and again even for the buffer that
+came from the user, which is of course wrong. Fix this by adding the
+number of bytes already transferred to the DMA address so that the
+data ends up in the right place.
 
-Thus, there is no reason to assume that gaining LE support will be a  
-major issue.
+Thanks to Wu Xuan for discovering this bug.
 
-Michael-Luke
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/spi/atmel_spi.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-[1] http://www.hohnstaedt.de/ixp_npe/0.3.1/ixp4xx_npe_driver-0.3.1.diff
-Search in this file for "swap the payload of the SKB" (it's in  
-mac_driver.c)
+diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
+index 1d8a2f6..8b2601d 100644
+--- a/drivers/spi/atmel_spi.c
++++ b/drivers/spi/atmel_spi.c
+@@ -113,16 +113,16 @@ static void atmel_spi_next_xfer(struct spi_master *master,
+ 
+ 	len = as->remaining_bytes;
+ 
+-	tx_dma = xfer->tx_dma;
+-	rx_dma = xfer->rx_dma;
++	tx_dma = xfer->tx_dma + xfer->len - len;
++	rx_dma = xfer->rx_dma + xfer->len - len;
+ 
+ 	/* use scratch buffer only when rx or tx data is unspecified */
+-	if (rx_dma == INVALID_DMA_ADDRESS) {
++	if (!xfer->rx_buf) {
+ 		rx_dma = as->buffer_dma;
+ 		if (len > BUFFER_SIZE)
+ 			len = BUFFER_SIZE;
+ 	}
+-	if (tx_dma == INVALID_DMA_ADDRESS) {
++	if (!xfer->tx_buf) {
+ 		tx_dma = as->buffer_dma;
+ 		if (len > BUFFER_SIZE)
+ 			len = BUFFER_SIZE;
+-- 
+1.4.4.4
 
