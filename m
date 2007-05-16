@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXEPMVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbXEPM2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762079AbXEPMVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbXEPMVY
+	id S1760693AbXEPM2l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbXEPM2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:21:24 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:41148 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758236AbXEPMVW (ORCPT
+	Wed, 16 May 2007 08:28:32 -0400
+Received: from mail.shareable.org ([81.29.64.88]:36241 "EHLO
+	mail.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756824AbXEPM2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:21:22 -0400
-Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64
-	and powerpc
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-In-Reply-To: <20070516031626.GM85884050@sgi.com>
-References: <20070330071417.GI355@devserv.devel.redhat.com>
-	 <20070417125514.GA7574@amitarora.in.ibm.com>
-	 <20070418130600.GW5967@schatzie.adilger.int>
-	 <20070420135146.GA21352@amitarora.in.ibm.com>
-	 <20070420145918.GY355@devserv.devel.redhat.com>
-	 <20070424121632.GA10136@amitarora.in.ibm.com>
-	 <20070426175056.GA25321@amitarora.in.ibm.com>
-	 <20070515193722.GA3487@amitarora.in.ibm.com>
-	 <20070515195421.GA2948@amitarora.in.ibm.com>
-	 <20070515200359.GA5834@amitarora.in.ibm.com>
-	 <20070516031626.GM85884050@sgi.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 07:21:16 -0500
-Message-Id: <1179318076.10313.6.camel@kleikamp.austin.ibm.com>
+	Wed, 16 May 2007 08:28:31 -0400
+Date: Wed, 16 May 2007 13:25:48 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>, akpm@osdl.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516122548.GA25239@mail.shareable.org>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <1179315498.3642.19.camel@sauron>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1179315498.3642.19.camel@sauron>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 13:16 +1000, David Chinner wrote:
-> On Wed, May 16, 2007 at 01:33:59AM +0530, Amit K. Arora wrote:
-
-> > Following changes were made to the previous version:
-> >  1) Added description before sys_fallocate() definition.
-> >  2) Return EINVAL for len<=0 (With new draft that Ulrich pointed to,
-> >     posix_fallocate should return EINVAL for len <= 0.
-> >  3) Return EOPNOTSUPP if mode is not one of FA_ALLOCATE or FA_DEALLOCATE
-> >  4) Do not return ENODEV for dirs (let individual file systems decide if
-> >     they want to support preallocation to directories or not.
-> >  5) Check for wrap through zero.
-> >  6) Update c/mtime if fallocate() succeeds.
+Artem Bityutskiy wrote:
+> On Wed, 2007-05-16 at 12:34 +0100, Jamie Lokier wrote:
+> > Jörn Engel wrote:
+> > > On Wed, 16 May 2007 12:54:14 +0800, David Woodhouse wrote:
+> > > > Personally I'd just go for 'JFFS3'. After all, it has a better claim to
+> > > > the name than either of its predecessors :)
+> > > 
+> > > Did you ever see akpm's facial expression when he tried to pronounce
+> > > "JFFS2"?  ;)
+> > 
+> > JFFS3 is a good, meaningful name to anyone familiar with JFFS2.
+> > 
+> > But if akpm can't pronounce it, how about FFFS for faster flash
+> > filesystem.... ;-)
 > 
-> Please don't make this always happen. c/mtime updates should be dependent
-> on the mode being used and whether there is visible change to the file. If no
-> userspace visible changes to the file occurred, then timestamps should not
-> be changed.
+> The problem is that JFFS2 will always be faster in terms of I/O speed
+> anyway, just because it does not have to maintain on-flash indexing
+> data structures. But yes, it is slow in mount and in building big
+> inodes, so the "faster" is confusing.
 
-i_blocks will be updated, so it seems reasonable to update ctime.  mtime
-shouldn't be changed, though, since the contents of the file will be
-unchanged.
+Is LogFS really slower than JFFS2 in practice?
 
-> e.g. FA_ALLOCATE that changes file size requires same semantics of ftruncate()
-> extending the file, otherwise no change in timestamps should occur.
-> 
-> Cheers,
-> 
-> Dave.
--- 
-David Kleikamp
-IBM Linux Technology Center
+I would have guessed reads to be a similar speed, tree updates to be a
+similar speed  to journal  updates for sustained  non-fsyncing writes,
+and the difference unimportant for tiny individual commits whose index
+updates are not merged with any other.  I've not thought about it much
+though.
 
+-- Jamie
