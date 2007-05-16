@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbXEPJLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761397AbXEPJNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbXEPJLy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 05:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbXEPJLl
+	id S1761397AbXEPJNE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 05:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbXEPJMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 05:11:41 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:60394 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756857AbXEPJLk (ORCPT
+	Wed, 16 May 2007 05:12:50 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:31608 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756058AbXEPJMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 05:11:40 -0400
-X-Sasl-enc: u5V80D/bogvMlmsQAcuPqP3VcwmYmfqFPqWIMLVYOyLV 1179306698
-Message-ID: <464ACB7E.9040405@imap.cc>
-Date: Wed, 16 May 2007 11:14:38 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Wed, 16 May 2007 05:12:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=m6c7GOrf1QAle1NMU6ZzDyXW21nWA/QJWp/nExrsiwmZF+FSJZPkDnIksrO3mVgSuHBmiwht4iDpbYI5p671wrFlBKPbbZYp5/bktTzhyoJsfWFq5i1MMQ01RGWapZjqH9HccrpwCoVswxDmOYiPIf0qSkHJLE/pr4N/U058+wQ=  ;
+X-YMail-OSG: B746yUYVM1kuj_0bejGHj1kPhW9SiGolKj_HNf1Ph5M7aULIJr5isiE6Sws7UtHGL9wUJsSHuA--
+Message-ID: <464ACB0B.7040603@yahoo.com.au>
+Date: Wed, 16 May 2007 19:12:43 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: Linux 2.6.22-rc1
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>	 <4647569D.7010709@imap.cc>	 <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>	 <4648A3DF.7040004@imap.cc>	 <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>	 <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>	 <46498EE3.8010907@imap.cc> <a781481a0705151839l65ea7ee0yb61bf7c911a0c2f8@mail.gmail.com>
-In-Reply-To: <a781481a0705151839l65ea7ee0yb61bf7c911a0c2f8@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig23D7448D781512D1DF8519F6"
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Chuck Ebbert <cebbert@redhat.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2.6.21.1] OOPS in timer stats code
+References: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl>	 <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com>	 <4649FDEA.2050703@redhat.com> <1179267292.12838.42.camel@chaos>
+In-Reply-To: <1179267292.12838.42.camel@chaos>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig23D7448D781512D1DF8519F6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Thomas Gleixner wrote:
 
-Am 16.05.2007 03:39 schrieb Satyam Sharma:
-["default n" for menuconfig]
-> these problems would occur only the _first_ time someone
-> transitions from the old .config's to the new scheme. But those
-> "default y"s for all the various "configmenu"s (let's please call
-> them that) that got introduced in the Kconfig files would cause
-> unnecessary annoyance to users of make oldconfig _for ever_.
+> Dammit. It's a HT enabled box again. I don't have one.
+> 
+> Folkert, does the problem go away when you disable HT
+> (CONFIG_SCHED_SMT) ?
 
-I'm not sure I'm following you. Where would that annoyance occur?
-On subsequent uses of "make oldconfig" the default shouldn't even
-matter, as the previous choice would just silently be kept.
+Why would that make a difference? If you do suspect it is the problem,
+then I think you could just do something like substitute cpu_online_map
+for the sibling map in the SMT domain setup in order to reproduce it
+locally?
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig23D7448D781512D1DF8519F6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGSsuGMdB4Whm86/kRAqV4AJ9Tt+dwz6leCLuL2Ix9u26yQtE8/ACfRkwU
-J+ReXeRlOLMSSgUo0HOhr7k=
-=qnLn
------END PGP SIGNATURE-----
-
---------------enig23D7448D781512D1DF8519F6--
+-- 
+SUSE Labs, Novell Inc.
