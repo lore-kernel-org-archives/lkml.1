@@ -1,60 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762440AbXEPRsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbXEPRtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762440AbXEPRsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbXEPRsA
+	id S932526AbXEPRtk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbXEPRtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:48:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37552 "EHLO mx1.redhat.com"
+	Wed, 16 May 2007 13:49:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38052 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756283AbXEPRr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:47:59 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <464B3F2D.9030603@yahoo.com.au>
-References: <464B3F2D.9030603@yahoo.com.au> <464B3209.4010003@yahoo.com.au> <464B07EC.4050308@yahoo.com.au> <464AF3F3.30204@yahoo.com.au> <20070516100225.18685.51699.stgit@warthog.cambridge.redhat.com> <17173.1179321391@redhat.com> <19714.1179331928@redhat.com> <23262.1179334587@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] AFS: Implement shared-writable mmap [try #2]
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 16 May 2007 18:46:48 +0100
-Message-ID: <24100.1179337608@redhat.com>
+	id S1757398AbXEPRta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 13:49:30 -0400
+Message-ID: <464B43BB.3070505@redhat.com>
+Date: Wed, 16 May 2007 13:47:39 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, lenb@kernel.org
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464B4155.9070902@gmail.com>
+In-Reply-To: <464B4155.9070902@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> > How do you do a write-through cache for shared-writable mmap?
+Maciej Rutecki wrote:
+> In 2.6.20.9 I can change trippoints:
 > 
-> For shared writable mmap? I don't know...
+> echo "105:100:100:78:70:40:30" > /proc/acpi/thermal_zone/TZ0/trip_points
+> echo 10  > /proc/acpi/thermal_zone/TZ0/polling_frequency
+> 
+> Then I got:
+> cat /proc/acpi/thermal_zone/TZ0/*
+> <setting not supported>
+> cooling mode:   active
+> polling frequency:       10 seconds
+> state:                   active[2]
+> temperature:             45 C
+> critical (S5):           105 C
+> active[0]:               78 C: devices=0xdf415a40
+> active[1]:               70 C: devices=0xdf4159dc
+> active[2]:               40 C: devices=0xdf41598c
+> active[3]:               30 C: devices=0xdf41593c
+> 
+> cat /proc/acpi/fan/*/*
+> status:                  off
+> status:                  off
+> status:                  on
+> status:                  on
+> 
+> And fan turns on.
+> 
+> In 2.6.22-rc1-mm1:
+> echo "105:100:100:78:70:40:30" > /proc/acpi/thermal_zone/TZ0/trip_points
+> bash: echo: write error: BĹÄd wejĹcia/wyjĹcia (input/output error)
+> 
+> rutek:/home/maciek# cat /proc/acpi/thermal_zone/TZ0/*
+> <setting not supported>
+> polling frequency:       10 seconds
+> state:                   ok
+> temperature:             45 C
+> critical (S5):           256 C
+> active[0]:               78 C: devices=0xc1827a40
+> active[1]:               70 C: devices=0xc18279dc
+> active[2]:               60 C: devices=0xc182798c
+> active[3]:               50 C: devices=0xc182793c
+> rutek:/home/maciek# cat /proc/acpi/fan/*/*
+> status:                  off
+> status:                  off
+> status:                  off
+> status:                  off
+> 
+> Fan turns on when temperature is over 50*C. (want: 30)
+> 
+> A read this:
+> http://article.gmane.org/gmane.linux.acpi.devel/22750
+> 
+> But I don't have colling_policy, but only colling_mode:
+> ls /proc/acpi/thermal_zone/TZ0/
+> cooling_mode  polling_frequency  state  temperature  trip_points
+> 
+> Its bug or feature?
+> 
 
-You can't do write-through caching for shared-writable mmap because the writes
-go directly into the pagecache once the page is made writable, at least, short
-of instruction emulation.
+Committed to mainline May 10:
 
-At some point in the future we'll be asked to turf the data back to the
-server.
+Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=11ccc0f249cb01a129f54760b8ff087f242935d4
+Commit:     11ccc0f249cb01a129f54760b8ff087f242935d4
+Parent:     de46c33745f5e2ad594c72f2cf5f490861b16ce1
+Author:     Len Brown <len.brown@intel.com>
+AuthorDate: Mon Apr 30 22:36:01 2007 -0400
+Committer:  Len Brown <len.brown@intel.com>
+CommitDate: Mon Apr 30 22:36:01 2007 -0400
 
-> does POSIX require mmap data to be coherent with read(2)/write(2)? ;)
-
-I suspect so, but I don't know offhand.  I want it to be coherent anyway,
-otherwise it's inconsistent with OpenAFS and Arla (or at least more so).
-
-Note also that the choice of write-through or write-back caching also has
-implications for local on-disk caching of modified data and disconnected
-operation.
-
-> I just mean more generally. simple write(2) writes, for starters.
-
-Given that writing through an mmap'd section is write-back by its very
-nature[*] and so since I have to do write-back anyway, why consider doing
-write-through too?
-
-[*] Unless we want to do instruction emulation or single stepping.
-
-Hmmm... I wonder if O_SYNC should use write-through caching.
-
-David
+    ACPI: thermal trip points are read-only
