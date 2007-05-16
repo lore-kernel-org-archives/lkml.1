@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934188AbXEPVxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934316AbXEPV6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934188AbXEPVxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbXEPVxL
+	id S934316AbXEPV6X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760649AbXEPV6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:53:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39751
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754711AbXEPVxL (ORCPT
+	Wed, 16 May 2007 17:58:15 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:15722 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755521AbXEPV6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:53:11 -0400
-Date: Wed, 16 May 2007 14:53:17 -0700 (PDT)
-Message-Id: <20070516.145317.03979683.davem@davemloft.net>
-To: adaplas@gmail.com
-Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move arch-specific bits to
- their respective subdirectories
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <464B78BC.4080900@gmail.com>
-References: <464B78BC.4080900@gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 16 May 2007 17:58:14 -0400
+Date: Wed, 16 May 2007 15:00:36 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Dan Aloni <da-x@monatomic.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] allow kernel module exclusion on load
+Message-Id: <20070516150036.aaa2ce95.randy.dunlap@oracle.com>
+In-Reply-To: <20070516210922.GA24231@localdomain>
+References: <20070513132517.GA14038@localdomain>
+	<20070513092352.18cd80de@freepuppy>
+	<20070513182035.GA10207@infradead.org>
+	<20070515082311.GA6816@ucw.cz>
+	<20070516165107.GA13190@localdomain>
+	<20070516193321.GA5156@ucw.cz>
+	<20070516210922.GA24231@localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Date: Thu, 17 May 2007 05:33:48 +0800
+On Thu, 17 May 2007 00:09:22 +0300 Dan Aloni wrote:
 
-> Move arch-specific bits of fb_mmap() to their respective subdirectories
+> On Wed, May 16, 2007 at 07:33:21PM +0000, Pavel Machek wrote:
+> > On Wed 2007-05-16 19:51:07, Dan Aloni wrote:
+> > > On Tue, May 15, 2007 at 08:23:11AM +0000, Pavel Machek wrote:
+> > > > On Sun 2007-05-13 19:20:35, Christoph Hellwig wrote:
+> > > > > On Sun, May 13, 2007 at 09:23:52AM -0700, Stephen Hemminger wrote:
+> > > > > > On Sun, 13 May 2007 16:25:17 +0300
+> > > > > > Dan Aloni <da-x@monatomic.org> wrote:
+> > > > > > 
+> > > > > > > Kernel developers might find it useful for quickly getting out from some 
+> > > > > > > rough debugging scenarios.
+> > > > > > > 
+> > > > > > > Signed-off-by: Dan Aloni <da-x@monatomic.org>
+> > > > > > > 
+> > > > > > 
+> > > > > > There is already the modprobe blacklist ability in user space.
+> > > > > 
+> > > > > doesn't really help if hotplug loads a broken module before you're getting
+> > > > > a login prompt.  So while this is a bit of a hack I'm all in favour of this.
+> > > > > (Especially as I got hit by this issue again yesterday)
+> > > > 
+> > > > It is quite a bick hack. Unknown kernel parameters are passed to init,
+> > > > can we just make modprobe parse that?
+> > > 
+> > > We can, and then we also have to patch busybox's own fork of modprobe
+> > > and every other code out there that does the same thing (not so much, 
+> > > but still).
+> > 
+> > Too lazy to fix userspace so lets break kernel?
+> > 
+> > No, thanks.
 > 
-> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-> ---
-> Hi all,
+> I wouldn't consider it breaking, more like extending. But regardless 
+> of userspace, in the future we can also use this same interface in 
+> order to disable _built-in_ kernel modules and functionlity (e.g.
+> 'nousb' could turn into something more canonical). This can be useful 
+> for people working in the embedded who compile module-less kernels (if 
+> module-less kernels are considered bad practicle these days, I'd like
+> to know more).
 > 
-> Please let me know if there are mistakes with this patch.
+> Just a thought..
+> 
+> One can even come up with a kernel parameter that allows a developer 
+> to skip a call to one or more of the initcall functions based on 
+> its name only even with !CONFIG_KALLSYMS (looks like that except 
+> for crypto/, almost all initcalls have unique names these days).
 
-Thank you for doing this work.
+sounds good to me.
 
-__sparc_v9__ means CONFIG_SPARC64, if that is not defined it's
-CONFIG_SPARC32, so you could simplify this patch a lot.
-
-1) Remove __sparc_v9__ ifdefs from asm-sparc64/fb.h
-2) Define fb_mmap_required() to return 0 in asm-sparc64/fb.h
-3) Define fb_mmap_required() to return 1 in asm-sparc/fb.h
-4) Remove all the sparc ifdef stuff you added to linux/fb.h
-5) There won't be a default fb_mmap_required() provided by
-   linux/fb.h on platforms other than sparc ones, you'll need
-   to provide one in order for the build to work non-sparc since
-   this call is unconditional in fbmem.c:
-
-+	if (fb_mmap_required())
-+		return -EINVAL;
-
-With those fixes:
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
