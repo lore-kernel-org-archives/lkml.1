@@ -1,256 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762786AbXEPTxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965301AbXEPTxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762786AbXEPTxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 15:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXEPTxL
+	id S965301AbXEPTxe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 15:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762309AbXEPTxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 15:53:11 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40427 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756415AbXEPTxK (ORCPT
+	Wed, 16 May 2007 15:53:16 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:23845 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761427AbXEPTxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 15:53:10 -0400
-Date: Wed, 16 May 2007 12:53:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179343521.2912.20.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> 
- <20070514161224.GC11115@waste.org>  <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-  <1179164453.2942.26.camel@lappy>  <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-  <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins> 
- <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com> 
- <1179298771.7173.16.camel@twins>  <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
- <1179343521.2912.20.camel@lappy>
+	Wed, 16 May 2007 15:53:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=mjGHUohtu3aAktdPfN9mHyFOIqXMyBd4TEl+qCTPz75I2CvNAM6/mdVBRAfFk/kQIaNI9SYYRd9P2YMqh87g9sfE6bXyqsWIk3i0aTXHZRk0X9YcFfw+EhCR1VbNN9pIx4Xq63FYPylVwGjJpi/Zgj2hAYVcjlLBHAjv3RSkecc=
+Message-ID: <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com>
+Date: Wed, 16 May 2007 20:53:13 +0100
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Prakash Punnoor" <prakash@punnoor.de>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
+Cc: "Joshua Hoblitt" <jhoblitt@ifa.hawaii.edu>,
+       LKML <linux-kernel@vger.kernel.org>, "Dave Jones" <davej@redhat.com>,
+       "Daniel Drake" <dsd@gentoo.org>
+In-Reply-To: <200705162039.02379.prakash@punnoor.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070516011711.GE15763@ifa.hawaii.edu>
+	 <200705162039.02379.prakash@punnoor.de>
+X-Google-Sender-Auth: 9d1f0648ab30039f
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, Peter Zijlstra wrote:
+On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
+> Maybe you want to give a hint in the p states driver help text?
 
-> If this 4k cpu system ever gets to touch the new lock it is in way
-> deeper problems than a bouncing cache-line.
+I think a hint is the right thing to do, but in the PowerNow! driver
+rather than the p states one. How about adding something like this to
+the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
 
-So its no use on NUMA?
+"ACPI support is required for non-UP systems and requires ACPI_PROCESSOR
+ to be selected. If ACPI_PROCESSOR is compiled as a module then this
+ option must be too in order for ACPI support to be available."
 
-> Please look at it more carefully.
-> 
-> We differentiate pages allocated at the level where GFP_ATOMIC starts to
-> fail. By not updating the percpu slabs those are retried every time,
-> except for ALLOC_NO_WATERMARKS allocations; those are served from the
-> ->reserve_slab.
-> 
-> Once a regular slab allocation succeeds again, the ->reserve_slab is
-> cleaned up and never again looked at it until we're in distress again.
+Cheers,
+Duane.
 
-A single slab? This may only give you a a single object in an extreme 
-case. Are you sure that this solution is generic enough?
-
-The problem here is that you may spinlock and take out the slab for one 
-cpu but then (AFAICT) other cpus can still not get their high priority 
-allocs satisfied. Some comments follow.
-
-
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  include/linux/slub_def.h |    2 +
->  mm/slub.c                |   85 ++++++++++++++++++++++++++++++++++++++++++-----
->  2 files changed, 78 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6-git/include/linux/slub_def.h
-> ===================================================================
-> --- linux-2.6-git.orig/include/linux/slub_def.h
-> +++ linux-2.6-git/include/linux/slub_def.h
-> @@ -46,6 +46,8 @@ struct kmem_cache {
->  	struct list_head list;	/* List of slab caches */
->  	struct kobject kobj;	/* For sysfs */
->  
-> +	struct page *reserve_slab;
-> +
->  #ifdef CONFIG_NUMA
->  	int defrag_ratio;
->  	struct kmem_cache_node *node[MAX_NUMNODES];
-> Index: linux-2.6-git/mm/slub.c
-> ===================================================================
-> --- linux-2.6-git.orig/mm/slub.c
-> +++ linux-2.6-git/mm/slub.c
-> @@ -20,11 +20,13 @@
->  #include <linux/mempolicy.h>
->  #include <linux/ctype.h>
->  #include <linux/kallsyms.h>
-> +#include "internal.h"
->  
->  /*
->   * Lock order:
-> - *   1. slab_lock(page)
-> - *   2. slab->list_lock
-> + *   1. reserve_lock
-> + *   2. slab_lock(page)
-> + *   3. node->list_lock
->   *
->   *   The slab_lock protects operations on the object of a particular
->   *   slab and its metadata in the page struct. If the slab lock
-> @@ -259,6 +261,8 @@ static int sysfs_slab_alias(struct kmem_
->  static void sysfs_slab_remove(struct kmem_cache *s) {}
->  #endif
->  
-> +static DEFINE_SPINLOCK(reserve_lock);
-> +
->  /********************************************************************
->   * 			Core slab cache functions
->   *******************************************************************/
-> @@ -1007,7 +1011,7 @@ static void setup_object(struct kmem_cac
->  		s->ctor(object, s, 0);
->  }
->  
-> -static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
-> +static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node, int *rank)
->  {
->  	struct page *page;
->  	struct kmem_cache_node *n;
-> @@ -1025,6 +1029,7 @@ static struct page *new_slab(struct kmem
->  	if (!page)
->  		goto out;
->  
-> +	*rank = page->rank;
->  	n = get_node(s, page_to_nid(page));
->  	if (n)
->  		atomic_long_inc(&n->nr_slabs);
-> @@ -1311,7 +1316,7 @@ static void unfreeze_slab(struct kmem_ca
->  /*
->   * Remove the cpu slab
->   */
-> -static void deactivate_slab(struct kmem_cache *s, struct page *page, int cpu)
-> +static void __deactivate_slab(struct kmem_cache *s, struct page *page)
->  {
->  	/*
->  	 * Merge cpu freelist into freelist. Typically we get here
-> @@ -1330,10 +1335,15 @@ static void deactivate_slab(struct kmem_
->  		page->freelist = object;
->  		page->inuse--;
->  	}
-> -	s->cpu_slab[cpu] = NULL;
->  	unfreeze_slab(s, page);
->  }
-
-So you want to spill back the lockless_freelist without deactivating the 
-slab? Why are you using the lockless_freelist at all? If you do not use it 
-then you can call unfreeze_slab. No need for this split.
-
-> @@ -1395,6 +1405,7 @@ static void *__slab_alloc(struct kmem_ca
->  {
->  	void **object;
->  	int cpu = smp_processor_id();
-> +	int rank = 0;
->  
->  	if (!page)
->  		goto new_slab;
-> @@ -1424,10 +1435,26 @@ new_slab:
->  	if (page) {
->  		s->cpu_slab[cpu] = page;
->  		goto load_freelist;
-> -	}
-> +	} else if (unlikely(gfp_to_alloc_flags(gfpflags) & ALLOC_NO_WATERMARKS))
-> +		goto try_reserve;
-
-Ok so we are trying to allocate a slab and do not get one thus -> 
-try_reserve. But this is only working if we are using the slab after
-explicitly flushing the cpuslabs. Otherwise the slab may be full and we
-get to alloc_slab.
-
->  
-> -	page = new_slab(s, gfpflags, node);
-> -	if (page) {
-
-> +alloc_slab:
-> +	page = new_slab(s, gfpflags, node, &rank);
-> +	if (page && rank) {
-
-Huh? You mean !page?
-
-> +		if (unlikely(s->reserve_slab)) {
-> +			struct page *reserve;
-> +
-> +			spin_lock(&reserve_lock);
-> +			reserve = s->reserve_slab;
-> +			s->reserve_slab = NULL;
-> +			spin_unlock(&reserve_lock);
-> +
-> +			if (reserve) {
-> +				slab_lock(reserve);
-> +				__deactivate_slab(s, reserve);
-> +				putback_slab(s, reserve);
-
-Remove the above two lines (they are wrong regardless) and simply make 
-this the cpu slab.
-
-> +			}
-> +		}
->  		cpu = smp_processor_id();
->  		if (s->cpu_slab[cpu]) {
->  			/*
-> @@ -1455,6 +1482,18 @@ new_slab:
->  		SetSlabFrozen(page);
->  		s->cpu_slab[cpu] = page;
->  		goto load_freelist;
-> +	} else if (page) {
-> +		spin_lock(&reserve_lock);
-> +		if (s->reserve_slab) {
-> +			discard_slab(s, page);
-> +			page = s->reserve_slab;
-> +		}
-> +		slab_lock(page);
-> +		SetPageActive(page);
-> +		s->reserve_slab = page;
-> +		spin_unlock(&reserve_lock);
-> +
-> +		goto got_reserve;
->  	}
->  	return NULL;
->  debug:
-> @@ -1470,6 +1509,31 @@ debug:
->  	page->freelist = object[page->offset];
->  	slab_unlock(page);
->  	return object;
-> +
-> +try_reserve:
-> +	spin_lock(&reserve_lock);
-> +	page = s->reserve_slab;
-> +	if (!page) {
-> +		spin_unlock(&reserve_lock);
-> +		goto alloc_slab;
-> +	}
-> +
-> +	slab_lock(page);
-> +	if (!page->freelist) {
-> +		s->reserve_slab = NULL;
-> +		spin_unlock(&reserve_lock);
-> +		__deactivate_slab(s, page);
-replace with unfreeze slab.
-
-> +		putback_slab(s, page);
-
-Putting back the slab twice.
-
-> +		goto alloc_slab;
-> +	}
-> +	spin_unlock(&reserve_lock);
-> +
-> +got_reserve:
-> +	object = page->freelist;
-> +	page->inuse++;
-> +	page->freelist = object[page->offset];
-> +	slab_unlock(page);
-> +	return object;
-
-
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
