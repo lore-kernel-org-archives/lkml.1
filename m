@@ -1,71 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbXEPWol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbXEPWso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760535AbXEPWol (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 18:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXEPWoe
+	id S1761680AbXEPWso (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 18:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758708AbXEPWse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 18:44:34 -0400
-Received: from alnrmhc11.comcast.net ([206.18.177.51]:46366 "EHLO
-	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754052AbXEPWod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 18:44:33 -0400
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 18:44:33 EDT
-Message-ID: <464B8819.3050303@comcast.net>
-Date: Wed, 16 May 2007 18:39:21 -0400
-From: Ed Sweetman <safemode2@comcast.net>
-User-Agent: Icedove 1.5.0.10 (X11/20070328)
-MIME-Version: 1.0
-To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
-CC: Daniel Drake <dsd@gentoo.org>, Duane Griffin <duaneg@dghda.com>,
-       Prakash Punnoor <prakash@punnoor.de>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
- driver
-References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <464B63D8.2060501@gentoo.org> <20070516212736.GO15763@ifa.hawaii.edu>
-In-Reply-To: <20070516212736.GO15763@ifa.hawaii.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 18:48:34 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:50150 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1758281AbXEPWsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 18:48:33 -0400
+Message-ID: <379355696.29993@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Message-Id: <20070516224818.963553696@mail.ustc.edu.cn>
+References: <20070516224752.500812933@mail.ustc.edu.cn>
+User-Agent: quilt/0.45-1
+Date: Thu, 17 May 2007 06:47:58 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Steven Pratt <slpratt@austin.ibm.com>
+Cc: Ram Pai <linuxram@us.ibm.com>
+Subject: [PATCH 6/9] readahead: convert filemap invocations
+Content-Disposition: inline; filename=readahead-invocations-filemap.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joshua Hoblitt wrote:
-> On Wed, May 16, 2007 at 04:04:40PM -0400, Daniel Drake wrote:
->   
->> Duane Griffin wrote:
->>     
->>> On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
->>>       
->>>> Maybe you want to give a hint in the p states driver help text?
->>>>         
->>> I think a hint is the right thing to do, but in the PowerNow! driver
->>> rather than the p states one. How about adding something like this to
->>> the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
->>>       
->> Please hold off this patch until we've gained a more complete 
->> understanding of the issues and workarounds (which will probably lead to 
->> us writing a better patch anyway)
->>     
->
-> I agree - the issue is more complicated that I had thought.  I received
-> an off list message saying that this dependency isn't required on a
-> single-socket Athlon X2 system.  So it sounds like isn't an SMP setup
-> issue as much as it is a multi-socket or perhaps just an issue with my
-> vendor (Tyan).
->
-> -J
->
-> --
->   
-Like i mentioned off list, the problem here is that cpu freq modules 
-dont depend (Kconfig) on CONFIG_ACPI_PROCESSOR, yet they do.  Even the 
-help text of CONFIG_ACPI_PROCESSOR says this.  I'm unsure as to why the 
-drivers that do, dont make the dependency known to Kconfig, since 
-obviously the writer of acpi_processor knew the dependency existed.
+Convert filemap reads to use on-demand readahead.
 
-Simple fix would be to just include the depends line for 
-CONFIG_ACPI_PROCESSOR for the powernow driver, and any others people 
-wonna test.   I suspect most people just compile in the acpi_processor 
-driver, never seeing this problem occur.
+The new call scheme is to
+- call readahead on non-cached page
+- call readahead on look-ahead page
+- update prev_index when finished with the read request
 
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ mm/filemap.c |   51 +++++++++++++++++++++++++++++--------------------
+ 1 file changed, 31 insertions(+), 20 deletions(-)
 
+--- linux-2.6.22-rc1-mm1.orig/mm/filemap.c
++++ linux-2.6.22-rc1-mm1/mm/filemap.c
+@@ -916,15 +916,20 @@ void do_generic_mapping_read(struct addr
+ 		nr = nr - offset;
+ 
+ 		cond_resched();
+-		if (index == next_index)
+-			next_index = page_cache_readahead(mapping, &ra, filp,
+-					index, last_index - index);
+-
+ find_page:
+ 		page = find_get_page(mapping, index);
+-		if (unlikely(page == NULL)) {
+-			handle_ra_miss(mapping, &ra, index);
+-			goto no_cached_page;
++		if (!page) {
++			page_cache_readahead_ondemand(mapping,
++					&ra, filp, page,
++					index, last_index - index);
++			page = find_get_page(mapping, index);
++			if (unlikely(page == NULL))
++				goto no_cached_page;
++		}
++		if (PageReadahead(page)) {
++			page_cache_readahead_ondemand(mapping,
++					&ra, filp, page,
++					index, last_index - index);
+ 		}
+ 		if (!PageUptodate(page))
+ 			goto page_not_up_to_date;
+@@ -1075,6 +1080,7 @@ no_cached_page:
+ 
+ out:
+ 	*_ra = ra;
++	_ra->prev_index = prev_index;
+ 
+ 	*ppos = ((loff_t) index << PAGE_CACHE_SHIFT) + offset;
+ 	if (cached_page)
+@@ -1378,26 +1384,30 @@ struct page *filemap_fault(struct vm_are
+ 		goto no_cached_page;
+ 
+ 	/*
+-	 * The readahead code wants to be told about each and every page
+-	 * so it can build and shrink its windows appropriately
+-	 *
+-	 * For sequential accesses, we use the generic readahead logic.
+-	 */
+-	if (VM_SequentialReadHint(vma))
+-		page_cache_readahead(mapping, ra, file, fdata->pgoff, 1);
+-
+-	/*
+ 	 * Do we have something in the page cache already?
+ 	 */
+ retry_find:
+ 	page = find_lock_page(mapping, fdata->pgoff);
++	/*
++	 * For sequential accesses, we use the generic readahead logic.
++	 */
++	if (VM_SequentialReadHint(vma)) {
++		if (!page) {
++			page_cache_readahead_ondemand(mapping, ra, file, page,
++							   fdata->pgoff, 1);
++			page = find_lock_page(mapping, fdata->pgoff);
++			if (!page)
++				goto no_cached_page;
++		}
++		if (PageReadahead(page)) {
++			page_cache_readahead_ondemand(mapping, ra, file, page,
++							   fdata->pgoff, 1);
++		}
++	}
++
+ 	if (!page) {
+ 		unsigned long ra_pages;
+ 
+-		if (VM_SequentialReadHint(vma)) {
+-			handle_ra_miss(mapping, ra, fdata->pgoff);
+-			goto no_cached_page;
+-		}
+ 		ra->mmap_miss++;
+ 
+ 		/*
+@@ -1450,6 +1460,7 @@ retry_find:
+ 	 * Found the page and have a reference on it.
+ 	 */
+ 	mark_page_accessed(page);
++	ra->prev_index = page->index;
+ 	return page;
+ 
+ outside_data_content:
+
+--
