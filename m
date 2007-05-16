@@ -1,40 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763410AbXEPXlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763544AbXEPXla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763410AbXEPXlS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbXEPXlA
+	id S1763544AbXEPXla (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761355AbXEPXlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:41:00 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53540 "EHLO
+	Wed, 16 May 2007 19:41:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35875 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757511AbXEPXlA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:41:00 -0400
-Date: Wed, 16 May 2007 16:40:59 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 1/2] scalable rw_mutex
-In-Reply-To: <20070516162829.23f9b1c4.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705161639010.12688@schroedinger.engr.sgi.com>
-References: <20070511131541.992688403@chello.nl> <20070511132321.895740140@chello.nl>
- <20070511093108.495feb70.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705111006470.32716@schroedinger.engr.sgi.com>
- <20070511110522.ed459635.akpm@linux-foundation.org> <p73odkpeusf.fsf@bingen.suse.de>
- <20070512110624.9ac3aa44.akpm@linux-foundation.org>
- <20070516162829.23f9b1c4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	with ESMTP id S1760237AbXEPXlD (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 19:41:03 -0400
+Date: Thu, 17 May 2007 09:40:36 +1000
+From: David Chinner <dgc@sgi.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64 and powerpc
+Message-ID: <20070516234036.GQ85884050@sgi.com>
+References: <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070515193722.GA3487@amitarora.in.ibm.com> <20070515195421.GA2948@amitarora.in.ibm.com> <20070515200359.GA5834@amitarora.in.ibm.com> <20070516031626.GM85884050@sgi.com> <1179318076.10313.6.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179318076.10313.6.camel@kleikamp.austin.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, Andrew Morton wrote:
+On Wed, May 16, 2007 at 07:21:16AM -0500, Dave Kleikamp wrote:
+> On Wed, 2007-05-16 at 13:16 +1000, David Chinner wrote:
+> > On Wed, May 16, 2007 at 01:33:59AM +0530, Amit K. Arora wrote:
+> 
+> > > Following changes were made to the previous version:
+> > >  1) Added description before sys_fallocate() definition.
+> > >  2) Return EINVAL for len<=0 (With new draft that Ulrich pointed to,
+> > >     posix_fallocate should return EINVAL for len <= 0.
+> > >  3) Return EOPNOTSUPP if mode is not one of FA_ALLOCATE or FA_DEALLOCATE
+> > >  4) Do not return ENODEV for dirs (let individual file systems decide if
+> > >     they want to support preallocation to directories or not.
+> > >  5) Check for wrap through zero.
+> > >  6) Update c/mtime if fallocate() succeeds.
+> > 
+> > Please don't make this always happen. c/mtime updates should be dependent
+> > on the mode being used and whether there is visible change to the file. If no
+> > userspace visible changes to the file occurred, then timestamps should not
+> > be changed.
+> 
+> i_blocks will be updated, so it seems reasonable to update ctime.  mtime
+> shouldn't be changed, though, since the contents of the file will be
+> unchanged.
 
-> (I hope.  Might have race windows in which the percpu_counter_sum() count is
-> inaccurate?)
+That's assuming blocks were actually allocated - if the prealloc range already
+has underlying blocks there is no change and so we should not be changing
+mtime either. Only the filesystem will know if it has changed the file, so I
+think that timestamp updates need to be driven down to that level, not done
+blindy at the highest layer....
 
-The question is how do these race windows affect the locking scheme?
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
