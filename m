@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbXEPH4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbXEPH5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759239AbXEPH4a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbXEPH4W
+	id S1759803AbXEPH5w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 03:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbXEPH5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 03:56:22 -0400
-Received: from www.osadl.org ([213.239.205.134]:43321 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753066AbXEPH4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 03:56:21 -0400
-Subject: Re: clockevent questions
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <38b2ab8a0705160042o350d429ct72c43749ff6bcbb8@mail.gmail.com>
-References: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
-	 <1178982892.22481.183.camel@localhost.localdomain>
-	 <38b2ab8a0705121313k37be467cy55402b490101ac9c@mail.gmail.com>
-	 <1179001391.22481.216.camel@localhost.localdomain>
-	 <38b2ab8a0705150147s4ce72914qfa30d543ed8a4839@mail.gmail.com>
-	 <1179267014.12838.38.camel@chaos>
-	 <38b2ab8a0705160042o350d429ct72c43749ff6bcbb8@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 10:00:32 +0200
-Message-Id: <1179302432.12838.62.camel@chaos>
+	Wed, 16 May 2007 03:57:45 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:54500 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756129AbXEPH5n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 03:57:43 -0400
+Date: Wed, 16 May 2007 09:57:40 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+       NeilBrown <neilb@suse.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-s390 <linux-s390@vger.kernel.org>
+Subject: Re: 2.6.22-rc1-mm1 - s390 vs. md
+Message-ID: <20070516095740.0f123058@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070515201914.16944e04.akpm@linux-foundation.org>
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 09:42 +0200, Francis Moreau wrote:
-> > On Tue, 2007-05-15 at 10:47 +0200, Francis Moreau wrote:
-> > > My question is about the clock resolution field which is equal to 1ns.
-> > > How is this possible since my timer's frequency is only 100Mhz ?
-> >
-> > you are right. It is a bit strange. The resolution info is not really
-> > reflecting the clock event source capability. I look if there is a sane
-> > solution for that.
-> >
-> 
-> Doesn't that make hrtimer_get_res() and its callers buggy since they
-> return this 1ns value which is not reflecting the correct clock event
-> capability ?
+On Tue, 15 May 2007 20:19:14 -0700,
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Well, it's not really buggy. It's just not telling the truth.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
 
-> Another question about the output of '/proc/timer_list':
-> 
-> [...]
-> active timers:
->  #0: <c03fde10>, tick_sched_timer, S:01
->  # expires at 64696546875000 nsecs [in 2514469 nsecs]
->  .expires_next   : 64696546875000 nsecs
-> [...]
-> 
-> Doesn't the 2 expire time lines give the same information ? If so,
-> couldn't we merge them into : ".expires_next   : 64696546875000 nsecs
-> [in 2514469 nsecs]" ?
+Doesn't build on s390 when selecting the md menu:
 
-No. The timers are taken from the hrtimer queue and the expires_next
-value is the clock events code internal value of the next timer event.
-The expiry time of the first timer and the clock events code should
-match of course, but we definitely want to have them seperate.
+drivers/built-in.o(.text+0x438ae): In function `async_xor':
+: undefined reference to `dma_map_page'
+drivers/built-in.o(.text+0x43aac): In function `async_xor':
+: undefined reference to `dma_map_page'
+drivers/built-in.o(.text+0x43d2e): In function `async_xor_zero_sum':
+: undefined reference to `dma_map_page'
+drivers/built-in.o(.text+0x43f50): In function `async_memcpy':
+: undefined reference to `dma_map_page'
+drivers/built-in.o(.text+0x43f90): In function `async_memcpy':
+: undefined reference to `dma_map_page'
+drivers/built-in.o(.text+0x4423e): more undefined references to
+`dma_map_page' follow
 
-	tglx
+This is caused by the following in drivers/md/Kconfig:
 
+menuconfig MD
+        bool "Multiple devices driver support (RAID and LVM)"
+        depends on BLOCK
+        select ASYNC_TX_DMA
+        help
+          Support multiple physical spindles through a single logical device.
+          Required for RAID and logical volume management.
 
+ASYNC_TX_DMA is defined in drivers/dma/Kconfig, which has
+
+menu "DMA Engine support"
+        depends on !S390
+
+but unfortunately ASYNC_TX_DMA depends neither on the menu nor
+on !S390. (I think it was just an unknown symbol on s390 before
+Martin's Kconfig rework, so I could build older -mm kernels.)
+
+Currently, the only md stuff depending on ASYNC_TX_DMA is MD_RAID456
+(which means it doesn't work on s390 anymore, which is bad enough).
+With the select statement, no md stuff can be build on s390 at all (and
+I really don't see why ASYNC_TX_DMA should be forced upon all md
+users)...
