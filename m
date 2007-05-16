@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934439AbXEPVAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934501AbXEPVAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934439AbXEPVAV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbXEPVAF
+	id S934501AbXEPVAn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934233AbXEPVAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:00:05 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1223 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756943AbXEPVAB (ORCPT
+	Wed, 16 May 2007 17:00:14 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:63386 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933805AbXEPVAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:00:01 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "David Schwartz" <davids@webmaster.com>, <david@lang.hm>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: RE: scheduling oddity on 2.6.20.3 stock
-Date: Wed, 16 May 2007 13:59:43 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKMEIIDNAC.davids@webmaster.com>
+	Wed, 16 May 2007 17:00:11 -0400
+X-IronPort-AV: i="4.14,544,1170662400"; 
+   d="scan'208"; a="486349636:sNHT43193270"
+To: Ben Collins <ben.collins@ubuntu.com>
+Cc: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+       Ganesh Varadarajan <ganesh@veritas.com>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH] Remove duplicate ID in ipaq driver
+X-Message-Flag: Warning: May contain useful information
+References: <1179348840.6510.16.camel@cunning>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 16 May 2007 13:59:54 -0700
+In-Reply-To: <1179348840.6510.16.camel@cunning> (Ben Collins's message of "Wed, 16 May 2007 16:54:00 -0400")
+Message-ID: <ada1whgmqlx.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEIIDNAC.davids@webmaster.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 16 May 2007 15:00:07 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 16 May 2007 15:00:09 -0700
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 16 May 2007 20:59:54.0884 (UTC) FILETIME=[27842440:01C797FD]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ >  	/* The first entry is a placeholder for the insmod-specified device */
+ > -	{ USB_DEVICE(0x049F, 0x0003) },
 
-> > >> bunzip2 -c $file.bz2 |gzip -9 >$file.gz
+Is it obvious why this patch is correct?  Especially given the
+comment just before the line you delete, and the code
 
-So here are some actual results from a dual P3-1Ghz machine (2.6.21.1,
-CFSv9). First lets time each operation individually:
+	if (vendor) {
+		ipaq_id_table[0].idVendor = vendor;
+		ipaq_id_table[0].idProduct = product;
+	}
 
-$ time bunzip2 -k linux-2.6.21.tar.bz2
+in ipaq_init()?
 
-real    1m5.626s
-user    1m2.240s
-sys     0m3.144s
-
-
-$ time gzip -9 linux-2.6.21.tar
-
-real    1m17.652s
-user    1m15.609s
-sys     0m1.912s
-
-The compress was the most complex (no surprise there) but they are close
-enough that efficient overlap will definitely affect the total wall time. If
-we can both decompress and compress in 1:17, we are optimal. First, let's
-try the normal way:
-
-$ time (bunzip2 -c linux-2.6.21.tar.bz2 | gzip -9 > test1)
-
-real    1m45.051s
-user    2m16.945s
-sys     0m2.752s
-
-1:45, or 1/3 over optimal. Now, with a 32MB non-blocking cache between the
-two processes ('accel' creates a 32MB cache and uses 'select' to fill from
-stdin and empty to stdout without blocking either direction):
-
-$ time (bunzip2 -c linux-2.6.21.tar.bz2 | ./accel | gzip -9 > test2)
-
-real    1m18.361s
-user    2m19.589s
-sys     0m6.356s
-
-Within testing accuracy of optimal.
-
-So it's not the scheduler. It's the fact that bunzip2/gzip have inadequate
-input/output buffering. I don't think it's unreasonable to consider this a
-defect in those programs.
-
-DS
-
-
+ - R.
