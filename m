@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934110AbXEPXct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXEPXeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934110AbXEPXct (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbXEPXck
+	id S933175AbXEPXeY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbXEPXeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:32:40 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:44180 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756728AbXEPXcj (ORCPT
+	Wed, 16 May 2007 19:34:17 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:34401 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757296AbXEPXeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:32:39 -0400
-Message-ID: <464B9427.1010204@freescale.com>
-Date: Wed, 16 May 2007 18:30:47 -0500
-From: Timur Tabi <timur@freescale.com>
-Organization: Freescale
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
+	Wed, 16 May 2007 19:34:17 -0400
+Message-ID: <464B9474.2080408@zytor.com>
+Date: Wed, 16 May 2007 16:32:04 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
-       kbuild-devel@lists.sourceforge.net
-Subject: Re: [RFC] select and dependencies in Kconfig
-References: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk> <20070516033335.GH4095@ftp.linux.org.uk> <464B141E.3020400@s5r6.in-berlin.de>
-In-Reply-To: <464B141E.3020400@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Mel Gorman <mel@skynet.ie>
+CC: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>
+Subject: Re: 2.6.22-rc1-mm1
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com> <20070516174046.GE10225@skynet.ie>
+In-Reply-To: <20070516174046.GE10225@skynet.ie>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------080403060707040200020507"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
+This is a multi-part message in MIME format.
+--------------080403060707040200020507
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-> "A... select B" is just a flavor of "A... depends on B", with the
-> additional instruction to the Kconfig UIs:  Don't hide A if you can
-> silently switch on B.
+Mel Gorman wrote:
+>   LD      arch/i386/boot/setup.elf
+> ld:arch/i386/boot/setup.ld:47: syntax error
 
-I think you mean "A... select B" is just a flavor of "B... depends on A".  There is one 
-minor difference between the two.
+Does this patch fix it for you?
 
-If A is a driver and B is a library, then it's more intuitive to update the Kconfig option 
-for A then it is to update the Kconfig option for B.  For example, if I want to add a new 
-driver C that uses library B, I can just add this:
+	-hpa
 
-C
-	select B
+--------------080403060707040200020507
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff"
 
-If I have to use "depends on", then I would have to change the Kconfig option for B like this:
+diff --git a/arch/i386/boot/setup.ld b/arch/i386/boot/setup.ld
+index e9ca0c2..c9c5530 100644
+--- a/arch/i386/boot/setup.ld
++++ b/arch/i386/boot/setup.ld
+@@ -44,5 +44,5 @@ SECTIONS
+ 
+ 	/DISCARD/ : { *(.note*) }
+ 
+-	ASSERT(_end <= 0x8000, "Setup too big!")
++	. = ASSERT(_end <= 0x8000, "Setup too big!")
+ }
 
-B
-	depends on A || C
-
-And every time I create a new driver that depends on library B, I have to update that 
-"depends on" line *in addition to* creating the Kconfig line for the new driver.  If 10 
-drivers use library B, you'll have this:
-
-B
-	depends on A || C || D || E || F || G || H || I || J || K
-
-> How about throwing "select" out of the Kconfig language and improving
-> the UIs instead, so that users find what they want and need?
-
-I know a lot of people don't like 'select', but I prefer it over 'depends on'.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+--------------080403060707040200020507--
