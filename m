@@ -1,157 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762884AbXEPIhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761609AbXEPIiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762884AbXEPIhp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762367AbXEPIeK
+	id S1761609AbXEPIiA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762428AbXEPIeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:34:10 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:6601 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:34:12 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6598 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762216AbXEPIeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762348AbXEPIeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 May 2007 04:34:04 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/19] Chaining sg lists for big IO commands v6
-Date: Wed, 16 May 2007 10:32:14 +0200
-Message-Id: <11793043533744-git-send-email-jens.axboe@oracle.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 3/19] libata: convert to using sg helpers
+Date: Wed, 16 May 2007 10:32:17 +0200
+Message-Id: <1179304353327-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
+In-Reply-To: <11793043533744-git-send-email-jens.axboe@oracle.com>
+References: <11793043533744-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(please ignore last posting, git send-email got hold of the
-wrong directory...)
+This converts libata to using the sg helpers for looking up sg
+elements, instead of doing it manually.
 
-Hi,
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ drivers/ata/libata-core.c |   30 ++++++++++++++++--------------
+ include/linux/libata.h    |   16 ++++++++++------
+ 2 files changed, 26 insertions(+), 20 deletions(-)
 
-Round 6 of the sg chaining patch set. Changes since v5:
-
-- Support for more architectures. It should now run and work on
-  i386, x86-64, sparc, sparc64, ia64, and ppc (32 and 64-bit).
-  I have only tested i386/x86-64/ppc64 myself.
-
-- Large command support is now automatically enabled by the
-  SCSI mid layer, if the arch supports sg chaining. The debug
-  queue entry in /sys/block/<dev>/queue/max_segments still exists
-  if you want to tweak it further. The default limit is now
-  2048 entries, or at least 8mb ios. Remember that you still need
-  to tweak the soft limit to allow the block layer to build large
-  commands, that is the max_sectors_kb variable in the same directory.
-
-- Add kerneldoc documentation to scatterlist.h
-
-It's solid here, so please give it a spin. I'd like to get some
-performance results as well, if someone feels inclined to do so.
-
-
- arch/ia64/hp/common/sba_iommu.c           |   14 -
- arch/ia64/hp/sim/simscsi.c                |   23 +-
- arch/ia64/sn/pci/pci_dma.c                |   11 -
- arch/powerpc/kernel/dma_64.c              |    5 
- arch/powerpc/kernel/ibmebus.c             |   11 -
- arch/powerpc/kernel/iommu.c               |   18 +
- arch/powerpc/platforms/ps3/system-bus.c   |    5 
- arch/sparc/kernel/ioport.c                |   25 +-
- arch/sparc/mm/io-unit.c                   |   12 -
- arch/sparc/mm/iommu.c                     |   10 
- arch/sparc/mm/sun4c.c                     |   10 
- arch/sparc64/kernel/pci_iommu.c           |   39 ++-
- arch/sparc64/kernel/pci_sun4v.c           |   32 +-
- arch/sparc64/kernel/sbus.c                |   44 ++--
- arch/x86_64/kernel/pci-calgary.c          |   25 +-
- arch/x86_64/kernel/pci-gart.c             |   60 ++---
- arch/x86_64/kernel/pci-nommu.c            |    5 
- block/ll_rw_blk.c                         |   42 +++
- crypto/digest.c                           |    2 
- crypto/scatterwalk.c                      |    2 
- crypto/scatterwalk.h                      |    2 
- drivers/ata/libata-core.c                 |   30 +-
- drivers/ide/cris/ide-cris.c               |    3 
- drivers/ide/ide-dma.c                     |    2 
- drivers/ide/ide-taskfile.c                |   17 +
- drivers/ide/mips/au1xxx-ide.c             |    2 
- drivers/ide/pci/sgiioc4.c                 |    2 
- drivers/ide/ppc/pmac.c                    |    2 
- drivers/infiniband/hw/ipath/ipath_dma.c   |    9 
- drivers/infiniband/ulp/iser/iser_memory.c |   75 +++---
- drivers/infiniband/ulp/srp/ib_srp.c       |   22 +-
- drivers/message/fusion/mptscsih.c         |    4 
- drivers/scsi/3w-9xxx.c                    |    8 
- drivers/scsi/3w-xxxx.c                    |    8 
- drivers/scsi/53c700.c                     |   16 -
- drivers/scsi/BusLogic.c                   |    7 
- drivers/scsi/NCR53c406a.c                 |   18 -
- drivers/scsi/a100u2w.c                    |    9 
- drivers/scsi/aacraid/aachba.c             |   29 +-
- drivers/scsi/advansys.c                   |   21 -
- drivers/scsi/aha1542.c                    |   21 -
- drivers/scsi/aha1740.c                    |    8 
- drivers/scsi/aic7xxx/aic79xx_osm.c        |    3 
- drivers/scsi/aic7xxx/aic7xxx_osm.c        |   12 -
- drivers/scsi/aic94xx/aic94xx_task.c       |    6 
- drivers/scsi/arcmsr/arcmsr_hba.c          |   11 -
- drivers/scsi/dc395x.c                     |    7 
- drivers/scsi/dpt_i2o.c                    |   13 -
- drivers/scsi/eata.c                       |    8 
- drivers/scsi/esp_scsi.c                   |    5 
- drivers/scsi/gdth.c                       |   45 ++--
- drivers/scsi/hptiop.c                     |    8 
- drivers/scsi/ibmmca.c                     |   11 -
- drivers/scsi/ibmvscsi/ibmvscsi.c          |    4 
- drivers/scsi/ide-scsi.c                   |   31 +-
- drivers/scsi/initio.c                     |   12 -
- drivers/scsi/ipr.c                        |    9 
- drivers/scsi/ips.c                        |   74 +++---
- drivers/scsi/iscsi_tcp.c                  |   43 ++-
- drivers/scsi/jazz_esp.c                   |   27 +-
- drivers/scsi/lpfc/lpfc_scsi.c             |    9 
- drivers/scsi/mac53c94.c                   |    9 
- drivers/scsi/megaraid.c                   |   13 -
- drivers/scsi/megaraid/megaraid_mbox.c     |    7 
- drivers/scsi/megaraid/megaraid_sas.c      |   16 -
- drivers/scsi/mesh.c                       |   12 -
- drivers/scsi/ncr53c8xx.c                  |    7 
- drivers/scsi/nsp32.c                      |    9 
- drivers/scsi/pcmcia/sym53c500_cs.c        |   18 -
- drivers/scsi/qla1280.c                    |   66 +++---
- drivers/scsi/qla2xxx/qla_iocb.c           |    9 
- drivers/scsi/qla4xxx/ql4_iocb.c           |    8 
- drivers/scsi/qlogicfas408.c               |    9 
- drivers/scsi/qlogicpti.c                  |   15 -
- drivers/scsi/scsi_debug.c                 |   29 +-
- drivers/scsi/scsi_lib.c                   |  239 ++++++++++++++++------
- drivers/scsi/scsi_tgt_lib.c               |    4 
- drivers/scsi/sg.c                         |   16 -
- drivers/scsi/sym53c416.c                  |    9 
- drivers/scsi/sym53c8xx_2/sym_glue.c       |    7 
- drivers/scsi/u14-34f.c                    |   10 
- drivers/scsi/ultrastor.c                  |   10 
- drivers/scsi/wd7000.c                     |    7 
- drivers/usb/storage/alauda.c              |   16 -
- drivers/usb/storage/datafab.c             |   10 
- drivers/usb/storage/jumpshot.c            |   10 
- drivers/usb/storage/protocol.c            |   20 +
- drivers/usb/storage/protocol.h            |    2 
- drivers/usb/storage/sddr09.c              |   16 -
- drivers/usb/storage/sddr55.c              |   16 -
- drivers/usb/storage/shuttle_usbat.c       |   17 -
- include/asm-i386/dma-mapping.h            |   13 -
- include/asm-i386/scatterlist.h            |    2 
- include/asm-ia64/dma-mapping.h            |    1 
- include/asm-ia64/scatterlist.h            |    2 
- include/asm-powerpc/dma-mapping.h         |    2 
- include/asm-powerpc/scatterlist.h         |    2 
- include/asm-sparc/scatterlist.h           |    2 
- include/asm-sparc64/scatterlist.h         |    2 
- include/asm-x86_64/dma-mapping.h          |    3 
- include/asm-x86_64/scatterlist.h          |    2 
- include/linux/i2o.h                       |    2 
- include/linux/ide.h                       |    2 
- include/linux/libata.h                    |   16 -
- include/linux/scatterlist.h               |   84 +++++++
- include/scsi/scsi.h                       |    7 
- include/scsi/scsi_cmnd.h                  |    3 
- lib/swiotlb.c                             |   19 +
- 108 files changed, 1104 insertions(+), 744 deletions(-)
-
-
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 4166407..32c8d14 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1376,7 +1376,7 @@ static void ata_qc_complete_internal(struct ata_queued_cmd *qc)
+  */
+ unsigned ata_exec_internal_sg(struct ata_device *dev,
+ 			      struct ata_taskfile *tf, const u8 *cdb,
+-			      int dma_dir, struct scatterlist *sg,
++			      int dma_dir, struct scatterlist *sgl,
+ 			      unsigned int n_elem)
+ {
+ 	struct ata_port *ap = dev->ap;
+@@ -1434,11 +1434,12 @@ unsigned ata_exec_internal_sg(struct ata_device *dev,
+ 	qc->dma_dir = dma_dir;
+ 	if (dma_dir != DMA_NONE) {
+ 		unsigned int i, buflen = 0;
++		struct scatterlist *sg;
+ 
+-		for (i = 0; i < n_elem; i++)
+-			buflen += sg[i].length;
++		for_each_sg(sgl, sg, n_elem, i)
++			buflen += sg->length;
+ 
+-		ata_sg_init(qc, sg, n_elem);
++		ata_sg_init(qc, sgl, n_elem);
+ 		qc->nbytes = buflen;
+ 	}
+ 
+@@ -4008,7 +4009,7 @@ void ata_sg_clean(struct ata_queued_cmd *qc)
+ 		if (qc->n_elem)
+ 			dma_unmap_sg(ap->dev, sg, qc->n_elem, dir);
+ 		/* restore last sg */
+-		sg[qc->orig_n_elem - 1].length += qc->pad_len;
++		sg_last(sg, qc->orig_n_elem)->length += qc->pad_len;
+ 		if (pad_buf) {
+ 			struct scatterlist *psg = &qc->pad_sgent;
+ 			void *addr = kmap_atomic(psg->page, KM_IRQ0);
+@@ -4167,6 +4168,7 @@ void ata_sg_init_one(struct ata_queued_cmd *qc, void *buf, unsigned int buflen)
+ 	qc->orig_n_elem = 1;
+ 	qc->buf_virt = buf;
+ 	qc->nbytes = buflen;
++	qc->cursg = qc->__sg;
+ 
+ 	sg_init_one(&qc->sgent, buf, buflen);
+ }
+@@ -4192,6 +4194,7 @@ void ata_sg_init(struct ata_queued_cmd *qc, struct scatterlist *sg,
+ 	qc->__sg = sg;
+ 	qc->n_elem = n_elem;
+ 	qc->orig_n_elem = n_elem;
++	qc->cursg = qc->__sg;
+ }
+ 
+ /**
+@@ -4281,7 +4284,7 @@ static int ata_sg_setup(struct ata_queued_cmd *qc)
+ {
+ 	struct ata_port *ap = qc->ap;
+ 	struct scatterlist *sg = qc->__sg;
+-	struct scatterlist *lsg = &sg[qc->n_elem - 1];
++	struct scatterlist *lsg = sg_last(qc->__sg, qc->n_elem);
+ 	int n_elem, pre_n_elem, dir, trim_sg = 0;
+ 
+ 	VPRINTK("ENTER, ata%u\n", ap->print_id);
+@@ -4445,7 +4448,6 @@ void ata_data_xfer_noirq(struct ata_device *adev, unsigned char *buf,
+ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ {
+ 	int do_write = (qc->tf.flags & ATA_TFLAG_WRITE);
+-	struct scatterlist *sg = qc->__sg;
+ 	struct ata_port *ap = qc->ap;
+ 	struct page *page;
+ 	unsigned int offset;
+@@ -4454,8 +4456,8 @@ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ 	if (qc->curbytes == qc->nbytes - qc->sect_size)
+ 		ap->hsm_task_state = HSM_ST_LAST;
+ 
+-	page = sg[qc->cursg].page;
+-	offset = sg[qc->cursg].offset + qc->cursg_ofs;
++	page = qc->cursg->page;
++	offset = qc->cursg->offset + qc->cursg_ofs;
+ 
+ 	/* get the current page and offset */
+ 	page = nth_page(page, (offset >> PAGE_SHIFT));
+@@ -4483,8 +4485,8 @@ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ 	qc->curbytes += qc->sect_size;
+ 	qc->cursg_ofs += qc->sect_size;
+ 
+-	if (qc->cursg_ofs == (&sg[qc->cursg])->length) {
+-		qc->cursg++;
++	if (qc->cursg_ofs == qc->cursg->length) {
++		qc->cursg = sg_next(qc->cursg);
+ 		qc->cursg_ofs = 0;
+ 	}
+ }
+@@ -4577,7 +4579,7 @@ static void __atapi_pio_bytes(struct ata_queued_cmd *qc, unsigned int bytes)
+ 		ap->hsm_task_state = HSM_ST_LAST;
+ 
+ next_sg:
+-	if (unlikely(qc->cursg >= qc->n_elem)) {
++	if (unlikely(qc->cursg == sg_last(qc->__sg, qc->n_elem))) {
+ 		/*
+ 		 * The end of qc->sg is reached and the device expects
+ 		 * more data to transfer. In order not to overrun qc->sg
+@@ -4600,7 +4602,7 @@ next_sg:
+ 		return;
+ 	}
+ 
+-	sg = &qc->__sg[qc->cursg];
++	sg = qc->cursg;
+ 
+ 	page = sg->page;
+ 	offset = sg->offset + qc->cursg_ofs;
+@@ -4639,7 +4641,7 @@ next_sg:
+ 	qc->cursg_ofs += count;
+ 
+ 	if (qc->cursg_ofs == sg->length) {
+-		qc->cursg++;
++		qc->cursg = sg_next(qc->cursg);
+ 		qc->cursg_ofs = 0;
+ 	}
+ 
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 27d9362..e6e216c 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -30,7 +30,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/pci.h>
+ #include <linux/dma-mapping.h>
+-#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ #include <linux/io.h>
+ #include <linux/ata.h>
+ #include <linux/workqueue.h>
+@@ -380,6 +380,7 @@ struct ata_queued_cmd {
+ 	unsigned long		flags;		/* ATA_QCFLAG_xxx */
+ 	unsigned int		tag;
+ 	unsigned int		n_elem;
++	unsigned int		n_iter;
+ 	unsigned int		orig_n_elem;
+ 
+ 	int			dma_dir;
+@@ -390,7 +391,7 @@ struct ata_queued_cmd {
+ 	unsigned int		nbytes;
+ 	unsigned int		curbytes;
+ 
+-	unsigned int		cursg;
++	struct scatterlist	*cursg;
+ 	unsigned int		cursg_ofs;
+ 
+ 	struct scatterlist	sgent;
+@@ -925,7 +926,7 @@ ata_sg_is_last(struct scatterlist *sg, struct ata_queued_cmd *qc)
+ 		return 1;
+ 	if (qc->pad_len)
+ 		return 0;
+-	if (((sg - qc->__sg) + 1) == qc->n_elem)
++	if (qc->n_iter == qc->n_elem)
+ 		return 1;
+ 	return 0;
+ }
+@@ -933,6 +934,7 @@ ata_sg_is_last(struct scatterlist *sg, struct ata_queued_cmd *qc)
+ static inline struct scatterlist *
+ ata_qc_first_sg(struct ata_queued_cmd *qc)
+ {
++	qc->n_iter = 0;
+ 	if (qc->n_elem)
+ 		return qc->__sg;
+ 	if (qc->pad_len)
+@@ -945,8 +947,8 @@ ata_qc_next_sg(struct scatterlist *sg, struct ata_queued_cmd *qc)
+ {
+ 	if (sg == &qc->pad_sgent)
+ 		return NULL;
+-	if (++sg - qc->__sg < qc->n_elem)
+-		return sg;
++	if (++qc->n_iter < qc->n_elem)
++		return sg_next(sg);
+ 	if (qc->pad_len)
+ 		return &qc->pad_sgent;
+ 	return NULL;
+@@ -1142,9 +1144,11 @@ static inline void ata_qc_reinit(struct ata_queued_cmd *qc)
+ 	qc->dma_dir = DMA_NONE;
+ 	qc->__sg = NULL;
+ 	qc->flags = 0;
+-	qc->cursg = qc->cursg_ofs = 0;
++	qc->cursg = NULL;
++	qc->cursg_ofs = 0;
+ 	qc->nbytes = qc->curbytes = 0;
+ 	qc->n_elem = 0;
++	qc->n_iter = 0;
+ 	qc->err_mask = 0;
+ 	qc->pad_len = 0;
+ 	qc->sect_size = ATA_SECT_SIZE;
+-- 
+1.5.2.rc1
 
