@@ -1,40 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbXEPR10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762995AbXEPR1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbXEPR10 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXEPR1R
+	id S1762995AbXEPR1x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759339AbXEPR1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:27:17 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:10840 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756270AbXEPR1Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:27:16 -0400
-Date: Wed, 16 May 2007 18:26:53 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 2/2] AFS: Implement shared-writable mmap
-In-Reply-To: <464B3BE4.10704@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0705161823550.16760@blonde.wat.veritas.com>
-References: <20070515155224.29345.22719.stgit@warthog.cambridge.redhat.com>
- <20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com>
- <20070515144007.f87d9be5.akpm@linux-foundation.org> <464A533B.8040507@yahoo.com.au>
- <Pine.LNX.4.64.0705161711090.7914@blonde.wat.veritas.com> <464B3BE4.10704@yahoo.com.au>
+	Wed, 16 May 2007 13:27:42 -0400
+Received: from mail.tmr.com ([64.65.253.246]:39082 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755936AbXEPR1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 13:27:41 -0400
+Message-ID: <464B3F23.50105@tmr.com>
+Date: Wed, 16 May 2007 13:28:03 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 16 May 2007 17:27:15.0357 (UTC) FILETIME=[723ED4D0:01C797DF]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWZzZGV2ZWxAdmdlci5rZXJuZWwub3JnAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBkaG93ZWxsc0ByZWRoYXQuY29tAG5pY2twaWdnaW5AeWFob28uY29tLmF1AA==
-X-Brightmail-Tracker: AAAAAA==
+To: Jeff Zheng <Jeff.Zheng@endace.com>
+CC: Neil Brown <neilb@suse.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Software raid0 will crash the file-system, when each disk is
+ 5TB
+References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com><6bffcb0e0705151629j78920ca2r9337dccdfc1bb6a9@mail.gmail.com> <17994.19043.771733.453896@notabene.brown> <659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com>
+In-Reply-To: <659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007, Nick Piggin wrote:
-> 
-> ... and I don't want to change the
-> VM in a way that people are not unhappy with :)
+Jeff Zheng wrote:
+> Here is the information of the created raid0. Hope it is enough.
+>
+>   
+If I read this correctly, the problem is with JFS rather than RAID? Have 
+you tried not mounting the JFS filesystem but just starting the array 
+which crashes, so you can read bits of it, etc, and verify that the 
+array itself is working?
 
-I'm hoping you intended one less negative ;)
+And can you run an fsck on the filesystem, if that makes sense? I assume 
+you got to actually write a f/s at one time, and I've never used JFS 
+under Linux. I spent five+ years using it on AIX, though, complex but 
+robust.
+> The crashing one:
+> md: bind<sdd>
+> md: bind<sde>
+> md: raid0 personality registered for level 0
+> md0: setting max_sectors to 4096, segment boundary to 1048575
+> raid0: looking at sde
+> raid0:   comparing sde(5859284992) with sde(5859284992)
+> raid0:   END
+> raid0:   ==> UNIQUE
+> raid0: 1 zones
+> raid0: looking at sdd
+> raid0:   comparing sdd(5859284992) with sde(5859284992)
+> raid0:   EQUAL
+> raid0: FINAL 1 zones
+> raid0: done.
+> raid0 : md_size is 11718569984 blocks.
+> raid0 : conf->hash_spacing is 11718569984 blocks.
+> raid0 : nb_zone is 2.
+> raid0 : Allocating 8 bytes for hash.
+> JFS: nTxBlock = 8192, nTxLock = 65536
+>
+> The working one:
+> md: bind<sde>
+> md: bind<sdf>
+> md: bind<sdg>
+> md: bind<sdd>
+> md0: setting max_sectors to 4096, segment boundary to 1048575
+> raid0: looking at sdd
+> raid0:   comparing sdd(2929641472) with sdd(2929641472)
+> raid0:   END
+> raid0:   ==> UNIQUE
+> raid0: 1 zones
+> raid0: looking at sdg
+> raid0:   comparing sdg(2929641472) with sdd(2929641472)
+> raid0:   EQUAL
+> raid0: looking at sdf
+> raid0:   comparing sdf(2929641472) with sdd(2929641472)
+> raid0:   EQUAL
+> raid0: looking at sde
+> raid0:   comparing sde(2929641472) with sdd(2929641472)
+> raid0:   EQUAL
+> raid0: FINAL 1 zones
+> raid0: done.
+> raid0 : md_size is 11718565888 blocks.
+> raid0 : conf->hash_spacing is 11718565888 blocks.
+> raid0 : nb_zone is 2.
+> raid0 : Allocating 8 bytes for hash.
+> JFS: nTxBlock = 8192, nTxLock = 65536
+>
+> -----Original Message-----
+> From: Neil Brown [mailto:neilb@suse.de] 
+> Sent: Wednesday, 16 May 2007 12:04 p.m.
+> To: Michal Piotrowski
+> Cc: Jeff Zheng; Ingo Molnar; linux-raid@vger.kernel.org;
+> linux-kernel@vger.kernel.org; linux-fsdevel@vger.kernel.org
+> Subject: Re: Software raid0 will crash the file-system, when each disk
+> is 5TB
+>
+> On Wednesday May 16, michal.k.k.piotrowski@gmail.com wrote:
+>   
+>>> Anybody have a clue?
+>>>
+>>>       
+>
+> No...
+> When a raid0 array is assemble, quite a lot of message get printed
+> about number of zones and hash_spacing etc.  Can you collect and post
+> those.  Both for the failing case (2*5.5T) and the working case
+> (4*2.55T) is possible.
+>   
+
+
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
+
