@@ -1,81 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031030AbXEPVFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934312AbXEPVGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031030AbXEPVFq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbXEPVFj
+	id S934312AbXEPVGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761627AbXEPVGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:05:39 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:40412 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754948AbXEPVFi (ORCPT
+	Wed, 16 May 2007 17:06:15 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:53389 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761617AbXEPVGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:05:38 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705161358030.11359@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-	 <20070514161224.GC11115@waste.org>
-	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-	 <1179164453.2942.26.camel@lappy>
-	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-	 <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins>
-	 <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
-	 <1179298771.7173.16.camel@twins>
-	 <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
-	 <1179343521.2912.20.camel@lappy>
-	 <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
-	 <1179346738.2912.39.camel@lappy>
-	 <Pine.LNX.4.64.0705161320020.11018@schroedinger.engr.sgi.com>
-	 <1179348039.2912.48.camel@lappy>
-	 <Pine.LNX.4.64.0705161343080.11234@schroedinger.engr.sgi.com>
-	 <1179348898.2912.57.camel@lappy>
-	 <Pine.LNX.4.64.0705161358030.11359@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 23:04:54 +0200
-Message-Id: <1179349494.2912.62.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 17:06:13 -0400
+Date: Wed, 16 May 2007 17:02:06 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Message-ID: <20070516210206.GH26766@think.oraclecorp.com>
+References: <20070516144205.GV26766@think.oraclecorp.com> <464B2AC2.10206@redhat.com> <20070516171156.GY26766@think.oraclecorp.com> <20070516112515.b6f247b2.akpm@linux-foundation.org> <20070516191339.GA26766@think.oraclecorp.com> <20070516123342.714a11d8.akpm@linux-foundation.org> <20070516195359.GE26766@think.oraclecorp.com> <20070516130413.1fd391bf.akpm@linux-foundation.org> <20070516201414.GF26766@think.oraclecorp.com> <20070516133726.0c68a65f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="dkEUBIird37B8yKS"
+Content-Disposition: inline
+In-Reply-To: <20070516133726.0c68a65f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 13:59 -0700, Christoph Lameter wrote:
-> On Wed, 16 May 2007, Peter Zijlstra wrote:
+
+--dkEUBIird37B8yKS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, May 16, 2007 at 01:37:26PM -0700, Andrew Morton wrote:
+> On Wed, 16 May 2007 16:14:14 -0400
+> Chris Mason <chris.mason@oracle.com> wrote:
 > 
-> > > I do not see any distinction between DMA and regular memory. If we need 
-> > > DMA memory to complete the transaction then this wont work?
-> > 
-> > If network relies on slabs that are cpuset constrained and the page
-> > allocator reserves do not match that, then yes, it goes bang.
+> > On Wed, May 16, 2007 at 01:04:13PM -0700, Andrew Morton wrote:
+> > > > The good news is that if you let it run long enough, the times
+> > > > stabilize.  The bad news is:
+> > > > 
+> > > > create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
+> > > > create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
+> > > > create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
+> > > > create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
+> > > 
+> > > well hang on.  Doesn't this just mean that the first few runs were writing
+> > > into pagecache and the later ones were blocking due to dirty-memory limits?
+> > > 
+> > > Or do you have a sync in there?
+> > > 
+> > There's no sync,  but if you watch vmstat you can clearly see the log
+> > flushes, even when the overall create times are 11MB/s.  vmstat goes
+> > 30MB/s -> 4MB/s or less, then back up to 30MB/s.
 > 
-> So if I put a 32 bit network card in a 64 bit system -> bang?
+> How do you know that it is a log flush rather than, say, pdflush
+> hitting the blockdev inode and doing a big seeky write?
 
-I hope the network stack already uses the appropriate allocator flags.
-If the slab was GFP_DMA that doesn't change, the ->reserve_slab will
-still be GFP_DMA.
+I don't...it gets especially tricky because ext3_writepage starts
+a transaction, and so pdflush does hit the log flushing code too.
 
-> > > Is there some indicator somewhere that indicates that we are in trouble? I 
-> > > just see the ranks.
-> > 
-> > Yes, and page->rank will only ever be 0 if the page was allocated with
-> > ALLOC_NO_WATERMARKS, and that only ever happens if we're in dire
-> > straights and entitled to it.
-> > 
-> > Otherwise it'll be ALLOC_WMARK_MIN or somesuch.
-> 
-> How we know that we are out of trouble? Just try another alloc and see? If 
-> that is the case then we may be failing allocations after the memory 
-> situation has cleared up.
+So, in comes systemtap.  I instrumented submit_bh to look for seeks
+(defined as writes more than 16 blocks apart) when the process was
+inside __log_wait_for_space.  The probe is attached, it is _really_
+quick and dirty because I'm about to run out the door.
 
-No, no, for each regular allocation we retry to populate ->cpu_slab with
-a new slab. If that works we're out of the woods and the ->reserve_slab
-is cleaned up.
+Watching vmstat, every time the __log_wait_for_space hits lots of seeks,
+vmstat goes into the 2-4MB/s range.  Not a scientific match up, but
+here's some sample output:
 
+7824 ext3 done waiting for space total wrote 3155 blocks seeks 2241
+7827 ext3 done waiting for space total wrote 855 blocks seeks 598
+7827 ext3 done waiting for space total wrote 2547 blocks seeks 1759
+7653 ext3 done waiting for space total wrote 2273 blocks seeks 1609
+
+I also recorded the total size of each seek, 66% of them where 6000
+blocks or more.
+
+-chris
+
+
+--dkEUBIird37B8yKS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="jbd.tap"
+
+
+global in_process
+global writers
+global last
+global seeks
+
+probe kernel.function("__log_wait_for_space@fs/jbd/checkpoint.c") {
+    printf("%d ext3 waiting for space\n", pid())
+    p = pid()
+    writers[p] = 0
+    in_process[p] = 1
+    last[p] = 0
+    seeks[p] = 0
+}
+
+probe kernel.function("__log_wait_for_space@fs/jbd/checkpoint.c").return {
+    p = pid()
+    in_process[p] = 0
+    printf("%d ext3 done waiting for space total wrote %d blocks seeks %d\n", p,
+	  writers[p], seeks[p])
+}
+
+probe kernel.function("submit_bh") {
+    p = pid()
+    in_proc = in_process[p]
+    if (in_proc != 0) {
+	writers[p] += 1
+	block = $bh->b_blocknr
+	last_block = last[p]
+	diff = 0
+	if (last_block != 0) {
+	    if (last_block < block && block - last_block > 16) {
+		diff = block - last_block
+	    }
+	    if (last_block > block && last_block - block > 16) {
+		diff = last_block - block
+	    }
+	}
+	    
+	last[p] = block
+	if (diff != 0) {
+	    printf("seek log write pid %d last %d this %d diff %d\n",
+		       p, last_block, block, diff);
+	    seeks[p] += 1
+	}
+    }
+}
+
+--dkEUBIird37B8yKS--
