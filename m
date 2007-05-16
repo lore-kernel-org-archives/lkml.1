@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759932AbXEPAdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbXEPAiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759932AbXEPAdA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 20:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760653AbXEPAcv
+	id S1761395AbXEPAiY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 20:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760024AbXEPAiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 20:32:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46021 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759656AbXEPAcu (ORCPT
+	Tue, 15 May 2007 20:38:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47595
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759010AbXEPAiQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 20:32:50 -0400
-Date: Tue, 15 May 2007 17:29:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
+	Tue, 15 May 2007 20:38:16 -0400
+Date: Tue, 15 May 2007 17:38:20 -0700 (PDT)
+Message-Id: <20070515.173820.101498227.davem@davemloft.net>
+To: akpm@linux-foundation.org
 Cc: clameter@sgi.com, mroos@linux.ee, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Subject: Re: slab hang on boot
-Message-Id: <20070515172957.02d80d51.akpm@linux-foundation.org>
-In-Reply-To: <20070515.171447.83623268.davem@davemloft.net>
-References: <20070515163321.744e2388.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705151642530.3886@schroedinger.engr.sgi.com>
-	<20070515165636.5057456e.akpm@linux-foundation.org>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070515172957.02d80d51.akpm@linux-foundation.org>
+References: <20070515165636.5057456e.akpm@linux-foundation.org>
 	<20070515.171447.83623268.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	<20070515172957.02d80d51.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 17:14:47 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Tue, 15 May 2007 17:29:57 -0700
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Tue, 15 May 2007 16:56:36 -0700
+> This:
 > 
-> > On Tue, 15 May 2007 16:45:22 -0700 (PDT)
-> > Christoph Lameter <clameter@sgi.com> wrote:
-> > 
-> > > KMALLOC_SHIFT_HIGH is not a constant but may be less than 25.
-> > 
-> > It darn well better be a compile-time constant.
+> struct kmem_cache kmalloc_caches[KMALLOC_SHIFT_HIGH + 1] __cacheline_aligned;
 > 
-> Try to define a compile-time array size with it smarty
-> pants :-)
+> is still there.
 
-confusedy pants, more like.
-
-> That's what we did initially and it doesn't work.
-
-This:
-
-struct kmem_cache kmalloc_caches[KMALLOC_SHIFT_HIGH + 1] __cacheline_aligned;
-
-is still there.
-
-
+My bad, we tried using min_t() and that's what caused the problems,
+that's why we open-coded the macro like it is now :-)
