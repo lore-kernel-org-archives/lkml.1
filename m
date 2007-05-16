@@ -1,83 +1,305 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762866AbXEPRB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbXEPRFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762866AbXEPRB3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbXEPRBM
+	id S1759967AbXEPRFq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbXEPRFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:01:12 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:38741 "EHLO mail.q-leap.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756959AbXEPRBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:01:10 -0400
-From: Bernd Schubert <bs@q-leap.de>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: mkfs.ext2 triggered softlockup
-Date: Wed, 16 May 2007 19:01:08 +0200
-User-Agent: KMail/1.9.6
-Cc: "Bernd Schubert" <bschubert@q-leap.de>, linux-kernel@vger.kernel.org
-References: <f2fcc1$otm$2@sea.gmane.org> <6bffcb0e0705160949m7486705s1b2fc5bbe8a025df@mail.gmail.com>
-In-Reply-To: <6bffcb0e0705160949m7486705s1b2fc5bbe8a025df@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 13:05:38 -0400
+Received: from lazybastard.de ([212.112.238.170]:37110 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753742AbXEPRFg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 13:05:36 -0400
+Date: Wed, 16 May 2007 19:01:14 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>,
+       Anton Altaparmakov <aia21@cam.ac.uk>, Al Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [PATCH resend] introduce I_SYNC
+Message-ID: <20070516170110.GC8113@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200705161901.09072.bs@q-leap.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 May 2007 18:49:57 Michal Piotrowski wrote:
-> Hi Bernd,
->
-> On 16/05/07, Bernd Schubert <bschubert@q-leap.de> wrote:
-> > Maybe you still remember my report about an mkfs.ext2 triggered ram disk
-> > corruption?
-> >
-> > http://lkml.org/lkml/2007/5/4/272
-> >
-> > Well, in principle I'm now doing the same stuff, only this time with
-> > another initrd, which mounts the root-fs over nfs.
-> >
-> > [ 1596.928552] BUG: soft lockup detected on CPU#2!
-> > [ 1596.933109]
-> > [ 1596.933110] Call Trace:
-> > [ 1596.933111]  <IRQ>  [<ffffffff8025167b>] softlockup_tick+0xd8/0xef
-> > [ 1596.933129]  [<ffffffff802329f8>] run_local_timers+0x13/0x15
-> > [ 1596.933132]  [<ffffffff80232a44>] update_process_times+0x4a/0x77
-> > [ 1596.933138]  [<ffffffff8021434b>] smp_local_timer_interrupt+0x34/0x54
-> > [ 1596.933143]  [<ffffffff802143cc>] smp_apic_timer_interrupt+0x61/0x78
-> > [ 1596.933147]  [<ffffffff8020a29b>] apic_timer_interrupt+0x6b/0x70
-> > [ 1596.933151]  <EOI>  [<ffffffff80299dff>] free_buffer_head+0x24/0x3e
-> > [ 1596.933162]  [<ffffffff80272a63>] kmem_cache_free+0x1f4/0x201
-> > [ 1596.933170]  [<ffffffff80299dff>] free_buffer_head+0x24/0x3e
-> > [ 1596.933175]  [<ffffffff80299ea1>] try_to_free_buffers+0x88/0x9f
-> > [ 1596.933181]  [<ffffffff802565a9>] try_to_release_page+0x39/0x40
-> > [ 1596.933188]  [<ffffffff8025b76d>] invalidate_mapping_pages+0x9d/0x121
-> > [ 1596.933196]  [<ffffffff8025b800>] invalidate_inode_pages+0xf/0x11
-> > [ 1596.933200]  [<ffffffff80299053>] invalidate_bdev+0x3b/0x3f
-> > [ 1596.933203]  [<ffffffff8029c9ee>] kill_bdev+0x13/0x29
-> > [ 1596.933208]  [<ffffffff8029d6e8>] __blkdev_put+0x62/0x141
-> > [ 1596.933213]  [<ffffffff8029db62>] blkdev_put+0xb/0xd
-> > [ 1596.933218]  [<ffffffff8029dbf7>] blkdev_close+0x2e/0x33
-> > [ 1596.933222]  [<ffffffff8027a3c3>] __fput+0xc3/0x172
-> > [ 1596.933228]  [<ffffffff8027a486>] fput+0x14/0x16
-> > [ 1596.933233]  [<ffffffff80278c4f>] filp_close+0x61/0x6d
-> > [ 1596.933238]  [<ffffffff80278ce7>] sys_close+0x8c/0xce
-> > [ 1596.933244]  [<ffffffff8020965e>] system_call+0x7e/0x83
-> > [ 1596.933250]
->
-> Can you tell me which kernel version you are using?
+While others are busy coming up with new silly names, here is something
+substantial to worry about.
 
-Sorry, forgot that. I think 2.6.20.6 or 2.6.20.7 (I always rename them to .3, 
-for some reasons thats easier than to change our tftp-rembo config). The 
-kernel is patches with lustre patches, hmm, one of them also adds a read-only 
-test to the block device layer.
-Probably I should test a vanilla kernel. Going to do that now...
+Patches fixes a deadlock problem well enough for LogFS to survive.  The
+problem itself is generic and seems to be ancient.  Shaggy has code in
+JFS from about 2.4.20 that seems to work around the deadlock.  Dave
+Chinner indicated that this could cause latency problems (not a
+deadlock) on the NFS server side.  I still suspect that NTFS has hit the
+same deadlock and its current "fix" will cause data corruption instead.
 
-Thanks,
-Bernd
+After all that, I consider it important that some version of this patch
+gets merged.  But before doing so, the patch needs better review and
+testing.  The code it changes is quite subtle and and easy to get wrong.
 
 
--- 
-Bernd Schubert
-Q-Leap Networks GmbH
+1. Introduction
+
+In its write path, LogFS may have to do some Garbage Collection when
+space is getting tight.  GC requires reading inodes, so the I_LOCK bit
+is taken for some random inodes.
+
+I_LOCK is also held when syncing inodes to flash, so LogFS has to wait
+for those inodes.  Inodes are written by the same code path as regular
+file data and needs to acquire an fs-global mutex.  Call stacks of the
+1-2 processes will look roughly like this:
+
+Process A:				Process B:
+inode_wait				[filesystem locking write path]
+__wait_on_bit				__writeback_single_inode
+out_of_line_wait_on_bit
+ifind_fast
+[filesystem calling iget()]
+[filesystem locking write path]
+
+
+2. The usage of inode_lock and I_LOCK
+
+Almost all modifications of inodes are protected by the inode_lock, a
+global spinlock.  Some modifications, however, can block for various
+reasons and require the inode_lock to get dropped temporarily.  In the
+meantime, the individual inode needs to get protected somehow.  Usually
+this happens through the use of I_LOCK.
+
+But I_LOCK is not a simple mutex.  It is a Janus-faced bit in the inode
+that is used for several things, including mutual exclusion and
+completion notification.  Most users are open-coded, so it is not easy
+to follow, but can be summarized in the table below.
+
+In this table columns indicate events when I_LOCK is either set or
+reset (or not reset but all waiters are notified anyway).  Rows
+indicate code that either checks for I_LOCK and changes behaviour
+depending on its state or is waiting until I_LOCK gets reset (or is
+waiting even if I_LOCK is not set).
+
+			__sync_single_inode
+			|	get_new_inode[_fast]
+			|	| unlock_new_inode
+			|	| |	dispose_list
+			|	| |	|	generic_delete_inode
+			|	| |	|	|	generic_forget_inode
+lock			v	v |	|	|	|
+unlock/complete		v	v	v	v	v	comment
+-------------------------------------------------------------------------------
+__writeback_single_inodeX	O	O	O	O	sync
+write_inode_now		X	O	O	O	O	sync
+clear_inode		X	O	O	O	O	sync
+__mark_inode_dirty	X	O	O	O	O	lists
+generic_osync_inode	X	O	O	O	O	sync
+get_new_inode[_fast]	O	X	O	O	O	mutex
+find_inode[_fast]	O	O	X	X	X	I_FREEING
+ifind[_fast]		O	X	O	O	O	read
+
+jfs txCommit		?	?	?	?	?	?
+xfs_ichgtime[_fast]	X	O	O	O	O	sync
+
+Comments:
+sync - wait for writeout to finish
+lists - move inode to dirty list without racing against __sync_single_inode
+mutex - protect against two concurrent get_new_inode[_fast] creating two inodes
+I_FREEING - wait for inode to get freed, then repeat
+read - don't return inode until it is read from medium
+
+Now, the "X"s mark combinations where columns and rows are related.
+"O"s mark combinations where afaics columns and rows share no
+relationship whatsoever except that both use either I_LOCK or
+wake_up_inode()/wait_on_inode() or any other of the partially open-coded
+variants.
+
+The table shows that two large usage groups exist for I_LOCK, one
+dealing exclusively with the various sync() functions in
+fs/fs-writeback.c and another basically confined to fs/inode.c code.
+JFS has one remaining user that is unclear to me.
+
+
+This patch introduces a new flag, I_SYNC and seperates out all sync()
+users of I_LOCK to use the new flag instead.
+
+
+ fs/fs-writeback.c           |   39 ++++++++++++++++++++++++---------------
+ fs/xfs/linux-2.6/xfs_iops.c |    4 ++--
+ include/linux/fs.h          |    2 ++
+ include/linux/writeback.h   |    7 +++++++
+ 4 files changed, 35 insertions(+), 17 deletions(-)
+
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -99,11 +99,11 @@ void __mark_inode_dirty(struct inode *in
+ 		inode->i_state |= flags;
+ 
+ 		/*
+-		 * If the inode is locked, just update its dirty state. 
++		 * If the inode is being synced, just update its dirty state.
+ 		 * The unlocker will place the inode on the appropriate
+ 		 * superblock list, based upon its state.
+ 		 */
+-		if (inode->i_state & I_LOCK)
++		if (inode->i_state & I_SYNC)
+ 			goto out;
+ 
+ 		/*
+@@ -139,6 +139,15 @@ static int write_inode(struct inode *ino
+ 	return 0;
+ }
+ 
++static void inode_sync_complete(struct inode *inode)
++{
++	/*
++	 * Prevent speculative execution through spin_unlock(&inode_lock);
++	 */
++	smp_mb();
++	wake_up_bit(&inode->i_state, __I_SYNC);
++}
++
+ /*
+  * Write a single inode's dirty pages and inode data out to disk.
+  * If `wait' is set, wait on the writeout.
+@@ -158,11 +167,11 @@ __sync_single_inode(struct inode *inode,
+ 	int wait = wbc->sync_mode == WB_SYNC_ALL;
+ 	int ret;
+ 
+-	BUG_ON(inode->i_state & I_LOCK);
++	BUG_ON(inode->i_state & I_SYNC);
+ 
+-	/* Set I_LOCK, reset I_DIRTY */
++	/* Set I_SYNC, reset I_DIRTY */
+ 	dirty = inode->i_state & I_DIRTY;
+-	inode->i_state |= I_LOCK;
++	inode->i_state |= I_SYNC;
+ 	inode->i_state &= ~I_DIRTY;
+ 
+ 	spin_unlock(&inode_lock);
+@@ -183,7 +192,7 @@ __sync_single_inode(struct inode *inode,
+ 	}
+ 
+ 	spin_lock(&inode_lock);
+-	inode->i_state &= ~I_LOCK;
++	inode->i_state &= ~I_SYNC;
+ 	if (!(inode->i_state & I_FREEING)) {
+ 		if (!(inode->i_state & I_DIRTY) &&
+ 		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+@@ -231,7 +240,7 @@ __sync_single_inode(struct inode *inode,
+ 			list_move(&inode->i_list, &inode_unused);
+ 		}
+ 	}
+-	wake_up_inode(inode);
++	inode_sync_complete(inode);
+ 	return ret;
+ }
+ 
+@@ -250,7 +259,7 @@ __writeback_single_inode(struct inode *i
+ 	else
+ 		WARN_ON(inode->i_state & I_WILL_FREE);
+ 
+-	if ((wbc->sync_mode != WB_SYNC_ALL) && (inode->i_state & I_LOCK)) {
++	if ((wbc->sync_mode != WB_SYNC_ALL) && (inode->i_state & I_SYNC)) {
+ 		struct address_space *mapping = inode->i_mapping;
+ 		int ret;
+ 
+@@ -269,16 +278,16 @@ __writeback_single_inode(struct inode *i
+ 	/*
+ 	 * It's a data-integrity sync.  We must wait.
+ 	 */
+-	if (inode->i_state & I_LOCK) {
+-		DEFINE_WAIT_BIT(wq, &inode->i_state, __I_LOCK);
++	if (inode->i_state & I_SYNC) {
++		DEFINE_WAIT_BIT(wq, &inode->i_state, __I_SYNC);
+ 
+-		wqh = bit_waitqueue(&inode->i_state, __I_LOCK);
++		wqh = bit_waitqueue(&inode->i_state, __I_SYNC);
+ 		do {
+ 			spin_unlock(&inode_lock);
+ 			__wait_on_bit(wqh, &wq, inode_wait,
+ 							TASK_UNINTERRUPTIBLE);
+ 			spin_lock(&inode_lock);
+-		} while (inode->i_state & I_LOCK);
++		} while (inode->i_state & I_SYNC);
+ 	}
+ 	return __sync_single_inode(inode, wbc);
+ }
+@@ -311,7 +320,7 @@ __writeback_single_inode(struct inode *i
+  * The inodes to be written are parked on sb->s_io.  They are moved back onto
+  * sb->s_dirty as they are selected for writing.  This way, none can be missed
+  * on the writer throttling path, and we get decent balancing between many
+- * throttled threads: we don't want them all piling up on __wait_on_inode.
++ * throttled threads: we don't want them all piling up on inode_sync_wait.
+  */
+ static void
+ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
+@@ -583,7 +592,7 @@ int write_inode_now(struct inode *inode,
+ 	ret = __writeback_single_inode(inode, &wbc);
+ 	spin_unlock(&inode_lock);
+ 	if (sync)
+-		wait_on_inode(inode);
++		inode_sync_wait(inode);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(write_inode_now);
+@@ -658,7 +667,7 @@ int generic_osync_inode(struct inode *in
+ 			err = err2;
+ 	}
+ 	else
+-		wait_on_inode(inode);
++		inode_sync_wait(inode);
+ 
+ 	return err;
+ }
+unchanged:
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1184,6 +1184,8 @@ #define I_FREEING		16
+ #define I_CLEAR			32
+ #define I_NEW			64
+ #define I_WILL_FREE		128
++#define __I_SYNC		8
++#define I_SYNC			(1 << __I_SYNC) /* Currently being synced */
+ 
+ #define I_DIRTY (I_DIRTY_SYNC | I_DIRTY_DATASYNC | I_DIRTY_PAGES)
+ 
+unchanged:
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -77,6 +77,13 @@ static inline void wait_on_inode(struct 
+ 	wait_on_bit(&inode->i_state, __I_LOCK, inode_wait,
+ 							TASK_UNINTERRUPTIBLE);
+ }
++static inline void inode_sync_wait(struct inode *inode)
++{
++	might_sleep();
++	wait_on_bit(&inode->i_state, __I_SYNC, inode_wait,
++							TASK_UNINTERRUPTIBLE);
++}
++
+ 
+ /*
+  * mm/page-writeback.c
+only in patch2:
+unchanged:
+--- a/fs/xfs/linux-2.6/xfs_iops.c
++++ b/fs/xfs/linux-2.6/xfs_iops.c
+@@ -133,7 +133,7 @@ xfs_ichgtime(
+ 	 */
+ 	SYNCHRONIZE();
+ 	ip->i_update_core = 1;
+-	if (!(inode->i_state & I_LOCK))
++	if (!(inode->i_state & I_SYNC))
+ 		mark_inode_dirty_sync(inode);
+ }
+ 
+@@ -185,7 +185,7 @@ xfs_ichgtime_fast(
+ 	 */
+ 	SYNCHRONIZE();
+ 	ip->i_update_core = 1;
+-	if (!(inode->i_state & I_LOCK))
++	if (!(inode->i_state & I_SYNC))
+ 		mark_inode_dirty_sync(inode);
+ }
+ 
