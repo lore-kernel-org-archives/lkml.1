@@ -1,61 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934080AbXEPU5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934354AbXEPU5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934080AbXEPU5V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759514AbXEPU5L
+	id S934354AbXEPU5i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934248AbXEPU5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:57:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40771 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756541AbXEPU5J (ORCPT
+	Wed, 16 May 2007 16:57:23 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:59839 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934235AbXEPU5W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:57:09 -0400
-Date: Wed, 16 May 2007 13:44:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Wed, 16 May 2007 16:57:22 -0400
+Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
+From: Badari Pulavarty <pbadari@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, bhalevy@panasas.com,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com,
-       David Chinner <dgc@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
-       Dave Airlie <airlied@linux.ie>, linux-ide@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Alex Dubov <oakad@yahoo.com>,
-       Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: [2/3] 2.6.22-rc1: known regressions v2
-In-Reply-To: <Pine.LNX.4.64.0705161333140.11079@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.0.98.0705161343470.3890@woody.linux-foundation.org>
-References: <464B6743.9000607@googlemail.com> <464B6A2B.9020703@googlemail.com>
- <Pine.LNX.4.64.0705161333140.11079@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+       fujita.tomonori@lab.ntt.co.jp, michaelc@cs.wisc.edu
+In-Reply-To: <20070515175025.GE23798@kernel.dk>
+References: <20070511135108.GF4629@kernel.dk>
+	 <1179249337.2836.110.camel@dyn9047017100.beaverton.ibm.com>
+	 <20070515172001.GB23798@kernel.dk>
+	 <1179251020.2836.118.camel@dyn9047017100.beaverton.ibm.com>
+	 <20070515175025.GE23798@kernel.dk>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 13:58:06 -0700
+Message-Id: <1179349086.16195.4.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 16 May 2007, Christoph Lameter wrote:
-
-> On Wed, 16 May 2007, Michal Piotrowski wrote:
-> 
-> > Memory management
+On Tue, 2007-05-15 at 19:50 +0200, Jens Axboe wrote:
+> On Tue, May 15 2007, Badari Pulavarty wrote:
+> > On Tue, 2007-05-15 at 19:20 +0200, Jens Axboe wrote:
+> > > On Tue, May 15 2007, Badari Pulavarty wrote:
+> > > > On Fri, 2007-05-11 at 15:51 +0200, Jens Axboe wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > Updated version of the patch - this time I'll just attach the patch
+> > > > > file...
+> > > > 
+> > > > Missing scatterlist.h inclusions..
+> > > > 
+> > > > drivers/scsi/sym53c8xx_2/sym_glue.c: In function ???sym_scatter???:
+> > > > drivers/scsi/sym53c8xx_2/sym_glue.c:385: warning: implicit declaration
+> > > > of function ???for_each_sg???
+> > > > drivers/scsi/sym53c8xx_2/sym_glue.c:385: error: expected ???;??? before ???{???
+> > > > token
+> > > > drivers/scsi/sym53c8xx_2/sym_glue.c:375: warning: unused variable ???tp???
+> > > > make[3]: *** [drivers/scsi/sym53c8xx_2/sym_glue.o] Error 1
+> > > > 
+> > > > 
+> > > > drivers/scsi/qla2xxx/qla_iocb.c: In function ???qla24xx_build_scsi_iocbs???:
+> > > > drivers/scsi/qla2xxx/qla_iocb.c:678: warning: implicit declaration of
+> > > > function ???for_each_sg???
+> > > > drivers/scsi/qla2xxx/qla_iocb.c:678: error: expected ???;??? before ???{???
+> > > > token
+> > > 
+> > > Thanks, will fix those. What arch? I tested it here.
 > > 
-> > Subject    : kernel BUG at include/linux/slub_def.h:88 kmalloc_index()
-> > References : http://bugzilla.kernel.org/show_bug.cgi?id=8476
-> > Submitter  : Cherwin R. Nooitmeer <cherwin@gmail.com>
-> > Status     : Unknown
+> > I am playing with them on ppc64.
 > 
+> Ah ok, you need the updated patch series for ppc64 support. Builds fine
+> here on ppc64. See the #sglist branch of the block repo:
 > 
-> This a kmalloc(0) that needs fixing.
+> git://git.kernel.dk/data/git/linux-2.6-block.git
+> 
+> I can mail you an updated patch, if you want.
+> 
 
-Well, "needs fixing" is a bit strong.
+paniced my amd64 box on boot :(
 
-It's a scary message for something we've always handled, and that we still 
-handle fine, we just complain about it.
+Unable to handle kernel NULL pointer dereference at 000000000000001e
+RIP:
+ [<ffffffff80381aa1>] blk_rq_map_sg+0x71/0x1b0
+PGD 0
+Oops: 0000 [1] SMP
+CPU 0
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.22-rc1 #2
+RIP: 0010:[<ffffffff80381aa1>]  [<ffffffff80381aa1>] blk_rq_map_sg
++0x71/0x1b0
+RSP: 0000:ffff810180239330  EFLAGS: 00010287
+RAX: 0000000179d0ffff RBX: ffff8101bf204320 RCX: 0000000000001000
+RDX: ffff810179c62000 RSI: ffff8101df507780 RDI: 0000000000179d00
 
-So we'll probably just turn the message off for 2.6.22, but in the 
-meantime, we leave it on and try to fix as many of these as we can be 
-bothered to.
 
-		Linus
