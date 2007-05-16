@@ -1,120 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761566AbXEPMrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXEPMr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761566AbXEPMrk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758511AbXEPMre
+	id S1762079AbXEPMr5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761339AbXEPMrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:47:34 -0400
-Received: from smtpauth02.prod.mesa1.secureserver.net ([64.202.165.182]:38921
-	"HELO smtpauth02.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757241AbXEPMrd (ORCPT
+	Wed, 16 May 2007 08:47:48 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:43775 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760304AbXEPMrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:47:33 -0400
-Message-ID: <464AFD61.10209@seclark.us>
-Date: Wed, 16 May 2007 08:47:29 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Wed, 16 May 2007 08:47:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type;
+  b=nO/cViuCDZBDVxxl7uSyKtOMyU/c8F5hREYG0+R/jefUP5u6soP1xqctcajYzJMZX3uucuT+03EBl75p1ql49dnsWARLlNDC2jlOm1aXhnUSaa+X3UnxQDjqI1CqlByrirEbD730/Z3RksK6+CBqXS1qt8PGvmFoA+rI4b3a4Zs=  ;
+X-YMail-OSG: qvmcrHkVM1mpjMqDXb_b819F5Zzt5jwYcJvvSsZ1oByJx4.mukrETVQXG6XN3fOCupvEsiDrbp6N1Q5JZoM0yE4m6GN.sIAaEYxHoZwpKKle.iEPgKb5CBqCuzznpw--
+Message-ID: <464AFD6D.4000103@yahoo.com.au>
+Date: Wed, 16 May 2007 22:47:41 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Dave Jones <davej@redhat.com>, Tejun Heo <htejun@gmail.com>,
-       Francesco Pretto <ceztko@gmail.com>, Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <46489D3B.8050805@gmail.com> <20070515210804.GG25902@redhat.com> <200705160129.16048.rob@landley.net>
-In-Reply-To: <200705160129.16048.rob@landley.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       trond.myklebust@fys.uio.no
+Subject: Re: (NFS) BUG: at page-writeback.c:829 [Was: 2.6.22-rc1-mm1]
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464AF4A6.5060000@gmail.com> <464AFB81.5050109@yahoo.com.au> <464AFCC6.5030208@gmail.com>
+In-Reply-To: <464AFCC6.5030208@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------060001010401020003080106"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
+This is a multi-part message in MIME format.
+--------------060001010401020003080106
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
->On Tuesday 15 May 2007 5:08 pm, Dave Jones wrote:
->  
->
->>On Mon, May 14, 2007 at 07:32:43PM +0200, Tejun Heo wrote:
->> > Francesco Pretto wrote:
->> > > 2007/5/4, Tejun Heo <htejun@gmail.com>:
->> > >> Yeap, the third iteration of the patch just got submitted.
->> > >>
->> > >>   http://thread.gmane.org/gmane.linux.ide/18485
->> > >>
->> > >> Unfortunately, there doesn't seem to be an easy way out.  We'll need
->> > >> userland shutdown(8) update.
->> > >>
->> > >> -- 
->> > >> tejun
->> > >>
->> > > 
->> > > Ok, i can't understand if the patch will be included in 2.6.22 (i
->> > > didn't see it in the Andrew Morton merge plan). However, if you can
->> > > confirm the inclusion, i can send bug reports for ubuntu and gentoo. I
->> > > can even send an email to Miquel van Smoorenburg, who should be the
->> > > mainstream sysvinit developer (and probably the last maintainer).
->> > 
->> > Okay, the patch made upstream and webpage posted.
->> > 
->> >  http://linux-ata.org/shutdown.html
+Jiri Slaby wrote:
+> Nick Piggin napsal(a):
+> 
+>>Jiri Slaby wrote:
 >>
->>There's a typo..
+>>>Andrew Morton napsal(a):
+>>>
+>>>
+>>>>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
+>>>>
+>>>
+>>>
+>>>I've got this in dmesg:
+>>>
+>>>BUG: at /local/xslaby/xxx/mm/page-writeback.c:829
+>>>__set_page_dirty_nobuffers()
+>>> [<c010531e>] dump_trace+0x1ce/0x200
+>>> [<c010536a>] show_trace_log_lvl+0x1a/0x30
+>>> [<c0106012>] show_trace+0x12/0x20
+>>> [<c0106086>] dump_stack+0x16/0x20
+>>> [<c015566d>] __set_page_dirty_nobuffers+0x11d/0x130
+>>> [<c0155690>] redirty_page_for_writepage+0x10/0x20
+>>> [<c01938fc>] __block_write_full_page+0x20c/0x330
+>>> [<c0193b0a>] block_write_full_page+0xea/0x100
+>>> [<c0196c82>] blkdev_writepage+0x12/0x20
+>>> [<c015539e>] __writepage+0xe/0x30
+>>> [<c01558c2>] write_cache_pages+0x222/0x340
+>>> [<c0155a03>] generic_writepages+0x23/0x30
+>>> [<c0155a3e>] do_writepages+0x2e/0x50
+>>> [<c018decb>] __writeback_single_inode+0x8b/0x470
+>>> [<c018e75b>] generic_sync_sb_inodes+0x24b/0x470
+>>> [<c018e9a7>] sync_sb_inodes+0x27/0x30
+>>> [<c018ec33>] writeback_inodes+0xb3/0xe0
+>>> [<c01560f2>] wb_kupdate+0x82/0xf0
+>>> [<c015660b>] pdflush+0xeb/0x1b0
+>>> [<c0132e72>] kthread+0x42/0x70
+>>> [<c0104d4b>] kernel_thread_helper+0x7/0x1c
 >>
->>"Check whether /sys/modules/libata/parameters/spindown_compat  exists. If it 
->>    
->>
->does, write 0 to it."
->  
->
->>should be /sys/module/libata/parameters/spindown_compat
->>
->>(no 's' after module)
->>    
->>
->
->Um, hang on.  So libata can't reliably turn the system off without data loss 
->and potential damage to hardware unless userspace goes through a special song 
->and dance?  And this is _not_ considered a defect in the kernel?
->
->Why?
->
->(Is there any other piece of hardware that needs userspace to quiesce it just 
->so the _off_switch_ can take effect?  Yes, I read both the gmane thread and 
->the linux-ata.org link.  I used to maintain the busybox halt/reboot/poweroff 
->commands, although I don't anymore.  That just called reboot(), and this 
->worked.)
->
->Why on _earth_ does complicating software suspend add extra requirements to 
->actual shutdown?  Since when does the shutdown command have to enumerate 
->attached block devices?  If anything this would belong in umount -a, but that 
->doesn't care about the hardware of the underlying block devices and 
->SHOULDN'T...
->
->I'm confused.  Could someone please explain?
->
->Rob
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->  
->
-I agree. This didn't happen when I was just using the ide driver, why 
-can't libata work as well
-as the old ide driver.
+>>Do you have any messages before this one? Seems like it is probably
+>>metadata,
+>>but we've only caught it at the last minute...
+> 
+> 
+> No other messages before that. Bazillion through-nfs stacks after this...
 
-My $.02
-Steve
+Does this patch fix NFS?
 
 -- 
+SUSE Labs, Novell Inc.
 
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
+--------------060001010401020003080106
+Content-Type: text/plain;
+ name="nfs-invariant-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="nfs-invariant-fix.patch"
 
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -826,7 +826,7 @@ int __set_page_dirty_nobuffers(struct pa
+ 		mapping2 = page_mapping(page);
+ 		if (mapping2) { /* Race with truncate? */
+ 			BUG_ON(mapping2 != mapping);
+-			WARN_ON(!PageUptodate(page));
++			WARN_ON(!PagePrivate(page) && !PageUptodate(page));
+ 			if (mapping_cap_account_dirty(mapping)) {
+ 				__inc_zone_page_state(page, NR_FILE_DIRTY);
+ 				task_io_account_write(PAGE_CACHE_SIZE);
 
-
-
+--------------060001010401020003080106--
