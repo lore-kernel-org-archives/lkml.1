@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbXEPPjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761844AbXEPPlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762290AbXEPPjv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 11:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbXEPPjm
+	id S1761844AbXEPPlo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 11:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757153AbXEPPlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 11:39:42 -0400
-Received: from ozlabs.org ([203.10.76.45]:53197 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756659AbXEPPjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 11:39:41 -0400
-Date: Wed, 16 May 2007 10:37:03 -0500
-From: Anton Blanchard <anton@samba.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, sfr@canb.auug.org.au, ak@suse.de
-Subject: Re: select(0, ..) is valid ?
-Message-ID: <20070516153703.GA26912@kryten>
-References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com> <20070515104453.f901e91f.akpm@linux-foundation.org> <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705151927360.28895@blonde.wat.veritas.com>
+	Wed, 16 May 2007 11:41:37 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:43530 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754758AbXEPPlg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 11:41:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=gBvaYKn+m6Kl7HXDsRKwjQuPbzKmG9IYCxGDpjGEXEu/yEHjtCQedIgcLwIN19pegA70EhOmEr07XHw0bb3szVHSvxyhOnS+0mKrCCWrouTuzrfU+QIj+1673slPS255a9afM9X6sqJwOKlKpff7D1tyExlddgzNRCqoVoI1wbM=
+Message-ID: <464B2605.9040200@gmail.com>
+Date: Wed, 16 May 2007 17:40:53 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705151927360.28895@blonde.wat.veritas.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Clemens Schwaighofer <cs@tequila.co.jp>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Maneesh Soni <maneesh@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Greg KH <greg@kroah.com>
+Subject: Re: Oops and Panics in 2.6.21.1, 2.6.20.6 and 2.6.19.2
+References: <464A4F56.6080108@tequila.co.jp>	<20070515185350.2e77bf21.akpm@linux-foundation.org>	<464AE56F.3040101@gmail.com> <20070516082935.fe112ab5.akpm@linux-foundation.org>
+In-Reply-To: <20070516082935.fe112ab5.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+>>> a number of people have hit that, on and off.
+>> Yeah, I've been seeing that one.  It should have been fixed with the big
+>> fat patchset.
+> 
+> Great - fingers crossed.
+> 
+>>> We were close to having a fix, I think, but then we decided that great
+>>> chunks of sysfs needed rewriting and I believe that we believe that this
+>>> great rewrite will fix this bug.
+>> How were we gonna fix it?  If it isn't too complex, I can cook up a
+>> patch for -stable series.
+> 
+> Do we actually understand the causes?
 
-Hi Hugh,
+Yeah, I think I do.  Basically, the problem is that on-demand attach and
+reclamation update sd->s_dentry but accesses to it aren't synchronized
+properly.  In the big fat patchset, first I tried to fix it by removing
+sd->s_dentry completely which didn't work because of shadow nodes, so
+the second try was to fix the synchronization which is in -mm now.
 
-> It's interesting that compat_core_sys_select() shows this kmalloc(0)
-> failure but core_sys_select() does not.  That's because core_sys_select()
-> avoids kmalloc by using a buffer on the stack for small allocations (and
-> 0 sure is small).  Shouldn't compat_core_sys_select() do just the same?
-> Or is SLUB going to be so efficient that doing so is a waste of time?
+>>  The safest approach I can think of is making
+>> dentries for attributes unreclaimable but those are made reclaimable for
+>> good reasons.  :-(
+> 
+> Yeah, that was the google workaround.  It's OK unless you happen to have
+> thousands of disks on an ia32 box.
 
-Nice catch, the original optimisation from Andi is:
+I see.  I thought there was different approach on fixing the problem.
+I'll try to backport the synchronization fix but am afraid it can be too
+risky for -stable.  If it seems too risky, I'll send a patch to disable
+reclamation.
 
-http://git.kernel.org/git-new/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=70674f95c0a2ea694d5c39f4e514f538a09be36f
-
-And I think it makes sense for the compat code to do it too.
-
-Anton
+-- 
+tejun
