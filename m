@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030634AbXEPVn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965880AbXEPVoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030634AbXEPVn5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760630AbXEPVnt
+	id S965880AbXEPVoY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965271AbXEPVoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:43:49 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:52073 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759818AbXEPVns (ORCPT
+	Wed, 16 May 2007 17:44:14 -0400
+Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:62173 "EHLO
+	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965158AbXEPVoN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:43:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Slab allocators: Define common size limitations
-Date: Wed, 16 May 2007 23:42:07 +0200
-User-Agent: KMail/1.9.6
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com> <Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0705160855470.24080@pademelon.sonytel.be>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Wed, 16 May 2007 17:44:13 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705162342.08601.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/0bb6oWZzgE6Mwbbp9WMBUQ6Ky701sf/VYl3q
- n/uAL5ilHW8m1Z42wCsw48WNiTg38sZE+sHZJUwxQbkRl5zmef
- wSZMqUIoz1yBhMZ4TQsUQ==
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
+Date: Thu, 17 May 2007 09:44:10 +1200
+Message-ID: <659F626D666070439A4A5965CD6EBF406B3327@gazelle.ad.endace.com>
+In-Reply-To: <Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
+Thread-Index: AceX5Uc3Dy9Im9CNRnOxD/rModHfwAAHd86w
+References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com> <20070516140452.GC5286@schatzie.adilger.int> <Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm>
+From: "Jeff Zheng" <Jeff.Zheng@endace.com>
+To: <david@lang.hm>, "Andreas Dilger" <adilger@clusterfs.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 May 2007, Geert Uytterhoeven wrote:
-> What are the changes a large allocation will actually succeed?
-> Is there an alignment rule for large allocations?
-> 
-> E.g. for one of the PS3 drivers I need a physically contiguous 256 KiB-aligned
-> block of 256 KiB. Currently I'm using __alloc_bootmem() for that, but maybe
-> kmalloc() becomes a suitable alternative now?
+ 
+You will definitely meet the same problem. As very large hardware disk
+becomes more and more popular, this will become a big issue for software
+raid. 
 
-kmalloc is limited to 128KiB on most architectures. Normally there is no
-need to use it anyway, just use __get_free_pages(). It will generally
-succeed at early boot time, but not after the system has been running
-for some time.
 
-	Arnd <><
+Jeff
+
+-----Original Message-----
+From: david@lang.hm [mailto:david@lang.hm] 
+Sent: Thursday, 17 May 2007 6:04 a.m.
+To: Andreas Dilger
+Cc: Jeff Zheng; linux-kernel@vger.kernel.org;
+linux-fsdevel@vger.kernel.org
+Subject: Re: Software raid0 will crash the file-system, when each disk
+is 5TB
+
+
+my experiance is taht if you don't have CONFIG_LBD enabled then the
+kernel will report the larger disk as 2G and everything will work, you
+just won't get all the space.
+
+plus he seems to be crashing around 500G of data
+
+and finally (if I am reading the post correctly) if he configures the
+drives as 4x2.2TB=11TB instead of 2x5.5TB=11TB he doesn't have the same
+problem.
+
+I'm getting ready to setup a similar machine that will have 3x10TB (3 15
+disk arrays with 750G drives), but won't be ready to try this for a few
+more days.
+
+David Lang
