@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933617AbXEPX3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762639AbXEPXaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933617AbXEPX3T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757382AbXEPX3E
+	id S1762639AbXEPXaJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758112AbXEPX36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:29:04 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35334 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757473AbXEPX3D (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:29:03 -0400
-Date: Thu, 17 May 2007 09:28:50 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Howells <dhowells@redhat.com>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
-Message-ID: <20070516232850.GO85884050@sgi.com>
-References: <20070318233008.GA32597093@melbourne.sgi.com> <18993.1179310769@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18993.1179310769@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 16 May 2007 19:29:58 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:37272 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758015AbXEPX35 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 19:29:57 -0400
+X-Greylist: delayed 339 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 19:29:57 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: bug seen with dynticks from CONFIG_HARDIRQS_SW_RESEND
+Date: Wed, 16 May 2007 18:20:55 -0500
+Message-ID: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: bug seen with dynticks from CONFIG_HARDIRQS_SW_RESEND
+Thread-Index: AceYENqeKwDo7DzLSiaYvkJKx0F4Nw==
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+To: <tglx@linutronix.de>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 16 May 2007 23:23:40.0170 (UTC) FILETIME=[3C9656A0:01C79811]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 11:19:29AM +0100, David Howells wrote:
-> 
-> However, page_mkwrite() isn't told which bit of the page is going to be
-> written to.  This means it has to ask prepare_write() to make sure the whole
-> page is filled in.  In other words, offset and to must be equal (in AFS I set
-> them both to 0).
+Hi,
 
-The assumption is the page is already up to date and we are writing
-the whole page unless EOF lands inside the page. AFAICT, we can't
-get called with a page that is not uptodate and so page filling is
-not something we should be doing (or want to be doing) here. All we
-want to do is to be able to change the mapping from a read to a
-write mapping (e.g. a read mapping of a hole needs to be changed on
-write) and do the relevant space reservation/allocation and buffer
-mapping needed for this change.
+In testing we were noticing that we were getting some intermittent
+crashes in profile_tick() when dyntick was enabled.
 
-> However, if someone adds a syscall to punch holes in files, this may change...
+The crashes were because the frame pointer per_cpu____irq_regs value was
+0.  That code does a user_mode(get_irq_regs()).  Currently regs is set
+only upon real hardware entry on an irq.
 
-We already have them - ioctl(XFS_IOC_UNRESVSP) and
-madvise(MADV_REMOVE) - and another - fallocate(FA_DEALLOCATE) - is
-on it's way. Racing with truncates should already be handled by the
-truncate code (i.e. partial page truncation does the zero filling).
+The crash path shows resend_irqs() could be called with in a context
+where set_irq_regs() was not executed.  In one specific case this was
+from
+softirq->tasklet_action(resend_tasklet)->resend_irqs->handle_level_irq->
+handle_IRQ_event->...->profile_tick.
 
-/me makes note to implement ->truncate_range() in XFS for MADV_REMOVE.
+It seems anyone calling kernel/irq/manage.c:enable_irq() at the wrong
+time can trigger this crash.
 
-Cheers,
+Creating a fake stack and doing a set_irq_regs() fixes the crash.  Would
+it be useful to set a pointer to the entry context on all state changes?
+For ease I just hacked a default fake stack into the init process after
+fork time so there is never a 0 but that doesn't seem so nice.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Regards,
+Richard W.
+
