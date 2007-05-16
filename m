@@ -1,232 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762347AbXEPU30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763309AbXEPUaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762347AbXEPU30 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbXEPU3T
+	id S1763309AbXEPUaa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758770AbXEPUaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:29:19 -0400
-Received: from smtp121.iad.emailsrvr.com ([207.97.245.121]:50554 "EHLO
-	smtp121.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756734AbXEPU3T (ORCPT
+	Wed, 16 May 2007 16:30:23 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:47724 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758281AbXEPUaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:29:19 -0400
-Message-ID: <464B699D.3000903@keyspan.com>
-Date: Wed, 16 May 2007 13:29:17 -0700
-From: Lucy McCoy <lucy@keyspan.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 16 May 2007 16:30:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:user-agent:from;
+	b=PyBpBr49DAz5cNIU7+jLA3gK5JgMw03gsDGZ4uiptuBu/fwyK+LkFHj+Gu9P+6NW5
+	76odBB6X38QDXUvnWzfog==
+Date: Wed, 16 May 2007 13:29:56 -0700
+To: ak@suse.de, vojtech@suse.cz
+Cc: akpm@google.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86_64: mcelog tolerant level cleanup
+Message-ID: <20070516202956.GA27184@google.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, linux-usb-users@lists.sourceforge.net,
-       linux-usb-devel@lists.sourceforge.net
-Subject: [PATCH 2.6.21] Usb Serial Keyspan: add support for USA-49WG & USA-28XG
-References: <464A34F2.5060002@keyspan.com> <20070516064753.GB18729@kroah.com>
-In-Reply-To: <20070516064753.GB18729@kroah.com>
-Content-Type: multipart/mixed;
- boundary="------------070901080105040805090704"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: thockin@google.com (Tim Hockin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070901080105040805090704
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Tim Hockin <thockin@google.com>
 
-Add support for Keyspan adapters: USA-49WG and USA-28XG
+Background:
+ The MCE handler has several paths that it can take, depending on various
+ conditions of the MCE status and the value of the 'tolerant' knob.  The
+ exact semantics are not well defined and the code is a bit twisty.
 
-Signed-off-by: Lucy P. McCoy <lucy@keyspan.com>
+Description:
+ This patch makes the MCE handler's behavior more clear by documenting the
+ behavior for various 'tolerant' levels.  It also fixes or enhances
+ several small things in the handler.  Specifically:
+     * If RIPV is set it is not safe to restart, so set the 'no way out'
+       flag rather than the 'kill it' flag.
+     * Don't panic() on correctable MCEs.
+     * If the _OVER bit is set *and* the _UC bit is set (meaning possibly
+       dropped uncorrected errors), set the 'no way out' flag.
+     * Use EIPV for testing whether an app can be killed (SIGBUS) rather
+       than RIPV.  According to docs, EIPV indicates that the error is
+       related to the IP, while RIPV simply means the IP is valid to
+       restart from.
+     * Don't clear the MCi_STATUS registers until after the panic() path.
+       This leaves the status bits set after the panic() so clever BIOSes
+       can find them (and dumb BIOSes can do nothing).
+
+ This patch also calls nonseekable_open() in mce_open (as suggested by akpm).
+
+Result:
+ Tolerant levels behave almost identically to how they always have, but
+ not it's well defined.  There's a slightly higher chance of panic()ing
+ when multiple errors happen (a good thing, IMHO).  If you take an MBE and
+ panic(), the error status bits are not cleared.
+
+Alternatives:
+ None.
+
+Testing:
+ I used software to inject correctable and uncorrectable errors.  With
+ tolerant = 3, the system usually survives.  With tolerant = 2, the system
+ usually panic()s (PCC) but not always.  With tolerant = 1, the system
+ always panic()s.  When the system panic()s, the BIOS is able to detect
+ that the cause of death was an MC4.  I was not able to reproduce the
+ case of a non-PCC error in userspace, with EIPV, with (tolerant < 3).
+ That will be rare at best.
+
+Patch:
+ This patch is against 2.6.21-mm.
+
+Signed-off-by: Tim Hockin <thockin@google.com>
+
 ---
-Sorry about the attachment but I can't get it to format correctly on my
-email client.
 
---------------070901080105040805090704
-Content-Type: application/gzip;
- name="keyspan_patch.2.6.21.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="keyspan_patch.2.6.21.gz"
+This is the first version of this patch.
 
-H4sICESmO0YAA2tleXNwYW5fcGF0Y2guMi42LjIxAOw8a1PbyLKfxa+YzVYSG8kgye9wyC4B
-klDLAgUkm71bKZWwZKyKLflIcoDN8t9vd8+M3jI2yd69955QCdiamZ6efk/3aBxvPGatxTw8
-Ya0PbOr5i9uWudXbMo3WZ9v3plN7+yAYLWauH9uxF/jbTuDHDg6q7OuE3mc3jLYX0dV25Iae
-Pd3+5N5Fc9vfGuVHTOezpb03Wq3W+nMopq73W3qnZXaZqb/QBy/a5pYuf1hL7+v6hqqq6+Ei
-oHYBMDPaL9rdF2a7BPXnn1nLHGg9psLvIfv55w22wRjbn9j+tcveelEchHfwTIWHDAHO7Dvd
-VI7PfmWNX/hMTWY7DosW83kQxmwchCyeuOzdxZ45+PCG2b6DnzvD395sbagK/GyoOANBa0fu
-XO88AM13b1jk+ddTl9GzeRg4i1GMUI3h24utDYZQj2bw/LPLIjdezNnMjSIbFgDLcIBo1wTI
-nk6Z4372Rm4Eg2jphtHVDJOphjHQjDYsn0UoMSPm+TH0vVpc72yw7U1AeJO9B0KDLLEjH4DN
-SK7w+fZG60fHHXu+yw7Oj94fnlvw/+Lo9IQ9+WxsGVudJxvq0g7dJxus0GHv3eXb03P25O3i
-esJeTd0ZLCFi/5rA159nXjTa8hflQQeHF/vsiSAjUOcViwN2QULB9gMf5CR2Q3ZAEvME2SzH
-H51cXO5dWq/evT4+PFHaZtry5vh0//Qkaep10qUcnRzsXQJXZVvXMBGmsr3JzmAaTmfi/hy+
-CsZ5n+3YZY4d20g3oHWIjBQSa3EBtmS3L5xD5hDkUjXabc3ocgYtH8QU0WMRXimbno8MteAz
-MFIZTexQUcSzq8X4j9zSP+6goOMKQARdB8kn5bAzvLnW2M3EDQX64zCYkUB1aG0RGwUgcyA2
-DCTEYIdnuEAOC0gw8a4nrWjuuolkwyfqkMfVkaiqCapOgmmO3oCryqn94cMHUDgvgold1I0r
-+2p6x27A6IDmwDQ2mwajT0Tv3GzX8BisYp408iHOmGf+xxSpURxOqcfg4w5o3vY2adfhmc5w
-bBhMpfptsHskaZFluP4il/tDroeDYaKHy8agpKFigjKOpgvHZVLsE8V3bQf0dYuxPSDEaBGG
-4AuSXnuOPQdliDZaYIdm9ieXLSKXBWOiIfwZB4swAcW1PQLue6MJs0ECQnfsAkCHhoOU2BEa
-o5bZ0/jfgbR6rc6QPxrq7OoumR5bbzxgms85x634FklEDULQYRWE1BqEtAI2/G+vvyJW7EdP
-0PmJZMgiss3eLLremjypax4sbe4MlzYPddGsVjb3+nK0gsIAkvB64Y/QJkdIOgcXho4DHGOL
-mwgQTsel1aDADbo6Or1Bz9AGZsbufw48RyHsLK57I1DyK3v0qSEEEr3NPQg2mooNtTTq5rpm
-HKgZ24RfzQ31C2gS+BdQHU9jU9fX2K3GgH87GXsQXQnLpiib/ENlK+kFdME/aBGSLnF8Z/GP
-yiZ8xsELP/KufSANajGsYpMM2S5i1noZh7YfgRChXsMfggVjnKtr1njyNHqiMct6/e5k/xL8
-lmU1xVycsLusUUKMbTY5YDQJ7q1AzhuzBj1Fui2iJkNS4CQ4B2sxP/D/dMOA8eYX7OltYWKN
-ZYfjqpQQHH7o48d7mgPMkedfBQuQZlqgR1YZQxLUG3b2o6A5h6El3kjFyETxYDXQDL/1Asr2
-KF4AwaHxOp4IzEEDISppeOxfrKYPhTwgnfsTF4ww+RJ/MbsCl0geRKj05rZCHXEyxOcP7yN7
-ucs4KVsvYQQxWhJMSfgCNHvnu7dzd4QeJQv+qVMinYDMyZYlHEo0/qbx6bT49Q8+SFU/fuQ9
-QZigCzaB0HDBUhROsaQrfyiXrt8OwPp5MXICpBxcxXhqXwuS05KTNT+jzk22C+RP1gog/ECM
-DNBM3YFygxcQABSYUawI3VDjFjAxdtgt8ATR2mGqettkvAPNxnEP5q5vjUBM4qZow6WB8sLq
-Y2s89eYW6kkDHmrpyjTAS0ymuNPIlUMTHDghsSmDfgSxAeEcQUDq8KWA5LlgXsVaJmCxuUAm
-y0oWo+NiVAgqaEH0ZZeZCXnQlNDYhAOAJVGYy3CyburzjJ1/ODw/Pz23TiFmPH93kqyehvy1
-yy4vf5dtS0a/Pt/79ejkTeVobDtcMvZs7/zo8vfKobxJjhXRTTQJFlOHx/JAx9C1P7GGfmuA
-iEhifSVjDUGyhLeeumuKz/cZvi6ZBecg4NyAWvNFNME5OMh7bp749gfXde5Gi6uZx/1CFLAb
-l4In2N+hNx+53mfctdDyyLJAPJ3RTPiWWqcGyBOacbS9BBNDOrRZGnvz+szauzz99Wi/2WQ/
-pEqVWtxQ4gFUdQiZsQ02zdlijadOs2RCYKqmMLXc2pLr9YOYnC5Y58iGKIM5gRv5z2NgGYQt
-EP+3yLLI6ND1nXkAUhuJTUDR8QaLmILQehcqosbhsItO3NAHpjYYVHjxoV4DDLx46sQ3VFjD
-Bdc+YZAjbp7Ra5iDW86IAuxe3xIbiZVcPRgF7uGLbvhBR6wUQmE+N1KU4/wrR1nZhIioJoRY
-JYZIgojifNnQW2HQjb7s8JWxYOpYzsixkBLuzv/VoKHay6PKRN6fbjBurMaDZgm5K9AqAazC
-I1cEDZXocZtxEtyAZpE3wSj9GnVuvJhS0E6imoYyIAoZCj+ANZAdR3JqPxir0D4BEAw9F5U7
-v6dXBC1hfh4/LAtjHhXEJJCrKVUVwiRDKDDh4isM5rUbZ7XAwmU0EuicHO/mjh3zVFI0sT8h
-4ecQUZLAQ2iZJIM45XP6gJESTQcmO6Mjinw4iqOkY4MTbRJ98mxrhET6CXz+CxFwlMCkI67n
-MACe5wYIPiRxGnv2jP2wb+3Dnn7vOH2MzgtzcdCaR/yHCswF2xBurnNTBoYWZg0X8wx44hHQ
-kFFExL319qZyAztcazEHAwq78HAxj72rqdt4Jmck53pje8AFPuY+Yca38Jv/uNcsexKZd3nA
-lVRYzIcMO1vFrLOCUfe+vSHn8azH41ncMJWsAkbqniB1lRp7fF+xuv5KYZViBVyD0MNCnGT0
-nDFB2IayQwnk0or5BiJvSAkadW9wHDQyXhqrmBAmMER0SQFsNipEmcjmneUsN6EXu1YYgO0t
-kzjDXIqH2FK3nfCXkm1tw6C4qTPQNcPIxE1ZqUsTrLBAVA5EArMf3OSyk3fHxzs8jhIqJeO6
-7PYNVFaGfYdnbOxNQUtwP34zgb0ZJWq4URBARfKTKKK4c8txoxGweuwBGd2UzHKmJiKAU/8g
-+jaJEjjrFHcJ6BRJpROf+TxiN2EAbEYvhs2ocW4YgWPFgHWE2TSRIjLaA8oRGd1uRzM6ZTJJ
-ZY34pFsQamYzP2wXldu8tQrPNers+fCx2Hdg5R9rEm7OOPDOFbGthqTTEsKDd+CSmsGUU3ur
-ELlyiOWIVqPOReOU9C42aAJ2BRV6hbQY77oyxdQ6ivVKFFNrKQadyxTjG4EdWQ/qGILnQzOv
-GmisWUknolQxkVVMCmgkLEBaatDyZRbiLBshDkkviVST1yFSGKIsAIpQQgCXm6gF+GQ3BkcU
-yUFSTzDd+8o6ODq3jk6IQhWIOimeuUoD71+d3GzyKoQEkikpVOLKqnGVw8rYnr671CrpmqlT
-aIUqlcYZ2Rt0tQEWFPqwNywU9nI57JwZB2YKk0a1lQvcv6IVj3lY+hlcG/oxbti3NlrKAZmN
-4LMbkrUWLdRpNA0iik4cD8NDSj236hwSxhltEY0tgYmR0XYVYBHUEK5k+lWjyV5WeaImErQK
-g12WjsZ8k7StWAywMjsoNO+tw6OTs/PTN+eHFxepzWUZd2pPMTa6Y7gEsLtlhyqt7KDdQ0aZ
-utleyqjB1zFqOV3/w3iV8OkhLnEWDTu6ZhrAI8Psa6ZZz6TOsIJJ8INbjGURjJZ2Q4jp2ii0
-aVVkQGAmbN/nsYVMgWAGhDJsaw3Ix85Y3Qzdfy/cKGaUnMFtAgU7SjnIKlSfMdEiAq2l8Rh2
-nCcdgaNRXCx48gK6NJKAhvy4g4LpE25pvVYUcTP1XURdSgNJhxwCmxFNlOctvjXgSTC2JNxn
-iZEvx90UcvPPFI6tHJ/DhHJNGOrL3WZu3Th1S8n7lSWeA4HKRWdg5qkkjNVvQfiJQTwgyqgk
-jEn505UHGLyIXbnJtiAxWsPeQDN01IhuDwvXa2qEiHZbRhJAfzdj3Iypf7vTgVEzx53ad42u
-sG+mPmhrJnLT7Le1jr4mN7EQ7cRhNtcThzLXA7MlOlFcu46qPHNno/lddsGFDLDGnsEMmkxE
-wudmM0nVAanywmrLoyoubWiLJzKwgAZ6md2T6cRLwc2MboljVhaEvbu7eSJAHJi2AifQbvN6
-HxnLBsXKm82G1D95YIRvgJ2w9fLqnFvYy7s5ZrIw3rv8/ezQen94cnB6zv7KRoClQUi621f6
-DhIAkSktcnM7GXPz3p4uXCK2kjw78h33NimP0aNjnqPdZaP5wooDa+oavUaZ5Am7KgPROkYp
-aApx72sJTCnXJDmuZdNTGneQvoM0m3tzt5Fr1JsUjpOnZI18KWGz6YQ1EXIGpcx4LtClTRxL
-jLkqUm9pOfOR0soUkHQshLpi103pYjS+GekF0SxWiLj9qp1Mpul3s9PJlONj5oKR607GcghW
-phsfar8XNq86JZmKSWVekmXzkoWhZKaaIje5LDVJTuhHwEHHtAvn9jLAAImd/sKeOqKqjakf
-VgEeaEOiJrfdtIyHKJyMwklRBSSHMlKHj5sin7Y+fDFqBficMJgZHIsMgWl2KHlmdrqGZnT7
-9c5iqFc4C+H5G5ik5/XH6sGF9GJd3pevZYX4Wq2Lr7N55XKdaHm4/HAUvDzrrGSLietGwWp9
-tKsui3ZXSGyvFOmuVUlaJdLFqR8KXoXbf2zsCoikpEiO8YhiW0t8ldZp5vlBmEz5Kx5KjBah
-i6EF1fVtStfihH5qbFMXLCKKdEV8F1WqpQTBPMIDPlRFCcRR4afOVslUZZHNFv8ojE5Ofz0c
-RH+7gBdD1tqQV1055F054FUfFfCquYA3IVujZTRTuoFjB6wa3Hnr0n8vqSDnLYOMdDAWFrJV
-UjpA/dSf3qE0sit74bCQCqhj5sXPIwxh/GsqB8gaclINnDoW9c/UJPG7LBUVu+V70YoRLZh2
-H09Co0JgADke78gCUSbqhShotJgCYgTLQhQp/4nhVhZsLoGJD0bTTzz22cJvbz1NDksfHgei
-xxxEACZy86aJjr39cvj7xdneiXV08n7v+OjAerX37sA637s8ZJmSlWD+kQ+iDZF2SsynWJmn
-GJkfxsG1Dnu6XlKmJAjMEZT70xTd9ARZui48XWd2Kfam0DoincFJOB7iRFZumThGTypekhtn
-mWbJjvtEiqYj2koklXI6JfaM7V9cnp69av7E6O/R5YXV6w8s80X6vYsPSK0iMIlgHStgHP3X
-ISfnyAYt37/ovpB44bR/4YZkzzrYu9zjEAn1pGwnxvSWjulVjukvHdOvHDNYOmaQH3Nf0B25
-5LO988OTV6kN8YOYXtERB+6sk9OTQyrbSYORTlcF6/TgoPkT8TkDAx6+yMI8hM2cxEmw/HiU
-YbZ4PIqj19PgRtiTLM/H8FjumBA5/j3mR3hw6G3g54fqO+lchRYhYNgIAntjh1jsTXZ9Ri8D
-cx93U/Csnz4bj+XDYWrMwE/QYRAKs6R7yFh3QNkQJEcoVnx76tPh1OyT8TjRMnwU376eLqJJ
-4dkrOvOYfRYWYYUlUGECKtvrNV98vic5BHECLt8AizmASOYyuMb3r4qKioeFwFHmqUD7hzIp
-zApS6GVSGI8lhV4ihfE3kyIfdYjjA3SkZeY6HtpjEN6xdx1l6FIiQeOH1Abj0qzAbz5eQBr1
-sGrJVCUx+reUmAyhkFIHQe4sFYSx8wWdBVVS5b28vQw9BO/iDug8jgoqHKftITUmoZY8UZUa
-GADwNvoU2AjpIA4LkCbUVJu/UymvVZu/E6HTozJ44kTT4/IU6+dEHkhCbCw7FvVADkL9FjmI
-5JRXdoucOxtTKMHX746zO9+qghKrP0iVbIrkuSq+5+/RQWOzZ/boJdmVMcLqDrpxcRRjqL/A
-vEp9kiB3jCiDNSWS85FBcrqD4oMVTyblQKaBQ3IamlbbNtr4yqXZ6/c1oy7BAY9C3FXmqE/F
-lapDEkl5CIt5+bMRdSLZWiKPZRBcMn85PD85PM5IZisrmeLMHh+UObVXdcxUyiS9vlCaDeFn
-NrMrrkjsNr5ySfk9wGPWlLyNkF+c88DanK9fmvOYlTnrLIwkWaGiS9aOcLlucy3u632tX6vF
-k0XsBDd+VrBFcS4O5nTgE7zWtthwI2KRfLc2mNdwsrlT1Z5J7DR5OqsEwMmMX/38JKs/P8nW
-OD/JadbhlwP0TWNdmnGq4aH1cei66NVmnFJUDYFH9dRS6/pkCVLZJU/Ub0Q153/suonJWlc8
-TB513cTkb7luYpJeN2Ewo/MC/nWrr5sYDlGi4LdRrLTWZs8VcfQUkxYrnCNRik5/p5Bor820
-Kw+m2h9CQK1BQKU3pS7kWJfnGsdeOLvBM6ctGDEC44INGLjhS98UEEbuSNw0wd/snsK2Vr6y
-/Txiz/efp0Dku78Bu3L5HAt/FoAgevycrezg/onIT9xbK3RHAYT2X0SYM8Q7FlQT71roZ17C
-r+gvr4hQ8ke00rKwokDgb+jjmp63pa6GXtfVLvftJhdRFPpeVcGt6Xtd6tvuVuLQGd6UV2bX
-dZ2OSp1Ne6NViUWhli6wMCouTchXC8hegTzJu1CODjDNvXC5gcU3zlKgPOpyweIpX0TQiBcD
-yI+D5CNeD5AEqvf0kb/cggZ53fFaGqDmQcnzNye86gByPp/cRd4INI3fpJEsIbXRXDx7HeG+
-ZQz+EIFwmkO5bUp0zvNhv5l525ZPJvxP5iSR2K7WASDtxGttYJM2vRMJIALk5OCotYiAr7qi
-ewn4Bm+cXGCQIFVxvknc2NMnUgx7Oaf8YAkNwIpj1Mk7mMou+6LfDrr3aDuTg9OFZl00F4ik
-4FYaUIGVb+WXrUBTy6AxxTXQIIjAsK0i267kzpoYoHnYidppiMi14wQyV44XAQ0+UKp8//gX
-fv63rbeRQriV+UYUai+nUHsJhTprU0i0rECf1cgzLFDHIB/cbuv/r6kDDulR1OH7hHan/506
-FdTp0vmHNljj77aHE+i3AoV6ZJ3bA+M7hWooNODWeTj4JhRqGcvpYy6hj/k32uZJtCJ53l4U
-6MP3SB2j+80kSMPF9h6QI+yk9/4haVrRHkE3SStFIWohmZBabfM/iFqr6p5ZjIw6bQPfbFM7
-EK6bg+/0WkYv/mKguiqBpnj3GN9ZFh7vUnpzK7vTK8h+bjdKdEg3Tdg52U1RW7I1wqaiCaN7
-aJA49Fy8S1luyNNZsrJDrBzcF8fm7GnCSbXGHmuMbLJaIw3ZDpWSYCyRBLVOEnjbupKgriQJ
-6j1dBMp+c8WbwuJuxcid23T0xoVN3F1y+6lIRuBFfF7M7PnctcMIv9l4nwzeYXVj056Rbays
-fly6MBdRIVyk2R3uNQbfJjLjTJL/l+h2Vcf/tfrdKcYinV6X7GEX5MccfqfbKjHco+wi5brW
-tIuF/Fi9XQTRL9nF4tbp8XaxyCn+ggG/k/g5T+M8F7cN+sndr3XW0yDryW1oZyVLmhGR5RY1
-33Ety4pGf4lt1TVxIdsicqPs60N8qd/M6ObEDI2uupaB3Mw/j/74SCLGlGeIw+C20F+TLcNS
-A5kGoNYQLEO7m78LYBXL8IxHtNXzmbWYULq72KTKpqL+aDwLTK4GL2HDw59eiI6J/E6ISVsX
-mZHxPZRcfFbpSbS0BThVjUWFFuMwrBhrmYsUuoaOb3V3e73qG0aiKwkkU0f0nMgCWF/421+H
-74/2DxtSNvibYdbRgVbYM2TfRCMbutbw268dbxcBqGsCuPpaANcFAMp6a8gXN5rrkqBY8Giu
-u4Li64QCgXuMti7dcAZWkSrtPMBC6U2FrNunW6N7Ri+5HPxhKTPBQXyXsq+VspWYtBI/OnTy
-AHQ/MdaPl961afuPim8fixNqj9LNlcIrXzyisnsyKxaUtnx75qLvTC7F9gMLC8H/3du1NbWN
-LOFn7a+Y4lSd2BVhLAOOgeJUCduAao3NWmZDnljZFuCNkV2SHOBh//vpr3tGF9vksptzUgkx
-1nRPT09PX0Yz3Tuc0oYdOSREimdLvFPilibR966q4LIQjhqaV8fVHdy6q/EEcWcA+Hdm2vgr
-8U+nd2kwnodFP20ZYz7ZDLADlmV1o08WDhNd3XWQn6XtDrtZo/Fq/hnPNxswa1otZg1HNP+Y
-Nc53MMWRE8yBZIb/J+xwjDz/TIZAxYEhH5o/gyGN72BI46cxpPE/YcjBAYdtH+r75YMkf5Ml
-B9/BkoOfxpKDH2TJ7gZLDstf0mLW377/Fvfeb4Jtn4BiIIUYdhkSusIg8IUEmbgsV3rE39j/
-v4NThZIAP3JqqQD2d45SFcAt56h5tOs0dvcd5TSP63X6Wzr91PrxM1VF9Nnhqn3lfDiu09/W
-1sNVdbuu3jt24xD56pDYmM/SZYPEefX2Yvkazx4eU1WZVJVzdNTaBXblRdHCf01QUmMR09xT
-2DDV9TOGaJ4g+WYYf0GZCWuEChH3yH6PpBNfKAyAiKtVNKWVFqgzv7ObpK9zXIHQvXHfZiWh
-Oo2bvEYTdW4OL6ULFa+4fIobTR4XsTq/dRhmGE5ntKhn4xVnWUXiPhTHQArWxSrWRWbGZGdl
-/+0psSUjLqHQZg6H9PkY1ISlzOaaGUsY55QzzsaLLzMu+PIYpLpSAI5ZwWxnN0ATAPFp//SY
-yXJqqkxZgrMsmiTUmlBPqwQxGMVIuqLGnDyfiJ4iJSaX6rCMHS6TpxsTNGHMKbCzpIUZfYKF
-qJjMg9kTqnWo0Rr9ZrIpPsSNAiZKNiTV7ElfVJm/qkBTBPTj8GEW8d0m6h9FbvSoMN8Jj17p
-Pz9FmAro/qZYNTbngnhekAkzF+Ko8WFUFYxRL6qACAQIl96cgs0ZUDnzdZ0JPSdFvQawPVwt
-psexeiJmYJ0nueTlKZwLg6jx2PZrPKUwWKClzFjmKyF85fDfnPqjpRRG00WMEjIxOnlapJos
-7akmihhKemdq8pzTaJPFfcor0QhlsgwnkEokecZiirFcIo0HqydJMipHl56v/MH56CNZEEWf
-r4eD371Ot6POPimv3x/4n3zVHgyva+qPP1yfWrx7p9x+h/59Ut3ba1xxVoMhYfKurnsewRGi
-odsfeV0fKQnbvZuO17+w1dnNSPUHI9XzrrwRNRsNbDW6pC43wAjX4FxddYftS/rCPfN63ugT
-93nujfro73wwVC7uM4689k3PHarrm+H1wO8qjKHj+e2e6111OzXqn5D1BwpXGkfKv3R7Pe5U
-1+miv0hAOPSIuMHQV2ddIs8963WlBxphxxt22yPYXq+vP2NQxCCirGcr/7rb9vChe9ulgbjD
-T7bG6nd/u6FG9FB13Cv3gsdV+QZDiPntm2H3CtQSD/ybM3/kjW5GXXUxGHQ0o/3uEPGNf6J6
-AzD/nLRy11a4WsqdExJiFD2mz2c3vscs8/ojlIa4xtH7qrocfCSWAFnbJeAOc3fQ5yETfwbD
-T0ALXjDzbfXxskvfDwmNcMwFI3ziXHtESAoNqU9i5UjlI1X97kXPu+j22108HQDPR8/vVmm2
-PB8NPOn4o/sJU3/DQ8csEWXysSCiNs+l8s6V2/ndA+m6Mc2/72lZGZyDTTftS836GnQUi/s5
-KURasTEFs1gDx4oVV7lAkyn1lRTr4TH0Gd/Uyuo44aXR8HZvdCtbyFkJAqxFLGs5NopcKwQb
-aAd3FZOWIj3BrcRhHVMbVCgT+wQTCyZUHhekxXb/AwpeXkiz4b4YWb5q3hG2c2GkApx5HELg
-/NGd2/4Vly9glHCGHrf2Sa/g6hybap2KCcW0qKG2m7ibtHhazkNWeqStTGcnvIcs+u95loRV
-W2tQqdSEcQvV1vA3fwSMJIbZv1pNlAxryYC6T4O58EpfdqOeVkuQ1dyvZYMncajwmDF4MMHW
-GcLDwtDZ1CmNWM6EEjjXZOEsxUivgZGVitjMMIzjX0xOFU4sVQmqVtZoMifzys81B8Mkdy4k
-ZU5uQGYyh1ydkMbEYNxGc8SykDeW1+XWH4Y7UjLGsKfAEmnGKG1uuYg16sq4QDTNcEby1ykO
-5mTAoiztPxk3BtRHat+i/eufvjGK/UZhFNrkEGU6AcIszYo8MUYhODBLwdL1bHC6uoHf5YY6
-fj3Ar7qYDX5v4fezYdf91UKFGQbvL7IBVZwqW2ONUCYbtdO0QxVp4VAkDrC9xGC9zH/h7Fki
-dbJwmbP6fyFoTxOyxwTwsADG54vzHnKcmRgjqUmlUVXn+vUzL3ni2jRMeQtKHJ7wJZggJwoO
-IQdpLtzcxxdEn7RmJ1wrb6oqBE6uSZTO7l8ZWuBMhhktqKSLwuCphE1k4jkg94mooIU+k5fl
-CQjiijkAdBotzlpGFIWohcTXCVm2tAc+i2kIWQvWJUKpUbLZ8jRzgS7Jw+PiiieMBATkOCoJ
-J2V51sWEvsDPDSOjE0iKwvQZXwCSyINGIGfPaRylj4DLqWVu71ctNyK1XdLZZZ0hY8jqO/FC
-yzQDO7/6tcyO1DRa3N/v5CpXhNxYGPUopVh17HF0dHQfjp26hWKpMuhLFI6Quq1JflNkxZ9n
-D9EilitYG9Dpizv5PHqMw+RxMde3UoIkfT9fIANO+hgvVg+POPAeRoR8EsKp1Uiegni/bhEX
-eZUWa7YSX6Rgl9DGkQqDBMvYOdBUl2+Ks3SUy0e+R9hb/zOI6gc07fGDuKZ4l+yYeFZarKK6
-w0gpsCLPlyZzS6Sgwy5AOH+u5vVDS3LOrJtt8EsXkzWihQu3AtlAX4fWSmqC5Ljxq53BkREE
-mxKBaRKz600JQeWICIW2JJezJSZTsi/+a3ZPdN9bd3gJ2vxw5V/c3eU3RsrfcsWiPTYYnNM+
-kST2U7VTTsqzw3YlQeHLhYj1O83hd9ltcuBKX5chdbT+QvOtXD+SMmzV4utyJ1z/sw5d58BJ
-mIcILnRqMYu3HxBSwr6xAPJNQOqPg+Ud8AmpAHaESq1c1sRA63CnZkk6hVUsMdVEy7osOA7w
-xmGe/wZ+BUmYlj2mgjCTbkuWC0nVsEOPd6RUWgVLXdcZY3VbxMTgXLAgIl1BNMWvtvhAHEtC
-daLcqGGyvOGowj+QOiQtq5B7yAa/WD9r/Ekhf884NFZY5wuyrKw5ampJ0+mMdAKyveqX7rge
-pkEuZxpEJ+vhsrA0nOKFs0Tnxao8zKCB4ITF3L3oRywhMu5zJvgufckIF3su833K25URLpaz
-T3dqoGSuJNVLkfpssMgqkw9znrXClo5YQTvL5SPBCD4RCNGZIS/kdtnCT+SJyYQo76ucaIbh
-nFN02yb8RRibxseHvABVzjFTgLod9PduB+fnXwVF1hibx6eDaal+YerR5vYtdxJMspkfAtN8
-2UibUZy0MpMo2kjj2a5U+8mZVE6soYdLfaH+bCVCb/MqBkmwAlohcqsZAcVEG2/3fen/OnB1
-4o9C31kqDhm6c4q9sPopdZDhz3JGbZl2nW4qMPKlKqTUgtU8PVbOvuRjM9Ana7wlK9zfa53I
-HbpEtXYpyIG+YveyMAyjZIAddSjT2VOozFIoJjVL0ORkHVLv0QCa1YlZNMjbLInJZlK9VieV
-Afz+utoT94p1Hrohk2PWNw59JJilTCXJFMDJzCjPxsy6cJISMLxWLkXJ/NRat1or6K/1jEm2
-UlL1mRPD8Fh4CynK7vRBRAs7eKBj0025myZxcXEV+OWcirCdQNeI91LmVqkt1mPHH769FMtO
-ji06DNMRSBBqZx3aqrHbODwkLT7nt0aIReEPhey1kVO0RJLcq8U0PDFYlPkWWMxnsrAYeHEq
-DzCVYvAKtZthf0RLs9OaiKUkPwKmRtb9Ip5K91YlWXBYZquw9lCzkWZpTApYSTYhGDGdMkiw
-iv1PbeM7yw33EARwuD+6vYMGkypeJyzS0SLa5XJ6cp90Bp86kdJsBYHg/rTmloFmoT578WxP
-J6Ywl2SpjsN3CUsvr0WhU6NA6oMSApkzzkYkyiBdJAk0Rl7YV5pw4iPdBNkeaIHoAqHsaYsb
-wNRyr3FOtmmu/f9YP85okufEynKDdZqKtYZ1C1kWtqmMzmsEzlqxqa36g4/EpgTMuX+e0ro6
-PXWExkJuJZZUncjCaH8dZldozUaSPhHhBVcvkhyKGkvJvT5hPNA8rD9S8blFhZMrAztLwa71
-y/u/vun/nWj/U3xT2b4yETjZ89xrLSfR47vN9TeeNuXm8xtPP1g6ct/6tMVP9/Ona6kApWNW
-FCJoCNp5k4HmhKMzXLhPtsHfOUuh+4DBa4cZAhn24S5wAccWaE5MmEM31mCbex/2Wlvg17Ly
-bWNbnnDP0nsWW55ifxOPncJj/YhYQg8amw/q/GC/9XaEUSocuRlgaNn8oeiiXMWUukXNe3Ao
-DHRu21LEYRsXlF1ZqNwkxAsa44kmYWi8RXYppJqirEYxQeyAeC6qOKKNqZ9YbnJxnbco6SpW
-oYjnefdgOktYzavKWOynUW63C4YwAFKF/DbTtrR8ZaOIba5EzHhazayV7i7fQIS6zotwTj5H
-i2fq+MEE5KR5umJypNsgUcZxEC0I3bcnSd9KrpVlaYs55NAoYV1BTt9GWv1s0Jlx2q4uShNq
-tIXREOs7Juw8ZJt2wqfJfDUFciOdayWr15RBuay03tRbf1je4lt/Wt7w+6rEymnvr0TEtqVk
-5vaVOK3R9IJhChq9cWr2z/nCyLMpXqtiPQVJpsIFSpS4dsdFj+vsARpQFPoaVBu7beym0GS+
-TuawzGzWN+dt27BOvpMZpfneWKvMijc5wa8fNTOQDXcSszxL0L19KCxGGuStgWyK4HeMoxOO
-Vw9fGwbvHQfspo7554R/IsfwdjKKGM1CmIXHkik7eJk9rZ4KrzCCiDeGskR/ktAvl9Yr95at
-3l0Pmt1qHmiMejNKS0KwpOX5UlPNOocnCV9SgoJUFadZa9If9YRIP7dX7ujGv7u5JtTdO36/
-97vbs5ymxm4kk6MPSFC6ijJBIjVmlLR6CFOkcQ4nn0nf8NfR1p6GLl4eWrLWdG597Gn9F4bg
-24vViwAA
---------------070901080105040805090704--
+
+diff -pruN linux-2.6.21+01+02+03/Documentation/x86_64/boot-options.txt linux-2.6.21+04/Documentation/x86_64/boot-options.txt
+--- linux-2.6.21+01+02+03/Documentation/x86_64/boot-options.txt	2007-04-25 20:08:32.000000000 -0700
++++ linux-2.6.21+04/Documentation/x86_64/boot-options.txt	2007-05-09 23:29:01.000000000 -0700
+@@ -14,9 +14,11 @@ Machine check
+    mce=nobootlog
+ 		Disable boot machine check logging.
+    mce=tolerancelevel (number)
+-		0: always panic, 1: panic if deadlock possible,
+-		2: try to avoid panic, 3: never panic or exit (for testing)
+-		default is 1
++		0: always panic on uncorrected errors, log corrected errors
++		1: panic or SIGBUS on uncorrected errors, log corrected errors
++		2: SIGBUS or log uncorrected errors, log corrected errors
++		3: never panic or SIGBUS, log all errors (for testing only)
++		Default is 1
+ 		Can be also set using sysfs which is preferable.
+ 
+    nomce (for compatibility with i386): same as mce=off
+diff -pruN linux-2.6.21+01+02+03/Documentation/x86_64/machinecheck linux-2.6.21+04/Documentation/x86_64/machinecheck
+--- linux-2.6.21+01+02+03/Documentation/x86_64/machinecheck	2007-05-07 12:08:26.000000000 -0700
++++ linux-2.6.21+04/Documentation/x86_64/machinecheck	2007-05-09 23:29:16.000000000 -0700
+@@ -49,12 +49,14 @@ tolerant
+ 	Since machine check exceptions can happen any time it is sometimes
+ 	risky for the kernel to kill a process because it defies
+ 	normal kernel locking rules. The tolerance level configures
+-	how hard the kernel tries to recover even at some risk of deadlock.
+-
+-	0: always panic,
+-	1: panic if deadlock possible,
+-	2: try to avoid panic,
+-   	3: never panic or exit (for testing only)
++	how hard the kernel tries to recover even at some risk of
++	deadlock.  Higher tolerant values trade potentially better uptime
++	with the risk of a crash or even corruption (for tolerant >= 3).
++
++	0: always panic on uncorrected errors, log corrected errors
++	1: panic or SIGBUS on uncorrected errors, log corrected errors
++	2: SIGBUS or log uncorrected errors, log corrected errors
++	3: never panic or SIGBUS, log all errors (for testing only)
+ 
+ 	Default: 1
+ 
+diff -pruN linux-2.6.21+01+02+03/arch/x86_64/kernel/mce.c linux-2.6.21+04/arch/x86_64/kernel/mce.c
+--- linux-2.6.21+01+02+03/arch/x86_64/kernel/mce.c	2007-05-09 22:05:48.000000000 -0700
++++ linux-2.6.21+04/arch/x86_64/kernel/mce.c	2007-05-11 21:02:12.000000000 -0700
+@@ -37,8 +37,13 @@ atomic_t mce_entry;
+ 
+ static int mce_dont_init;
+ 
+-/* 0: always panic, 1: panic if deadlock possible, 2: try to avoid panic,
+-   3: never panic or exit (for testing only) */
++/*
++ * Tolerant levels:
++ *   0: always panic on uncorrected errors, log corrected errors
++ *   1: panic or SIGBUS on uncorrected errors, log corrected errors
++ *   2: SIGBUS or log uncorrected errors (if possible), log corrected errors
++ *   3: never panic or SIGBUS, log all errors (for testing only)
++ */
+ static int tolerant = 1;
+ static int banks;
+ static unsigned long bank[NR_BANKS] = { [0 ... NR_BANKS-1] = ~0UL };
+@@ -132,9 +137,6 @@ static void mce_panic(char *msg, struct 
+ { 
+ 	int i;
+ 
+-	if (tolerant >= 3)
+-		return;
+-
+ 	oops_begin();
+ 	for (i = 0; i < MCE_LOG_LEN; i++) {
+ 		unsigned long tsc = mcelog.entry[i].tsc;
+@@ -178,11 +180,19 @@ static inline void mce_get_rip(struct mc
+ void do_machine_check(struct pt_regs * regs, long error_code)
+ {
+ 	struct mce m, panicm;
+-	int nowayout = (tolerant < 1); 
+-	int kill_it = 0;
+ 	u64 mcestart = 0;
+ 	int i;
+ 	int panicm_found = 0;
++	/*
++	 * If no_way_out gets set, there is no safe way to recover from this
++	 * MCE.  If tolerant is cranked up, we'll try anyway.
++	 */
++	int no_way_out = 0;
++	/*
++	 * If kill_it gets set, there might be a way to recover from this
++	 * error.
++	 */
++	int kill_it = 0;
+ 
+ 	atomic_inc(&mce_entry);
+ 
+@@ -194,8 +204,9 @@ void do_machine_check(struct pt_regs * r
+ 	memset(&m, 0, sizeof(struct mce));
+ 	m.cpu = smp_processor_id();
+ 	rdmsrl(MSR_IA32_MCG_STATUS, m.mcgstatus);
++	/* if the restart IP is not valid, we're done for */
+ 	if (!(m.mcgstatus & MCG_STATUS_RIPV))
+-		kill_it = 1;
++		no_way_out = 1;
+ 	
+ 	rdtscll(mcestart);
+ 	barrier();
+@@ -214,10 +225,18 @@ void do_machine_check(struct pt_regs * r
+ 			continue;
+ 
+ 		if (m.status & MCI_STATUS_EN) {
+-			/* In theory _OVER could be a nowayout too, but
+-			   assume any overflowed errors were no fatal. */
+-			nowayout |= !!(m.status & MCI_STATUS_PCC);
+-			kill_it |= !!(m.status & MCI_STATUS_UC);
++			/* if PCC was set, there's no way out */
++			no_way_out |= !!(m.status & MCI_STATUS_PCC);
++			/*
++			 * If this error was uncorrectable and there was
++			 * an overflow, we're in trouble.  If no overflow,
++			 * we might get away with just killing a task.
++			 */
++			if (m.status & MCI_STATUS_UC) {
++				if (tolerant < 1 || m.status & MCI_STATUS_OVER)
++					no_way_out = 1;
++				kill_it = 1;
++			}
+ 		}
+ 
+ 		if (m.status & MCI_STATUS_MISCV)
+@@ -228,7 +247,6 @@ void do_machine_check(struct pt_regs * r
+ 		mce_get_rip(&m, regs);
+ 		if (error_code >= 0)
+ 			rdtscll(m.tsc);
+-		wrmsrl(MSR_IA32_MC0_STATUS + i*4, 0);
+ 		if (error_code != -2)
+ 			mce_log(&m);
+ 
+@@ -251,37 +269,52 @@ void do_machine_check(struct pt_regs * r
+ 	   the last one (shouldn't happen, just being safe). */
+ 	if (!panicm_found)
+ 		panicm = m;
+-	if (nowayout)
++
++	/*
++	 * If we have decided that we just CAN'T continue, and the user
++	 *  has not set tolerant to an insane level, give up and die.
++	 */
++	if (no_way_out && tolerant < 3)
+ 		mce_panic("Machine check", &panicm, mcestart);
+-	if (kill_it) {
++
++	/*
++	 * If the error seems to be unrecoverable, something should be
++	 * done.  Try to kill as little as possible.  If we can kill just
++	 * one task, do that.  If the user has set the tolerance very
++	 * high, don't try to do anything at all.
++	 */
++	if (kill_it && tolerant < 3) {
+ 		int user_space = 0;
+ 
+-		if (m.mcgstatus & MCG_STATUS_RIPV)
++		/*
++		 * If the EIPV bit is set, it means the saved IP is the
++		 * instruction which caused the MCE.
++		 */
++		if (m.mcgstatus & MCG_STATUS_EIPV)
+ 			user_space = panicm.rip && (panicm.cs & 3);
+-		
+-		/* When the machine was in user space and the CPU didn't get
+-		   confused it's normally not necessary to panic, unless you 
+-		   are paranoid (tolerant == 0)
+-
+-		   RED-PEN could be more tolerant for MCEs in idle,
+-		   but most likely they occur at boot anyways, where
+-		   it is best to just halt the machine. */
+-		if ((!user_space && (panic_on_oops || tolerant < 2)) ||
+-		    (unsigned)current->pid <= 1)
+-			mce_panic("Uncorrected machine check", &panicm, mcestart);
+-
+-		/* do_exit takes an awful lot of locks and has as
+-		   slight risk of deadlocking. If you don't want that
+-		   don't set tolerant >= 2 */
+-		if (tolerant < 3)
++
++		/*
++		 * If we know that the error was in user space, send a
++		 * SIGBUS.  Otherwise, panic if tolerance is low.
++		 *
++		 * do_exit() takes an awful lot of locks and has a slight
++		 * risk of deadlocking.
++		 */
++		if (user_space) {
+ 			do_exit(SIGBUS);
++		} else if (panic_on_oops || tolerant < 2) {
++			mce_panic("Uncorrected machine check",
++				&panicm, mcestart);
++		}
+ 	}
+ 
+ 	/* notify userspace ASAP */
+ 	set_thread_flag(TIF_MCE_NOTIFY);
+ 
+  out:
+-	/* Last thing done in the machine check exception to clear state. */
++	/* the last thing we do is clear state */
++	for (i = 0; i < banks; i++)
++		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
+ 	wrmsrl(MSR_IA32_MCG_STATUS, 0);
+  out2:
+ 	atomic_dec(&mce_entry);
+@@ -505,7 +538,7 @@ static int mce_open(struct inode *inode,
+ 
+ 	spin_unlock(&mce_state_lock);
+ 
+-	return 0;
++	return nonseekable_open(inode, file);
+ }
+ 
+ static int mce_release(struct inode *inode, struct file *file)
