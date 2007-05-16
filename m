@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXEPUsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762680AbXEPUuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933760AbXEPUsv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757979AbXEPUso
+	id S1762680AbXEPUuI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758450AbXEPUt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:48:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34510 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756641AbXEPUsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:48:43 -0400
-Date: Wed, 16 May 2007 16:48:07 -0400
-From: Dave Jones <davej@redhat.com>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: Prakash Punnoor <prakash@punnoor.de>,
-       Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
-Message-ID: <20070516204807.GA23751@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Duane Griffin <duaneg@dghda.com>,
-	Prakash Punnoor <prakash@punnoor.de>,
-	Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>,
-	LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>
-References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com>
+	Wed, 16 May 2007 16:49:58 -0400
+Received: from adelie.ubuntu.com ([82.211.81.139]:45103 "EHLO
+	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757979AbXEPUt5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 16:49:57 -0400
+Subject: [PATCH] Remove duplicate IDs from option card driver
+From: Ben Collins <ben.collins@ubuntu.com>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@osdl.org>, linux-usb-devel@lists.sourceforge.net,
+       Matthias Urlichs <smurf@smurf.noris.de>
+Content-Type: text/plain
+Organization: Canonical
+Date: Wed, 16 May 2007 16:49:54 -0400
+Message-Id: <1179348594.6510.13.camel@cunning>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 08:53:13PM +0100, Duane Griffin wrote:
- > On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
- > > Maybe you want to give a hint in the p states driver help text?
- > 
- > I think a hint is the right thing to do, but in the PowerNow! driver
- > rather than the p states one. How about adding something like this to
- > the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
 
-The mobile K7s which had powernow support weren't SMP capable, so they're
-irrelevant.
+Cc: Matthias Urlichs <smurf@smurf.noris.de>
+Cc: linux-usb-devel@lists.sourceforge.net
+Signed-off-by: Ben Collins <bcollins@ubuntu.com>
 
- > "ACPI support is required for non-UP systems and requires ACPI_PROCESSOR
- >  to be selected. If ACPI_PROCESSOR is compiled as a module then this
- >  option must be too in order for ACPI support to be available."
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index 8c3f55b..89f067d 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -165,7 +165,6 @@ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1410) }, /* Novatel U740 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1420) }, /* Novatel EU870 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1430) }, /* Novatel Merlin XU870 HSDPA/3G */
+-	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x1430) }, /* Novatel XU870 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x2100) }, /* Novatel EV620 CDMA/EV-DO */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x2110) }, /* Novatel Merlin ES620 / Merlin ES720 / Ovation U720 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, 0x2130) }, /* Novatel Merlin ES620 SM Bus */
 
-X86_POWERNOW_K8_ACPI is already 'default y'. I think the problem lies in
-that people aren't enabling its dependancy, ACPI_PROCESSOR.
-
-We want something along the lines of..
-
-config X86_POWERNOW_K8_ACPI
-	bool
-	if SMP & X86_POWERNOW_K8_ACPI
-	  select ACPI_PROCESSOR
-
-kconfig language quirks aside..
-
-
-	Dave
 
 -- 
-http://www.codemonkey.org.uk
+Ubuntu   : http://www.ubuntu.com/
+Linux1394: http://wiki.linux1394.org/
+
