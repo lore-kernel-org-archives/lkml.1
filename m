@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030788AbXEPVEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031030AbXEPVFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030788AbXEPVEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbXEPVE1
+	id S1031030AbXEPVFq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758598AbXEPVFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:04:27 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:51404 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754948AbXEPVE0 (ORCPT
+	Wed, 16 May 2007 17:05:39 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:40412 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754948AbXEPVFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:04:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=UYLy+UQ0oVl6bh14M+6Doyz1PVw436NB89f/ghdKk61xwiwTG1sd+sax3a1wF0FCVnO0Aqw3tBXiZlXs9AVlOX58bt8kHSVQX7Q0fVPDHP1pIZGXSe/ckvU1f/l0MjjRhPRMQK6o+yaUDS1Fwwe/VpXUc8gBEo7qXeczX+IbF6M=
-Message-ID: <464B71EF.8060602@gmail.com>
-Date: Wed, 16 May 2007 23:04:47 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Ben Collins <ben.collins@ubuntu.com>
-CC: linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Ganesh Varadarajan <ganesh@veritas.com>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [PATCH] Remove duplicate ID in ipaq driver
-References: <1179348840.6510.16.camel@cunning>
-In-Reply-To: <1179348840.6510.16.camel@cunning>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 16 May 2007 17:05:38 -0400
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705161358030.11359@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl>
+	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
+	 <20070514161224.GC11115@waste.org>
+	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
+	 <1179164453.2942.26.camel@lappy>
+	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
+	 <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins>
+	 <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
+	 <1179298771.7173.16.camel@twins>
+	 <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
+	 <1179343521.2912.20.camel@lappy>
+	 <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
+	 <1179346738.2912.39.camel@lappy>
+	 <Pine.LNX.4.64.0705161320020.11018@schroedinger.engr.sgi.com>
+	 <1179348039.2912.48.camel@lappy>
+	 <Pine.LNX.4.64.0705161343080.11234@schroedinger.engr.sgi.com>
+	 <1179348898.2912.57.camel@lappy>
+	 <Pine.LNX.4.64.0705161358030.11359@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 23:04:54 +0200
+Message-Id: <1179349494.2912.62.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Collins napsal(a):
-> Cc: Ganesh Varadarajan <ganesh@veritas.com>
-> Cc: linux-usb-devel@lists.sourceforge.net
-> Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+On Wed, 2007-05-16 at 13:59 -0700, Christoph Lameter wrote:
+> On Wed, 16 May 2007, Peter Zijlstra wrote:
 > 
-> diff --git a/drivers/usb/serial/ipaq.c b/drivers/usb/serial/ipaq.c
-> index 4df0ec7..7c85be4 100644
-> --- a/drivers/usb/serial/ipaq.c
-> +++ b/drivers/usb/serial/ipaq.c
-> @@ -92,7 +92,6 @@ static void ipaq_destroy_lists(struct usb_serial_port *port);
->  
->  static struct usb_device_id ipaq_id_table [] = {
->  	/* The first entry is a placeholder for the insmod-specified device */
-
-I wonder if the people ever read the comments? ^^^^^^^^^
-It's used for parameter from command line when modprobing. See ipaq_init.
-
-> -	{ USB_DEVICE(0x049F, 0x0003) },
->  	{ USB_DEVICE(0x0104, 0x00BE) }, /* Socket USB Sync */
->  	{ USB_DEVICE(0x03F0, 0x1016) }, /* HP USB Sync */
->  	{ USB_DEVICE(0x03F0, 0x1116) }, /* HP USB Sync 1611 */
+> > > I do not see any distinction between DMA and regular memory. If we need 
+> > > DMA memory to complete the transaction then this wont work?
+> > 
+> > If network relies on slabs that are cpuset constrained and the page
+> > allocator reserves do not match that, then yes, it goes bang.
 > 
+> So if I put a 32 bit network card in a 64 bit system -> bang?
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+I hope the network stack already uses the appropriate allocator flags.
+If the slab was GFP_DMA that doesn't change, the ->reserve_slab will
+still be GFP_DMA.
+
+> > > Is there some indicator somewhere that indicates that we are in trouble? I 
+> > > just see the ranks.
+> > 
+> > Yes, and page->rank will only ever be 0 if the page was allocated with
+> > ALLOC_NO_WATERMARKS, and that only ever happens if we're in dire
+> > straights and entitled to it.
+> > 
+> > Otherwise it'll be ALLOC_WMARK_MIN or somesuch.
+> 
+> How we know that we are out of trouble? Just try another alloc and see? If 
+> that is the case then we may be failing allocations after the memory 
+> situation has cleared up.
+
+No, no, for each regular allocation we retry to populate ->cpu_slab with
+a new slab. If that works we're out of the woods and the ->reserve_slab
+is cleaned up.
+
