@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763261AbXEPW7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbXEPXEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763261AbXEPW7W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 18:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758947AbXEPW7Q
+	id S933331AbXEPXEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbXEPXE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 18:59:16 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:36098 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758932AbXEPW7P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 18:59:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=chQ//803eRW5JyEb8P36fq4c1+dBzK7Qp6D0tC05xO7unoqlGIfw1ZlHaYa8I31IK4K4yxYHAw97S3vKMjV19eLO2MufTU6CD4ttcVKvN5iS1uN6KlRs5OX6DOrywLPumE+Swil+hg9d3UzCGIKBDN+TY35/aqGBCpOwzZfAqcY=
-Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move arch-specific bits to
-	their respective subdirectories
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070516.145317.03979683.davem@davemloft.net>
-References: <464B78BC.4080900@gmail.com>
-	 <20070516.145317.03979683.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 17 May 2007 06:59:05 +0800
-Message-Id: <1179356345.4743.6.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 19:04:26 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:41453 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758025AbXEPXEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 19:04:25 -0400
+Date: Thu, 17 May 2007 01:03:55 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+cc: Marcel Holtmann <marcel@holtmann.org>, Greg KH <gregkh@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
+ at net/core/sock.c:1523
+In-Reply-To: <Pine.LNX.4.64.0705161418250.25986@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.64.0705170102290.13706@twin.jikos.cz>
+References: <462D1B09.9050005@goop.org>  <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
+  <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz> 
+ <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com> 
+ <Pine.LNX.4.64.0705161124030.25986@twin.jikos.cz> 
+ <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com> 
+ <1179315904.10069.67.camel@violet>  <a781481a0705160456q778cfb4dk67d754317d57e9bb@mail.gmail.com>
+  <a781481a0705160459p2d538d7fu8096bd594d6df2f9@mail.gmail.com>
+ <1179317775.10069.77.camel@violet> <Pine.LNX.4.64.0705161418250.25986@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 14:53 -0700, David Miller wrote:
-> From: "Antonino A. Daplas" <adaplas@gmail.com>
-> Date: Thu, 17 May 2007 05:33:48 +0800
-> 
-> > Move arch-specific bits of fb_mmap() to their respective subdirectories
-> > 
-> > Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-> > ---
-> > Hi all,
-> > 
-> > Please let me know if there are mistakes with this patch.
-> 
-> Thank you for doing this work.
-> 
-> __sparc_v9__ means CONFIG_SPARC64, if that is not defined it's
-> CONFIG_SPARC32, so you could simplify this patch a lot.
-> 
-> 1) Remove __sparc_v9__ ifdefs from asm-sparc64/fb.h
-> 2) Define fb_mmap_required() to return 0 in asm-sparc64/fb.h
-> 3) Define fb_mmap_required() to return 1 in asm-sparc/fb.h
-> 4) Remove all the sparc ifdef stuff you added to linux/fb.h
-> 5) There won't be a default fb_mmap_required() provided by
->    linux/fb.h on platforms other than sparc ones, you'll need
->    to provide one in order for the build to work non-sparc since
->    this call is unconditional in fbmem.c:
-> 
-> +	if (fb_mmap_required())
-> +		return -EINVAL;
-> 
-> With those fixes:
-> 
+On Wed, 16 May 2007, Jiri Kosina wrote:
 
-Okay, I see what you mean.  I will concoct another patch later.
+> > since Jiri has a good test case for it, I leave it to him for testing.
+> > If he confirms that this fixes the locking issues, then this is
+> > Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+> I will verify later this evening and will let you know. I am however 
+> pretty convinced now that this is the right fix.
 
-Tony
+Satyam,
 
+I have just verified that this locking scheme is indeed correct. So you 
+can add
 
+	Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+if you wish to, and submit the patch to Andrew.
+
+Thanks,
+
+-- 
+Jiri Kosina
