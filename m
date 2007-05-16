@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbXEPIdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762092AbXEPIdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760861AbXEPIdc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbXEPIdL
+	id S1762092AbXEPIdp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758253AbXEPIdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:33:11 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:7089 "EHLO kernel.dk"
+	Wed, 16 May 2007 04:33:12 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:7090 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755414AbXEPIdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757566AbXEPIdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 16 May 2007 04:33:10 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 5/10] scsi: convert to using sg helpers
-Date: Wed, 16 May 2007 10:31:35 +0200
-Message-Id: <11793043003915-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 6/10] i386 dma_map_sg: convert to using sg helpers
+Date: Wed, 16 May 2007 10:31:36 +0200
+Message-Id: <11793043004172-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <1179304300358-git-send-email-jens.axboe@oracle.com>
 References: <1179304300358-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This converts the SCSI mid layer to using the sg helpers for looking up
-sg elements, instead of doing it manually.
+The dma mapping helpers need to be converted to using
+sg helpers as well, so they will work with a chained
+sglist setup.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- drivers/scsi/scsi_lib.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ include/asm-i386/dma-mapping.h |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 61fbcdc..9355c5b 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -302,14 +302,15 @@ static int scsi_req_map_sg(struct request *rq, struct scatterlist *sgl,
- 	struct request_queue *q = rq->q;
- 	int nr_pages = (bufflen + sgl[0].offset + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 	unsigned int data_len = 0, len, bytes, off;
+diff --git a/include/asm-i386/dma-mapping.h b/include/asm-i386/dma-mapping.h
+index 183eebe..a956ec1 100644
+--- a/include/asm-i386/dma-mapping.h
++++ b/include/asm-i386/dma-mapping.h
+@@ -2,10 +2,10 @@
+ #define _ASM_I386_DMA_MAPPING_H
+ 
+ #include <linux/mm.h>
++#include <linux/scatterlist.h>
+ 
+ #include <asm/cache.h>
+ #include <asm/io.h>
+-#include <asm/scatterlist.h>
+ #include <asm/bug.h>
+ 
+ #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+@@ -35,18 +35,19 @@ dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
+ }
+ 
+ static inline int
+-dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
++dma_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 	   enum dma_data_direction direction)
+ {
 +	struct scatterlist *sg;
- 	struct page *page;
- 	struct bio *bio = NULL;
- 	int i, err, nr_vecs = 0;
+ 	int i;
  
--	for (i = 0; i < nsegs; i++) {
--		page = sgl[i].page;
--		off = sgl[i].offset;
--		len = sgl[i].length;
-+	for_each_sg(sgl, sg, nsegs, i) {
-+		page = sg->page;
-+		off = sg->offset;
-+		len = sg->length;
- 		data_len += len;
+ 	BUG_ON(!valid_dma_direction(direction));
+-	WARN_ON(nents == 0 || sg[0].length == 0);
++	WARN_ON(nents == 0 || sglist[0].length == 0);
  
- 		while (len > 0) {
+-	for (i = 0; i < nents; i++ ) {
+-		BUG_ON(!sg[i].page);
++	for_each_sg(sglist, sg, nents, i) {
++		BUG_ON(!sg->page);
+ 
+-		sg[i].dma_address = page_to_phys(sg[i].page) + sg[i].offset;
++		sg->dma_address = page_to_phys(sg->page) + sg->offset;
+ 	}
+ 
+ 	flush_write_buffers();
 -- 
 1.5.2.rc1
 
