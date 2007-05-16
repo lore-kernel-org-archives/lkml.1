@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbXEPOlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbXEPOn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbXEPOlP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 10:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbXEPOlD
+	id S1760261AbXEPOn3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 10:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXEPOnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 10:41:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:16196 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754586AbXEPOlB (ORCPT
+	Wed, 16 May 2007 10:43:20 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:60648 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753981AbXEPOnT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 10:41:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=bOm1+BdteOs7g3liWT0jYoeEsFP/WC7xeidDhgHa2QabLlOUe5Xm3vQJcG2SLHd2/CvaeIs5dCAXtyXlRGkkAklqcOjjvh7X52jt2fusNaP7sfrYRws3HzSvrReYYzxJh5zREa1WVGOnj/hAgXTuieGhm2Xc8NH1/nFyNawit0k=
-Date: Wed, 16 May 2007 18:33:08 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@ucw.cz>
-Subject: Re: [PATCH] UDF: check for allocated memory for inode data
-Message-ID: <20070516143308.GA8327@cvg>
-References: <20070510140000.GA12399@cvg> <20070510154640.c0299a52.akpm@linux-foundation.org> <20070511072939.GA25727@infradead.org> <20070511090127.GD9444@cvg> <20070511103956.GA30896@infradead.org> <20070511110920.GA11898@cvg> <20070513210126.GB14030@infradead.org>
+	Wed, 16 May 2007 10:43:19 -0400
+Message-ID: <464B1886.1060502@s5r6.in-berlin.de>
+Date: Wed, 16 May 2007 16:43:18 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070513210126.GB14030@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-scsi@vger.kernel.org
+CC: Simon Arlott <simon@fire.lp0.eu>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kernel-packagers@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] SCSI: Let users disable SCSI_WAIT_SCAN to be built
+References: <1179073116.3723.45.camel@mulgrave.il.steeleye.com> <a781481a0705140235h6a96563cw63ed2c7a85a4f736@mail.gmail.com> <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com> <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com> <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com> <1179153096.3703.23.camel@mulgrave.il.steeleye.com> <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk> <20070515172905.GJ10562@parisc-linux.org> <tkrat.99c0f1a1898aa67f@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.99c0f1a1898aa67f@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Christoph Hellwig - Sun, May 13, 2007 at 10:01:26PM +0100]
-| On Fri, May 11, 2007 at 03:09:20PM +0400, Cyrill Gorcunov wrote:
-| > | > | And please get rid of the UDF_I_* macro for everything you touch, just
-| > | > | put a
-| > | > | 
-| > | > | 	struct udf_inode_info *uip = UDF_I(inode);
-| > | > | 
-| > | > | at the beginning of the function and use the fields directly.
-| > | > | 
-| > | > 
-| > | > Actually to properly remove UDF_I* and UDF_SB_* macroses in the
-| > | > whole UDF subsystem - is _lot_ of work. I'm going to make it but
-| > | > not now (too busy).
-| > | 
-| > | Doing it completely is a lot of work, yes.  I was more thinking of
-| > | converting a piece of code once you do major changes.  But if you
-| > | want to convert all the code as a separate patch I'm more than happy
-| > | aswell.
-| > | 
-| > 
-| > Christoph, my only argue against getting rid of UDF_I_* macro in
-| > my patch is UDF coding style, I don't want to damage it. I think
-| > we may leave it as is (including my patch). So just review the patch
-| > I sent (second version) and Ack it then so Andrew could include it
-| > into mm tree. Meantime I'm rewritting the whole UDF subsystem to
-| > get rid of that macroses (it will be a long way ;)
-| 
-| The UDF style is horrible and very unlike other kernel code.  Given
-| that udf has been pretty much unmtained for a while there should be
-| nothing in the way of fixing it.
-| 
-| Anyway, the patch is technically correct so you'll get my ACK (not
-| that you should need it).
-| 
+I wrote:
+> --- linux-2.6.22-rc1.orig/drivers/scsi/Kconfig
+> +++ linux-2.6.22-rc1/drivers/scsi/Kconfig
+> @@ -241,11 +241,19 @@ config SCSI_SCAN_ASYNC
+>  	  You can override this choice by specifying "scsi_mod.scan=sync"
+>  	  or async on the kernel's command line.
+>  
+> -config SCSI_WAIT_SCAN
+> +config SCSI_WAIT_SCAN_NO_Y
+>  	tristate
+>  	default m
+> -	depends on SCSI
+> -	depends on MODULES
 
-Hi Christoph,
+SCSI_WAIT_SCAN_NO_Y is unnecessary, as Randy Dunlap pointed out in "Re:
+How to force Kconfig tristate into range n..m?".
+http://lkml.org/lkml/2007/5/15/320
 
-you know I've read UDF sources. As I understand all UDF_I_ macroses
-could be converted without breaking UDF state but... as you exactly
-mentoined it's style is horrible and I'm thinking about rewritting the
-whole UDF system. Unfortunelly I'm not _mature_ kernel developer (I'm kernel
-newbie) and it could take a long time for this (I think something like
-~ 3 month or more ;). Actually I'm ready to spend my free time for
-this. So how do you think could it be reasonable?
+> +
+> +config SCSI_WAIT_SCAN
+> +	tristate "Pseudo driver which waits for SCSI scanning to finish"
+> +	depends on MODULES && SCSI && SCSI_WAIT_SCAN_NO_Y
 
-		Cyrill
+	depends on SCSI && m
 
+> +	help
+> +	  When loaded, this module will do nothing else than wait for
+> +	  SCSI low-level drivers to finish asynchronous scanning.
+> +	  The module will be called scsi_wait_scan.
+
+There should be explained that it is the command "modprobe
+scsi_wait_scan" which is doing the waiting, and that this is useful or
+required in initrds.
+
+> +	  Most people can say n here.
+
+This sentence should probably be omitted, as it may be wrong in the
+future and unsafe already now.
+
+I will resend an updated patch.
+-- 
+Stefan Richter
+-=====-=-=== -=-= =----
+http://arcgraph.de/sr/
