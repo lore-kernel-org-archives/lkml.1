@@ -1,160 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXEPUEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763078AbXEPUG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbXEPUEr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbXEPUEl
+	id S1763078AbXEPUG7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756943AbXEPUGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:04:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50224 "EHLO mx1.redhat.com"
+	Wed, 16 May 2007 16:06:51 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43041 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756943AbXEPUEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:04:40 -0400
+	id S1753152AbXEPUGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 16:06:50 -0400
+Date: Wed, 16 May 2007 15:06:47 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  8/14] Union-mount lookup
+Message-ID: <20070516200647.GA8961@sergelap.austin.ibm.com>
+References: <20070514093722.GB4139@in.ibm.com> <20070514094218.GJ4139@in.ibm.com> <Pine.LNX.4.61.0705150937590.9570@yvahk01.tjqt.qr> <20070516050851.GB4403@in.ibm.com> <Pine.LNX.4.61.0705162127080.9019@yvahk01.tjqt.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Cc: Steve.Hawkes@motorola.com
-Cc: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: [PATCH] recalc_sigpending_tsk fixes
-In-Reply-To: <7BFDACCD6948EF4D8FE8F4888A91596A01636E70@tx14exm60.ds.mot.com>
-X-Zippy-Says: ..  here I am in 53 B.C. and all I want is a dill pickle!!
-Message-Id: <20070516200324.835BC1F8509@magilla.localdomain>
-Date: Wed, 16 May 2007 13:03:24 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0705162127080.9019@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Jan Engelhardt (jengelh@linux01.gwdg.de):
+> 
+> On May 16 2007 10:38, Bharata B Rao wrote:
+> >> 
+> >> >+lookup_union:
+> >> >+	do {
+> >> >+		struct vfsmount *mnt = find_mnt(topmost);
+> >> >+		UM_DEBUG_DCACHE("name=\"%s\", inode=%p, device=%s\n",
+> >> >+				topmost->d_name.name, topmost->d_inode,
+> >> >+				mnt->mnt_devname);
+> >> >+		mntput(mnt);
+> >> >+	} while (0);
+> >> 
+> >> Why the extra do{}while? [elsewhere too]
+> >
+> >Not sure, may be to get a scope to define 'mnt' here. Jan ?
+> 
+> What I was implicitly suggesting that mnt could be moved into the
+> normal 'function scope'.
+> 
+> 
+> 	Jan
 
-Steve Hawkes discovered a problem where recalc_sigpending_tsk was called in
-do_sigaction but no signal_wake_up call was made, preventing later signals
-from waking up blocked threads with TIF_SIGPENDING already set.
+This code can't stay anyway so it's kind of moot.  find_mnt() is bogus,
+and the topmost and overlaid mappings need to be changed from
+dentry->dentry to (vfsmnt,dentry)->(vfsmnt,dentry) in order to cope with
+bind mounts and mount namespaces.
 
-In fact, the few other calls to recalc_sigpending_tsk outside the signals
-code are also subject to this problem in other race conditions.
-
-This change makes recalc_sigpending_tsk private to the signals code.
-It changes the outside calls, as well as do_sigaction, to use the new
-recalc_sigpending_and_wake instead.
-
-Signed-off-by: Roland McGrath <roland@redhat.com>
-CC: Steve.Hawkes@motorola.com
-CC: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>
----
- include/linux/sched.h  |   22 ++++++++++++----------
- kernel/exit.c          |    7 ++-----
- kernel/power/process.c |    2 +-
- kernel/signal.c        |   48 ++++++++++++++++++++++++++++++------------------
- 4 files changed, 45 insertions(+), 34 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index a81897e..2ae8859 100644  
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1615,11 +1615,13 @@ static inline int lock_need_resched(spin
- 	return 0;
- }
- 
--/* Reevaluate whether the task has signals pending delivery.
--   This is required every time the blocked sigset_t changes.
--   callers must hold sighand->siglock.  */
--
--extern FASTCALL(void recalc_sigpending_tsk(struct task_struct *t));
-+/*
-+ * Reevaluate whether the task has signals pending delivery.
-+ * Wake the task if so.
-+ * This is required every time the blocked sigset_t changes.
-+ * callers must hold sighand->siglock.
-+ */
-+extern void recalc_sigpending_and_wake(struct task_struct *t);
- extern void recalc_sigpending(void);
- 
- extern void signal_wake_up(struct task_struct *t, int resume_stopped);
-diff --git a/kernel/exit.c b/kernel/exit.c
-index c6d14b8..5b888c2 100644  
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -762,11 +762,8 @@ static void exit_notify(struct task_stru
- 		read_lock(&tasklist_lock);
- 		spin_lock_irq(&tsk->sighand->siglock);
- 		for (t = next_thread(tsk); t != tsk; t = next_thread(t))
--			if (!signal_pending(t) && !(t->flags & PF_EXITING)) {
--				recalc_sigpending_tsk(t);
--				if (signal_pending(t))
--					signal_wake_up(t, 0);
--			}
-+			if (!signal_pending(t) && !(t->flags & PF_EXITING))
-+				recalc_sigpending_and_wake(t);
- 		spin_unlock_irq(&tsk->sighand->siglock);
- 		read_unlock(&tasklist_lock);
- 	}
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 0884193..6685eb7 100644  
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -81,7 +81,7 @@ static void cancel_freezing(struct task_
- 		pr_debug("  clean up: %s\n", p->comm);
- 		do_not_freeze(p);
- 		spin_lock_irqsave(&p->sighand->siglock, flags);
--		recalc_sigpending_tsk(p);
-+		recalc_sigpending_and_wake(p);
- 		spin_unlock_irqrestore(&p->sighand->siglock, flags);
- 	}
- }
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 364fc95..0ab3213 100644  
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -96,15 +96,27 @@ static inline int has_pending_signals(si
- 
- #define PENDING(p,b) has_pending_signals(&(p)->signal, (b))
- 
--fastcall void recalc_sigpending_tsk(struct task_struct *t)
-+static int recalc_sigpending_tsk(struct task_struct *t)
- {
- 	if (t->signal->group_stop_count > 0 ||
- 	    (freezing(t)) ||
- 	    PENDING(&t->pending, &t->blocked) ||
--	    PENDING(&t->signal->shared_pending, &t->blocked))
-+	    PENDING(&t->signal->shared_pending, &t->blocked)) {
- 		set_tsk_thread_flag(t, TIF_SIGPENDING);
--	else
--		clear_tsk_thread_flag(t, TIF_SIGPENDING);
-+		return 1;
-+	}
-+	clear_tsk_thread_flag(t, TIF_SIGPENDING);
-+	return 0;
-+}
-+
-+/*
-+ * After recalculating TIF_SIGPENDING, we need to make sure the task wakes up.
-+ * This is superfluous when called on current, the wakeup is a harmless no-op.
-+ */
-+void recalc_sigpending_and_wake(struct task_struct *t)
-+{
-+	if (recalc_sigpending_tsk(t))
-+		signal_wake_up(t, 0);
- }
- 
- void recalc_sigpending(void)
-@@ -744,7 +756,7 @@ force_sig_info(int sig, struct siginfo *
- 		action->sa.sa_handler = SIG_DFL;
- 		if (blocked) {
- 			sigdelset(&t->blocked, sig);
--			recalc_sigpending_tsk(t);
-+			recalc_sigpending_and_wake(t);
- 		}
- 	}
- 	ret = specific_send_sig_info(sig, info, t);
-@@ -2273,7 +2285,7 @@ int do_sigaction(int sig, struct k_sigac
- 			rm_from_queue_full(&mask, &t->signal->shared_pending);
- 			do {
- 				rm_from_queue_full(&mask, &t->pending);
--				recalc_sigpending_tsk(t);
-+				recalc_sigpending_and_wake(t);
- 				t = next_thread(t);
- 			} while (t != current);
- 		}
+-serge
