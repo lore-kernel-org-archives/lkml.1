@@ -1,109 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760380AbXEPMQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbXEPMSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760380AbXEPMQT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbXEPMQF
+	id S1760971AbXEPMSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbXEPMSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:16:05 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:53233 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756240AbXEPMQE (ORCPT
+	Wed, 16 May 2007 08:18:33 -0400
+Received: from nessie.weebeastie.net ([220.233.7.36]:2605 "EHLO
+	bunyip.lochness.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756824AbXEPMSd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:16:04 -0400
-Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
-	at net/core/sock.c:1523
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Jiri Kosina <jikos@jikos.cz>, Greg KH <gregkh@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, maxk@qualcomm.com,
-       bluez-devel@lists.sourceforge.net, Cedric Le Goater <clg@fr.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <a781481a0705160459p2d538d7fu8096bd594d6df2f9@mail.gmail.com>
-References: <462D1B09.9050005@goop.org>
-	 <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
-	 <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
-	 <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
-	 <Pine.LNX.4.64.0705161124030.25986@twin.jikos.cz>
-	 <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com>
-	 <1179315904.10069.67.camel@violet>
-	 <a781481a0705160456q778cfb4dk67d754317d57e9bb@mail.gmail.com>
-	 <a781481a0705160459p2d538d7fu8096bd594d6df2f9@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 14:16:15 +0200
-Message-Id: <1179317775.10069.77.camel@violet>
+	Wed, 16 May 2007 08:18:33 -0400
+Date: Wed, 16 May 2007 22:06:24 +1000
+From: CaT <cat@zip.com.au>
+To: J??rn Engel <joern@lazybastard.org>
+Cc: Jamie Lokier <jamie@shareable.org>, David Woodhouse <dwmw2@infradead.org>,
+       akpm@osdl.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516120624.GA18926@zip.com.au>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070516115003.GD5472@lazybastard.org>
+Organisation: Furball Inc.
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Satyam,
-
-> > > > > > (later)
-> > > > > > I Googled a bit to see if this problem was faced elsewhere in the kernel
-> > > > > > too. Saw the following commit by Ingo Molnar
-> > > > > > (9883a13c72dbf8c518814b6091019643cdb34429):
-> > > > > > -     lock_sock(sock->sk);
-> > > > > > +     local_bh_disable();
-> > > > > > +     bh_lock_sock_nested(sock->sk);
-> > > > > >       rc = selinux_netlbl_socket_setsid(sock, sksec->sid);
-> > > > > > -     release_sock(sock->sk);
-> > > > > > +     bh_unlock_sock(sock->sk);
-> > > > > > +     local_bh_enable();
-> > > > > > Is it _really_ *this* simple?
-> > > > > [...]
-> > > > > actually this *seems* to be proper solution also for our case, thanks for
-> > > > > pointing this out. I will think about it once again, do some more tests
-> > > > > with this locking scheme, and will let you know.
-> > > >
-> > > > Yes, I can almost confirm that this (open-coding of spin_lock_bh,
-> > > > effectively) is the proper solution (Rusty's unreliable guide to
-> > > > kernel-locking needs to be next to every developer's keyboard :-)
-> > > > I also came across this idiom in other places in the networking code
-> > > > so it seems to be pretty much the standard way. I wish I owned
-> > > > bluetooth hardware, could've tested this for you myself.
-> > >
-> > > does this mean we should revert previous changes to the locking or only
-> > > apply this on top of it?
-> >
-> > I've fixed a simple patch on top of 2.6.22-rc1 below.
+On Wed, May 16, 2007 at 01:50:03PM +0200, J??rn Engel wrote:
+> On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
+> > 
+> > But if akpm can't pronounce it, how about FFFS for faster flash
+> > filesystem.... ;-)
 > 
-> Eek, please ignore previous one. This one's correct.
+> How many of you have worked for IBM before?  Vowels are not evil. ;)
 > 
-> Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> Grouping four or more consonants to name anything will cause similar
+> expressions on people's faces.  Numbers don't help much either.
 > 
-> diff -ruNp a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
-> --- a/net/bluetooth/hci_sock.c	2007-05-16 17:31:06.000000000 +0530
-> +++ b/net/bluetooth/hci_sock.c	2007-05-16 17:38:35.000000000 +0530
-> @@ -665,7 +665,8 @@ static int hci_sock_dev_event(struct not
->  		/* Detach sockets from device */
->  		read_lock(&hci_sk_list.lock);
->  		sk_for_each(sk, node, &hci_sk_list.head) {
-> -			lock_sock(sk);
-> +			local_bh_disable();
-> +			bh_lock_sock_nested(sk);
->  			if (hci_pi(sk)->hdev == hdev) {
->  				hci_pi(sk)->hdev = NULL;
->  				sk->sk_err = EPIPE;
-> @@ -674,7 +675,8 @@ static int hci_sock_dev_event(struct not
-> 
->  				hci_dev_put(hdev);
->  			}
-> -			release_sock(sk);
-> +			bh_unlock_sock(sk);
-> +			local_bh_enable();
->  		}
->  		read_unlock(&hci_sk_list.lock);
->  	}
+> Ext2 is a great name, because "ext" actually is a pronouncable syllable.
+> MinixFS, ChunkFS, TileFS are great too.  XFS and JFS are ok, at least
+> they only have three consonants.  But FFS exists, so I'd rather go for a
+> syllable.
 
-since Jiri has a good test case for it, I leave it to him for testing.
-If he confirms that this fixes the locking issues, then this is
+FlashFS?
 
-Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
-
-Regards
-
-Marcel
-
-
+-- 
+    "To the extent that we overreact, we proffer the terrorists the
+    greatest tribute."
+    	- High Court Judge Michael Kirby
