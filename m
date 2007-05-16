@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762490AbXEPUMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762057AbXEPUQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762490AbXEPUMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbXEPUMP
+	id S1762057AbXEPUQF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758640AbXEPUP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:12:15 -0400
-Received: from www17.your-server.de ([213.133.104.17]:4184 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754940AbXEPUMO (ORCPT
+	Wed, 16 May 2007 16:15:56 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:37969 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757846AbXEPUPz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:12:14 -0400
-Message-ID: <1179346302.464b657e70b7b@213.133.104.17>
-Date: Wed, 16 May 2007 22:11:42 +0200
-From: thomas@m3y3r.de
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, tglx@linutronix.de
-Subject: [BUG] unable to handle kernel NULL pointer dereference at virtual address 00000003
+	Wed, 16 May 2007 16:15:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cK5l9hhx1M8C6aBRDb82vC2nDs/wq5VrYIgWHfQ8AXDiC5vHg9llDGogVIkQU0TtrKOWfN/HCzoizwVkGOuZW2ABpdWa9yef1ISGJOapnCQEDWD/E6/Qh/JZk1oqKsekn9T7in118P/yfcIrL7XmG2uBeU66WWSTx5l9QO23Ncs=
+Message-ID: <9a8748490705161315p44830796t22f7f31f784e0852@mail.gmail.com>
+Date: Wed, 16 May 2007 22:15:53 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Bhutani Meeta-W19091" <Meeta.Bhutani@motorola.com>
+Subject: Re: Contributor Agreement/Copyright Assignment
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <7376BC9FD0C11A4CA373508199DEED1802E35A76@de01exm65.ds.mot.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 84.59.60.74
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <7376BC9FD0C11A4CA373508199DEED1802E35A76@de01exm65.ds.mot.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This Oops happens under heavy load with 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7b104bcb8e460e45a1aebe3da9b86aacdb4cab12
- head.
+On 16/05/07, Bhutani Meeta-W19091 <Meeta.Bhutani@motorola.com> wrote:
+>
+> Motorola would like to understand if kernel.org has a contributor
+> agreement (or a copyright assignment agreement) that is posted somewhere
+> ?
+As far as I know, no.
 
-Also i run the powertop tool in parallel of the build process.
+> We are investigating what would be needed from a legal standpoint to
+> possibly contribute in the future.
+>
+I am not a lawyer, but my personal understanding is this:
 
-This is what i could capture with netconsole:
+1. Any code you contribute has to be licensed under the GNU GPL v2
+(preferably) or a different, but 100% compatible, license (usually
+acceptable).
+For the text of the GNU GPL v2, please see the file "COPYING" in the
+root of the kernel source tree.
+For a list of other Open Source licenses, see
+http://www.opensource.org/licenses/category (note: GPLv2 is strongly
+prefered)
 
-"BUG: unable to handle kernel NULL pointer dereference at virtual address
-00000003
- printing eip:
-c0136e32
-*pde = 00000000
-Oops: 0000 [#1]
-SMP 
-Modules linked in: applesmc evdev snd_seq snd_seq_device"
+2. When submitting your code, please include Signed-off-by: lines as
+pr Section 11 in Documentation/SubmittingPatches
 
-System.map says:
-c0136d47 t tick_nohz_handler
-c0136e30 t match_entries
-c0136e5a t tstats_open
+3. Make sure your patches adhere to the guidelines laid out in
+Documentation/CodingStyle (unless a specific maintainer tells you
+otherwise)
 
-match_entries is part of kernel/time/timer_stats.c
-and only used within timer_stats.c
 
-I guess without stack values this is hard to debug...
+A good place to start when looking for info is  Documentation/HOWTO.
 
-I cc'ed Ingo Molnar and Thomas Gleixner as they signed of the initial patch for
-the timer_stats support:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=82f67cd9fca8c8762c15ba7ed0d5747588c1e221
+A few quotes from Documentation/HOWTO that seem relevant (please do
+read the document in full yourself for the full story - this is a good
+starting point) can be found below;
 
-mfg
-thomas
+"
+...
+It contains instructions on how to become a Linux kernel developer and
+how to learn
+to work with the Linux kernel development community.
+...
+Legal Issues
+------------
 
+The Linux kernel source code is released under the GPL.  Please see the
+file, COPYING, in the main directory of the source tree, for details on
+the license.  If you have further questions about the license, please
+contact a lawyer, and do not ask on the Linux kernel mailing list.  The
+people on the mailing lists are not lawyers, and you should not rely on
+their statements on legal matters.
+...
+"
+
+Various other documents that are worth reading in the kernel source :
+
+README
+Documentation/SubmitChecklist
+Documentation/SubmittingDrivers
+Documentation/SubmittingPatches
+Documentation/Changes
+
+There are many more documents in the Documentation/ directory that are
+worth reading as well...
+
+
+Looking forward to your contributions.
+
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
