@@ -1,118 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbXEPQrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbXEPQuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762846AbXEPQrY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757714AbXEPQrQ
+	id S1760684AbXEPQuL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbXEPQt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:47:16 -0400
-Received: from ee.oulu.fi ([130.231.61.23]:34454 "EHLO ee.oulu.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757358AbXEPQrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:47:15 -0400
-Date: Wed, 16 May 2007 19:38:18 +0300
-From: Pekka Pietikainen <pp@ee.oulu.fi>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org
-Subject: Re: [PATCH] Pekka Pietikainen goes UTF-8 (try #2)
-Message-ID: <20070516163818.GA3834@ee.oulu.fi>
-References: <46486EAE.3060009@s5r6.in-berlin.de> <Pine.LNX.4.61.0705141947390.9570@yvahk01.tjqt.qr> <tkrat.0d89f95b66d8bb2c@s5r6.in-berlin.de> <Pine.LNX.4.61.0705142209090.9570@yvahk01.tjqt.qr> <20070514202509.GA1515@stusta.de> <Pine.LNX.4.61.0705142235320.9570@yvahk01.tjqt.qr> <20070514204107.GB1515@stusta.de> <Pine.LNX.4.61.0705142258120.9570@yvahk01.tjqt.qr> <20070515162314.GA10965@ee.oulu.fi> <464A9F2E.5020801@zytor.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="wRRV7LY7NUeQGEoC"
+	Wed, 16 May 2007 12:49:59 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:27513 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbXEPQt6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 12:49:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WuGcbkP6XmZUOqtkO/jeFkZCzyn09DSmkpofkLi3HhDS52O4GnjNQ8Qb+8mb+r+dVGJ21gfkXcO7+mHaMsGzuFhWjlXcOK3YorA6GQ8C1yLtBkH5vUUI2Ueve83ag+106QM2BTrYvNZsmRuLdSVv1ng+3aSsQokZ7oS4IfVKKrY=
+Message-ID: <6bffcb0e0705160949m7486705s1b2fc5bbe8a025df@mail.gmail.com>
+Date: Wed, 16 May 2007 18:49:57 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Bernd Schubert" <bschubert@q-leap.de>
+Subject: Re: mkfs.ext2 triggered softlockup
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <f2fcc1$otm$2@sea.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <464A9F2E.5020801@zytor.com>
-User-Agent: Mutt/1.4.2i
+References: <f2fcc1$otm$2@sea.gmane.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Bernd,
 
---wRRV7LY7NUeQGEoC
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+On 16/05/07, Bernd Schubert <bschubert@q-leap.de> wrote:
+> Maybe you still remember my report about an mkfs.ext2 triggered ram disk
+> corruption?
+>
+> http://lkml.org/lkml/2007/5/4/272
+>
+> Well, in principle I'm now doing the same stuff, only this time with another
+> initrd, which mounts the root-fs over nfs.
+>
+> [ 1596.928552] BUG: soft lockup detected on CPU#2!
+> [ 1596.933109]
+> [ 1596.933110] Call Trace:
+> [ 1596.933111]  <IRQ>  [<ffffffff8025167b>] softlockup_tick+0xd8/0xef
+> [ 1596.933129]  [<ffffffff802329f8>] run_local_timers+0x13/0x15
+> [ 1596.933132]  [<ffffffff80232a44>] update_process_times+0x4a/0x77
+> [ 1596.933138]  [<ffffffff8021434b>] smp_local_timer_interrupt+0x34/0x54
+> [ 1596.933143]  [<ffffffff802143cc>] smp_apic_timer_interrupt+0x61/0x78
+> [ 1596.933147]  [<ffffffff8020a29b>] apic_timer_interrupt+0x6b/0x70
+> [ 1596.933151]  <EOI>  [<ffffffff80299dff>] free_buffer_head+0x24/0x3e
+> [ 1596.933162]  [<ffffffff80272a63>] kmem_cache_free+0x1f4/0x201
+> [ 1596.933170]  [<ffffffff80299dff>] free_buffer_head+0x24/0x3e
+> [ 1596.933175]  [<ffffffff80299ea1>] try_to_free_buffers+0x88/0x9f
+> [ 1596.933181]  [<ffffffff802565a9>] try_to_release_page+0x39/0x40
+> [ 1596.933188]  [<ffffffff8025b76d>] invalidate_mapping_pages+0x9d/0x121
+> [ 1596.933196]  [<ffffffff8025b800>] invalidate_inode_pages+0xf/0x11
+> [ 1596.933200]  [<ffffffff80299053>] invalidate_bdev+0x3b/0x3f
+> [ 1596.933203]  [<ffffffff8029c9ee>] kill_bdev+0x13/0x29
+> [ 1596.933208]  [<ffffffff8029d6e8>] __blkdev_put+0x62/0x141
+> [ 1596.933213]  [<ffffffff8029db62>] blkdev_put+0xb/0xd
+> [ 1596.933218]  [<ffffffff8029dbf7>] blkdev_close+0x2e/0x33
+> [ 1596.933222]  [<ffffffff8027a3c3>] __fput+0xc3/0x172
+> [ 1596.933228]  [<ffffffff8027a486>] fput+0x14/0x16
+> [ 1596.933233]  [<ffffffff80278c4f>] filp_close+0x61/0x6d
+> [ 1596.933238]  [<ffffffff80278ce7>] sys_close+0x8c/0xce
+> [ 1596.933244]  [<ffffffff8020965e>] system_call+0x7e/0x83
+> [ 1596.933250]
 
-On Tue, May 15, 2007 at 11:05:34PM -0700, H. Peter Anvin wrote:
-> Pekka Pietikainen wrote:
-> > Since everyone else is doing it, why not me as well. Looks like I had
-> > a nice retro 7-bit a-umlaut in the tree from ten years ago too! 
-> > (That was back when ISO 8859-1 didn't work universally...).
-> > I hope my mailer is setup correctly for this, 
-> > http://www.ee.oulu.fi/~pp/pp-goes-utf8.patch has the same in 
-> > case something in the middle munges up the utf-8.
-> 
-> Your message came through tagged as iso-8859-1.
-I noticed. Reconfigured mutt, tested the change, then sent out the email
-from an unrestarted mutt. Shame on me :-( .
+Can you tell me which kernel version you are using?
 
-I wonder how much hassle these kinds of patches will cause when the UTF-8
-chars they introduce start occasionally showing up in the diff -u context.
-Somehow I think the world might not be ready yet (maybe in 5 years or so
-I'll dare start using umlauts in email headers :D ). Oh well :-)
+Regards,
+Michal
 
-Since I'm polluting the list already, might as well take the opportunity
-to resubmit :)
-
-Signed-off-by: Pekka Pietikäinen <pp@ee.oulu.fi>                                
-
---wRRV7LY7NUeQGEoC
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: attachment; filename="pp-goes-utf8.patch"
-Content-Transfer-Encoding: 8bit
-
---- linux-2.6.21/arch/m68k/sun3/config.c~	2007-05-15 19:01:45.000000000 +0300
-+++ linux-2.6.21/arch/m68k/sun3/config.c	2007-05-15 19:01:45.000000000 +0300
-@@ -1,7 +1,7 @@
- /*
-  *  linux/arch/m68k/sun3/config.c
-  *
-- *  Copyright (C) 1996,1997 Pekka Pietik{inen
-+ *  Copyright (C) 1996,1997 Pekka PietikÃ¤inen
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-  * License.  See the file COPYING in the main directory of this archive
---- linux-2.6.21/drivers/media/video/msp3400-driver.c~	2007-05-15 19:04:10.000000000 +0300
-+++ linux-2.6.21/drivers/media/video/msp3400-driver.c	2007-05-15 19:04:10.000000000 +0300
-@@ -22,7 +22,7 @@
-  *
-  *  NICAM (B/G, L , used in UK, Scandinavia, Spain and France)
-  *      should work, with autodetect. Support for NICAM was added by
-- *      Pekka Pietikainen <pp@netppl.fi>
-+ *      Pekka PietikÃ¤inen <pp@ee.oulu.fi>
-  *
-  * TODO:
-  *   - better SAT support
---- linux-2.6.21/drivers/net/wireless/bcm43xx/bcm43xx_dma.c~	2007-05-15 19:05:36.000000000 +0300
-+++ linux-2.6.21/drivers/net/wireless/bcm43xx/bcm43xx_dma.c	2007-05-15 19:05:36.000000000 +0300
-@@ -8,7 +8,7 @@
- 
-   Some code in this file is derived from the b44.c driver
-   Copyright (C) 2002 David S. Miller
--  Copyright (C) Pekka Pietikainen
-+  Copyright (C) Pekka PietikÃ¤inen
- 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
---- linux-2.6.21/drivers/net/b44.c~	2007-05-15 19:18:39.000000000 +0300
-+++ linux-2.6.21/drivers/net/b44.c	2007-05-15 19:18:24.000000000 +0300
-@@ -1,7 +1,7 @@
- /* b44.c: Broadcom 4400 device driver.
-  *
-  * Copyright (C) 2002 David S. Miller (davem@redhat.com)
-- * Fixed by Pekka Pietikainen (pp@ee.oulu.fi)
-+ * Copyright (C) 2004 Pekka PietikÃ¤inen (pp@ee.oulu.fi)
-  * Copyright (C) 2006 Broadcom Corporation.
-  *
-  * Distribute under GPL.
-@@ -86,7 +86,7 @@
- static char version[] __devinitdata =
- 	DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
- 
--MODULE_AUTHOR("Florian Schirmer, Pekka Pietikainen, David S. Miller");
-+MODULE_AUTHOR("Florian Schirmer, Pekka PietikÃ¤inen, David S. Miller");
- MODULE_DESCRIPTION("Broadcom 4400 10/100 PCI ethernet driver");
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRV_MODULE_VERSION);
-
---wRRV7LY7NUeQGEoC--
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
