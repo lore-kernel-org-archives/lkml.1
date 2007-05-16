@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbXEPHRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbXEPHUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759411AbXEPHRa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbXEPHRW
+	id S1760136AbXEPHUg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 03:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbXEPHU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 03:17:22 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:42708 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755695AbXEPHRV (ORCPT
+	Wed, 16 May 2007 03:20:28 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:34226 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754352AbXEPHU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 03:17:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=YVW+A99jQqanMZoHTZ4oSly6eJEMVSrYTqANQmKnY0pmxFNoIFPA2STaAMjWa5+2A0BNDvhG+p6VcKFyIVyVusAl9wzkumXg+VdJFwWjgIfunQJd2fdzXkkh+rxwPm1P+WOfZVapLNpeFHyo7teCF6ZqbOnSPMQE3DH4zBKoUzs=  ;
-X-YMail-OSG: r8ICYc8VM1m_EL.th1e8DeFezfv4OUo4ybpOBDC5hFzS4LIiDCRkZaTVYl.ghDmFEZtKeaWV7A--
-Message-ID: <464AAFF5.2040308@yahoo.com.au>
-Date: Wed, 16 May 2007 17:17:09 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 16 May 2007 03:20:27 -0400
+Date: Wed, 16 May 2007 00:18:51 -0700
+From: Greg KH <greg@kroah.com>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pci probe
+Message-ID: <20070516071851.GB19294@kroah.com>
+References: <4648B29A.6080406@gmail.com> <4649B270.8050002@gmail.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: David Howells <dhowells@redhat.com>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       dchinner@sgi.com
-Subject: Re: [PATCH 2/2] AFS: Implement shared-writable mmap
-References: <20070515155224.29345.22719.stgit@warthog.cambridge.redhat.com> <20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com> <20070516071054.GA14222@infradead.org>
-In-Reply-To: <20070516071054.GA14222@infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4649B270.8050002@gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Tue, May 15, 2007 at 04:52:31PM +0100, David Howells wrote:
+On Tue, May 15, 2007 at 05:15:28PM +0400, Manu Abraham wrote:
+> Manu Abraham wrote:
+> > Hi,
+> > 
+> > I do have a device that's a multifunction device. Eventhough a MFD, it
+> > just has one Interrupt which is shared by by a Configuration space for
+> > each function. ie, INTA is shared between them functions.
+> > 
+> > In such a case, i am wondering, (since pci_probe returns a pointer to
+> > one PCI function alone and i need to use both the functions in one
+> > module alone rather than using a module for each function and that the
+> > functions are quite similar for them to be used in different modules,
+> > such that a separate probe/ISR etc is used) whether using pci_get_device
+> > would be a better alternative to do manual searching for the functions
+> > in such a case.
+> > 
 > 
->>+int afs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
->>+{
->>+	struct afs_vnode *vnode = AFS_FS_I(vma->vm_file->f_mapping->host);
->>+	struct key *key = vma->vm_file->private_data;
->>+	int ret;
->>+
->>+	_enter("{{%x:%u},%x},{%lx}",
->>+	       vnode->fid.vid, vnode->fid.vnode, key_serial(key), page->index);
->>+
->>+	lock_page(page);
->>+	ret = afs_prepare_write(vma->vm_file, page, 0, 0);
->>+	unlock_page(page);
->>+
->>+	_leave(" = %d", ret);
->>+	return ret;
->>+}
+> Just figured out that pci_get_subsys() does work in a better. Looking at
+> kernel sources all i find is just one single user of pci_get_subsys()
 > 
-> 
-> It looks like you really want Dave's generic page_mkwrite.
+> building the code around pci_get_subsys(), does this have any negative
+> impact ?
 
-Is that appropriate for a non buffer based filesystem?
+Yes:
+	- your device will not show up properly in sysfs (no
+	  device/driver binding ability from userspace, no good
+	  information so that udev can properly name the device, etc.)
+	- your driver will not work on any pci-hotplug type system (that
+	  includes expresscard and pccard and lots of high-end servers.
+	- your driver will not be notified if the system is being
+	  suspended or resumed or wanting to drop into a low power
+	  state.
+	- another driver can bind to your device without you ever
+	  knowing it.
 
+So in short, use pci_probe and just handle the fact that you need to be
+called for two PCI devices and bind to both of them.  It shouldn't be
+that hard...
 
-> And we should
-> really get that one merged for 2.6.22.
+thanks,
 
-Dave asked me about that the other day (in relation to the ->fault ops)...
-I have no problem merging it for 2.6.22 and rebasing my patches on top.
-
--- 
-SUSE Labs, Novell Inc.
+greg k-h
