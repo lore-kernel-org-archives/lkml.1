@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933576AbXEPVO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933862AbXEPVV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933576AbXEPVO2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759121AbXEPVOU
+	id S933862AbXEPVV0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758910AbXEPVVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:14:20 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:8197 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754948AbXEPVOT (ORCPT
+	Wed, 16 May 2007 17:21:18 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:40742 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758450AbXEPVVR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:14:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GZyHTUdfP3grRrw8gPVj1+BlOdOz5hSjlNBI0Cw6BIGk3F+d272Kh7d30GuCGyXofHk2TxY0Iipv4ODnpIZByTFnWC/pe3FdczZDyOljs5AimdMzV0N3mvG1zBJL955M+emwV6CFodhCIwIrkuGq10EqDAapxx451ZYctXJixqc=
-Message-ID: <1defaf580705161414i67e753d7x883a78da347f7d55@mail.gmail.com>
-Date: Wed, 16 May 2007 23:14:18 +0200
-From: "=?ISO-8859-1?Q?H=E5vard_Skinnemoen?=" <hskinnemoen@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH] atmel_spi: Pass correct DMA address to controller
-Cc: "Haavard Skinnemoen" <hskinnemoen@atmel.com>, wux@landicorp.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200705161254.59308.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 16 May 2007 17:21:17 -0400
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705161410220.11517@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl>
+	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
+	 <20070514161224.GC11115@waste.org>
+	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
+	 <1179164453.2942.26.camel@lappy>
+	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
+	 <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins>
+	 <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
+	 <1179298771.7173.16.camel@twins>
+	 <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
+	 <1179343521.2912.20.camel@lappy>
+	 <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
+	 <1179346738.2912.39.camel@lappy>
+	 <Pine.LNX.4.64.0705161320020.11018@schroedinger.engr.sgi.com>
+	 <1179348039.2912.48.camel@lappy>
+	 <Pine.LNX.4.64.0705161343080.11234@schroedinger.engr.sgi.com>
+	 <1179348898.2912.57.camel@lappy>
+	 <Pine.LNX.4.64.0705161358030.11359@schroedinger.engr.sgi.com>
+	 <1179349494.2912.62.camel@lappy>
+	 <Pine.LNX.4.64.0705161410220.11517@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 23:20:33 +0200
+Message-Id: <1179350433.2912.66.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11793107892086-git-send-email-hskinnemoen@atmel.com>
-	 <200705161254.59308.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, David Brownell <david-b@pacbell.net> wrote:
-> On Wednesday 16 May 2007, Haavard Skinnemoen wrote:
-> > -     tx_dma = xfer->tx_dma;
-> > -     rx_dma = xfer->rx_dma;
-> > +     tx_dma = xfer->tx_dma + xfer->len - len;
-> > +     rx_dma = xfer->rx_dma + xfer->len - len;
-> >
-> >       /* use scratch buffer only when rx or tx data is unspecified */
-> > -     if (rx_dma == INVALID_DMA_ADDRESS) {
-> > +     if (!xfer->rx_buf) {
->
-> This test ...
->
-> >               rx_dma = as->buffer_dma;
-> >               if (len > BUFFER_SIZE)
-> >                       len = BUFFER_SIZE;
-> >       }
-> > -     if (tx_dma == INVALID_DMA_ADDRESS) {
-> > +     if (!xfer->tx_buf) {
->
-> ... and this one must not assume that the relevant buffer
-> is always NULL when the tx_dma has been set up.  Keep the
-> test against INVALID_DMA_ADDRESS, but fetch the address
-> from the spi_transfer.
+On Wed, 2007-05-16 at 14:13 -0700, Christoph Lameter wrote:
+> On Wed, 16 May 2007, Peter Zijlstra wrote:
+> > > How we know that we are out of trouble? Just try another alloc and see? If 
+> > > that is the case then we may be failing allocations after the memory 
+> > > situation has cleared up.
+> > No, no, for each regular allocation we retry to populate ->cpu_slab with
+> > a new slab. If that works we're out of the woods and the ->reserve_slab
+> > is cleaned up.
+> 
+> Hmmm.. so we could simplify the scheme by storing the last rank 
+> somewheres.
 
-No it doesn't -- it's the other way around. It assumes that if
-xfer->tx_buf is NULL, the user didn't provide a buffer so it has to
-use the scratch buffer instead. The driver never does PIO transfers,
-so if tx_buf is valid, tx_dma ought to be valid  too. This is taken
-care of elsewhere by calling dma_map_single() if the user provided a
-virtual pointer but not a dma address.
+Not sure how that would help..
 
-Checking for an invalid cpu-virtual pointer really should be
-equivalent to checking for an invalid DMA address at this point.
+> If the alloc has less priority and we can extend the slab then
+> clear up the situation.
+> 
+> If we cannot extend the slab then the alloc must fail.
 
-I could perhaps add else blocks to those two ifs and add the offset to
-the respective dma addresses there instead if it makes it clearer. The
-tests are supposed to be the same as before, but I had to change them
-one way or another because of the added offset (which would make an
-invalid dma address non-invalid.)
+That is exactly what is done; and as mpm remarked the other day, its a
+binary system; we don't need full gfp fairness just ALLOC_NO_WATERMARKS.
 
-> It's legit to set up cpu-virtual (for PIO) and dma addresses
-> for each buffer, since the upper layer driver has no way to
-> know if the underlying controller driver is DMA-capable, or
-> for that matter PIO-capable.
+And that is already found in ->reserve_slab; if present the last
+allocation needed it; if not the last allocation was good.
 
-Yes, but are there any drivers that will provide a valid dma address
-and a NULL cpu-virtual pointer? That would indeed break my
-assumptions, but it would also break any PIO-only drivers, wouldn't
-it?
+> Could you put the rank into the page flags? On 64 bit at least there 
+> should be enough space.
 
-Haavard
+Current I stick the newly allocated page's rank in page->rank (yet
+another overload of page->index). I've not yet seen the need to keep it
+around longer.
+
