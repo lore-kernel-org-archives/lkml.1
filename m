@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934155AbXEPUIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762490AbXEPUMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934155AbXEPUIA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXEPUHG
+	id S1762490AbXEPUMV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbXEPUMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:07:06 -0400
-Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:59917 "EHLO
-	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763244AbXEPUHC (ORCPT
+	Wed, 16 May 2007 16:12:15 -0400
+Received: from www17.your-server.de ([213.133.104.17]:4184 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754940AbXEPUMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:07:02 -0400
-Message-ID: <464B63D8.2060501@gentoo.org>
-Date: Wed, 16 May 2007 16:04:40 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 16 May 2007 16:12:14 -0400
+Message-ID: <1179346302.464b657e70b7b@213.133.104.17>
+Date: Wed, 16 May 2007 22:11:42 +0200
+From: thomas@m3y3r.de
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@linutronix.de
+Subject: [BUG] unable to handle kernel NULL pointer dereference at virtual address 00000003
 MIME-Version: 1.0
-To: Duane Griffin <duaneg@dghda.com>
-CC: Prakash Punnoor <prakash@punnoor.de>,
-       Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
- driver
-References: <20070516011711.GE15763@ifa.hawaii.edu>	 <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com>
-In-Reply-To: <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 84.59.60.74
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duane Griffin wrote:
-> On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
->> Maybe you want to give a hint in the p states driver help text?
-> 
-> I think a hint is the right thing to do, but in the PowerNow! driver
-> rather than the p states one. How about adding something like this to
-> the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
+This Oops happens under heavy load with 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7b104bcb8e460e45a1aebe3da9b86aacdb4cab12
+ head.
 
-Please hold off this patch until we've gained a more complete 
-understanding of the issues and workarounds (which will probably lead to 
-us writing a better patch anyway)
+Also i run the powertop tool in parallel of the build process.
 
-Daniel
+This is what i could capture with netconsole:
+
+"BUG: unable to handle kernel NULL pointer dereference at virtual address
+00000003
+ printing eip:
+c0136e32
+*pde = 00000000
+Oops: 0000 [#1]
+SMP 
+Modules linked in: applesmc evdev snd_seq snd_seq_device"
+
+System.map says:
+c0136d47 t tick_nohz_handler
+c0136e30 t match_entries
+c0136e5a t tstats_open
+
+match_entries is part of kernel/time/timer_stats.c
+and only used within timer_stats.c
+
+I guess without stack values this is hard to debug...
+
+I cc'ed Ingo Molnar and Thomas Gleixner as they signed of the initial patch for
+the timer_stats support:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=82f67cd9fca8c8762c15ba7ed0d5747588c1e221
+
+mfg
+thomas
 
