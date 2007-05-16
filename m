@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762757AbXEPVWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763117AbXEPVXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762757AbXEPVWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 17:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759984AbXEPVWL
+	id S1763117AbXEPVXR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 17:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760500AbXEPVXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 17:22:11 -0400
-Received: from moa.IfA.Hawaii.Edu ([128.171.168.48]:36134 "EHLO
-	moa.ifa.hawaii.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757812AbXEPVWL (ORCPT
+	Wed, 16 May 2007 17:23:06 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:28693 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759984AbXEPVXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 17:22:11 -0400
-Date: Wed, 16 May 2007 11:27:36 -1000
-From: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: Duane Griffin <duaneg@dghda.com>, Prakash Punnoor <prakash@punnoor.de>,
-       LKML <linux-kernel@vger.kernel.org>, Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
-Message-ID: <20070516212736.GO15763@ifa.hawaii.edu>
-References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <464B63D8.2060501@gentoo.org>
+	Wed, 16 May 2007 17:23:03 -0400
+Subject: Re: v2.6.21-rt2
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20070516210104.GA17240@elte.hu>
+References: <20070516180447.GA17922@elte.hu>
+	 <1179348842.20519.20.camel@imap.mvista.com>
+	 <20070516210104.GA17240@elte.hu>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 14:20:48 -0700
+Message-Id: <1179350448.20519.25.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="tDYGg60iReQ7u8wj"
-Content-Disposition: inline
-In-Reply-To: <464B63D8.2060501@gentoo.org>
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-05-16 at 23:01 +0200, Ingo Molnar wrote:
+> * Daniel Walker <dwalker@mvista.com> wrote:
+> 
+> > On Wed, 2007-05-16 at 20:04 +0200, Ingo Molnar wrote:
+> > > i'm pleased to announce the v2.6.20-rt2 kernel, which can be downloaded 
+> > > from the usual place:
+> > 
+> > 2.6.21-rt2 ?
+> 
+> oops, right! :-)
+> 
+> > >   - fixes for various problems by Steven Rostedt and Clark Williams
+> > 
+> > I think you missed the fix I submitted for one of Steve's changes.
+> > 
+> > http://lkml.org/lkml/2007/5/3/368
+> 
+> hm - trace_hardirqs_on() should never be called with irqs on - lockdep 
+> could break for example. Could you try to fix the call site instead?
 
---tDYGg60iReQ7u8wj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If that's the case why check if they're enabled inside
+trace_hardirqs_on() ? If that check fails you still still get the
+warning in my original release ..
 
-On Wed, May 16, 2007 at 04:04:40PM -0400, Daniel Drake wrote:
-> Duane Griffin wrote:
-> >On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
-> >>Maybe you want to give a hint in the p states driver help text?
-> >
-> >I think a hint is the right thing to do, but in the PowerNow! driver
-> >rather than the p states one. How about adding something like this to
-> >the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
->=20
-> Please hold off this patch until we've gained a more complete=20
-> understanding of the issues and workarounds (which will probably lead to=
-=20
-> us writing a better patch anyway)
+Daniel
 
-I agree - the issue is more complicated that I had thought.  I received
-an off list message saying that this dependency isn't required on a
-single-socket Athlon X2 system.  So it sounds like isn't an SMP setup
-issue as much as it is a multi-socket or perhaps just an issue with my
-vendor (Tyan).
-
--J
-
---
-
---tDYGg60iReQ7u8wj
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFGS3dIWa2BU+b7tU0RAn48AJ4/dhSKZy4t0yVtgTyhRSYB+EJPfwCcCq1a
-j7PP7ciLH7ly+oPLf69p6Mc=
-=K8bm
------END PGP SIGNATURE-----
-
---tDYGg60iReQ7u8wj--
