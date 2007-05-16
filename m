@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762681AbXEPGno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbXEPGwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762681AbXEPGno (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 02:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760257AbXEPGnh
+	id S1759601AbXEPGwW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 02:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbXEPGwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 02:43:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46153
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760032AbXEPGng (ORCPT
+	Wed, 16 May 2007 02:52:15 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:36937 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755538AbXEPGwO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 02:43:36 -0400
-Date: Tue, 15 May 2007 23:43:43 -0700 (PDT)
-Message-Id: <20070515.234343.74747977.davem@davemloft.net>
-To: clameter@sgi.com
-Cc: akpm@linux-foundation.org, mroos@linux.ee, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: slab hang on boot
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070515.180316.41635662.davem@davemloft.net>
-References: <20070515.173820.101498227.davem@davemloft.net>
-	<Pine.LNX.4.64.0705151759420.4399@schroedinger.engr.sgi.com>
-	<20070515.180316.41635662.davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 02:52:14 -0400
+Date: Tue, 15 May 2007 23:47:53 -0700
+From: Greg KH <greg@kroah.com>
+To: Lucy McCoy <lucy@keyspan.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb-users@lists.sourceforge.net,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2.6.21] Usb Serial Keyspan: add support for USA-49WG &
+	USA-28XG
+Message-ID: <20070516064753.GB18729@kroah.com>
+References: <464A34F2.5060002@keyspan.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464A34F2.5060002@keyspan.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Tue, 15 May 2007 18:03:16 -0700 (PDT)
+On Tue, May 15, 2007 at 03:32:18PM -0700, Lucy McCoy wrote:
+>  Add support for Keyspan adapters:  USA-49WG and USA-28XG
 
-> From: Christoph Lameter <clameter@sgi.com>
-> Date: Tue, 15 May 2007 18:00:23 -0700 (PDT)
-> 
-> > Slab allocators: Define common size limitations
-> 
-> Thanks for doing this work Christoph, I'll test this patch out on all
-> my sparc64 boxes, with both SLAB and SLUB, later this evening.
+Yeah!  Thanks for doing this, I was beginning to wonder about these
+devices as I had a few users ask about them recently.
 
-SLAB works properly again on sparc64 with this patch, thanks
-Christophe.
+>  Signed-off-by: Lucy P. McCoy <lucy@keyspan.com>
+>  ---
+>  diff -uprN -X linux-2.6.21-vanilla/Documentation/dontdiff 
+>  linux-2.6.21-vanilla/drivers/usb/serial/keyspan.c 
+>  linux-2.6.21-lpm/drivers/usb/serial/keyspan.c
+>  --- linux-2.6.21-vanilla/drivers/usb/serial/keyspan.c    2007-04-25 
+>  20:08:32.000000000 -0700
+>  +++ linux-2.6.21-lpm/drivers/usb/serial/keyspan.c    2007-05-04 
+>  13:35:23.000000000 -0700
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Ugh, somehow your email client word-wrapped everything and stripped out
+all of the tabs from your patch :(
+
+Can you try resending this to me, and in worse case, as an attachment?
+
+thanks,
+
+greg k-h
