@@ -1,305 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbXEPUTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762437AbXEPUUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933409AbXEPUTu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbXEPUTn
+	id S1762437AbXEPUUZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760874AbXEPUUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:19:43 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:57501 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756168AbXEPUTm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:19:42 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-	 <20070514161224.GC11115@waste.org>
-	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-	 <1179164453.2942.26.camel@lappy>
-	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-	 <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins>
-	 <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
-	 <1179298771.7173.16.camel@twins>
-	 <Pine.LNX.4.64.0705161139540.10265@schroedinger.engr.sgi.com>
-	 <1179343521.2912.20.camel@lappy>
-	 <Pine.LNX.4.64.0705161235490.10660@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 22:18:58 +0200
-Message-Id: <1179346738.2912.39.camel@lappy>
+	Wed, 16 May 2007 16:20:06 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39056 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759175AbXEPUUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 16:20:04 -0400
+Date: Wed, 16 May 2007 22:21:00 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PowerPC64 symbols start with '.'
+Message-ID: <20070516202100.GA31701@uranus.ravnborg.org>
+References: <20070511154501.1961fb92.sfr@canb.auug.org.au> <20070515203935.GB22966@uranus.ravnborg.org> <20070516135953.b8b7320c.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070516135953.b8b7320c.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 12:53 -0700, Christoph Lameter wrote:
-> On Wed, 16 May 2007, Peter Zijlstra wrote:
+On Wed, May 16, 2007 at 01:59:53PM +1000, Stephen Rothwell wrote:
+> Hi Sam,
 > 
-> > If this 4k cpu system ever gets to touch the new lock it is in way
-> > deeper problems than a bouncing cache-line.
+> On Tue, 15 May 2007 22:39:35 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+> >
+> > On Fri, May 11, 2007 at 03:45:01PM +1000, Stephen Rothwell wrote:
+> > > which we want to skip during modpost processing.  We need this to make
+> > > some of the whitelisting work.
+> >
+> > I have a popwerpc64 crosscompiler and would like to reproduce
+> > this bug.
+> > What config shall I use to try it out.
 > 
-> So its no use on NUMA?
-
-It is, its just that we're swapping very heavily at that point, a
-bouncing cache-line will not significantly slow down the box compared to
-waiting for block IO, will it?
-
-> > Please look at it more carefully.
-> > 
-> > We differentiate pages allocated at the level where GFP_ATOMIC starts to
-> > fail. By not updating the percpu slabs those are retried every time,
-> > except for ALLOC_NO_WATERMARKS allocations; those are served from the
-> > ->reserve_slab.
-> > 
-> > Once a regular slab allocation succeeds again, the ->reserve_slab is
-> > cleaned up and never again looked at it until we're in distress again.
+> I use allmodconfig, but that doesn't really build at the moment, so I
+> have attached a config that should build (with a recent Linus tree).
 > 
-> A single slab? This may only give you a a single object in an extreme 
-> case. Are you sure that this solution is generic enough?
-
-Well, single as in a single active; it gets spilled into the full list
-and a new one is instanciated if more is needed.
-
-> The problem here is that you may spinlock and take out the slab for one 
-> cpu but then (AFAICT) other cpus can still not get their high priority 
-> allocs satisfied. Some comments follow.
-
-All cpus are redirected to ->reserve_slab when the regular allocations
-start to fail.
-
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  include/linux/slub_def.h |    2 +
-> >  mm/slub.c                |   85 ++++++++++++++++++++++++++++++++++++++++++-----
-> >  2 files changed, 78 insertions(+), 9 deletions(-)
-> > 
-> > Index: linux-2.6-git/include/linux/slub_def.h
-> > ===================================================================
-> > --- linux-2.6-git.orig/include/linux/slub_def.h
-> > +++ linux-2.6-git/include/linux/slub_def.h
-> > @@ -46,6 +46,8 @@ struct kmem_cache {
-> >  	struct list_head list;	/* List of slab caches */
-> >  	struct kobject kobj;	/* For sysfs */
-> >  
-> > +	struct page *reserve_slab;
-> > +
-> >  #ifdef CONFIG_NUMA
-> >  	int defrag_ratio;
-> >  	struct kmem_cache_node *node[MAX_NUMNODES];
-> > Index: linux-2.6-git/mm/slub.c
-> > ===================================================================
-> > --- linux-2.6-git.orig/mm/slub.c
-> > +++ linux-2.6-git/mm/slub.c
-> > @@ -20,11 +20,13 @@
-> >  #include <linux/mempolicy.h>
-> >  #include <linux/ctype.h>
-> >  #include <linux/kallsyms.h>
-> > +#include "internal.h"
-> >  
-> >  /*
-> >   * Lock order:
-> > - *   1. slab_lock(page)
-> > - *   2. slab->list_lock
-> > + *   1. reserve_lock
-> > + *   2. slab_lock(page)
-> > + *   3. node->list_lock
-> >   *
-> >   *   The slab_lock protects operations on the object of a particular
-> >   *   slab and its metadata in the page struct. If the slab lock
-> > @@ -259,6 +261,8 @@ static int sysfs_slab_alias(struct kmem_
-> >  static void sysfs_slab_remove(struct kmem_cache *s) {}
-> >  #endif
-> >  
-> > +static DEFINE_SPINLOCK(reserve_lock);
-> > +
-> >  /********************************************************************
-> >   * 			Core slab cache functions
-> >   *******************************************************************/
-> > @@ -1007,7 +1011,7 @@ static void setup_object(struct kmem_cac
-> >  		s->ctor(object, s, 0);
-> >  }
-> >  
-> > -static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
-> > +static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node, int *rank)
-> >  {
-> >  	struct page *page;
-> >  	struct kmem_cache_node *n;
-> > @@ -1025,6 +1029,7 @@ static struct page *new_slab(struct kmem
-> >  	if (!page)
-> >  		goto out;
-> >  
-> > +	*rank = page->rank;
-> >  	n = get_node(s, page_to_nid(page));
-> >  	if (n)
-> >  		atomic_long_inc(&n->nr_slabs);
-> > @@ -1311,7 +1316,7 @@ static void unfreeze_slab(struct kmem_ca
-> >  /*
-> >   * Remove the cpu slab
-> >   */
-> > -static void deactivate_slab(struct kmem_cache *s, struct page *page, int cpu)
-> > +static void __deactivate_slab(struct kmem_cache *s, struct page *page)
-> >  {
-> >  	/*
-> >  	 * Merge cpu freelist into freelist. Typically we get here
-> > @@ -1330,10 +1335,15 @@ static void deactivate_slab(struct kmem_
-> >  		page->freelist = object;
-> >  		page->inuse--;
-> >  	}
-> > -	s->cpu_slab[cpu] = NULL;
-> >  	unfreeze_slab(s, page);
-> >  }
+> > Can you please supply the exact warning message too.
 > 
-> So you want to spill back the lockless_freelist without deactivating the 
-> slab? Why are you using the lockless_freelist at all? If you do not use it 
-> then you can call unfreeze_slab. No need for this split.
-
-Ah, quite right. I do indeed not use the lockless_freelist.
-
-> > @@ -1395,6 +1405,7 @@ static void *__slab_alloc(struct kmem_ca
-> >  {
-> >  	void **object;
-> >  	int cpu = smp_processor_id();
-> > +	int rank = 0;
-> >  
-> >  	if (!page)
-> >  		goto new_slab;
-> > @@ -1424,10 +1435,26 @@ new_slab:
-> >  	if (page) {
-> >  		s->cpu_slab[cpu] = page;
-> >  		goto load_freelist;
-> > -	}
-> > +	} else if (unlikely(gfp_to_alloc_flags(gfpflags) & ALLOC_NO_WATERMARKS))
-> > +		goto try_reserve;
+> WARNING: mm/built-in.o - Section mismatch: reference to .init.text:.__alloc_bootmem_node from .text between '.sparse_index_alloc' (at offset 0x27df0) and '.__section_nr'
 > 
-> Ok so we are trying to allocate a slab and do not get one thus -> 
-> try_reserve. 
+> The '.sparse_index_alloc' doesn't match "sparse_index_alloc" in pat4sym
+> due to the '.' at the beginning.  I have seen another one as well, but
+> cannot reproduce it at the moment.
 
-Right, so the cpu-slab is NULL, and we need a new slab.
+I'm reluctant to apply this patch for two reasons.
+1) I cannot reproduce it
+2) The cases that this patch would repair are most likely
+   better addressed by the upcoming __init_refok marker.
 
-> But this is only working if we are using the slab after
-> explicitly flushing the cpuslabs. Otherwise the slab may be full and we
-> get to alloc_slab.
+ad 1) I think the alloc_bootmem warning was fixed by
+correcting the __init / __initdata markes so it got
+fixed in the rigt way and not by whitelisting.
 
-/me fails to parse.
+I had a bunch or warnings like this:
+WARNING: arch/ppc/platforms/built-in.o(.data+0x18): Section mismatch: reference to .init.text:Powerplus_Map_Non0 (between 'mot_info' and 'Mesquite_pci_IRQ_map')
+This is mot_info that should be marked __initdata - shall I post a patch?
 
-When we need a new_slab: 
- - we try the partial lists,
- - we try the reserve (if ALLOC_NO_WATERMARKS)
-   otherwise alloc_slab
+And one warning like this:
+WARNING: arch/ppc/mm/built-in.o(.text+0x1000): Section mismatch: reference to .init.text:early_get_page (between 'pte_alloc_one_kernel' and 'hash_page_sync')
 
-> >  
-> > -	page = new_slab(s, gfpflags, node);
-> > -	if (page) {
-> 
-> > +alloc_slab:
-> > +	page = new_slab(s, gfpflags, node, &rank);
-> > +	if (page && rank) {
-> 
-> Huh? You mean !page?
+The latter is a __init_Refok candidate.
+The logic make sure we call early_get_page only if we are in init mode.
 
-No, no, we did get a page, and it was !ALLOC_NO_WATERMARK hard to get
-it. 
+I also saw a number of:
+WARNING: "next_slot" [arch/ppc/mm/built-in] is COMMON symbol
 
-> > +		if (unlikely(s->reserve_slab)) {
-> > +			struct page *reserve;
-> > +
-> > +			spin_lock(&reserve_lock);
-> > +			reserve = s->reserve_slab;
-> > +			s->reserve_slab = NULL;
-> > +			spin_unlock(&reserve_lock);
-> > +
-> > +			if (reserve) {
-> > +				slab_lock(reserve);
-> > +				__deactivate_slab(s, reserve);
-> > +				putback_slab(s, reserve);
-> 
-> Remove the above two lines (they are wrong regardless) and simply make 
-> this the cpu slab.
+I can see where modpost post this warning but I do not know the rationale
+behind it.
+The symbols that modpost complain about are all assembler defined symbols.
+Maybe something needs to be fixed in the assembler code?
+The offending symbols are marked with .comm but other global symbols
+are marked with _GLOBAL(symbol).
 
-It need not be the same node; the reserve_slab is node agnostic.
-So here the free page watermarks are good again, and we can forget all
-about the ->reserve_slab. We just push it on the free/partial lists and
-forget about it.
-
-But like you said above: unfreeze_slab() should be good, since I don't
-use the lockless_freelist.
-
-> > +			}
-> > +		}
-> >  		cpu = smp_processor_id();
-> >  		if (s->cpu_slab[cpu]) {
-> >  			/*
-> > @@ -1455,6 +1482,18 @@ new_slab:
-> >  		SetSlabFrozen(page);
-> >  		s->cpu_slab[cpu] = page;
-> >  		goto load_freelist;
-> > +	} else if (page) {
-> > +		spin_lock(&reserve_lock);
-> > +		if (s->reserve_slab) {
-> > +			discard_slab(s, page);
-> > +			page = s->reserve_slab;
-> > +		}
-> > +		slab_lock(page);
-> > +		SetPageActive(page);
-> > +		s->reserve_slab = page;
-> > +		spin_unlock(&reserve_lock);
-> > +
-> > +		goto got_reserve;
-
-So this is when we get a page and it was ALLOC_NO_WATERMARKS hard to get
-it. Instead of updating the cpu_slab we leave that unset, so that
-subsequent allocations will try to allocate a slab again thereby testing
-the current free pages limit (and not gobble up the reserve).
-
-> >  	}
-> >  	return NULL;
-> >  debug:
-> > @@ -1470,6 +1509,31 @@ debug:
-> >  	page->freelist = object[page->offset];
-> >  	slab_unlock(page);
-> >  	return object;
-> > +
-> > +try_reserve:
-> > +	spin_lock(&reserve_lock);
-> > +	page = s->reserve_slab;
-> > +	if (!page) {
-> > +		spin_unlock(&reserve_lock);
-> > +		goto alloc_slab;
-> > +	}
-> > +
-> > +	slab_lock(page);
-> > +	if (!page->freelist) {
-> > +		s->reserve_slab = NULL;
-> > +		spin_unlock(&reserve_lock);
-> > +		__deactivate_slab(s, page);
-> replace with unfreeze slab.
-> 
-> > +		putback_slab(s, page);
-> 
-> Putting back the slab twice.
-
-__deactivete_slab() doesn't do putback_slab, and now I see that whole
-function isn't there anymore. unfreeze_slab() it is.
-
-> > +		goto alloc_slab;
-> > +	}
-> > +	spin_unlock(&reserve_lock);
-> > +
-> > +got_reserve:
-> > +	object = page->freelist;
-> > +	page->inuse++;
-> > +	page->freelist = object[page->offset];
-> > +	slab_unlock(page);
-> > +	return object;
-
-
-
+	Sam
