@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbXEPJNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbXEPJP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762058AbXEPJNe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 05:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbXEPJNV
+	id S1761581AbXEPJP6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 05:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbXEPJPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 05:13:21 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:19039 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758770AbXEPJNT (ORCPT
+	Wed, 16 May 2007 05:15:51 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:58283 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbXEPJPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 05:13:19 -0400
-X-Greylist: delayed 959 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 05:13:18 EDT
-Message-ID: <464AC75D.1090701@linux-kernel.at>
-Date: Wed, 16 May 2007 10:57:01 +0200
-From: Oliver Falk <oliver@linux-kernel.at>
-Organization: Linux kernel Austria
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070419 Fedora/2.0.0.0-1.fc7 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+	Wed, 16 May 2007 05:15:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LZHzqa4iYqaFBpKWnGvDhAm89Owp6esDT4X5gBaXelmfg55R7QWQ7VPHFCRrOpBohHCeqMyliXAAlQYyCqE6MVUrZrO7bgUbezpvUIa79fUUf3lhvPZIhfOXvNeFcr4RwMtILMyPH4KGnX2ib4HeCqagCIZEB+IppwEr2lifQLo=
+Message-ID: <e5ab0f710705160215p6b11bffeh53796b1b2223fd6d@mail.gmail.com>
+Date: Wed, 16 May 2007 11:15:49 +0200
+From: "Francesco Pretto" <ceztko@gmail.com>
+To: "Rob Landley" <rob@landley.net>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+Cc: "Dave Jones" <davej@redhat.com>, "Tejun Heo" <htejun@gmail.com>,
+       "Phillip Susi" <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200705160129.16048.rob@landley.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [patch] Missing defines in asm-alpha/unistd.h!?
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-3.009, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
-	PLING_QUERY 1.39)
-X-MailScanner-From: oliver@linux-kernel.at
+Content-Disposition: inline
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>
+	 <46489D3B.8050805@gmail.com> <20070515210804.GG25902@redhat.com>
+	 <200705160129.16048.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+2007/5/16, Rob Landley <rob@landley.net>:
+> (Is there any other piece of hardware that needs userspace to quiesce it just
+> so the _off_switch_ can take effect?  Yes, I read both the gmane thread and
+> the linux-ata.org link.  I used to maintain the busybox halt/reboot/poweroff
+> commands, although I don't anymore.  That just called reboot(), and this
+> worked.)
+>
 
-I believe this is missing... :-) I hope I understood NR_SYSCALLS
-correctly and it's the number of defined syscals - as I added 20 of
-them, I increased it by 20... Maybe someone can have a look if it's correct.
+For what i understood, there were a misunderstanding caused by the
+wrong assumption that shutdown(8) implementations were issuing
+STANDBYNOW on all hard disk devices on the system (indistinctly from
+the interface, old-ide/libata/scsi). The fact is that sysvinit and
+others actually do something with the old interface /proc/ide, trying
+to spindown the hard disks. This worked only on systems using the old
+ide/ata drivers because kernel prior to 2.6.22rc1 didn't even have the
+necessary feature to spindown hard disks using the libata or the scsi
+interface.
 
-- --- linux-2.6.21/include/asm-alpha/unistd.h.missing_defines
-2007-05-16 10:53:02.000000000 +0200
-+++ linux-2.6.21/include/asm-alpha/unistd.h     2007-05-16
-10:54:44.000000000 +0200
-@@ -388,9 +388,30 @@
- #define __NR_inotify_add_watch         445
- #define __NR_inotify_rm_watch          446
+Hopefully, with the patch in discussion, there will be an happy ending with:
 
-+#define __NR_openat             447
-+#define __NR_mkdirat            448
-+#define __NR_mknodat            449
-+#define __NR_fchownat           450
-+#define __NR_futimesat          451
-+#define __NR_unlinkat           452
-+#define __NR_renameat           453
-+#define __NR_linkat             454
-+#define __NR_symlinkat          455
-+#define __NR_readlinkat         456
-+#define __NR_fchmodat           457
-+#define __NR_faccessat          458
-+#define __NR_pselect6           459
-+#define __NR_ppoll              460
-+#define __NR_unshare            461
-+#define __NR_set_robust_list    462
-+#define __NR_get_robust_list    463
-+#define __NR_splice             464
-+#define __NR_sync_file_range    465
-+#define __NR_tee                466
-+
- #ifdef __KERNEL__
+- sysvinit and derived implementations:
+if ( old ide/ata drivers are used )
+  {continue to do the old userland spindown mechanism with /proc/ide; }
+// else
+//  { do nothing; }
+reboot();
 
-- -#define NR_SYSCALLS                    447
-+#define NR_SYSCALLS                    467
+- everyone else:
+// continue to do nothing :-)
+reboot();
 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
+If exists some, at this point, exotic shutdown(8) implementation that
+is trying to issue STANDBYBOW on libata/scsi devices, it will get a
+fat warning. The warning could also state that the only supported way
+is to leave complete responsibility of spinning down the hard disks to
+kernel, so eventually it could be cleaned of checks and compatibility
+options.
 
-Best,
- Oliver
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGSsdcxWN5Ge8lKUMRAruUAJ9SElaGQfpU/6f5pAUhM/m+DHUuOACgx3Au
-7GvsNTJnlvIKdnOPrSZBWtc=
-=h2CN
------END PGP SIGNATURE-----
+[1] http://article.gmane.org/gmane.linux.ide/18846
