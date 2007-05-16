@@ -1,35 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762802AbXEPRZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbXEPR10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762802AbXEPRZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbXEPRZO
+	id S1757909AbXEPR10 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXEPR1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:25:14 -0400
-Received: from ee.oulu.fi ([130.231.61.23]:40389 "EHLO ee.oulu.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757317AbXEPRZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:25:13 -0400
-Date: Wed, 16 May 2007 20:16:23 +0300
-From: Pekka Pietikainen <pp@ee.oulu.fi>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org
-Subject: Re: [PATCH] Pekka Pietikainen goes UTF-8 (try #2)
-Message-ID: <20070516171623.GA4387@ee.oulu.fi>
-References: <Pine.LNX.4.61.0705141947390.9570@yvahk01.tjqt.qr> <tkrat.0d89f95b66d8bb2c@s5r6.in-berlin.de> <Pine.LNX.4.61.0705142209090.9570@yvahk01.tjqt.qr> <20070514202509.GA1515@stusta.de> <Pine.LNX.4.61.0705142235320.9570@yvahk01.tjqt.qr> <20070514204107.GB1515@stusta.de> <Pine.LNX.4.61.0705142258120.9570@yvahk01.tjqt.qr> <20070515162314.GA10965@ee.oulu.fi> <464A9F2E.5020801@zytor.com> <20070516163818.GA3834@ee.oulu.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070516163818.GA3834@ee.oulu.fi>
-User-Agent: Mutt/1.4.2i
+	Wed, 16 May 2007 13:27:17 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:10840 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756270AbXEPR1Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 13:27:16 -0400
+Date: Wed, 16 May 2007 18:26:53 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 2/2] AFS: Implement shared-writable mmap
+In-Reply-To: <464B3BE4.10704@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0705161823550.16760@blonde.wat.veritas.com>
+References: <20070515155224.29345.22719.stgit@warthog.cambridge.redhat.com>
+ <20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com>
+ <20070515144007.f87d9be5.akpm@linux-foundation.org> <464A533B.8040507@yahoo.com.au>
+ <Pine.LNX.4.64.0705161711090.7914@blonde.wat.veritas.com> <464B3BE4.10704@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 16 May 2007 17:27:15.0357 (UTC) FILETIME=[723ED4D0:01C797DF]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWZzZGV2ZWxAdmdlci5rZXJuZWwub3JnAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBkaG93ZWxsc0ByZWRoYXQuY29tAG5pY2twaWdnaW5AeWFob28uY29tLmF1AA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 07:38:18PM +0300, Pekka Pietikainen wrote:
-> Since I'm polluting the list already, might as well take the opportunity
-> to resubmit :)
-Blah, I think it now thought the UTF-8 in the patch was actually 
-latin-1 and then helpfully re-encoded into UTF-8.
+On Thu, 17 May 2007, Nick Piggin wrote:
+> 
+> ... and I don't want to change the
+> VM in a way that people are not unhappy with :)
 
-I give up :-(
+I'm hoping you intended one less negative ;)
