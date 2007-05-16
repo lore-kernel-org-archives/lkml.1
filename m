@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbXEPHAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762460AbXEPHAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762130AbXEPHAJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760076AbXEPG75
+	id S1762460AbXEPHAf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 03:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbXEPHA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 02:59:57 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:57971 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754100AbXEPG75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 02:59:57 -0400
-Date: Wed, 16 May 2007 08:55:54 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Pekka Pietikainen <pp@ee.oulu.fi>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org
-Subject: Re: [PATCH] Pekka Pietikainen goes UTF-8
-In-Reply-To: <464A9F2E.5020801@zytor.com>
-Message-ID: <Pine.LNX.4.61.0705160855270.9570@yvahk01.tjqt.qr>
-References: <4647A52A.8000709@post.pl> <4647A868.4070201@post.pl>
- <46486EAE.3060009@s5r6.in-berlin.de> <Pine.LNX.4.61.0705141947390.9570@yvahk01.tjqt.qr>
- <tkrat.0d89f95b66d8bb2c@s5r6.in-berlin.de> <Pine.LNX.4.61.0705142209090.9570@yvahk01.tjqt.qr>
- <20070514202509.GA1515@stusta.de> <Pine.LNX.4.61.0705142235320.9570@yvahk01.tjqt.qr>
- <20070514204107.GB1515@stusta.de> <Pine.LNX.4.61.0705142258120.9570@yvahk01.tjqt.qr>
- <20070515162314.GA10965@ee.oulu.fi> <464A9F2E.5020801@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Wed, 16 May 2007 03:00:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57606 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755028AbXEPHAY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 03:00:24 -0400
+Date: Wed, 16 May 2007 08:00:15 +0100
+From: hch <hch@infradead.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, hch <hch@infradead.org>
+Subject: Re: [PATCH 1/6] lguest: host code tidyups
+Message-ID: <20070516070015.GA13980@infradead.org>
+Mail-Followup-To: hch <hch@infradead.org>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	virtualization <virtualization@lists.linux-foundation.org>,
+	Al Viro <viro@zeniv.linux.org.uk>
+References: <1179191827.10836.24.camel@localhost.localdomain> <20070515214235.b0625699.sfr@canb.auug.org.au> <20070515214756.b8020d4e.sfr@canb.auug.org.au> <1179271936.23574.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179271936.23574.2.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 16, 2007 at 09:32:16AM +1000, Rusty Russell wrote:
+> On Tue, 2007-05-15 at 21:47 +1000, Stephen Rothwell wrote:
+> > On Tue, 15 May 2007 21:42:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > >
+> > > On Tue, 15 May 2007 11:17:07 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > > -		on_each_cpu(adjust_pge, 0, 0, 1);
+> > > > +		on_each_cpu(adjust_pge, (void *)0, 0, 1);
+> > >
+> > > Sorry?  What ever happened to a simple NULL?
+> > 
+> > Oh, I guess that is an explicit (numeric) 0 (of some type) caste to
+> > "void *" because of the prototype - rather than not passing anything?
+> 
+> Indeed.  We really want to pass a bool, but on_each_cpu uses a void *.
+> Hence the clearest solution seemed "(void *)0" and "(void *)1" in the
+> callers.
 
-On May 15 2007 23:05, H. Peter Anvin wrote:
->Pekka Pietikainen wrote:
->> Since everyone else is doing it, why not me as well. Looks like I had
->> a nice retro 7-bit a-umlaut in the tree from ten years ago too! 
->> (That was back when ISO 8859-1 didn't work universally...).
->> I hope my mailer is setup correctly for this, 
->> http://www.ee.oulu.fi/~pp/pp-goes-utf8.patch has the same in 
->> case something in the middle munges up the utf-8.
->
->Your message came through tagged as iso-8859-1.
+Cleanest way to do that is to pass the value by reference.
 
-Which perhaps is best, because UTF-8 is 'valid' ISO-8859-1 afaict,
-while the reverse is not true.
+	const int some_useful_name = 0;
 
-
-	Jan
--- 
+	 on_each_cpu(adjust_pge, &some_useful_name, 0, 1);
