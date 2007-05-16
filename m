@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762269AbXEPLlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbXEPLqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762269AbXEPLlc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758652AbXEPLlZ
+	id S1760601AbXEPLqV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757079AbXEPLqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:41:25 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:30220 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758236AbXEPLlY (ORCPT
+	Wed, 16 May 2007 07:46:11 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:53153 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756321AbXEPLqK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:41:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=gHk/vxVa6qg/ohsIOvaiFLKLb+V+czw7Of/RFqiU1cYNJ0dQrUtxyXtd53vWS4qNcVEkqMr+bNARmyr4//u02MST0iW7zaHKat0EUmketSVR0hmTUe5rnyvXatcUg1xehuo43sSiRu74B8oio4B5WzxUOtoe/txW13ttuLFajQ8=
-Message-ID: <464AEDD0.3090304@gmail.com>
-Date: Wed, 16 May 2007 13:41:04 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Dave Jones <davej@redhat.com>, Francesco Pretto <ceztko@gmail.com>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <46489D3B.8050805@gmail.com> <20070515210804.GG25902@redhat.com> <200705160129.16048.rob@landley.net>
-In-Reply-To: <200705160129.16048.rob@landley.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 16 May 2007 07:46:10 -0400
+Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
+	at net/core/sock.c:1523
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Jiri Kosina <jikos@jikos.cz>, Greg KH <gregkh@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com>
+References: <462D1B09.9050005@goop.org>
+	 <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
+	 <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
+	 <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
+	 <Pine.LNX.4.64.0705161124030.25986@twin.jikos.cz>
+	 <a781481a0705160436s3564022aybd9b318ec0947d94@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 13:45:04 +0200
+Message-Id: <1179315904.10069.67.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Satayam,
 
-Rob Landley wrote:
-> Um, hang on.  So libata can't reliably turn the system off without data loss 
-> and potential damage to hardware unless userspace goes through a special song 
-> and dance?  And this is _not_ considered a defect in the kernel?
+> > > (later)
+> > > I Googled a bit to see if this problem was faced elsewhere in the kernel
+> > > too. Saw the following commit by Ingo Molnar
+> > > (9883a13c72dbf8c518814b6091019643cdb34429):
+> > > -     lock_sock(sock->sk);
+> > > +     local_bh_disable();
+> > > +     bh_lock_sock_nested(sock->sk);
+> > >       rc = selinux_netlbl_socket_setsid(sock, sksec->sid);
+> > > -     release_sock(sock->sk);
+> > > +     bh_unlock_sock(sock->sk);
+> > > +     local_bh_enable();
+> > > Is it _really_ *this* simple?
+> > [...]
+> > actually this *seems* to be proper solution also for our case, thanks for
+> > pointing this out. I will think about it once again, do some more tests
+> > with this locking scheme, and will let you know.
+> 
+> Yes, I can almost confirm that this (open-coding of spin_lock_bh,
+> effectively) is the proper solution (Rusty's unreliable guide to
+> kernel-locking needs to be next to every developer's keyboard :-)
+> I also came across this idiom in other places in the networking code
+> so it seems to be pretty much the standard way. I wish I owned
+> bluetooth hardware, could've tested this for you myself.
 
-Yeap, definitely a bug in the kernel and we're trying to fix it.  Just
-for the record, we have _always_ issued FLUSH CACHE, so there hasn't
-been and won't be any data loss problem.  The data loss problem was
-mentioned as why we can't do things completely inside kernel without
-updating userland shutdown(8) which issues STANDBYNOW.
+does this mean we should revert previous changes to the locking or only
+apply this on top of it?
 
--- 
-tejun
+Regards
+
+Marcel
+
+
