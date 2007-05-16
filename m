@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbXEPQJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762167AbXEPQKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761052AbXEPQJy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbXEPQJs
+	id S1762167AbXEPQKa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbXEPQKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:09:48 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:23493 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756524AbXEPQJr (ORCPT
+	Wed, 16 May 2007 12:10:23 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:23336 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbXEPQKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:09:47 -0400
-Message-ID: <a781481a0705160720p58f0730ehcb491bb6e111f924@mail.gmail.com>
-Date: Wed, 16 May 2007 19:50:05 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [RFC] select and dependencies in Kconfig
-Cc: "Al Viro" <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, kbuild-devel@lists.sourceforge.net
-In-Reply-To: <alpine.LFD.0.98.0705152046070.3890@woody.linux-foundation.org>
+	Wed, 16 May 2007 12:10:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:user-agent;
+	b=afctwYAxmzabYHAy6fHU+GPUuI7/N5YR0XyU3sK7W8YiCeYz5WIVIk3v5sLCTY6Ww
+	DOeiEIAgY0OkTuspDma7w==
+Date: Wed, 16 May 2007 09:09:11 -0700
+From: Aaron Durbin <adurbin@google.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, len.brown@intel.com
+Subject: [PATCH] acpi: Fix potential call to a freed memory section.
+Message-ID: <20070516160911.GA15066@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk>
-	 <20070516033335.GH4095@ftp.linux.org.uk>
-	 <alpine.LFD.0.98.0705152046070.3890@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, Al Viro <viro@ftp.linux.org.uk> wrote:
-> On Tue, May 15, 2007 at 08:36:20PM +0100, Al Viro wrote:
-> >
-> > stuff that does select USB should depend on USB_ARCH_HAS_HCD, or we'll
-> > end up with unbuildable configs.
->
-> BTW, this kind of situation happens often enough, so how about doing
-> the following: teach kconfig that if FOO selects BAR and BAR depends
-> on <expr>, we should act as if FOO had explicit depends on <expr>.
->
-> Rationale: if FOO selects BAR, BAR depends on <expr> and <expr> is false,
-> turning FOO on will land us into unbuildable configuration (BAR turned on,
-> dependencies of BAR are not satisfied).  It really happens often enough to
-> be very annoying.  And we have fsckloads of dependencies that are there
-> only because of such scenarios.  Gets especially nasty when BAR is selected
-> by several dozens of options and dependencies of BAR change...
+Strip __cpuinit[data] from Node <-> PXM routines and supporting data structures.
+Also make pxm_to_node_map and node_to_pxm_map local to the numa acpi module.
 
-[ First off, "select"ing BAR that itself "depends on" BAZ is evil and
-should be avoided, except where BAR is strictly library-like and thus
-has simple or few basic dependencies. Still, like you say, dependencies
-of BAR can change over time, or one could want to be lazy and wish to
-avoid burdening users with having to pick dependencies _before_ the
-option they're interested in -- especially with menuconfig not even
-showing options whose dependencies are not satisfied already. ]
+This fixes a bug triggered by the following conditions:
+- boot on a machine with a SLIT table defined
+- kernel is configured w/ CONFIG_HOTPLUG_CPU=n
+- cat /sys/devices/system/node/node*/distance
+This will cause an oops by calling into a freed memory section.
 
-Anyway, I'd gotten into a couple of threads discussing precisely this over
-the last couple of weeks, and thought of more-or-less a similar solution:
-http://lkml.org/lkml/2007/5/7/332
+In particular, on x86_64, __node_distance calls node_to_pxm().
 
-When user picks FOO, we select BAR and note its dependencies (i.e. BAZ).
-Build a complete dependency tree (FOO upwards), and show to the user all
-the other config options (such as BAZ) that will now have to be picked
-to satisfy user's selection of FOO without causing build breakages. If
-user says yes, we *select* BAZ too (so now it can't be un-selected). If
-user says no, FOO is not picked at all.
+Signed-off-by: Aaron Durbin <adurbin@google.com>
+---
 
-On 5/16/07, Al Viro <viro@ftp.linux.org.uk> wrote:
-> Implementing that is pretty simply; the only thing I'm not sure how to deal
-> with is how to show such inherited dependencies in menuconfig et.al.
-
-On 5/16/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> Sounds sane. I wonder if there are any non-obvious gotchas, and I worry
-> that the indirect dependency ends up getting really confusing at times,
-> but I don't think the notion is broken - just worrying about how to *show*
-> this to explain what is going on when people say "why can't I select X".
-
-For menuconfig / xconfig it _could_ simply be another dialog box that
-pops up the moment user picks FOO.
-
-For config/oldconfig/etc non-curses/graphics-based ones, we could do
-something like what "yum" does for package dependencies on Red Hat
-and Fedora. Once the entire thing is done, just run through the entire
-.config just generated, and build these complete dependency trees for
-all picked options, and thus compiling a list of all the BAZ'es that also
-need to be picked now to satisfy user's demand for the FOO's.
-Simple Y/n then follows.
-
-Satyam
+diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
+index 8fcd6a1..a2efae8 100644
+--- a/drivers/acpi/numa.c
++++ b/drivers/acpi/numa.c
+@@ -40,19 +40,19 @@ #define PXM_INVAL	-1
+ #define NID_INVAL	-1
+ 
+ /* maps to convert between proximity domain and logical node ID */
+-int __cpuinitdata pxm_to_node_map[MAX_PXM_DOMAINS]
++static int pxm_to_node_map[MAX_PXM_DOMAINS]
+ 				= { [0 ... MAX_PXM_DOMAINS - 1] = NID_INVAL };
+-int __cpuinitdata node_to_pxm_map[MAX_NUMNODES]
++static int node_to_pxm_map[MAX_NUMNODES]
+ 				= { [0 ... MAX_NUMNODES - 1] = PXM_INVAL };
+ 
+-int __cpuinit pxm_to_node(int pxm)
++int pxm_to_node(int pxm)
+ {
+ 	if (pxm < 0)
+ 		return NID_INVAL;
+ 	return pxm_to_node_map[pxm];
+ }
+ 
+-int __cpuinit node_to_pxm(int node)
++int node_to_pxm(int node)
+ {
+ 	if (node < 0)
+ 		return PXM_INVAL;
+diff --git a/include/acpi/acpi_numa.h b/include/acpi/acpi_numa.h
+index f9d2bde..b62cd36 100644
+--- a/include/acpi/acpi_numa.h
++++ b/include/acpi/acpi_numa.h
+@@ -11,11 +11,8 @@ #else
+ #define MAX_PXM_DOMAINS (256)	/* Old pxm spec is defined 8 bit */
+ #endif
+ 
+-extern int __cpuinitdata pxm_to_node_map[MAX_PXM_DOMAINS];
+-extern int __cpuinitdata node_to_pxm_map[MAX_NUMNODES];
+-
+-extern int __cpuinit pxm_to_node(int);
+-extern int __cpuinit node_to_pxm(int);
++extern int pxm_to_node(int);
++extern int node_to_pxm(int);
+ extern int __cpuinit acpi_map_pxm_to_node(int);
+ extern void __cpuinit acpi_unmap_pxm_to_node(int);
+ 
