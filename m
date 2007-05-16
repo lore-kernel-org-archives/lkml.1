@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763186AbXEPRjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762972AbXEPRkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763186AbXEPRjY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbXEPRjO
+	id S1762972AbXEPRkz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758777AbXEPRkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:39:14 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:8538 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755753AbXEPRjM (ORCPT
+	Wed, 16 May 2007 13:40:49 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:43959 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755753AbXEPRkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:39:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qY2IozNLsE688yKqC2LwSTd3lda8WV9CgKu2s5aexlU9mqIx+Sebf4MzGlH+rR7Smy2bh2+CEjLTv/Vj+RDOnIWvFWdFs+/czQ7Uf92ElWZX0Oi8cHvarWW1PwLS7KeSZP/qe7f/lk/+y2eLsyV63L2DR4huSh58FnarmnPnsr8=
-Message-ID: <a781481a0705161039v56ae211di8b6e5b92d3dec93@mail.gmail.com>
-Date: Wed, 16 May 2007 23:09:11 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: Pagecache zeroing: zero_user_segment, zero_user_segments and zero_user
-Cc: "Christoph Lameter" <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       "Nate Diller" <nate.diller@gmail.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>
-In-Reply-To: <20070515202442.eeaa49a0.akpm@linux-foundation.org>
+	Wed, 16 May 2007 13:40:49 -0400
+Date: Wed, 16 May 2007 18:40:47 +0100
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>
+Subject: Re: 2.6.22-rc1-mm1
+Message-ID: <20070516174046.GE10225@skynet.ie>
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0705151958210.4852@schroedinger.engr.sgi.com>
-	 <20070515202442.eeaa49a0.akpm@linux-foundation.org>
+In-Reply-To: <464B2048.7040103@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > 2. It has a useless parameter specifying the kmap slot.
-> >    The functions above default to KM_USER0 which is also always used when
-> >    zero_user_page was called except in one single case. We open code that
-> >    single case to draw attention to the spot.
-> >
->
-> Dunno.  fwiw, we decided to _not_ embed KM_USER0 in the callee: we have had
-> some pretty ghastly bugs in the past due to misuse of kmap slots so the
-> idea was to shove the decision into the caller's face, make them think
-> about what they're doing
+On (16/05/07 08:16), H. Peter Anvin didst pronounce:
+> Andy Whitcroft wrote:
+> > Getting this on both x86 and x86_64 boxes, they are the older boxen so
+> > likely older compilers:
+> 
+> Please give the gcc version number.
+> 
+> >   CC      arch/x86_64/boot/memory.o
+> > arch/i386/boot/memory.c: In function `detect_memory':
+> > arch/i386/boot/memory.c:32: error: can't find a register in class `DREG'
+> > while reloading `asm'
+> > 
+> > Seems to come from git-netsetup, but that tree isn't pulled into your
+> > git version of -mm so I can't be more specific.
+> 
+> Does the following patch work for you?
+> 
 
-Christoph hasn't really _replaced_ any !KM_USER0 case with
-KM_USER0 in this patch. AFAIR, we had originally decided to not
-embed KM_USER0 in zero_user_page because of this complaint
-from Anton Altaparmakov:
-http://lkml.org/lkml/2007/4/10/62
+With the patch, elm3b6 from test.kernel.org builds and boots. It's
+x86_64. elm3b132 which is x86 fails with
 
-But Christoph's patch here seems to have left that fs/ntfs/aops.c case
-alone, and used the zero_xxx helpers only for KM_USER0 cases, so
-we should probably be safe.
+  CC      arch/i386/boot/video-bios.o
+  HOSTCC  arch/i386/boot/tools/build
+  AS      arch/i386/boot/compressed/head.o
+  CC      arch/i386/boot/compressed/misc.o
+  OBJCOPY arch/i386/boot/compressed/vmlinux.bin
+  LD      arch/i386/boot/setup.elf
+ld:arch/i386/boot/setup.ld:47: syntax error
+make[1]: *** [arch/i386/boot/setup.elf] Error 1
+make[1]: *** Waiting for unfinished jobs....
+  GZIP    arch/i386/boot/compressed/vmlinux.bin.gz
+include/asm/processor.h: In function `native_get_debugreg':
+include/asm/processor.h:531: warning: asm operand 0 probably doesn't
+match constraints
+include/asm/processor.h: In function `native_set_debugreg':
+include/asm/processor.h:558: warning: asm operand 0 probably doesn't
+match constraints
+  LD      arch/i386/boot/compressed/piggy.o
+  LD      arch/i386/boot/compressed/vmlinux
+make: *** [bzImage] Error 2
+05/16/07-17:27:44 Build the kernel. Failed rc = 2
+05/16/07-17:27:44 build: kernel build Failed rc = 1
+Failed and terminated the run
 
-> > +static inline void zero_user_segments(struct page *page,
-> > +     unsigned start1, unsigned end1,
-> > +     unsigned start2, unsigned end2)
-> > +{
-> > +     void *kaddr = kmap_atomic(page, KM_USER0);
-> > +
-> > +     BUG_ON(end1 > PAGE_SIZE ||
-> > +             end2 > PAGE_SIZE);
-> > +
-> > +     if (end1 > start1)
-> > +             memset(kaddr + start1, 0, end1 - start1);
-> > +
-> > +     if (end2 > start2)
-> > +             memset(kaddr + start2, 0, end2 - start2);
-> > +
-> > +     flush_dcache_page(page);
-> > +     kunmap_atomic(kaddr, KM_USER0);
-> > +}
->
-> For some reason we've always done the flush_dcache_page() while holding the
-> kmap.  There's no reason for doing it this way and it just serves to worsen
-> scheduling latency a tiny bit.
+I haven't checked yet if that has anything to do with git-newsetup or
+not.
 
-Wonder if any arch requires a valid mapping when doing the flush?
-
-(reading Documentation/cachetlb.txt)
-
-Documentation/cachetlb.txt is silent on whether flush_dcache_page()
-really must be called before a kunmap(), but mentions that
-flush_kernel_dcache_page() _must_ be called _before_ kunmap.
-And I saw that parisc implements flush_dcache_page() using
-flush_kernel_dcache_page itself (but then, we've not implemented a
-meaningful kmap for parisc in the first place), so we've _just_
-managed to be fine here ...
-
-Still, flush_dcache_page() before kunmap'ing is an old practice,
-would be wise to get this whetted by linux-arch first?
-
-Satyam
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
