@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbXEPM2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761378AbXEPMaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760693AbXEPM2l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbXEPM2c
+	id S1761378AbXEPMaO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbXEPMaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:28:32 -0400
-Received: from mail.shareable.org ([81.29.64.88]:36241 "EHLO
-	mail.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756824AbXEPM2b (ORCPT
+	Wed, 16 May 2007 08:30:01 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:14142 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756872AbXEPMaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:28:31 -0400
-Date: Wed, 16 May 2007 13:25:48 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>, akpm@osdl.org,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070516122548.GA25239@mail.shareable.org>
-References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <1179315498.3642.19.camel@sauron>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1179315498.3642.19.camel@sauron>
-User-Agent: Mutt/1.4.1i
+	Wed, 16 May 2007 08:30:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=ePGrBnEayyzYPv6oXEIcVGeMpMB8bRhvibWIr8VGqUllE18hB5bibCNOa+LgtSl94MLTc9pudEMwqWFpquqnyGIDFcsOiUeC6EO4QuWcQ/lCcJ51be8YnvHB9M5B2PnHDkxQYhE/Yu9t0ELbWxGivLG/lbOh4v6yvLbZhstNMlA=
+Message-ID: <464AF932.9070008@gmail.com>
+Date: Wed, 16 May 2007 16:29:38 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pci probe
+References: <4648B29A.6080406@gmail.com> <4649B270.8050002@gmail.com> <20070516071851.GB19294@kroah.com>
+In-Reply-To: <20070516071851.GB19294@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-> On Wed, 2007-05-16 at 12:34 +0100, Jamie Lokier wrote:
-> > Jörn Engel wrote:
-> > > On Wed, 16 May 2007 12:54:14 +0800, David Woodhouse wrote:
-> > > > Personally I'd just go for 'JFFS3'. After all, it has a better claim to
-> > > > the name than either of its predecessors :)
-> > > 
-> > > Did you ever see akpm's facial expression when he tried to pronounce
-> > > "JFFS2"?  ;)
-> > 
-> > JFFS3 is a good, meaningful name to anyone familiar with JFFS2.
-> > 
-> > But if akpm can't pronounce it, how about FFFS for faster flash
-> > filesystem.... ;-)
+Greg KH wrote:
+> On Tue, May 15, 2007 at 05:15:28PM +0400, Manu Abraham wrote:
+>> Manu Abraham wrote:
+>>> Hi,
+>>>
+>>> I do have a device that's a multifunction device. Eventhough a MFD, it
+>>> just has one Interrupt which is shared by by a Configuration space for
+>>> each function. ie, INTA is shared between them functions.
+>>>
+>>> In such a case, i am wondering, (since pci_probe returns a pointer to
+>>> one PCI function alone and i need to use both the functions in one
+>>> module alone rather than using a module for each function and that the
+>>> functions are quite similar for them to be used in different modules,
+>>> such that a separate probe/ISR etc is used) whether using pci_get_device
+>>> would be a better alternative to do manual searching for the functions
+>>> in such a case.
+>>>
+>> Just figured out that pci_get_subsys() does work in a better. Looking at
+>> kernel sources all i find is just one single user of pci_get_subsys()
+>>
+>> building the code around pci_get_subsys(), does this have any negative
+>> impact ?
 > 
-> The problem is that JFFS2 will always be faster in terms of I/O speed
-> anyway, just because it does not have to maintain on-flash indexing
-> data structures. But yes, it is slow in mount and in building big
-> inodes, so the "faster" is confusing.
+> Yes:
+> 	- your device will not show up properly in sysfs (no
+> 	  device/driver binding ability from userspace, no good
+> 	  information so that udev can properly name the device, etc.)
 
-Is LogFS really slower than JFFS2 in practice?
+This one sounds bad.
 
-I would have guessed reads to be a similar speed, tree updates to be a
-similar speed  to journal  updates for sustained  non-fsyncing writes,
-and the difference unimportant for tiny individual commits whose index
-updates are not merged with any other.  I've not thought about it much
-though.
+> 	- your driver will not work on any pci-hotplug type system (that
+> 	  includes expresscard and pccard and lots of high-end servers.
 
--- Jamie
+This doesn't matter
+
+> 	- your driver will not be notified if the system is being
+> 	  suspended or resumed or wanting to drop into a low power
+> 	  state.
+> 	- another driver can bind to your device without you ever
+> 	  knowing it.
+
+These also sound bad.
+
+> So in short, use pci_probe and just handle the fact that you need to be
+> called for two PCI devices and bind to both of them.  It shouldn't be
+> that hard...
+
+Thanks for the explanation.
+
+Do you mean to have two PCIID tables ? But then that does mean 2 modules
+don't you ? (i thought probe would be called once per module) Or you
+mean to say use PCI_ANY_ID in the table to match multiple devices and
+then allow probe to return a list of devices ?
+
+Thanks,
+Manu
+
