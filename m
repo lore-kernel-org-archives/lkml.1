@@ -1,37 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762077AbXEPGjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbXEPGmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762077AbXEPGjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 02:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757318AbXEPGjf
+	id S1762333AbXEPGmr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 02:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbXEPGmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 02:39:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36030
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756727AbXEPGje (ORCPT
+	Wed, 16 May 2007 02:42:40 -0400
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:45520 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755005AbXEPGmk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 02:39:34 -0400
-Date: Tue, 15 May 2007 23:39:40 -0700 (PDT)
-Message-Id: <20070515.233940.48528771.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: Slab allocators: Define common size limitations
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070515233239.335bd4ed.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0705152313490.5832@schroedinger.engr.sgi.com>
-	<20070515233239.335bd4ed.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 16 May 2007 02:42:40 -0400
+Message-ID: <464AA7D7.2040602@kernel.org>
+Date: Tue, 15 May 2007 23:42:31 -0700
+From: Josh Triplett <josh@kernel.org>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, ak@suse.de, akpm@linux-foundation.org,
+       dipankar@in.ibm.com, randy.dunlap@oracle.com
+Subject: Re: [PATCH] prohibit rcutorture from being compiled into the kernel
+References: <20070516002720.GA22379@linux.vnet.ibm.com>
+In-Reply-To: <20070516002720.GA22379@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 15 May 2007 23:32:39 -0700
+Paul E. McKenney wrote:
+> There have been a number of instances where people have accidentally
+> compiled rcutorture into the kernel (CONFIG_RCU_TORTURE_TEST=y), which
+> has never been useful, and has often resulted in great frustration.  The
+> attached patch prohibits rcutorture from being compiled into the kernel.
+> It may be excluded altogether or compiled as a module.  People wishing
+> to have rcutorture hammer their machine immediately upon boot are free
+> to hand-edit lib/Kconfig.debug to remove the "depends on m" line.
+> 
+> Thanks to Randy Dunlap for the trick that makes this work.
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-> rofl. Really we shouldn't put this into 2.6.22, but it turfs out so much
-> crap that it's hard to justify holding it back.
+This seems reasonable to me.  I can imagine legitimate reasons to want to
+have rcutorture running as early as possible, but as you said, anyone
+wishing to do so can hand-edit lib/Kconfig.debug easily enough.
 
-If fixes sparc64 with SLAB for one thing.  I was going to put
-LARGE_ALLOCS back into sparc64/Kconfig but this is just soooo
-much better.
+Acked-by: Josh Triplett <josh@kernel.org>
+
+- Josh Triplett
+
