@@ -1,121 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762995AbXEPR1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbXEPR23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762995AbXEPR1x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 13:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759339AbXEPR1m
+	id S932929AbXEPR23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 13:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759847AbXEPR2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 13:27:42 -0400
-Received: from mail.tmr.com ([64.65.253.246]:39082 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755936AbXEPR1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 13:27:41 -0400
-Message-ID: <464B3F23.50105@tmr.com>
-Date: Wed, 16 May 2007 13:28:03 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Wed, 16 May 2007 13:28:20 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:24940 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757358AbXEPR2T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 13:28:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=V7QWUxwyPS+J1TVUkw+F5Y9NJkuTEMrpvCyXjqEnKLs8MyLQCfqYY/3x9g1CF+h2Vzls/gX8zF3G/duDO++XwT4SFMbm3Evt93vagud6XWDTxSDFVDhF4V5Vhh39i+tj0z0+EwykbSG+S4jrUEFINm/064cA1nfI/Ri+I6h42GU=  ;
+X-YMail-OSG: 3O80Uo8VM1lSlvlvy7mQtqLIGFI0.hbLQj7p40.r4byfpPMK_N2n8kYOTgfzknipRKoB.4l9sw--
+Message-ID: <464B3F2D.9030603@yahoo.com.au>
+Date: Thu, 17 May 2007 03:28:13 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Jeff Zheng <Jeff.Zheng@endace.com>
-CC: Neil Brown <neilb@suse.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Software raid0 will crash the file-system, when each disk is
- 5TB
-References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com><6bffcb0e0705151629j78920ca2r9337dccdfc1bb6a9@mail.gmail.com> <17994.19043.771733.453896@notabene.brown> <659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com>
-In-Reply-To: <659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: David Howells <dhowells@redhat.com>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement shared-writable mmap [try #2]
+References: <464B3209.4010003@yahoo.com.au> <464B07EC.4050308@yahoo.com.au> <464AF3F3.30204@yahoo.com.au> <20070516100225.18685.51699.stgit@warthog.cambridge.redhat.com> <17173.1179321391@redhat.com> <19714.1179331928@redhat.com> <23262.1179334587@redhat.com>
+In-Reply-To: <23262.1179334587@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Zheng wrote:
-> Here is the information of the created raid0. Hope it is enough.
->
->   
-If I read this correctly, the problem is with JFS rather than RAID? Have 
-you tried not mounting the JFS filesystem but just starting the array 
-which crashes, so you can read bits of it, etc, and verify that the 
-array itself is working?
+David Howells wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> 
+> 
+>>>I can't call invalidate_inode_pages() or similar because that might
+>>>incorrectly kill one of B's writes (or someone else's writes); besides,
+>>>the on-server file hasn't changed.
+>>
+>>Why would that kill anyone's writes?
+> 
+> 
+> Because invalidate_inode_pages() forcibly removes the dirty flag from each page
 
-And can you run an fsck on the filesystem, if that makes sense? I assume 
-you got to actually write a f/s at one time, and I've never used JFS 
-under Linux. I spent five+ years using it on AIX, though, complex but 
-robust.
-> The crashing one:
-> md: bind<sdd>
-> md: bind<sde>
-> md: raid0 personality registered for level 0
-> md0: setting max_sectors to 4096, segment boundary to 1048575
-> raid0: looking at sde
-> raid0:   comparing sde(5859284992) with sde(5859284992)
-> raid0:   END
-> raid0:   ==> UNIQUE
-> raid0: 1 zones
-> raid0: looking at sdd
-> raid0:   comparing sdd(5859284992) with sde(5859284992)
-> raid0:   EQUAL
-> raid0: FINAL 1 zones
-> raid0: done.
-> raid0 : md_size is 11718569984 blocks.
-> raid0 : conf->hash_spacing is 11718569984 blocks.
-> raid0 : nb_zone is 2.
-> raid0 : Allocating 8 bytes for hash.
-> JFS: nTxBlock = 8192, nTxLock = 65536
->
-> The working one:
-> md: bind<sde>
-> md: bind<sdf>
-> md: bind<sdg>
-> md: bind<sdd>
-> md0: setting max_sectors to 4096, segment boundary to 1048575
-> raid0: looking at sdd
-> raid0:   comparing sdd(2929641472) with sdd(2929641472)
-> raid0:   END
-> raid0:   ==> UNIQUE
-> raid0: 1 zones
-> raid0: looking at sdg
-> raid0:   comparing sdg(2929641472) with sdd(2929641472)
-> raid0:   EQUAL
-> raid0: looking at sdf
-> raid0:   comparing sdf(2929641472) with sdd(2929641472)
-> raid0:   EQUAL
-> raid0: looking at sde
-> raid0:   comparing sde(2929641472) with sdd(2929641472)
-> raid0:   EQUAL
-> raid0: FINAL 1 zones
-> raid0: done.
-> raid0 : md_size is 11718565888 blocks.
-> raid0 : conf->hash_spacing is 11718565888 blocks.
-> raid0 : nb_zone is 2.
-> raid0 : Allocating 8 bytes for hash.
-> JFS: nTxBlock = 8192, nTxLock = 65536
->
-> -----Original Message-----
-> From: Neil Brown [mailto:neilb@suse.de] 
-> Sent: Wednesday, 16 May 2007 12:04 p.m.
-> To: Michal Piotrowski
-> Cc: Jeff Zheng; Ingo Molnar; linux-raid@vger.kernel.org;
-> linux-kernel@vger.kernel.org; linux-fsdevel@vger.kernel.org
-> Subject: Re: Software raid0 will crash the file-system, when each disk
-> is 5TB
->
-> On Wednesday May 16, michal.k.k.piotrowski@gmail.com wrote:
->   
->>> Anybody have a clue?
->>>
->>>       
->
-> No...
-> When a raid0 array is assemble, quite a lot of message get printed
-> about number of zones and hash_spacing etc.  Can you collect and post
-> those.  Both for the failing case (2*5.5T) and the working case
-> (4*2.55T) is possible.
->   
+It had better not. We use that sucker to nuke pagecache when we're trying to
+reclaim inodes, for example...
 
+
+>>>I can't as it can/would deadlock if called from prepare_write() in two
+>>>different ways.
+>>
+>>Which ways? Are you talking about prepare_write being called from
+>>page_mkwrite, or anywhere?
+> 
+> 
+>  (1) prepare_write() is called with the target page locked and does not release
+>      the lock.  The truncation routines lock the page prior to invalidating it.
+>      Any truncation routine that skips locked pages is of no use.
+
+You can drop the lock, do the invalidation, and return AOP_TRUNCATED_PAGE. The
+new aops patches will provide a better solution, but that will work today.
+
+
+>  (2) Consider a run of pages that make up a single write by one user.  Two
+>      other writes from other users may be attempting to overwrite that run at
+>      the same time.  Each of them would need to invalidate the other's locked
+>      page(s).
+
+See #1.
+
+
+> Furthermore, the caller of prepare_write() probably won't take kindly to the
+> page it's dealing with being evicted from the pagecache.
+
+It's fine if you return AOP_TRUNCATED_PAGE.
+
+
+>>More generally it sounds like a nasty thing to have a writeback cache if it
+>>can become incoherent (due to dirty pages that subsequently cannot be
+>>written back) without notification. Have you tried doing a write-through
+>>one?
+> 
+> 
+> How do you do a write-through cache for shared-writable mmap?
+
+I just mean more generally. simple write(2) writes, for starters.
+
+For shared writable mmap? I don't know... does POSIX require mmap data
+to be coherent with read(2)/write(2)? ;)
+
+
+>>You may be clearing PG_uptodate, but isn't there still an underlying problem
+>>that you can have mappings to the page at that point? If that isn't a problem
+>>for you, then I don't know why you would have to clear PG_uptodate at all.
+> 
+> 
+> There might be, yes.  I guess I should ask the VM to nuke all PTEs to each of
+> these pages too.
+
+That's what the invalidate / truncate routines do.
 
 -- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+SUSE Labs, Novell Inc.
