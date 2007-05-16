@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933949AbXEPSOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933454AbXEPSSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933949AbXEPSOm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 14:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761213AbXEPSOV
+	id S933454AbXEPSSy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 14:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbXEPSSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 14:14:21 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:56411 "EHLO atlrel7.hp.com"
+	Wed, 16 May 2007 14:18:47 -0400
+Received: from ires.in2p3.fr ([193.48.86.184]:35164 "EHLO IReS.in2p3.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760831AbXEPSOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 14:14:20 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [patch] early printk and boot console fixups.
-Date: Wed, 16 May 2007 12:14:16 -0600
-User-Agent: KMail/1.9.6
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Gerd Hoffmann <kraxel@suse.de>,
-       Andi Kleen <ak@suse.de>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <45D5C473.4010608@suse.de> <200705160959.12433.bjorn.helgaas@hp.com> <Pine.LNX.4.64N.0705161803110.29569@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0705161803110.29569@blysk.ds.pg.gda.pl>
+	id S1753395AbXEPSSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 14:18:47 -0400
+X-Greylist: delayed 526 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 14:18:46 EDT
+Message-ID: <464B4911.4050903@free.fr>
+Date: Wed, 16 May 2007 20:10:25 +0200
+From: Goulven Guillard <lecotegougdelaforce@free.fr>
+Reply-To: lecotegougdelaforce@free.fr
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705161214.16426.bjorn.helgaas@hp.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, lenb@kernel.org
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464B4155.9070902@gmail.com> <464B43BB.3070505@redhat.com>
+In-Reply-To: <464B43BB.3070505@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 May 2007 11:09:14 am Maciej W. Rozycki wrote:
-> On Wed, 16 May 2007, Bjorn Helgaas wrote:
-> 
-> > > for early_uart_console, I have some ideas:
-> > > 1. merged that into early_serial_console in
-> > > arch/x86_64/kernel/early_printk.c, and
-> > > move early_printk.c to kernel/, --- make it understand
-> > >      earlyprintk=uart,io,0x3f8,9600n8
-> > >      earlyprintk=uart,mmio,0xff5e0000,115200n8
-> > > in addition to vga, ttyS, serial
-> > 
-> > I would rather try to merge 8250_early and early_printk.
-> > "console=uart,io,0x3f8" is already pretty similar to
-> > "earlyprintk=serial", and it would be nice to have only one.
-> > 
-> > "console=uart" does have the disadvantage that you have to know the
-> > port address.  But it has the advantage that it doesn't depend on
-> > compiled-in legacy serial port names.  If you need early console
-> > output, you're probably a developer and can come up with the address.
-> 
->  Given the generic name of "uart" I am assuming this will work with any 
-> UART driver making use of the serial_core.c core -- am I correct?
+Le 05/16/2007 07:47 PM, Chuck Ebbert a déclaré :
 
-I knew somebody would ask that eventually :-)
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=11ccc0f249cb01a129f54760b8ff087f242935d4
+> Commit:     11ccc0f249cb01a129f54760b8ff087f242935d4
+> Parent:     de46c33745f5e2ad594c72f2cf5f490861b16ce1
+> Author:     Len Brown <len.brown@intel.com>
+> AuthorDate: Mon Apr 30 22:36:01 2007 -0400
+> Committer:  Len Brown <len.brown@intel.com>
+> CommitDate: Mon Apr 30 22:36:01 2007 -0400
+> 
+>     ACPI: thermal trip points are read-only
 
-Unfortunately, the answer is "no."  "console=uart" only works with
-8250-compatible devices.
+
+Should one understand that it IS a wanted behaviour ?
+
+Isn't it the DSDT job (which is kernel-accessible, or isn't it ?) to
+communicate trip_points to ACPI thermal zone ?
+
+Isn't OSPM managing thermal zone ?
+
+(http://acpi.sourceforge.net/documentation/thermal.html)
+
+
+
+
+PS : Sorry for all these (maybe stupid) questions, but I think I
+remember that changing trip_points had an effect on a (DSDT-bugged)
+laptop I used to use, and I'd like to understand...
+
+PPS : Sorry also for the english mistakes or approximations...
+
+
+
+
+-- 
+    ~~
+   |Oo|   La banquise fond !!! Adoptez un pingouin...
+  /|\/|\
+   |__|            => http://doc.ubuntu-fr.org/
+   ^__^
+~~~|  |~~~
+
+
+
+
+
+
+
+
