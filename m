@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762782AbXEPQqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762963AbXEPQqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762782AbXEPQqZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbXEPQqL
+	id S1762963AbXEPQqj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762870AbXEPQq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:46:11 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:59567 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbXEPQqJ (ORCPT
+	Wed, 16 May 2007 12:46:27 -0400
+Received: from lazybastard.de ([212.112.238.170]:50480 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762790AbXEPQq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:46:09 -0400
-Date: Wed, 16 May 2007 09:50:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, rpurdie@openedhand.com
-Subject: Re: 2.6.22-rc1-mm1
-Message-Id: <20070516095018.6f0048bc.randy.dunlap@oracle.com>
-In-Reply-To: <20070515201914.16944e04.akpm@linux-foundation.org>
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 16 May 2007 12:46:26 -0400
+Date: Wed, 16 May 2007 18:41:59 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516164158.GB8113@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <20070515133759.9ee434a2.akpm@linux-foundation.org> <1179317240.2859.222.camel@shinybook.infradead.org> <20070516083408.dcd9dd78.akpm@linux-foundation.org> <1179330596.2859.248.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1179330596.2859.248.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 20:19:14 -0700 Andrew Morton wrote:
-
+On Wed, 16 May 2007 23:49:55 +0800, David Woodhouse wrote:
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
+> Utility is a factor of the underlying design -- a filesystem designed
+> for flash really isn't suited to block devices.
 
-LZO build fails on allyesconfig:
+I can think of at least three examples where LogFS would indeed make
+sense on block devices.
 
-lib/built-in.o: In function `lzo1x_1_compress':
-lib/lzo/minilzo.c:724: multiple definition of `lzo1x_1_compress'                           fs/built-in.o:fs/reiser4/plugin/compress/minilzo.c:1307: first defined here
-ld: Warning: size of symbol `lzo1x_1_compress' changed from 1541 in fs/built-in.o to 244 in lib/built-in.o
-lib/built-in.o: In function `lzo1x_decompress':                                            lib/lzo/minilzo.c:885: multiple definition of `lzo1x_decompress'
-fs/built-in.o:fs/reiser4/plugin/compress/minilzo.c:1466: first defined here                ld: Warning: size of symbol `lzo1x_decompress' changed from 1047 in fs/built-in.o to 678 in lib/built-in.o
-make: *** [.tmp_vmlinux1] Error 1
-make: Target `all' not remade because of errors.
+Jörn
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+Happiness isn't having what you want, it's wanting what you have.
+-- unknown
