@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933884AbXEPTfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762880AbXEPThV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933884AbXEPTfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 15:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbXEPTew
+	id S1762880AbXEPThV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 15:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbXEPThL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 15:34:52 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:56680 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756332AbXEPTev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 15:34:51 -0400
-Date: Wed, 16 May 2007 21:28:07 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jan Blunck <j.blunck@tu-harburg.de>
-Subject: Re: [RFC][PATCH  8/14] Union-mount lookup
-In-Reply-To: <20070516050851.GB4403@in.ibm.com>
-Message-ID: <Pine.LNX.4.61.0705162127080.9019@yvahk01.tjqt.qr>
-References: <20070514093722.GB4139@in.ibm.com> <20070514094218.GJ4139@in.ibm.com>
- <Pine.LNX.4.61.0705150937590.9570@yvahk01.tjqt.qr> <20070516050851.GB4403@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Wed, 16 May 2007 15:37:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35533 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756689AbXEPThJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 15:37:09 -0400
+Date: Wed, 16 May 2007 12:33:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Message-Id: <20070516123342.714a11d8.akpm@linux-foundation.org>
+In-Reply-To: <20070516191339.GA26766@think.oraclecorp.com>
+References: <20070516144205.GV26766@think.oraclecorp.com>
+	<464B2AC2.10206@redhat.com>
+	<20070516171156.GY26766@think.oraclecorp.com>
+	<20070516112515.b6f247b2.akpm@linux-foundation.org>
+	<20070516191339.GA26766@think.oraclecorp.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 16 May 2007 15:13:39 -0400
+Chris Mason <chris.mason@oracle.com> wrote:
 
-On May 16 2007 10:38, Bharata B Rao wrote:
->> 
->> >+lookup_union:
->> >+	do {
->> >+		struct vfsmount *mnt = find_mnt(topmost);
->> >+		UM_DEBUG_DCACHE("name=\"%s\", inode=%p, device=%s\n",
->> >+				topmost->d_name.name, topmost->d_inode,
->> >+				mnt->mnt_devname);
->> >+		mntput(mnt);
->> >+	} while (0);
->> 
->> Why the extra do{}while? [elsewhere too]
->
->Not sure, may be to get a scope to define 'mnt' here. Jan ?
+> > 
+> > If that's still working then the problem will _probably_ be directory
+> > writeout.  Possibly inodes, but they should be well-laid-out.
+> > 
+> > Were you using dir_index?  That might be screwing things up.
+> 
+> Yes, dir_index.  A quick test of mkfs.ext3 -O ^dir_index seems to still
+> have the problem.  Even though the inodes are well laid out, is the
+> order they get written sane?
 
-What I was implicitly suggesting that mnt could be moved into the
-normal 'function scope'.
+Should be: it uses first-fit.
 
+>  Looks like ext3 is just walking a list of
+> bh/jh, maybe we can just sort the silly thing?
 
-	Jan
--- 
+The IO scheduler is supposed to do that.
+
+But I don't know what's causing this.
