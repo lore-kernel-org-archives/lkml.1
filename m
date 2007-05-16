@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762144AbXEPCIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762049AbXEPCQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762144AbXEPCIQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 22:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757575AbXEPCIF
+	id S1762049AbXEPCQP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 22:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759273AbXEPCP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 22:08:05 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:50751 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756748AbXEPCIE convert rfc822-to-8bit (ORCPT
+	Tue, 15 May 2007 22:15:59 -0400
+Received: from lazybastard.de ([212.112.238.170]:39767 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757575AbXEPCP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 22:08:04 -0400
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH 2/2] powerpc: Fix Section mismatch warnings
-Date: Wed, 16 May 2007 10:09:41 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890B760A2@zch01exm26.fsl.freescale.net>
-In-Reply-To: <4575ED11-C144-49CF-9FBA-0613B61EFCE3@kernel.crashing.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/2] powerpc: Fix Section mismatch warnings
-Thread-Index: AceW+nNdGbj2zPYzQB6lnurmQLc3MQAZIyCw
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: "Paul" <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Tue, 15 May 2007 22:15:58 -0400
+Date: Wed, 16 May 2007 04:11:39 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516021139.GA3175@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <20070515133759.9ee434a2.akpm@linux-foundation.org> <20070516000630.GD1220@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070516000630.GD1220@lazybastard.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, May 15, 2007 10:07 PM
-> To: Li Yang-r58472
-> Cc: Paul; linuxppc-dev@ozlabs.org; Linux Kernel
-> Subject: Re: [PATCH 2/2] powerpc: Fix Section mismatch warnings
+On Wed, 16 May 2007 02:06:31 +0200, Jörn Engel wrote:
+>
+> > > +
+> > > +	if (dest) {
+> > > +		/* symlink */
+> > > +		ret = logfs_inode_write(inode, dest, destlen, 0);
+> > > +	} else {
+> > > +		/* creat/mkdir/mknod */
+> > > +		ret = __logfs_write_inode(inode);
+> > > +	}
+> > > +	super->s_victim_ino = 0;
+> > > +	if (ret) {
+> > > +		if (!dest)
+> > > +			li->li_flags |= LOGFS_IF_STILLBORN;
+> > > +		/* FIXME: truncate symlink */
+> > > +		inode->i_nlink--;
+> > > +		iput(inode);
+> > > +		goto out;
+> > > +	}
+> > > +
+> > > +	if (inode->i_mode & S_IFDIR)
+> > > +		dir->i_nlink++;
+> > 
+> > You have helper functions for i_nlink++, which remember to do
+> > mark_inode_dirty()?
 > 
-> 
-> On May 14, 2007, at 5:59 AM, Li Yang wrote:
-> 
-> > This patch fix the following Section mismatch warnings
-> > in powerpc code.
-> >
-> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
-> > reference to .init.data:mv643xx_eth_pd_devs from .text between
-> > 'mv643xx_eth_add_pds' (at offset 0x9ed2) and 'gg2_read_config'
-> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
-> > reference to .init.data:mv643xx_eth_pd_devs from .text between
-> > 'mv643xx_eth_add_pds' (at offset 0x9ed6) and 'gg2_read_config'
-> > WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:
-> > reference to .init.text:note_scsi_host from __ksymtab between
-> > '__ksymtab_note_scsi_host' (at offset 0x8) and
-'__ksymtab_sys_ctrler'
-> >
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> >  arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
-> >  arch/powerpc/platforms/powermac/setup.c   |    2 +-
-> >  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> Did you change anything?
+> I do.  Looks like I should use them here and in at least one other
+> place.  Will recheck them all.
 
-Nothing yet. I think it's a delay of mail system.
+Actually, this code was correct.  New inodes get written immediatly to
+ensure catching -ENOSPC at a place where errors can get returned.  After
+leaving this function, the inode is not dirty.  Either it has been
+written or it is marked LOGFS_IF_STILLBORN never will be.
 
-- Leo
+Your intuition was still good.  Link() did need the change you
+indicated.
+
+Jörn
+
+-- 
+Joern's library part 14:
+http://www.sandpile.org/
