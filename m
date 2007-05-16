@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbXEPNtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbXEPNz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758427AbXEPNtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 09:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXEPNto
+	id S1757979AbXEPNz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 09:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbXEPNzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 09:49:44 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:20222 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754941AbXEPNto (ORCPT
+	Wed, 16 May 2007 09:55:22 -0400
+Received: from 125.14.124.24.cm.sunflower.com ([24.124.14.125]:7484 "EHLO
+	mail.atipa.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753549AbXEPNzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 09:49:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oOpV/nkGVODQzns6ksDwsHzudd+edq6xfUuIXqWA9iBDJUMP0XJxG/v/ic0CbKasIpD4cNkcUVT3EaZcWS4j2Xvl+QdKpBnRXIa/5cu1Ee7u3eGwPJDNh8AZ+3mSBkq6LojqlsIP163lVLagON/mOFrcv1RCNNdOZlVQMefjzKE=
-Message-ID: <e5ab0f710705160649s5a8a0ef8s8ba7f4be76bc873c@mail.gmail.com>
-Date: Wed, 16 May 2007 15:49:42 +0200
-From: "Francesco Pretto" <ceztko@gmail.com>
-To: Stephen.Clark@seclark.us
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-Cc: "Rob Landley" <rob@landley.net>, "Dave Jones" <davej@redhat.com>,
-       "Tejun Heo" <htejun@gmail.com>, "Phillip Susi" <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <464AFD61.10209@seclark.us>
+	Wed, 16 May 2007 09:55:21 -0400
+Message-ID: <464B0D47.6070509@atipa.com>
+Date: Wed, 16 May 2007 08:55:19 -0500
+From: Roger Heflin <rheflin@atipa.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: NFS <nfs@lists.sourceforge.net>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Kernel BUG at mm/slab.c:2380 on NFS server in nfsd (2.6.21.1)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>
-	 <46489D3B.8050805@gmail.com> <20070515210804.GG25902@redhat.com>
-	 <200705160129.16048.rob@landley.net> <464AFD61.10209@seclark.us>
+X-OriginalArrivalTime: 16 May 2007 13:57:55.0828 (UTC) FILETIME=[342ECB40:01C797C2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/16, Stephen Clark <Stephen.Clark@seclark.us>:
-> >On Tuesday 15 May 2007 5:08 pm, Dave Jones wrote:
-> >
-> >I'm confused.  Could someone please explain?
-> >
-> I agree. This didn't happen when I was just using the ide driver, why
-> can't libata work as well
-> as the old ide driver.
->
+Running bonnie over nfs on a RHEL4.4 client against a 2.6.21.1 server
+got me this crash after about 4 hours of running on the server:
 
-Read my reply to that post. To summarize: libata, prior to 2.6.22rc1,
-lacked the feature to spindown the hard disk. The last discussion was
-about who's responsable to issue the STANDBYNOW command to the hard
-disk. Response from the discussion is: the kernel. Trying to issue it
-form userspace (iff your shutdown(8) implementation do so) will now
-result in a big fat warning, until these compatibility measures will
-be dropped from the kernel (soon or later).
+This was running lvm -> ext3 -> nfs ---- nfsclient (RHEL4.4).
+
+	Ideas?
+
+                       Roger
+
+May 15 21:10:31 vault1 kernel: ------------[ cut here ]------------
+May 15 21:10:31 vault1 kernel: kernel BUG at mm/slab.c:2380!
+May 15 21:10:31 vault1 kernel: invalid opcode: 0000 [1] SMP
+May 15 21:10:31 vault1 kernel: CPU 0
+May 15 21:10:31 vault1 kernel: Modules linked in: qla2xxx nfsd exportfs 
+lockd nfs_acl sunrpc hidp l2cap bluetooth ipv6 cpufreq_ondemand jfs 
+dm_mirror dm_multipath dm_mod video sbs i2c_ec dock button battery 
+asus_acpi ac lp snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy 
+snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device sg snd_pcm_oss 
+floppy snd_mixer_oss snd_pcm cfi_cmdset_0002 cfi_util mtdpart snd_timer 
+jedec_probe cfi_probe gen_probe snd ck804xrom sata_nv mtdcore chipreg 
+i2c_nforce2 soundcore map_funcs libata snd_page_alloc pcspkr i2c_core 
+k8temp hwmon forcedeth ohci1394 ieee1394 parport_pc ide_cd parport cdrom 
+serio_raw scsi_transport_fc shpchp megaraid_mbox sd_mod scsi_mod 
+megaraid_mm ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+May 15 21:10:31 vault1 kernel: Pid: 4256, comm: nfsd Not tainted 2.6.21.1 #1
+May 15 21:10:31 vault1 kernel: RIP: 0010:[<ffffffff8025a710>] 
+[<ffffffff8025a710>] cache_alloc_refill+0xe6/0x1f3
+May 15 21:10:31 vault1 kernel: RSP: 0018:ffff81021dead6d0  EFLAGS: 00010002
+May 15 21:10:31 vault1 kernel: RAX: 0000000000000001 RBX: 
+ffff81012211d960 RCX: ffff810120013040
+May 15 21:10:31 vault1 kernel: RDX: 000000000000000e RSI: 
+ffff810139020000 RDI: ffff810120013040
