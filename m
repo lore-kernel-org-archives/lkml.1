@@ -1,43 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759652AbXEPKSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbXEPKTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759652AbXEPKSw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 06:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757429AbXEPKSq
+	id S1761364AbXEPKTo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 06:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758202AbXEPKTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 06:18:46 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1988 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757405AbXEPKSp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 06:18:45 -0400
-Message-ID: <464ADA5D.8050405@shadowen.org>
-Date: Wed, 16 May 2007 11:18:05 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org, Steve Fox <drfickle@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: 2.6.22-rc1-mm1
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
-In-Reply-To: <20070515201914.16944e04.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 06:19:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55769 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757429AbXEPKTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 06:19:35 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070318233008.GA32597093@melbourne.sgi.com>
+References: <20070318233008.GA32597093@melbourne.sgi.com>
+To: David Chinner <dgc@sgi.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 16 May 2007 11:19:29 +0100
+Message-ID: <18993.1179310769@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Getting this on both x86 and x86_64 boxes, they are the older boxen so
-likely older compilers:
+David Chinner <dgc@sgi.com> wrote:
 
-  CC      arch/x86_64/boot/memory.o
-arch/i386/boot/memory.c: In function `detect_memory':
-arch/i386/boot/memory.c:32: error: can't find a register in class `DREG'
-while reloading `asm'
+> +	ret = block_prepare_write(page, 0, end, get_block);
 
-Seems to come from git-netsetup, but that tree isn't pulled into your
-git version of -mm so I can't be more specific.
+As I understand the way prepare_write() works, this is incorrect.
 
--apw
+The start and end points passed to block_prepare_write() delimit the region of
+the page that is going to be modified.  This means that prepare_write()
+doesn't need to fill it in if the page is not up to date.  It does, however,
+need to fill in the region before (if present) and the region after (if
+present).  Look at it like this:
+
+		+---------------+
+		|               |
+		|               |	<-- Filled in by prepare_write()
+		|               |
+	to->	|:::::::::::::::|
+		|               |
+		|               |	<-- Filled in by caller
+		|               |
+	offset->|:::::::::::::::|
+		|               |
+		|               |	<-- Filled in by prepare_write()
+		|               |
+	page->	+---------------+
+
+However, page_mkwrite() isn't told which bit of the page is going to be
+written to.  This means it has to ask prepare_write() to make sure the whole
+page is filled in.  In other words, offset and to must be equal (in AFS I set
+them both to 0).
+
+With what you've got, if, say, 'offset' is 0 and 'to' is calculated at
+PAGE_SIZE, then if the page is not up to date for any reason, then none of the
+page will be updated before the page is written on by the faulting code.
+
+You probably get away with this in a blockdev-based filesystem because it's
+unlikely that the page will cease to be up to date.
+
+However, if someone adds a syscall to punch holes in files, this may change...
+
+David
