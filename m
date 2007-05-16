@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761414AbXEPBLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761554AbXEPBXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761414AbXEPBLz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 21:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760005AbXEPBLs
+	id S1761554AbXEPBXM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 21:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760450AbXEPBW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 21:11:48 -0400
-Received: from moa.IfA.Hawaii.Edu ([128.171.168.48]:36117 "EHLO
-	moa.ifa.hawaii.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759675AbXEPBLr (ORCPT
+	Tue, 15 May 2007 21:22:59 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33570 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760321AbXEPBW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 21:11:47 -0400
-Date: Tue, 15 May 2007 15:17:11 -1000
-From: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: trivial@kernel.org
-Subject: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
-Message-ID: <20070516011711.GE15763@ifa.hawaii.edu>
+	Tue, 15 May 2007 21:22:58 -0400
+Date: Wed, 16 May 2007 02:22:54 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mchehab@infradead.org
+Subject: Re: [PATCH] em28xx and ivtv should depend on PCI
+Message-ID: <20070516012254.GF4095@ftp.linux.org.uk>
+References: <E1Ho2p6-0003Tt-B7@ZenIV.linux.org.uk> <464A4163.7090509@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <464A4163.7090509@gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, May 16, 2007 at 03:25:23AM +0400, Manu Abraham wrote:
+> Al Viro wrote:
+> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> > ---
+> >  drivers/media/video/em28xx/Kconfig |    2 +-
+> >  drivers/media/video/ivtv/Kconfig   |    2 +-
+> >  2 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/media/video/em28xx/Kconfig b/drivers/media/video/em28xx/Kconfig
+> > index 3823b62..2c450bd 100644
+> > --- a/drivers/media/video/em28xx/Kconfig
+> > +++ b/drivers/media/video/em28xx/Kconfig
+> > @@ -1,6 +1,6 @@
+> >  config VIDEO_EM28XX
+> >  	tristate "Empia EM2800/2820/2840 USB video capture support"
+> > -	depends on VIDEO_V4L1 && I2C
+> > +	depends on VIDEO_V4L1 && I2C && PCI
+> 
+> Err .. why would a USB device need to be depend on PCI ?
 
-Below is a one line patch to possibly fix this bug:
-
-http://bugs.gentoo.org/show_bug.cgi?id=178585
-http://bugzilla.kernel.org/show_bug.cgi?id=8075
-
-If the kernel is configured with:
-
-CONFIG_X86_POWERNOW_K8=y
-CONFIG_X86_ACPI_CPUFREQ=m
-
-Which is currently an allowed configuration, the powernow-k8 driver on
-an SMP system will fail with a warning like:
-
-powernow-k8: Found 4 Dual Core AMD Opteron(tm) Processor 285 processors (version 2.00.00)
-powernow-k8: MP systems not supported by PSB BIOS structure
-powernow-k8: MP systems not supported by PSB BIOS structure
-powernow-k8: MP systems not supported by PSB BIOS structure
-powernow-k8: MP systems not supported by PSB BIOS structure
-
-Which mimics that failure you get when powernow/cool'n'quiet is disabled
-in the BIOS.  I don't know if this config combination is valid on a
-uniprocessor system so this dependency may need to be enforced only if
-SMP in enabled.  The other powernow-* drivers likely have the same
-requirements as -k8 but I am unable to test them.
-
-Signed-off-by: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
---
- Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-2.6.21.1.orig/arch/i386/kernel/cpu/cpufreq/Kconfig    2007-04-27 11:49:26.000000000 -1000
-+++ linux-2.6.21.1/arch/i386/kernel/cpu/cpufreq/Kconfig 2007-05-15 14:48:50.000000000 -1000
-@@ -82,6 +82,7 @@ config X86_POWERNOW_K8
-        tristate "AMD Opteron/Athlon64 PowerNow!"
-        select CPU_FREQ_TABLE
-        depends on EXPERIMENTAL
-+       depends on X86_ACPI_CPUFREQ
-        help
-          This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
-
+Because video-buf.c does.  And VIDEO_EM28XX selects it.
