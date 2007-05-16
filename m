@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbXEPD1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762284AbXEPDdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762513AbXEPD1b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 23:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbXEPD1Y
+	id S1762284AbXEPDdp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 23:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbXEPDdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 23:27:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39889 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756771AbXEPD1Y (ORCPT
+	Tue, 15 May 2007 23:33:38 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38393 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756597AbXEPDdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 23:27:24 -0400
-Date: Tue, 15 May 2007 20:24:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Satyam Sharma <satyam.sharma@gmail.com>,
-       Nate Diller <nate.diller@gmail.com>
-Subject: Re: Pagecache zeroing: zero_user_segment, zero_user_segments and
- zero_user
-Message-Id: <20070515202442.eeaa49a0.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705151958210.4852@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705151958210.4852@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 15 May 2007 23:33:38 -0400
+Date: Wed, 16 May 2007 04:33:35 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
+       kbuild-devel@lists.sourceforge.net
+Subject: [RFC] select and dependencies in Kconfig
+Message-ID: <20070516033335.GH4095@ftp.linux.org.uk>
+References: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 20:00:18 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+On Tue, May 15, 2007 at 08:36:20PM +0100, Al Viro wrote:
+> 
+> stuff that does select USB should depend on USB_ARCH_HAS_HCD, or we'll
+> end up with unbuildable configs.
 
-> Simplify page cache zeroing of segments of pages through 3 functions
-> 
-> 
-> zero_user_segments(page, start1, end1, start2, end2)
-> 
-> 	Zeros two segments of the page. It takes the position where to
-> 	start and end the zeroing which avoids length calculations.
-> 
-> zero_user_segment(page, start, end)
-> 
-> 	Same for a single segment.
-> 
-> zero_user(page, start, length)
-> 
-> 	Length variant for the case where we know the length.
-> 
-> 
-> 
-> We remove the zero_user_page macro. Issues:
-> 
-> 1. Its a macro. Inline functions are preferable.
-> 
-> 2. It has a useless parameter specifying the kmap slot.
->    The functions above default to KM_USER0 which is also always used when
->    zero_user_page was called except in one single case. We open code that
->    single case to draw attention to the spot.
-> 
+BTW, this kind of situation happens often enough, so how about doing
+the following: teach kconfig that if FOO selects BAR and BAR depends
+on <expr>, we should act as if FOO had explicit depends on <expr>.
 
-Dunno.  fwiw, we decided to _not_ embed KM_USER0 in the callee: we have had
-some pretty ghastly bugs in the past due to misuse of kmap slots so the
-idea was to shove the decision into the caller's face, make them think
-about what they're doing
+Rationale: if FOO selects BAR, BAR depends on <expr> and <expr> is false,
+turning FOO on will land us into unbuildable configuration (BAR turned on,
+dependencies of BAR are not satisfied).  It really happens often enough to
+be very annoying.  And we have fsckloads of dependencies that are there
+only because of such scenarios.  Gets especially nasty when BAR is selected
+by several dozens of options and dependencies of BAR change...
 
-> +static inline void zero_user_segments(struct page *page,
-> +	unsigned start1, unsigned end1,
-> +	unsigned start2, unsigned end2)
-> +{
-> +	void *kaddr = kmap_atomic(page, KM_USER0);
-> +
-> +	BUG_ON(end1 > PAGE_SIZE ||
-> +		end2 > PAGE_SIZE);
-> +
-> +	if (end1 > start1)
-> +		memset(kaddr + start1, 0, end1 - start1);
-> +
-> +	if (end2 > start2)
-> +		memset(kaddr + start2, 0, end2 - start2);
-> +
-> +	flush_dcache_page(page);
-> +	kunmap_atomic(kaddr, KM_USER0);
-> +}
+Implementing that is pretty simply; the only thing I'm not sure how to deal
+with is how to show such inherited dependencies in menuconfig et.al.
 
-For some reason we've always done the flush_dcache_page() while holding the
-kmap.  There's no reason for doing it this way and it just serves to worsen
-scheduling latency a tiny bit.
-
-
+Comments?
