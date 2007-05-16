@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbXEPMyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762294AbXEPMzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761536AbXEPMyc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758648AbXEPMyX
+	id S1762294AbXEPMzq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759569AbXEPMzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:54:23 -0400
-Received: from lazybastard.de ([212.112.238.170]:51410 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758046AbXEPMyW (ORCPT
+	Wed, 16 May 2007 08:55:38 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:55088 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758871AbXEPMzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:54:22 -0400
-Date: Wed, 16 May 2007 14:49:33 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Artem Bityutskiy <dedekind@infradead.org>, akpm@osdl.org,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070516124933.GF5472@lazybastard.org>
-References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <1179315498.3642.19.camel@sauron> <20070516122548.GA25239@mail.shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 16 May 2007 08:55:37 -0400
+Date: Wed, 16 May 2007 08:53:41 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Howells <dhowells@redhat.com>, David Chinner <dgc@sgi.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
+Message-ID: <20070516125341.GS26766@think.oraclecorp.com>
+References: <20070318233008.GA32597093@melbourne.sgi.com> <18993.1179310769@redhat.com> <1179317360.2859.225.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070516122548.GA25239@mail.shareable.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1179317360.2859.225.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 13:25:48 +0100, Jamie Lokier wrote:
+On Wed, May 16, 2007 at 08:09:19PM +0800, David Woodhouse wrote:
+> On Wed, 2007-05-16 at 11:19 +0100, David Howells wrote:
+> > The start and end points passed to block_prepare_write() delimit the region of
+> > the page that is going to be modified.  This means that prepare_write()
+> > doesn't need to fill it in if the page is not up to date. 
 > 
-> Is LogFS really slower than JFFS2 in practice?
+> Really? Is it _really_ going to be modified? Even if the pointer
+> userspace gave to write() is bogus, and is going to fault half-way
+> through the copy_from_user()?
 
-Not sure.  I ran a benchmark before adding compression support in QEMU
-with a lightning-fast device.  So the results should differ quite a bit
-from practice.
+This is why there are so many variations on copy_from_user that zero on
+faults.  One way or another, the prepare_write/commit_write pair are
+responsible for filling it in.
 
-http://logfs.org/~joern/logfs/benchmark/benchmark_overview
+-chris
 
-LogFS was actually faster than JFFS2.  So for that particular
-unrealistic benchmark, updating the LogFS tree was less expensive than
-trying (and failing) to compress and calculating the CRC was for JFFS2.
-
-With compression finished, I would expect LogFS numbers to degrade.  If
-file data had checksums (not done yet, should be optional for users to
-decide) even more so.
-
-> I would have guessed reads to be a similar speed, tree updates to be a
-> similar speed  to journal  updates for sustained  non-fsyncing writes,
-> and the difference unimportant for tiny individual commits whose index
-> updates are not merged with any other.  I've not thought about it much
-> though.
-
-LogFS isn't that good yet.  Right now, writing 10 adjacent blocks to a
-file requires 10 tree updates instead of 1.  Not full updates though,
-just up to the inode.
-
-Quite surprisingly, read speed in the benchmark was significantly better
-for LogFS, even after substracting mount time.  I don't know if all of
-that can be explained with CRC checks or there is more to it.
-
-Jörn
-
--- 
-I can say that I spend most of my time fixing bugs even if I have lots
-of new features to implement in mind, but I give bugs more priority.
--- Andrea Arcangeli, 2000
