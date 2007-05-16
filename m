@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbXEPUH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763399AbXEPUHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbXEPUH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 16:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762483AbXEPUG4
+	id S1763399AbXEPUHq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 16:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763263AbXEPUHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 16:06:56 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2403 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762372AbXEPUGz (ORCPT
+	Wed, 16 May 2007 16:07:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41595 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763229AbXEPUHB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 16:06:55 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <david@lang.hm>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: RE: scheduling oddity on 2.6.20.3 stock
-Date: Wed, 16 May 2007 13:06:28 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKCEIIDNAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	Wed, 16 May 2007 16:07:01 -0400
+Date: Wed, 16 May 2007 13:04:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Message-Id: <20070516130413.1fd391bf.akpm@linux-foundation.org>
+In-Reply-To: <20070516195359.GE26766@think.oraclecorp.com>
+References: <20070516144205.GV26766@think.oraclecorp.com>
+	<464B2AC2.10206@redhat.com>
+	<20070516171156.GY26766@think.oraclecorp.com>
+	<20070516112515.b6f247b2.akpm@linux-foundation.org>
+	<20070516191339.GA26766@think.oraclecorp.com>
+	<20070516123342.714a11d8.akpm@linux-foundation.org>
+	<20070516195359.GE26766@think.oraclecorp.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <Pine.LNX.4.64.0705161247490.1280@asgard.lang.hm>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Wed, 16 May 2007 14:06:55 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Wed, 16 May 2007 14:06:57 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 16 May 2007 15:53:59 -0400
+Chris Mason <chris.mason@oracle.com> wrote:
 
-> On Thu, 3 May 2007, David Schwartz wrote:
->
-> >> I needed to recompress some files from .bz2 to .gz so I setup
-> a script to
-> >> do
-> >>
-> >> bunzip2 -c $file.bz2 |gzip -9 >$file.gz
-> >>
-> >> I expected that the two CPU heavy processes would end up on different
-> >> cpu's and spend a little time shuffling data between the two cpu's on a
-> >> system (dual core opteron)
-> >>
-> >> however, instead what I find is that each process is getting 50% of one
-> >> cpu while the other cpu is 97% idle.
-> >
-> > That would only be possible if the compression/decompression
-> block size is
-> > small compared to the maximum pipe buffer size. I suspect the
-> reverse is the
-> > case.
->
-> I'm still running into this problem in various forms
->
-> is there an easy way to change the maximum pipe buffer size? (including a
-> simple change to the kernel source, I do compile my own kernels)
+> > 
+> > Should be: it uses first-fit.
+> > 
+> > >  Looks like ext3 is just walking a list of
+> > > bh/jh, maybe we can just sort the silly thing?
+> > 
+> > The IO scheduler is supposed to do that.
+> > 
+> > But I don't know what's causing this.
+> 
+> I had high hopes of blaming cfq, but deadline gives the same results:
+> 
+> create dir kernel-0 222MB in 5.38 seconds (41.33 MB/s)
+> ... [ ~30MB/s here ] ...
+> create dir kernel-7 222MB in 8.11 seconds (27.42 MB/s)
+> create dir kernel-8 222MB in 18.39 seconds (12.09 MB/s)
+> create dir kernel-9 222MB in 6.91 seconds (32.18 MB/s)
+> create dir kernel-10 222MB in 24.32 seconds (9.14 MB/s)
+> create dir kernel-11 222MB in 12.06 seconds (18.44 MB/s)
+> create dir kernel-12 222MB in 10.95 seconds (20.31 MB/s)
+> 
+> The good news is that if you let it run long enough, the times
+> stabilize.  The bad news is:
+> 
+> create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
+> create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
+> create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
+> create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
 
-No. Changing the size will not do what you want it to do since that only
-tells the kernel what the size is, it does not determine what it is.
+well hang on.  Doesn't this just mean that the first few runs were writing
+into pagecache and the later ones were blocking due to dirty-memory limits?
 
-> > It would be interesting to write an intermediate process that basically
-> > enlarged the pipe buffers and see if that changed anything.
-> > Basically, the
-> > intermediate process would allocate a large buffer (16MB or so)
-> > and fill it
-> > from 'bunzip2' while draining it to 'gzip' in a non-blocking
-> > way (unless the
-> > buffer was full/empty, of course).
+Or do you have a sync in there?
 
-It is not particularly hard to write such a process. I have a proxy that I
-can easily tweak to do this. I'm going to give it a shot and see if it
-helps.
-
-DS
-
-
+> echo 2048 > /sys/block/..../nr_requests didn't do it either.
+> 
+> I guess I'll have systemtap tell me more about the log flushing.
