@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762646AbXEPMhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbXEPMhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762646AbXEPMhR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762657AbXEPMg6
+	id S1762196AbXEPMhi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762705AbXEPMhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:36:58 -0400
-Received: from ipmail03.adl2.internode.on.net ([203.16.214.135]:8625 "EHLO
-	ipmail03.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762637AbXEPMg5 (ORCPT
+	Wed, 16 May 2007 08:37:04 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:41719 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762554AbXEPMhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:36:57 -0400
-X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 08:36:56 EDT
-X-IronPort-AV: E=Sophos;i="4.14,543,1170595800"; 
-   d="scan'208";a="90067233"
-Message-ID: <464AF9BD.6040107@iinet.net.au>
-Date: Wed, 16 May 2007 22:31:57 +1000
-From: Ben Nizette <ben.nizette@iinet.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Al Viro <viro@ftp.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Make prepare_namespace() wait for devices (v2)
-References: <464853D9.70904@drzeus.cx>	<20070514123436.GB4095@ftp.linux.org.uk>	<46486A7F.8050705@drzeus.cx>	<20070514160403.6414f149@dhcp-252-105.norway.atmel.com>	<46487DAE.5000206@drzeus.cx> <20070516111531.03164a36@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070516111531.03164a36@dhcp-252-105.norway.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 08:37:00 -0400
+Date: Wed, 16 May 2007 18:07:05 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: David Chinner <dgc@sgi.com>, torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64 and powerpc
+Message-ID: <20070516123705.GB24299@amitarora.in.ibm.com>
+References: <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070515193722.GA3487@amitarora.in.ibm.com> <20070515195421.GA2948@amitarora.in.ibm.com> <20070515200359.GA5834@amitarora.in.ibm.com> <20070516031626.GM85884050@sgi.com> <1179318076.10313.6.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179318076.10313.6.camel@kleikamp.austin.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
-> On Mon, 14 May 2007 17:18:06 +0200
-> Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+On Wed, May 16, 2007 at 07:21:16AM -0500, Dave Kleikamp wrote:
+> On Wed, 2007-05-16 at 13:16 +1000, David Chinner wrote:
+> > On Wed, May 16, 2007 at 01:33:59AM +0530, Amit K. Arora wrote:
 > 
->> New suggestion.
+> > > Following changes were made to the previous version:
+> > >  1) Added description before sys_fallocate() definition.
+> > >  2) Return EINVAL for len<=0 (With new draft that Ulrich pointed to,
+> > >     posix_fallocate should return EINVAL for len <= 0.
+> > >  3) Return EOPNOTSUPP if mode is not one of FA_ALLOCATE or FA_DEALLOCATE
+> > >  4) Do not return ENODEV for dirs (let individual file systems decide if
+> > >     they want to support preallocation to directories or not.
+> > >  5) Check for wrap through zero.
+> > >  6) Update c/mtime if fallocate() succeeds.
+> > 
+> > Please don't make this always happen. c/mtime updates should be dependent
+> > on the mode being used and whether there is visible change to the file. If no
+> > userspace visible changes to the file occurred, then timestamps should not
+> > be changed.
 > 
-> Works wonderfully here:
-> 
-> Waiting for root device /dev/mmcblk0p1...
-> <inserts card>
-> mmcblk0: mmc0:a95c SD128 123008KiB
->  mmcblk0: p1
-> VFS: Mounted root (ext2 filesystem).
-> 
-> Of course, it also fixes the case where the card _is_ inserted at
-> bootup :-)
+> i_blocks will be updated, so it seems reasonable to update ctime.  mtime
+> shouldn't be changed, though, since the contents of the file will be
+> unchanged.
 
-Seconded.  Love your work Pierre :)
+I agree. Thus the ctime should change for FA_PREALLOCATE mode also
+(which does not change the file size) - if we end up having this
+additional mode in near future.
 
-Tested across 4 different brands of SD/MMC/RS-MMC card and 2 different 
-configurations (both AVR32 arch) just for the hells of it.  All plays nice.
-
-Thanks,
---Ben.
+--
+Regards,
+Amit Arora
+ 
+> > e.g. FA_ALLOCATE that changes file size requires same semantics of ftruncate()
+> > extending the file, otherwise no change in timestamps should occur.
+> > 
+> > Cheers,
+> > 
+> > Dave.
+> -- 
+> David Kleikamp
+> IBM Linux Technology Center
