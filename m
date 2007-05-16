@@ -1,43 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbXEPCjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762107AbXEPClX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762189AbXEPCjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 22:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759779AbXEPCjG
+	id S1762107AbXEPClX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 22:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760173AbXEPClQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 22:39:06 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:43925 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760110AbXEPCjF (ORCPT
+	Tue, 15 May 2007 22:41:16 -0400
+Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:47475 "EHLO
+	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759779AbXEPClP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 22:39:05 -0400
-Date: Wed, 16 May 2007 03:38:47 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Pete Zaitcev <zaitcev@redhat.com>, linux-input@atrey.karlin.mff.cuni.cz,
-       nicolas@boichat.ch, linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Message-ID: <20070516023846.GA29187@srcf.ucam.org>
-References: <1178995886.4168.10.camel@localhost> <20070513172052.GA26712@srcf.ucam.org> <20070513114626.d943999a.zaitcev@redhat.com> <20070513195724.GA28493@srcf.ucam.org> <20070513185807.18222a0d.zaitcev@redhat.com> <1179261295.18316.9.camel@localhost>
+	Tue, 15 May 2007 22:41:15 -0400
+Date: Wed, 16 May 2007 11:41:01 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org
+Subject: Re: Fwd: Re: Linux 2.6.22-rc1
+Message-ID: <20070516024101.GC3971@inferi.kami.home>
+References: <Pine.LNX.4.61.0705131123280.9570@yvahk01.tjqt.qr> <20070514015541.GB4800@inferi.kami.home> <Pine.LNX.4.61.0705140742350.9570@yvahk01.tjqt.qr> <20070514104546.10a4368f.randy.dunlap@oracle.com> <20070515154208.GJ5043@inferi.kami.home> <20070515104621.a4e0e609.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1179261295.18316.9.camel@localhost>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Make appletouch shut up when it has nothing to say
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <20070515104621.a4e0e609.randy.dunlap@oracle.com>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.21-rc7-mm2-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 at 08:34:55PM +0000, Soeren Sonnenburg wrote:
+On Tue, May 15, 2007 at 10:46:21AM -0700, Randy Dunlap wrote:
+> On Wed, 16 May 2007 00:42:08 +0900 Mattia Dongili wrote:
+...
+> > Given the drivers/acpi/Kconfig portion
+> > 
+> >   if ACPI
+> >   ...
+> >   config ACPI_EC
+> >           bool
+> >           default y
+> >           help
+> >             ...
+> >   
+> >   config ACPI_POWER
+> >           bool
+> >           default y
+> >   
+> >   config ACPI_SYSTEM
+> >           bool
+> >           default y
+> >           help
+> > 	  ...
+> >   ...
+> >   endif
+> > 
+> > I'd expect the 3 symbols to be all set when CONFIG_ACPI=y.
+> > What am I overseeing?
+> 
+> I think that this is just 'make randconfig' throwing a curve ball.
+> ACPI depends on PM, but PM=n.  In my experience, randconfig is a
+> good tool for testing oddball configs, but the results are not
+> always something that is fixable or needs to be fixed.
 
-> I was using this patch for some days now and I realized that - from time
-> to time - the touchpad runs amok, i.e. I more or less unable to control
-> the mouse when that happens.
-
-Hmm. Just seen this. I'll see if I can work around that.
+It looks like Kconfig does the right thing on i386 though. Not the same
+on x84_64.
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+mattia
+:wq!
