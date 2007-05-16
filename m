@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbXEPH7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbXEPIA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbXEPH7W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 03:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759204AbXEPH7N
+	id S1761069AbXEPIA0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 04:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbXEPIAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 03:59:13 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:55475 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758642AbXEPH7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 03:59:11 -0400
-Date: Wed, 16 May 2007 09:57:28 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jan Blunck <j.blunck@tu-harburg.de>
-Subject: Re: [RFC][PATCH 10/14] In-kernel file copy between union mounted
- filesystems
-In-Reply-To: <20070514094329.GL4139@in.ibm.com>
-Message-ID: <Pine.LNX.4.61.0705160951140.9570@yvahk01.tjqt.qr>
-References: <20070514093722.GB4139@in.ibm.com> <20070514094329.GL4139@in.ibm.com>
+	Wed, 16 May 2007 04:00:16 -0400
+Received: from keetweej.vanheusden.com ([213.84.46.114]:53487 "EHLO
+	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756873AbXEPIAO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 04:00:14 -0400
+Date: Wed, 16 May 2007 10:00:12 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2.6.21.1] OOPS in timer stats code
+Message-ID: <20070516080011.GA3304@vanheusden.com>
+References: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl> <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com> <4649FDEA.2050703@redhat.com> <1179267292.12838.42.camel@chaos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179267292.12838.42.camel@chaos>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Wed May 16 23:38:34 CEST 2007
+X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a key-signing at www.biglumber.com
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > >> Hi,
+> > >> After an uptime of, say, 4 hours I got an oops on my P4 with HT and
+> > >> 2GB ram.
+> > >> It has dynamic ticks enabled as well has timer stats. I cannot reboot the
+> > >> machine to give more details right now (19:00 gmt+1 i can).
+> > >> For now, this is the oops:
+> > >> [13092.479019] BUG: unable to handle kernel paging request at virtual
+> > >> address b9d0458f
+> > Timer hash list contains a user address.
+> 
+> Dammit. It's a HT enabled box again. I don't have one.
+> Folkert, does the problem go away when you disable HT
+> (CONFIG_SCHED_SMT) ?
 
-On May 14 2007 15:13, Bharata B Rao wrote:
->+
->+	if (flag & 0x2) {
->+		error = union_copyup(nd, flag);
->+		if (error)
->+			goto exit;
->+	}
-
-What I dislike (and that also goes for fs/namei.c and such) that they use
-numeral constants, i.e. 0x2. That seems error-prone. Could this (and
-the in-kernel users of 0x1/0x2/0x4) be turned into some constant?
-
->+	if (IS_DEADDIR(parent->d_inode))
->+		goto error;
->+	err = -EACCES;	/* shouldn't it be ENOSYS? */
-
-I do not think so. ENOSYS means Syscall not implemented. But it is
-implemented. If ->i_op is not there does not imply ENOSYS.
-
-Though, now that I grep through fs/*, I see that namei.c also
-has that comment "shouldn't it be ENOSYS", so it's all at odds.
-
->+	if (!parent->d_inode->i_op || !parent->d_inode->i_op->create)
->+		goto error;
-
->+struct dentry * union_create_topmost(struct nameidata *nd, struct dentry *old)
->+{
->+	struct dentry *dentry;
->+	struct dentry *parent = nd->dentry;
->+
->+	UM_DEBUG_UID("dentry=%s\n", old->d_name.name);
->+
->+	BUG_ON(parent->d_sb == old->d_sb);
->+	if (!S_ISREG(old->d_inode->i_mode)) {
->+		UM_DEBUG("This filetype isn't supported!\n");
-
-Does that mean I cannot create block devices, etc.?
-
->+int union_copy_file(struct dentry *old_dentry, struct vfsmount *old_mnt,
->+		    struct dentry *new_dentry, struct vfsmount *new_mnt)
->+{
->+	int ret;
->+	size_t size;
->+	loff_t offset;
->+	struct file *old_file, *new_file;
->[...]
->+	size = i_size_read(old_file->f_path.dentry->d_inode);
->+	if (((size_t)size != size) || ((ssize_t)size != size)) {
-
-No need to cast, size is already size_t. And then that left part
-is somewhat superfluous.
-
->+		ret = -EFBIG;
->+		goto fput_new;
->+	}
->+
+Don't know but the last patch I got works fine it seems (10 hours up).
 
 
-	Jan
+Folkert van Heusden
+
 -- 
+MultiTail is a versatile tool for watching logfiles and output of
+commands. Filtering, coloring, merging, diff-view, etc.
+http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
