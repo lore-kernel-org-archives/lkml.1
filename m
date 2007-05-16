@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763544AbXEPXla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934283AbXEPXmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763544AbXEPXla (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 19:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761355AbXEPXlG
+	id S934283AbXEPXmh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 19:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbXEPXmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 19:41:06 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35875 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760237AbXEPXlD (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 19:41:03 -0400
-Date: Thu, 17 May 2007 09:40:36 +1000
-From: David Chinner <dgc@sgi.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64 and powerpc
-Message-ID: <20070516234036.GQ85884050@sgi.com>
-References: <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070515193722.GA3487@amitarora.in.ibm.com> <20070515195421.GA2948@amitarora.in.ibm.com> <20070515200359.GA5834@amitarora.in.ibm.com> <20070516031626.GM85884050@sgi.com> <1179318076.10313.6.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179318076.10313.6.camel@kleikamp.austin.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 16 May 2007 19:42:31 -0400
+Received: from omta02ps.mx.bigpond.com ([144.140.83.154]:59213 "EHLO
+	omta02ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757812AbXEPXma (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 19:42:30 -0400
+Message-ID: <464B96DD.2000706@bigpond.net.au>
+Date: Thu, 17 May 2007 09:42:21 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>
+Subject: Re: [patch] CFS scheduler, -v12
+References: <20070513153853.GA19846@elte.hu> <464A6698.3080400@bigpond.net.au> <20070516080843.GA8909@elte.hu>
+In-Reply-To: <20070516080843.GA8909@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta02ps.mx.bigpond.com from [138.130.234.53] using ID pwil3058@bigpond.net.au at Wed, 16 May 2007 23:42:27 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 07:21:16AM -0500, Dave Kleikamp wrote:
-> On Wed, 2007-05-16 at 13:16 +1000, David Chinner wrote:
-> > On Wed, May 16, 2007 at 01:33:59AM +0530, Amit K. Arora wrote:
+Ingo Molnar wrote:
+> * Peter Williams <pwil3058@bigpond.net.au> wrote:
 > 
-> > > Following changes were made to the previous version:
-> > >  1) Added description before sys_fallocate() definition.
-> > >  2) Return EINVAL for len<=0 (With new draft that Ulrich pointed to,
-> > >     posix_fallocate should return EINVAL for len <= 0.
-> > >  3) Return EOPNOTSUPP if mode is not one of FA_ALLOCATE or FA_DEALLOCATE
-> > >  4) Do not return ENODEV for dirs (let individual file systems decide if
-> > >     they want to support preallocation to directories or not.
-> > >  5) Check for wrap through zero.
-> > >  6) Update c/mtime if fallocate() succeeds.
-> > 
-> > Please don't make this always happen. c/mtime updates should be dependent
-> > on the mode being used and whether there is visible change to the file. If no
-> > userspace visible changes to the file occurred, then timestamps should not
-> > be changed.
+>>> As usual, any sort of feedback, bugreport, fix and suggestion is more 
+>>> than welcome,
+>> Load balancing appears to be badly broken in this version.  When I 
+>> started 4 hard spinners on my 2 CPU machine one ended up on one CPU 
+>> and the other 3 on the other CPU and they stayed there.
 > 
-> i_blocks will be updated, so it seems reasonable to update ctime.  mtime
-> shouldn't be changed, though, since the contents of the file will be
-> unchanged.
+> hm, i cannot reproduce this on 4 different SMP boxen, trying various 
+> combinations of SCHED_SMT/MC
 
-That's assuming blocks were actually allocated - if the prealloc range already
-has underlying blocks there is no change and so we should not be changing
-mtime either. Only the filesystem will know if it has changed the file, so I
-think that timestamp updates need to be driven down to that level, not done
-blindy at the highest layer....
+You may need to try more than once.  Testing load balancing can be a 
+pain as there's always a possibility you'll get a good result just by 
+chance.  I.e. you need a bunch of good results to say it's OK but only 
+one bad result to say it's broken.   This makes testing load balancing a 
+pain.
 
-Cheers,
+> and other .config options that might make a 
+> difference to balancing. Could you send me your .config?
 
-Dave.
+Sent separately.
+
+Peter
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
