@@ -1,53 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761340AbXEPI6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760410AbXEPJFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761340AbXEPI6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 04:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbXEPI6J
+	id S1760410AbXEPJFm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 05:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbXEPJFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 04:58:09 -0400
-Received: from www.osadl.org ([213.239.205.134]:45999 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753641AbXEPI6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 04:58:08 -0400
-Subject: Re: [2.6.21.1] OOPS in timer stats code
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20070516080011.GA3304@vanheusden.com>
-References: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl>
-	 <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com>
-	 <4649FDEA.2050703@redhat.com> <1179267292.12838.42.camel@chaos>
-	 <20070516080011.GA3304@vanheusden.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 11:02:19 +0200
-Message-Id: <1179306139.12838.69.camel@chaos>
+	Wed, 16 May 2007 05:05:30 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:58437 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756492AbXEPJF2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 05:05:28 -0400
+Date: Wed, 16 May 2007 11:05:26 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg K-H <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [Patch -mm] Driver core: coding style cleanup
+Message-ID: <20070516110526.67e5b36e@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 10:00 +0200, Folkert van Heusden wrote:
-> > > >> Hi,
-> > > >> After an uptime of, say, 4 hours I got an oops on my P4 with HT and
-> > > >> 2GB ram.
-> > > >> It has dynamic ticks enabled as well has timer stats. I cannot reboot the
-> > > >> machine to give more details right now (19:00 gmt+1 i can).
-> > > >> For now, this is the oops:
-> > > >> [13092.479019] BUG: unable to handle kernel paging request at virtual
-> > > >> address b9d0458f
-> > > Timer hash list contains a user address.
-> > 
-> > Dammit. It's a HT enabled box again. I don't have one.
-> > Folkert, does the problem go away when you disable HT
-> > (CONFIG_SCHED_SMT) ?
-> 
-> Don't know but the last patch I got works fine it seems (10 hours up).
+[This goes on top of
+driver-core-check-return-code-of-sysfs_create_link.patch]
 
-/me lost context. Which patch ?
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-	tglx
+This converts code of the form
 
+	if ((error = some_func()))
+		goto fixup;
+to
+	error = some_func();
+	if (error)
+		goto fixup;
 
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+---
+ drivers/base/bus.c  |    6 ++++--
+ drivers/base/core.c |   12 ++++++++----
+ 2 files changed, 12 insertions(+), 6 deletions(-)
+
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -764,13 +764,17 @@ int device_add(struct device *dev)
+ 		if (error)
+ 			goto ueventattrError;
+ 	}
+-	if ((error = device_add_class_symlinks(dev)))
++	error = device_add_class_symlinks(dev);
++	if (error)
+ 		goto SymlinkError;
+-	if ((error = device_add_attrs(dev)))
++	error = device_add_attrs(dev);
++	if (error)
+ 		goto AttrsError;
+-	if ((error = device_pm_add(dev)))
++	error = device_pm_add(dev);
++	if (error)
+ 		goto PMError;
+-	if ((error = bus_add_device(dev)))
++	error = bus_add_device(dev);
++	if (error)
+ 		goto BusError;
+ 	kobject_uevent(&dev->kobj, KOBJ_ADD);
+ 	bus_attach_device(dev);
+--- linux-2.6.orig/drivers/base/bus.c
++++ linux-2.6/drivers/base/bus.c
+@@ -608,7 +608,8 @@ int bus_add_driver(struct device_driver 
+ 	if (error)
+ 		goto out_put_bus;
+ 	drv->kobj.kset = &bus->drivers;
+-	if ((error = kobject_register(&drv->kobj)))
++	error = kobject_register(&drv->kobj);
++	if (error)
+ 		goto out_put_bus;
+ 
+ 	if (drv->bus->drivers_autoprobe) {
+@@ -757,7 +758,8 @@ static int bus_add_attrs(struct bus_type
+ 
+ 	if (bus->bus_attrs) {
+ 		for (i = 0; attr_name(bus->bus_attrs[i]); i++) {
+-			if ((error = bus_create_file(bus,&bus->bus_attrs[i])))
++			error = bus_create_file(bus,&bus->bus_attrs[i]);
++			if (error)
+ 				goto Err;
+ 		}
+ 	}
