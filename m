@@ -1,64 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761615AbXEPMDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbXEPMHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761615AbXEPMDP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758966AbXEPMDA
+	id S1760087AbXEPMHi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbXEPMH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:03:00 -0400
-Received: from keetweej.vanheusden.com ([213.84.46.114]:32978 "EHLO
-	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757876AbXEPMC7 (ORCPT
+	Wed, 16 May 2007 08:07:29 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:24707 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755902AbXEPMH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:02:59 -0400
-Date: Wed, 16 May 2007 14:02:58 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2.6.21.1] OOPS in timer stats code
-Message-ID: <20070516120258.GC3304@vanheusden.com>
-References: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl> <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com> <4649FDEA.2050703@redhat.com> <1179267292.12838.42.camel@chaos> <20070516080011.GA3304@vanheusden.com> <1179306139.12838.69.camel@chaos>
+	Wed, 16 May 2007 08:07:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=AkUJAT19q8D8RkWTCkxGoSH4kmVLOst5Ink8MQ49YR7w4ua7QLP2ZdPAwZ4ARzyiIYFIUUUViaUoSs/hzs+/XAFvZkE+vqKrvh5Sudkm7z40ViP5QUDS7OTIl3OYZXImwmXCae3sS7SrIAFEf9a6enff1dKcNdCihNA3BaNydeY=  ;
+X-YMail-OSG: YCxCvIAVM1l7trfkRH2tYpb3qj8AdudP8aL5qJSSGdd1dtVaGCP41JUgP4.LiNx0N1jjexvyhQ--
+Message-ID: <464AF3F3.30204@yahoo.com.au>
+Date: Wed, 16 May 2007 22:07:15 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179306139.12838.69.camel@chaos>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Wed May 16 23:38:34 CEST 2007
-X-Message-Flag: PGP key-id: 0x1f28d8ae - consider encrypting your e-mail to me with PGP!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: David Howells <dhowells@redhat.com>
+CC: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement shared-writable mmap [try #2]
+References: <20070516100225.18685.51699.stgit@warthog.cambridge.redhat.com>
+In-Reply-To: <20070516100225.18685.51699.stgit@warthog.cambridge.redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > >> After an uptime of, say, 4 hours I got an oops on my P4 with HT and
-> > > > >> 2GB ram.
-> > > > >> It has dynamic ticks enabled as well has timer stats. I cannot reboot the
-> > > > >> machine to give more details right now (19:00 gmt+1 i can).
-> > > > >> For now, this is the oops:
-> > > > >> [13092.479019] BUG: unable to handle kernel paging request at virtual
-> > > > >> address b9d0458f
-> > > > Timer hash list contains a user address.
-> > > Dammit. It's a HT enabled box again. I don't have one.
-> > > Folkert, does the problem go away when you disable HT
-> > > (CONFIG_SCHED_SMT) ?
-> > Don't know but the last patch I got works fine it seems (10 hours up).
-> /me lost context. Which patch ?
+David Howells wrote:
+> Implement shared-writable mmap for AFS.
+> 
+> The key with which to access the file is obtained from the VMA at the point
+> where the PTE is made writable by the page_mkwrite() VMA op and cached in the
+> affected page.
+> 
+> If there's an outstanding write on the page made with a different key, then
+> page_mkwrite() will flush it before attaching a record of the new key.
+> 
+> [try #2] Only flush the page if the page is still part of the mapping (truncate
+> may have discarded it).
 
-The one by Jan Kara with Message-ID: <20070515191827.GB3677@duck.suse.cz>
+Couple more issues...
+
+> Signed-off-by: David Howells <dhowells@redhat.com>
+
+> +/*
+> + * notification that a previously read-only page is about to become writable
+> + * - if it returns an error, the caller will deliver a bus error signal
+> + *
+> + * we use this to make a record of the key with which the writeback should be
+> + * performed and to flush any outstanding writes made with a different key
+> + *
+> + * the key to be used is attached to the file pinned by the VMA
+> + */
+> +int afs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+> +{
+> +	struct afs_vnode *vnode = AFS_FS_I(vma->vm_file->f_mapping->host);
+> +	struct key *key = vma->vm_file->private_data;
+> +	int ret;
+> +
+> +	_enter("{{%x:%u},%x},{%lx}",
+> +	       vnode->fid.vid, vnode->fid.vnode, key_serial(key), page->index);
+> +
+> +	lock_page(page);
+> +	if (page->mapping == vma->vm_file->f_mapping)
+> +		ret = afs_prepare_write(vma->vm_file, page, 0, 0);
+
+I would strongly suggest you used (0, PAGE_CACHE_SIZE) for the range, and
+have your nopage function DTRT.
+
+Minor issue: you can just check for `if (!page->mapping)` for truncation,
+which is the usual signal to tell the reader you're checking for truncate.
+Then you can remove the comment...
 
 
-Folkert van Heusden
+> +	else
+> +		ret = 0; /* seems truncate interfered - let the caller deal
+> +			  * with it (presumably the PTE changed too) */
+
+Rather than add this (not always correct) comment about the VM workings, I'd
+just add a directive in the page_mkwrite API documentation that the filesystem
+is to return 0 if the page has been truncated.
+
+
+> +	unlock_page(page);
+> +
+> +	_leave(" = %d", ret);
+> +	return ret;
+> +}
 
 -- 
-www.vanheusden.com/multitail - multitail is tail on steroids. multiple
-               windows, filtering, coloring, anything you can think of
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+SUSE Labs, Novell Inc.
