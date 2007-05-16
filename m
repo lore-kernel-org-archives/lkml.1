@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbXEPMAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbXEPMAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761939AbXEPMAg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758806AbXEPMAZ
+	id S1762288AbXEPMAs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761719AbXEPMAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:00:25 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:40353 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757862AbXEPMAY (ORCPT
+	Wed, 16 May 2007 08:00:33 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:33656 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761339AbXEPMAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:00:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=ILAyxrI/iIHKn8KZ0HqHV+fB6hV0DPk8E56hXXNkJ4KAuAXYvBZc41wi4SFr8HIIuya7OZ4myG3JMdtCMTirE9i7aDlEXkbz48s36uE9X1h6WCTo2I5uB7PdaD05PClTHashNcxBR2LKo8nJO5JyrUv3LxtHuVDYLcWaBgS4Akk=  ;
-X-YMail-OSG: e.BPOsEVM1mRdtZz.TPpayqrLavklJC9pql7htldA5VXM3CIFn6e3Jl4boVT6JTRMnjwpzptAQ--
-Message-ID: <464AF224.30105@yahoo.com.au>
-Date: Wed, 16 May 2007 21:59:32 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 1 of 2] block_page_mkwrite() Implementation V2
-References: <20070318233008.GA32597093@melbourne.sgi.com> <18993.1179310769@redhat.com>
-In-Reply-To: <18993.1179310769@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 08:00:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=T8K2/a+Z0ZEIz3TSRmbhxWRfrqktSH0+7U4QfzUFdBQgUBOs1YFPDSM/fjjZq
+	QmPibAe0UfAfulovl7WlcqZwg==
+Date: Wed, 16 May 2007 14:00:24 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Rod Whitby <rod@whitby.id.au>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
+       Michael Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+Message-ID: <20070516120024.GE16262@xi.wantstofly.org>
+References: <464034CF.20700@wpkg.org> <20070516071300.GB14222@infradead.org> <20070516094100.GB16262@xi.wantstofly.org> <464AE10E.7090606@whitby.id.au> <20070516105626.GC16262@xi.wantstofly.org> <464AEC76.7090000@whitby.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464AEC76.7090000@whitby.id.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> David Chinner <dgc@sgi.com> wrote:
+On Wed, May 16, 2007 at 09:05:18PM +0930, Rod Whitby wrote:
+
+> >> So, if the author of these patches wishes to concentrate on big-endian
+> >> support first, then we will not say (and have not said) anything which
+> >> will block inclusion of a big-endian only version of this driver.
+> > 
+> > The NSLU2 people are the ones here that are saying that the driver
+> > should really support LE (because that is what they happen to be
+> > using, the rest of the world runs the ixp4xx in BE)
 > 
+> I'll repeat again.  NSLU2-Linux supports both BE and LE.  We have
+> about 5,000 users running BE and about 5,000 users running LE.
+
+Perhaps, but somehow I don't think that we'd have seen any reaction
+if the submitted driver had only supported LE and not BE.
+
+
+> > Please just write the patch and let's get this over with.
 > 
->>+	ret = block_prepare_write(page, 0, end, get_block);
-> 
-> 
-> As I understand the way prepare_write() works, this is incorrect.
+> Please let's just stop arguing about it.  If a patch appears before
+> it gets merged, then great.  If it doesn't then it will appear at a
+> later date.
 
-I think it is actually OK.
-
-
-> The start and end points passed to block_prepare_write() delimit the region of
-> the page that is going to be modified.  This means that prepare_write()
-> doesn't need to fill it in if the page is not up to date.  It does, however,
-> need to fill in the region before (if present) and the region after (if
-> present).  Look at it like this:
-> 
-> 		+---------------+
-> 		|               |
-> 		|               |	<-- Filled in by prepare_write()
-> 		|               |
-> 	to->	|:::::::::::::::|
-> 		|               |
-> 		|               |	<-- Filled in by caller
-> 		|               |
-> 	offset->|:::::::::::::::|
-> 		|               |
-> 		|               |	<-- Filled in by prepare_write()
-> 		|               |
-> 	page->	+---------------+
-> 
-> However, page_mkwrite() isn't told which bit of the page is going to be
-> written to.  This means it has to ask prepare_write() to make sure the whole
-> page is filled in.  In other words, offset and to must be equal (in AFS I set
-> them both to 0).
-
-Dave is using prepare_write here to ensure blocks are allocated in the
-given range. The filesystem's ->nopage function must ensure it is uptodate
-before allowing it to be mapped.
-
-
-> With what you've got, if, say, 'offset' is 0 and 'to' is calculated at
-> PAGE_SIZE, then if the page is not up to date for any reason, then none of the
-> page will be updated before the page is written on by the faulting code.
-
-Consider that the code currently works OK today _without_ page_mkwrite.
-page_mkwrite is being added to do block allocation / reservation.
-
-
-> You probably get away with this in a blockdev-based filesystem because it's
-> unlikely that the page will cease to be up to date.
-> 
-> However, if someone adds a syscall to punch holes in files, this may change...
-
-We have one. Strangely enough, it is done with madvise(MADV_REMOVE).
-
--- 
-SUSE Labs, Novell Inc.
+Great.  I agree.
