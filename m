@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbXEPLjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762037AbXEPLkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762127AbXEPLjv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 07:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758841AbXEPLjn
+	id S1762037AbXEPLkq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 07:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758236AbXEPLkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 07:39:43 -0400
-Received: from lazybastard.de ([212.112.238.170]:48278 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758328AbXEPLjm (ORCPT
+	Wed, 16 May 2007 07:40:36 -0400
+Received: from smtp.nokia.com ([131.228.20.171]:64569 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758212AbXEPLkf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 07:39:42 -0400
-Date: Wed, 16 May 2007 13:35:20 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
+	Wed, 16 May 2007 07:40:35 -0400
 Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070516113519.GC5472@lazybastard.org>
-References: <20070515151919.GA32510@lazybastard.org> <adar6pho5n3.fsf@cisco.com>
-Mime-Version: 1.0
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Jamie Lokier <jamie@shareable.org>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>, akpm@osdl.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070516113434.GC20482@mail.shareable.org>
+References: <20070515151919.GA32510@lazybastard.org>
+	 <17994.1241.436841.681216@stoffel.org>
+	 <20070515191926.GB1220@lazybastard.org>
+	 <1179291255.2859.195.camel@shinybook.infradead.org>
+	 <20070516110933.GA5472@lazybastard.org>
+	 <20070516113434.GC20482@mail.shareable.org>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <adar6pho5n3.fsf@cisco.com>
-User-Agent: Mutt/1.5.9i
+Date: Wed, 16 May 2007 14:38:18 +0300
+Message-Id: <1179315498.3642.19.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 16 May 2007 11:38:18.0784 (UTC) FILETIME=[B3135200:01C797AE]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 19:37:36 -0700, Roland Dreier wrote:
+On Wed, 2007-05-16 at 12:34 +0100, Jamie Lokier wrote:
+> Jörn Engel wrote:
+> > On Wed, 16 May 2007 12:54:14 +0800, David Woodhouse wrote:
+> > > Personally I'd just go for 'JFFS3'. After all, it has a better claim to
+> > > the name than either of its predecessors :)
+> > 
+> > Did you ever see akpm's facial expression when he tried to pronounce
+> > "JFFS2"?  ;)
 > 
-> There are rather a lot of of FIXME comments, including scary stuff like
+> JFFS3 is a good, meaningful name to anyone familiar with JFFS2.
 > 
->  > +	/*
->  > +	 * FIXME: this cannot be right but it does "fix" a bug of i_count
->  > +	 * dropping too low.  Needs more thought.
->  > +	 */
->  > +	atomic_inc(&old_dentry->d_inode->i_count);
+> But if akpm can't pronounce it, how about FFFS for faster flash
+> filesystem.... ;-)
 
-Any thoughts on this would be appreciated.
-
-> and
-> 
->  > +int __logfs_write_inode(struct inode *inode)
->  > +{
->  > +	/*
->  > +	 * FIXME: Those two inodes are 512 bytes in total.  Not good to
->  > +	 * have on the stack.  Possibly the best solution would be to bite
->  > +	 * the bullet and do another format change before release and
->  > +	 * shrink the inodes.
->  > +	 */
->  > +	struct logfs_disk_inode old, new;
-> 
-> are you going to change the format?  or fix this some other way?
-
-I would love to put my inodes on a diet.  It is just a matter of time
-and priorities.  To me the 512 bytes on the stack are unfortunate, but
-not a show stopper.  Crash behaviour is, so that has priority.
-
-> I think a sweep through the code searching for FIXME and at least
-> rewriting all such comments to look like stuff that can be deferred
-> would be warranted ;)
-
-Are you asking me to hide known problems under a rug? ;)
-
-Will see if I can easily fix some of these.  In particular the
-eat-your-data FIXME that can cause LogFS to not survive a crash.
-
-Jörn
+The problem is that JFFS2 will always be faster in terms of I/O speed
+anyway, just because it does not have to maintain on-flash indexing
+data structures. But yes, it is slow in mount and in building big
+inodes, so the "faster" is confusing.
 
 -- 
-Correctness comes second.
-Features come third.
-Performance comes last.
-Maintainability is easily forgotten.
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
