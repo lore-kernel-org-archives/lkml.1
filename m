@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbXEPQ3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762022AbXEPQ3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbXEPQ3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 12:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbXEPQ3N
+	id S1762022AbXEPQ3s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 12:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758538AbXEPQ3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 12:29:13 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:13233 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbXEPQ3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 12:29:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=epZFVrWcmHYOomnetRy4BU/mRymR36Puqm1Qoq3b6UncT0KkWKtsinEZ7aJQoA0cFzdyGFcn8qN3jKz4abPAJJ2HbL9MB6XRIcvIxoO/zQ5oaGwqLctCw1ijBIhDvtAig5niVsRrJfLHkLnieLeWZs/IA2vs1iAeojJZwl2KqKU=
-Message-ID: <86802c440705160929t5cbec9d2me2b83db34a9c572f@mail.gmail.com>
-Date: Wed, 16 May 2007 09:29:11 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: Re: [patch] early printk and boot console fixups.
-Cc: "Gerd Hoffmann" <kraxel@redhat.com>, "Andi Kleen" <ak@suse.de>,
-       akpm@linux-foundation.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200705160959.12433.bjorn.helgaas@hp.com>
+	Wed, 16 May 2007 12:29:40 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:57055 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758123AbXEPQ3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 12:29:40 -0400
+Date: Wed, 16 May 2007 12:29:37 -0400
+To: Roger Heflin <rheflin@atipa.com>
+Cc: NFS <nfs@lists.sourceforge.net>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [NFS] Kernel BUG at mm/slab.c:2380 on NFS server in nfsd (2.6.21.1)
+Message-ID: <20070516162937.GC9895@fieldses.org>
+References: <464B0D47.6070509@atipa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <45D5C473.4010608@suse.de>
-	 <86802c440705152117o34325f1dw4a0cdf95241b3b42@mail.gmail.com>
-	 <200705160959.12433.bjorn.helgaas@hp.com>
+In-Reply-To: <464B0D47.6070509@atipa.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> On Tuesday 15 May 2007 10:17:50 pm Yinghai Lu wrote:
-> > for early_uart_console, I have some ideas:
-> > 1. merged that into early_serial_console in
-> > arch/x86_64/kernel/early_printk.c, and
-> > move early_printk.c to kernel/, --- make it understand
-> >      earlyprintk=uart,io,0x3f8,9600n8
-> >      earlyprintk=uart,mmio,0xff5e0000,115200n8
-> > in addition to vga, ttyS, serial
->
-> I would rather try to merge 8250_early and early_printk.
-> "console=uart,io,0x3f8" is already pretty similar to
-> "earlyprintk=serial", and it would be nice to have only one.
->
-> "console=uart" does have the disadvantage that you have to know the
-> port address.  But it has the advantage that it doesn't depend on
-> compiled-in legacy serial port names.  If you need early console
-> output, you're probably a developer and can come up with the address.
->
-> I think it would be nice to have a "console=vga".  That could use
-> the current "earlyprintk=vga" implementation, and automatically
-> hand off to tty0.
->
-> Then we could remove "earlyprintk=" and always use "console=uart"
-> or "console=vga".
+On Wed, May 16, 2007 at 08:55:19AM -0500, Roger Heflin wrote:
+> Running bonnie over nfs on a RHEL4.4 client against a 2.6.21.1 server
+> got me this crash after about 4 hours of running on the server:
+> 
+> This was running lvm -> ext3 -> nfs ---- nfsclient (RHEL4.4).
 
-earlyprintk= is needed for seeting bootconsole, or setting CON_BOOT,
-and it is could be loaded earlier with early_param than console_init.
+Yipes.  Has this happened only once, or do you have a way to reliably
+reproduce it?
 
-in the console_init (via register_console), the console is handed over
-from bootconsole to normal console.
+Is it a new problem?  (And, if so, what changed?)
 
-also console_init could be moved to quite late than current, and till
-some subsystem is initialized like pci and usb.
+> May 15 21:10:31 vault1 kernel: ------------[ cut here ]------------
+> May 15 21:10:31 vault1 kernel: kernel BUG at mm/slab.c:2380!
 
-YH
+That's the check_spinlock_acquired() in cache_alloc_refill().  What
+causes that to fail?
+
+> May 15 21:10:31 vault1 kernel: invalid opcode: 0000 [1] SMP
+> May 15 21:10:31 vault1 kernel: CPU 0
+> May 15 21:10:31 vault1 kernel: Modules linked in: qla2xxx nfsd exportfs 
+> lockd nfs_acl sunrpc hidp l2cap bluetooth ipv6 cpufreq_ondemand jfs 
+> dm_mirror dm_multipath dm_mod video sbs i2c_ec dock button battery 
+> asus_acpi ac lp snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy 
+> snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device sg snd_pcm_oss 
+> floppy snd_mixer_oss snd_pcm cfi_cmdset_0002 cfi_util mtdpart snd_timer 
+> jedec_probe cfi_probe gen_probe snd ck804xrom sata_nv mtdcore chipreg 
+> i2c_nforce2 soundcore map_funcs libata snd_page_alloc pcspkr i2c_core 
+> k8temp hwmon forcedeth ohci1394 ieee1394 parport_pc ide_cd parport cdrom 
+> serio_raw scsi_transport_fc shpchp megaraid_mbox sd_mod scsi_mod 
+> megaraid_mm ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+> May 15 21:10:31 vault1 kernel: Pid: 4256, comm: nfsd Not tainted 2.6.21.1 #1
+> May 15 21:10:31 vault1 kernel: RIP: 0010:[<ffffffff8025a710>] 
+> [<ffffffff8025a710>] cache_alloc_refill+0xe6/0x1f3
+> May 15 21:10:31 vault1 kernel: RSP: 0018:ffff81021dead6d0  EFLAGS: 00010002
+> May 15 21:10:31 vault1 kernel: RAX: 0000000000000001 RBX: 
+> ffff81012211d960 RCX: ffff810120013040
+> May 15 21:10:31 vault1 kernel: RDX: 000000000000000e RSI: 
+> ffff810139020000 RDI: ffff810120013040
+
+There wasn't a backtrace?
+
+--b.
