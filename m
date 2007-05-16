@@ -1,88 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761378AbXEPMaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762337AbXEPMal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761378AbXEPMaO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbXEPMaB
+	id S1762337AbXEPMal (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759304AbXEPMac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:30:01 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:14142 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756872AbXEPMaB (ORCPT
+	Wed, 16 May 2007 08:30:32 -0400
+Received: from lazybastard.de ([212.112.238.170]:40209 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757465AbXEPMab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:30:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ePGrBnEayyzYPv6oXEIcVGeMpMB8bRhvibWIr8VGqUllE18hB5bibCNOa+LgtSl94MLTc9pudEMwqWFpquqnyGIDFcsOiUeC6EO4QuWcQ/lCcJ51be8YnvHB9M5B2PnHDkxQYhE/Yu9t0ELbWxGivLG/lbOh4v6yvLbZhstNMlA=
-Message-ID: <464AF932.9070008@gmail.com>
-Date: Wed, 16 May 2007 16:29:38 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pci probe
-References: <4648B29A.6080406@gmail.com> <4649B270.8050002@gmail.com> <20070516071851.GB19294@kroah.com>
-In-Reply-To: <20070516071851.GB19294@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 08:30:31 -0400
+Date: Wed, 16 May 2007 14:26:06 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070516122603.GE5472@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <Pine.LNX.4.64.0705161319060.5152@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0705161319060.5152@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, May 15, 2007 at 05:15:28PM +0400, Manu Abraham wrote:
->> Manu Abraham wrote:
->>> Hi,
->>>
->>> I do have a device that's a multifunction device. Eventhough a MFD, it
->>> just has one Interrupt which is shared by by a Configuration space for
->>> each function. ie, INTA is shared between them functions.
->>>
->>> In such a case, i am wondering, (since pci_probe returns a pointer to
->>> one PCI function alone and i need to use both the functions in one
->>> module alone rather than using a module for each function and that the
->>> functions are quite similar for them to be used in different modules,
->>> such that a separate probe/ISR etc is used) whether using pci_get_device
->>> would be a better alternative to do manual searching for the functions
->>> in such a case.
->>>
->> Just figured out that pci_get_subsys() does work in a better. Looking at
->> kernel sources all i find is just one single user of pci_get_subsys()
->>
->> building the code around pci_get_subsys(), does this have any negative
->> impact ?
+On Wed, 16 May 2007 13:21:11 +0300, Pekka J Enberg wrote:
 > 
-> Yes:
-> 	- your device will not show up properly in sysfs (no
-> 	  device/driver binding ability from userspace, no good
-> 	  information so that udev can properly name the device, etc.)
+> > +#define LOGFS_BUG(sb) do {           \
+> > +     struct super_block *__sb = sb;  \
+> > +     logfs_crash_dump(__sb);         \
+> > +     BUG();                          \
+> > +} while(0)
+> 
+> Note that BUG() can be a no-op so dumping something on disk might not make 
+> sense there. This seems useful, but you probably need to make this bit 
+> more generic so that using BUG() proper in your filesystem code does the 
+> right thing. Inventing your own wrapper should be avoided.
 
-This one sounds bad.
+Hmm.  I am not sure how this could be generic and still make sense.
 
-> 	- your driver will not work on any pci-hotplug type system (that
-> 	  includes expresscard and pccard and lots of high-end servers.
+LogFS has some unused write-once space in the superblock segment.
+Embedded people always have problems debugging and were suggesting using
+this to store debug information.  That allows me to ask for a filesystem
+image and get both the offending image plus a crash dump.  It also
+allows me to abort mounting if I ever see an existing crash dump (not
+implemented yet).  "First failure data capture" was an old IBM slogal
+and the "first" really makes a difference.
 
-This doesn't matter
+So how should I deal with BUG() as a no-op?  I _think_ it should not
+make a difference.  People choosing that option should know that their
+kernels will continue running with errors and can potentially do any
+kind of damage.  My wrapper doesn't seem to change that one way or
+another.
 
-> 	- your driver will not be notified if the system is being
-> 	  suspended or resumed or wanting to drop into a low power
-> 	  state.
-> 	- another driver can bind to your device without you ever
-> 	  knowing it.
+What I _should_ do is make the filesystem read-only after this point.
+That would actually be quite simple.  Onto my list.
 
-These also sound bad.
+> > +static inline struct logfs_super *LOGFS_SUPER(struct super_block *sb)
+> > +{
+> > +     return sb->s_fs_info;
+> > +}
+> > +
+> > +static inline struct logfs_inode *LOGFS_INODE(struct inode *inode)
+> > +{
+> > +     return container_of(inode, struct logfs_inode, vfs_inode);
+> > +}
+> 
+> No need for upper case in function names.
 
-> So in short, use pci_probe and just handle the fact that you need to be
-> called for two PCI devices and bind to both of them.  It shouldn't be
-> that hard...
+Will change.
 
-Thanks for the explanation.
+> > +int logfs_memcpy(void *in, void *out, size_t inlen, size_t outlen)
+> > +{
+> > +     if (outlen < inlen)
+> > +             return -EIO;
+> > +     memcpy(out, in, inlen);
+> > +     return inlen;
+> > +}
+> 
+> Please drop this wrapper function. It's better to open-code the error
+> handling in the callers (there are total of three of them).
 
-Do you mean to have two PCIID tables ? But then that does mean 2 modules
-don't you ? (i thought probe would be called once per module) Or you
-mean to say use PCI_ANY_ID in the table to match multiple devices and
-then allow probe to return a list of devices ?
+Is it?  The advantage of having the wrapper is that the compression case
+and the non-compressed case look identical and the code just repeats the
+same pattern twice.
 
-Thanks,
-Manu
+I'll try to open-code it and see how it looks.
 
+> > +/* FIXME: combine with per-sb journal variant */
+> > +static unsigned char compressor_buf[LOGFS_MAX_OBJECTSIZE];
+> > +static DEFINE_MUTEX(compr_mutex);
+> 
+> This looks fishy. All reads and writes are serialized by compr_mutex 
+> because they share a scratch buffer for compression and uncompression?
+
+s/fishy/lame/
+
+Will move to superblock.
+
+> > +/* FIXME: all this mess should get replaced by using the page cache */
+> > +static void fixup_from_wbuf(struct super_block *sb, struct logfs_area 
+> *area,
+> > +             void *read, u64 ofs, size_t readlen)
+> > +{
+> 
+> Indeed. And I think you're getting some more trouble because of this... 
+
+More trouble?
+
+Sadly squeezing bugs out of that beast was easier than wrapping my brain
+around the proper solution.  And now it works and has moved to a less
+urgent position in my todo list.
+
+> > +int logfs_segment_read(struct super_block *sb, void *buf, u64 ofs)
+> > +{
+> > +     struct logfs_object_header *h;
+> > +     u16 len;
+> > +     int err, bs = sb->s_blocksize;
+> > +
+> > +     mutex_lock(&compr_mutex);
+> > +     err = wbuf_read(sb, ofs, bs + LOGFS_HEADERSIZE, compressor_buf);
+> > +     if (err)
+> > +             goto out;
+> > +     h = (void*)compressor_buf;
+> > +     len = be16_to_cpu(h->len);
+> > +
+> > +     switch (h->compr) {
+> > +     case COMPR_NONE:
+> > +             logfs_memcpy(compressor_buf + LOGFS_HEADERSIZE, buf, bs, 
+> bs);
+> > +             break;
+> 
+> Seems wasteful to first read the data in a scratch buffer and then 
+> memcpy() it immediately for the COMPR_NONE case. Any reason why we can't 
+> read a full struct page, for example, and simply use that if we don't need 
+> to uncompress anything?
+
+No technical reason.  Just a case of "make it work now and optimize
+later".
+
+> > +     case COMPR_ZLIB:
+> > +             err = logfs_uncompress(compressor_buf + LOGFS_HEADERSIZE, 
+> buf,
+> > +                             len, bs);
+> > +             BUG_ON(err);
+> > +             break;
+> 
+> Not claiming to undestand your on-disk format, but wouldn't it make more 
+> sense if we knew whether a given segment is compressed or not _before_ we 
+> actually read it?
+
+[ Objects are the units that get compressed.  Segments can contain both
+compressed and uncompressed objects. ]
+
+It is a trade-off.  Each object has a 24 Byte header plus X Bytes of
+data.  Whether the data is compressed or not is indicated in the header.
+So we have to do one of two things.  Either:
+- read the complete object, then either uncompress or memcpy, or
+- read just the header, then either read uncompressed data or read
+  compressed data and uncompress.
+
+The former does an unnecessary memcpy() in the uncompressed case.  The
+latter does an extra IO operation.  I haven't done any benchmarks to see
+which variant is faster on which hardware.
+
+An advantage of the second approach is that no buffer and no mutex is
+needed in the uncompressed case.  That could help read performance on an
+SMP system.  I'll put it on my list, just not at the top.  Ok?
+
+Jörn
+
+-- 
+When in doubt, punt.  When somebody actually complains, go back and fix it...
+The 90% solution is a good thing.
+-- Rob Landley
