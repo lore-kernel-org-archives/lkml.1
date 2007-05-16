@@ -1,133 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761574AbXEPJl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbXEPJuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761574AbXEPJl7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 05:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbXEPJlw
+	id S1759997AbXEPJuw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 05:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbXEPJuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 05:41:52 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:24523 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756030AbXEPJlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 05:41:51 -0400
-Message-ID: <464AD1DB.3050609@linux-kernel.at>
-Date: Wed, 16 May 2007 11:41:47 +0200
-From: Oliver Falk <oliver@linux-kernel.at>
-Organization: Linux kernel Austria
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070419 Fedora/2.0.0.0-1.fc7 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+	Wed, 16 May 2007 05:50:46 -0400
+Received: from mail1.perex.cz ([212.20.107.53]:51402 "EHLO mail1.perex.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753641AbXEPJup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 05:50:45 -0400
+Date: Wed, 16 May 2007 11:50:43 +0200 (CEST)
+From: Jaroslav Kysela <perex@suse.cz>
+X-X-Sender: perex@tm8103-a.perex-int.cz
+To: Linus Torvalds <torvalds@osdl.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [ALSA PATCH] alsa-git merge request
+Message-ID: <Pine.LNX.4.61.0705161149050.8048@tm8103-a.perex-int.cz>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] Missing defines in asm-alpha/unistd.h!?
-References: <464AC75D.1090701@linux-kernel.at>
-In-Reply-To: <464AC75D.1090701@linux-kernel.at>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------050604000409010305040409"
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-3.009, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
-	PLING_QUERY 1.39)
-X-MailScanner-From: oliver@linux-kernel.at
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050604000409010305040409
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Linus, please pull from [the linus branch at]:
 
-On 05/16/2007 10:57 AM, Oliver Falk wrote:
-> I believe this is missing... :-) I hope I understood NR_SYSCALLS
-> correctly and it's the number of defined syscals - as I added 20 of
-> them, I increased it by 20... Maybe someone can have a look if it's correct.
-[ ... ]
+  master.kernel.org:/pub/scm/linux/kernel/git/perex/alsa.git linus
+gitweb interface:
+  http://www.kernel.org/git/?p=linux/kernel/git/perex/alsa.git
 
-Sorry, the patch was missing one hunk/file and also the tab stops where
-wrong. Attached a new working version.
+The GNU patch is available at:
 
-- -of
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+  ftp://ftp.alsa-project.org/pub/kernel-patches/alsa-git-2007-05-16.patch.gz
 
-iD8DBQFGStDwxWN5Ge8lKUMRAp9pAJ9VWmpI5zSUmW4s99I/8YC0Cw60lgCgvIHR
-iRRdK8OTSVMepjQbNRWfQYA=
-=HexW
------END PGP SIGNATURE-----
 
---------------050604000409010305040409
-Content-Type: text/x-patch;
- name="linux-2.6.21-alpha_missing_syscalls.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6.21-alpha_missing_syscalls.patch"
+The following files will be updated:
 
---- linux-2.6.21/include/asm-alpha/unistd.h.missing_defines	2007-05-16 10:53:02.000000000 +0200
-+++ linux-2.6.21/include/asm-alpha/unistd.h	2007-05-16 10:54:44.000000000 +0200
-@@ -388,9 +388,30 @@
- #define __NR_inotify_add_watch		445
- #define __NR_inotify_rm_watch		446
- 
-+#define __NR_openat             447
-+#define __NR_mkdirat            448
-+#define __NR_mknodat            449
-+#define __NR_fchownat           450
-+#define __NR_futimesat          451
-+#define __NR_unlinkat           452
-+#define __NR_renameat           453
-+#define __NR_linkat             454
-+#define __NR_symlinkat          455
-+#define __NR_readlinkat         456
-+#define __NR_fchmodat           457
-+#define __NR_faccessat          458
-+#define __NR_pselect6           459
-+#define __NR_ppoll              460
-+#define __NR_unshare            461
-+#define __NR_set_robust_list    462
-+#define __NR_get_robust_list    463
-+#define __NR_splice             464
-+#define __NR_sync_file_range    465
-+#define __NR_tee                466
-+
- #ifdef __KERNEL__
- 
--#define NR_SYSCALLS			447
-+#define NR_SYSCALLS			467
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
---- linux-2.6.21/arch/alpha/kernel/systbls.S.missing_defines	2007-05-16 11:32:29.000000000 +0200
-+++ linux-2.6.21/arch/alpha/kernel/systbls.S	2007-05-16 11:30:36.000000000 +0200
-@@ -465,6 +465,26 @@
- 	.quad sys_inotify_init
- 	.quad sys_inotify_add_watch		/* 445 */
- 	.quad sys_inotify_rm_watch
-+	.quad sys_openat
-+	.quad sys_mkdirat
-+	.quad sys_mknodat
-+	.quad sys_fchownat          /* 450 */
-+	.quad sys_futimesat
-+	.quad sys_unlinkat
-+	.quad sys_renameat
-+	.quad sys_linkat
-+	.quad sys_symlinkat         /* 455 */
-+	.quad sys_readlinkat
-+	.quad sys_fchmodat
-+	.quad sys_faccessat
-+	.quad sys_pselect6
-+	.quad sys_ppoll             /* 460 */
-+	.quad sys_unshare
-+	.quad sys_set_robust_list
-+	.quad sys_get_robust_list
-+	.quad sys_splice
-+	.quad sys_sync_file_range
-+	.quad sys_tee
- 
- 	.size sys_call_table, . - sys_call_table
- 	.type sys_call_table, @object
+ include/sound/soc.h           |    4 +-
+ include/sound/version.h       |    2 +-
+ sound/pci/hda/hda_codec.c     |    3 +-
+ sound/pci/hda/patch_realtek.c |  532 +++++++++++++++++++++++++++++++++++++++--
+ sound/soc/codecs/ac97.c       |    3 +-
+ sound/soc/codecs/wm9712.c     |    1 +
+ sound/soc/soc-core.c          |   18 ++-
+ sound/usb/usbquirks.h         |    9 +
+ 8 files changed, 548 insertions(+), 24 deletions(-)
 
---------------050604000409010305040409--
+
+The following things were done:
+
+Daniel Drake (1):
+      [ALSA] usb-audio: another Logitech QuickCam ID
+
+Jaroslav Kysela (1):
+      [ALSA] version 1.0.14rc4
+
+Kailang Yang (1):
+      [ALSA] hda-codec - Fix ALC882/861VD codec support on some laptops
+
+Liam Girdwood (2):
+      [ALSA] ASoC AC97 static GPL symbol fix
+      [ALSA] ASoC AC97 device reg bugfix
+
+Takashi Iwai (1):
+      [ALSA] hda-codec - Make the mixer capability check more robust
+
+-----
+Jaroslav Kysela <perex@suse.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, SUSE Labs
