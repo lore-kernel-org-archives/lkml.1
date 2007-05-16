@@ -1,112 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXEPORg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbXEPOYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbXEPORg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 10:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbXEPOR3
+	id S1758121AbXEPOYi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 10:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbXEPOYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 10:17:29 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:10782 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756087AbXEPOR3 (ORCPT
+	Wed, 16 May 2007 10:24:32 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:60594 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754941AbXEPOYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 10:17:29 -0400
-Message-ID: <464B1275.6020007@linux-kernel.at>
-Date: Wed, 16 May 2007 16:17:25 +0200
-From: Oliver Falk <oliver@linux-kernel.at>
-Organization: Linux kernel Austria
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070419 Fedora/2.0.0.0-1.fc7 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+	Wed, 16 May 2007 10:24:31 -0400
+Message-ID: <464B141E.3020400@s5r6.in-berlin.de>
+Date: Wed, 16 May 2007 16:24:30 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] Missing defines in asm-alpha/unistd.h!?
-References: <464AC75D.1090701@linux-kernel.at> <464AD1DB.3050609@linux-kernel.at> <464AE8D1.5000500@linux-kernel.at> <464B02BC.1040101@linux-kernel.at>
-In-Reply-To: <464B02BC.1040101@linux-kernel.at>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------040200050908020107060801"
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-3.009, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
-	PLING_QUERY 1.39)
-X-MailScanner-From: oliver@linux-kernel.at
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, kbuild-devel@lists.sourceforge.net
+Subject: Re: [RFC] select and dependencies in Kconfig
+References: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk> <20070516033335.GH4095@ftp.linux.org.uk>
+In-Reply-To: <20070516033335.GH4095@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040200050908020107060801
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-On 05/16/2007 03:10 PM, Oliver Falk wrote:
-> On 05/16/2007 01:19 PM, Oliver Falk wrote:
->> On 05/16/2007 11:41 AM, Oliver Falk wrote:
->>> On 05/16/2007 10:57 AM, Oliver Falk wrote:
->>>> I believe this is missing... :-) I hope I understood NR_SYSCALLS
->>>> correctly and it's the number of defined syscals - as I added 20 of
->>>> them, I increased it by 20... Maybe someone can have a look if it's correct.
->>> [ ... ]
->>> Sorry, the patch was missing one hunk/file and also the tab stops where
->>> wrong. Attached a new working version.
->> But. The strange error that follows after patching:
->>   ld  -static -N  -o .tmp_vmlinux1 -T arch/alpha/kernel/vmlinux.lds
->> arch/alpha/kernel/head.o  init/built-in.o --start-group  usr/built-in.o
->>  arch/alpha/kernel/built-in.o  arch/alpha/mm/built-in.o
->> arch/alpha/math-emu/built-in.o  kernel/built-in.o  mm/built-in.o
->> fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
->> block/built-in.o  lib/lib.a  arch/alpha/lib/lib.a  lib/built-in.o
->> arch/alpha/lib/built-in.o  drivers/built-in.o  sound/built-in.o
->> net/built-in.o --end-group
->> arch/alpha/kernel/built-in.o:(.data+0x2d60): undefined reference to
->> `sys_pselect6'
->> arch/alpha/kernel/built-in.o:(.data+0x2d68): undefined reference to
->> `sys_ppoll'
+Al Viro wrote:
+>> stuff that does select USB should depend on USB_ARCH_HAS_HCD, or we'll
+>> end up with unbuildable configs.
 > 
->> I don't understand this... Any clue(s)?
-> 
-> Needed to replace sys_pselect6 and sys_ppoll with alpha_ni_syscall... If
-> this is very correct way to fix it!? :-/
-> 
-> Can someone please have a look and correct me!?
+> BTW, this kind of situation happens often enough, so how about doing
+> the following: teach kconfig that if FOO selects BAR and BAR depends
+> on <expr>, we should act as if FOO had explicit depends on <expr>.
 
-Sergey just told me, that this is wrong. Patch is fine, but we need
-another. Please apply as well.
+"A... select B" is just a flavor of "A... depends on B", with the
+additional instruction to the Kconfig UIs:  Don't hide A if you can
+silently switch on B.
 
-- -of
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+So, since it is just a flavor of 'depend on', it is very obvious that it
+has to propagate indirect dependencies just like 'depends on' does.
 
-iD8DBQFGSxFcxWN5Ge8lKUMRApQjAJwOFDVvTLyU1iUnGPYZOjDsgdQc+gCgln/Z
-/l4a0VXPlCgjTfzQXklaC1g=
-=VFix
------END PGP SIGNATURE-----
+[...]
+> the only thing I'm not sure how to deal
+> with is how to show such inherited dependencies in menuconfig et.al.
 
---------------040200050908020107060801
-Content-Type: text/x-patch;
- name="linux-2.6.21-alpha_thread_info.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6.21-alpha_thread_info.patch"
+How about throwing "select" out of the Kconfig language and improving
+the UIs instead, so that users find what they want and need?
 
---- linux-2.6.21.alpha/include/asm-alpha/thread_info.h.alpha_thread	2007-05-16 16:08:18.000000000 +0200
-+++ linux-2.6.21.alpha/include/asm-alpha/thread_info.h	2007-05-16 16:08:07.000000000 +0200
-@@ -76,12 +76,14 @@
- #define TIF_UAC_NOFIX		7
- #define TIF_UAC_SIGBUS		8
- #define TIF_MEMDIE		9
-+#define TIF_RESTORE_SIGMASK	11
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
- #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
- #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
-+#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- 
- /* Work to do on interrupt/exception return.  */
- #define _TIF_WORK_MASK		(_TIF_NOTIFY_RESUME	\
+Compare to software package management.  I think most of the package
+management systems store merely plain dependencies in the package
+metadata.  The package manager UIs then allow users to auto-select all
+packages which package A depends on, show him what was selected, let him
+edit his choice before massive downloads, et cetera.  Also, package
+manager UIs often offer some collections of typically used packages and
+so on.  I don't think the package metadata already contain some
+instructions which stuff to pre-select for the user.  It's all in the UIs.
 
---------------040200050908020107060801--
+Back to Kconfig.
+
+We have
+
+  - driver-like options which enable building of certain functionality.
+    They often depend on multiple other options higher up, either by
+    directly depending on one other option which itself may depend on
+    others, or even by directly depending on several options (which each
+    may depend others.)
+    The driver-like options are the ones that are most relevant to users
+    because they ultimately decide what the kernel can do.
+
+  - Tunables which modify how those driver-like code will behave.
+
+  - Infrastructure (subsystem cores), libraries.
+    Nobody really cares about these on their own, we only want have all
+    those of them built which serve above mentioned driver-like options.
+
+Did I forget anything?
+
+So, we put
+
+  - metadata about kernel parts (what do they, what are their
+    dependencies)
+    into Kconfig files,
+
+  - methods to produce .configs (which honor the dependencies and
+    reflect which kernel functionality the user wanted)
+    into "make fooconfig" programs,
+
+  - user interfaces which control these methods
+    into "make fooconfig" programs.
+
+The goal is to let the user safely and efficiently enable everything he
+needs/ disable everything he doesn't need.
+
+The question is:  Which kind of information has to be put into the
+Kconfig files to achieve this objective --- besides the plain
+information about dependencies and human-readable information about the
+functionality of the options?
+
+Do we need instructions like "select" in Kconfig files, or do we rather
+need more powerful "make fooconfig" programs?
+
+PS:  Actually, the problems with "select" which Al pointed out in the
+parent post show that "select" doesn't really let us get by with less
+powerful "make fooconfig" programs, because proper treatment of
+"depends" is sometimes nontrivial.
+
+PPS:  Other current discussions indicate that additional metadata in the
+Kconfigs might perhaps be useful, e.g. metadata about a kernel part's
+lifecycle status (experimental, deprecated et al).
+-- 
+Stefan Richter
+-=====-=-=== -=-= =----
+http://arcgraph.de/sr/
