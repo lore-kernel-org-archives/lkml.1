@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbXEPMSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761771AbXEPMT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760971AbXEPMSk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 08:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbXEPMSd
+	id S1761771AbXEPMT0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 08:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbXEPMTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 08:18:33 -0400
-Received: from nessie.weebeastie.net ([220.233.7.36]:2605 "EHLO
-	bunyip.lochness.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756824AbXEPMSd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 08:18:33 -0400
-Date: Wed, 16 May 2007 22:06:24 +1000
-From: CaT <cat@zip.com.au>
-To: J??rn Engel <joern@lazybastard.org>
-Cc: Jamie Lokier <jamie@shareable.org>, David Woodhouse <dwmw2@infradead.org>,
-       akpm@osdl.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070516120624.GA18926@zip.com.au>
-References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 16 May 2007 08:19:20 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51184 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756824AbXEPMTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 08:19:20 -0400
+From: Andi Kleen <ak@suse.de>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: How to force Kconfig tristate into range n..m?
+Date: Wed, 16 May 2007 14:18:48 +0200
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org
+References: <20070515233002.GA9614@linux.vnet.ibm.com>
+In-Reply-To: <20070515233002.GA9614@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070516115003.GD5472@lazybastard.org>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.9i
+Message-Id: <200705161418.49151.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 01:50:03PM +0200, J??rn Engel wrote:
-> On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
-> > 
-> > But if akpm can't pronounce it, how about FFFS for faster flash
-> > filesystem.... ;-)
-> 
-> How many of you have worked for IBM before?  Vowels are not evil. ;)
-> 
-> Grouping four or more consonants to name anything will cause similar
-> expressions on people's faces.  Numbers don't help much either.
-> 
-> Ext2 is a great name, because "ext" actually is a pronouncable syllable.
-> MinixFS, ChunkFS, TileFS are great too.  XFS and JFS are ok, at least
-> they only have three consonants.  But FFS exists, so I'd rather go for a
-> syllable.
+ 
+>
+> Is there some other way to prohibit modules from being compiled into
+> the main kernel?
 
-FlashFS?
+One way is to use a separate symbol that is not user visible, but depends
+on your main symbol and uses default m
 
--- 
-    "To the extent that we overreact, we proffer the terrorists the
-    greatest tribute."
-    	- High Court Judge Michael Kirby
+(similar to the now infamous CONFIG_SCSI_WAIT_SCAN)
+
+-Andi
