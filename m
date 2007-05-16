@@ -1,124 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbXEPOjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbXEPOlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759845AbXEPOjz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 10:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXEPOjt
+	id S1760150AbXEPOlP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 10:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbXEPOlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 10:39:49 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:20456 "EHLO
-	outbound6-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753981AbXEPOjs (ORCPT
+	Wed, 16 May 2007 10:41:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:16196 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754586AbXEPOlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 10:39:48 -0400
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-From: "Peter Oruba" <peter.oruba@amd.com>
-Organization: AMD
-To: "Andrew Vasquez" <andrew.vasquez@qlogic.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/2] PCI-X/PCI-Express read control interfaces -
- Patch correction
-Date: Wed, 16 May 2007 16:39:59 +0200
-User-Agent: KMail/1.9.6
-cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>
-References: <200705151350.28330.peter.oruba@amd.com>
- <20070515123721.1bfb02a3.akpm@linux-foundation.org>
- <20070515213531.GG29996@n7651av69tz181.qlogic.org>
-In-Reply-To: <20070515213531.GG29996@n7651av69tz181.qlogic.org>
+	Wed, 16 May 2007 10:41:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=bOm1+BdteOs7g3liWT0jYoeEsFP/WC7xeidDhgHa2QabLlOUe5Xm3vQJcG2SLHd2/CvaeIs5dCAXtyXlRGkkAklqcOjjvh7X52jt2fusNaP7sfrYRws3HzSvrReYYzxJh5zREa1WVGOnj/hAgXTuieGhm2Xc8NH1/nFyNawit0k=
+Date: Wed, 16 May 2007 18:33:08 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@ucw.cz>
+Subject: Re: [PATCH] UDF: check for allocated memory for inode data
+Message-ID: <20070516143308.GA8327@cvg>
+References: <20070510140000.GA12399@cvg> <20070510154640.c0299a52.akpm@linux-foundation.org> <20070511072939.GA25727@infradead.org> <20070511090127.GD9444@cvg> <20070511103956.GA30896@infradead.org> <20070511110920.GA11898@cvg> <20070513210126.GB14030@infradead.org>
 MIME-Version: 1.0
-Message-ID: <200705161639.59591.peter.oruba@amd.com>
-X-OriginalArrivalTime: 16 May 2007 14:39:16.0696 (UTC)
- FILETIME=[FAE53580:01C797C7]
-X-WSS-ID: 6A55C82E20G2451110-02-01
-Content-Type: text/plain;
- charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070513210126.GB14030@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 15. Mai 2007 23:35:31 schrieb Andrew Vasquez:
+[Christoph Hellwig - Sun, May 13, 2007 at 10:01:26PM +0100]
+| On Fri, May 11, 2007 at 03:09:20PM +0400, Cyrill Gorcunov wrote:
+| > | > | And please get rid of the UDF_I_* macro for everything you touch, just
+| > | > | put a
+| > | > | 
+| > | > | 	struct udf_inode_info *uip = UDF_I(inode);
+| > | > | 
+| > | > | at the beginning of the function and use the fields directly.
+| > | > | 
+| > | > 
+| > | > Actually to properly remove UDF_I* and UDF_SB_* macroses in the
+| > | > whole UDF subsystem - is _lot_ of work. I'm going to make it but
+| > | > not now (too busy).
+| > | 
+| > | Doing it completely is a lot of work, yes.  I was more thinking of
+| > | converting a piece of code once you do major changes.  But if you
+| > | want to convert all the code as a separate patch I'm more than happy
+| > | aswell.
+| > | 
+| > 
+| > Christoph, my only argue against getting rid of UDF_I_* macro in
+| > my patch is UDF coding style, I don't want to damage it. I think
+| > we may leave it as is (including my patch). So just review the patch
+| > I sent (second version) and Ack it then so Andrew could include it
+| > into mm tree. Meantime I'm rewritting the whole UDF subsystem to
+| > get rid of that macroses (it will be a long way ;)
+| 
+| The UDF style is horrible and very unlike other kernel code.  Given
+| that udf has been pretty much unmtained for a while there should be
+| nothing in the way of fixing it.
+| 
+| Anyway, the patch is technically correct so you'll get my ACK (not
+| that you should need it).
+| 
 
-> In general, if PCI-[Xe] capability structure exists do set-
-> mmrbc()/readrq(), yet each of those pre-condition checks are already
-> present in the pcix_set_mmrbc() and pcie_set_readrq().
-> 
-> At least for the qla2xxx case, the patch could easily distill down from:
-> 
-> 	...
-> 	/* PCIe -- adjust Maximum Read Request Size (2048). */
-> 	pcie_dctl_reg = pci_find_capability(ha->pdev, PCI_CAP_ID_EXP);
-> 	if (pcie_dctl_reg)
-> 		if (pcie_set_readrq(ha->pdev, 2048))
-> 			DEBUG2(printk("Couldn't write PCI Express read request\n"));
-> 
-> to:
-> 
-> 	...
-> 	pcie_set_readrq(ha->pdev, 2048);
-> 
-> 
-> Whatever the decision, I can fold this into my next patchset for
-> qla2xxx and submit.
-> 
-> 
-> 
+Hi Christoph,
 
-Sorry, I missed out an essential part in the qla2xxx driver, namely the MMRBC configuration for PCI-X. The submitted patch only did that for PCIe. This is the corrected version
+you know I've read UDF sources. As I understand all UDF_I_ macroses
+could be converted without breaking UDF state but... as you exactly
+mentoined it's style is horrible and I'm thinking about rewritting the
+whole UDF system. Unfortunelly I'm not _mature_ kernel developer (I'm kernel
+newbie) and it could take a long time for this (I think something like
+~ 3 month or more ;). Actually I'm ready to spend my free time for
+this. So how do you think could it be reasonable?
 
-The pre-condition check is there to not blindly call the mmrbc-functions, but to check for the bus type first. Indeed, the first patch version made this check look unnecessary.
-
-Signed-off by: Peter Oruba <peter.oruba@amd.com>
-Based on patch set by Stephen Hemminger <shemminger@linux-foundation.org>
-
----
---- linux-2.6.22-rc1.orig/drivers/scsi/qla2xxx/qla_init.c       2007-05-14 11:29:41.561311000 +0200
-+++ linux-2.6.22-rc1/drivers/scsi/qla2xxx/qla_init.c    2007-05-16 16:08:47.811810000 +0200
-@@ -269,27 +269,15 @@ qla24xx_pci_config(scsi_qla_host_t *ha)
-
-        /* PCI-X -- adjust Maximum Memory Read Byte Count (2048). */
-        pcix_cmd_reg = pci_find_capability(ha->pdev, PCI_CAP_ID_PCIX);
--       if (pcix_cmd_reg) {
--               uint16_t pcix_cmd;
--
--               pcix_cmd_reg += PCI_X_CMD;
--               pci_read_config_word(ha->pdev, pcix_cmd_reg, &pcix_cmd);
--               pcix_cmd &= ~PCI_X_CMD_MAX_READ;
--               pcix_cmd |= 0x0008;
--               pci_write_config_word(ha->pdev, pcix_cmd_reg, pcix_cmd);
--       }
-+       if (pcix_cmd_reg)
-+               if (pcix_set_mmrbc(ha->pdev, 2048))
-+                       DEBUG2(printk("Couldn't write PCI-X read request\n"));
-
-        /* PCIe -- adjust Maximum Read Request Size (2048). */
-        pcie_dctl_reg = pci_find_capability(ha->pdev, PCI_CAP_ID_EXP);
--       if (pcie_dctl_reg) {
--               uint16_t pcie_dctl;
--
--               pcie_dctl_reg += PCI_EXP_DEVCTL;
--               pci_read_config_word(ha->pdev, pcie_dctl_reg, &pcie_dctl);
--               pcie_dctl &= ~PCI_EXP_DEVCTL_READRQ;
--               pcie_dctl |= 0x4000;
--               pci_write_config_word(ha->pdev, pcie_dctl_reg, pcie_dctl);
--       }
-+       if (pcie_dctl_reg)
-+               if (pcie_set_readrq(ha->pdev, 2048))
-+                       DEBUG2(printk("Couldn't write PCI Express read request\n"));
-
-        /* Reset expansion ROM address decode enable */
-        pci_read_config_dword(ha->pdev, PCI_ROM_ADDRESS, &d);
-
----
-
--- 
-AMD Saxony Limited Liability Company & Co. KG
-Operating System Research Center
-Wilschdorfer Landstr. 101, 01109 Dresden, Germany
-Register Court Dresden: HRA 4896
-General Partner authorized to represent:
-AMD Saxony LLC (Wilmington, Delaware, US)
-General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+		Cyrill
 
