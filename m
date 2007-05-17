@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbXEQRHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbXEQRNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757861AbXEQRHB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbXEQRGy
+	id S1757486AbXEQRNW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbXEQRNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:06:54 -0400
-Received: from mail4.webhostingstar.com ([67.106.77.50]:47251 "HELO
-	mail4.webhostingstar.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755571AbXEQRGy convert rfc822-to-8bit (ORCPT
+	Thu, 17 May 2007 13:13:12 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:38691 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755850AbXEQRNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:06:54 -0400
-Message-ID: <20070517120544.d2hnzayns4o8scks@67.106.77.50>
-Date: Thu, 17 May 2007 12:05:44 -0500
-From: art@usfltd.com
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@osdl.org, greg@kroah.com
-Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
+	Thu, 17 May 2007 13:13:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=p6CZcH0IT7jBifaFOs22CjiVbREb0kHzlctnHFCKfJMbBuveIZRE9HW3IkaVbbsMnGkjiOJtNb7B5WS8mA6RGeP83UTULwKQltE4vXOXKhoJdRWhqydMPnKxy1j/M6p7vgkrLSY5ripk1QJIhor9zx5C8714SflYByX982mZVEc=
+Message-ID: <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com>
+Date: Thu, 17 May 2007 22:43:06 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: Asynchronous scsi scanning
+Cc: "Simon Arlott" <simon@fire.lp0.eu>,
+       "James Bottomley" <james.bottomley@steeleye.com>,
+       "Dave Jones" <davej@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+In-Reply-To: <20070516025121.GK10562@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+References: <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
+	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
+	 <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
+	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
+	 <17841.simon.1179228389@5ec7c279.invalid>
+	 <20070515120228.GI10562@parisc-linux.org>
+	 <4649E03A.1090004@simon.arlott.org.uk>
+	 <20070515172905.GJ10562@parisc-linux.org>
+	 <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
+	 <20070516025121.GK10562@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-greg
+Hi Matthew,
 
->> You didn't answer my, "what distro are you using" question.  Also, what
-package created the udev rule that creates the above symlink?
+On 5/16/07, Matthew Wilcox <matthew@wil.cx> wrote:
+> [...]
+> > /sys/module/scsi_mod/parameters/wait_for_async_scans (?)
+> > Doesn't really matter, but perhaps who created the sysfs namespace
+> > for scsi in /sys/module/scsi_mod/... could be the best person to suggest.
+>
+> No, it does matter.  Your suggestion doesn't work, because
+> /sys/module/scsi_mod/parameters/ belongs to the module code.  To create
+> a new attribute there, you use the module_param() code -- and there's
+> no way to have code called when your parameter is changed.
 
-distro fc6
-Linux xxx.xxx 2.6.22-rc1-200705170855cfq6-g0479ea0e #134 SMP PREEMPT  
-Thu May 17 09:13:26 CDT 2007 x86_64 x86_64 x86_64 GNU/Linux
+Ok, thanks for pointing out that /sys/module/scsi_mod/parameters/wait...
+is _wrong_. Could you suggest something that would be _right_?
 
+> > OK, I'll get really silly here myself. I don't want even that half a second
+> > of
+> > overhead when that module is being _built_ (during make modules), not
+> > the overhead of copying / installing at modules_install time.
+>
+> You're claiming that 0.7 second (I just timed it on a 3 year old
+> laptop) *inconveniences* you?
 
-2.6.20
+...
 
-$ udevtest /class/usb_device/usbdev2.10
-main: looking at device '/class/usb_device/usbdev2.10' from subsystem  
-'usb_device'
-run_program: '/bin/sh -c 'K=usbdev2.10; K=${K#usbdev}; printf  
-bus/usb/%03i/%03i ${K%%.*} ${K#*.}''
-run_program: '/bin/sh' (stdout) 'bus/usb/002/010'
-run_program: '/bin/sh' returned with status 0
-udev_rules_get_name: rule applied, 'usbdev2.10' becomes 'bus/usb/002/010'
-udev_rules_get_name: add symlink 'scanner-usbdev2.10'
-udev_device_event: device '/class/usb_device/usbdev2.10' already in  
-database, validate currently present symlinks
-udev_node_add: creating device node '/dev/bus/usb/002/010', major =  
-'189', minor = '137', mode = '0644', uid = '0', gid = '0'
-udev_node_add: creating symlink '/dev/scanner-usbdev2.10' to 'bus/usb/002/010'
-main: run: 'socket:/org/kernel/udev/monitor'
-main: run: '/lib/udev/udev_run_devd'
-main: run: 'socket:/org/freedesktop/hal/udev_event'
-main: run: '/sbin/pam_console_apply /dev/bus/usb/002/010  
-/dev/scanner-usbdev2.10'
+On 5/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+OK, I'll get really silly here myself. ...
 
+...
 
+On 5/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+It's not _inconvenient_. Just that writing/building a module for accomplishing
+something like that ... is just not _right_.
 
-xboom
+...
+
+On 5/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+static int __init wait_scan_init(void)
+{
+        scsi_complete_async_scans();
+        return 0;
+/* BTW this could've been return scsi_complete_async_scans();
+ * I see scsi_complete_async_scans() never fails, but still. */
+}
+late_initcall(wait_scan_init);
+... does _not_ deserve to be a module, and writing/building a module
+for something like this (just to run a function in some kernel subsytem)
+does not seem to be the proper way to solve the problem either.
+
+...
+
+> This whole thing is such a tempest in a teapot.  I really don't
+> understand why you care so much.
+
+You're almost right here. But IMHO this is simply a case of
+doing something in some kernel subsystem in a proper/better
+way than it is being done presently.
+
+Anyway, like I said on another thread, discussions here tend to be
+most productive only over code, so I'll try and make a patch to do
+this some other way.
+
+Thanks,
+Satyam
