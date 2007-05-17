@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbXEQVog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbXEQVo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760221AbXEQVog (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbXEQVo3
+	id S1761485AbXEQVo5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629AbXEQVor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:44:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38355 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754972AbXEQVo2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:44:28 -0400
-Date: Thu, 17 May 2007 14:44:50 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: clameter@sgi.com, mpm@selenic.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, tgraf@suug.ch, davem@davemloft.net,
-       akpm@linux-foundation.org, phillips@google.com, penberg@cs.helsinki.fi
-Subject: Re: [PATCH 0/5] make slab gfp fair
-Message-Id: <20070517144450.ca1a6625.pj@sgi.com>
-In-Reply-To: <1179437209.2925.29.camel@lappy>
-References: <20070514131904.440041502@chello.nl>
-	<Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
-	<1179385718.27354.17.camel@twins>
-	<Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-	<20070517175327.GX11115@waste.org>
-	<Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
-	<1179429499.2925.26.camel@lappy>
-	<Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
-	<1179437209.2925.29.camel@lappy>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Thu, 17 May 2007 17:44:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34881 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754972AbXEQVoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 17:44:46 -0400
+Date: Thu, 17 May 2007 17:43:24 -0400
+From: Dave Jones <davej@redhat.com>
+To: Ed Sweetman <safemode2@comcast.net>
+Cc: Len Brown <lenb@kernel.org>, Daniel Drake <dsd@gentoo.org>,
+       duaneg@dghda.com, prakash@punnoor.de, jhoblitt@ifa.hawaii.edu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powernow-k8: depend on acpi-processor for SMP systems
+Message-ID: <20070517214324.GB398@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Ed Sweetman <safemode2@comcast.net>, Len Brown <lenb@kernel.org>,
+	Daniel Drake <dsd@gentoo.org>, duaneg@dghda.com, prakash@punnoor.de,
+	jhoblitt@ifa.hawaii.edu, linux-kernel@vger.kernel.org
+References: <20070516235050.9B4237B409F@zog.reactivated.net> <200705171413.42595.lenb@kernel.org> <20070517182340.GA25691@redhat.com> <464CC920.6030409@comcast.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464CC920.6030409@comcast.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The way I read the cpuset page allocator, it will only respect the
-> cpuset if there is memory aplenty. Otherwise it will grab whatever. So
-> still, it will only ever use ALLOC_NO_WATERMARKS if the whole system is
-> in distress.
+On Thu, May 17, 2007 at 05:29:04PM -0400, Ed Sweetman wrote:
 
-Wrong.  Well, only a little right.
+ > Every other cpufreq driver demands acpi
 
-For allocations that can't fail (the kernel could die if it failed)
-then yes, the kernel will eventually take any damn page it can find,
-regardless of cpusets.
+This isn't true.
 
-Allocations for user space are hardwall enforced to be in the current
-tasks cpuset.
-
-Allocations off interrupts ignore the current tasks cpuset (such allocations
-don't have a valid current contect.)
-
-Allocations for most kernel space allocations will try to fit in the
-current tasks cpuset, but may come from the possibly larger context of
-the closest ancestor cpuset that is marked memory_exclusive.
+	Dave
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+http://www.codemonkey.org.uk
