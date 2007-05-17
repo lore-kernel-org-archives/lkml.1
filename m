@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbXEQOox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbXEQOpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758270AbXEQOox (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756847AbXEQOoo
+	id S1758645AbXEQOpK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbXEQOou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:44:44 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:48897 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754382AbXEQOon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:44:43 -0400
-Date: Thu, 17 May 2007 16:44:39 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Chris Malton <chrism@cjsoftuk.dyndns.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Saitek USB Gamer's Keyboard
-In-Reply-To: <464C61FF.6080606@cjsoftuk.dyndns.org>
-Message-ID: <Pine.LNX.4.64.0705171641400.27422@twin.jikos.cz>
-References: <464C61FF.6080606@cjsoftuk.dyndns.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 May 2007 10:44:50 -0400
+Received: from www.osadl.org ([213.239.205.134]:50429 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758087AbXEQOot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 10:44:49 -0400
+Subject: Re: [PATCH] INPUT: Sanitize PIT locking in pcspkr
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Richard Henderson <rth@twiddle.net>
+In-Reply-To: <d120d5000705170736q4e9eb5d4jab82732e01e377c@mail.gmail.com>
+References: <1179408962.3764.72.camel@chaos>
+	 <d120d5000705170715s2066ea39r9b129e5efe79c4dd@mail.gmail.com>
+	 <1179412525.3764.80.camel@chaos>
+	 <d120d5000705170736q4e9eb5d4jab82732e01e377c@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 17 May 2007 16:49:35 +0200
+Message-Id: <1179413375.3764.86.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007, Chris Malton wrote:
+On Thu, 2007-05-17 at 10:36 -0400, Dmitry Torokhov wrote:
+> > BTW, there are more creative PIT users in drivers/input which use the
+> > global lock already, but the PIT usage there is definitely broken on
+> > anything >= 2.6.21.
+> >
+> 
+> Are you talking about drivers/input/joystick/analog.c? What is broken there?
 
-> I have been working on this device for a while, and have come up with 
-> the following: The protocol is simple:
-> ???? 52 70 ?? ?? ??
-> ??
-> KC 1 [DOWN]
-> ?? ?? 52 70 ?? ?? ??
+drivers/gameport/gameport.c as well.
 
-Chris,
+Both read the PIT directly, which will lead to interesting results. The
+PIT is either stopped or it can be used in one shot mode with per event
+changing intervals due to the changes introduced by the clock events
+layer.
 
-is this device a 0x04f2/0x0418? If so, I have already written a patch 
-which adds proper mapping of these keys into input events (also see ticket 
-#7352 on bugzilla.kernel.org). This patch is queued for next round of 
-mainline merge.
+This code should use ktime_get() and not fiddle in the hardware itself.
 
--- 
-Jiri Kosina
+	tglx
+
+
