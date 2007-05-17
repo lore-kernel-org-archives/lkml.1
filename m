@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762529AbXEQUaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXEQUai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762529AbXEQUaL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761622AbXEQU3k
+	id S1762098AbXEQUai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761212AbXEQUaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:29:40 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:28544 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761516AbXEQU3j (ORCPT
+	Thu, 17 May 2007 16:30:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56689
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758651AbXEQUaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:29:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SBHKJZlyPBz6O7WU8FjgG8cEqrkz5Dp6lH471IRGJ1Si0KjNhrFRs1bnGqcZ7aUhB7w9mEqW5JO24ZuedV9jFN/rH2QRw12+Cg5x8H+/1DE/3cU6Qsx3dfai7+t7vEvyBIbzLSoapCJD3/Wes/YPa0kyw88ZO+4b6TSZUuRTq3Y=
-Message-ID: <b637ec0b0705171329i6da89fa8h655976e823aef41e@mail.gmail.com>
-Date: Thu, 17 May 2007 22:29:38 +0200
-From: "Fabio Comolli" <fabio.comolli@gmail.com>
-To: "Luca Tettamanti" <kronos.it@gmail.com>
-Subject: Re: radeonfb and X800 cards
-Cc: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Daniel Drake" <dsd@gentoo.org>,
-       "linux list" <linux-kernel@vger.kernel.org>, Jimmy.Jazz@gmx.net
-In-Reply-To: <20070517195958.GA6489@dreamland.darkstar.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 17 May 2007 16:30:06 -0400
+Date: Thu, 17 May 2007 13:30:03 -0700 (PDT)
+Message-Id: <20070517.133003.63739733.davem@davemloft.net>
+To: adaplas@gmail.com
+Cc: hch@infradead.org, akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move arch-specific bits to
+ their respective subdirectories
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1179399082.4586.10.camel@daplas>
+References: <464B78BC.4080900@gmail.com>
+	<20070517094930.GA27627@infradead.org>
+	<1179399082.4586.10.camel@daplas>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <464BB43D.2020407@gentoo.org>
-	 <1179367164.32247.256.camel@localhost.localdomain>
-	 <20070517195958.GA6489@dreamland.darkstar.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Date: Thu, 17 May 2007 18:51:22 +0800
 
-On 5/17/07, Luca Tettamanti <kronos.it@gmail.com> wrote:
-> Il Thu, May 17, 2007 at 11:59:23AM +1000, Benjamin Herrenschmidt ha scritto:
-> > On Wed, 2007-05-16 at 21:47 -0400, Daniel Drake wrote:
-> > > Hi,
-> > >
-> > > Did anything happen to the patch titled "radeonfb: add support for newer
-> > > cards"?
-> > > http://lwn.net/Articles/215965/
-> > >
-> > > Jimmy at http://bugs.gentoo.org/174063 has extended upon this with some
-> > > further fixes based on code the in X11 driver. The patches are on the
-> > > bug report.
-> > >
-> > > Ben, where can the most up-to-date radeonfb code be found?
-> >
-> > upstream. I haven't released anything else so far. Does the patch still
-> > apply ?
->
-> This is what I'm using here, it's still the same old patch (Solomon's
-> plus my stuff). I think I can coordinate with Jimmy.Jazz@gmx.net to
-> create an incremental patch to fix radeonfb on his hardware (provided
-> that this mega-patch is suitable as baseline that is).
->
+> On Thu, 2007-05-17 at 10:49 +0100, Christoph Hellwig wrote:
+> > On Thu, May 17, 2007 at 05:33:48AM +0800, Antonino A. Daplas wrote:
+> > > -#if defined(__sparc__) && !defined(__sparc_v9__)
+> > > -	/* Should never get here, all fb drivers should have their own
+> > > -	   mmap routines */
+> > > -	return -EINVAL;
+> > > -#else
+> > > -	/* !sparc32... */
+> > > +	if (fb_mmap_required())
+> > > +		return -EINVAL;
+> > > +
+> > 
+> > I don't like this bit.
+> 
+> Me too, actually. I did it this way because I don't want to deviate from
+> the old code too much. Since all sparc32 drivers are either linked to
+> sbuslib.c or has their own fb_mmap method, the above test is redundant. 
+> I'll leave the decision to remove the above test to David Miller.
 
-[long patch snipped]
-
-Is there a reason why this patch can't go upstream?
-
-Regards,
-Fabio
-
-> Luca
-> --
-> "New processes are created by other processes, just like new
->  humans. New humans are created by other humans, of course,
->  not by processes." -- Unix System Administration Handbook
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at ...
->
-> [Message clipped]
+Feel free to remove it.
