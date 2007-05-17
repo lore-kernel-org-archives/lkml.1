@@ -1,37 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761270AbXEQUTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbXEQUUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761270AbXEQUTD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbXEQUSz
+	id S1761389AbXEQUUg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXEQUU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:18:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:39009 "EHLO mail.goop.org"
+	Thu, 17 May 2007 16:20:29 -0400
+Received: from max.feld.cvut.cz ([147.32.192.36]:48652 "EHLO max.feld.cvut.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755985AbXEQUSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:18:54 -0400
-Message-ID: <464CB8A9.9030700@goop.org>
-Date: Thu, 17 May 2007 13:18:49 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1755554AbXEQUU2 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 16:20:28 -0400
+From: CIJOML <cijoml@volny.cz>
+To: Linux-kernel@vger.kernel.org
+Subject: Having problems with 8250 module in 2.6.20,2.6.21...
+Date: Thu, 17 May 2007 22:20:10 +0200
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       David Woodhouse <dwmw2@infradead.org>, dedekind@infradead.org,
-       akpm@osdl.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-References: <20070517143200.GA30850@lst.de> <1179417055.2859.506.camel@shinybook.infradead.org> <20070517181223.GA17765@lst.de> <20070517182314.GA5584@uranus.ravnborg.org> <20070517183628.GA12282@infradead.org>
-In-Reply-To: <20070517183628.GA12282@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705172220.10469.cijoml@volny.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
->  The attribute syntax is perfecltly
-> find to address endianess issues without introducing wrapper structs the
-> lead to horrible code generation in some situations (e.g. trying to return
-> such a value)
+Hi,
 
-Small structs are returned in register; it is indistinguishable from
-returning a scalar.
+with kernel 2.6.20 and 2.6.21 I have problem with my good old router 
+Dell Dual P2 333MHz.
 
-    J
+Module 8250 getts loaded, but UPS driver is unable talk to UPS:
+
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+eth0:  setting full-duplex.
+eth1:  setting full-duplex.
+prism2: wlan0: operating mode changed 3 -> 2
+wifi0: LinkStatus=2 (Disconnected)
+wifi0: LinkStatus: BSSID=00:60:b3:6a:5e:88
+nf_conntrack version 0.5.0 (1024 buckets, 8192 max)
+ip_tables: (C) 2000-2006 Netfilter Core Team
+wifi0: LinkStatus=1 (Connected)
+wifi0: LinkStatus: BSSID=00:02:2d:ba:4e:7d
+ttyS0: LSR safety check engaged!
+ttyS0: LSR safety check engaged!
+ttyS1: LSR safety check engaged!
+ttyS1: LSR safety check engaged!
+HTB: quantum of class 10001 is big. Consider r2q change.
+HTB: quantum of class 10001 is big. Consider r2q change.
+HTB: quantum of class 10015 is small. Consider r2q change.
+HTB: quantum of class 10016 is small. Consider r2q change.
+HTB: quantum of class 10017 is small. Consider r2q change.
+HTB: quantum of class 10011 is small. Consider r2q change.
+HTB: quantum of class 10015 is small. Consider r2q change.
+HTB: quantum of class 10016 is small. Consider r2q change.
+HTB: quantum of class 10017 is small. Consider r2q change.
+u32 classifier
+    OLD policer on
+wifi0: LinkStatus=2 (Disconnected)
+wifi0: LinkStatus: BSSID=00:02:2d:ba:4e:7d
+wifi0: LinkStatus=2 (Disconnected)
+wifi0: LinkStatus: BSSID=44:44:44:44:44:44
+ttyS1: LSR safety check engaged!
+wifi0: LinkStatus=1 (Connected)
+wifi0: LinkStatus: BSSID=00:02:2d:ba:4e:7d
+ttyS1: LSR safety check engaged!
+ttyS1: LSR safety check engaged!
+ttyS1: LSR safety check engaged!
+ttyS1: LSR safety check engaged!
+ttyS1: LSR safety check engaged!
+ttyS1: LSR safety check engaged!
+ttyS1: LSR safety check engaged!
+
+Liboc01:/home/cijoml# upsdrvctl start
+Network UPS Tools - UPS driver controller 2.0.4
+Network UPS Tools - Tripp-Lite SmartUPS driver 0.8 (2.0.4)
+tcgetattr(/dev/ttyS1): Input/output error
+Driver failed to start (exit status=1)
+
+Does anybody work on this problem or can help?
+
+Thanks a LOT
+
+Michal
