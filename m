@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbXEQVPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbXEQVPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760122AbXEQVPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbXEQVPH
+	id S1758891AbXEQVPz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbXEQVPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:15:07 -0400
-Received: from main.gmane.org ([80.91.229.2]:47925 "EHLO ciao.gmane.org"
+	Thu, 17 May 2007 17:15:45 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:50909 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755122AbXEQVPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:15:05 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Philip Pemberton <usenet07@philpem.me.uk>
-Subject: IPv6: 6to4 tunnel randomly cutting out on 2.6.8.1 - any patches?
-Date: Thu, 17 May 2007 21:59:31 +0100
-Message-ID: <f2ifnf$ooh$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 87-194-114-122.bethere.co.uk
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	id S1755967AbXEQVPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 17:15:44 -0400
+Date: Thu, 17 May 2007 23:11:17 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Peer Chen <pchen@nvidia.com>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Robert Hancock <hancockr@shaw.ca>,
+       Kuan Luo <kluo@nvidia.com>
+Subject: Re: [PATCH] drivers/ata: Add the SW NCQ support to sata_nv for
+ MCP51/MCP55/MCP61
+In-Reply-To: <20070517131742.029e9fd0.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.61.0705172308410.3231@yvahk01.tjqt.qr>
+References: <15F501D1A78BD343BE8F4D8DB854566B13CD8F45@hkemmail01.nvidia.com>
+ <464A94D7.30300@garzik.org> <15F501D1A78BD343BE8F4D8DB854566B13F197C0@hkemmail01.nvidia.com>
+ <20070517131235.8f9445cc.akpm@linux-foundation.org>
+ <20070517131742.029e9fd0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   I'm currently trying to set IPv6 up on a Linux-based router. The 
-aforementioned router runs kernel 2.6.8.1, and just about all the hardware 
-driver modules are binary modules. For the record, I'd love to upgrade the 
-router to one of the newer kernels, but AIUI I can't do it because I don't 
-have the source to the bmods. But anyway...
 
-   What I've done is set up an IPv6 subnet via the SixXS tunnel broker (and 
-I've also tried the BT Exact tunnel broker, which has the same problem). This 
-tunnel is then routed onto my LAN and set up router advertisement (with radvd) 
-so the machines can get access to the IPv6 side of the Internet.
+On May 17 2007 13:17, Andrew Morton wrote:
+>> @@ -2115,7 +2115,7 @@ static void nv_fill_sg(struct ata_queued
+>>  	WARN_ON(qc->__sg == NULL);
+>>  	WARN_ON(qc->n_elem == 0 && qc->pad_len == 0);
+>>  
+>> -	prd = (struct ata_prd*)((u64)pp->prd + ATA_PRD_TBL_SZ*qc->tag);
+>> +	prd = pp->prd + ATA_PRD_TBL_SZ*qc->tag;
+>>  
+>>  	idx = 0;
+>>  	ata_for_each_sg(sg, qc) {
+>
+>hm, no.
+>
+>ugh, I dunno what's going on here and I think I'd prefer not to.  Can't
+>we come up with some typesafe way of doing this without casting?
+>
+>Meanwhile, I'll switch the cast from u64 to long.
 
-   The problem is that every 10 minutes or so, the IPv6 link (apparently the 
-routing side as the router can still ping kame.net, but the other machines on 
-the LAN can't) stops working for a few seconds (between 5 and 60) and comes 
-back up of its own free will. Running the tunnel on another machine (with a 
-2.6.16 kernel) stops the problem completely - IPv6 works perfectly. But being 
-the energy-conscious person I am, I'd prefer to have as few machines powered 
-up as possible.
+Maybe this?
 
-   When IPv6 stops working, ping returns the error "sendmsg: Network is 
-unreachable". The intermittent nature of this issue, and the fact that IPv6 
-works fine when I move routing to a machine with a later kernel, leads me to 
-believe that this may be an old kernel bug that got fixed in a later release, 
-but evidently not this one...
+	prd = (void *)pp->prd + ATA_PRD_TBL_SZ * qc->tag
 
-   There appear to be a number of IPv6 related fixes in 2.6.9, but the patches 
-are all globbed together in a single "patch-2.6.9.bz2" file - I'd like to 
-apply some of the more promising ones directly, and try and fix the problem 
-that way. The problem being that I can't find these patches as individual 
-"this fixes X" releases, just as one huge 'go from 2.6.8.1 to 2.6.9' glob, and 
-the git repository on kernel.org only seems to go back to 2.6.11.
+Or...
 
-   So what I'm wondering is, does anyone know if a bug like I've described was 
-ever found between 2.6.8.1 and 2.6.16, and if so how it can be fixed?
+	prd = pp->prd + (ATA_PRD_TBL_SZ * qc->tag) / sizeof(typeof(pp->prd));
 
-Thanks.
+
+	Jan
 -- 
-Phil.                         |  (\_/)  This is Bunny. Copy and paste Bunny
-usenet07@philpem.me.uk        | (='.'=) into your signature to help him gain
-http://www.philpem.me.uk/     | (")_(") world domination.
-If mail bounces, replace "07" with the last two digits of the current year.
-
