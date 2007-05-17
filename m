@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbXEQBzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbXEQB7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761417AbXEQBzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 21:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757793AbXEQBzm
+	id S1759977AbXEQB7k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 21:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbXEQB7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 21:55:42 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:48502 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760193AbXEQBzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 21:55:41 -0400
-Message-Id: <200705170154.l4H1sO07018316@sous-sol.org>
-Subject: patch jfs-fix-race-waking-up-jfsio-kernel-thread.patch queued to 2.6.21-stable tree
-To: shaggy@linux.vnet.ibm.com, chrisw@sous-sol.org,
-       linux-kernel@vger.kernel.org
-Cc: stable@kernel.org
-From: chrisw@sous-sol.org
-Date: Wed, 16 May 2007 18:54:23 -0700
-In-Reply-To: <1179287616.8339.8.camel@kleikamp.austin.ibm.com>
+	Wed, 16 May 2007 21:59:34 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33882 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754789AbXEQB7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 21:59:33 -0400
+Subject: Re: radeonfb and X800 cards
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: kronos.it@gmail.com, linux list <linux-kernel@vger.kernel.org>,
+       Jimmy.Jazz@gmx.net
+In-Reply-To: <464BB43D.2020407@gentoo.org>
+References: <464BB43D.2020407@gentoo.org>
+Content-Type: text/plain
+Date: Thu, 17 May 2007 11:59:23 +1000
+Message-Id: <1179367164.32247.256.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-05-16 at 21:47 -0400, Daniel Drake wrote:
+> Hi,
+> 
+> Did anything happen to the patch titled "radeonfb: add support for newer 
+> cards"?
+> http://lwn.net/Articles/215965/
+> 
+> Jimmy at http://bugs.gentoo.org/174063 has extended upon this with some 
+> further fixes based on code the in X11 driver. The patches are on the 
+> bug report.
+> 
+> Ben, where can the most up-to-date radeonfb code be found?
 
-This is a note to let you know that we have just queued up the patch titled
+upstream. I haven't released anything else so far. Does the patch still
+apply ?
 
-     Subject: JFS: Fix race waking up jfsIO kernel thread
-
-to the 2.6.21-stable tree.  Its filename is
-
-     jfs-fix-race-waking-up-jfsio-kernel-thread.patch
-
-A git repo of this tree can be found at 
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-
->From stable-bounces@linux.kernel.org  Tue May 15 20:55:43 2007
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: stable@kernel.org
-Date: Tue, 15 May 2007 22:53:36 -0500
-Message-Id: <1179287616.8339.8.camel@kleikamp.austin.ibm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: JFS: Fix race waking up jfsIO kernel thread
-
-It's possible for a journal I/O request to be added to the log_redrive
-queue and the jfsIO thread to be awakened after the thread releases
-log_redrive_lock but before it sets its state to TASK_INTERRUPTIBLE.
-
-The jfsIO thread should set the state before giving up the spinlock, so
-the waking thread will really wake it.
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- fs/jfs/jfs_logmgr.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- linux-2.6.21.1.orig/fs/jfs/jfs_logmgr.c
-+++ linux-2.6.21.1/fs/jfs/jfs_logmgr.c
-@@ -2354,12 +2354,13 @@ int jfsIOWait(void *arg)
- 			lbmStartIO(bp);
- 			spin_lock_irq(&log_redrive_lock);
- 		}
--		spin_unlock_irq(&log_redrive_lock);
- 
- 		if (freezing(current)) {
-+			spin_unlock_irq(&log_redrive_lock);
- 			refrigerator();
- 		} else {
- 			set_current_state(TASK_INTERRUPTIBLE);
-+			spin_unlock_irq(&log_redrive_lock);
- 			schedule();
- 			current->state = TASK_RUNNING;
- 		}
+Ben.
 
 
-Patches currently in stable-queue which might be from shaggy@linux.vnet.ibm.com are
-
-queue-2.6.21/jfs-fix-race-waking-up-jfsio-kernel-thread.patch
