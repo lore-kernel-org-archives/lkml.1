@@ -1,38 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbXEQGvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760404AbXEQG5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760241AbXEQGvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 02:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbXEQGvM
+	id S1760404AbXEQG5t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 02:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbXEQG5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 02:51:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49299
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751661AbXEQGvL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 02:51:11 -0400
-Date: Wed, 16 May 2007 23:51:11 -0700 (PDT)
-Message-Id: <20070516.235111.07638844.davem@davemloft.net>
-To: ssatyam@cse.iitk.ac.in
-Cc: akpm@linux-foundation.org, marcel@holtmann.org, jikos@jikos.cz,
-       gregkh@suse.de, jeremy@goop.org, maxk@qualcomm.com, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bluetooth: fix locking in hci_sock_dev_event()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0705171106550.9262@cselinux1.cse.iitk.ac.in>
-References: <Pine.LNX.4.64.0705171106550.9262@cselinux1.cse.iitk.ac.in>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 17 May 2007 02:57:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38664 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754052AbXEQG5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 02:57:41 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: Linux 2.6.22-rc1
+Date: Thu, 17 May 2007 02:55:37 -0400
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org> <Pine.LNX.4.61.0705131105400.9570@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705131105400.9570@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705170255.37347.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-Date: Thu, 17 May 2007 11:13:36 +0530 (IST)
+On Sunday 13 May 2007 05:20, Jan Engelhardt wrote:
+> On May 12 2007 20:20, Linus Torvalds wrote:
+> >
+> >Ok, the merge window has closed, and 2.6.22-rc1 is out there.
+> 
+> I have hit a randconfig compile failure. .config attached.
+> 
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `acpi_bus_generate_event':
+> (.text+0x233f7): undefined reference to `event_is_open'
+> drivers/built-in.o: In function `acpi_bus_get_power':
+> (.text+0x236ad): undefined reference to `acpi_power_get_inferred_state'
+> drivers/built-in.o: In function `acpi_bus_set_power':
+> (.text+0x237c3): undefined reference to `acpi_power_transition'
+> drivers/built-in.o: In function `acpi_bus_set_power':
+> (.text+0x23835): undefined reference to `acpi_power_transition'
+> drivers/built-in.o: In function `sony_pic_fanspeed_store':
+> sony-laptop.c:(.text+0x91930): undefined reference to `ec_write'
+> drivers/built-in.o: In function `sony_pic_fanspeed_show':
+> sony-laptop.c:(.text+0x9195d): undefined reference to `ec_read'
+> make: *** [.tmp_vmlinux1] Error 1
 
-> [PATCH] bluetooth: fix locking in hci_sock_dev_event()
+CONFIG_PM=n
+CONFIG_ACPI=y
 
-BTW, your email client corrupted the patch spaces and tabs
-a lot, I applied your patch by hand but I will not do that
-next time.  Please look into getting your email client to
-not corrupt the patches you send out, thank you.
+not possible.
+"select" in Kconfig is broken.
+
+http://lkml.org/lkml/2007/4/28/28
+
+-Len
