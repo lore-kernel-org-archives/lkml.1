@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbXEQW0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbXEQW15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760793AbXEQW0q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 18:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921AbXEQW0j
+	id S1760815AbXEQW15 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 18:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbXEQW1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 18:26:39 -0400
-Received: from soda.ext.ti.com ([198.47.26.145]:59135 "EHLO soda.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756766AbXEQW0i convert rfc822-to-8bit (ORCPT
+	Thu, 17 May 2007 18:27:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40605 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756665AbXEQW1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 18:26:38 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 17 May 2007 18:27:50 -0400
+Date: Thu, 17 May 2007 15:27:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 0/5] make slab gfp fair
+In-Reply-To: <1179437209.2925.29.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl> 
+ <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com> 
+ <1179385718.27354.17.camel@twins>  <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+  <20070517175327.GX11115@waste.org>  <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
+  <1179429499.2925.26.camel@lappy>  <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
+ <1179437209.2925.29.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: bug seen with dynticks from CONFIG_HARDIRQS_SW_RESEND
-Date: Thu, 17 May 2007 17:24:55 -0500
-Message-ID: <3B6D69C3A9EBCA4BA5DA60D913027429010259ED@dlee13.ent.ti.com>
-In-Reply-To: <1179434296.12981.14.camel@chaos>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: bug seen with dynticks from CONFIG_HARDIRQS_SW_RESEND
-Thread-Index: AceYwqIsCifIHhhFQhiWt+UPgMdkeQADibwg
-References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com> <1179396659.3764.40.camel@chaos> <3B6D69C3A9EBCA4BA5DA60D913027429010258E8@dlee13.ent.ti.com> <1179434296.12981.14.camel@chaos>
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Cc: <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>
-X-OriginalArrivalTime: 17 May 2007 22:24:56.0286 (UTC) FILETIME=[329A0FE0:01C798D2]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is the original ARM dyntick stuff, right ?
+On Thu, 17 May 2007, Peter Zijlstra wrote:
 
-Yes this is a version is not using clocksource.
+> The way I read the cpuset page allocator, it will only respect the
+> cpuset if there is memory aplenty. Otherwise it will grab whatever. So
+> still, it will only ever use ALLOC_NO_WATERMARKS if the whole system is
+> in distress.
 
-> The dyntick support on your architecture is broken. Why does it fiddle
-> with the timer, when the system is not idle ?
+Sorry no. The purpose of the cpuset is to limit memory for an application. 
+If the boundaries would be fluid then we would not need cpusets.
 
-I can't yet run the test sequence on the latest kernel so I'll have to
-wait to experiment.  A brief look at the new code seems to show a
-similar path but I need to actually run though it to understand better.
+But the same principles also apply for allocations to different zones in a 
+SMP system. There are 4 zones DMA DMA32 NORMAL and HIGHMEM and we have 
+general slabs for DMA and NORMAL. A slab that uses zone NORMAL falls back 
+to DMA32 and DMA depending on the watermarks of the 3 zones. So a 
+ZONE_NORMAL slab can exhaust memory available for ZONE_DMA.
+
+Again the question is the watermarks of which zone? In case of the 
+ZONE_NORMAL allocation you have 3 to pick from. Its the last one? Then its 
+the same as ZONE_DMA, and you got a collision with the corresponding
+DMA slab. Depending the system deciding on a zone where we allocate the 
+page from you may get a different watermark situation.
+
+On x86_64 systems you have the additional complication that there are 
+even multiple DMA32 or NORMAL zones per node. Some will have DMA32 and 
+NORMAL, others DMA32 alone or NORMAL alone. Which watermarks are we 
+talking about?
+
+The use of ALLOC_NO_WATERMARKS depends on the contraints of the allocation 
+in all cases. You can only compare the stresslevel (rank?) of allocations 
+that have the same allocation constraints. The allocation constraints are
+a result of gfp flags, cpuset configuration and memory policies in effect.
 
 
-On the irq_resend() path handle_dynamic_tick() is still called as
-before.  The difference now is the handler looks like it will jump into
-some generic event code in tick-common.c.  This still calls
-ticker_periodic() which calls profile_tick() in and out of one-shot
-mode.
 
-It might be the path still exists or I've just not spent enough time
-understanding the real flow.
 
-Thanks for the insight and the nice code.
-
-> This stuff should go away ASAP. A lot of ARMs are already converted to
-> clock events are using the generic NOHZ implementation, which does not
-> have those problems at all.
-
-Ok. Thanks. I look forward to using that when I can.
-
-Regards,
-Richard W. 
