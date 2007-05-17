@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbXEQGNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXEQGRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761463AbXEQGNd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 02:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbXEQGN1
+	id S1758263AbXEQGRa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 02:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbXEQGRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 02:13:27 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:35862 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754790AbXEQGN0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 02:13:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=jWKCo9sve2kYLArWFbpER/F7fMFGi0oenTPpF15UIlEXdfEZ80LrkxIArZ/+AsEkWlXct9J5K4y7i3eB+B+zx9Oje11maShoM0Soql3+EbDvaYigjXa1iWeL1oj4Ol5yUTk0KcdJeuYGa9UJ08xz41u+/2/MHp9y/TD9Asow5aA=
-Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move arch-specific bits to
-	their respective subdirectories
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Fbdev development list 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-In-Reply-To: <3B9BEEF0-F01D-4FE3-86A8-B58AAAB0B2DC@kernel.crashing.org>
-References: <464B78BC.4080900@gmail.com>
-	 <3B9BEEF0-F01D-4FE3-86A8-B58AAAB0B2DC@kernel.crashing.org>
+	Thu, 17 May 2007 02:17:24 -0400
+Received: from barclay.balt.net ([195.14.162.78]:64711 "EHLO barclay.balt.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752277AbXEQGRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 02:17:23 -0400
+Subject: Re: Kernel NFS lockd freezes notebook on shutdown (Linux
+	2.6.22-rc1 + CFS v12)
+From: Zilvinas Valinskas <zilvinas@wilibox.com>
+Reply-To: zilvinas@wilibox.com
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070516225543.GA337@tv-sign.ru>
+References: <1179338441.4265.13.camel@zv.wilibox.com>
+	 <20070516121538.7b108c10.akpm@linux-foundation.org>
+	 <20070516225543.GA337@tv-sign.ru>
 Content-Type: text/plain
-Date: Thu, 17 May 2007 14:13:14 +0800
-Message-Id: <1179382394.28568.6.camel@daplas>
+Date: Thu, 17 May 2007 09:17:21 +0300
+Message-Id: <1179382641.3833.1.camel@zv.wilibox.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 19:54 -0500, Kumar Gala wrote:
-> On May 16, 2007, at 4:33 PM, Antonino A. Daplas wrote:
+Hello Oleg, Andrew,
+
+Sure no problem Oleg, compiling now, reboot will follow with results.
+Thank you both !
+
+On Thu, 2007-05-17 at 02:55 +0400, Oleg Nesterov wrote:
+
+> Zilvinas, could you try the patch below?
 > 
-> > Move arch-specific bits of fb_mmap() to their respective  
-> > subdirectories
-> >
-
-> You don't need a version in asm-ppc since you have one in asm- 
-> powerpc.  We are slowly phasing out arch/ppc in favor of arch/powerpc  
-> which merges the 32 and 64-bit support.
+> It is a shot in the dark. I hope I'll suggest somethimg better tomorrow.
+> 
+> Oleg.
 > 
 
-Okay, thanks.
-
-Tony
 
