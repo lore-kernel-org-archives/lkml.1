@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbXEQTxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbXEQTyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758978AbXEQTxg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 15:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbXEQTxa
+	id S1760473AbXEQTyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 15:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756687AbXEQTyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 15:53:30 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41706 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754478AbXEQTx3 (ORCPT
+	Thu, 17 May 2007 15:54:08 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:55925 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755399AbXEQTyG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 15:53:29 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <464CB2B3.50506@s5r6.in-berlin.de>
-Date: Thu, 17 May 2007 21:53:23 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Thu, 17 May 2007 15:54:06 -0400
+Date: Thu, 17 May 2007 14:53:54 -0500
+To: matthew@wil.cx
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
+Message-ID: <20070517195354.GG4325@austin.ibm.com>
+References: <20070420204114.GL31947@austin.ibm.com> <20070420204720.GM31947@austin.ibm.com> <20070509202621.GA4452@austin.ibm.com>
 MIME-Version: 1.0
-To: lkml@dervishd.net
-CC: linux-kernel@vger.kernel.org
-Subject: Re: usb-storage nice value
-References: <20070517100308.GA14667@DervishD>
-In-Reply-To: <20070517100308.GA14667@DervishD>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070509202621.GA4452@austin.ibm.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DervishD wrote:
->     I'm having problems when reading/writing to external USB harddisks:
-> my *internal* harddisk stalls from time to time, so watching a movie
-> while copying data is a PITA (well, if the movie is bad, the leaps help
-> a bit...).
+On Wed, May 09, 2007 at 03:26:21PM -0500, Linas Vepstas wrote:
+> Hi Matthew,
+> 
+> I had been hoping these patches might make it into 2.6.22,
+> ... this is a nag note; please forward upstream.
 
-If the internal harddisk is source or target of these copy operations...
 
-...
-> is there any way of modifying the pdflush behaviour so
-> large buffered writes are less "agressive" and doesn't block apps which
-> are just reading?
+... should I repost the patches? 
 
-...then switching to another IO scheduler might perhaps help.
+--linas 
 
-# cat /sys/block/hda/queue/scheduler
-
-# echo deadline > /sys/block/hda/queue/scheduler
--- 
-Stefan Richter
--=====-=-=== -=-= =---=
-http://arcgraph.de/sr/
