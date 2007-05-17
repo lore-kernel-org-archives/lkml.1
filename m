@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbXEQSYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbXEQSYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbXEQSYY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXEQSYR
+	id S1760652AbXEQSYo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbXEQSYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:24:17 -0400
-Received: from neopsis.com ([213.239.204.14]:39428 "EHLO
-	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754439AbXEQSYR (ORCPT
+	Thu, 17 May 2007 14:24:32 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50486 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756616AbXEQSYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:24:17 -0400
-Message-ID: <464CA34F.8090509@dbservice.com>
-Date: Thu, 17 May 2007 20:47:43 +0200
-From: Tomas Carnecky <tom@dbservice.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
-MIME-Version: 1.0
-To: Jiri Kosina <jikos@jikos.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: SideWinder GameVoice driver
-References: <464C5FAC.8060609@dbservice.com> <Pine.LNX.4.64.0705171623280.27422@twin.jikos.cz> <464C708C.6090808@dbservice.com>
-In-Reply-To: <464C708C.6090808@dbservice.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
-X-Neopsis-MailScanner: Found to be clean
-X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.367,
-	required 5, autolearn=spam, AWL 0.23, BAYES_00 -2.60)
-X-MailScanner-From: tom@dbservice.com
+	Thu, 17 May 2007 14:24:30 -0400
+Date: Thu, 17 May 2007 19:24:14 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: Asynchronous scsi scanning
+Message-ID: <20070517182414.GA12170@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Satyam Sharma <satyam.sharma@gmail.com>,
+	Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
+	James Bottomley <james.bottomley@steeleye.com>,
+	Dave Jones <davej@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+	"Robert P. J. Day" <rpjday@mindspring.com>
+References: <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk> <20070515172905.GJ10562@parisc-linux.org> <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com> <20070516025121.GK10562@parisc-linux.org> <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com> <20070517172023.GL10562@parisc-linux.org> <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Additional info: HID device has two collections (whatever those are, I
-have _no_ idea):
+On Thu, May 17, 2007 at 11:11:10PM +0530, Satyam Sharma wrote:
+> Another command to /proc/scsi/scsi isn't a bad thought at all, considering
 
-collection 00: type: 1, usage: 000b0005, level: 00000000
-collection 01: type: 2, usage: 0008003a, level: 00000001
+Yes it is.  /proc/scsi/scsi is a horrible interface and deprecated since
+the start of the 2.6 series.
 
-The usage of the first one means 'Telephony/Headset', the second one
-'LEDs/Usage Selected Indicator' (IDs taken from [1]).
-
-The culprit is the IS_INPUT_APPLICATION() macro, which only accepts
-certain 'usage' types. Should it also accept this particular one, too,
-or even the whole 'Telephony' group? Or maybe add a (configurable)
-'quirk' to enable the GameVoice device?
-
-tom
-
-[1] http://www.freebsddiary.org/APC/usb_hid_usages.php
