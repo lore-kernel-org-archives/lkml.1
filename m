@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbXEQRln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbXEQRp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758184AbXEQRln (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759314AbXEQRlQ
+	id S1758855AbXEQRp0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbXEQRpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:41:16 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:53003 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759232AbXEQRlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:41:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bs8tJsAkww0M1AXtr/dc4TiqcrFNCFiEYFBTzAVcNgmpfbXyxhBnjlbNJEmOHRedz8MTRy/eqPyz1Z2QVOm5j2ddJAbgDcoZCC2FbYCMQ6rdMGb96Ov36cmC+CNPMLD2Z771nINO3wI0mhtG4vKTkUcBVvqSe1HInd245rWdFII=
-Message-ID: <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com>
-Date: Thu, 17 May 2007 23:11:10 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Subject: Re: Asynchronous scsi scanning
-Cc: "Simon Arlott" <simon@fire.lp0.eu>,
-       "James Bottomley" <james.bottomley@steeleye.com>,
-       "Dave Jones" <davej@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-In-Reply-To: <20070517172023.GL10562@parisc-linux.org>
+	Thu, 17 May 2007 13:45:16 -0400
+Received: from h155.mvista.com ([63.81.120.155]:24913 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756524AbXEQRpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:45:15 -0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+To: tglx@linutronix.de, mingo@elte.hu
+Subject: [PATCH 2.6.21-rt2] PowerPC: enable HRT and dynticks support
+Date: Thu, 17 May 2007 21:46:46 +0400
+User-Agent: KMail/1.5
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
-	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
-	 <17841.simon.1179228389@5ec7c279.invalid>
-	 <20070515120228.GI10562@parisc-linux.org>
-	 <4649E03A.1090004@simon.arlott.org.uk>
-	 <20070515172905.GJ10562@parisc-linux.org>
-	 <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
-	 <20070516025121.GK10562@parisc-linux.org>
-	 <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com>
-	 <20070517172023.GL10562@parisc-linux.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705172146.46769.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/17/07, Matthew Wilcox <matthew@wil.cx> wrote:
-> On Thu, May 17, 2007 at 10:43:06PM +0530, Satyam Sharma wrote:
-> > >No, it does matter.  Your suggestion doesn't work, because
-> > >/sys/module/scsi_mod/parameters/ belongs to the module code.  To create
-> > >a new attribute there, you use the module_param() code -- and there's
-> > >no way to have code called when your parameter is changed.
->
-> (thanks, Roland for pointing out that I'm incorrect about code being
-> called)
+Enable HRT and dynamic ticks support for PowerPC.
 
-> Come up with a sensible suggestion, and I'll listen to you.  Code isn't
-> the issue.  API is the issue.
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Well, that itself is a suggestion.
+---
+This patch has been reworked against the 2.6.21 clockevents framework.
+It has only been tested on the Book E 32-bit CPU this time, so re-testing on
+"classic" PowerPC CPUs is needed (there have been issues as of 2.6.18-rt7 but
+those should now be fixed)...
 
-> > Ok, thanks for pointing out that /sys/module/scsi_mod/parameters/wait...
-> > is _wrong_. Could you suggest something that would be _right_?
->
-> No, I can't, which is why I find it hard to like the idea of "use
-> sysfs".  I have no particular love for using a module like this, but
-> my preferred way (a new verb for /proc/scsi/scsi) isn't liked by others.
+ arch/powerpc/Kconfig       |    1 +
+ arch/powerpc/kernel/idle.c |    3 +++
+ 2 files changed, 4 insertions(+)
 
-Another command to /proc/scsi/scsi isn't a bad thought at all, considering
-we're not _inventing_ a *new* /proc/not-related-to-processes interface, but
-simply extending one that already exists. But then James / others are also
-somewhat justified in shooting that down. I bet a lot of people would find
-that even worse than this whole module affair.
+Index: linux-2.6/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/Kconfig
++++ linux-2.6/arch/powerpc/Kconfig
+@@ -770,6 +770,7 @@ config GENERIC_CLOCKEVENTS
+ 	  NOTE: This is not compatible with the deterministic time accounting
+ 	  option on PPC64.
+ 
++source kernel/time/Kconfig
+ source kernel/Kconfig.preempt
+ 
+ config RWSEM_GENERIC_SPINLOCK
+Index: linux-2.6/arch/powerpc/kernel/idle.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/idle.c
++++ linux-2.6/arch/powerpc/kernel/idle.c
+@@ -24,6 +24,7 @@
+ #include <linux/smp.h>
+ #include <linux/cpu.h>
+ #include <linux/sysctl.h>
++#include <linux/tick.h>
+ 
+ #include <asm/system.h>
+ #include <asm/processor.h>
+@@ -56,6 +57,7 @@ void cpu_idle(void)
+ 
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 	while (1) {
++		tick_nohz_stop_sched_tick();
+ 		while (!need_resched() && !need_resched_delayed() &&
+ 				!cpu_should_die()) {
+ 			ppc64_runlatch_off();
+@@ -92,6 +94,7 @@ void cpu_idle(void)
+ 		ppc64_runlatch_on();
+ 		if (cpu_should_die())
+ 			cpu_die();
++		tick_nohz_restart_sched_tick();
+ 		__preempt_enable_no_resched();
+ 		schedule();
+ 		preempt_disable();
+
