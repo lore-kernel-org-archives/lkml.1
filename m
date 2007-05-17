@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbXEQSZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbXEQScY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760952AbXEQSZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760802AbXEQSZR
+	id S1757501AbXEQScY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXEQScR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:25:17 -0400
-Received: from h155.mvista.com ([63.81.120.155]:25082 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760779AbXEQSZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:25:15 -0400
-Message-ID: <464C9E67.2020909@ru.mvista.com>
-Date: Thu, 17 May 2007 22:26:47 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com> <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org> <464C99FF.8080404@ru.mvista.com> <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-In-Reply-To: <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 17 May 2007 14:32:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57016 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753886AbXEQScQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 14:32:16 -0400
+Date: Thu, 17 May 2007 11:23:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: balbir@linux.vnet.ibm.com
+Cc: Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
+       Kirill Korotaev <dev@sw.ru>, devel@openvz.org,
+       Linux Containers <containers@lists.osdl.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Subject: Re: RSS controller v2 Test results (lmbench )
+Message-Id: <20070517112357.7adc4763.akpm@linux-foundation.org>
+In-Reply-To: <464C95D4.7070806@linux.vnet.ibm.com>
+References: <464C95D4.7070806@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, 17 May 2007 23:20:12 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Kumar Gala wrote:
+> A meaningful container size does not hamper performance. I am in the process
+> of getting more results (with varying container sizes). Please let me know
+> what you think of the results? Would you like to see different benchmarks/
+> tests/configuration results?
+> 
+> Any feedback, suggestions to move this work forward towards identifying
+> and correcting bottlenecks or to help improve it is highly appreciated.
 
-> I haven't looked at all the new clock/timer code, is there any  utility 
-> in having support for more than one clock source?
+<wakes up>
 
-    Of course, you may register as many as you like.
+Memory reclaim tends not to consume much CPU.  Because in steady state it
+tends to be the case that the memory reclaim rate (and hopefully the
+scanning rate) is equal to the disk IO rate.
 
-> - k
+Often the most successful way to identify performance problems in there is
+by careful code inspection followed by development of exploits.
 
-WBR, Sergei
+Is this RSS controller built on Paul's stuff, or is it standalone?
+
+Where do we stand on all of this now anyway?  I was thinking of getting Paul's
+changes into -mm soon, see what sort of calamities that brings about.
+
