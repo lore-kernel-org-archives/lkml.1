@@ -1,120 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbXEQXLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761185AbXEQXLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759313AbXEQXLQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 19:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746AbXEQXLE
+	id S1761185AbXEQXLp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 19:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757592AbXEQXLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 19:11:04 -0400
-Received: from gw.goop.org ([64.81.55.164]:36237 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755951AbXEQXLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 19:11:03 -0400
-Message-ID: <464CE105.7030808@goop.org>
-Date: Thu, 17 May 2007 16:11:01 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linux Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Further update of the i386 boot documentation
-References: <200705172250.l4HMol8f004870@tazenda.hos.anvin.org>
-In-Reply-To: <200705172250.l4HMol8f004870@tazenda.hos.anvin.org>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 19:11:37 -0400
+Received: from mail.shareable.org ([81.29.64.88]:44611 "EHLO
+	mail.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755746AbXEQXLf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 19:11:35 -0400
+Date: Thu, 17 May 2007 23:01:44 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, akpm@osdl.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070517220144.GB10756@mail.shareable.org>
+References: <20070515151919.GA32510@lazybastard.org> <200705171708.53038.arnd@arndb.de> <20070517202139.GD15676@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070517202139.GD15676@lazybastard.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> +Field name:	boot_flag
-> +Type:		read
-> +Offset/size:	0x1fe/2
-> +Protocol:	ALL
-> +
-> +  Contains 0xAA55.  This is the closest thing old Linux kernels have
-> +  to a magic number.
->   
+Jörn Engel wrote:
+> > Almost all your static functions start with logfs_, why not this one?
+> 
+> Because after a while I discovered how silly it is to start every
+> function with logfs_.  That prefix doesn't add much unless the function
+> has global scope.  What I didn't do was remove the prefix from older
+> functions.
 
-Endianess?  I guess a blanket statement saying that all constants are
-stored little-endian enough (which is obvious, but its always good to be
-explicit).
+It's handy when debugging or showing detailed backtraces.  Not that
+I'm advocating it (or not), just something I've noticed in other
+programs.
 
-> +
-> +Field name:	jump
-> +Type:		read
-> +Offset/size:	0x200/2
-> +Protocol:	2.00+
-> +
-> +  Contains an x86 jump instruction, 0xEB followed by a signed offset
-> +  relative to byte 0x202.  This can be used to determine the size of
-> +  the header.
-> +
-> +Field name:	header
-> +Type:		read
-> +Offset/size:	0x202/4
-> +Protocol:	2.00+
-> +
-> +  Contains the magic number "HdrS" (0x53726448).
->   
-
-This is a bit confusing from an endian perspective.  Does the "HdrS"
-notation mean that it is a byte array containing 'H', 'd', 'r', 'S', as
-the string syntax suggests?  Or is that the ascii interpretation of each
-byte of a 4-byte value read as a little-endian encoding from that location?
-
-> +
-> +Field name:	version
-> +Type:		read
-> +Offset/size:	0x206/2
-> +Protocol:	2.00+
-> +
-> +  Contains the boot protocol version, e.g. 0x0204 for version 2.04.
->   
-
-So the version is in BCD?
-
-> +
-> +Field name:	readmode_swtch
-> +Type:		modify (optional)
-> +Offset/size:	0x208/4
-> +Protocol:	2.00+
-> +
-> +  Boot loader hook (see separate chapter.)
->   
-
-Chapter?  Is there a more specific reference you could make?
-
-> +
-> +Field name:	start_sys
-> +Type:		read
-> +Offset/size:	0x20c/4
-> +Protocol:	2.00+
-> +
-> +  The load low segment (0x1000).  Obsolete.
-> +
-> +Field name:	kernel_version
-> +Type:		read
-> +Offset/size:	0x20e/2
-> +Protocol:	2.00+
-> +
-> +  If set to a nonzero value, contains a pointer to a null-terminated
->   
-
-"nil-terminated"? "\0-terminated"?
-
-> +  human-readable kernel version number string, less 0x200.  This can
-> +  be used to display the kernel version to the user.  This value
-> +  should be less than (0x200*setup_sects).  For example, if this value
-> +  is set to 0x1c00, the kernel version number string can be found at
-> +  offset 0x1e00 in the kernel file.  This is a valid value if and only
-> +  if the "setup_sects" field contains the value 14 or higher.
->   
-How about something like:
-
-    This example is only valid if "setup_sects" is greater than
-
-        ((0x1e00 - 0x200) / 0x200) = 14.
-
-Just to make the calculation explicit.
-
-    J
+-- Jamie
