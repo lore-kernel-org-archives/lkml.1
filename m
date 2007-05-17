@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbXEQEQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbXEQEZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760634AbXEQEQz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 00:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbXEQEQr
+	id S1760658AbXEQEZa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 00:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbXEQEZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 00:16:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:2149 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbXEQEQr (ORCPT
+	Thu, 17 May 2007 00:25:24 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:60130 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752276AbXEQEZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 00:16:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rhzqem/fhMWMtkURK/xgJa6iwoikrjTTcz9x53xehFmozGaHm/EHDpswOH6JQnNiGZ0wW88u77hDkaM5K63v13nlQbd6YASdu0LmDNHsK3hBh033xPMqtnb18EjdeCUK5kebTarra4R8FOBiZGFtsS/inIYHSOIPy8mHDySDHwc=
-Message-ID: <344eb09a0705162116o65804d2atb1998602eab98266@mail.gmail.com>
-Date: Thu, 17 May 2007 09:46:46 +0530
-From: "Bharata B Rao" <bharata.rao@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.22-rc1-mm1
-Cc: "Andy Whitcroft" <apw@shadowen.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Steve Fox" <drfickle@us.ibm.com>,
-       "Mel Gorman" <mel@csn.ul.ie>
-In-Reply-To: <464B2048.7040103@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
-	 <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com>
+	Thu, 17 May 2007 00:25:23 -0400
+Date: Wed, 16 May 2007 21:24:53 -0700
+From: "Kok, Auke" <sofar@foo-projects.org>
+Subject: Re: PROBLEM: 2.6.21 - "make modules" with GREP_OPTIONS="-C1" (and
+ other)
+In-reply-to: <464BCB66.2090205@da7a.de>
+To: Martin Christoph <mail@da7a.de>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <464BD915.7090209@foo-projects.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <464BCB66.2090205@da7a.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Andy Whitcroft wrote:
-> > Getting this on both x86 and x86_64 boxes, they are the older boxen so
-> > likely older compilers:
->
-> Please give the gcc version number.
->
-> >   CC      arch/x86_64/boot/memory.o
-> > arch/i386/boot/memory.c: In function `detect_memory':
-> > arch/i386/boot/memory.c:32: error: can't find a register in class `DREG'
-> > while reloading `asm'
-> >
-> > Seems to come from git-netsetup, but that tree isn't pulled into your
-> > git version of -mm so I can't be more specific.
->
-> Does the following patch work for you?
->
->         -hpa
->
->
-> diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-> index 8a82aa9..d7b250b 100644
-> --- a/arch/i386/boot/memory.c
-> +++ b/arch/i386/boot/memory.c
-> @@ -30,7 +30,7 @@ static int detect_memory_e820(void)
->                 size = sizeof(struct e820entry);
->                 id = SMAP;
->                 asm("int $0x15; setc %0"
-> -                   : "=dm" (err), "+b" (next), "+d" (id), "+c" (size),
-> +                   : "=am" (err), "+b" (next), "+d" (id), "+c" (size),
->                       "=m" (*desc)
->                     : "D" (desc), "a" (0xe820));
+Martin Christoph wrote:
+> [1] Summary:
+> If i have some GREP_OPTIONS set (like -C1 or other) i get several errors
+> while trying to do "make modules".
+> 
+> [2] Full description:
+> With some GREP_OPTIONS set "make modules" drops several errors like that:
+> 
+> root@spot /usr/src/linux # GREP_OPTIONS="-C1" make modules
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   Building modules, stage 2.
+> [...]
+> WARNING: "aes_enc_blk" [arch/i386/crypto/aes.ko] undefined!
+> WARNING: "aes_dec_blk" [arch/i386/crypto/aes.ko] undefined!
+> [...]
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> 
+> [3] Keywords:
+> "make modules", "GREP_OPTIONS", "WARNING", "undefined"
+> 
+> [X.] Suggestion to fix:
+> Unset GREP_OPTIONS within make process.
 
-Observed same problem with gcc version 3.4.4 20050721 (Red Hat
-3.4.4-2) and binutils-2.15.92.0.2-15 and the above patch fixes it.
+While I admit that this will break the build, I think it's safe to say that 
+there are hundreds of environment variables that will influence the kbuild 
+system and makefiles. It's going to be an uphill battle if you want to fix each 
+and every occurrence of a *possible* build breakage due to an environment 
+variable being set wrongly.
 
-Regards,
-Bharata.
--- 
-"Men come and go but mountains remain" -- Ruskin Bond.
+I think it's perfectly fine for the kbuild system to expect a reasonably sane 
+and clean build system. Those who want to set specific variables to influence 
+their build should be able to do so as well, without getting settings removed.
+
+In your case, I would suggest not setting this option by default in your shell ;)
+
+Cheers,
+
+Auke
+
+
