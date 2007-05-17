@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761192AbXEQGZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbXEQG1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761192AbXEQGZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 02:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXEQGZe
+	id S1762811AbXEQG1s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 02:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbXEQG1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 02:25:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57506 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754124AbXEQGZd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 02:25:33 -0400
-Subject: Re: [PATCH] LogFS take three
-From: David Woodhouse <dwmw2@infradead.org>
-To: Dongjun Shin <djshin90@gmail.com>
-Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-In-Reply-To: <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com>
-References: <20070515151919.GA32510@lazybastard.org>
-	 <20070515133759.9ee434a2.akpm@linux-foundation.org>
-	 <1179317240.2859.222.camel@shinybook.infradead.org>
-	 <20070516083408.dcd9dd78.akpm@linux-foundation.org>
-	 <1179330596.2859.248.camel@shinybook.infradead.org>
-	 <20070516164158.GB8113@lazybastard.org>
-	 <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 17 May 2007 14:25:17 +0800
-Message-Id: <1179383117.2859.416.camel@shinybook.infradead.org>
+	Thu, 17 May 2007 02:27:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60917 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754783AbXEQG1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 02:27:39 -0400
+Date: Thu, 17 May 2007 08:27:30 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] optimise unlock_page
+Message-ID: <20070517062729.GA14350@wotan.suse.de>
+References: <Pine.LNX.4.64.0705101935590.18496@blonde.wat.veritas.com> <20070511085424.GA15352@wotan.suse.de> <Pine.LNX.4.64.0705111357120.3350@blonde.wat.veritas.com> <20070513033210.GA3667@wotan.suse.de> <Pine.LNX.4.64.0705130535410.3015@blonde.wat.veritas.com> <20070513065246.GA15071@wotan.suse.de> <Pine.LNX.4.64.0705161838080.16762@blonde.wat.veritas.com> <20070516181847.GD5883@wotan.suse.de> <Pine.LNX.4.64.0705161946170.28185@blonde.wat.veritas.com> <alpine.LFD.0.98.0705161242520.3890@woody.linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705161242520.3890@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 15:12 +0900, Dongjun Shin wrote:
-> The current trend of flash-based device is to hide the flash-specific details
-> from the host OS. The flash memory is encapsulated in a package
-> which contains a dedicated controller where a small piece of software (F/W or FTL)
-> runs and makes the storage shown as a block device to the host.
+On Wed, May 16, 2007 at 12:47:54PM -0700, Linus Torvalds wrote:
+> 
+> On Wed, 16 May 2007, Hugh Dickins wrote:
+> 
+> > > The other option of moving the bit into ->mapping hopefully avoids all
+> > > the issues, and would probably be a little faster again on the P4, at the
+> > > expense of being a more intrusive (but it doesn't look too bad, at first
+> > > glance)...
+> > 
+> > Hmm, I'm so happy with PG_swapcache in there, that I'm reluctant to
+> > cede it to your PG_locked, though I can't deny your use should take
+> > precedence.  Perhaps we could enforce 8-byte alignment of struct
+> > address_space and struct anon_vma to make both bits available
+> > (along with the anon bit).
+> 
+> We probably could. It should be easy enough to mark "struct address_space" 
+> to be 8-byte aligned.
 
-Yes. These things are almost always implemented _very_ badly by the same
-kind of crack-smoking hobo they drag in off the streets to write BIOSen.
+Yeah, it might be worthwhile, because I agree that PG_swapcache would
+work nicely there too.
 
-It's bog-roll technology; if you fancy a laugh try doing some real
-reliability tests on them time some. Powerfail testing is a good one.
- 
-This kind of thing is OK for disposable storage such as in digital
-cameras, where it doesn't matter that it's no more reliable than a
-floppy disc, but for real long-term storage it's really a bad idea.
 
-> IMHO, for a flash-optimized filesystem to be useful and widely-used, it would be better
-> to run on a block device and to be designed to run efficiently on top of the FTL.
-> (ex. log-structured filesystem on general block device)
+> > But I think you may not be appreciating how intrusive PG_locked
+> > will be.  There are many references to page->mapping (often ->host)
+> > throughout fs/ : when we keep anon/swap flags in page->mapping, we
+> > know the filesystems will never see those bits set in their pages,
+> > so no page_mapping-like conversion is needed; just a few places in
+> > common code need to adapt.
+> 
+> You're right, it could be really painful. We'd have to rename the field, 
+> and use some inline function to access it (which masks off the low bits).
 
-There's little point in optimising a file system _specifically_ for
-devices which in often aren't reliable enough to keep your data anyway.
-You might as well use ramfs.
+Yeah, I realise that the change is intrusive in terms of lines touched,
+but AFAIKS, it should not be much more complex than a search/replace...
 
-It's unfortunate really -- there's no _fundamental_ reason why FTL has
-to be done so badly; it's just that it almost always is. Direct access
-to the flash from Linux is _always_ going to be better in practice --
-and that way you avoid the problems with dual journalling, along with
-the problems with the underlying FTL continuing to keep (and copy around
-during GC) sectors which the top-level filesystem has actually
-deallocated, etc.
-
--- 
-dwmw2
+As far as deprecating things goes... I don't think we have to wait too
+long, its more for features, drivers, or more fundamental APIs isn't it?
+If we just point out that one must use set_page_mapping/page_mapping
+rather than page->mapping, it is trivial to fix any out of tree breakage.
 
