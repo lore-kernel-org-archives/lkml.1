@@ -1,34 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbXEQLcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbXEQLeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbXEQLcE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 07:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbXEQLbz
+	id S1756738AbXEQLeO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 07:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbXEQLd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 07:31:55 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37953 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755024AbXEQLbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 07:31:55 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19c7IRgJ8VcNPxqGZC/DyBZAOn3Ib048eLwJQyTL3
-	Fu/NZFLA2SSaHQ
-Date: Thu, 17 May 2007 13:31:48 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: another "default y" Kconfig option...
-Message-ID: <Pine.LNX.4.60.0705171326540.5029@poirot.grange>
+	Thu, 17 May 2007 07:33:59 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:62429 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755271AbXEQLd6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 07:33:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
+        b=TeUvnT5UdxsXeeqegMPPvilV2V+aGR88kRLQxVf/zLPSF2VuK2U5tMZUwW4A70H5i7v5nzEtsg9LotxaPLyIcMwwu5+pgv1ibHMcEyjOJeI2K42hpuo3kF7r5IdNa0qAtSfSIpBcfC58FowkjUO54wwSSM6Zo6jPjnpcf7qRJD4=
+Date: Thu, 17 May 2007 14:33:54 +0300
+From: Paul Sokolovsky <pmiscml@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <1726326841.20070517143354@gmail.com>
+To: Borislav Petkov <bbpetkov@yahoo.de>
+CC: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ide.c: microscopic size and readability optimization
+In-Reply-To: <20070517112554.GA32183@zmei.tnic>
+References: <20070517112554.GA32183@zmei.tnic>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hello Borislav,
 
-Is there any special reason why DAB in drivers/media/Kconfig has "default 
-y"?
+Thursday, May 17, 2007, 2:25:54 PM, you wrote:
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> -----
+> From: bbpetkov@yahoo.de
+
+> A very small size (object file 432 bytes smaller) and readability optimization of ide.c
+
+        And how these "optimizations" fit with BUG_ON() purpose - to
+be able to easily identify cause and place of the failure? You
+could just remove them altogether and claim that you did even "better"
+"optimization".
+
+> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+
+> --
+> Index: 22-rc1/drivers/ide/ide.c
+> ===================================================================
+> --- 22-rc1/drivers/ide/ide.c.orig
+> +++ 22-rc1/drivers/ide/ide.c
+> @@ -568,10 +568,8 @@ void ide_unregister(unsigned int index)
+>         ide_hwgroup_t *hwgroup;
+>         int irq_count = 0, unit;
+
+> -       BUG_ON(index >= MAX_HWIFS);
+> +       BUG_ON(index >= MAX_HWIFS || in_interrupt() || irqs_disabled());
+
+> -       BUG_ON(in_interrupt());
+> -       BUG_ON(irqs_disabled());
+>         down(&ide_cfg_sem);
+
+
+
+-- 
+Best regards,
+ Paul                            mailto:pmiscml@gmail.com
+
