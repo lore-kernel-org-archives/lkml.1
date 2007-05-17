@@ -1,80 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbXEQU1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762286AbXEQU1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760130AbXEQU1M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762016AbXEQU0q
+	id S1762286AbXEQU1p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757210AbXEQU1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:26:46 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3031 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761693AbXEQU0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:26:44 -0400
-Date: Thu, 17 May 2007 20:18:47 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Dongjun Shin <djshin90@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070517201847.GA5032@ucw.cz>
-References: <20070515151919.GA32510@lazybastard.org> <20070515133759.9ee434a2.akpm@linux-foundation.org> <1179317240.2859.222.camel@shinybook.infradead.org> <20070516083408.dcd9dd78.akpm@linux-foundation.org> <1179330596.2859.248.camel@shinybook.infradead.org> <20070516164158.GB8113@lazybastard.org> <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com> <1179383117.2859.416.camel@shinybook.infradead.org> <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
+	Thu, 17 May 2007 16:27:35 -0400
+Received: from main.gmane.org ([80.91.229.2]:33755 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757047AbXEQU1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 16:27:34 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthieu CASTET <castet.matthieu@free.fr>
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+Date: Thu, 17 May 2007 20:27:20 +0000 (UTC)
+Message-ID: <pan.2007.05.17.20.27.20@free.fr>
+References: <20070517143200.GA30850@lst.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: cac94-1-81-57-151-96.fbx.proxad.net
+User-Agent: Pan/0.125 (Potzrebie)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 17 May 2007 16:32:01 +0200, Christoph Hellwig wrote:
 
-> >Yes. These things are almost always implemented _very_ 
-> >badly by the same
-> >kind of crack-smoking hobo they drag in off the streets 
-> >to write BIOSen.
-> >
-> >It's bog-roll technology; if you fancy a laugh try 
-> >doing some real
-> >reliability tests on them time some. Powerfail testing 
-> >is a good one.
-> >
-> >This kind of thing is OK for disposable storage such as 
-> >in digital
-> >cameras, where it doesn't matter that it's no more 
-> >reliable than a
-> >floppy disc, but for real long-term storage it's really 
-> >a bad idea.
-> >
+> Kill ubis homegrown endianess handling crap and replace it with the
+> normal kernel endianess handling.
 > 
-> There are so many flash-based storage and some 
-> disposable storages,
-> as you pointed out, have poor quality. I think it's 
-> mainly because these
-> are not designed for good quality, but for lowering the 
-> price.
-> 
-> These kind of devices are not ready for things like 
-> power failure because
-> their use case is far from that. For example, removing 
-> flash card
-> while taking pictures using digital camera is not a 
-> common use case.
-> (there should be a written notice that this kind of 
-> action is against
-> the warranty)
+Hum, you should check about alignment stuff.
+Jffs2 use a similar mechanism and the packed struct also take care of 
+some unaligned data (present in summary node for example).
 
-Hmm.. so operating your camera on batteries should be against the
-warranty, since batteries commonly run empty while storing pictures?
+Matthieu
 
-
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
