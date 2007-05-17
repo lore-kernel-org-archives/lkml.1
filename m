@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbXEQWpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbXEQWrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758761AbXEQWpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 18:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXEQWpZ
+	id S1759661AbXEQWrv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 18:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755961AbXEQWro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 18:45:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58062 "EHLO hera.kernel.org"
+	Thu, 17 May 2007 18:47:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:4174 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754630AbXEQWpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 18:45:24 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-Date: Thu, 17 May 2007 18:42:43 -0400
-User-Agent: KMail/1.9.5
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171508.40202.lenb@kernel.org> <20070517215321.GC7336@elf.ucw.cz>
-In-Reply-To: <20070517215321.GC7336@elf.ucw.cz>
+	id S1755450AbXEQWro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 18:47:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,550,1170662400"; 
+   d="scan'208";a="229295619"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] allow console unregistration
+Date: Thu, 17 May 2007 15:47:33 -0700
+User-Agent: KMail/1.9.6
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       James Simmons <jsimmons@pentafluge.infradead.org>,
+       Dave Airlie <airlied@gmail.com>,
+       "Jakob Bornecrantz" <wallbraker@gmail.com>,
+       dri-devel@lists.sourceforge.net
+References: <200705171423.46748.jesse.barnes@intel.com> <200705171532.28799.jesse.barnes@intel.com>
+In-Reply-To: <200705171532.28799.jesse.barnes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705171842.44134.lenb@kernel.org>
+Message-Id: <200705171547.33377.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Something similar happened to me on XE3, yes.
-> 
-> (Actual values were different; BIOS specified critical temperature at
-> cca 95C, but hw killed the power at cca 83C. Setting critical trip
-> point at 80C made the problem go away.)
+On Thursday, May 17, 2007 3:32 pm Jesse Barnes wrote:
+> Randy just informed me that the patch limits are bigger now, so here
+> are the actual patches.
+>
+> This patch allows for proper console unregistration via the VT layer,
+> and updates the FB layer to use it.  This makes debugging new console
+> drivers much easier, since you can properly clean them up before
+> unloading. Antonio already checked it out (and suggested a tweak for
+> the fbcon side) so I think it's on its way already via the FB tree.
 
-Great, please file a bug and include the acpidump from the XE3
-and we'll fix it, rather than supporting a bogus (manual) workaround for it.
-
-Of course if your system is running at 80*C and the hardware shuts
-off at 83*C, you may have a broken fan, or one clogged with dust...
-
--Len
-
+And before someone complains, here's the diffstat:
+ drivers/char/vt.c             |   21 +++++++++++++++++++--
+ drivers/video/console/fbcon.c |   17 ++++++++++++++++-
+ drivers/video/fbmem.c         |    2 ++
+ include/linux/console.h       |    1 +
+ include/linux/fb.h            |    2 ++
+ 5 files changed, 40 insertions(+), 3 deletions(-)
