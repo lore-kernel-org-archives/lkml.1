@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758682AbXEQVCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbXEQVDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758682AbXEQVCn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbXEQVCg
+	id S1758994AbXEQVDb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXEQVDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:02:36 -0400
-Received: from linux.dunaweb.hu ([62.77.196.1]:46107 "EHLO linux.dunaweb.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755122AbXEQVCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:02:35 -0400
-Message-ID: <464CC2D9.5060409@dunaweb.hu>
-Date: Thu, 17 May 2007 23:02:17 +0200
-From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Peer Chen <pchen@nvidia.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] drivers/ata: Add the SW NCQ support to sata_nv for MCP51/MCP55/MCP61
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 17 May 2007 17:03:24 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:56436 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754417AbXEQVDX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 17:03:23 -0400
+Date: Thu, 17 May 2007 22:03:19 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: dedekind@infradead.org, hch@lst.de, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+Message-ID: <20070517210319.GT4095@ftp.linux.org.uk>
+References: <20070517143200.GA30850@lst.de> <1179413443.3642.49.camel@sauron> <20070517.135624.131107441.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070517.135624.131107441.davem@davemloft.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, May 17, 2007 at 01:56:24PM -0700, David Miller wrote:
+> From: Artem Bityutskiy <dedekind@infradead.org>
+> Date: Thu, 17 May 2007 17:50:43 +0300
+> 
+> > Well, I see the good side of your change - no home-brewed media<->cpu
+> > things. Fair enough and nice. But why don't you make __be32 a struct
+> > (just like I do) so that compiler could complain then?
+> 
+> structs get passed on the stack instead of via registers, regardless
+> of size, when passed as arguments on some architectures, so there is a
+> terrible performance cost of doing things that way
 
-thanks for publishing this.
+BTW, the lack of home-grown coversions is not a benefit - it's _nice_ to
+have protections against mixing be32 and ubi32, etc.  Avoiding the mess
+with struct, OTOH, *is* a benefit.
 
-> Add the Software NCQ support to sata_nv.c for MCP51/MCP55/MCP61 SATA
-> controller.
->
-> This patch base on sata_nv.c file from kernel 2.6.22-rc1
->
-> See attachment for the patch.
->
-> Signed-off-by: Kuan Luo <kluo@nvidia.com>
-> Signed-off-by: Peer Chen <pchen@nvidia.com>
-> ==================================
-> See attached file.
-> ==================================
->   
-
-However, I saw this in the patch:
-
-+               /* determine if physical DMA addr spans 64K boundary.
-+                * Note h/w doesn't support 64-bit, so we unconditionally
-+                * truncate dma_addr_t to u32.
-+                */
-+               addr = (u32) sg_dma_address(sg);
-
-Does it mean that I can't upgrade my machine to 4 GB or more
-without losing NCQ or risking data corruption?
-Can the code be made IOMMU-aware?
-
-Best regards,
-Zoltán Böszörményi
-
+So I'd rather go with independent bitwise types and conversions done by
+use of be... ones + force-cast.  The rest of ubi code remain unchanged.
