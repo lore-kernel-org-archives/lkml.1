@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761793AbXEQU0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbXEQU0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761793AbXEQU0g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbXEQU02
+	id S1761505AbXEQU0u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbXEQU0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:26:28 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:36162 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761450AbXEQU02 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:26:28 -0400
-Message-ID: <464CB7CC.8030706@zytor.com>
-Date: Thu, 17 May 2007 13:15:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Simon Arlott <simon@fire.lp0.eu>
-CC: Claas Langbehn <claas@rootdir.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: This kernel requires the following features not present on the
- CPU... (on a VIA C7 CPU)
-References: <464C4A22.7040709@rootdir.de> <464CB726.6090201@simon.arlott.org.uk>
-In-Reply-To: <464CB726.6090201@simon.arlott.org.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 16:26:41 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3030 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761698AbXEQU0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 16:26:40 -0400
+Date: Thu, 17 May 2007 20:22:13 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: George Nychis <gnychis@cmu.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: dock support on thinkpad x60s for DVD/CDROM
+Message-ID: <20070517202213.GB5032@ucw.cz>
+References: <464BB172.2040502@cmu.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464BB172.2040502@cmu.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Arlott wrote:
-> 
-> Is it automatic? I have CONFIG_X86_CMPXCHG=y without cx8 showing in
-> cpuinfo, and it appears to work fine.
-> 
-> Will your changes needlessly prevent the kernel running? Would I be
-> right in thinking that the kernel is successfully using cmpxchg even
-> though it's considered disabled? I realise people compile kernels for
-> the wrong CPU but preventing them working when it's been chosen
-> correctly seems wrong.
-> 
+Hi!
 
-CX8 isn't cmpxchg; it's cmpxchg8b.
+> I was wondering if any progress was made on the docking station support for new thinkpads,
+> like the x60s ultradock.  I'm looking for support for the CD/DVD burner on it.  I tried
+> enabling the most recent dock support in the kernel and still nothing. (2.6.22-rc1)
 
-	-hpa
+Kristen is working on that, AFAICT. Search archives.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
