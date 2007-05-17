@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbXEQCLD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbXEQCVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762834AbXEQCLD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 22:11:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbXEQCKz
+	id S1759586AbXEQCVd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 22:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXEQCV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 22:10:55 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:42239 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757908AbXEQCKz (ORCPT
+	Wed, 16 May 2007 22:21:26 -0400
+Received: from nwk-ea-fw-1.sun.com ([192.18.42.249]:13069 "EHLO
+	nwk-ea-fw-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755177AbXEQCVZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 22:10:55 -0400
-Date: Wed, 16 May 2007 22:10:34 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH] Serial 8250: Handle saving the clear-on-read bits from the
- LSR and MSR
-In-reply-to: <464B4235.5030405@acm.org>
-To: Corey Minyard <minyard@acm.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Message-id: <200705162210.34739.gene.heskett@gmail.com>
-Organization: Organization? very little
+	Wed, 16 May 2007 22:21:25 -0400
+Date: Wed, 16 May 2007 19:19:20 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH]x86_64: early_print kernel console should send CRLF not LFCR
+To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       rmk@arm.linux.org.uk
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai.Lu@Sun.COM
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200705161919.21304.yinghai.lu@sun.com>
 MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
 Content-disposition: inline
-References: <20070504131532.GA12265@localdomain>
- <20070506181422.GB21158@flint.arm.linux.org.uk> <464B4235.5030405@acm.org>
-User-Agent: KMail/1.9.6
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 May 2007, Corey Minyard wrote:
->Russell King wrote:
->> On Sun, May 06, 2007 at 12:58:25PM -0400, Gene Heskett wrote:
->>> [long message snipped]
->>>
->>> Thanks for your patience Corey.
->>
->> So, in one sentence or preferably one word, did Corey's patch cause a
->> regression?
->
->>From what Gene said, I think the final outcome is that this patch didn't
->seem to make any difference. It looks to me that the problems were
->elsewhere.
->
->So what's the state of this patch?
->
->Thanks,
->
->-corey
+[PATCH]x86_64: early_print kernel console should send CRLF not LFCR
 
-Gene here.  My impression was that this patch did help in that it appeared to 
-clean up what was thought to be less than optimum code in that area.  There 
-were a few times when it didn't seem to take quite as many kills and restarts 
-of that ill-coded proprietary daemon to make things behave.
+   in 
+	commit d358788f3f30113e49882187d794832905e42592
+	Author: Russell King <rmk@dyn-67.arm.linux.org.uk>
+	Date:   Mon Mar 20 20:00:09 2006 +0000
 
-OTOH, I get the very strong impression there is another, more serious buglet 
-someplace else that does a pretty good job of masking any black and white 
-comparisons one might make about this patch.
+    Glen Turner reported that writing LFCR rather than the more
+    traditional CRLF causes issues with some terminals.
 
-Older code, as in 4 or 5 minor kernel versions back, appeared to work 
-correctly, either on a serial port, or a usb port with a pl2303, if one could 
-tolerate the miss-fires it did occasionally.  Now of course the pl2303 seems 
-to be broken, both of the ones I have quit working at all with 2.6.21 final.
+    Since this aflicts many serial drivers, extract the common code
+    to a library function (uart_console_write) and arrange for each
+    driver to supply a "putchar" function.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-* |Rain| prepares for polygon soup
-<|Rain|> sweet merciful crap, it works?
-* |Rain| faints
+    but early_printk is left out. 
+
+    Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+    Cc: Andi Kleen <ak@suse.de>
+    Cc: Russell King <rmk@arm.linux.org.uk>
+
+diff --git a/arch/x86_64/kernel/early_printk.c b/arch/x86_64/kernel/early_printk.c
+index 56eaa25..296d2b0 100644
+--- a/arch/x86_64/kernel/early_printk.c
++++ b/arch/x86_64/kernel/early_printk.c
+@@ -91,9 +91,9 @@ static int early_serial_putc(unsigned char ch)
+ static void early_serial_write(struct console *con, const char *s, unsigned n)
+ {
+ 	while (*s && n-- > 0) {
+-		early_serial_putc(*s);
+ 		if (*s == '\n')
+ 			early_serial_putc('\r');
++		early_serial_putc(*s);
+ 		s++;
+ 	}
+ }
