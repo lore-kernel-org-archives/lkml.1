@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbXEQOpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXEQOpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758645AbXEQOpK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbXEQOou
+	id S1758683AbXEQOpr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbXEQOpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:44:50 -0400
-Received: from www.osadl.org ([213.239.205.134]:50429 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758087AbXEQOot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:44:49 -0400
-Subject: Re: [PATCH] INPUT: Sanitize PIT locking in pcspkr
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>,
-       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Richard Henderson <rth@twiddle.net>
-In-Reply-To: <d120d5000705170736q4e9eb5d4jab82732e01e377c@mail.gmail.com>
-References: <1179408962.3764.72.camel@chaos>
-	 <d120d5000705170715s2066ea39r9b129e5efe79c4dd@mail.gmail.com>
-	 <1179412525.3764.80.camel@chaos>
-	 <d120d5000705170736q4e9eb5d4jab82732e01e377c@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 17 May 2007 16:49:35 +0200
-Message-Id: <1179413375.3764.86.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Thu, 17 May 2007 10:45:36 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:60902 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbXEQOpf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 10:45:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=MrKgUHYo0UG+xd79WN+BtwTXt6xdQlRZAagBIQcjTsu1cb4NHmJbDg/gBQ71x1uL3nFEVTH2yfYhRYojzlPhVabcB0RcslUATuBiOguXH8MVjX1rBw8W0sGIG1ahmVICkI5QXz1lP8F4Jv3wR9BGT0DeTf2INm9MHu57DwcPBqM=
+Message-ID: <25ae38200705170745t4a80e7eer413b3c2bb0c5a327@mail.gmail.com>
+Date: Thu, 17 May 2007 20:15:32 +0530
+From: "Anand Jahagirdar" <anandjigar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Fork Bombing Attack
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 10:36 -0400, Dmitry Torokhov wrote:
-> > BTW, there are more creative PIT users in drivers/input which use the
-> > global lock already, but the PIT usage there is definitely broken on
-> > anything >= 2.6.21.
-> >
-> 
-> Are you talking about drivers/input/joystick/analog.c? What is broken there?
+Hello All
+              I have set per user process limit ( ulimit) for both
+root and guest account as 8000 by using option ulimit -u 8000.this is
+Hard limit.  still fork bombing attack killed the box and machine
+needed reboot. will any body please tell me why this is so? i have
+tried all this attack on machine with FC6 and Linux kernel 2.6.18.
 
-drivers/gameport/gameport.c as well.
-
-Both read the PIT directly, which will lead to interesting results. The
-PIT is either stopped or it can be used in one shot mode with per event
-changing intervals due to the changes introduced by the clock events
-layer.
-
-This code should use ktime_get() and not fiddle in the hardware itself.
-
-	tglx
-
-
+Regards
+Anand
