@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbXEQJXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbXEQJ03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbXEQJXk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 05:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXEQJXd
+	id S1755986AbXEQJ03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 05:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXEQJ0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 05:23:33 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4239 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752389AbXEQJXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 05:23:32 -0400
-Date: Thu, 17 May 2007 09:23:19 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, lenb@kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-Message-ID: <20070517092318.GD3975@ucw.cz>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <464B4155.9070902@gmail.com> <464B43BB.3070505@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 May 2007 05:26:22 -0400
+Received: from mail22.syd.optusnet.com.au ([211.29.133.160]:37276 "EHLO
+	mail22.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753965AbXEQJ0V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 05:26:21 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: ck@vds.kolivas.org
+Subject: Re: [ck] Swap prefetch tester
+Date: Thu, 17 May 2007 19:26:03 +1000
+User-Agent: KMail/1.9.5
+Cc: "Kacper Wysocki" <kacperw@online.no>, linux-kernel@vger.kernel.org
+References: <200705141210.43614.kernel@kolivas.org> <200705141217.57142.kernel@kolivas.org> <367a23780705151304s49734da1u778ab1ea96b3e9ed@mail.gmail.com>
+In-Reply-To: <367a23780705151304s49734da1u778ab1ea96b3e9ed@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <464B43BB.3070505@redhat.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200705171926.04165.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wednesday 16 May 2007 06:04, Kacper Wysocki wrote:
+> ...a nice order of magnitude better! Very happy you fixed this Con.
 
-> > In 2.6.20.9 I can change trippoints:
-> > 
-> > echo "105:100:100:78:70:40:30" > /proc/acpi/thermal_zone/TZ0/trip_points
-> > echo 10  > /proc/acpi/thermal_zone/TZ0/polling_frequency
-> > 
-> > Then I got:
-> > cat /proc/acpi/thermal_zone/TZ0/*
-...
-> > Its bug or feature?
-> > 
-> 
-> Committed to mainline May 10:
-> 
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=11ccc0f249cb01a129f54760b8ff087f242935d4
-> Commit:     11ccc0f249cb01a129f54760b8ff087f242935d4
-> Parent:     de46c33745f5e2ad594c72f2cf5f490861b16ce1
-> Author:     Len Brown <len.brown@intel.com>
-> AuthorDate: Mon Apr 30 22:36:01 2007 -0400
-> Committer:  Len Brown <len.brown@intel.com>
-> CommitDate: Mon Apr 30 22:36:01 2007 -0400
-> 
->     ACPI: thermal trip points are read-only
+Great!, thanks for testing.
 
-What was the rationale? Can we get this one reverted? 
+> Have I understood correctly that there are more prefetch improvements
+> in ck2 than just the sp38 patch?
 
-Some machines (HP omnibook xe3) have broken trip points -- too high --
-so machine will overheat and trigger hw shutdown before starting
-passive cooling.
+No; 2.6.21-ck2 simply brings it up to sp38. The code in -ck for swap prefetch 
+is a little different to suit the SD scheduler and the SCHED_IDLEPRIO patch.
+>
+> I'll post more results if I ever manage to tear myself from the
+> computer for 10 minutes when I'm home - it looks like I have a yiff
+> daemon running at 7% cpu all the time which might have affected the
+> results.
+>
+> Speaking of "feel", the net effect of swap prefetch for me seems to be
+> that I don't notice it - that is, I don't notice my programs behaving
+> sluggishly when I come back to the computer. Excellent!
 
-That's really broken, and write to trip points is reasonable way to
-'fix' that. (I'd understand if you only ever let trip points to
-decrease... but otoh root should be able to shoot himself....)
+Excellent!. Thanks very much for your feedback.
 
-							Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-ck
