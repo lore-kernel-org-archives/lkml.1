@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763151AbXEQHYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbXEQH0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763151AbXEQHYo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 03:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbXEQHYf
+	id S1763288AbXEQH0H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 03:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbXEQHZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 03:24:35 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:52036 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752277AbXEQHYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 03:24:34 -0400
-Date: Thu, 17 May 2007 09:21:45 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Jeff Zheng <Jeff.Zheng@endace.com>
-cc: david@lang.hm, Andreas Dilger <adilger@clusterfs.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: RE: Software raid0 will crash the file-system, when each disk is
- 5TB
-In-Reply-To: <659F626D666070439A4A5965CD6EBF406B3324@gazelle.ad.endace.com>
-Message-ID: <Pine.LNX.4.61.0705170918480.1791@yvahk01.tjqt.qr>
-References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com>
- <20070516140452.GC5286@schatzie.adilger.int> <Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm>
- <Pine.LNX.4.61.0705162016060.9019@yvahk01.tjqt.qr>
- <659F626D666070439A4A5965CD6EBF406B3324@gazelle.ad.endace.com>
+	Thu, 17 May 2007 03:25:57 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:40275 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754537AbXEQHZ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 03:25:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=bEl+6vZhgjtXWeqKHJ2Jq+k69FHMn009YzWOMP9IVWkJHT2tmVSLSlYSvg3eV3y6EtWB04resVVBGjb/OZymfQw2axlpO+HoiA1bN0XWO/DQc9CkmMQEqDyju5UfNzgxoMHdBZqJCELDjbVYY+hLQKhvDPeyo566eArhRkhiHFc=
+Message-ID: <25ae38200705170025m23fe8ea9s81515ec8d1a0a137@mail.gmail.com>
+Date: Thu, 17 May 2007 12:55:53 +0530
+From: "Anand Jahagirdar" <anandjigar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Fork bombing Attack
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dear Sir,
+             I just want to know whether fork bombing attack still
+exist on the machine having Distribution as Fedora Core 6 and Linux
+Kernel 2.6.x.?
 
-On May 17 2007 09:42, Jeff Zheng wrote:
->
->Problem is that is only happens when you actually write data to the
->raid. You need the actual space to reproduce the problem.
+           additional Info :  I have set ulimit as 8000 and loged in
+as Guest User on machine having Distribution as Fedora Core 6 and
+Linux kernel 2.6.18. simple fork bombing program while(1) fork();
+killed the box and machine needed reboot. will any body please tell me
+why fork bombing attack killed the box even after setting ulimit as
+8000?
 
-That should not be a big problem. Create like 4x950G virtual sparse
-drives (takes roughly or so 4x100 MB on the host after mkfs), then
-set up a raid inside the vm, with which you can play - even write
-to it. Not sure how RAID5 will affect the host size of the virtual
-drives, since during first resync when all disks are blank, it will
-XOR it (0^0=1), and hence fills up the host disk.
-
-
-	Jan
--- 
+Regards
+Anand
