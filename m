@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbXEQNhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbXEQNic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757486AbXEQNhv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 09:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbXEQNhp
+	id S1757671AbXEQNic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 09:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbXEQNiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 09:37:45 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:51864 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753981AbXEQNho (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 09:37:44 -0400
-Message-ID: <464C5AA5.3090002@linux.vnet.ibm.com>
-Date: Thu, 17 May 2007 08:37:41 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
-Reply-To: brking@linux.vnet.ibm.com
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+	Thu, 17 May 2007 09:38:25 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49300 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754312AbXEQNiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 09:38:24 -0400
+From: Andi Kleen <ak@suse.de>
+To: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       Jan Hubicka <jh@suse.cz>
+Subject: Re: stack alignment on i386
+Date: Thu, 17 May 2007 15:37:57 +0200
+User-Agent: KMail/1.9.1
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0705160648320.18296@artax.karlin.mff.cuni.cz>
+In-Reply-To: <Pine.LNX.4.64.0705160648320.18296@artax.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-To: Mel Gorman <mel@skynet.ie>
-CC: Bob Picco <bob.picco@hp.com>, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: PPC64 build breakage drivers/pci/hotplug/rpadlpar_sysfs.c
-References: <20070516133046.GB25792@localhost> <20070517104008.GA667@skynet.ie>
-In-Reply-To: <20070517104008.GA667@skynet.ie>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705171537.57893.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-> On (16/05/07 09:30), Bob Picco didst pronounce:
->> bob.picco@hp.com
->> /usr/src/linux-2.6.22-rc1-mm1/drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field `subsys' specified in initializer
->> /usr/src/linux-2.6.22-rc1-mm1/drivers/pci/hotplug/rpadlpar_sysfs.c:132: warning: initialization from incompatible pointer type
->> make[4]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
->> make[3]: *** [drivers/pci/hotplug] Error 2
->> make[2]: *** [drivers/pci] Error 2
->> make[1]: *** [drivers] Error 2
->> make: *** [_all] Error 2
->>
-> 
-> This is showing up on TKO as well and Andy Whitcroft has kicked it
-> around a bit as far as I know. He makes it build with this patch
-> http://test.kernel.org/abat/88951/build/patches/update-sysfs-kset-initialisation-in-PPC64-DLPAR-IO-driver
-> 
-> However, my understand is that the driver is broken even though it builds
-> but I don't recall why. I've added Andy to the CC
+On Wednesday 16 May 2007 07:24, Mikulas Patocka wrote:
+> >    [PATCH] x86: Drop cc-options call for all options supported in gcc
+> >3.2+
+> >
+> >    The kernel only supports gcc 3.2+ now so it doesn't make sense
+> >    anymore to explicitely check for options this compiler version
+> >    already has.
+> >
+> >    This actually fixes a bug. The -mprefered-stack-boundary check
+> >    never worked because gcc rightly complains
+> >
+> >      CC      arch/i386/kernel/asm-offsets.s
+> >    cc1: -mpreferred-stack-boundary=2 is not between 4 and 12
+>
+> Hi
+>
+> Your patch for stack alignment on i386 is wrong. -mprefered-stack-boundary
+> is log2 of the stack alignment (read gcc man page). 
 
-Al Viro posted a patch yesterday that fixes this:
+Ah just using the real number would have been too easy I guess.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036222.html
+> On AMD64 16-byte 
+> alignment is enforced because of SSE, on i386 minimal alignment is 4
+> bytes.
 
-It's in mainline now.
+Ok fixed now
 
--Brian
+> See the code in gcc that triggered your error:
+>        i = atoi (ix86_preferred_stack_boundary_string);
+>        if (i < (TARGET_64BIT ? 4 : 2) || i > 12)
+>          error ("-mpreferred-stack-boundary=%d is not between %d and 12",
+> i,
+>                 TARGET_64BIT ? 4 : 2);
+>        else
+>          ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
+>
+> You are actually dealing with gcc bug, not Linux bug --- when gcc is
+> compiled with AMD64 support it enforces 16-byte alignment even in 32-bit
+> mode.
+
+Honza? 
+
+> Rather let it be as it was, adding -mpreferred-stack-boundary=4 doesn't
+> make sense, because it is default.
+
+Hmm, maybe that was different on older gcc versions. There must have been
+some reason this option was originally added.
+
+Linus can you please just revert  c8fdd247255a3a027cd9f66dcf93e6847d1d2f85
+
+-Andi
+
