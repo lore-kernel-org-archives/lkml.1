@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761192AbXEQDDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXEQDFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761192AbXEQDDn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 23:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbXEQDDg
+	id S1760908AbXEQDFa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 23:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758584AbXEQDFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 23:03:36 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37737 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758502AbXEQDDf (ORCPT
+	Wed, 16 May 2007 23:05:24 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:47875
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758520AbXEQDFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 23:03:35 -0400
-X-Sasl-enc: q6YT5VY2RgVik0ilRXH+Q6iBIHVtfNWjykknV6Hht9KO 1179371016
-Date: Thu, 17 May 2007 00:03:30 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: George Nychis <gnychis@cmu.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: dock support on thinkpad x60s for DVD/CDROM
-Message-ID: <20070517030330.GA20892@khazad-dum.debian.net>
-References: <464BB172.2040502@cmu.edu>
+	Wed, 16 May 2007 23:05:23 -0400
+From: Rob Landley <rob@landley.net>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+Date: Wed, 16 May 2007 23:05:11 -0400
+User-Agent: KMail/1.9.1
+Cc: Tejun Heo <htejun@gmail.com>, Dave Jones <davej@redhat.com>,
+       Francesco Pretto <ceztko@gmail.com>, Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <200705161948.56497.rob@landley.net> <20070517005842.GC600@khazad-dum.debian.net>
+In-Reply-To: <20070517005842.GC600@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <464BB172.2040502@cmu.edu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705162305.11755.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, George Nychis wrote:
-> I was wondering if any progress was made on the docking station support for new thinkpads,
-> like the x60s ultradock.  I'm looking for support for the CD/DVD burner on it.  I tried
-> enabling the most recent dock support in the kernel and still nothing. (2.6.22-rc1)
+On Wednesday 16 May 2007 8:58 pm, Henrique de Moraes Holschuh wrote:
+> On Wed, 16 May 2007, Rob Landley wrote:
+> > Ok, so the change is to get shutdown to _stop_ doing something stupid 
+> > (spinning down the disk without first flushing the cache), and the correct 
+> > thing for shutdown to do is keep its' mitts off the thing and let the 
+kernel 
+> > power down the darn hardware?
+> 
+> Yes, for *all* SCSI disk devices, libata or not.
 
-ACPI generic dock driver, or thinkpad-acpi dock driver?
+I realize that this time next year it won't be possible to use a ramdisk or a 
+network block device without going through the SCSI layer, but while it 
+remains an option I'm relishing _not_ using it, thanks.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> But you need to detect if the kernel has proper SCSI device shutdown
+> support, because if it does not, you have to do a cache flush and spindown
+> on shutdown(8) if you can...
+
+Or (and this is just a thought), you could upgrade your kernel so it correctly 
+handles your hardware, treating this just like any other driver bug or other 
+lack of proper hardware support in the history of Linux.  (Back when APM 
+couldn't power off the machine at the end of the shutdown sequence, did we 
+modify shutdown to try to work around this, or did we fix it in the kernel so 
+it worked?)
+
+Why does everybody want to shoehorn everything through the SCSI layer, anyway?  
+Last I checked you didn't have to spin down a USB flash key.  If SATA is 
+SCSI, what the heck is SAS?  (Answer: a cynical marketing hack to bleed SCSI 
+bigots for the huge margins they've always been bled for.  But oh well.)  It 
+would be hilarious if I didn't have to put up with it renumbering my devices 
+and imposing requirements for hardware I haven't got on hardware I have 
+got...
+
+Rob
