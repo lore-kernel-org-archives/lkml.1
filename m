@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbXEQVmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbXEQVog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759248AbXEQVmv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXEQVmn
+	id S1760221AbXEQVog (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbXEQVo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:42:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34184 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754614AbXEQVml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:42:41 -0400
-Date: Thu, 17 May 2007 17:42:34 -0400
-From: Dave Jones <davej@redhat.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Benjamin LaHaise <bcrl@kvack.org>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-       pjones@redhat.com
-Subject: Re: Asynchronous scsi scanning
-Message-ID: <20070517214234.GA398@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Matthew Wilcox <matthew@wil.cx>, Benjamin LaHaise <bcrl@kvack.org>,
-	James Bottomley <james.bottomley@steeleye.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-	pjones@redhat.com
-References: <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com> <20070517172023.GL10562@parisc-linux.org> <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com> <20070517182414.GA12170@infradead.org> <a781481a0705171147s1ef5c205y8873d0bfa201f928@mail.gmail.com> <20070517185115.GA13207@infradead.org> <a781481a0705171204o5b25fafdm36d5970acf9119cd@mail.gmail.com> <20070517193953.GM10562@parisc-linux.org> <20070517194326.GC30571@kvack.org> <20070517213043.GN10562@parisc-linux.org>
+	Thu, 17 May 2007 17:44:29 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38355 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754972AbXEQVo2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 17:44:28 -0400
+Date: Thu, 17 May 2007 14:44:50 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: clameter@sgi.com, mpm@selenic.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tgraf@suug.ch, davem@davemloft.net,
+       akpm@linux-foundation.org, phillips@google.com, penberg@cs.helsinki.fi
+Subject: Re: [PATCH 0/5] make slab gfp fair
+Message-Id: <20070517144450.ca1a6625.pj@sgi.com>
+In-Reply-To: <1179437209.2925.29.camel@lappy>
+References: <20070514131904.440041502@chello.nl>
+	<Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
+	<1179385718.27354.17.camel@twins>
+	<Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+	<20070517175327.GX11115@waste.org>
+	<Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
+	<1179429499.2925.26.camel@lappy>
+	<Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
+	<1179437209.2925.29.camel@lappy>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070517213043.GN10562@parisc-linux.org>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 03:30:43PM -0600, Matthew Wilcox wrote:
- > On Thu, May 17, 2007 at 03:43:26PM -0400, Benjamin LaHaise wrote:
- > > On Thu, May 17, 2007 at 01:39:54PM -0600, Matthew Wilcox wrote:
- > > > On Fri, May 18, 2007 at 12:34:40AM +0530, Satyam Sharma wrote:
- > > > > Hmmm, actually those other users could easily write and maintain
- > > > > a 20-line patch that does the wait for async scans thing for them
- > > > > using /proc/scsi/scsi in any case.
- > > > 
- > > > How about the three users who're bothered by this extra module being
- > > > built maintain a one-line patch to Kconfig and leave well enough alone?
- > > 
- > > The module has an added bonus that it doesn't require any new tools to 
- > > make work.  Doing it via sysfs/procfs means a new rev of whatever tool 
- > > generates the boot initrd, plus fixing up boot scripts.  Loading a module 
- > > can be done via a simple option to the existing boot tools.
- > 
- > That was what James and I thought.  However, the distros seem unhappy
- > with it.  Of course, they won't actually *comment* on it, they just
- > disable the async scan and won't talk about why.
+> The way I read the cpuset page allocator, it will only respect the
+> cpuset if there is memory aplenty. Otherwise it will grab whatever. So
+> still, it will only ever use ALLOC_NO_WATERMARKS if the whole system is
+> in distress.
 
-FWIW, Fedora 7 has it enabled, and afaik, Peter (mkinitrd maintainer) is happy
-with the current situation.  It's my understanding that the latest ubuntu
-release has it enabled too, though obviously I can't speak for whether
-or not they're happy with the status quo.
+Wrong.  Well, only a little right.
 
-	Dave
+For allocations that can't fail (the kernel could die if it failed)
+then yes, the kernel will eventually take any damn page it can find,
+regardless of cpusets.
+
+Allocations for user space are hardwall enforced to be in the current
+tasks cpuset.
+
+Allocations off interrupts ignore the current tasks cpuset (such allocations
+don't have a valid current contect.)
+
+Allocations for most kernel space allocations will try to fit in the
+current tasks cpuset, but may come from the possibly larger context of
+the closest ancestor cpuset that is marked memory_exclusive.
 
 -- 
-http://www.codemonkey.org.uk
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
