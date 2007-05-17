@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbXEQRUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbXEQRVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758197AbXEQRUe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbXEQRU0
+	id S1758492AbXEQRVK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756580AbXEQRUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:20:26 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47313 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756157AbXEQRUZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:20:25 -0400
-Date: Thu, 17 May 2007 11:20:23 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Simon Arlott <simon@fire.lp0.eu>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: Asynchronous scsi scanning
-Message-ID: <20070517172023.GL10562@parisc-linux.org>
-References: <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com> <1179153096.3703.23.camel@mulgrave.il.steeleye.com> <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk> <20070515172905.GJ10562@parisc-linux.org> <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com> <20070516025121.GK10562@parisc-linux.org> <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com>
+	Thu, 17 May 2007 13:20:55 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:45513 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756104AbXEQRUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:20:53 -0400
+Date: Thu, 17 May 2007 18:59:29 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+cc: David Woodhouse <dwmw2@infradead.org>, John Stoffel <john@stoffel.org>,
+       akpm@osdl.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+In-Reply-To: <20070516110933.GA5472@lazybastard.org>
+Message-ID: <Pine.LNX.4.61.0705171853120.3231@yvahk01.tjqt.qr>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org>
+ <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org>
+ <20070516110933.GA5472@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 10:43:06PM +0530, Satyam Sharma wrote:
-> >No, it does matter.  Your suggestion doesn't work, because
-> >/sys/module/scsi_mod/parameters/ belongs to the module code.  To create
-> >a new attribute there, you use the module_param() code -- and there's
-> >no way to have code called when your parameter is changed.
 
-(thanks, Roland for pointing out that I'm incorrect about code being
-called)
+On May 16 2007 13:09, Jörn Engel wrote:
+>On Wed, 16 May 2007 12:54:14 +0800, David Woodhouse wrote:
+>> 
+>> Personally I'd just go for 'JFFS3'. After all, it has a better claim to
+>> the name than either of its predecessors :)
+>
+>Did you ever see akpm's facial expression when he tried to pronounce
+>"JFFS2"?  ;)
 
-> Ok, thanks for pointing out that /sys/module/scsi_mod/parameters/wait...
-> is _wrong_. Could you suggest something that would be _right_?
+Is there something special with [dʒeɪ ɛf ɛf ɛs tuː]?
 
-No, I can't, which is why I find it hard to like the idea of "use
-sysfs".  I have no particular love for using a module like this, but
-my preferred way (a new verb for /proc/scsi/scsi) isn't liked by others.
-So here we stand.
 
-> You're almost right here. But IMHO this is simply a case of
-> doing something in some kernel subsystem in a proper/better
-> way than it is being done presently.
-> 
-> Anyway, like I said on another thread, discussions here tend to be
-> most productive only over code, so I'll try and make a patch to do
-> this some other way.
-
-Come up with a sensible suggestion, and I'll listen to you.  Code isn't
-the issue.  API is the issue.
+	Jan
+-- 
