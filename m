@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757663AbXERID4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbXERIE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757663AbXERID4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 04:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbXERIDn
+	id S1756027AbXERIE1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 04:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbXERIDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 04:03:43 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:50851 "EHLO mail.sf-mail.de"
+	Fri, 18 May 2007 04:03:44 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:45562 "EHLO mail.sf-mail.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755433AbXERIDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755487AbXERIDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 May 2007 04:03:41 -0400
 From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix roundup_pow_of_two(1)
-Date: Thu, 17 May 2007 23:56:56 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] MM: use DIV_ROUND_UP() in mm/memory.c
+Date: Thu, 17 May 2007 23:05:10 +0200
 User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <200704241610.23342.eike-kernel@sf-tec.de> <20070503202808.4f835c8a.akpm@linux-foundation.org>
+In-Reply-To: <20070503202808.4f835c8a.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705172356.57620.eike-kernel@sf-tec.de>
+Message-Id: <200705172305.11267.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix roundup_pow_of_two(1)
+Replace a hand coded version of DIV_ROUND_UP().
 
-1 is a power of two, therefore roundup_pow_of_two(1) should return 1. It does
-in case the argument is a variable but in case it's a constant it behaves
-wrong and returns 0. Probably nobody ever did it so this was never noticed.
-
-Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de
 
 ---
-commit 01ceeffac83011f0b5021013cc4abd1c4f291df5
-tree 7da59df51617d7cebd55e4361019181645a17e10
-parent ab35916f807eb4f2019a208e96cb0bddbb91dfc3
-author Rolf Eike Beer <eike-kernel@sf-tec.de> Thu, 17 May 2007 23:43:54 +0200
-committer Rolf Eike Beer <eike-kernel@sf-tec.de> Thu, 17 May 2007 23:43:54 +0200
+commit ab35916f807eb4f2019a208e96cb0bddbb91dfc3
+tree 6dc4485902c1a96a09ed287270de108630b26719
+parent 335aa0289219ca2c1dc309d6bf856d4b25ad8746
+author Rolf Eike Beer <eike-kernel@sf-tec.de> Thu, 17 May 2007 23:03:06 +0200
+committer Rolf Eike Beer <eike-kernel@sf-tec.de> Thu, 17 May 2007 23:03:06 +0200
 
- include/linux/log2.h |    2 +-
+ mm/memory.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/log2.h b/include/linux/log2.h
-index 57e641e..1b8a2c1 100644
---- a/include/linux/log2.h
-+++ b/include/linux/log2.h
-@@ -159,7 +159,7 @@ unsigned long __roundup_pow_of_two(unsigned long n)
- #define roundup_pow_of_two(n)			\
- (						\
- 	__builtin_constant_p(n) ? (		\
--		(n == 1) ? 0 :			\
-+		(n == 1) ? 1 :			\
- 		(1UL << (ilog2((n) - 1) + 1))	\
- 				   ) :		\
- 	__roundup_pow_of_two(n)			\
+diff --git a/mm/memory.c b/mm/memory.c
+index cb94488..5bc26b7 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2674,7 +2674,7 @@ int make_pages_present(unsigned long addr, unsigned long end)
+ 	write = (vma->vm_flags & VM_WRITE) != 0;
+ 	BUG_ON(addr >= end);
+ 	BUG_ON(end > vma->vm_end);
+-	len = (end+PAGE_SIZE-1)/PAGE_SIZE-addr/PAGE_SIZE;
++	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
+ 	ret = get_user_pages(current, current->mm, addr,
+ 			len, write, 0, NULL, NULL);
+ 	if (ret < 0)
