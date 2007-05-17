@@ -1,102 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbXEQFjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762564AbXEQFoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762050AbXEQFjQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 01:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbXEQFjA
+	id S1762564AbXEQFoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 01:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbXEQFoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 01:39:00 -0400
-Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:9603 "EHLO
-	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755358AbXEQFi7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 01:38:59 -0400
-Content-class: urn:content-classes:message
+	Thu, 17 May 2007 01:44:10 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:38339 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755531AbXEQFoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 01:44:09 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Thu, 17 May 2007 11:13:36 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: akpm@linux-foundation.org
+cc: David Miller <davem@davemloft.net>, Marcel Holtmann <marcel@holtmann.org>,
+       Jiri Kosina <jikos@jikos.cz>, Greg KH <gregkh@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, maxk@qualcomm.com,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] bluetooth: fix locking in hci_sock_dev_event()
+Message-ID: <Pine.LNX.4.64.0705171106550.9262@cselinux1.cse.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
-Date: Thu, 17 May 2007 17:38:57 +1200
-Message-ID: <659F626D666070439A4A5965CD6EBF406B348A@gazelle.ad.endace.com>
-In-Reply-To: <17995.59547.368508.202596@notabene.brown>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
-Thread-Index: AceYRKGV0QiTznLZS6GN06MsyAXZ0QAAMFMg
-References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com><6bffcb0e0705151629j78920ca2r9337dccdfc1bb6a9@mail.gmail.com><17994.19043.771733.453896@notabene.brown><659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com><17995.42562.870806.396617@notabene.brown><659F626D666070439A4A5965CD6EBF406B33ED@gazelle.ad.endace.com><17995.49602.427417.500049@notabene.brown><Pine.LNX.4.64.0705162145060.31624@asgard.lang.hm><17995.57891.56738.592100@notabene.brown> <17995.59547.368508.202596@notabene.brown>
-From: "Jeff Zheng" <Jeff.Zheng@endace.com>
-To: "Neil Brown" <neilb@suse.de>, <david@lang.hm>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, <linux-raid@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH] bluetooth: fix locking in hci_sock_dev_event()
 
-Yeah, seems you've locked it down, :D. I've written 600GB of data now,
-and anything is still fine.
-Will let it run overnight, and fill the whole 11T. I'll post the result
-tomorrow
+We presently use lock_sock() to acquire a lock on a socket in
+hci_sock_dev_event(), but this goes BUG because lock_sock()
+can sleep and we're already holding a read-write spinlock at
+that point. So, we must use the non-sleeping BH version,
+bh_lock_sock().
 
-Thanks a lot though.
+However, hci_sock_dev_event() is called from user context and
+hence using simply bh_lock_sock() will deadlock against a
+concurrent softirq that tries to acquire a lock on the same
+socket. Hence, disabling BH's before acquiring the socket lock
+and enable them afterwards, is the proper solution to fix
+socket locking in hci_sock_dev_event().
 
-Jeff 
+Cc: David Miller <davem@davemloft.net>
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-> -----Original Message-----
-> From: Neil Brown [mailto:neilb@suse.de] 
-> Sent: Thursday, 17 May 2007 5:31 p.m.
-> To: david@lang.hm; Jeff Zheng; Michal Piotrowski; Ingo 
-> Molnar; linux-raid@vger.kernel.org; 
-> linux-kernel@vger.kernel.org; linux-fsdevel@vger.kernel.org
-> Subject: RE: Software raid0 will crash the file-system, when 
-> each disk is 5TB
-> 
-> On Thursday May 17, neilb@suse.de wrote:
-> > 
-> > Uhm, I just noticed something.
-> > 'chunk' is unsigned long, and when it gets shifted up, we 
-> might lose 
-> > bits.  That could still happen with the 4*2.75T arrangement, but is 
-> > much more likely in the 2*5.5T arrangement.
-> 
-> Actually, it cannot be a problem with the 4*2.75T arrangement.
->   chuck << chunksize_bits
-> 
-> will not exceed the size of the underlying device *in*kilobytes*.
-> In that case that is 0xAE9EC800 which will git in a 32bit long.
-> We don't double it to make sectors until after we add
-> zone->dev_offset, which is "sector_t" and so 64bit arithmetic is used.
-> 
-> So I'm quite certain this bug will cause exactly the problems 
-> experienced!!
-> 
-> > 
-> > Jeff, can you try this patch?
-> 
-> Don't bother about the other tests I mentioned, just try this one.
-> Thanks.
-> 
-> NeilBrown
-> 
-> > Signed-off-by: Neil Brown <neilb@suse.de>
-> > 
-> > ### Diffstat output
-> >  ./drivers/md/raid0.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff .prev/drivers/md/raid0.c ./drivers/md/raid0.c
-> > --- .prev/drivers/md/raid0.c	2007-05-17 
-> 10:33:30.000000000 +1000
-> > +++ ./drivers/md/raid0.c	2007-05-17 15:02:15.000000000 +1000
-> > @@ -475,7 +475,7 @@ static int raid0_make_request (request_q
-> >  		x = block >> chunksize_bits;
-> >  		tmp_dev = zone->dev[sector_div(x, zone->nb_dev)];
-> >  	}
-> > -	rsect = (((chunk << chunksize_bits) + zone->dev_offset)<<1)
-> > +	rsect = ((((sector_t)chunk << chunksize_bits) + 
-> > +zone->dev_offset)<<1)
-> >  		+ sect_in_chunk;
-> >   
-> >  	bio->bi_bdev = tmp_dev->bdev;
-> 
+---
+
+  net/bluetooth/hci_sock.c |    6 ++++--
+  1 file changed, 4 insertions(+), 2 deletions(-)
+
+---
+
+diff -ruNp a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
+--- a/net/bluetooth/hci_sock.c	2007-05-16 17:31:06.000000000 +0530
++++ b/net/bluetooth/hci_sock.c	2007-05-16 17:38:35.000000000 +0530
+@@ -665,7 +665,8 @@ static int hci_sock_dev_event(struct not
+  		/* Detach sockets from device */
+  		read_lock(&hci_sk_list.lock);
+  		sk_for_each(sk, node, &hci_sk_list.head) {
+-			lock_sock(sk);
++			local_bh_disable();
++			bh_lock_sock_nested(sk);
+  			if (hci_pi(sk)->hdev == hdev) {
+  				hci_pi(sk)->hdev = NULL;
+  				sk->sk_err = EPIPE;
+@@ -674,7 +675,8 @@ static int hci_sock_dev_event(struct not
+
+  				hci_dev_put(hdev);
+  			}
+-			release_sock(sk);
++			bh_unlock_sock(sk);
++			local_bh_enable();
+  		}
+  		read_unlock(&hci_sk_list.lock);
+  	}
+
