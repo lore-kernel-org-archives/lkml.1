@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbXEQWYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbXEQWZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbXEQWYs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 18:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbXEQWYi
+	id S1759549AbXEQWZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 18:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbXEQWZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 18:24:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44994 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756784AbXEQWYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 18:24:36 -0400
-Message-ID: <464CD613.3090406@redhat.com>
-Date: Thu, 17 May 2007 18:24:19 -0400
-From: Peter Jones <pjones@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 17 May 2007 18:25:50 -0400
+Received: from smtpa1.mediabeam.com ([194.25.41.13]:6221 "EHLO
+	smtpa1.mediabeam.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755287AbXEQWZt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 18:25:49 -0400
+X-Greylist: delayed 1124 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 May 2007 18:25:48 EDT
+Date: Fri, 18 May 2007 00:06:38 +0200
+From: Philipp Kohlbecher <pk031698@uni-greifswald.de>
+To: Dave Jones <davej@codemonkey.org.uk>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       linux-assembly@vger.kernel.org
+Subject: [PATCH 2.6.21.1] i386: save registers before intra-privilege syscall
+Message-ID: <20070517220638.GA6532@localhost.localdomain>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Simon Arlott <simon@fire.lp0.eu>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org
-Subject: Re: Asynchronous scsi scanning
-References: <20070513160608.GA29024@redhat.com> <1179072655.3723.42.camel@mulgrave.il.steeleye.com> <1179073116.3723.45.camel@mulgrave.il.steeleye.com> <a781481a0705140235h6a96563cw63ed2c7a85a4f736@mail.gmail.com> <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com> <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com> <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com> <1179153096.3703.23.camel@mulgrave.il.steeleye.com> <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org>
-In-Reply-To: <20070515120228.GI10562@parisc-linux.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 8BIT
+X-mediaBEAM-MailScanner-Information: Spam-/VirusProtection V1.1
+X-mediaBEAM-VirusProtection: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Tue, May 15, 2007 at 12:26:29PM +0100, Simon Arlott wrote:
->> I've already suggested a sysfs attribute - or something equivalent - would
->> be much better. It's just one function that a user might want to run multiple
->> times (e.g. after adding scsi devices?) - why should loading a module be used
->> for this?
-> 
-> It's easy to suggest a sysfs attribute.  What you've failed to do is
-> suggest the pathname of the sysfs attribute, the contents of it, or the
-> semantics of it (read-only?  read-write?  write-only?  blocking?)
-> 
-> My personal favourite would be to add a new verb to /proc/scsi/scsi, but
-> James dislikes that idea.
-> 
-> I'd *really* like to hear from distro people.  What is the most
-> convenient way for you to implement "load all the scsi modules, then
-> wait until all devices are found"?  James and I had thought that loading
-> a new module would be the easiest way for you, but it seems inconvenient
-> for you.
+From: Philipp Kohlbecher <pk031698@uni-greifswald.de>
 
-Basically we're going to wind up listening for SUBSYSTEM=block hotplug 
-events.  What would be helpful is if 
-/sys/block/$foo/device/{model,vendor} were populated when we get the 
-event (or, since there are good reasons why they're not, if we got 
-another event afterwards that said they'd been populated).
+The kernel_execve function issues a software interrupt (int 0x80) to make
+a system call to sys_execve. This function expects to find the stack segment
+and stack pointer of the function that issued the system call in the pt_regs
+struct. The syscall entry code that sets up this struct expects the stack
+segment and the stack pointer of the issuing function already on the stack.
+But the Intel processor saves these registers only if a stack-switch occurs,
+i.e. for inter-privilege interrupts and exceptions (cf. Intel Software
+Developer’s Manual, Vol. 3A, p. 5-17,
+http://www.intel.com/design/processor/manuals/253668.pdf).
+For an intra-privilege interrupt like the one issued in kernel_execve, these
+registers must be saved manually.
 
-Even more helpful if there were also sysfs attributes for serial numbers 
-and such from INQUIRY VPD data.  That would make probing for the 
-*correct* drive(s) much simpler.
+Signed-off-by: Philipp Kohlbecher <pk031698@uni-greifswald.de>
 
--- 
-   Peter
+---
+
+I am a total newbie and this is my first patch, so please be merciful...
+Also, please CC me, I am not on the list.
+
+--- a/arch/i386/kernel/sys_i386.c	2007-05-13 18:40:33.000000000 +0200
++++ b/arch/i386/kernel/sys_i386.c	2007-05-13 17:23:10.000000000 +0200
+@@ -258,7 +258,8 @@ int kernel_execve(const char *filename,
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[])
+ {
+ 	long __res;
+-	asm volatile ("push %%ebx ; movl %2,%%ebx ; int $0x80 ; pop %%ebx"
++	asm volatile ("push %%ebx ; movl %2,%%ebx ; push %%ss ; push %%esp;"
++				"int $0x80 ; addl $(4*2),%%esp ; pop %%ebx"
+ 	: "=a" (__res)
+ 	: "0" (__NR_execve),"ri" (filename),"c" (argv), "d" (envp) : "memory");
+ 	return __res;
