@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761050AbXEQXgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbXEQXiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761050AbXEQXgB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 19:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756688AbXEQXfy
+	id S1760299AbXEQXiZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 19:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbXEQXiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 19:35:54 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:49324 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756547AbXEQXfx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 19:35:53 -0400
-Message-ID: <464CE6B2.5090403@zytor.com>
-Date: Thu, 17 May 2007 16:35:14 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 17 May 2007 19:38:18 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:51833 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755450AbXEQXiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 19:38:18 -0400
+Subject: Re: [BUG] (regression) AMD k6-III/450 won't boot w/2.6.22-rc1
+In-Reply-To: <200705171435.31010.ak@suse.de> "from Andi Kleen at May 17, 2007
+ 02:35:30 pm"
+To: Andi Kleen <ak@suse.de>
+Date: Thu, 17 May 2007 18:38:13 -0500 (CDT)
+CC: Chuck Ebbert <cebbert@redhat.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Joachim Deguara <joachim.deguara@amd.com>
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Linux Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Further update of the i386 boot documentation
-References: <200705172250.l4HMol8f004870@tazenda.hos.anvin.org> <464CE105.7030808@goop.org> <464CE38B.8010802@zytor.com> <464CE5A4.3040106@goop.org>
-In-Reply-To: <464CE5A4.3040106@goop.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070517233813.266B6DBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> Given that we have already established littleendian byte order, it's the
->> same thing.
->>   
+Andi Kleen wrote:
+> Hmpf.
 > 
-> Well, not quite; mentioning the string form first creates an ambiguity. 
-> I'd express as something like: ``The magic number is 0x53726448
-> (implicitly, stored little-endian), which breaks down to the characters
-> "HdrS".''
-
-It does not create any ambiguity whatsoever.  The two are equivalent
-forms, and either is authoritative.
-
->>>> +
->>>> +Field name:	version
->>>> +Type:		read
->>>> +Offset/size:	0x206/2
->>>> +Protocol:	2.00+
->>>> +
->>>> +  Contains the boot protocol version, e.g. 0x0204 for version 2.04.
->>>>   
->>>>       
->>> So the version is in BCD?
->>>     
->> Valid objection.  It probably should be considered as (major, minor)
->> bytes, but we haven't had any releases where it hasn't also been valid
->> BCD.  I would prefer separate bytes myself, so 2.10 = 0x20a instead of
->> 2.10 = 0x210.
+> We cold either use rdmsr_safe or add a family check again or clear it 
+> in k6 setup.  I think clearing it in setup is cleanest.
 > 
-> OK.  So is the major or minor at the lower address?
+> Does this patch work?
+> 
+> -Andi
+> 
+> Clear MCE flag on AMD K6
+> 
+> It reports machine check capability in CPUID, but doesn't actually
+> implement all the necessary MSRs of the standard Intel machine
+> check architecture.
+> 
+> This fixes a boot failure recently introduced.
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
 
-Minor.  Littleendian.
+ACK.  I reinstalled Joachim's patch (default 2.6.22-rc1 state), and
+added your patch.  Life is good: we have a fix/workaround.
 
-> 0x00 or \0-terminated is idiomatic and unambigous.  Not a big deal
-> either way.
-
-Null-terminated is idiomatic and unambiguous.
-
-	-hpa
+-- 
+-----------------------------------------------------------------------
+Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
+rct@frus.com
+-----------------------------------------------------------------------
