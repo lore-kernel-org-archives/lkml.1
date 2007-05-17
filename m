@@ -1,37 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXEQOpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbXEQOrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbXEQOpr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbXEQOpg
+	id S1757653AbXEQOrf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXEQOr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:45:36 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:60902 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753995AbXEQOpf (ORCPT
+	Thu, 17 May 2007 10:47:28 -0400
+Received: from neopsis.com ([213.239.204.14]:38401 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753169AbXEQOr1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:45:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=MrKgUHYo0UG+xd79WN+BtwTXt6xdQlRZAagBIQcjTsu1cb4NHmJbDg/gBQ71x1uL3nFEVTH2yfYhRYojzlPhVabcB0RcslUATuBiOguXH8MVjX1rBw8W0sGIG1ahmVICkI5QXz1lP8F4Jv3wR9BGT0DeTf2INm9MHu57DwcPBqM=
-Message-ID: <25ae38200705170745t4a80e7eer413b3c2bb0c5a327@mail.gmail.com>
-Date: Thu, 17 May 2007 20:15:32 +0530
-From: "Anand Jahagirdar" <anandjigar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fork Bombing Attack
+	Thu, 17 May 2007 10:47:27 -0400
+Message-ID: <464C708C.6090808@dbservice.com>
+Date: Thu, 17 May 2007 17:11:08 +0200
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jiri Kosina <jikos@jikos.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: SideWinder GameVoice driver
+References: <464C5FAC.8060609@dbservice.com> <Pine.LNX.4.64.0705171623280.27422@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0705171623280.27422@twin.jikos.cz>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.365,
+	required 5, autolearn=spam, AWL 0.23, BAYES_00 -2.60)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All
-              I have set per user process limit ( ulimit) for both
-root and guest account as 8000 by using option ulimit -u 8000.this is
-Hard limit.  still fork bombing attack killed the box and machine
-needed reboot. will any body please tell me why this is so? i have
-tried all this attack on machine with FC6 and Linux kernel 2.6.18.
+Jiri Kosina wrote:
+> On Thu, 17 May 2007, Tomas Carnecky wrote:
+> 
+>> Despite it's a Microsoft product, it's actually very nice and useful. A 
+>> little pad with a few buttons and connectors for a headset. It's an USB 
+>> device, but it doesn't represent itself as an input/HID device:
+>>    HID device not claimed by input or hiddev
+>
+> Could you please 
+> 
+> - compile the kernel with CONFIG_HID_DEBUG and send me the output you 
+>   receive when you connect the device
 
-Regards
-Anand
+usb 2-5: new low speed USB device using ohci_hcd and address 4
+usb 2-5: configuration #1 chosen from 1 choice
+drivers/hid/usbhid/hid-core.c: report descriptor (size 61, read 61) =
+05 0b 09 05 a1 01 05 09 19 11 29 18 15 00 25 01 75 01 95 08 81 22 05 08
+09 3a a1 02 05 09 19 11 29 17 15 00 25 01 75 01 95 07 b1 a2 c0 06 ff ff
+09 01 15 00 25 01 75 01 95 01 b1 22 c0
+drivers/hid/hid-core.c: report (size 1) (unnumbered)
+drivers/hid/hid-core.c: report 0 (size 1) =  00
+hid-debug: input Button.0011 = 0
+hid-debug: input Button.0012 = 0
+hid-debug: input Button.0013 = 0
+hid-debug: input Button.0014 = 0
+hid-debug: input Button.0015 = 0
+hid-debug: input Button.0016 = 0
+hid-debug: input Button.0017 = 0
+hid-debug: input Button.0018 = 0
+drivers/hid/hid-core.c: report (size 1) (unnumbered)
+drivers/hid/hid-core.c: report 0 (size 1) =  00
+hid-debug: input Button.0011 = 0
+hid-debug: input Button.0012 = 0
+hid-debug: input Button.0013 = 0
+hid-debug: input Button.0014 = 0
+hid-debug: input Button.0015 = 0
+hid-debug: input Button.0016 = 0
+hid-debug: input Button.0017 = 0
+hid-debug: input Vendor-specific-FF.0001 = 0
+  INPUT[INPUT]
+    Field(0)
+      Usage(8)
+        Button.0011
+        Button.0012
+        Button.0013
+        Button.0014
+        Button.0015
+        Button.0016
+        Button.0017
+        Button.0018
+      Logical Minimum(0)
+      Logical Maximum(1)
+      Report Size(1)
+      Report Count(8)
+      Report Offset(0)
+      Flags( Variable Absolute NoPrefferedState )
+  FEATURE[FEATURE]
+    Field(0)
+      Logical(LED.003a)
+      Usage(7)
+        Button.0011
+        Button.0012
+        Button.0013
+        Button.0014
+        Button.0015
+        Button.0016
+        Button.0017
+      Logical Minimum(0)
+      Logical Maximum(1)
+      Report Size(1)
+      Report Count(7)
+      Report Offset(0)
+      Flags( Variable Absolute NoPrefferedState Volatile )
+    Field(1)
+      Usage(1)
+        Vendor-specific-FF.0001
+      Logical Minimum(0)
+      Logical Maximum(1)
+      Report Size(1)
+      Report Count(1)
+      Report Offset(7)
+      Flags( Variable Absolute NoPrefferedState )
+HID device not claimed by input or hiddev
+
