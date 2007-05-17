@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbXEQSXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbXEQSYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbXEQSXa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXEQSXY
+	id S1760061AbXEQSYY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXEQSYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:23:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47667 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754483AbXEQSXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:23:23 -0400
-Message-ID: <464C9D82.60105@redhat.com>
-Date: Thu, 17 May 2007 14:22:58 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Thu, 17 May 2007 14:24:17 -0400
+Received: from neopsis.com ([213.239.204.14]:39428 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754439AbXEQSYR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 14:24:17 -0400
+Message-ID: <464CA34F.8090509@dbservice.com>
+Date: Thu, 17 May 2007 20:47:43 +0200
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-To: righiandr@users.sourceforge.net
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [RFC] log out-of-virtual-memory events
-References: <464C81B5.8070101@users.sourceforge.net>
-In-Reply-To: <464C81B5.8070101@users.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jiri Kosina <jikos@jikos.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: SideWinder GameVoice driver
+References: <464C5FAC.8060609@dbservice.com> <Pine.LNX.4.64.0705171623280.27422@twin.jikos.cz> <464C708C.6090808@dbservice.com>
+In-Reply-To: <464C708C.6090808@dbservice.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.367,
+	required 5, autolearn=spam, AWL 0.23, BAYES_00 -2.60)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> I'm looking for a way to keep track of the processes that fail to allocate new
-> virtual memory. What do you think about the following approach (untested)?
+Additional info: HID device has two collections (whatever those are, I
+have _no_ idea):
 
-Looks like an easy way for users to spam syslogd over and
-over and over again.
+collection 00: type: 1, usage: 000b0005, level: 00000000
+collection 01: type: 2, usage: 0008003a, level: 00000001
 
-At the very least, shouldn't this be dependant on print_fatal_signals?
+The usage of the first one means 'Telephony/Headset', the second one
+'LEDs/Usage Selected Indicator' (IDs taken from [1]).
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+The culprit is the IS_INPUT_APPLICATION() macro, which only accepts
+certain 'usage' types. Should it also accept this particular one, too,
+or even the whole 'Telephony' group? Or maybe add a (configurable)
+'quirk' to enable the GameVoice device?
+
+tom
+
+[1] http://www.freebsddiary.org/APC/usb_hid_usages.php
