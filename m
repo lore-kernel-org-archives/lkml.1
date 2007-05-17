@@ -1,181 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbXEQQyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbXEQRCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757366AbXEQQyy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 12:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbXEQQyr
+	id S1756989AbXEQRCm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbXEQRCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 12:54:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:1426 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755898AbXEQQyq (ORCPT
+	Thu, 17 May 2007 13:02:33 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:33543 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755146AbXEQRCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 12:54:46 -0400
+	Thu, 17 May 2007 13:02:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=HQmAV+RJ2qpDYuvniPPndN99iP/wPmFk7COOMCzMXAqsRleah8Rp7zpxu+F6MYvi/aV0WkI3jCnlPkKJmZA8iMA0siYRWX9gkCO2a3uqeyifxFaq6iENgsdKkW3iypR6FSjbR4WRIqo00IS1rqmZCh/IhRzCbhN2pTDj7DxG7zQ=
-Message-ID: <86802c440705170954k4863d95ah16e1068e47983822@mail.gmail.com>
-Date: Thu, 17 May 2007 09:54:44 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [patch] early printk and boot console fixups.
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>, "Gerd Hoffmann" <kraxel@suse.de>,
-       "Andi Kleen" <ak@suse.de>, akpm@linux-foundation.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64N.0705171038050.11098@blysk.ds.pg.gda.pl>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=W/o9x+gxlpK2FheR13BemOIFz1OFgpgfN2gAlh63y8jEPL5d9pR0YRu6BsQFgwWy29vkGwgQmlvXgzjT5SadMMTlD4Pckaz7FQYWt0gptrsFjJsPLj/sBNhLliUYkb+xGNH5uS2LUfG0INVb+x8I6QgT94Rkv+Iv+hzHJRNE588=
+Message-ID: <a781481a0705171002m61bdb9e9ka53c38cbe698265e@mail.gmail.com>
+Date: Thu, 17 May 2007 22:32:30 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "James Bottomley" <James.Bottomley@steeleye.com>
+Subject: Re: [PATCH] SCSI: Let users disable SCSI_WAIT_SCAN to be built
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>, linux-scsi@vger.kernel.org,
+       "Simon Arlott" <simon@fire.lp0.eu>, "Dave Jones" <davej@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       kernel-packagers@vger.kernel.org, "Matthew Wilcox" <matthew@wil.cx>
+In-Reply-To: <1179410407.3785.16.camel@mulgrave.il.steeleye.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_46315_19915990.1179420884381"
-References: <45D5C473.4010608@suse.de>
-	 <200705160959.12433.bjorn.helgaas@hp.com>
-	 <Pine.LNX.4.64N.0705161803110.29569@blysk.ds.pg.gda.pl>
-	 <200705161214.16426.bjorn.helgaas@hp.com>
-	 <Pine.LNX.4.64N.0705171038050.11098@blysk.ds.pg.gda.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-X-Mailing-List: linux-kernel@vger.kernel.org
-
-------=_Part_46315_19915990.1179420884381
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
+	 <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
+	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
+	 <17841.simon.1179228389@5ec7c279.invalid>
+	 <20070515120228.GI10562@parisc-linux.org>
+	 <4649E03A.1090004@simon.arlott.org.uk>
+	 <20070515172905.GJ10562@parisc-linux.org>
+	 <tkrat.99c0f1a1898aa67f@s5r6.in-berlin.de>
+	 <464B1886.1060502@s5r6.in-berlin.de>
+	 <1179410407.3785.16.camel@mulgrave.il.steeleye.com>
+Sender: linux-kernel-owner@vger.kernel.org
+X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/17/07, Maciej W. Rozycki <macro@linux-mips.org> wrote:
-> On Wed, 16 May 2007, Bjorn Helgaas wrote:
->
-> > >  Given the generic name of "uart" I am assuming this will work with any
-> > > UART driver making use of the serial_core.c core -- am I correct?
-> >
-> > I knew somebody would ask that eventually :-)
-> >
-> > Unfortunately, the answer is "no."  "console=uart" only works with
-> > 8250-compatible devices.
->
->  But is it a design limitation or is it just that other UART drivers have
-> to be modified to work with this option?  My point is if the former, then
-> the option should be something like "console=8250" (the right-hand side
-> being the name of the driver involved; others may want to add support for
-> other drivers).  If the latter, then it's fine as is as other UART drivers
-> may be wired to this code as a need arises.
->
->   Maciej
->
-Actually that early_uart is not real early one.
-it is called via console_initcall.
+On 5/17/07, James Bottomley <James.Bottomley@steeleye.com> wrote:
+> [...]
+> Please don't bother ... I really want a more considered way of fixing
+> this.  If everyone decides the best way is exposing this to the user,
+> then this is the way to do it ... however, I still don't consider this
+> argument made out yet.
 
-for IA64, Bjom is calling that directly in setup_arch.
+Neither do I, considering that the user can switch async scanning on
+at any later time with the scan=async module option. The absence
+of the async scan wait module will only screw things up for him later.
 
-Please check my patch to make it to be called via early_param, that
-will be good to other platform.
+But then I don't consider an argument made out yet for doing this
+via a separate module in the first place. scsi_wait_scan just does
+_not_ want/deserve/need to be a module.
 
-also you may extend to support other early_uart.
-
-YH
-
-------=_Part_46315_19915990.1179420884381
-Content-Type: text/x-patch; name=early_uart_early_param.patch; 
-	charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f1tgmumn
-Content-Disposition: attachment; filename="early_uart_early_param.patch"
-
-W1BBVENIXSBzZXJpYWw6IG1ha2UgZWFybHlfdWFydCB0byB1c2UgZWFybHlfcHJhcm0gaW5zdGVh
-ZCBvZiBjb25zb2xlX2luaXRjYWxsCgpNYWtlIGVhcmx5X3VhcnQgdG8gdXNlIGVhcmx5X3BhcmFt
-LCBzbyB1YXJ0IGNvbnNvbGUgY2FuIGJlIHVzZWQgZWFybGllci4KTWFrZSBpdCB0byBiZSBib290
-Y29uc29sZSB3aXRoIENPTl9CT09UIGZsYWcsIHNvIGNhbiB1c2UgY29uc29sZSBoYW5kb3Zlcgpm
-ZWF0dXJlLgpuZXcgY29tbWFuZCBsaW5lIHdpbGwgYmUKZWFybHljb249dWFydCxpbywweDNmOCw5
-NjAwbjggY29uc29sZT10dHlTMCw5NjAwCml0IHdpbGwgcHJpbnQgaW4gdmVyeSBlYXJseSBzdGFn
-ZQpFYXJseSBzZXJpYWwgY29uc29sZSBhdCBJL08gcG9ydCAweDNmOCAob3B0aW9ucyAnOTYwMG44
-JykKbGF0ZXIgZm9yIGNvbnNvbGUgaXQgd2lsbCBwcmludApjb25zb2xlIGhhbmRvdmVyOiBib290
-IFt1YXJ0MF0gLT4gcmVhbCBbdHR5UzBdCgpTaWduZWQtb2ZmLWJ5OiA8eWluZ2hhaS5sdUBzdW4u
-Y29tPgoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvc2VyaWFsLzgyNTAuYyBiL2RyaXZlcnMvc2VyaWFs
-LzgyNTAuYwppbmRleCA0OGUyNTlhLi4yYTc2NjE4IDEwMDY0NAotLS0gYS9kcml2ZXJzL3Nlcmlh
-bC84MjUwLmMKKysrIGIvZHJpdmVycy9zZXJpYWwvODI1MC5jCkBAIC0yNTMzLDM5ICsyNTM4LDYg
-QEAgc3RhdGljIGludCBfX2luaXQgc2VyaWFsODI1MF9jb25zb2xlX2luaXQodm9pZCkKIH0KIGNv
-bnNvbGVfaW5pdGNhbGwoc2VyaWFsODI1MF9jb25zb2xlX2luaXQpOwogCi1zdGF0aWMgaW50IF9f
-aW5pdCBmaW5kX3BvcnQoc3RydWN0IHVhcnRfcG9ydCAqcCkKLXsKLQlpbnQgbGluZTsKLQlzdHJ1
-Y3QgdWFydF9wb3J0ICpwb3J0OwotCi0JZm9yIChsaW5lID0gMDsgbGluZSA8IG5yX3VhcnRzOyBs
-aW5lKyspIHsKLQkJcG9ydCA9ICZzZXJpYWw4MjUwX3BvcnRzW2xpbmVdLnBvcnQ7Ci0JCWlmICh1
-YXJ0X21hdGNoX3BvcnQocCwgcG9ydCkpCi0JCQlyZXR1cm4gbGluZTsKLQl9Ci0JcmV0dXJuIC1F
-Tk9ERVY7Ci19Ci0KLWludCBfX2luaXQgc2VyaWFsODI1MF9zdGFydF9jb25zb2xlKHN0cnVjdCB1
-YXJ0X3BvcnQgKnBvcnQsIGNoYXIgKm9wdGlvbnMpCi17Ci0JaW50IGxpbmU7Ci0KLQlsaW5lID0g
-ZmluZF9wb3J0KHBvcnQpOwotCWlmIChsaW5lIDwgMCkKLQkJcmV0dXJuIC1FTk9ERVY7Ci0KLQlh
-ZGRfcHJlZmVycmVkX2NvbnNvbGUoInR0eVMiLCBsaW5lLCBvcHRpb25zKTsKLQlwcmludGsoIkFk
-ZGluZyBjb25zb2xlIG9uIHR0eVMlZCBhdCAlcyAweCVseCAob3B0aW9ucyAnJXMnKVxuIiwKLQkJ
-bGluZSwgcG9ydC0+aW90eXBlID09IFVQSU9fTUVNID8gIk1NSU8iIDogIkkvTyBwb3J0IiwKLQkJ
-cG9ydC0+aW90eXBlID09IFVQSU9fTUVNID8gKHVuc2lnbmVkIGxvbmcpIHBvcnQtPm1hcGJhc2Ug
-OgotCQkgICAgKHVuc2lnbmVkIGxvbmcpIHBvcnQtPmlvYmFzZSwgb3B0aW9ucyk7Ci0JaWYgKCEo
-c2VyaWFsODI1MF9jb25zb2xlLmZsYWdzICYgQ09OX0VOQUJMRUQpKSB7Ci0JCXNlcmlhbDgyNTBf
-Y29uc29sZS5mbGFncyAmPSB+Q09OX1BSSU5UQlVGRkVSOwotCQlyZWdpc3Rlcl9jb25zb2xlKCZz
-ZXJpYWw4MjUwX2NvbnNvbGUpOwotCX0KLQlyZXR1cm4gbGluZTsKLX0KLQogI2RlZmluZSBTRVJJ
-QUw4MjUwX0NPTlNPTEUJJnNlcmlhbDgyNTBfY29uc29sZQogI2Vsc2UKICNkZWZpbmUgU0VSSUFM
-ODI1MF9DT05TT0xFCU5VTEwKZGlmZiAtLWdpdCBhL2RyaXZlcnMvc2VyaWFsLzgyNTBfZWFybHku
-YyBiL2RyaXZlcnMvc2VyaWFsLzgyNTBfZWFybHkuYwppbmRleCA3ZTUxMTE5Li5mMzIwZjhmIDEw
-MDY0NAotLS0gYS9kcml2ZXJzL3NlcmlhbC84MjUwX2Vhcmx5LmMKKysrIGIvZHJpdmVycy9zZXJp
-YWwvODI1MF9lYXJseS5jCkBAIC0xNywxMyArMTcsOSBAQAogICogd2UgbG9jYXRlIHRoZSBkZXZp
-Y2UgZGlyZWN0bHkgYnkgaXRzIE1NSU8gb3IgSS9PIHBvcnQgYWRkcmVzcy4KICAqCiAgKiBUaGUg
-dXNlciBjYW4gc3BlY2lmeSB0aGUgZGV2aWNlIGRpcmVjdGx5LCBlLmcuLAotICoJY29uc29sZT11
-YXJ0LGlvLDB4M2Y4LDk2MDBuOAotICoJY29uc29sZT11YXJ0LG1taW8sMHhmZjVlMDAwMCwxMTUy
-MDBuOAotICogb3IgcGxhdGZvcm0gY29kZSBjYW4gY2FsbCBlYXJseV91YXJ0X2NvbnNvbGVfaW5p
-dCgpIHRvIHNldAotICogdGhlIGVhcmx5IFVBUlQgZGV2aWNlLgorICoJZWFybHljb249dWFydCxp
-bywweDNmOCw5NjAwbjgKKyAqCWVhcmx5Y29uPXVhcnQsbW1pbywweGZmNWUwMDAwLDExNTIwMG44
-CiAgKgotICogQWZ0ZXIgdGhlIG5vcm1hbCBzZXJpYWwgZHJpdmVyIHN0YXJ0cywgd2UgdHJ5IHRv
-IGxvY2F0ZSB0aGUKLSAqIG1hdGNoaW5nIHR0eVMgZGV2aWNlIGFuZCBzdGFydCBhIGNvbnNvbGUg
-dGhlcmUuCiAgKi8KIAogI2luY2x1ZGUgPGxpbnV4L3R0eS5oPgpAQCAtNDIsNyArMzgsNiBAQCBz
-dHJ1Y3QgZWFybHlfdWFydF9kZXZpY2UgewogfTsKIAogc3RhdGljIHN0cnVjdCBlYXJseV91YXJ0
-X2RldmljZSBlYXJseV9kZXZpY2UgX19pbml0ZGF0YTsKLXN0YXRpYyBpbnQgZWFybHlfdWFydF9y
-ZWdpc3RlcmVkIF9faW5pdGRhdGE7CiAKIHN0YXRpYyB1bnNpZ25lZCBpbnQgX19pbml0IHNlcmlh
-bF9pbihzdHJ1Y3QgdWFydF9wb3J0ICpwb3J0LCBpbnQgb2Zmc2V0KQogewpAQCAtMTc1LDYgKzE3
-MCwxMyBAQCBzdGF0aWMgaW50IF9faW5pdCBwYXJzZV9vcHRpb25zKHN0cnVjdCBlYXJseV91YXJ0
-X2RldmljZSAqZGV2aWNlLCBjaGFyICpvcHRpb25zKQogCXJldHVybiAwOwogfQogCitzdGF0aWMg
-c3RydWN0IGNvbnNvbGUgZWFybHlfdWFydF9jb25zb2xlIF9faW5pdGRhdGEgPSB7CisJLm5hbWUJ
-PSAidWFydCIsCisJLndyaXRlCT0gZWFybHlfdWFydF93cml0ZSwKKwkuZmxhZ3MJPSBDT05fUFJJ
-TlRCVUZGRVIsCisJLmluZGV4CT0gLTEsCit9OworCiBzdGF0aWMgaW50IF9faW5pdCBlYXJseV91
-YXJ0X3NldHVwKHN0cnVjdCBjb25zb2xlICpjb25zb2xlLCBjaGFyICpvcHRpb25zKQogewogCXN0
-cnVjdCBlYXJseV91YXJ0X2RldmljZSAqZGV2aWNlID0gJmVhcmx5X2RldmljZTsKQEAgLTE5MCw2
-MSArMTkyLDQxIEBAIHN0YXRpYyBpbnQgX19pbml0IGVhcmx5X3VhcnRfc2V0dXAoc3RydWN0IGNv
-bnNvbGUgKmNvbnNvbGUsIGNoYXIgKm9wdGlvbnMpCiAJcmV0dXJuIDA7CiB9CiAKLXN0YXRpYyBz
-dHJ1Y3QgY29uc29sZSBlYXJseV91YXJ0X2NvbnNvbGUgX19pbml0ZGF0YSA9IHsKLQkubmFtZQk9
-ICJ1YXJ0IiwKLQkud3JpdGUJPSBlYXJseV91YXJ0X3dyaXRlLAotCS5zZXR1cAk9IGVhcmx5X3Vh
-cnRfc2V0dXAsCi0JLmZsYWdzCT0gQ09OX1BSSU5UQlVGRkVSLAotCS5pbmRleAk9IC0xLAotfTsK
-LQotc3RhdGljIGludCBfX2luaXQgZWFybHlfdWFydF9jb25zb2xlX2luaXQodm9pZCkKLXsKLQlp
-ZiAoIWVhcmx5X3VhcnRfcmVnaXN0ZXJlZCkgewotCQlyZWdpc3Rlcl9jb25zb2xlKCZlYXJseV91
-YXJ0X2NvbnNvbGUpOwotCQllYXJseV91YXJ0X3JlZ2lzdGVyZWQgPSAxOwotCX0KLQlyZXR1cm4g
-MDsKLX0KLWNvbnNvbGVfaW5pdGNhbGwoZWFybHlfdWFydF9jb25zb2xlX2luaXQpOwotCi1pbnQg
-X19pbml0IGVhcmx5X3NlcmlhbF9jb25zb2xlX2luaXQoY2hhciAqY21kbGluZSkKK3N0YXRpYyBp
-bnQgX19pbml0IHNldHVwX2Vhcmx5X3NlcmlhbF9jb25zb2xlKGNoYXIgKmNtZGxpbmUpCiB7CiAJ
-Y2hhciAqb3B0aW9uczsKIAlpbnQgZXJyOwogCi0Jb3B0aW9ucyA9IHN0cnN0cihjbWRsaW5lLCAi
-Y29uc29sZT11YXJ0LCIpOworCW9wdGlvbnMgPSBzdHJzdHIoY21kbGluZSwgInVhcnQsIik7CiAJ
-aWYgKCFvcHRpb25zKQogCQlyZXR1cm4gLUVOT0RFVjsKIAogCW9wdGlvbnMgPSBzdHJjaHIoY21k
-bGluZSwgJywnKSArIDE7CiAJaWYgKChlcnIgPSBlYXJseV91YXJ0X3NldHVwKE5VTEwsIG9wdGlv
-bnMpKSA8IDApCiAJCXJldHVybiBlcnI7Ci0JcmV0dXJuIGVhcmx5X3VhcnRfY29uc29sZV9pbml0
-KCk7CisKKwlyZWdpc3Rlcl9jb25zb2xlKCZlYXJseV91YXJ0X2NvbnNvbGUpOworCWVhcmx5X3Vh
-cnRfY29uc29sZS5mbGFncyB8PSBDT05fQk9PVDsKKwlyZXR1cm4gMDsKIH0KIAotc3RhdGljIGlu
-dCBfX2luaXQgZWFybHlfdWFydF9jb25zb2xlX3N3aXRjaCh2b2lkKQorZWFybHlfcGFyYW0oImVh
-cmx5Y29uIiwgc2V0dXBfZWFybHlfc2VyaWFsX2NvbnNvbGUpOworCitzdGF0aWMgaW50IF9faW5p
-dCBlYXJseV91YXJ0X2NvbnNvbGVfcG9zdCh2b2lkKQogewogCXN0cnVjdCBlYXJseV91YXJ0X2Rl
-dmljZSAqZGV2aWNlID0gJmVhcmx5X2RldmljZTsKIAlzdHJ1Y3QgdWFydF9wb3J0ICpwb3J0ID0g
-JmRldmljZS0+cG9ydDsKLQlpbnQgbW1pbywgbGluZTsKKwlpbnQgbW1pbzsKIAogCWlmICghKGVh
-cmx5X3VhcnRfY29uc29sZS5mbGFncyAmIENPTl9FTkFCTEVEKSkKIAkJcmV0dXJuIDA7CiAKLQkv
-KiBUcnkgdG8gc3RhcnQgdGhlIG5vcm1hbCBkcml2ZXIgb24gYSBtYXRjaGluZyBsaW5lLiAgKi8K
-IAltbWlvID0gKHBvcnQtPmlvdHlwZSA9PSBVUElPX01FTSk7Ci0JbGluZSA9IHNlcmlhbDgyNTBf
-c3RhcnRfY29uc29sZShwb3J0LCBkZXZpY2UtPm9wdGlvbnMpOwotCWlmIChsaW5lIDwgMCkKLQkJ
-cHJpbnRrKCJObyB0dHlTIGRldmljZSBhdCAlcyAweCVseCBmb3IgY29uc29sZVxuIiwKLQkJCW1t
-aW8gPyAiTU1JTyIgOiAiSS9PIHBvcnQiLAotCQkJbW1pbyA/IHBvcnQtPm1hcGJhc2UgOgotCQkJ
-ICAgICh1bnNpZ25lZCBsb25nKSBwb3J0LT5pb2Jhc2UpOwotCi0JdW5yZWdpc3Rlcl9jb25zb2xl
-KCZlYXJseV91YXJ0X2NvbnNvbGUpOworCiAJaWYgKG1taW8pCiAJCWlvdW5tYXAocG9ydC0+bWVt
-YmFzZSk7CiAKIAlyZXR1cm4gMDsKIH0KLWxhdGVfaW5pdGNhbGwoZWFybHlfdWFydF9jb25zb2xl
-X3N3aXRjaCk7CisKK2xhdGVfaW5pdGNhbGwoZWFybHlfdWFydF9jb25zb2xlX3Bvc3QpOwpkaWZm
-IC0tZ2l0IGEvaW5jbHVkZS9saW51eC9zZXJpYWwuaCBiL2luY2x1ZGUvbGludXgvc2VyaWFsLmgK
-aW5kZXggMzNmYzhjYi4uZGViNzE0MyAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9zZXJpYWwu
-aAorKysgYi9pbmNsdWRlL2xpbnV4L3NlcmlhbC5oCkBAIC0xNzcsMTEgKzE3Nyw1IEBAIHN0cnVj
-dCBzZXJpYWxfaWNvdW50ZXJfc3RydWN0IHsKICNpZmRlZiBfX0tFUk5FTF9fCiAjaW5jbHVkZSA8
-bGludXgvY29tcGlsZXIuaD4KIAotLyogQWxsb3cgYXJjaGl0ZWN0dXJlcyB0byBvdmVycmlkZSBl
-bnRyaWVzIGluIHNlcmlhbDgyNTBfcG9ydHNbXSBhdCBydW4gdGltZTogKi8KLXN0cnVjdCB1YXJ0
-X3BvcnQ7CS8qIGZvcndhcmQgZGVjbGFyYXRpb24gKi8KLWV4dGVybiBpbnQgZWFybHlfc2VyaWFs
-X3NldHVwKHN0cnVjdCB1YXJ0X3BvcnQgKnBvcnQpOwotZXh0ZXJuIGludCBlYXJseV9zZXJpYWxf
-Y29uc29sZV9pbml0KGNoYXIgKm9wdGlvbnMpOwotZXh0ZXJuIGludCBzZXJpYWw4MjUwX3N0YXJ0
-X2NvbnNvbGUoc3RydWN0IHVhcnRfcG9ydCAqcG9ydCwgY2hhciAqb3B0aW9ucyk7Ci0KICNlbmRp
-ZiAvKiBfX0tFUk5FTF9fICovCiAjZW5kaWYgLyogX0xJTlVYX1NFUklBTF9IICovCg==
-------=_Part_46315_19915990.1179420884381--
+Of course, whining is useless, and discussions on lkml tend to be
+most constructive / progressive only over code, so I'll try and see
+if I can learn enough of the code in there to fix a patch to do the
+async scan waiting thing using some other mechanism; this
+module thing seems just horribly wrong/unnecessary.
