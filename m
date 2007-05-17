@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbXEQBzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbXEQBzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759780AbXEQBzi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 21:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757793AbXEQBzc
+	id S1761417AbXEQBzv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 21:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757793AbXEQBzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 21:55:32 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:33474 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756382AbXEQBzb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 21:55:31 -0400
-Message-ID: <464BB60B.8060207@zytor.com>
-Date: Wed, 16 May 2007 18:55:23 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Christian <haveaniceday@cv-sv.de>,
-       linux-kernel@vger.kernel.org, ak@suse.de
-Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64
-References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <464BACCC.7070504@zytor.com>
-In-Reply-To: <464BACCC.7070504@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 21:55:42 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:48502 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760193AbXEQBzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 21:55:41 -0400
+Message-Id: <200705170154.l4H1sO07018316@sous-sol.org>
+Subject: patch jfs-fix-race-waking-up-jfsio-kernel-thread.patch queued to 2.6.21-stable tree
+To: shaggy@linux.vnet.ibm.com, chrisw@sous-sol.org,
+       linux-kernel@vger.kernel.org
+Cc: stable@kernel.org
+From: chrisw@sous-sol.org
+Date: Wed, 16 May 2007 18:54:23 -0700
+In-Reply-To: <1179287616.8339.8.camel@kleikamp.austin.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> 
-> Andi added code to verify that we can actually execute on the processor
-> before protected mode (so we can still get a message out through the
-> BIOS.)  That code presumably doesn't know of the MSR that needs to be
-> touched.
-> 
-> That code is in assembly in Andi's version, my rewritten version has it
-> in C.  I should add this code.
-> 
 
-The newsetup tree now has code to unmask features on VIA and Transmeta
-(as well as AMD, which was already in there):
+This is a note to let you know that we have just queued up the patch titled
 
-http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-newsetup.git;a=commitdiff;h=c9cf55604433b386d0b499ed7bed654fd01c3be2
+     Subject: JFS: Fix race waking up jfsIO kernel thread
 
-	-hpa
+to the 2.6.21-stable tree.  Its filename is
+
+     jfs-fix-race-waking-up-jfsio-kernel-thread.patch
+
+A git repo of this tree can be found at 
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+
+>From stable-bounces@linux.kernel.org  Tue May 15 20:55:43 2007
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: stable@kernel.org
+Date: Tue, 15 May 2007 22:53:36 -0500
+Message-Id: <1179287616.8339.8.camel@kleikamp.austin.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: JFS: Fix race waking up jfsIO kernel thread
+
+It's possible for a journal I/O request to be added to the log_redrive
+queue and the jfsIO thread to be awakened after the thread releases
+log_redrive_lock but before it sets its state to TASK_INTERRUPTIBLE.
+
+The jfsIO thread should set the state before giving up the spinlock, so
+the waking thread will really wake it.
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ fs/jfs/jfs_logmgr.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-2.6.21.1.orig/fs/jfs/jfs_logmgr.c
++++ linux-2.6.21.1/fs/jfs/jfs_logmgr.c
+@@ -2354,12 +2354,13 @@ int jfsIOWait(void *arg)
+ 			lbmStartIO(bp);
+ 			spin_lock_irq(&log_redrive_lock);
+ 		}
+-		spin_unlock_irq(&log_redrive_lock);
+ 
+ 		if (freezing(current)) {
++			spin_unlock_irq(&log_redrive_lock);
+ 			refrigerator();
+ 		} else {
+ 			set_current_state(TASK_INTERRUPTIBLE);
++			spin_unlock_irq(&log_redrive_lock);
+ 			schedule();
+ 			current->state = TASK_RUNNING;
+ 		}
+
+
+Patches currently in stable-queue which might be from shaggy@linux.vnet.ibm.com are
+
+queue-2.6.21/jfs-fix-race-waking-up-jfsio-kernel-thread.patch
