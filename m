@@ -1,127 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbXEQUJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbXEQUKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759541AbXEQUJg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbXEQUJ1
+	id S1760526AbXEQUKS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbXEQUKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:09:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:47227 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756685AbXEQUJ0 (ORCPT
+	Thu, 17 May 2007 16:10:06 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:54819 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756287AbXEQUKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:09:26 -0400
+	Thu, 17 May 2007 16:10:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type;
-        b=LBEg26mBlDhdZ+qR8TkpkAJ+H9MQ744D3fb36Mrg0CNJmhYlaQfh84oDxU2CBVF3uH1/uKa8P/YHb6OoI37r0pLeBkRv4ORa3jXgriz5IFgSdxGEELkpATwQaOCs7taswQTDO/cj3FgQxl2JjNCBcln+LzK/PqDoLgfQlXp2vBE=
-Message-ID: <464CB66A.8020506@gmail.com>
-Date: Thu, 17 May 2007 22:09:14 +0200
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tfrFbrg+XR5HM36ZOrY/ELR+K260vagzK6fS2WcnO0GRVccZ9iA4jKKR3szD27jSqmUXPOoKiCDs/iliZ+JLXYt6ZbtY0zYspa+/YfLm/fz6TITNi+x1jKZNEIY2OmjN6Op2D8fpqN08M28pnYq/xxwPbSF+0QxTqgluqTpA95w=
+Message-ID: <4354d3270705171310x1d7770b2mb086f1fde7cffabd@mail.gmail.com>
+Date: Thu, 17 May 2007 20:10:01 +0000
+From: "=?ISO-8859-1?Q?T=F6r=F6k_Edvin?=" <edwintorok@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: CFS Scheduler and real-time tasks
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20070517192343.GA24249@elte.hu>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Pavel Machek <pavel@ucw.cz>, Chuck Ebbert <cebbert@redhat.com>,
-       len.brown@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <20070517092318.GD3975@ucw.cz> <464C5A62.6060604@gmail.com> <200705171508.40202.lenb@kernel.org>
-In-Reply-To: <200705171508.40202.lenb@kernel.org>
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms010306050406070103050904"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4354d3270705171214v25bc4834t5e28a08649761e91@mail.gmail.com>
+	 <20070517192343.GA24249@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a cryptographically signed message in MIME format.
+On 5/17/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> note: you ran it on a dual-core system and the SMP load-balancer needs
+> time to gain precision in the non-RT test - so i'd suggest to test it
+> much longer than 10 seconds: 300 seconds at least.
 
---------------ms010306050406070103050904
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Thanks, running for 300 seconds shows only a 2% error.
+Even running a I/O workload while running the massive_intr test keeps
+the same error.
+BTW, the system is more 'responsive'. For example starting
+applications while running the tests, switching windows, moving
+windows is much "smoother" than on default scheduler.
 
-Len Brown pisze:
+[while true;do cp /usr/portage/distfiles/linux-2.6.21.tar.bz2 . &&
+sync && rm linux-2.6.21.tar.bz2 && sync; done]
 
-> What bad things happen if you leave the critical trip point at 256?
-> Do you find that you can drive the temperature over 105 and
-> the system fails to shut down?
-> 
-> -Len
-> 
-> 
+./massiv_new 9 300
+020860  00017782
+020858  00017774
 
-It isn't problem in this case (nx6310). But on hp nc nc6220 first trip
-point is at 30 *C, so fan is usually on (noise, power consumption).
+RT JOB:020865   00003785
 
--- 
-Maciej Rutecki
-www.unixy.pl
-Kernel Monkeys
-(http://kernel.wikidot.com/)
+020859  00017048
+020862  00017387
+020855  00017494
+020861  00017245
+020863  00017492
+020864  00017122
 
 
---------------ms010306050406070103050904
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIJHzCC
-AuowggJToAMCAQICEE6xoJMcyW54m7Gt6FEjF3swDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UE
-BhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMT
-I1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA2MDgyODEyMzAwNloX
-DTA3MDgyODEyMzAwNlowSjEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEnMCUG
-CSqGSIb3DQEJARYYbWFjaWVqLnJ1dGVja2lAZ21haWwuY29tMIIBIjANBgkqhkiG9w0BAQEF
-AAOCAQ8AMIIBCgKCAQEAxmrZ/vMNBQsTG+9oNg9WeFTNtluscxhg5oBwudmsZhsoDdtQYPlK
-ZsRSZnkKTdEWR9w8dwi0JBxmq1XHumBA6/rFfAfhbOV1SBH3ktZ9foamMjpJTjO3+3gF9ocT
-wj1GzfReeGZuPgr4qVVvOT5FfD/PkAJzvur7fyLnviiZokQz8R3c+VhJlW3HurhlOlK0ItUu
-UuVtCdJosQRepYdPQ6H3Mvn74UxVttDeVxWNlQ2DaS7cy8wTmtc5CTNMVctbJkzFz0a/7wCJ
-JHdmqKTgjMBm+ry/IC50jvwkLKAumSJBLWhoIB+LxkJlMwgn69jc0KJkrdkpsUjPdo+zDgff
-iQIDAQABozUwMzAjBgNVHREEHDAagRhtYWNpZWoucnV0ZWNraUBnbWFpbC5jb20wDAYDVR0T
-AQH/BAIwADANBgkqhkiG9w0BAQUFAAOBgQC2O4xAuM7DplCDsgJuaMKz3uR25rq9ucMqVtCW
-CAfCyORrFaxN8LFF9KcYx6M4AK1fQ36JVPtMER2VzGMF74gXgrFQ4A9tno6rKzi/QpzwWoPE
-4I1hcOKz/YxOK0sRjSDR3p5s2XrKVxgUe+TEeJ6/y1iv52o41oYVmilsUovvHzCCAuowggJT
-oAMCAQICEE6xoJMcyW54m7Gt6FEjF3swDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UEBhMCWkEx
-JTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0
-ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA2MDgyODEyMzAwNloXDTA3MDgy
-ODEyMzAwNlowSjEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEnMCUGCSqGSIb3
-DQEJARYYbWFjaWVqLnJ1dGVja2lAZ21haWwuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
-MIIBCgKCAQEAxmrZ/vMNBQsTG+9oNg9WeFTNtluscxhg5oBwudmsZhsoDdtQYPlKZsRSZnkK
-TdEWR9w8dwi0JBxmq1XHumBA6/rFfAfhbOV1SBH3ktZ9foamMjpJTjO3+3gF9ocTwj1GzfRe
-eGZuPgr4qVVvOT5FfD/PkAJzvur7fyLnviiZokQz8R3c+VhJlW3HurhlOlK0ItUuUuVtCdJo
-sQRepYdPQ6H3Mvn74UxVttDeVxWNlQ2DaS7cy8wTmtc5CTNMVctbJkzFz0a/7wCJJHdmqKTg
-jMBm+ry/IC50jvwkLKAumSJBLWhoIB+LxkJlMwgn69jc0KJkrdkpsUjPdo+zDgffiQIDAQAB
-ozUwMzAjBgNVHREEHDAagRhtYWNpZWoucnV0ZWNraUBnbWFpbC5jb20wDAYDVR0TAQH/BAIw
-ADANBgkqhkiG9w0BAQUFAAOBgQC2O4xAuM7DplCDsgJuaMKz3uR25rq9ucMqVtCWCAfCyORr
-FaxN8LFF9KcYx6M4AK1fQ36JVPtMER2VzGMF74gXgrFQ4A9tno6rKzi/QpzwWoPE4I1hcOKz
-/YxOK0sRjSDR3p5s2XrKVxgUe+TEeJ6/y1iv52o41oYVmilsUovvHzCCAz8wggKooAMCAQIC
-AQ0wDQYJKoZIhvcNAQEFBQAwgdExCzAJBgNVBAYTAlpBMRUwEwYDVQQIEwxXZXN0ZXJuIENh
-cGUxEjAQBgNVBAcTCUNhcGUgVG93bjEaMBgGA1UEChMRVGhhd3RlIENvbnN1bHRpbmcxKDAm
-BgNVBAsTH0NlcnRpZmljYXRpb24gU2VydmljZXMgRGl2aXNpb24xJDAiBgNVBAMTG1RoYXd0
-ZSBQZXJzb25hbCBGcmVlbWFpbCBDQTErMCkGCSqGSIb3DQEJARYccGVyc29uYWwtZnJlZW1h
-aWxAdGhhd3RlLmNvbTAeFw0wMzA3MTcwMDAwMDBaFw0xMzA3MTYyMzU5NTlaMGIxCzAJBgNV
-BAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQD
-EyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQTCBnzANBgkqhkiG9w0BAQEF
-AAOBjQAwgYkCgYEAxKY8VXNV+065yplaHmjAdQRwnd/p/6Me7L3N9VvyGna9fww6YfK/Uc4B
-1OVQCjDXAmNaLIkVcI7dyfArhVqqP3FWy688Cwfn8R+RNiQqE88r1fOCdz0Dviv+uxg+B79A
-gAJk16emu59l0cUqVIUPSAR/p7bRPGEEQB5kGXJgt/sCAwEAAaOBlDCBkTASBgNVHRMBAf8E
-CDAGAQH/AgEAMEMGA1UdHwQ8MDowOKA2oDSGMmh0dHA6Ly9jcmwudGhhd3RlLmNvbS9UaGF3
-dGVQZXJzb25hbEZyZWVtYWlsQ0EuY3JsMAsGA1UdDwQEAwIBBjApBgNVHREEIjAgpB4wHDEa
-MBgGA1UEAxMRUHJpdmF0ZUxhYmVsMi0xMzgwDQYJKoZIhvcNAQEFBQADgYEASIzRUIPqCy7M
-DaNmrGcPf6+svsIXoUOWlJ1/TCG4+DYfqi2fNi/A9BxQIJNwPP2t4WFiw9k6GX6EsZkbAMUa
-C4J0niVQlGLH2ydxVyWN3amcOY6MIE9lX5Xa9/eH1sYITq726jTlEBpbNU1341YheILcIRk1
-3iSx0x1G/11fZU8xggNkMIIDYAIBATB2MGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3
-dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJl
-ZW1haWwgSXNzdWluZyBDQQIQTrGgkxzJbnibsa3oUSMXezAJBgUrDgMCGgUAoIIBwzAYBgkq
-hkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0wNzA1MTcyMDA5MTRaMCMG
-CSqGSIb3DQEJBDEWBBRBcert1leUfZOe+vAI8cBP59dFNTBSBgkqhkiG9w0BCQ8xRTBDMAoG
-CCqGSIb3DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMCBzANBggq
-hkiG9w0DAgIBKDCBhQYJKwYBBAGCNxAEMXgwdjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMc
-VGhhd3RlIENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFs
-IEZyZWVtYWlsIElzc3VpbmcgQ0ECEE6xoJMcyW54m7Gt6FEjF3swgYcGCyqGSIb3DQEJEAIL
-MXigdjBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1bHRpbmcgKFB0eSkg
-THRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElzc3VpbmcgQ0ECEE6x
-oJMcyW54m7Gt6FEjF3swDQYJKoZIhvcNAQEBBQAEggEABoxoAAhNlXEaLB9pqA/+75cjf0h9
-7q8NQxLWrXgI4G3tXQALmxdb8rk0HqFhCyTqKDhsEmUTTaumB3Nf9giron4GoF0GN02XGJJ6
-Mg0PyD8ehZoviKpStttbAV79uTJ6WYePzqubxdeUVGOSowcOi4Ydg3lo3yZi9mYxA/6xaT9I
-cGxYlthdruL1lc5n7Uh0R0QIJ554LhrudwXyI2Du7loDWFDCpxf7mNiP541uZkxfv17avIEZ
-AKRIUgKhk7NUI4INDYczhEadhR/O8dKHsbO3JiyaktofiueuqpzZgQ/1v66WvGUwfCzWC115
-6SS/YhUGEwLG4e0VUJoOjRPIggAAAAAAAA==
---------------ms010306050406070103050904--
+Best regards,
+Edwin
