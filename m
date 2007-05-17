@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbXEQSYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbXEQSZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760652AbXEQSYo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbXEQSYc
+	id S1760836AbXEQSZS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbXEQSZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:24:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50486 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756616AbXEQSYa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:24:30 -0400
-Date: Thu, 17 May 2007 19:24:14 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: Asynchronous scsi scanning
-Message-ID: <20070517182414.GA12170@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Satyam Sharma <satyam.sharma@gmail.com>,
-	Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
-	James Bottomley <james.bottomley@steeleye.com>,
-	Dave Jones <davej@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-	"Robert P. J. Day" <rpjday@mindspring.com>
-References: <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk> <20070515172905.GJ10562@parisc-linux.org> <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com> <20070516025121.GK10562@parisc-linux.org> <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com> <20070517172023.GL10562@parisc-linux.org> <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com>
+	Thu, 17 May 2007 14:25:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48160 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756275AbXEQSY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 14:24:59 -0400
+Date: Thu, 17 May 2007 14:23:40 -0400
+From: Dave Jones <davej@redhat.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Daniel Drake <dsd@gentoo.org>, duaneg@dghda.com, prakash@punnoor.de,
+       jhoblitt@ifa.hawaii.edu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powernow-k8: depend on acpi-processor for SMP systems
+Message-ID: <20070517182340.GA25691@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Len Brown <lenb@kernel.org>, Daniel Drake <dsd@gentoo.org>,
+	duaneg@dghda.com, prakash@punnoor.de, jhoblitt@ifa.hawaii.edu,
+	linux-kernel@vger.kernel.org
+References: <20070516235050.9B4237B409F@zog.reactivated.net> <200705171413.42595.lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com>
+In-Reply-To: <200705171413.42595.lenb@kernel.org>
 User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 11:11:10PM +0530, Satyam Sharma wrote:
-> Another command to /proc/scsi/scsi isn't a bad thought at all, considering
+On Thu, May 17, 2007 at 02:13:42PM -0400, Len Brown wrote:
 
-Yes it is.  /proc/scsi/scsi is a horrible interface and deprecated since
-the start of the 2.6 series.
+ > > Index: linux/arch/i386/kernel/cpu/cpufreq/Kconfig
+ > > ===================================================================
+ > > --- linux.orig/arch/i386/kernel/cpu/cpufreq/Kconfig
+ > > +++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig
+ > > @@ -81,6 +81,7 @@ config X86_POWERNOW_K7_ACPI
+ > >  config X86_POWERNOW_K8
+ > >  	tristate "AMD Opteron/Athlon64 PowerNow!"
+ > >  	select CPU_FREQ_TABLE
+ > > +	select ACPI_PROCESSOR if SMP
+ > >  	depends on EXPERIMENTAL
+ > >  	help
+ > >  	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
+ > 
+ > Unfortunately this patch will not actually enable ACPI_PROCESSOR in
+ > the SMP=y ACPI=n case.  "select" doesn't work for targets that
+ > have dependencies.
 
+I don't think we can fix this perfectly tbh, but the above at
+least gets us close for the majority of users.
+
+Are there many x86-64 users that don't enable acpi ?
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
