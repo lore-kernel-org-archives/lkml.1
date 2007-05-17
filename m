@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbXEQTT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbXEQTTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758607AbXEQTT1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 15:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755874AbXEQTTT
+	id S1760157AbXEQTTm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 15:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759149AbXEQTTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 15:19:19 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:52263 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755492AbXEQTTT (ORCPT
+	Thu, 17 May 2007 15:19:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51786 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758929AbXEQTT3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 15:19:19 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
+	Thu, 17 May 2007 15:19:29 -0400
+Date: Thu, 17 May 2007 12:19:26 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Frank Sorenson <frank@tuxrocks.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
-	 <1179385718.27354.17.camel@twins>
-	 <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-	 <20070517175327.GX11115@waste.org>
-	 <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Thu, 17 May 2007 21:18:19 +0200
-Message-Id: <1179429499.2925.26.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+       Alistair John Strachan <s0348365@sms.ed.ac.uk>
+Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v5
+In-Reply-To: <464CA90B.20100@tuxrocks.com>
+Message-ID: <Pine.LNX.4.64.0705171219140.3043@schroedinger.engr.sgi.com>
+References: <1178485128.31213.98.camel@localhost.localdomain>
+ <1179309789.3764.20.camel@chaos> <464B5FF7.5070701@tuxrocks.com>
+ <464BD945.2070007@tuxrocks.com> <464CA90B.20100@tuxrocks.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 11:02 -0700, Christoph Lameter wrote:
-> On Thu, 17 May 2007, Matt Mackall wrote:
+On Thu, 17 May 2007, Frank Sorenson wrote:
+
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> > Simply stated, the problem is sometimes it's impossible to free memory
-> > without allocating more memory. Thus we must keep enough protected
-> > reserve that we can guarantee progress. This is what mempools are for
-> > in the regular I/O stack. Unfortunately, mempools are a bad match for
-> > network I/O.
-> > 
-> > It's absolutely correct that performance doesn't matter in the case
-> > this patch is addressing. All that matters is digging ourselves out of
-> > OOM. The box either survives the crisis or it doesn't.
+> Frank Sorenson wrote:
 > 
-> Well we fail allocations in order to do so and these allocations may be 
-> even nonatomic allocs. Pretty dangerous approach.
-
-These allocations didn't have right to the memory they would otherwise
-get. Also they will end up in the page allocator just like they normally
-would. So from that point, its no different than what happens now; only
-they will not eat away the very last bit of memory that could be used to
-avoid deadlocking.
-
-> > It's also correct that we should hardly ever get into a situation
-> > where we trigger this problem. But such cases are still fairly easy to
-> > trigger in some workloads. Swap over network is an excellent example,
-> > because we typically don't start swapping heavily until we're quite
-> > low on freeable memory.
+> > Hrm.  Looks like it gets past the hpet_is_known  There's still something
+> > in the hpet detection code, but I didn't get to the bottom of it yet.
+> > I'll do some more debugging to track down where it's really hanging.
+> > Sorry for the noise.
 > 
-> Is it not possible to avoid failing allocs? Instead put processes to 
-> sleep? Run synchrononous reclaim?
+> I've tracked down this hang to a kzalloc in the hpet code that never
+> returns.  But only when using SLUB.  Using SLAB, the highres/dyntick
+> patch boots without problem.
+> 
+> ...adding Christoph to the CC list...
 
-That would radically change the way we do reclaim and would be much
-harder to get right. Such things could be done independant from this.
-
-The proposed patch doesn't change how the kernel functions at this
-point; it just enforces an existing rule better.
-
-
+Please boot with slub_debug.
 
