@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbXEQKwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbXEQLKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbXEQKwt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 06:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXEQKwm
+	id S1756056AbXEQLKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 07:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbXEQLK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 06:52:42 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:42635 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755157AbXEQKwl (ORCPT
+	Thu, 17 May 2007 07:10:29 -0400
+Received: from c2bthomr04.btconnect.com ([213.123.20.136]:13737 "EHLO
+	c2bthomr04.btconnect.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754866AbXEQLK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 06:52:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=mebmgFyclP3XfHvw+n16RzVV5Le+80jKzPPfEzfGZ2D1K3cXhC2W9SJhbCEcKfi9LtOrg30mfo3gilrK0pdDMXyUH1hLPuWylLv0sorw6yixzdNEyKp7tAz5sMrLtIqk6/NuJPglOec526pYDyzPt1jVTz8FDTR1/gar7CMwjWE=
-Subject: Re: [Linux-fbdev-devel] [PATCH 10/10] [HEADS UP] fbdev: Move
-	arch-specific bits to their respective subdirectories
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       uClinux list <uclinux-dev@uclinux.org>
-In-Reply-To: <Pine.LNX.4.64.0705171140230.20754@anakin>
-References: <464B78BC.4080900@gmail.com>
-	 <Pine.LNX.4.64.0705171140230.20754@anakin>
-Content-Type: text/plain
-Date: Thu, 17 May 2007 18:52:32 +0800
-Message-Id: <1179399152.4586.13.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Thu, 17 May 2007 07:10:28 -0400
+Message-ID: <464C380E.6080604@onelan.co.uk>
+Date: Thu, 17 May 2007 12:10:06 +0100
+From: Barry Scott <barry.scott@onelan.co.uk>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Barry Scott <barry.scott@onelan.co.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Opss: 2.6.21-1.3116.ONELAN Kernel last sysfs file: /class/vc/vcsa7/dev
+References: <46483868.5040106@onelan.co.uk> <6bffcb0e0705140340m228e8e62n5053db88deadf5fd@mail.gmail.com> <20070514190825.GD29024@redhat.com>
+In-Reply-To: <20070514190825.GD29024@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Junkmail-Status: score=10/50, host=c2bthomr04.btconnect.com
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A090201.464C3817.00D0,ss=1,fgs=0,
+	ip=217.35.101.6,
+	so=2006-12-09 10:45:40,
+	dmn=5.3.10/2007-02-21
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 11:43 +0200, Geert Uytterhoeven wrote:
-> On Thu, 16 May 2007, Antonino A. Daplas wrote:
-> > diff --git a/include/asm-m68k/fb.h b/include/asm-m68k/fb.h
-> > new file mode 100644
-> > index 0000000..7d4a28f
-> > --- /dev/null
-> > +++ b/include/asm-m68k/fb.h
-> > @@ -0,0 +1,28 @@
-> > +#ifndef _ASM_FB_H_
-> > +#define _ASM_FB_H_
-> > +
-> > +#include <linux/fs.h>
-> > +#include <asm/page.h>
-> > +#include <asm/setup.h>
-> > +
-> > +#ifdef CONFIG_SUN3
-> > +static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-> > +{
-> > +	pgprot_val(vma->vm_page_prot) |= SUN3_PAGE_NOCACHE;
-> > +}
-> > +#elif defined(CONFIG_MMU)
->    ^^^^^^^^^^^^^^^^^^^^^^^^^
-> This can be a plain `#else', as m68knommu hasn't been merged with m68k
-> (yet :-)
-> 
-> > +static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma)
-> > +	if (CPU_IS_020_OR_030)
-> > +		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE030;
-> > +	if (CPU_IS_040_OR_060) {
-> > +		pgprot_val(vma->vm_page_prot) &= _CACHEMASK040;
-> > +		/* Use no-cache mode, serialized */
-> > +		pgprot_val(vma->vm_page_prot) |= _PAGE_NOCACHE_S;
-> > +	}
-> > +}
-> > +#else
->    ^^^^^
-> So this branch can go away
-> 
-> > +#warning What do we have to do here??
-> > +#define fb_pgprotect(...) do {} while (0)
-> > +#endif /* CONFIG_SUN3 */
-> > +
-> > +#endif /* _ASM_FB_H_ */
-> > diff --git a/include/asm-m68knommu/fb.h b/include/asm-m68knommu/fb.h
-> > new file mode 100644
-> > index 0000000..dc9d1be
-> > --- /dev/null
-> > +++ b/include/asm-m68knommu/fb.h
-> > @@ -0,0 +1,7 @@
-> > +#ifndef _ASM_FB_H_
-> > +#define _ASM_FB_H_
-> > +
-> > +#warning What do we have to do here??
-> > +#define fb_pgprotect(...) do {} while (0)
-> > +
-> > +#endif /* _ASM_FB_H_ */
-> 
-> If the m68knommu case in fb_mmap() was empty before, it should be empty here
-> too, so I guess the warning can go away.
+Dave Jones wrote:
+> On Mon, May 14, 2007 at 12:40:48PM +0200, Michal Piotrowski wrote:
+>  > Hi Barry,
+>  > 
+>  > On 14/05/07, Barry Scott <barry.scott@onelan.co.uk> wrote:
+>  > > I'm testing the robustness of Xorg 1.3 server with intel 2.0 driver
+>  > > by restarting the X and a set of apps every 30 seconds. After
+>  > > about an hour this happened.
+>  > >
+>  > > 2.6.21-1.3116.ONELAN is the same as 2.6.21-1.3116 from FC7
+>  > > but with the spec file change so that we can run the kernel on an FC4
+>  > > system.
+>  > 
+>  > Ok, it's Fedora 7 kernel, so please visit
+>  > https://bugzilla.redhat.com/bugzilla/index.cgi
+>
+> For all intents and purposes here, that may as well be a vanilla 2.6.21.1
+> Reporting it there isn't going to get much more than a "*shrug* ask upstream"
+> from me.
+>
+>   
+Indeed I'm sure Fedora would point me here.
 
-Thanks. It's confusing when there's multiple directories for one
-architecture.
+Anyone have any idea what wrong?
 
-Tony
-
+Barry
 
