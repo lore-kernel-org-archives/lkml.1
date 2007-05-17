@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXEQUai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762008AbXEQUcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbXEQUai (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761212AbXEQUaI
+	id S1762008AbXEQUcg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756626AbXEQUca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:30:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56689
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758651AbXEQUaG (ORCPT
+	Thu, 17 May 2007 16:32:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55406 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755795AbXEQUc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:30:06 -0400
-Date: Thu, 17 May 2007 13:30:03 -0700 (PDT)
-Message-Id: <20070517.133003.63739733.davem@davemloft.net>
-To: adaplas@gmail.com
-Cc: hch@infradead.org, akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/10] [HEADS UP] fbdev: Move arch-specific bits to
- their respective subdirectories
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1179399082.4586.10.camel@daplas>
-References: <464B78BC.4080900@gmail.com>
-	<20070517094930.GA27627@infradead.org>
-	<1179399082.4586.10.camel@daplas>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 16:32:28 -0400
+Date: Thu, 17 May 2007 21:32:27 +0100 (BST)
+From: Artem Bityutskiy <dedekind@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+In-Reply-To: <20070517111838.842a29ca.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705172125080.16443@pentafluge.infradead.org>
+References: <20070517143200.GA30850@lst.de> <1179413443.3642.49.camel@sauron>
+ <20070517145653.GA968@lst.de> <1179414590.3642.69.camel@sauron>
+ <20070517102931.6bbbad1a.akpm@linux-foundation.org> <1179424006.3642.84.camel@sauron>
+ <20070517111838.842a29ca.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dedekind@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Date: Thu, 17 May 2007 18:51:22 +0800
+On Thu, 17 May 2007, Andrew Morton wrote:
+> Drat, and here was I hoping I'd lured you into implementing the generic
+> code.
 
-> On Thu, 2007-05-17 at 10:49 +0100, Christoph Hellwig wrote:
-> > On Thu, May 17, 2007 at 05:33:48AM +0800, Antonino A. Daplas wrote:
-> > > -#if defined(__sparc__) && !defined(__sparc_v9__)
-> > > -	/* Should never get here, all fb drivers should have their own
-> > > -	   mmap routines */
-> > > -	return -EINVAL;
-> > > -#else
-> > > -	/* !sparc32... */
-> > > +	if (fb_mmap_required())
-> > > +		return -EINVAL;
-> > > +
-> > 
-> > I don't like this bit.
-> 
-> Me too, actually. I did it this way because I don't want to deviate from
-> the old code too much. Since all sparc32 drivers are either linked to
-> sbuslib.c or has their own fb_mmap method, the above test is redundant. 
-> I'll leave the decision to remove the above test to David Miller.
+Well, I am really happy to contribute, but I am not a generic janitor like
+Cristoph, who (amaizingly) knows many differet kernel subsystems. I am 
+a specific developer and I would rather concentrate on the Flash file 
+system I am writing, and this will be my later contribution.
 
-Feel free to remove it.
+Artem.
