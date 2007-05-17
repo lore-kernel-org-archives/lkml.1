@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXEQDFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbXEQDG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760908AbXEQDFa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 23:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758584AbXEQDFY
+	id S1761239AbXEQDG5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 23:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbXEQDGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 23:05:24 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:47875
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758520AbXEQDFX (ORCPT
+	Wed, 16 May 2007 23:06:51 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:45579 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758584AbXEQDGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 23:05:23 -0400
-From: Rob Landley <rob@landley.net>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-Date: Wed, 16 May 2007 23:05:11 -0400
-User-Agent: KMail/1.9.1
-Cc: Tejun Heo <htejun@gmail.com>, Dave Jones <davej@redhat.com>,
-       Francesco Pretto <ceztko@gmail.com>, Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <200705161948.56497.rob@landley.net> <20070517005842.GC600@khazad-dum.debian.net>
-In-Reply-To: <20070517005842.GC600@khazad-dum.debian.net>
+	Wed, 16 May 2007 23:06:50 -0400
+Message-ID: <464BC67F.7080707@zytor.com>
+Date: Wed, 16 May 2007 20:05:35 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Christian <haveaniceday@cv-sv.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64
+References: <464B9D2C.7040704@cv-sv.de> <alpine.LFD.0.98.0705161750350.3890@woody.linux-foundation.org> <464BAF07.9020003@cv-sv.de> <alpine.LFD.0.98.0705161920410.3890@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705161920410.3890@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705162305.11755.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 May 2007 8:58 pm, Henrique de Moraes Holschuh wrote:
-> On Wed, 16 May 2007, Rob Landley wrote:
-> > Ok, so the change is to get shutdown to _stop_ doing something stupid 
-> > (spinning down the disk without first flushing the cache), and the correct 
-> > thing for shutdown to do is keep its' mitts off the thing and let the 
-kernel 
-> > power down the darn hardware?
+Linus Torvalds wrote:
 > 
-> Yes, for *all* SCSI disk devices, libata or not.
+> On Thu, 17 May 2007, Christian wrote:
+> 
+>> Linus Torvalds wrote:
+>>> Can you check? The Nehemian (C3-2) should be model 9 or greater.
+>> Yes, it's a Nehemiah
+> 
+> Ok. If so, we should blacklist both MCYRIXIII and MVIAC3_2, I suspect.
+> 
+>> lola:~ # cat /proc/cpuinfo
+>> flags           : fpu vme de pse tsc msr cx8 sep mtrr pge cmov pat mmx fxsr sse rng rng_en ace ace_en
+> 
+> However, it does seem to *claim* to support "cx8" aka cmpxchg8b. What's up 
+> with that?
 
-I realize that this time next year it won't be possible to use a ramdisk or a 
-network block device without going through the SCSI layer, but while it 
-remains an option I'm relishing _not_ using it, thanks.
+It gets turned on by the code in arch/i386/kernel/cpu.  It's just that
+the new code that Andi added runs during setup, i.e. in real mode, so
+*way* earlier than that.
 
-> But you need to detect if the kernel has proper SCSI device shutdown
-> support, because if it does not, you have to do a cache flush and spindown
-> on shutdown(8) if you can...
-
-Or (and this is just a thought), you could upgrade your kernel so it correctly 
-handles your hardware, treating this just like any other driver bug or other 
-lack of proper hardware support in the history of Linux.  (Back when APM 
-couldn't power off the machine at the end of the shutdown sequence, did we 
-modify shutdown to try to work around this, or did we fix it in the kernel so 
-it worked?)
-
-Why does everybody want to shoehorn everything through the SCSI layer, anyway?  
-Last I checked you didn't have to spin down a USB flash key.  If SATA is 
-SCSI, what the heck is SAS?  (Answer: a cynical marketing hack to bleed SCSI 
-bigots for the huge margins they've always been bled for.  But oh well.)  It 
-would be hilarious if I didn't have to put up with it renumbering my devices 
-and imposing requirements for hardware I haven't got on hardware I have 
-got...
-
-Rob
+	-hpa
