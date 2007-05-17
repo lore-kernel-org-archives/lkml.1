@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbXEQRp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbXEQRqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbXEQRp0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbXEQRpQ
+	id S1759351AbXEQRqX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXEQRqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:45:16 -0400
-Received: from h155.mvista.com ([63.81.120.155]:24913 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756524AbXEQRpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:45:15 -0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-To: tglx@linutronix.de, mingo@elte.hu
-Subject: [PATCH 2.6.21-rt2] PowerPC: enable HRT and dynticks support
-Date: Thu, 17 May 2007 21:46:46 +0400
-User-Agent: KMail/1.5
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	Thu, 17 May 2007 13:46:16 -0400
+Received: from hu-out-0506.google.com ([72.14.214.230]:43763 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755706AbXEQRqP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:46:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=kg//06rnKvbA8GJD2FI5eHvKTqeoOdAXxX8ipzGV3Mmv1uUnlBnLnZORqMOojbQvfHLnhoBqM4aB1HV6HhALT27BE9Wxw1cteN8g4yQZIGwOgfgKgviVvKZd8OP6cQXREfhxTeIeoJNSX/f54rqQHhRpvs81WYTZkMe3a2OZ5G0=
+Date: Thu, 17 May 2007 19:46:10 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot - crypto?
+Message-ID: <20070517174610.GA7486@dreamland.darkstar.lan>
+References: <d1af83620705100410n482f4f9h428b7cab5501d963@mail.gmail.com> <20070514173823.GA7137@dreamland.darkstar.lan> <20070515014344.GA8850@gondor.apana.org.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705172146.46769.sshtylyov@ru.mvista.com>
+In-Reply-To: <20070515014344.GA8850@gondor.apana.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable HRT and dynamic ticks support for PowerPC.
+Il Tue, May 15, 2007 at 11:43:44AM +1000, Herbert Xu ha scritto: 
+> On Mon, May 14, 2007 at 07:38:23PM +0200, Luca Tettamanti wrote:
+> > I'm running git 705962cc (which is a commit after -rc1) and I still see
+> > the OOPS on boot. The patch above is already applied though. Note that
+> > I'm using the SLAB allocator:
+> > 
+> > CONFIG_SLAB=y
+> > # CONFIG_SLUB is not set
+> > # CONFIG_SLOB is not set
+> > 
+> > 
+> > Ending clean XFS mount for filesystem: dm-4
+> > BUG: unable to handle kernel paging request at virtual address 6b6b6ceb
+> 
+> Please send me your .config file.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+It seems that build system was confused... I've checked the timestamps
+of *.o files and make didn't rebuild anything, but rebuilding after a
+'make clean' did "fix" the problem. Sorry for the noise...
 
----
-This patch has been reworked against the 2.6.21 clockevents framework.
-It has only been tested on the Book E 32-bit CPU this time, so re-testing on
-"classic" PowerPC CPUs is needed (there have been issues as of 2.6.18-rt7 but
-those should now be fixed)...
-
- arch/powerpc/Kconfig       |    1 +
- arch/powerpc/kernel/idle.c |    3 +++
- 2 files changed, 4 insertions(+)
-
-Index: linux-2.6/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/Kconfig
-+++ linux-2.6/arch/powerpc/Kconfig
-@@ -770,6 +770,7 @@ config GENERIC_CLOCKEVENTS
- 	  NOTE: This is not compatible with the deterministic time accounting
- 	  option on PPC64.
- 
-+source kernel/time/Kconfig
- source kernel/Kconfig.preempt
- 
- config RWSEM_GENERIC_SPINLOCK
-Index: linux-2.6/arch/powerpc/kernel/idle.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/idle.c
-+++ linux-2.6/arch/powerpc/kernel/idle.c
-@@ -24,6 +24,7 @@
- #include <linux/smp.h>
- #include <linux/cpu.h>
- #include <linux/sysctl.h>
-+#include <linux/tick.h>
- 
- #include <asm/system.h>
- #include <asm/processor.h>
-@@ -56,6 +57,7 @@ void cpu_idle(void)
- 
- 	set_thread_flag(TIF_POLLING_NRFLAG);
- 	while (1) {
-+		tick_nohz_stop_sched_tick();
- 		while (!need_resched() && !need_resched_delayed() &&
- 				!cpu_should_die()) {
- 			ppc64_runlatch_off();
-@@ -92,6 +94,7 @@ void cpu_idle(void)
- 		ppc64_runlatch_on();
- 		if (cpu_should_die())
- 			cpu_die();
-+		tick_nohz_restart_sched_tick();
- 		__preempt_enable_no_resched();
- 		schedule();
- 		preempt_disable();
-
+Luca
+-- 
+Mi piace avere amici rispettabili;
+Mi piace essere il peggiore della compagnia.
