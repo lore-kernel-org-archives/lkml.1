@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbXEQRl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbXEQRln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759631AbXEQRl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbXEQRlH
+	id S1758184AbXEQRln (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759314AbXEQRlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:41:07 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:35063 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758752AbXEQRlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:41:05 -0400
-Date: Thu, 17 May 2007 19:26:07 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-Subject: Re: [PATCH] LogFS take three
-In-Reply-To: <20070516000630.GD1220@lazybastard.org>
-Message-ID: <Pine.LNX.4.61.0705171920330.3231@yvahk01.tjqt.qr>
-References: <20070515151919.GA32510@lazybastard.org>
- <20070515133759.9ee434a2.akpm@linux-foundation.org> <20070516000630.GD1220@lazybastard.org>
+	Thu, 17 May 2007 13:41:16 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:53003 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759232AbXEQRlM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:41:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bs8tJsAkww0M1AXtr/dc4TiqcrFNCFiEYFBTzAVcNgmpfbXyxhBnjlbNJEmOHRedz8MTRy/eqPyz1Z2QVOm5j2ddJAbgDcoZCC2FbYCMQ6rdMGb96Ov36cmC+CNPMLD2Z771nINO3wI0mhtG4vKTkUcBVvqSe1HInd245rWdFII=
+Message-ID: <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com>
+Date: Thu, 17 May 2007 23:11:10 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: Asynchronous scsi scanning
+Cc: "Simon Arlott" <simon@fire.lp0.eu>,
+       "James Bottomley" <james.bottomley@steeleye.com>,
+       "Dave Jones" <davej@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+In-Reply-To: <20070517172023.GL10562@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
+	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
+	 <17841.simon.1179228389@5ec7c279.invalid>
+	 <20070515120228.GI10562@parisc-linux.org>
+	 <4649E03A.1090004@simon.arlott.org.uk>
+	 <20070515172905.GJ10562@parisc-linux.org>
+	 <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
+	 <20070516025121.GK10562@parisc-linux.org>
+	 <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com>
+	 <20070517172023.GL10562@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On May 16 2007 02:06, Jörn Engel wrote:
+On 5/17/07, Matthew Wilcox <matthew@wil.cx> wrote:
+> On Thu, May 17, 2007 at 10:43:06PM +0530, Satyam Sharma wrote:
+> > >No, it does matter.  Your suggestion doesn't work, because
+> > >/sys/module/scsi_mod/parameters/ belongs to the module code.  To create
+> > >a new attribute there, you use the module_param() code -- and there's
+> > >no way to have code called when your parameter is changed.
 >
->> > +/* memtree.c */
->> > +void btree_init(struct btree_head *head);
->> > +void *btree_lookup(struct btree_head *head, long val);
->> > +int btree_insert(struct btree_head *head, long val, void *ptr);
->> > +int btree_remove(struct btree_head *head, long val);
->> 
->> These names are too generic.  If we later add a btree library: blam.
+> (thanks, Roland for pointing out that I'm incorrect about code being
+> called)
+
+> Come up with a sensible suggestion, and I'll listen to you.  Code isn't
+> the issue.  API is the issue.
+
+Well, that itself is a suggestion.
+
+> > Ok, thanks for pointing out that /sys/module/scsi_mod/parameters/wait...
+> > is _wrong_. Could you suggest something that would be _right_?
 >
->My plan was to move this code to lib/ sooner or later.  If you consider
->it useful in its current state, I can do it immediatly.  And if someone
->else merged a superior btree library I'd happily remove mine and use the
->new one instead.
->
->Opinions?
+> No, I can't, which is why I find it hard to like the idea of "use
+> sysfs".  I have no particular love for using a module like this, but
+> my preferred way (a new verb for /proc/scsi/scsi) isn't liked by others.
 
-Why would we need another btree, when there is lib/rbtree.c?
-Or does yours do something fundamentally different?
-
-
-	Jan
--- 
+Another command to /proc/scsi/scsi isn't a bad thought at all, considering
+we're not _inventing_ a *new* /proc/not-related-to-processes interface, but
+simply extending one that already exists. But then James / others are also
+somewhat justified in shooting that down. I bet a lot of people would find
+that even worse than this whole module affair.
