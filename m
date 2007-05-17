@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762711AbXEQVxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbXEQVz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762711AbXEQVxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758383AbXEQVxW
+	id S1758634AbXEQVz3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756493AbXEQVzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:53:22 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39313 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756493AbXEQVxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:53:21 -0400
-Date: Thu, 17 May 2007 23:53:21 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Len Brown <lenb@kernel.org>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-Message-ID: <20070517215321.GC7336@elf.ucw.cz>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <20070517092318.GD3975@ucw.cz> <464C5A62.6060604@gmail.com> <200705171508.40202.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 May 2007 17:55:20 -0400
+Received: from lazybastard.de ([212.112.238.170]:52969 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755961AbXEQVzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 17:55:19 -0400
+Date: Thu, 17 May 2007 23:50:58 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+       akpm@osdl.org, Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070517215057.GH15676@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <20070516132035.GJ5472@lazybastard.org> <464CC209.4060500@cs.helsinki.fi> <200705172336.14552.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200705171508.40202.lenb@kernel.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200705172336.14552.arnd@arndb.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-05-17 15:08:39, Len Brown wrote:
-> On Thursday 17 May 2007 09:36, Maciej Rutecki wrote:
-> 
-> > Many people need change trippoints, for example I have:
+On Thu, 17 May 2007 23:36:13 +0200, Arnd Bergmann wrote:
+> On Thursday 17 May 2007, Pekka Enberg wrote:
 > > 
-> > cat /proc/acpi/thermal_zone/TZ0/trip_points  | grep critical
-> > critical (S5):           256 C
-> > 
-> > I _must_ change it to below 105 C, or edit DSDT table (too difficult to
-> > me). I cannot use this kernel, when trip points are read only.
+> > So any sane way to enable compression is on per-inode basis which makes 
+> > me still wonder why you need per-object compression.
 > 
-> What bad things happen if you leave the critical trip point at 256?
-> Do you find that you can drive the temperature over 105 and
-> the system fails to shut down?
+> 1. it doesn't require user interaction, the file system will do the right
+> thing most of the time.
+> 
+> 2. enlarging data is a very bad thing because it makes the behaviour
+> of the fs unpredictable. With uncompressed objects, you have a guaranteed
+> upper bound on the size.
 
-Something similar happened to me on XE3, yes.
+Correct.  The compression decision is always per-object.  Per-inode is a
+hint from userspace that a compression attempt would be futile.
 
-(Actual values were different; BIOS specified critical temperature at
-cca 95C, but hw killed the power at cca 83C. Setting critical trip
-point at 80C made the problem go away.)
-								Pavel
+A compression algorithm that compresses any data is provably impossible.
+Some data will always cause expansion instead of compression.  Some
+algorithms have a well-known upper bound on the expansion, others don't.
+So LogFS instead creates its own upper bound by reserving one byte in
+the header for the compression type.
+
+And while one bit would suffice as a compressed/uncompressed flag,
+having a byte allows to support more than one compression algorithm.
+LZO looks promising and is on its way into the kernel.  Others may come
+in the future.
+
+Jörn
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+My second remark is that our intellectual powers are rather geared to
+master static relations and that our powers to visualize processes
+evolving in time are relatively poorly developed.
+-- Edsger W. Dijkstra
