@@ -1,120 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbXEQL01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbXEQL0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbXEQL01 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 07:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbXEQL0U
+	id S1756851AbXEQL0q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 07:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629AbXEQL0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 07:26:20 -0400
-Received: from m-relay.rz.uni-saarland.de ([134.96.7.3]:43659 "EHLO
-	m-relay.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755274AbXEQL0T (ORCPT
+	Thu, 17 May 2007 07:26:38 -0400
+Received: from smtp105.plus.mail.re2.yahoo.com ([206.190.53.30]:41900 "HELO
+	smtp105.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756625AbXEQL0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 07:26:19 -0400
-Date: Thu, 17 May 2007 13:25:53 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86 new setup: use appropriate sections for code and data
-Message-ID: <20070517112553.GA12901@mailshack.com>
-Mime-Version: 1.0
+	Thu, 17 May 2007 07:26:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:User-Agent;
+  b=NLa39heHayPiM2f+z00/MnKO1+d9O6pxWG9gFEYrN32HjOmW3tb2GB2Jy+Vt7f/XBa6yJ/t2upKlZFRUV3RiMGBftgI181AdfJMDF3tfiG7JpzmSqrp32epYi8j8v3Cy0Fi6r8H5692l8T6rh0ryZzP4HcauHpEti1jimIQRgew=  ;
+X-YMail-OSG: SopHLgoVM1kykU2LEgAex9wShgUu4rVqwCLsJoLTCHcfP4Gz25.MuzKTVFrmSDW3HAJHwTPdKg--
+Date: Thu, 17 May 2007 13:25:54 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ide.c: microscopic size and readability optimization
+Message-ID: <20070517112554.GA32183@zmei.tnic>
+Reply-To: bbpetkov@yahoo.de
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.5.1 (m-relay.rz.uni-saarland.de [134.96.7.3]); Thu, 17 May 2007 13:26:16 +0200 (CEST)
-X-AntiVirus: checked by AntiVir Milter (version: 1.1.3-1; AVE: 7.4.0.23; VDF: 6.38.1.154; host: AntiVir1)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An intermediate elf file is generated for the 16-bit setup code.
-The generated code can be viewed using objdump -m i8086 -d. As it
-stands, it also tries to disassemble the bugger_off_msg, which
-results in garbage. This introduces two new sections to separate
-the code and the data part of the bootsector stub. It also moves
-some code from the .header section (a data section) to .inittext.
+-----
+From: bbpetkov@yahoo.de
 
-Signed-off-by: Alexander van Heukelum <heukelum@mailshack.com>
----
+A very small size (object file 432 bytes smaller) and readability optimization of ide.c
 
-Hi,
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
 
-I hope the new section names are ok? Alternatives would be
-.bstext/.bsdata or .floppytext/.floppydata.
+--
+Index: 22-rc1/drivers/ide/ide.c
+===================================================================
+--- 22-rc1/drivers/ide/ide.c.orig
++++ 22-rc1/drivers/ide/ide.c
+@@ -568,10 +568,8 @@ void ide_unregister(unsigned int index)
+ 	ide_hwgroup_t *hwgroup;
+ 	int irq_count = 0, unit;
 
-Greetings,
-	Alexander
+-	BUG_ON(index >= MAX_HWIFS);
++	BUG_ON(index >= MAX_HWIFS || in_interrupt() || irqs_disabled());
 
-
- arch/i386/boot/header.S |   10 +++++-----
- arch/i386/boot/setup.ld |    4 ++++
- 2 files changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/arch/i386/boot/header.S b/arch/i386/boot/header.S
-index 02d0f7d..70b39cb 100644
---- a/arch/i386/boot/header.S
-+++ b/arch/i386/boot/header.S
-@@ -44,7 +44,7 @@ SWAP_DEV	= 0			/* SWAP_DEV is now written by "build" */
- #endif
- 
- 	.code16
--	.section ".header", "ax"
-+	.section ".stubtext", "ax"
- 
- 	.global bootsect_start
- bootsect_start:
-@@ -82,7 +82,7 @@ bs_die:
- 	# invoke the BIOS reset code...
- 	ljmp	$0xf000,$0xfff0
- 
--
-+	.section ".stubdata", "a"
- bugger_off_msg:
- 	.ascii	"Direct booting from floppy is no longer supported.\r\n"
- 	.ascii	"Please use a boot loader program instead.\r\n"
-@@ -94,7 +94,7 @@ bugger_off_msg:
- 	# Kernel attributes; used by setup.  This is part 1 of the
- 	# header, from the old boot sector.
- 
--	.org 497
-+	.section ".header", "a"
- 	.globl	hdr
- hdr:
- setup_sects:	.byte SETUPSECTS
-@@ -208,10 +208,11 @@ pad3:			.word 0
- cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
-                                                 #added with boot protocol
-                                                 #version 2.06
-+start_of_setup:
- 
- # End of setup header #####################################################
- 
--start_of_setup:
-+	.section ".inittext", "ax"
- #ifdef SAFE_RESET_DISK_CONTROLLER
- # Reset the disk controller.
- 	movw	$0x0000, %ax		# Reset disk controller
-@@ -225,7 +226,6 @@ start_of_setup:
- 	pushw	$setup2
- 	lretw
- 
--	.section ".inittext", "ax"
- setup2:
- # Force %es = %ds
- 	movw	%ds, %ax
-diff --git a/arch/i386/boot/setup.ld b/arch/i386/boot/setup.ld
-index a111572..8defc4f 100644
---- a/arch/i386/boot/setup.ld
-+++ b/arch/i386/boot/setup.ld
-@@ -10,6 +10,10 @@ ENTRY(_start)
- SECTIONS
- {
- 	. = 0;
-+	.stubtext	: { *(.stubtext) }
-+	.stubdata	: { *(.stubdata) }
-+
-+	. = 497;
- 	.header		: { *(.header) }
- 	.inittext	: { *(.inittext) }
- 	.initdata	: { *(.initdata) }
--- 
-1.4.4.2
-
+-	BUG_ON(in_interrupt());
+-	BUG_ON(irqs_disabled());
+ 	down(&ide_cfg_sem);
+ 	spin_lock_irq(&ide_lock);
+ 	hwif = &ide_hwifs[index];
