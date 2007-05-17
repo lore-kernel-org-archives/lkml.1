@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbXEQJU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbXEQJXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbXEQJU0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 05:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbXEQJUU
+	id S1755799AbXEQJXk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 05:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXEQJXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 05:20:20 -0400
-Received: from mail28.syd.optusnet.com.au ([211.29.133.169]:46931 "EHLO
-	mail28.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754305AbXEQJUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 05:20:19 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Brad Campbell <brad@wasp.net.au>
-Subject: Re: Standalone swap prefetch patch for mainline
-Date: Thu, 17 May 2007 19:20:13 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-References: <200705141210.43614.kernel@kolivas.org> <4649C789.6050305@wasp.net.au>
-In-Reply-To: <4649C789.6050305@wasp.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 05:23:33 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4239 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752389AbXEQJXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 05:23:32 -0400
+Date: Thu, 17 May 2007 09:23:19 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, lenb@kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+Message-ID: <20070517092318.GD3975@ucw.cz>
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464B4155.9070902@gmail.com> <464B43BB.3070505@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705171920.13333.kernel@kolivas.org>
+In-Reply-To: <464B43BB.3070505@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 May 2007 00:45, Brad Campbell wrote:
-> Con Kolivas wrote:
-> > I've had a few requests for a standalone patch implementing swap prefetch
-> > for mainline.
-> >
-> > Here is a patch that is a current rollup that should apply and work for
-> > vanilla 2.6.21 (ie not a -ck kernel):
-> >
-> > http://ck.kolivas.org/patches/swap-prefetch/2.6.21-swap_prefetch-38.patch
->
-> Heh.. 20 mins after I finished scraping the relevant bits from -ck1 and
-> patching my kernel this arrives!
->
-> <WARNING - Fanboy rant ahead>
->
-> I don't normally get/take the time to pass personal comment, but I have to
-> say Con I've just taken a 2.6.21 kernel, applied your 0.48 SD scheduler and
-> swap-prefetch from -ck1 (needed to separate them out so I could also apply
-> suspend2) and it's like I've bought a new machine.
->
-> I'm running on a tiny Vaio with a 4800RPM 1.8" drive, so it's not fast by
-> any stretch of the imagination. But the combination of SD and swap-prefetch
-> has given it a new lease on life completely.
->
-> Really, you have done a great job with SD. I was so impressed I built a new
-> kernel for my Core Duo Mac Mini with the full 2.6.21-ck1 patchset. I wish
-> I'd tried it years ago!
->
-> This also prompted me to have a play with CFS, but for my desktop workload
-> on either machine, SD just "felt" better (for whatever that may be worth).
->
-> +1 for SD
-> +1 for swap-prefetch
+Hi!
 
-Great! Thanks for the feedback. I'm pleased that people don't just naturally 
-assume CFS will be better and are still willing to test SD. I'm even more 
-pleased that you're finding it better than CFS too :)
+> > In 2.6.20.9 I can change trippoints:
+> > 
+> > echo "105:100:100:78:70:40:30" > /proc/acpi/thermal_zone/TZ0/trip_points
+> > echo 10  > /proc/acpi/thermal_zone/TZ0/polling_frequency
+> > 
+> > Then I got:
+> > cat /proc/acpi/thermal_zone/TZ0/*
+...
+> > Its bug or feature?
+> > 
+> 
+> Committed to mainline May 10:
+> 
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=11ccc0f249cb01a129f54760b8ff087f242935d4
+> Commit:     11ccc0f249cb01a129f54760b8ff087f242935d4
+> Parent:     de46c33745f5e2ad594c72f2cf5f490861b16ce1
+> Author:     Len Brown <len.brown@intel.com>
+> AuthorDate: Mon Apr 30 22:36:01 2007 -0400
+> Committer:  Len Brown <len.brown@intel.com>
+> CommitDate: Mon Apr 30 22:36:01 2007 -0400
+> 
+>     ACPI: thermal trip points are read-only
 
+What was the rationale? Can we get this one reverted? 
+
+Some machines (HP omnibook xe3) have broken trip points -- too high --
+so machine will overheat and trigger hw shutdown before starting
+passive cooling.
+
+That's really broken, and write to trip points is reasonable way to
+'fix' that. (I'd understand if you only ever let trip points to
+decrease... but otoh root should be able to shoot himself....)
+
+							Pavel
 -- 
--ck
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
