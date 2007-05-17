@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbXEQPlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbXEQPvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbXEQPlV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 11:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbXEQPlP
+	id S1756520AbXEQPvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 11:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbXEQPvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 11:41:15 -0400
-Received: from dedi.luli.de ([88.198.62.74]:35669 "EHLO dedi.luli.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754293AbXEQPlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 11:41:14 -0400
-Message-ID: <464C779C.90009@rootdir.de>
-Date: Thu, 17 May 2007 17:41:16 +0200
-From: Claas Langbehn <claas@rootdir.de>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: This kernel requires the following features not present on the
- CPU... (on a VIA C7 CPU)
-References: <464C4A22.7040709@rootdir.de> <20070517162403.2ff0e3b5@the-village.bc.nu>
-In-Reply-To: <20070517162403.2ff0e3b5@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 May 2007 11:51:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56791 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754960AbXEQPvE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 11:51:04 -0400
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+From: David Woodhouse <dwmw2@infradead.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: dedekind@infradead.org, akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070517143200.GA30850@lst.de>
+References: <20070517143200.GA30850@lst.de>
+Content-Type: text/plain
+Date: Thu, 17 May 2007 23:50:54 +0800
+Message-Id: <1179417055.2859.506.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Concerning the crashes I already changed the memory module, but with no 
->> success. I'm not sure
->> wether this is a hardware or software bug.
->>     
->
-> Testing with memtest86 should help tell you if the problem is a dodgy
-> DIMM specifically rather than another hardware or software fault.
->   
+On Thu, 2007-05-17 at 16:32 +0200, Christoph Hellwig wrote:
+> Kill ubis homegrown endianess handling crap and replace it with
+> the normal kernel endianess handling. 
 
-I already did this. I had a broken aeneon DIMM at first. I got a new 
-working one.
-But the crashes were still there. Then I got a samsung DIMM instead and 
-it did
-not get better. Therefore I think that the memory is not causing this.
+NAK. The 'normal' kernel stuff doesn't work in GCC; only in sparse.
 
-Actually the system freezes when I click somewhere with my USB mouse, even
-with no load at all. Unfortunately the system does not have a serial 
-port for
-a serial console. Netconsole was not working with the via-rhine. I wanted to
-try serial console over ttyUSB, but I did not have time for it, yet.
+If you want to go removing the ones which _do_ work in GCC, then fix the
+'normal' one first. _Then_ go about converting others over to it.
 
+-- 
+dwmw2
 
-Claas
