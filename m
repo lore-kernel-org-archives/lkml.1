@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbXEQVdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbXEQVeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761204AbXEQVdk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbXEQVdd
+	id S1761491AbXEQVeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbXEQVeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:33:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52306
+	Thu, 17 May 2007 17:34:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52312
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754972AbXEQVdc (ORCPT
+	by vger.kernel.org with ESMTP id S1754972AbXEQVeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:33:32 -0400
-Date: Thu, 17 May 2007 14:33:34 -0700 (PDT)
-Message-Id: <20070517.143334.38710608.davem@davemloft.net>
-To: dmitry.torokhov@gmail.com
-Cc: viro@ftp.linux.org.uk, akpm@linux-foundation.org, dedekind@infradead.org,
-       linux-kernel@vger.kernel.org, hch@lst.de
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
+	Thu, 17 May 2007 17:34:07 -0400
+Date: Thu, 17 May 2007 14:34:09 -0700 (PDT)
+Message-Id: <20070517.143409.102123884.davem@davemloft.net>
+To: usenet07@philpem.me.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: IPv6: 6to4 tunnel randomly cutting out on 2.6.8.1 - any
+ patches?
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <d120d5000705171414u55af4c03m6e6d2fbcf982e3ff@mail.gmail.com>
-References: <20070517102931.6bbbad1a.akpm@linux-foundation.org>
-	<20070517204234.GR4095@ftp.linux.org.uk>
-	<d120d5000705171414u55af4c03m6e6d2fbcf982e3ff@mail.gmail.com>
+In-Reply-To: <f2ifnf$ooh$1@sea.gmane.org>
+References: <f2ifnf$ooh$1@sea.gmane.org>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,17 +26,15 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Date: Thu, 17 May 2007 17:14:26 -0400
+From: Philip Pemberton <usenet07@philpem.me.uk>
+Date: Thu, 17 May 2007 21:59:31 +0100
 
-> On 5/17/07, Al Viro <viro@ftp.linux.org.uk> wrote:
-> >
-> > Ahem...  So what does
-> >        x |= y;
-> > turns into with that approach?
-> 
-> Do we want to do such kind of operations on endian-annotated data? I'd
-> imagine you want to convert ot host-endianess first anyway.
+>    I'm currently trying to set IPv6 up on a Linux-based router. The 
+> aforementioned router runs kernel 2.6.8.1, and just about all the hardware 
+> driver modules are binary modules. For the record, I'd love to upgrade the 
+> router to one of the newer kernels, but AIUI I can't do it because I don't 
+> have the source to the bmods. But anyway...
 
-Generally you don't, if 'x' and 'y' are both in the needed
-endinaness already, there is no reason to convert anything.
+Then don't come here looking for support, because we can't
+help you.
+
