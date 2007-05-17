@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbXEQRFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbXEQRHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757505AbXEQRFq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbXEQRFk
+	id S1757861AbXEQRHB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbXEQRGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:05:40 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:59473 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755487AbXEQRFj (ORCPT
+	Thu, 17 May 2007 13:06:54 -0400
+Received: from mail4.webhostingstar.com ([67.106.77.50]:47251 "HELO
+	mail4.webhostingstar.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755571AbXEQRGy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:05:39 -0400
-Message-ID: <464C8B60.5040109@zytor.com>
-Date: Thu, 17 May 2007 10:05:36 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 17 May 2007 13:06:54 -0400
+Message-ID: <20070517120544.d2hnzayns4o8scks@67.106.77.50>
+Date: Thu, 17 May 2007 12:05:44 -0500
+From: art@usfltd.com
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@osdl.org, greg@kroah.com
+Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
 MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@mailshack.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 new setup: use appropriate sections for code and
- data
-References: <20070517112553.GA12901@mailshack.com>
-In-Reply-To: <20070517112553.GA12901@mailshack.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum wrote:
-> An intermediate elf file is generated for the 16-bit setup code.
-> The generated code can be viewed using objdump -m i8086 -d. As it
-> stands, it also tries to disassemble the bugger_off_msg, which
-> results in garbage. This introduces two new sections to separate
-> the code and the data part of the bootsector stub. It also moves
-> some code from the .header section (a data section) to .inittext.
-> 
-> Signed-off-by: Alexander van Heukelum <heukelum@mailshack.com>
-> ---
-> 
-> Hi,
-> 
-> I hope the new section names are ok? Alternatives would be
-> .bstext/.bsdata or .floppytext/.floppydata.
+greg
 
-I'd prefer .bstext or .bs_text and .bsdata/.bs_data; possibly .bsecttext
-and .bsectdata.  The term "boot sector" for that particular piece of
-code is firmly established.
+>> You didn't answer my, "what distro are you using" question.  Also, what
+package created the udev rule that creates the above symlink?
 
-	-hpa
+distro fc6
+Linux xxx.xxx 2.6.22-rc1-200705170855cfq6-g0479ea0e #134 SMP PREEMPT  
+Thu May 17 09:13:26 CDT 2007 x86_64 x86_64 x86_64 GNU/Linux
 
 
+2.6.20
+
+$ udevtest /class/usb_device/usbdev2.10
+main: looking at device '/class/usb_device/usbdev2.10' from subsystem  
+'usb_device'
+run_program: '/bin/sh -c 'K=usbdev2.10; K=${K#usbdev}; printf  
+bus/usb/%03i/%03i ${K%%.*} ${K#*.}''
+run_program: '/bin/sh' (stdout) 'bus/usb/002/010'
+run_program: '/bin/sh' returned with status 0
+udev_rules_get_name: rule applied, 'usbdev2.10' becomes 'bus/usb/002/010'
+udev_rules_get_name: add symlink 'scanner-usbdev2.10'
+udev_device_event: device '/class/usb_device/usbdev2.10' already in  
+database, validate currently present symlinks
+udev_node_add: creating device node '/dev/bus/usb/002/010', major =  
+'189', minor = '137', mode = '0644', uid = '0', gid = '0'
+udev_node_add: creating symlink '/dev/scanner-usbdev2.10' to 'bus/usb/002/010'
+main: run: 'socket:/org/kernel/udev/monitor'
+main: run: '/lib/udev/udev_run_devd'
+main: run: 'socket:/org/freedesktop/hal/udev_event'
+main: run: '/sbin/pam_console_apply /dev/bus/usb/002/010  
+/dev/scanner-usbdev2.10'
+
+
+
+xboom
