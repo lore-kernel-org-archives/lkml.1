@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbXEQM2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbXEQMbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbXEQM2p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 08:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbXEQM2g
+	id S1756613AbXEQMbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 08:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbXEQMb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 08:28:36 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:40945 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753689AbXEQM2e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 08:28:34 -0400
-Date: Thu, 17 May 2007 17:58:40 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64 and powerpc
-Message-ID: <20070517122840.GA12381@amitarora.in.ibm.com>
-References: <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070515193722.GA3487@amitarora.in.ibm.com> <20070515195421.GA2948@amitarora.in.ibm.com> <20070515200359.GA5834@amitarora.in.ibm.com> <20070516031626.GM85884050@sgi.com> <1179318076.10313.6.camel@kleikamp.austin.ibm.com> <20070516234036.GQ85884050@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516234036.GQ85884050@sgi.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 17 May 2007 08:31:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46254 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754693AbXEQMb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 08:31:26 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <464BF8B2.3080101@yahoo.com.au>
+References: <464BF8B2.3080101@yahoo.com.au> <464B3F2D.9030603@yahoo.com.au> <464B3209.4010003@yahoo.com.au> <464B07EC.4050308@yahoo.com.au> <464AF3F3.30204@yahoo.com.au> <20070516100225.18685.51699.stgit@warthog.cambridge.redhat.com> <17173.1179321391@redhat.com> <19714.1179331928@redhat.com> <23262.1179334587@redhat.com> <31162.1179341123@redhat.com> 
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement shared-writable mmap [try #2]
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Thu, 17 May 2007 13:30:01 +0100
+Message-ID: <6333.1179405001@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 09:40:36AM +1000, David Chinner wrote:
-> On Wed, May 16, 2007 at 07:21:16AM -0500, Dave Kleikamp wrote:
-> > On Wed, 2007-05-16 at 13:16 +1000, David Chinner wrote:
-> > > On Wed, May 16, 2007 at 01:33:59AM +0530, Amit K. Arora wrote:
-> > 
-> > > > Following changes were made to the previous version:
-> > > >  1) Added description before sys_fallocate() definition.
-> > > >  2) Return EINVAL for len<=0 (With new draft that Ulrich pointed to,
-> > > >     posix_fallocate should return EINVAL for len <= 0.
-> > > >  3) Return EOPNOTSUPP if mode is not one of FA_ALLOCATE or FA_DEALLOCATE
-> > > >  4) Do not return ENODEV for dirs (let individual file systems decide if
-> > > >     they want to support preallocation to directories or not.
-> > > >  5) Check for wrap through zero.
-> > > >  6) Update c/mtime if fallocate() succeeds.
-> > > 
-> > > Please don't make this always happen. c/mtime updates should be dependent
-> > > on the mode being used and whether there is visible change to the file. If no
-> > > userspace visible changes to the file occurred, then timestamps should not
-> > > be changed.
-> > 
-> > i_blocks will be updated, so it seems reasonable to update ctime.  mtime
-> > shouldn't be changed, though, since the contents of the file will be
-> > unchanged.
-> 
-> That's assuming blocks were actually allocated - if the prealloc range already
-> has underlying blocks there is no change and so we should not be changing
-> mtime either. Only the filesystem will know if it has changed the file, so I
-> think that timestamp updates need to be driven down to that level, not done
-> blindy at the highest layer....
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Ok. Will make this change in the next post.
+> No, you shouldn't. We could theoretically introduce a new API for this,
+> but I think it would be preferable if you can fix the race in the fs.
 
---
-Regards,
-Amit Arora
-> 
-> Cheers,
-> 
-> Dave.
-> -- 
-> Dave Chinner
-> Principal Engineer
-> SGI Australian Software Group
+Actually, I might be able to do better.
+
+When making a StoreData call to the AFS server, I send all the parameters
+first, and at that point, the server will abort it, I think, if permission is
+not available, and won't wait for the payload to be delivered.
+
+So if I tell AF_RXRPC to send the parameter data with an explicit ACK request
+and then wait till it's either hard-ACK'd or aborted, I should then be able to
+deal with the permissions failure at a state where I have locked *all* the
+pages to be sent.
+
+At that point, I should be able to tell truncate to simple discard all these
+locked pages.
+
+How's that sound?
+
+David
