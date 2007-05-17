@@ -1,43 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760420AbXEQT12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757859AbXEQTew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760420AbXEQT12 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 15:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbXEQT1V
+	id S1757859AbXEQTew (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 15:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXEQTeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 15:27:21 -0400
-Received: from mail-in-02.arcor-online.net ([151.189.21.42]:41477 "EHLO
-	mail-in-02.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755874AbXEQT1V (ORCPT
+	Thu, 17 May 2007 15:34:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60865 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754072AbXEQTeo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 15:27:21 -0400
-In-Reply-To: <200705172142.26739.sshtylyov@ru.mvista.com>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
+	Thu, 17 May 2007 15:34:44 -0400
+Date: Thu, 17 May 2007 12:32:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zou Nan hai <nanhai.zou@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ak@suse.de, suresh.b.siddha@intel.com
+Subject: Re: [Patch] Allocate sparsemem memmap above 4G on X86_64
+Message-Id: <20070517123216.184104a8.akpm@linux-foundation.org>
+In-Reply-To: <1179369607.4103.158.camel@linux-znh>
+References: <1179369607.4103.158.camel@linux-znh>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-Date: Thu, 17 May 2007 21:27:17 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	 * We must write a positive value to the decrementer to clear
-> +	 * the interrupt on the IBM 970 CPU series.  In periodic mode,
-> +	 * this happens when the decrementer gets reloaded later, but
-> +	 * in one-shot mode, we have to do it here since an event handler
-> +	 * may skip loading the new value...
+On 17 May 2007 10:40:07 +0800
+Zou Nan hai <nanhai.zou@intel.com> wrote:
 
-Nothing special about 970 here -- on *every* PowerPC,
-a decrementer exception exists as long as the high
-bit of the decrementer equals 1.  BookE is different
-of course.  Some other CPUs might deviate from the
-architecture as well.
+> On system with huge amount of physical memory. 
+> VFS cache and memory memmap may eat all available system memory under
+> 4G, then system may fail to allocated swiotlb bounce buffer. 
+> 
+> There was a fix in arch/x86_64/mm/numa.c, but that fix does not cover
+> sparsemem model.
+> This patch add fix to sparsemem model.
+> 
+
+This seems like something we need in 2.6.22, but this implementation is a
+bit ugly-looking.
+
+> 
+> diff -Nraup a/include/asm-x86_64/mmzone.h b/include/asm-x86_64/mmzone.h
+> --- a/include/asm-x86_64/mmzone.h	2007-05-17 09:38:02.000000000 +0800
+> +++ b/include/asm-x86_64/mmzone.h	2007-05-17 09:54:10.000000000 +0800
+> @@ -52,5 +52,10 @@ extern int pfn_valid(unsigned long pfn);
+>  #define FAKE_NODE_MIN_HASH_MASK	(~(FAKE_NODE_MIN_SIZE - 1uL))
+>  #endif
+>  
+> +#define ARCH_HAS_ALLOC_BOOTMEM_HIGH_NODE 1
+> +#define alloc_bootmem_high_node(pgdat,size) \
+> +({__alloc_bootmem_core(pgdat->bdata, size, SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);})
+> +
+> +
+>  #endif
+>  #endif
+> diff -Nraup a/include/linux/bootmem.h b/include/linux/bootmem.h
+> --- a/include/linux/bootmem.h	2007-05-17 09:38:02.000000000 +0800
+> +++ b/include/linux/bootmem.h	2007-05-17 09:37:00.000000000 +0800
+> @@ -131,5 +131,8 @@ extern void *alloc_large_system_hash(con
+>  #endif
+>  extern int hashdist;		/* Distribute hashes across NUMA nodes? */
+>  
+> +#ifndef ARCH_HAS_ALLOC_BOOTMEM_HIGH_NODE
+> +#define alloc_bootmem_high_node(pgdat, size) ({NULL;})
+> +#endif
+>  
+>  #endif /* _LINUX_BOOTMEM_H */
+> diff -Nraup a/mm/sparse.c b/mm/sparse.c
+> --- a/mm/sparse.c	2007-05-17 09:38:03.000000000 +0800
+> +++ b/mm/sparse.c	2007-05-17 09:54:27.000000000 +0800
+> @@ -219,6 +219,11 @@ static struct page __init *sparse_early_
+>  	if (map)
+>  		return map;
+>  
+> +	map = alloc_bootmem_high_node(NODE_DATA(nid),
+> +			sizeof(struct page) * PAGES_PER_SECTION);
+> +        if (map)
+> +                return map;
+> +
+
+Please use tabs, not spaces
+
+>  	map = alloc_bootmem_node(NODE_DATA(nid),
+>  			sizeof(struct page) * PAGES_PER_SECTION);
+>  	if (map)
+> 
+
+Please always prefer to use static inline functions rather than macros. 
+They are more readable, they are more likely to have comments attached to
+them and they provide typechecking.
+
+Please prefer to uninline functions by default.  One reason for this is
+that adding inlines to headers increases include complexity.  This code is
+all __init anyway, so the possible few bytes of text will get removed.
 
 
-Segher
+Try to avoid using the ARCH_HAS_FOO thing.  We have two alternatives:
+
+a) use __attribute__((weak))
+
+b) do:
+
+	extern void foo(void);
+	#define foo foo
+
+   then, elsewhere,
+
+	#ifndef foo
+	#define foo() bar()
+	#endif
+
+Both tricks avoid the introduction of two new symbols into the global
+namespace to solve a single problem.
 
