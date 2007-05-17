@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760019AbXEQDCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761192AbXEQDDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760019AbXEQDCt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 23:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbXEQDCl
+	id S1761192AbXEQDDn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 23:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758692AbXEQDDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 23:02:41 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42953 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758502AbXEQDCl (ORCPT
+	Wed, 16 May 2007 23:03:36 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37737 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758502AbXEQDDf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 23:02:41 -0400
-Date: Wed, 16 May 2007 20:02:37 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <20070514131904.440041502@chello.nl>
-Message-ID: <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
+	Wed, 16 May 2007 23:03:35 -0400
+X-Sasl-enc: q6YT5VY2RgVik0ilRXH+Q6iBIHVtfNWjykknV6Hht9KO 1179371016
+Date: Thu, 17 May 2007 00:03:30 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: George Nychis <gnychis@cmu.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: dock support on thinkpad x60s for DVD/CDROM
+Message-ID: <20070517030330.GA20892@khazad-dum.debian.net>
+References: <464BB172.2040502@cmu.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464BB172.2040502@cmu.edu>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007, Peter Zijlstra wrote:
+On Wed, 16 May 2007, George Nychis wrote:
+> I was wondering if any progress was made on the docking station support for new thinkpads,
+> like the x60s ultradock.  I'm looking for support for the CD/DVD burner on it.  I tried
+> enabling the most recent dock support in the kernel and still nothing. (2.6.22-rc1)
 
-> 
-> In the interest of creating a reserve based allocator; we need to make the slab
-> allocator (*sigh*, all three) fair with respect to GFP flags.
-> 
-> That is, we need to protect memory from being used by easier gfp flags than it
-> was allocated with. If our reserve is placed below GFP_ATOMIC, we do not want a
-> GFP_KERNEL allocation to walk away with it - a scenario that is perfectly
-> possible with the current allocators.
+ACPI generic dock driver, or thinkpad-acpi dock driver?
 
-And the solution is to fail the allocation of the process which tries to 
-walk away with it. The failing allocation will lead to the killing of the 
-process right?
-
-We already have an OOM killer which potentially kills random processes. We 
-hate it.
-
-Could you please modify the patchset to *avoid* failure conditions. This 
-patchset here only manages failure conditions. The system should not get 
-into the failure conditions in the first place! For that purpose you may 
-want to put processes to sleep etc. But in order to do so you need to 
-figure out which processes you need to make progress.
-
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
