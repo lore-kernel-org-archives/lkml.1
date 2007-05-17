@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763266AbXEQBL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933576AbXEQBMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763266AbXEQBL6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 21:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762745AbXEQBLu
+	id S933576AbXEQBMd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 21:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbXEQBMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 21:11:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33800 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762733AbXEQBLu (ORCPT
+	Wed, 16 May 2007 21:12:25 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:53873
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757576AbXEQBMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 21:11:50 -0400
-Date: Wed, 16 May 2007 18:10:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christian <haveaniceday@cv-sv.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64
-In-Reply-To: <464B9D2C.7040704@cv-sv.de>
-Message-ID: <alpine.LFD.0.98.0705161750350.3890@woody.linux-foundation.org>
-References: <464B9D2C.7040704@cv-sv.de>
+	Wed, 16 May 2007 21:12:24 -0400
+From: Rob Landley <rob@landley.net>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Subject: Re: UML doesn't compile in 2.6.21
+Date: Wed, 16 May 2007 21:11:18 -0400
+User-Agent: KMail/1.9.1
+Cc: LKML <linux-kernel@vger.kernel.org>, jdike@karaya.com
+References: <20070516224938.GN12319@pengutronix.de>
+In-Reply-To: <20070516224938.GN12319@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705162111.19123.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 17 May 2007, Christian wrote:
->
-> my small VIA C3_2 box does not boot with 2.6.22-rc1.
-> It even does not uncompress the kernel.
+On Wednesday 16 May 2007 6:49 pm, Robert Schwebel wrote:
+> Jeff,
 > 
-> The configuration as M386 M486 works. But M586 + MVIAC3_2
-> does not work.
+> Any idea how this could happen? I'm trying to build 2.6.21 for ARCH=um, and 
+the
+> linker stage explodes here:
 
-Ahh, from the EPIA HOWTO:
+2.6.21.1 built for me:
 
-	13.2. Is the C3 Pentium compatible?
+tar xvjf linux-2.6.21.1.tar.bz2 &&
+cd linux-2.6.21.1 &&
+cat > mini.conf << EOF
+CONFIG_MODE_SKAS=y
+CONFIG_BINFMT_ELF=y
+CONFIG_HOSTFS=y
+CONFIG_SYSCTL=y
+CONFIG_STDERR_CONSOLE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_LBD=y
+CONFIG_EXT2_FS=y
+CONFIG_PROC_FS=y
+EOF
+make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf &&
+make ARCH=um &&
+./linux rootfstype=hostfs rw init=/bin/sh
 
-	Yes. But Samuel 2, Ezra, Ezra T C3 processors have a problem with 
-	the cmpxchg8b (i.e. CMOV) opcode. Nehemiah and Antaur processors 
-	are not affected.
+Does this not work for you?
 
-However, that would imply that you don't have a VIA C3-2 (Nehamiah) at 
-all, but the older original CyrixIII/VIA C3.
-
-Can you check? The Nehemian (C3-2) should be model 9 or greater.
-
-So afaik, you should use MCYRIXIII, and make _that_ be the one that 
-disables the use of the cmpxchg8b instruction.
-
-Can you please verify?
-
-		Linus
+Rob
