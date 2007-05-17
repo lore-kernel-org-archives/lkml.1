@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762896AbXEQFIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762670AbXEQFPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762896AbXEQFIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 01:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760350AbXEQFIL
+	id S1762670AbXEQFPr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 01:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759317AbXEQFPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 01:08:11 -0400
-Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:3841 "EHLO
-	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759769AbXEQFIK convert rfc822-to-8bit (ORCPT
+	Thu, 17 May 2007 01:15:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46236 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758197AbXEQFPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 01:08:10 -0400
-Content-class: urn:content-classes:message
+	Thu, 17 May 2007 01:15:40 -0400
+Date: Wed, 16 May 2007 22:14:20 -0700
+From: Greg KH <greg@kroah.com>
+To: art@usfltd.com
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
+Message-ID: <20070517051420.GA10934@kroah.com>
+References: <20070516145822.d1bz7paab4o8gg8c@67.106.77.50>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
-Date: Thu, 17 May 2007 17:08:07 +1200
-Message-ID: <659F626D666070439A4A5965CD6EBF406B3471@gazelle.ad.endace.com>
-In-Reply-To: <17995.56011.742143.418388@notabene.brown>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
-Thread-Index: AceYPGvtHz1VoFOuRXean0ucGU8FiAAA2LaA
-References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com><6bffcb0e0705151629j78920ca2r9337dccdfc1bb6a9@mail.gmail.com><17994.19043.771733.453896@notabene.brown><659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com><17995.42562.870806.396617@notabene.brown><659F626D666070439A4A5965CD6EBF406B33ED@gazelle.ad.endace.com><17995.49602.427417.500049@notabene.brown><659F626D666070439A4A5965CD6EBF406B3428@gazelle.ad.endace.com> <17995.56011.742143.418388@notabene.brown>
-From: "Jeff Zheng" <Jeff.Zheng@endace.com>
-To: "Neil Brown" <neilb@suse.de>
-Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, <linux-raid@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070516145822.d1bz7paab4o8gg8c@67.106.77.50>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> What is the nature of the corruption?  Is it data in a file 
-> that is wrong when you read it back, or does the filesystem 
-> metadata get corrupted?
-The corruption is in fs metadata, jfs is completely destroied, after 
-Umount, fsck does not recogonize it as jfs anymore. Xfs gives kernel 
-Crash, but seems still recoverable.
+On Wed, May 16, 2007 at 02:58:22PM -0500, art@usfltd.com wrote:
+>  greg
 > 
-> Can you try the configuration that works, and sha1sum the 
-> files after you have written them to make sure that they 
-> really are correct?
-We have verified the data on the working configuration, we have written 
-around 900 identical 10G files , and verified that the md5sum is
-actually
-the same. The verification took two days though :)
-
-> My thought here is "maybe there is a bad block on one device, 
-> and the block is used for data in the 'working' config, and 
-> for metadata in the 'broken' config.
+>  CONFIG_SYSFS_DEPRECATED=Y
 > 
-> Can you try a degraded raid10 configuration. e.g.
+>  check that we have
+>  rwxrwxrwx 1 root root       15 May 16 13:43 scanner-usbdev2.12 -> 
+>  bus/usb/002/012
 > 
->    mdadm -C /dev/md1 --level=10 --raid-disks=4 /dev/first missing \
->    /dev/second missing
+>  in /dev directory after usb-scanner connection for kernel-2.6.20
+>  we don't have this for kernel-2.6.22
+
+Who creates that?  udev?  What udev rule does that?
+
+Can you run 'udevtest' to see what is supposed to be matching here?
+Odds are you have a broken rule somehow.
+
+
 > 
-> That will lay out the data in exactly the same place as with 
-> raid0, but will use totally different code paths to access 
-> it.  If you still get a problem, then it isn't in the raid0 code.
+>  ----------------------------2.6.20 usb-scanner connect
+> 
+>  # /usr/sbin/udevmonitor
+> 
+>  UEVENT[1179340996.886805] 
+>  add@/devices/pci0000:00/0000:00:0b.1/usb2/2-2/2-2.2
+>  UEVENT[1179340996.886864] add@/class/usb_endpoint/usbdev2.12_ep00
+>  UEVENT[1179340996.887438] 
+>  add@/devices/pci0000:00/0000:00:0b.1/usb2/2-2/2-2.2/2-2.2:1.0
+>  UEVENT[1179340996.887467] add@/class/usb_endpoint/usbdev2.12_ep81
+>  UEVENT[1179340996.887484] add@/class/usb_endpoint/usbdev2.12_ep02
+>  UEVENT[1179340996.887499] add@/class/usb_endpoint/usbdev2.12_ep83
+>  UEVENT[1179340996.887514] add@/class/usb_device/usbdev2.12
+>  UDEV  [1179340996.921506] 
+>  add@/devices/pci0000:00/0000:00:0b.1/usb2/2-2/2-2.2
+>  UDEV  [1179340996.936005] add@/class/usb_endpoint/usbdev2.12_ep00
+>  UDEV  [1179340996.960144] add@/class/usb_endpoint/usbdev2.12_ep81
+>  UDEV  [1179340996.963672] add@/class/usb_endpoint/usbdev2.12_ep02
+>  UDEV  [1179340996.967439] add@/class/usb_endpoint/usbdev2.12_ep83
+>  UDEV  [1179340997.240934] 
+>  add@/devices/pci0000:00/0000:00:0b.1/usb2/2-2/2-2.2/2-2.2:1.0
+>  UDEV  [1179340997.473142] add@/class/usb_device/usbdev2.12
 
-I will try this later today. As I'm now trying different size of the
-component.
-3.4T, seems working. Test 4.1T right now.
+This last device is correct, and what your udev rule should be using to
+create your symlink.
 
-> Maybe try version 1 metadata (mdadm --metadata=1).  I doubt 
-> that would make a difference, but as I am grasping at straws 
-> already, it may be a straw woth trying.
+You didn't answer my, "what distro are you using" question.  Also, what
+package created the udev rule that creates the above symlink?
 
-Well the problem may also be in 3ware disk array, or disk array driver.
-The guy
-complaining about the same problem is also using 3ware disk array
-controller.
-But there is no way to verify that and a single disk array has been
-working fine for us.
+thanks,
 
-Jeff
+greg k-h
+
