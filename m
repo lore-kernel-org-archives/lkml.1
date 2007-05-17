@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbXEQNCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbXEQNFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757108AbXEQNCr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 09:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbXEQNCl
+	id S1757227AbXEQNFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 09:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbXEQNFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 09:02:41 -0400
-Received: from adelie.ubuntu.com ([82.211.81.139]:59051 "EHLO
-	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754757AbXEQNCk (ORCPT
+	Thu, 17 May 2007 09:05:36 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:54881 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754757AbXEQNFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 09:02:40 -0400
-Subject: Re: [linux-usb-devel] [PATCH] Remove duplicate ID in ipaq driver
-From: Ben Collins <ben.collins@ubuntu.com>
-To: Greg KH <greg@kroah.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       Ganesh Varadarajan <ganesh@veritas.com>
-In-Reply-To: <20070517124333.GB20055@kroah.com>
-References: <1179348840.6510.16.camel@cunning> <ada1whgmqlx.fsf@cisco.com>
-	 <1179351408.6510.24.camel@cunning>  <20070517124333.GB20055@kroah.com>
-Content-Type: text/plain
-Organization: Canonical
-Date: Thu, 17 May 2007 09:02:20 -0400
-Message-Id: <1179406940.6510.90.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 09:05:35 -0400
+Date: Thu, 17 May 2007 15:05:34 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] NOHZ: local_softirq_pending with tickless plip
+In-Reply-To: <1179399131.3764.50.camel@chaos>
+Message-ID: <Pine.LNX.4.64.0705171453580.31321@artax.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0705161415350.10041@artax.karlin.mff.cuni.cz>
+ <1179399131.3764.50.camel@chaos>
+X-Personality-Disorder: Schizoid
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 05:43 -0700, Greg KH wrote:
-> On Wed, May 16, 2007 at 05:36:48PM -0400, Ben Collins wrote:
-> > On Wed, 2007-05-16 at 13:59 -0700, Roland Dreier wrote:
-> > > >  	/* The first entry is a placeholder for the insmod-specified device */
-> > >  > -	{ USB_DEVICE(0x049F, 0x0003) },
-> > > 
-> > > Is it obvious why this patch is correct?  Especially given the
-> > > comment just before the line you delete, and the code
-> > > 
-> > > 	if (vendor) {
-> > > 		ipaq_id_table[0].idVendor = vendor;
-> > > 		ipaq_id_table[0].idProduct = product;
-> > > 	}
-> > > 
-> > > in ipaq_init()?
-> > 
-> > My mistake, quick on the patching going through this dupe list.
-> > 
-> > Might I add that this is terrible use of the device table, though.
-> > Clutters userspace, and adds processing to module-init-tools programs.
-> 
-> It's a hold-over from the times when we didn't have the sysfs "add a new
-> id" interface for usb-serial drivers, which only recently was created.
-> 
-> So we just have to live with it, and the infinitesimal speed hit it
-> creates :)
+>> Hi
+>>
+>> On one of my machines with tickless kernel and plip I get messages :
+>
+> I bet this is a machine a P4 with Hyperthreading enabled ?
 
-Any objection to adding it to planned-for-removal and spitting out a
-printk when someone uses the "feature"?
+No, it's single Pentium 2. I have other Pentium MMX using plip, where I 
+don't get these error messages, I don't know why.
 
--- 
-Ubuntu   : http://www.ubuntu.com/
-Linux1394: http://wiki.linux1394.org/
+Mikulas
 
+>> NOHZ: local_softirq_pending 08
+>>
+>> always when using plip (on other machine with tickless kernel and plip I
+>> get no errors). Thebug happens both on 2.6.21 and 2.6.22-rc1
+>>
+>> This patch fixes that. Note that plip calls netif_rx neither from hardware
+>> interrupt nor from ksoftirqd, so there is no one who would wake
+>> ksoftirqd then. netif_tx calls only
+>> __raise_softirq_irqoff(NET_RX_SOFTIRQ), which sets softirq bit, but
+>> doesn't wake ksoftirqd.
+>
+> Dave,
+>
+> can we please get rid of __raise_softirq_irqoff() at all ? These micro
+> optimizations are causing more trouble than they are worth.
+>
+> 	tglx
+>
+>> Mikulas
+>>
+>> Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz
+>>
+>> --- linux-2.6.22-rc1/net/core/dev.c_	Fri May 18 07:51:01 2007
+>> +++ linux-2.6.22-rc1/net/core/dev.c	Fri May 18 07:51:06 2007
+>> @@ -1117,7 +1117,7 @@
+>>   		dev->quota += dev->weight;
+>>   	else
+>>   		dev->quota = dev->weight;
+>> -	__raise_softirq_irqoff(NET_RX_SOFTIRQ);
+>> +	raise_softirq_irqoff(NET_RX_SOFTIRQ);
+>>   	local_irq_restore(flags);
+>>   }
+>>   EXPORT_SYMBOL(__netif_rx_schedule);
+>
+>
