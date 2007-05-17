@@ -1,51 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbXEQJfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbXEQJhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbXEQJfc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 05:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXEQJf0
+	id S1756276AbXEQJhX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 05:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbXEQJhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 05:35:26 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:48505 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754437AbXEQJfZ (ORCPT
+	Thu, 17 May 2007 05:37:12 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:18856 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754537AbXEQJhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 05:35:25 -0400
-Date: Thu, 17 May 2007 10:35:23 +0100 (IST)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steve Fox <drfickle@us.ibm.com>
-Subject: Re: 2.6.22-rc1-mm1
-In-Reply-To: <464B9573.8030407@zytor.com>
-Message-ID: <Pine.LNX.4.64.0705171013560.27336@skynet.skynet.ie>
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
- <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com>
- <20070516174046.GE10225@skynet.ie> <464B9573.8030407@zytor.com>
+	Thu, 17 May 2007 05:37:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=fxOXBvLVDhqmjpLgh+MrCy1aSTDc2Bq2gmQRyMVk1NYVI9qSuXdxY2ILWsXldg2V2sVir+FS5/sgvCsCBnCiXcjD5rAzo4VQ+Fdai8u8/hyCWTyR8ykqgiMGXKvO+vzB1SM14vFQ/gJVMsnaWE3gWtiZ8T5bbnfP4UQGXkFXMjg=
+Message-ID: <464C221B.9080004@gmail.com>
+Date: Thu, 17 May 2007 11:36:27 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+References: <20070511134714.GA191@tv-sign.ru> <46448965.7070500@gmail.com> <20070511145345.GA240@tv-sign.ru> <4645559D.4050602@gmail.com> <20070513192753.GA3014@tv-sign.ru> <46477239.9030007@gmail.com> <20070514194446.GA159@tv-sign.ru> <46496EC1.3090109@gmail.com> <20070515220024.GA615@tv-sign.ru> <464AEA47.7030600@gmail.com> <20070516185203.GB81@tv-sign.ru>
+In-Reply-To: <20070516185203.GB81@tv-sign.ru>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, H. Peter Anvin wrote:
+Hello, Oleg.
 
-> Correction, does *this patch* do it for you?
->
+Oleg Nesterov wrote:
+> Hello Tejun,
+> 
+> On 05/16, Tejun Heo wrote:
+>>>> lock is read arrier, unlock is write barrier.
+>> Let's say there's a shared data structure protected by a spinlock and
+>> two threads are accessing it.
+>>
+>> 1. thr1 locks spin
+>> 2. thr1 updates data structure
+>> 3. thr1 unlocks spin
+>> 4. thr2 locks spin
+>> 5. thr2 accesses data structure
+>> 6. thr2 unlocks spin
+>>
+>> If spin_unlock is not a write barrier and spin_lock is not a read
+>> barrier, nothing guarantees memory accesses from step#5 will see the
+>> changes made in step#2.  Memory fetch can occur during updates in step#2
+>> or even before that.
+> 
+> Ah, but this is something different. Both lock/unlock are full barriers,
+> but they protect only one direction. A memory op must not leak out of the
+> critical section, but it may leak in.
+> 
+> 	A = B;		// 1
+> 	lock();		// 2
+> 	C = D;		// 3
+> 
+> this can be re-ordered to
+> 
+> 	lock();		// 2
+> 	C = D;		// 3
+> 	A = B;		// 1
+> 
+> but 2 and 3 must not be re-ordered.
 
-With these two patches in combination, previously failing machines elm3b6 
-(x86_64 on test.kernel.org) and a modern x86 built a kernel and booted 
-correctly.
+OIC.  Right, barriers with directionality would do that.
 
-elm3b132 and elm3b132 (x86 numaq on test.kernel.org) built with these 
-patches but silently fail on boot with no output via earlyprintk. 
-According to test.kernel.org, this failure occurs with git-newsetup 
-reverted so it is a separate problem.
+> To be sure, I contacted Paul E. McKenney privately, and his reply is
+> 
+> 	> No.  See for example IA64 in file include/asm-ia64/spinlock.h,
+> 	> line 34 for spin_lock() and line 92 for spin_unlock().  The
+> 	> spin_lock() case uses a ,acq completer, which will allow preceding
+> 	> reads to be reordered into the critical section.  The spin_unlock()
+> 	> uses the ,rel completer, which will allow subsequent writes to be
+> 	> reordered into the critical section.  The locking primitives are
+> 	> guaranteed to keep accesses bound within the critical section, but
+> 	> are free to let outside accesses be reordered into the critical
+> 	> section.
+> 	>
+> 	> Download the Itanium Volume 2 manual:
+> 	>
+> 	>         http://developer.intel.com/design/itanium/manuals/245318.htm
+> 	>
+> 	> Table 2.3 on page 2:489 (physical page 509) shows an example of how
+> 	> the rel and acq completers work.
 
-Thanks
+And, there actually is such a beast.  Thanks for the enlightenment.
+Care to document these?
+
+>>> Could you also look at
+>>> 	http://marc.info/?t=116275561700001&r=1
+>>>
+>>> and, in particular,
+>>> 	http://marc.info/?l=linux-kernel&m=116281136122456
+>> This is because spin_lock() isn't a write barrier, right?  I totally
+>> agree with you there.
+> 
+> Yes, but in fact I think wake_up() needs a full mb() semantics (which we
+> don't have _in theory_), because try_to_wake_up() first checks task->state
+> and does nothing if it is TASK_RUNNING.
+> 
+> That is why I think that smp_mb__before_spinlock() may be useful not only
+> for workqueue.c
+
+Yeap, I agree.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+tejun
