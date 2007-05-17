@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbXEQCVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760142AbXEQCXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbXEQCVd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 22:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXEQCV0
+	id S1760142AbXEQCXX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 22:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbXEQCXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 22:21:26 -0400
-Received: from nwk-ea-fw-1.sun.com ([192.18.42.249]:13069 "EHLO
-	nwk-ea-fw-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755177AbXEQCVZ (ORCPT
+	Wed, 16 May 2007 22:23:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38227 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754880AbXEQCXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 22:21:25 -0400
-Date: Wed, 16 May 2007 19:19:20 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH]x86_64: early_print kernel console should send CRLF not LFCR
-To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       rmk@arm.linux.org.uk
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai.Lu@Sun.COM
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200705161919.21304.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.8.2
+	Wed, 16 May 2007 22:23:17 -0400
+Date: Wed, 16 May 2007 19:21:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christian <haveaniceday@cv-sv.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64
+In-Reply-To: <464BAF07.9020003@cv-sv.de>
+Message-ID: <alpine.LFD.0.98.0705161920410.3890@woody.linux-foundation.org>
+References: <464B9D2C.7040704@cv-sv.de> <alpine.LFD.0.98.0705161750350.3890@woody.linux-foundation.org>
+ <464BAF07.9020003@cv-sv.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH]x86_64: early_print kernel console should send CRLF not LFCR
 
-   in 
-	commit d358788f3f30113e49882187d794832905e42592
-	Author: Russell King <rmk@dyn-67.arm.linux.org.uk>
-	Date:   Mon Mar 20 20:00:09 2006 +0000
 
-    Glen Turner reported that writing LFCR rather than the more
-    traditional CRLF causes issues with some terminals.
+On Thu, 17 May 2007, Christian wrote:
 
-    Since this aflicts many serial drivers, extract the common code
-    to a library function (uart_console_write) and arrange for each
-    driver to supply a "putchar" function.
+> Linus Torvalds wrote:
+> > Can you check? The Nehemian (C3-2) should be model 9 or greater.
+> 
+> Yes, it's a Nehemiah
 
-    but early_printk is left out. 
+Ok. If so, we should blacklist both MCYRIXIII and MVIAC3_2, I suspect.
 
-    Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-    Cc: Andi Kleen <ak@suse.de>
-    Cc: Russell King <rmk@arm.linux.org.uk>
+> lola:~ # cat /proc/cpuinfo
+> flags           : fpu vme de pse tsc msr cx8 sep mtrr pge cmov pat mmx fxsr sse rng rng_en ace ace_en
 
-diff --git a/arch/x86_64/kernel/early_printk.c b/arch/x86_64/kernel/early_printk.c
-index 56eaa25..296d2b0 100644
---- a/arch/x86_64/kernel/early_printk.c
-+++ b/arch/x86_64/kernel/early_printk.c
-@@ -91,9 +91,9 @@ static int early_serial_putc(unsigned char ch)
- static void early_serial_write(struct console *con, const char *s, unsigned n)
- {
- 	while (*s && n-- > 0) {
--		early_serial_putc(*s);
- 		if (*s == '\n')
- 			early_serial_putc('\r');
-+		early_serial_putc(*s);
- 		s++;
- 	}
- }
+However, it does seem to *claim* to support "cx8" aka cmpxchg8b. What's up 
+with that?
+
+		Linus
