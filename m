@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbXEQUUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761891AbXEQUUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761389AbXEQUUg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXEQUU3
+	id S1761891AbXEQUUx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761584AbXEQUUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:20:29 -0400
-Received: from max.feld.cvut.cz ([147.32.192.36]:48652 "EHLO max.feld.cvut.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755554AbXEQUU2 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:20:28 -0400
-From: CIJOML <cijoml@volny.cz>
-To: Linux-kernel@vger.kernel.org
-Subject: Having problems with 8250 module in 2.6.20,2.6.21...
-Date: Thu, 17 May 2007 22:20:10 +0200
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Thu, 17 May 2007 16:20:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59445 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759513AbXEQUUm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 16:20:42 -0400
+Date: Thu, 17 May 2007 13:17:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Peer Chen" <pchen@nvidia.com>, <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Robert Hancock" <hancockr@shaw.ca>,
+       "Kuan Luo" <kluo@nvidia.com>
+Subject: Re: [PATCH] drivers/ata: Add the SW NCQ support to sata_nv for
+ MCP51/MCP55/MCP61
+Message-Id: <20070517131742.029e9fd0.akpm@linux-foundation.org>
+In-Reply-To: <20070517131235.8f9445cc.akpm@linux-foundation.org>
+References: <15F501D1A78BD343BE8F4D8DB854566B13CD8F45@hkemmail01.nvidia.com>
+	<464A94D7.30300@garzik.org>
+	<15F501D1A78BD343BE8F4D8DB854566B13F197C0@hkemmail01.nvidia.com>
+	<20070517131235.8f9445cc.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705172220.10469.cijoml@volny.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 17 May 2007 13:12:35 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-with kernel 2.6.20 and 2.6.21 I have problem with my good old router 
-Dell Dual P2 333MHz.
+> The patch generates warnings:
+> 
+> drivers/ata/sata_nv.c:2118: warning: cast from pointer to integer of different size
+> drivers/ata/sata_nv.c:2118: warning: cast to pointer from integer of different size
+> 
+> due to some quite suspicious-looknig code:
+> 
+>         prd = (struct ata_prd*)((u64)pp->prd + ATA_PRD_TBL_SZ*qc->tag);
+> 
+> we have
+> 
+> struct ata_prd {
+> 	        u32                     addr;
+> 	        u32                     flags_len;
+> };
+> 
+> and the code is casting a pointer to this into a pointer to u64, then
+> adding stuff to it, then casting it back to the correct type.
+> 
+> Can't we simply do this?
+> 
+> --- a/drivers/ata/sata_nv.c~drivers-ata-add-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61-fix
+> +++ a/drivers/ata/sata_nv.c
+> @@ -2115,7 +2115,7 @@ static void nv_fill_sg(struct ata_queued
+>  	WARN_ON(qc->__sg == NULL);
+>  	WARN_ON(qc->n_elem == 0 && qc->pad_len == 0);
+>  
+> -	prd = (struct ata_prd*)((u64)pp->prd + ATA_PRD_TBL_SZ*qc->tag);
+> +	prd = pp->prd + ATA_PRD_TBL_SZ*qc->tag;
+>  
+>  	idx = 0;
+>  	ata_for_each_sg(sg, qc) {
 
-Module 8250 getts loaded, but UPS driver is unable talk to UPS:
+hm, no.
 
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-eth0:  setting full-duplex.
-eth1:  setting full-duplex.
-prism2: wlan0: operating mode changed 3 -> 2
-wifi0: LinkStatus=2 (Disconnected)
-wifi0: LinkStatus: BSSID=00:60:b3:6a:5e:88
-nf_conntrack version 0.5.0 (1024 buckets, 8192 max)
-ip_tables: (C) 2000-2006 Netfilter Core Team
-wifi0: LinkStatus=1 (Connected)
-wifi0: LinkStatus: BSSID=00:02:2d:ba:4e:7d
-ttyS0: LSR safety check engaged!
-ttyS0: LSR safety check engaged!
-ttyS1: LSR safety check engaged!
-ttyS1: LSR safety check engaged!
-HTB: quantum of class 10001 is big. Consider r2q change.
-HTB: quantum of class 10001 is big. Consider r2q change.
-HTB: quantum of class 10015 is small. Consider r2q change.
-HTB: quantum of class 10016 is small. Consider r2q change.
-HTB: quantum of class 10017 is small. Consider r2q change.
-HTB: quantum of class 10011 is small. Consider r2q change.
-HTB: quantum of class 10015 is small. Consider r2q change.
-HTB: quantum of class 10016 is small. Consider r2q change.
-HTB: quantum of class 10017 is small. Consider r2q change.
-u32 classifier
-    OLD policer on
-wifi0: LinkStatus=2 (Disconnected)
-wifi0: LinkStatus: BSSID=00:02:2d:ba:4e:7d
-wifi0: LinkStatus=2 (Disconnected)
-wifi0: LinkStatus: BSSID=44:44:44:44:44:44
-ttyS1: LSR safety check engaged!
-wifi0: LinkStatus=1 (Connected)
-wifi0: LinkStatus: BSSID=00:02:2d:ba:4e:7d
-ttyS1: LSR safety check engaged!
-ttyS1: LSR safety check engaged!
-ttyS1: LSR safety check engaged!
-ttyS1: LSR safety check engaged!
-ttyS1: LSR safety check engaged!
-ttyS1: LSR safety check engaged!
-ttyS1: LSR safety check engaged!
+ugh, I dunno what's going on here and I think I'd prefer not to.  Can't
+we come up with some typesafe way of doing this without casting?
 
-Liboc01:/home/cijoml# upsdrvctl start
-Network UPS Tools - UPS driver controller 2.0.4
-Network UPS Tools - Tripp-Lite SmartUPS driver 0.8 (2.0.4)
-tcgetattr(/dev/ttyS1): Input/output error
-Driver failed to start (exit status=1)
-
-Does anybody work on this problem or can help?
-
-Thanks a LOT
-
-Michal
+Meanwhile, I'll switch the cast from u64 to long.
