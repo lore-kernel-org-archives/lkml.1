@@ -1,138 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbXEQOL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbXEQONR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbXEQOL0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbXEQOLR
+	id S1757427AbXEQONR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbXEQONA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:11:17 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:55333 "EHLO e3.ny.us.ibm.com"
+	Thu, 17 May 2007 10:13:00 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:58445 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754783AbXEQOLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:11:15 -0400
-Date: Thu, 17 May 2007 19:41:15 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: [PATCH 0/6][TAKE4] fallocate system call
-Message-ID: <20070517141115.GA24260@amitarora.in.ibm.com>
-References: <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426175056.GA25321@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	id S1754538AbXEQOM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 10:12:59 -0400
+Date: Thu, 17 May 2007 16:10:20 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Greg KH <greg@kroah.com>
+cc: ark3116_driver@auctionant.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] ark3116: receive returns negative
+In-Reply-To: <20070517124525.GC20055@kroah.com>
+Message-ID: <Pine.LNX.4.61.0705171529570.3231@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705161743250.9570@yvahk01.tjqt.qr>
+ <20070517124525.GC20055@kroah.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Description:
------------
-fallocate() is a new system call being proposed here which will allow
-applications to preallocate space to any file(s) in a file system.
-Each file system implementation that wants to use this feature will need
-to support an inode operation called fallocate.
+Hi Greg,
 
-Applications can use this feature to avoid fragmentation to certain
-level and thus get faster access speed. With preallocation, applications
-also get a guarantee of space for particular file(s) - even if later the
-the system becomes full.
+On May 17 2007 05:45, Greg KH wrote:
+>> 
+>> I seem to have problems with the ark3116 driver from 2.6.18.8. This 
+>> is a USB-RS232 cable. Just opening the /dev/ttyUSB0 device gives 
+>> (this is the debug output enabled by `modprobe ark3116 debug=1`).
+>> 
+>> The lines that look suspicious are
+>> /serial/ark3116.c: 124 < 1 bytes [0xFFFFFFB0]
+>> and
+>> /serial/ark3116.c: ark3116_ioctl cmd 0x5401 not supported
+>
+>Why is this suspicious?  We don't support all ioctls for all usb-serial
+>drivers, perhaps this one is just not really needed?
 
-Currently, glibc provides an interface called posix_fallocate() which
-can be used for similar cause. Though this has the advantage of working
-on all file systems, but it is quite slow (since it writes zeroes to
-each block that has to be preallocated). Without a doubt, file systems
-can do this more efficiently within the kernel, by implementing
-the proposed fallocate() system call. It is expected that
-posix_fallocate() will be modified to call this new system call first
-and incase the kernel/filesystem does not implement it, it should fall
-back to the current implementation of writing zeroes to the new blocks.
+ark3116 supports set_termios (0x5402), but does not get_termios 
+(0x5401). Not sure how that affects userspace, though.
 
-Interface:
----------
-The proposed system call's layout is:
+The 0xFFFFFFB0 looks like a simple formatting error (ark3116.c line 66)
+an explicit cast to (unsigned char)buf[0] or (unsigned int) seems 
+required.
 
- asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
+>> I have also seen things like "id here < -62 [0x10]", which would 
+>> indicate that usb_control_msg() returned something very negative 
+>> (-ETIME!?).
 
-fd: The descriptor of the open file.
+The -62 only shows up when the cable is already connected when I 
+modprobe ark3116. Reinserting it - and no "-62" shows up.
+Maybe this is something normal with USB?
 
-mode*: This specifies the behavior of the system call. Currently the
-  system call supports two modes - FA_ALLOCATE and FA_DEALLOCATE.
-  FA_ALLOCATE: Applications can use this mode to preallocate blocks to
-    a given file (specified by fd). This mode changes the file size if
-    the preallocation is done beyond the EOF. It also updates the
-    ctime in the inode of the corresponding file, marking a
-    successfull allocation.
-  FA_DEALLOCATE: This mode can be used by applications to deallocate the
-    previously preallocated blocks. This also may change the file size
-    and the ctime/mtime.
-* New modes might get added in future. One such new mode which is
-  already under discussion is FA_PREALLOCATE, which when used will
-  preallocate space but will not change the filesize and [cm]time.
-  Since the semantics of this new mode is not clear and agreed upon yet,
-  this patchset does not implement it currently.
+>But does the driver seem to work properly?
+>
+>> Issuing a write() on an open fd to ttyUSB does not generate any further 
+>> debug output. Is the driver even complete/functional?
 
-offset: This is the offset in bytes, from where the preallocation should
-  start.
+(I found that I already need to modprobe usbserial with debug=1,
+since ark3116 uses usb_serial_generic_write)
 
-len: This is the number of bytes requested for preallocation (from
-  offset).
- 
-RETURN VALUE: The system call returns 0 on success and an error on
-failure. This is done to keep the semantics same as of
-posix_fallocate(). 
-    
-sys_fallocate() on s390:
------------------------
-There is a problem with s390 ABI to implement sys_fallocate() with the
-proposed order of arguments. Martin Schwidefsky has suggested a patch to
-solve this problem which makes use of a wrapper in the kernel. This will
-require special handling of this system call on s390 in glibc as well.
-But, this seems to be the best solution so far.
+>Do you get data through the device properly?
 
-Known Problem:
--------------
-mmapped writes into uninitialized extents is a known problem with the
-current ext4 patches. Like XFS, ext4 may need to implement
-->page_mkwrite() to solve this. See:
-http://lkml.org/lkml/2007/5/8/583
+I would have to test with a real serial port. (I do not
+have any real port right now, just two cables + adapters.)
 
-Since there is a talk of ->fault() replacing ->page_mkwrite() and also
-with a generic block_page_mkwrite() implementation already posted, we
-can implement this later some time. See:
-http://lkml.org/lkml/2007/3/7/161
-http://lkml.org/lkml/2007/3/18/198
+What certainly does not work: Connecting two cables to each other, that is,
+USB-RS232-GenderChanger-RS232-USB. (1) USB ends connected to the same machine
+(2) USB ends connected to different machines. Both (1) and (2) do not work.
+The write() seems to succeed, but read() blocks:
 
-ToDos:
------
-1> Implementation on other architectures (other than i386, x86_64,
-ppc64 and s390(x)). David Chinner has already posted a patch for ia64.
-2> A generic file system operation to handle fallocate
-(generic_fallocate), for filesystems that do _not_ have the fallocate
-inode operation implemented.
-3> Changes to glibc,
-   a) to support fallocate() system call
-   b) to make posix_fallocate() and posix_fallocate64() call fallocate()
+# klogconsole -l8 -r0
+# ./sertest
+[...]
+Writing...
+drivers/usb/serial/usb-serial.c: serial_write_room - port 0
+drivers/usb/serial/generic.c: usb_serial_generic_write_room - port 0
+drivers/usb/serial/generic.c: usb_serial_generic_write_room - returns 64
+drivers/usb/serial/usb-serial.c: serial_write - port 0, 3 byte(s)
+drivers/usb/serial/generic.c: usb_serial_generic_write - port 0
+ark3116 ttyUSB0: usb_serial_generic_write - length = 3, data = 66 6f 6f
+drivers/usb/serial/generic.c: usb_serial_generic_write_bulk_callback - 
+port 0
+drivers/usb/serial/usb-serial.c: usb_serial_port_work - port 0
+Reading...
+(stops)
 
-
-Changelog:
----------
-Changes from Take2 to Take3:
-	1) Return type is now described in the interface description
-	   above.
-	2) Patches rebased to 2.6.22-rc1 kernel.
-
-** Each post will have an individual changelog for a particular patch.
+Source:
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main(void)
+{
+	char bar[4] = {};
+	int s0 = open("/dev/ttyUSB0", O_RDWR);
+	int s1 = open("/dev/ttyUSB1", O_RDWR);
+	if (s0 < 0 || s1 < 0)
+		abort();
+	printf("Writing...\n");
+	write(s0, "foo", 3);
+	printf("Reading...\n");
+	read(s1, bar, 3);
+	printf("Read: %s\n", bar);
+	return 0;
+}
 
 
-Following patches follow:
-Patch 1/6 : fallocate() implementation on i86, x86_64 and powerpc
-Patch 2/6 : fallocate() on s390
-Patch 3/6 : fallocate() on ia64
-Patch 4/6 : ext4: Extent overlap bugfix
-Patch 5/6 : ext4: fallocate support in ext4
-Patch 6/6 : ext4: write support for preallocated blocks
 
---
-Regards,
-Amit Arora
+	Jan
+-- 
