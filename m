@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbXEQRrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbXEQRre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759534AbXEQRrU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756979AbXEQRrJ
+	id S1759997AbXEQRre (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbXEQRrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:47:09 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:39457 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756373AbXEQRrH (ORCPT
+	Thu, 17 May 2007 13:47:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51320 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759456AbXEQRrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:47:07 -0400
-Subject: Re: sysfs makes scaling suck Re: Asynchronous scsi scanning
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
-       Simon Arlott <simon@fire.lp0.eu>, Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-In-Reply-To: <20070517173238.GA30571@kvack.org>
-References: <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
-	 <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com>
-	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
-	 <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
-	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
-	 <17841.simon.1179228389@5ec7c279.invalid>
-	 <20070515120228.GI10562@parisc-linux.org>
-	 <4649E03A.1090004@simon.arlott.org.uk>
-	 <20070515172905.GJ10562@parisc-linux.org>
-	 <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
-	 <20070517173238.GA30571@kvack.org>
-Content-Type: text/plain
-Date: Thu, 17 May 2007 13:45:24 -0400
-Message-Id: <1179423924.3785.30.camel@mulgrave.il.steeleye.com>
+	Thu, 17 May 2007 13:47:19 -0400
+Date: Thu, 17 May 2007 10:36:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, axboe@kernel.dk,
+       herbert@gondor.apana.org.au, dmitry.torokhov@gmail.com, kkeil@suse.de,
+       trond.myklebust@fys.uio.no, chas@cmf.nrl.navy.mil, kaber@trash.net,
+       devel@openvz.org
+Subject: Re: [PATCH] Make common helpers for seq_files that work with
+ list_head-s
+Message-Id: <20070517103655.b6a7054c.akpm@linux-foundation.org>
+In-Reply-To: <464C728C.8050507@sw.ru>
+References: <464C728C.8050507@sw.ru>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 13:32 -0400, Benjamin LaHaise wrote:
-> On Wed, May 16, 2007 at 04:57:52AM +0530, Satyam Sharma wrote:
-> > 
-> > echo 1 > /sys/module/scsi_mod/.../wait_for_async_scans
-> > 
-> > somewhere in some script. In fact, the latter method seems simpler,
-> > saner, better (in every which way)!
+On Thu, 17 May 2007 19:19:40 +0400 Pavel Emelianov <xemul@sw.ru> wrote:
+
+> Many places in kernel use seq_file API to iterate over a regular
+> list_head. The code for such iteration is identical in all the
+> places, so it's worth introducing a common helpers.
 > 
-> Please don't force sysfs on people.  Just watch how it keels over and dies 
-> when you end up with lots of disks/network interfaces on reasonably sized 
-> boxes.  16 statically allocated files per network interface starts being 
-> a problem once you've got a few thousand interfaces.  Anything that forces 
-> me to use sysfs is not gonna fly.
+> This makes code more than 300 lines smaller.
+> 
+> Cc-ed are people, who maintain the code altered by the patch.
+> 
+> Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+> 
+>  block/genhd.c                                         |   40 +++-----
+>  crypto/proc.c                                         |   17 ---
+>  drivers/char/misc.c                                   |   18 ----
+>  drivers/input/input.c                                 |   29 ------
+>  drivers/isdn/capi/kcapi_proc.c                        |   28 ------
+>  fs/afs/proc.c                                         |   81 ++----------------
+>  fs/namespace.c                                        |   14 ---
+>  fs/nfs/client.c                                       |   54 +-----------
+>  fs/proc/proc_tty.c                                    |   15 ---
+>  include/linux/seq_file.h                              |   35 +++++++
+>  kernel/module.c                                       |   17 ---
+>  mm/slab.c                                             |   28 +-----
+>  net/atm/br2684.c                                      |   22 ----
+>  net/core/sock.c                                       |   39 --------
+>  net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c |   27 ------
+>  net/netfilter/nf_conntrack_expect.c                   |   27 ------
+>  net/rxrpc/ar-proc.c                                   |   48 +---------
+>  17 files changed, 116 insertions(+), 423 deletions(-)
 
-Well, for that case, you just never enable async scanning
+Can't complain about the diffstat.  Please experiment with uninlining
+seq_list_start(), see if that reduces overall text size.
 
-But also, the sysfs with over 4,000 (and higher) devices was
-specifically checked by OSDL (actually as part of the CGL testing) some
-of the Manoj changes (for unpinning entries etc) were needed to get it
-to function, but as of now, I believe an enterprise scaling test works
-reasonably well for it ... there certainly wasn't any evidence of it
-dying horribly in the tests.
-
-James
-
-
+And as Dmitry indicated, it would be less disruptive if we could have the
+one core patch then a stream of per-subsystem patches, please.
