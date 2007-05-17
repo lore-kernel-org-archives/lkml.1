@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbXEQWOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbXEQWOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759225AbXEQWOe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 18:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbXEQWO1
+	id S1760766AbXEQWOq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 18:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbXEQWOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 18:14:27 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2712 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756132AbXEQWO0 (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 18:14:26 -0400
-Date: Thu, 17 May 2007 23:14:18 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: CIJOML <cijoml@volny.cz>
-Cc: Linux-kernel@vger.kernel.org
-Subject: Re: Having problems with 8250 module in 2.6.20,2.6.21...
-Message-ID: <20070517221418.GA15498@flint.arm.linux.org.uk>
-Mail-Followup-To: CIJOML <cijoml@volny.cz>, Linux-kernel@vger.kernel.org
-References: <200705172220.10469.cijoml@volny.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705172220.10469.cijoml@volny.cz>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 17 May 2007 18:14:30 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:43195 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757362AbXEQWO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 18:14:29 -0400
+Message-ID: <464CD3BB.3090604@zytor.com>
+Date: Thu, 17 May 2007 15:14:19 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Dave Jones <davej@redhat.com>, Christian <haveaniceday@cv-sv.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <200705171351.34531.ak@suse.de>
+In-Reply-To: <200705171351.34531.ak@suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 10:20:10PM +0200, CIJOML wrote:
-> Hi,
+Andi Kleen wrote:
+>>
+>> The C3s all have cx8, but it needs to be enabled in an MSR first.
+>> (See arch/i386/kernel/cpu/centaur.c , search for CX8)
 > 
-> with kernel 2.6.20 and 2.6.21 I have problem with my good old router 
-> Dell Dual P2 333MHz.
+> Sigh. I wonder what genius at VIA came up with that setup.
 > 
-> Module 8250 getts loaded, but UPS driver is unable talk to UPS:
-> 
-> Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
-> eth0:  setting full-duplex.
-> eth1:  setting full-duplex.
 
-Looks like no serial ports were found?
+It's very simple, actually.  We had to do something similar at
+Transmeta, because Windows NT 4 was very fond of assuming that certain
+features meant certain *other* features were enabled, or would just
+plain crash if it saw a combination that confused it.
 
-> ttyS0: LSR safety check engaged!
-> ttyS0: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-
-But something in userspace tried to add some, but they don't look like
-a serial port - the LSR register contains an impossible value for a
-serial port to be there.
-
-> ttyS1: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-> ttyS1: LSR safety check engaged!
-
-More attempts at trying to open the nonexistent serial port.
-
-> Does anybody work on this problem or can help?
-
-Please track down the last kernel version which worked.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	-hpa
