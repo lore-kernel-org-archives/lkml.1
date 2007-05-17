@@ -1,40 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbXEQBsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbXEQBzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759468AbXEQBsy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 21:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbXEQBsr
+	id S1759780AbXEQBzi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 21:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757793AbXEQBzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 21:48:47 -0400
-Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:41955 "EHLO
-	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756382AbXEQBsr (ORCPT
+	Wed, 16 May 2007 21:55:32 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:33474 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756382AbXEQBzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 21:48:47 -0400
-Message-ID: <464BB43D.2020407@gentoo.org>
-Date: Wed, 16 May 2007 21:47:41 -0400
-From: Daniel Drake <dsd@gentoo.org>
+	Wed, 16 May 2007 21:55:31 -0400
+Message-ID: <464BB60B.8060207@zytor.com>
+Date: Wed, 16 May 2007 18:55:23 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: kronos.it@gmail.com, linux list <linux-kernel@vger.kernel.org>,
-       Jimmy.Jazz@gmx.net
-Subject: radeonfb and X800 cards
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Dave Jones <davej@redhat.com>, Christian <haveaniceday@cv-sv.de>,
+       linux-kernel@vger.kernel.org, ak@suse.de
+Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <464BACCC.7070504@zytor.com>
+In-Reply-To: <464BACCC.7070504@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+H. Peter Anvin wrote:
+> 
+> Andi added code to verify that we can actually execute on the processor
+> before protected mode (so we can still get a message out through the
+> BIOS.)  That code presumably doesn't know of the MSR that needs to be
+> touched.
+> 
+> That code is in assembly in Andi's version, my rewritten version has it
+> in C.  I should add this code.
+> 
 
-Did anything happen to the patch titled "radeonfb: add support for newer 
-cards"?
-http://lwn.net/Articles/215965/
+The newsetup tree now has code to unmask features on VIA and Transmeta
+(as well as AMD, which was already in there):
 
-Jimmy at http://bugs.gentoo.org/174063 has extended upon this with some 
-further fixes based on code the in X11 driver. The patches are on the 
-bug report.
+http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-newsetup.git;a=commitdiff;h=c9cf55604433b386d0b499ed7bed654fd01c3be2
 
-Ben, where can the most up-to-date radeonfb code be found?
-
-Thanks,
-Daniel
+	-hpa
