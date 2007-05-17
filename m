@@ -1,38 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757811AbXEQU4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbXEQU6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757811AbXEQU4b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbXEQU4Z
+	id S1757458AbXEQU6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbXEQU6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:56:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50284
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754136AbXEQU4Y (ORCPT
+	Thu, 17 May 2007 16:58:39 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40682 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754136AbXEQU6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:56:24 -0400
-Date: Thu, 17 May 2007 13:56:24 -0700 (PDT)
-Message-Id: <20070517.135624.131107441.davem@davemloft.net>
-To: dedekind@infradead.org
-Cc: hch@lst.de, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1179413443.3642.49.camel@sauron>
-References: <20070517143200.GA30850@lst.de>
-	<1179413443.3642.49.camel@sauron>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 16:58:38 -0400
+Message-ID: <464CC209.4060500@cs.helsinki.fi>
+Date: Thu, 17 May 2007 23:58:49 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
+MIME-Version: 1.0
+To: "=?UTF-8?B?SsO2cm4gRW5nZWw=?=" <joern@lazybastard.org>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+References: <20070515151919.GA32510@lazybastard.org> <Pine.LNX.4.64.0705161319060.5152@sbz-30.cs.Helsinki.FI> <20070516122603.GE5472@lazybastard.org> <84144f020705160536i189f6206sffc964a145177da7@mail.gmail.com> <20070516132035.GJ5472@lazybastard.org>
+In-Reply-To: <20070516132035.GJ5472@lazybastard.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Artem Bityutskiy <dedekind@infradead.org>
-Date: Thu, 17 May 2007 17:50:43 +0300
+Jörn Engel wrote:
+> Compressing random data will actually enlarge it.  If that happens I
+> simply store the verbatim uncompressed data instead and mark it as such.
+> 
+> There is also demand for a user-controlled bit in the inode to disable
+> compression completely.  All those .jpg, .mpg, .mp3, etc. just waste
+> time by trying and failing to compress them.
 
-> Well, I see the good side of your change - no home-brewed media<->cpu
-> things. Fair enough and nice. But why don't you make __be32 a struct
-> (just like I do) so that compiler could complain then?
-
-structs get passed on the stack instead of via registers, regardless
-of size, when passed as arguments on some architectures, so there is a
-terrible performance cost of doing things that way
+So any sane way to enable compression is on per-inode basis which makes 
+me still wonder why you need per-object compression.
