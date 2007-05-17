@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760578AbXEQRxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbXEQRyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760578AbXEQRxb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759078AbXEQRxS
+	id S1760757AbXEQRyF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbXEQRxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:53:18 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:51651 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758761AbXEQRxR (ORCPT
+	Thu, 17 May 2007 13:53:52 -0400
+Received: from smtp.nokia.com ([131.228.20.171]:46166 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756312AbXEQRxv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:53:17 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>
-In-Reply-To: <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
-	 <1179385718.27354.17.camel@twins>
-	 <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Thu, 17 May 2007 19:52:15 +0200
-Message-Id: <1179424335.2925.5.camel@lappy>
+	Thu, 17 May 2007 13:53:51 -0400
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20070517102931.6bbbad1a.akpm@linux-foundation.org>
+References: <20070517143200.GA30850@lst.de>
+	 <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de>
+	 <1179414590.3642.69.camel@sauron>
+	 <20070517102931.6bbbad1a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 17 May 2007 20:46:46 +0300
+Message-Id: <1179424006.3642.84.camel@sauron>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 17 May 2007 17:46:46.0759 (UTC) FILETIME=[56DE5770:01C798AB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 10:29 -0700, Christoph Lameter wrote:
-> On Thu, 17 May 2007, Peter Zijlstra wrote:
+On Thu, 2007-05-17 at 10:29 -0700, Andrew Morton wrote:
+> umm..  I'd say what you've done in there is an improvement to the exiting
+> stuff: getting gcc to check it is better than having to use sparse.
 > 
-> > I'm really not seeing why you're making such a fuzz about it; normally
-> > when you push the system this hard we're failing allocations left right
-> > and center too. Its just that the block IO path has some mempools which
-> > allow it to write out some (swap) pages and slowly get back to sanity.
+> I'd have expected gcc to generate poorer code with your approach but I'm
+> showing zero text size changes from Christoph's patch (gcc-4.1 and
+> gcc-3.4.5).
 > 
-> I am weirdly confused by these patches. Among other things you told me 
-> that the performance does not matter since its never (or rarely) being 
-> used (why do it then?).
+> So I wouldn't be averse to creating a new, generic, kernel-wide alternative
+> to the existing __be32/__le32/etc code.  It is an improvement.
+> 
+> We could conceivably simply switch the existing stuff to use structs, but
+> quite a lot of code assumes that cpu_to_foo32(0) == 0 and just does
+> open-coded assigments of zero.  They'd need fixups.
 
-When we are very low on memory and do access the reserves by means of
-ALLOC_NO_WATERMARKS, we want to avoid processed that are not entitled to
-use such memory from running away with the little we have.
+Andrew,
 
-That is the whole and only point; restrict memory allocated under
-ALLOC_NO_WATERMARKS to those processes that are entitled to it.
+thanks for answer. I personally do not think this should be applied
+before we have better __be32 and friends. Thus, if I can do so, I will
+just sit and wait for your decision - whether you include this patch to
+-mm or not :-) .
 
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
