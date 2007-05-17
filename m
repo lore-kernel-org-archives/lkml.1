@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbXEQVMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757865AbXEQVOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbXEQVMj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbXEQVMc
+	id S1757865AbXEQVOh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbXEQVOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:12:32 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:36115 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754740AbXEQVMc (ORCPT
+	Thu, 17 May 2007 17:14:30 -0400
+Received: from qb-out-0506.google.com ([72.14.204.230]:14622 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754614AbXEQVO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:12:32 -0400
-Date: Thu, 17 May 2007 23:12:29 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Rob Landley <rob@landley.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, jdike@karaya.com
-Subject: Re: UML doesn't compile in 2.6.21
-Message-ID: <20070517211229.GP12319@pengutronix.de>
-References: <20070516224938.GN12319@pengutronix.de> <200705162111.19123.rob@landley.net> <20070517210538.GO12319@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Thu, 17 May 2007 17:14:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tqds0av92DDrRo83T+URC3HLbGCSsgURRtmPZBh8DQjIstQzOD/1t5viPkZBFoKN4mr7Yxpt3wJiaK+uSM1TXAjgT5TzEwb2su72U2N802+3+Ho0JoPAckx1xxcDT//8FqjhrL5IQ7DHxmwDcK04xULlXLRbxUAXcM9sEvCqXIw=
+Message-ID: <d120d5000705171414u55af4c03m6e6d2fbcf982e3ff@mail.gmail.com>
+Date: Thu, 17 May 2007 17:14:26 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Al Viro" <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, dedekind@infradead.org,
+       linux-kernel@vger.kernel.org, "Christoph Hellwig" <hch@lst.de>
+In-Reply-To: <20070517204234.GR4095@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070517210538.GO12319@pengutronix.de>
-User-Agent: Mutt/1.5.9i
+References: <20070517143200.GA30850@lst.de> <1179413443.3642.49.camel@sauron>
+	 <20070517145653.GA968@lst.de> <1179414590.3642.69.camel@sauron>
+	 <20070517102931.6bbbad1a.akpm@linux-foundation.org>
+	 <20070517204234.GR4095@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 11:05:38PM +0200, Robert Schwebel wrote:
-> So it must be something with my configuration. I've tried to build a
-> minimized configuration, see below. You can trigger the bug here by
-> changing "Enable loadable module support.
+On 5/17/07, Al Viro <viro@ftp.linux.org.uk> wrote:
+>
+> Ahem...  So what does
+>        x |= y;
+> turns into with that approach?
 
-update: it can also be triggered by switching off the "embedded" option.
+Do we want to do such kind of operations on endian-annotated data? I'd
+imagine you want to convert ot host-endianess first anyway.
 
-Robert 
 -- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
-
+Dmitry
