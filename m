@@ -1,74 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761453AbXEQUNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbXEQUP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761453AbXEQUNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbXEQUNp
+	id S1760895AbXEQUP0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbXEQUPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:13:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34511 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757213AbXEQUNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:13:44 -0400
-Date: Thu, 17 May 2007 22:13:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?B?VPZy9ms=?= Edvin <edwintorok@gmail.com>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: CFS Scheduler and real-time tasks
-Message-ID: <20070517201338.GA1713@elte.hu>
-References: <4354d3270705171214v25bc4834t5e28a08649761e91@mail.gmail.com> <20070517192343.GA24249@elte.hu> <4354d3270705171310x1d7770b2mb086f1fde7cffabd@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4354d3270705171310x1d7770b2mb086f1fde7cffabd@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 17 May 2007 16:15:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:53500 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754377AbXEQUPN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 16:15:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=IUZs/kf64sPrUC1rkKtQirmZ9UNbRbsU9sN2sNka70MTP5XALdkOJeGIk5JCVgj+HUgyFgS+dmLNIu3TzsMmoCaTFmEYQzd1mHMkSlCIOcI7tdZnPIxtRBjT5wFiCKh1Iy6vi6MmTXCOoFzM+dM4t1Uk4FT8yuLgC/dCr3Y6P3k=
+Message-ID: <464CB7C9.2080807@gmail.com>
+Date: Thu, 17 May 2007 22:15:05 +0200
+From: Robert de Rooy <robert.de.rooy@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, alan@redhat.com, bzolnier@gmail.com
+CC: jgarzik@pobox.com
+Subject: libata and legacy ide pcmcia failure
+References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com>
+In-Reply-To: <464C1575.8070005@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I tried 2.6.22rc1-git5 with both the libata pcmcia and the legacy ide 
+pcmcia support, both failed as can be seen below...
 
-* Török Edvin <edwintorok@gmail.com> wrote:
+Linux localhost.localdomain 2.6.22-rc1-git5 #5 SMP Thu May 17 21:23:42 
+CEST 2007 i686 i686 i386 GNU/Linux
 
-> On 5/17/07, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >note: you ran it on a dual-core system and the SMP load-balancer needs
-> >time to gain precision in the non-RT test - so i'd suggest to test it
-> >much longer than 10 seconds: 300 seconds at least.
-> 
-> Thanks, running for 300 seconds shows only a 2% error. Even running a 
-> I/O workload while running the massive_intr test keeps the same error.
+** libata **
+May 17 21:55:06 localhost kernel: pccard: PCMCIA card inserted into slot 0
+May 17 21:55:06 localhost kernel: cs: memory probe 
+0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
+May 17 21:55:06 localhost kernel: cs: memory probe 
+0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
+0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
+0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
+0xcfa00000-0xd01fffff
+May 17 21:55:06 localhost kernel: pcmcia: registering new device pcmcia0.0
+May 17 21:55:07 localhost kernel: scsi2 : pata_pcmcia
+May 17 21:55:07 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 ctl 
+0x0001410e bmdma 0x00000000 irq 0
+May 17 21:55:37 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+May 17 21:55:37 localhost kernel: ata3.00: failed to IDENTIFY 
+(INIT_DEV_PARAMS failed, err_mask=0x4)
+May 17 21:56:08 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+May 17 21:56:08 localhost kernel: ata3.00: failed to IDENTIFY 
+(INIT_DEV_PARAMS failed, err_mask=0x4)
+May 17 21:56:08 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
+May 17 21:56:18 localhost kernel: ata3: SRST failed (errno=-16)
+May 17 21:56:28 localhost kernel: ata3: SRST failed (errno=-16)
+May 17 21:56:58 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+May 17 21:56:58 localhost kernel: ata3.00: failed to IDENTIFY 
+(INIT_DEV_PARAMS failed, err_mask=0x4)
+May 17 21:56:59 localhost udevd-event[2653]: udev_rules_apply_format: 
+unknown format variable '$modalias'
 
-hey, cool! Also try -v13 - it should be even more tighter.
+** legacy ide **
+May 17 15:29:25 localhost kernel: pccard: PCMCIA card inserted into slot 0
+May 17 15:29:25 localhost kernel: cs: memory probe 
+0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
+May 17 15:29:25 localhost kernel: cs: memory probe 
+0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
+0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
+0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
+0xcfa00000-0xd01fffff
+May 17 15:29:25 localhost kernel: pcmcia: registering new device pcmcia0.0
+May 17 15:29:26 localhost kernel: hde: Memory Card Adapter, CFA DISK drive
+May 17 15:29:26 localhost kernel: ide2 at 0x4100-0x4107,0x410e on irq 3
+May 17 15:29:26 localhost kernel: hde: max request size: 128KiB
+May 17 15:29:26 localhost kernel: hde: 253696 sectors (129 MB) w/1KiB 
+Cache, CHS=991/16/16
+May 17 15:29:56 localhost kernel:  hde:<4>hde: lost interrupt
+May 17 15:30:26 localhost kernel: hde: lost interrupt
+May 17 15:31:06 localhost last message repeated 2 times
+May 17 15:32:36 localhost last message repeated 3 times
 
-> BTW, the system is more 'responsive'. For example starting 
-> applications while running the tests, switching windows, moving 
-> windows is much "smoother" than on default scheduler.
+Robert de Rooy wrote:
+> I installed the LiveCD to a spare HDD, and updated to the latest 
+> kernel available.
+> The errors stayed the same, but they took much longer (it seems the 
+> timeouts changed).
+>
+> Linux localhost.localdomain 2.6.21-1.3149.fc7 #1 SMP Fri May 11 
+> 12:12:11 EDT 2007 i686 i686 i386 GNU/Linux
+>
+> May 16 23:10:42 localhost kernel: pccard: PCMCIA card inserted into 
+> slot 0
+> May 16 23:10:42 localhost kernel: cs: memory probe 
+> 0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
+> May 16 23:10:42 localhost kernel: cs: memory probe 
+> 0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
+> 0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
+> 0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
+> 0xcfa00000-0xd01fffff
+> May 16 23:10:42 localhost kernel: pcmcia: registering new device 
+> pcmcia0.0
+> May 16 23:10:42 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 
+> ctl 0x0001410e bmdma 0x00000000 irq 3
+> May 16 23:10:42 localhost kernel: scsi2 : pata_pcmcia
+> May 16 23:11:43 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+> May 16 23:11:43 localhost kernel: ata3.00: failed to IDENTIFY 
+> (INIT_DEV_PARAMS failed, err_mask=0x4)
+> May 16 23:12:44 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+> May 16 23:12:44 localhost kernel: ata3.00: failed to IDENTIFY 
+> (INIT_DEV_PARAMS failed, err_mask=0x4)
+> May 16 23:12:44 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
+> May 16 23:13:14 localhost kernel: ATA: abnormal status 0x82 on port 
+> 0x00014107
+> May 16 23:13:14 localhost kernel: ATA: abnormal status 0x82 on port 
+> 0x00014107
+> May 16 23:13:44 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+> May 16 23:13:44 localhost kernel: ata3.00: failed to IDENTIFY 
+> (INIT_DEV_PARAMS failed, err_mask=0x4)
+>
+> Robert de Rooy wrote:
+>> Hi,
+>>
+>> I tried Fedora 7t4 LiveCD on my ThinkPad T41 with a PCMCIA "Dazzle 
+>> 4in1 Card Adapter", this adapter supports Sony Memorystick, MMC, SD 
+>> and SmartMedia cards. The card had a 128MB Lexmark MemoryStick 
+>> installed.
+>>
+>> Under windows the adapter works fine, but under Linux I got a bunch 
+>> of errors in syslog as shown below...
+>> I do not know if it works with the Linux legacy PCMCIA IDE driver.
+>>
+>> If I need to retrieve additional information or test something, 
+>> please let me know.
+>>
+>> Linux localhost.localdomain 2.6.20-1.3104.fc7 #1 SMP Sat Apr 21 
+>> 22:20:43 EDT 2007 i686 i686 i386 GNU/Linux
+>>
+>> Socket 0:
+>>  product info: "                   ", "Memory Card Adapter", "", ""
+>>  manfid: 0x0045, 0x0401
+>>  function: 4 (fixed disk)
+>>
+>> May 14 21:46:24 localhost kernel: pccard: PCMCIA card inserted into 
+>> slot 0
+>> May 14 21:46:24 localhost kernel: cs: memory probe 
+>> 0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
+>> May 14 21:46:24 localhost kernel: cs: memory probe 
+>> 0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
+>> 0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
+>> 0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
+>> 0xcfa00000-0xd01fffff
+>> May 14 21:46:24 localhost kernel: pcmcia: registering new device 
+>> pcmcia0.0
+>> May 14 21:46:25 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 
+>> ctl 0x0001410e bmdma 0x00000000 irq 3
+>> May 14 21:46:25 localhost kernel: scsi3 : pata_pcmcia
+>> May 14 21:46:25 localhost kernel: ATA: abnormal status 0x80 on port 
+>> 0x00014107
+>> May 14 21:46:25 localhost kernel: ATA: abnormal status 0x80 on port 
+>> 0x00014107
+>> May 14 21:46:55 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+>> May 14 21:46:55 localhost kernel: ata3.00: failed to IDENTIFY 
+>> (INIT_DEV_PARAMS failed, err_mask=0x4)
+>> May 14 21:46:56 localhost kernel: ATA: abnormal status 0x80 on port 
+>> 0x00014107
+>> May 14 21:46:56 localhost kernel: ATA: abnormal status 0x80 on port 
+>> 0x00014107
+>> May 14 21:47:26 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+>> May 14 21:47:26 localhost kernel: ata3.00: failed to IDENTIFY 
+>> (INIT_DEV_PARAMS failed, err_mask=0x4)
+>> May 14 21:47:26 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
+>> May 14 21:47:26 localhost kernel: ATA: abnormal status 0x80 on port 
+>> 0x00014107
+>> May 14 21:47:26 localhost kernel: ATA: abnormal status 0x80 on port 
+>> 0x00014107
+>> May 14 21:47:56 localhost kernel: ata3.00: qc timeout (cmd 0x91)
+>> May 14 21:47:56 localhost kernel: ata3.00: failed to IDENTIFY 
+>> (INIT_DEV_PARAMS failed, err_mask=0x4)
+>> May 14 21:47:57 localhost kernel: ATA: abnormal status 0x80 on port 
+>> 0x00014107
+>> May 14 21:47:57 localhost udevd-event[3946]: udev_rules_apply_format: 
+>> unknown format variable '$modalias'
+>>
+>>
+>>
+>
+>
 
-yeah :)
-
-> [while true;do cp /usr/portage/distfiles/linux-2.6.21.tar.bz2 . && 
-> sync && rm linux-2.6.21.tar.bz2 && sync; done]
-> 
-> ./massiv_new 9 300
-> 020860  00017782
-> 020858  00017774
-> 
-> RT JOB:020865   00003785
-> 
-> 020859  00017048
-> 020862  00017387
-> 020855  00017494
-> 020861  00017245
-> 020863  00017492
-> 020864  00017122
-
-looks pretty good!
-
-	Ingo
