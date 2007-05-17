@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760689AbXEQAEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbXEQAJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760689AbXEQAEG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 20:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbXEQAD4
+	id S1761495AbXEQAJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 20:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbXEQAJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 20:03:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53671 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754940AbXEQAD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 20:03:56 -0400
-Date: Wed, 16 May 2007 20:03:38 -0400
-From: Dave Jones <davej@redhat.com>
-To: Daniel Drake <dsd@gentoo.org>
-Cc: duaneg@dghda.com, prakash@punnoor.de, jhoblitt@ifa.hawaii.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powernow-k8: depend on acpi-processor for SMP systems
-Message-ID: <20070517000338.GC23751@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Daniel Drake <dsd@gentoo.org>, duaneg@dghda.com, prakash@punnoor.de,
-	jhoblitt@ifa.hawaii.edu, linux-kernel@vger.kernel.org
-References: <20070516235050.9B4237B409F@zog.reactivated.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516235050.9B4237B409F@zog.reactivated.net>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 16 May 2007 20:09:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:56000 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754940AbXEQAJT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 20:09:19 -0400
+Message-ID: <464B9D2C.7040704@cv-sv.de>
+Date: Thu, 17 May 2007 02:09:16 +0200
+From: Christian <haveaniceday@cv-sv.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.2) Gecko/20070218 SUSE/1.1.1-5.1 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX189j+mM0IaZ3E8eHbMNim/0bHhpxdYt6P+EBjM
+ fxykVnEKyKxQ3BZCNinW7tDbu1p7A3WlIkeVP9s3DRDW/UerP6
+ uCTNlDjzzkmlnVvkVC49w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 12:50:50AM +0100, Daniel Drake wrote:
- > powernow-k8 uses PSB BIOS tables to read frequency info on UP systems, but
- > on SMP it requires the acpi-processor driver. Kconfig should be updated
- > accordingly to avoid the issues that users are running into.
- > 
- > http://bugzilla.kernel.org/show_bug.cgi?id=8075
- > https://bugs.gentoo.org/show_bug.cgi?id=178585
+Hi,
 
-looks ok to me, but I'd like someone who has been seeing problems
-to confirm this works first.
+my small VIA C3_2 box does not boot with 2.6.22-rc1.
+It even does not uncompress the kernel.
 
-	Dave
+The configuration as M386 M486 works. But M586 + MVIAC3_2
+does not work.
 
--- 
-http://www.codemonkey.org.uk
+solution for me, cahnge arch/i386/Kconfig.cpu
+
+--- arch/i386/Kconfig.cpu.before     2007-05-17 01:38:26.000000000 +0200
++++ arch/i386/Kconfig.cpu       2007-05-17 00:54:52.000000000 +0200
+@@ -299,5 +299,5 @@
+
+ config X86_CMPXCHG64
+        bool
+-       depends on !M386 && !M486
++       depends on !M386 && !M486 && !MVIAC3_2
+        default y
+
+
+The related #ifdef is in ./include/asm-i386/cmpxchg.h
+May be cmpxchg8b is not supported by VIAC3_2 ?
+
+May be some other non Intel/AMD need to be excluded from X86_CMPXCHG64 ?
+May be the generic option CONFIG_X86_GENERIC need to switch this off also ?
+
+
+Just write an email to me if you want to send a patch to test on a C3_2.
+
+Best regards,
+
+Christian
+
+
