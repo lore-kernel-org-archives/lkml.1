@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbXEQRqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbXEQRrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbXEQRqX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXEQRqQ
+	id S1759534AbXEQRrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756979AbXEQRrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:46:16 -0400
-Received: from hu-out-0506.google.com ([72.14.214.230]:43763 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755706AbXEQRqP (ORCPT
+	Thu, 17 May 2007 13:47:09 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:39457 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756373AbXEQRrH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:46:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=kg//06rnKvbA8GJD2FI5eHvKTqeoOdAXxX8ipzGV3Mmv1uUnlBnLnZORqMOojbQvfHLnhoBqM4aB1HV6HhALT27BE9Wxw1cteN8g4yQZIGwOgfgKgviVvKZd8OP6cQXREfhxTeIeoJNSX/f54rqQHhRpvs81WYTZkMe3a2OZ5G0=
-Date: Thu, 17 May 2007 19:46:10 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot - crypto?
-Message-ID: <20070517174610.GA7486@dreamland.darkstar.lan>
-References: <d1af83620705100410n482f4f9h428b7cab5501d963@mail.gmail.com> <20070514173823.GA7137@dreamland.darkstar.lan> <20070515014344.GA8850@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070515014344.GA8850@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 17 May 2007 13:47:07 -0400
+Subject: Re: sysfs makes scaling suck Re: Asynchronous scsi scanning
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Benjamin LaHaise <bcrl@kvack.org>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Simon Arlott <simon@fire.lp0.eu>, Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+In-Reply-To: <20070517173238.GA30571@kvack.org>
+References: <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
+	 <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com>
+	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
+	 <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
+	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
+	 <17841.simon.1179228389@5ec7c279.invalid>
+	 <20070515120228.GI10562@parisc-linux.org>
+	 <4649E03A.1090004@simon.arlott.org.uk>
+	 <20070515172905.GJ10562@parisc-linux.org>
+	 <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
+	 <20070517173238.GA30571@kvack.org>
+Content-Type: text/plain
+Date: Thu, 17 May 2007 13:45:24 -0400
+Message-Id: <1179423924.3785.30.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Tue, May 15, 2007 at 11:43:44AM +1000, Herbert Xu ha scritto: 
-> On Mon, May 14, 2007 at 07:38:23PM +0200, Luca Tettamanti wrote:
-> > I'm running git 705962cc (which is a commit after -rc1) and I still see
-> > the OOPS on boot. The patch above is already applied though. Note that
-> > I'm using the SLAB allocator:
+On Thu, 2007-05-17 at 13:32 -0400, Benjamin LaHaise wrote:
+> On Wed, May 16, 2007 at 04:57:52AM +0530, Satyam Sharma wrote:
 > > 
-> > CONFIG_SLAB=y
-> > # CONFIG_SLUB is not set
-> > # CONFIG_SLOB is not set
+> > echo 1 > /sys/module/scsi_mod/.../wait_for_async_scans
 > > 
-> > 
-> > Ending clean XFS mount for filesystem: dm-4
-> > BUG: unable to handle kernel paging request at virtual address 6b6b6ceb
+> > somewhere in some script. In fact, the latter method seems simpler,
+> > saner, better (in every which way)!
 > 
-> Please send me your .config file.
+> Please don't force sysfs on people.  Just watch how it keels over and dies 
+> when you end up with lots of disks/network interfaces on reasonably sized 
+> boxes.  16 statically allocated files per network interface starts being 
+> a problem once you've got a few thousand interfaces.  Anything that forces 
+> me to use sysfs is not gonna fly.
 
-It seems that build system was confused... I've checked the timestamps
-of *.o files and make didn't rebuild anything, but rebuilding after a
-'make clean' did "fix" the problem. Sorry for the noise...
+Well, for that case, you just never enable async scanning
 
-Luca
--- 
-Mi piace avere amici rispettabili;
-Mi piace essere il peggiore della compagnia.
+But also, the sysfs with over 4,000 (and higher) devices was
+specifically checked by OSDL (actually as part of the CGL testing) some
+of the Manoj changes (for unpinning entries etc) were needed to get it
+to function, but as of now, I believe an enterprise scaling test works
+reasonably well for it ... there certainly wasn't any evidence of it
+dying horribly in the tests.
+
+James
+
+
