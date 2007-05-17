@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762177AbXEQAdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761552AbXEQAiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762177AbXEQAdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 20:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbXEQAdm
+	id S1761552AbXEQAiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 20:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbXEQAiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 20:33:42 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56205 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755058AbXEQAdl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 20:33:41 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <464BA28E.1020706@s5r6.in-berlin.de>
-Date: Thu, 17 May 2007 02:32:14 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
-       kbuild-devel@lists.sourceforge.net
-Subject: Re: [RFC] select and dependencies in Kconfig
-References: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk> <20070516033335.GH4095@ftp.linux.org.uk> <464B141E.3020400@s5r6.in-berlin.de> <464B9427.1010204@freescale.com>
-In-Reply-To: <464B9427.1010204@freescale.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 20:38:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60964 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755702AbXEQAiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 20:38:06 -0400
+Date: Wed, 16 May 2007 20:37:33 -0400
+From: Dave Jones <davej@redhat.com>
+To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+Cc: Daniel Drake <dsd@gentoo.org>, duaneg@dghda.com, prakash@punnoor.de,
+       linux-kernel@vger.kernel.org, Ed Sweetman <safemode2@comcast.net>,
+       mark.langsdorf@amd.com
+Subject: Re: [PATCH] powernow-k8: depend on acpi-processor for SMP systems
+Message-ID: <20070517003733.GD16810@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>,
+	Daniel Drake <dsd@gentoo.org>, duaneg@dghda.com, prakash@punnoor.de,
+	linux-kernel@vger.kernel.org, Ed Sweetman <safemode2@comcast.net>,
+	mark.langsdorf@amd.com
+References: <20070516235050.9B4237B409F@zog.reactivated.net> <20070517002614.GU15763@ifa.hawaii.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070517002614.GU15763@ifa.hawaii.edu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Timur Tabi wrote:
-> For example, if I want to add a new driver C that uses library B, I can
-> just add this:
-> 
-> C
->     select B
-> 
-> If I have to use "depends on", then I would have to change the Kconfig
-> option for B like this:
-> 
-> B
->     depends on A || C
+On Wed, May 16, 2007 at 02:26:14PM -1000, Joshua Hoblitt wrote:
+ > I don't think this is quiet right either as Ed Sweetman has reported
+ > that this issue doesn't occur on single socket/multi-core systems.
 
-You mean, "B... serves A, C".
+I'm not sure why [*], because this should be preventing it..
 
-However, it shouldn't matter which way around the dependencies are
-written down in the Kconfigs.  What does matter is how "make
-{old,menu,...}config" deal with it.
+                if (num_online_cpus() != 1) {
+                        printk(KERN_ERR PFX "MP systems not supported by PSB BIOS structure\n");
+                        kfree(data);
+                        return -ENODEV;
+                }
+
+num_online_cpus will return 2 in a dual-core system, even though there's
+just one socket.  Given they share a power plane, if there's a valid
+PSB structure however, it may be usable.  Though this isn't necessarily
+true for all future dual-core AMD CPUs, and the ACPI tables really
+should be preferred.
+
+	Dave
+
+[*] unless you have the second core disabled or CONFIG_SMP=n
+
 -- 
-Stefan Richter
--=====-=-=== -=-= =---=
-http://arcgraph.de/sr/
+http://www.codemonkey.org.uk
