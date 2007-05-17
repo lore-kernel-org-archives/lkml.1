@@ -1,149 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbXEQMeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbXEQMfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbXEQMeG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 08:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXEQMd4
+	id S1757074AbXEQMfE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 08:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbXEQMez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 08:33:56 -0400
-Received: from dedi.luli.de ([88.198.62.74]:44814 "EHLO dedi.luli.de"
+	Thu, 17 May 2007 08:34:55 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:58062 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754377AbXEQMdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 08:33:55 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 May 2007 08:33:54 EDT
-Message-ID: <464C4A22.7040709@rootdir.de>
-Date: Thu, 17 May 2007 14:27:14 +0200
-From: Claas Langbehn <claas@rootdir.de>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	id S1754338AbXEQMey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 08:34:54 -0400
+Subject: Re: [BUG] (regression) AMD k6-III/450 won't boot w/2.6.22-rc1
+In-Reply-To: <20070517060810.GK30166@redhat.com> "from Dave Jones at May 17,
+ 2007 02:08:10 am"
+To: Dave Jones <davej@redhat.com>
+Date: Thu, 17 May 2007 07:34:49 -0500 (CDT)
+CC: Chuck Ebbert <cebbert@redhat.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, Joachim Deguara <joachim.deguara@amd.com>
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: This kernel requires the following features not present on the CPU...
- (on a VIA C7 CPU)
-Content-Type: multipart/mixed;
- boundary="------------060004010705010101030409"
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070517123449.9FC11DBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060004010705010101030409
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Dave Jones wrote:
+> On Wed, May 16, 2007 at 11:36:46PM -0500, Bob Tracy wrote:
+>  > Dave Jones wrote:
+>  > > Bob, does this patch make it boot again for you?
+>  > 
+>  > NAK.  No difference.  Identical panic message.  (Yes, I double-checked
+>  > to make sure I was booting the patched kernel :-)).
+> 
+> Hmm, odd.
+> Does reverting the patch that Chuck fingered fix it? 
 
-Hello,
+ACK.  I'm running 2.6.22-rc1 minus Joachim's patch as I type this.
 
-I have got a VIA EPIA EX15000G Mini-ITX mainboard with a C7 VIA Esther 
-processor (1500MHz).
-There are two options in the BIOS that affect CPU feature flags:
+Anticipating the question, here's the "Processor type and features"
+section from "linux/.config":
 
-C7 CMPXCHG8 - enable/disable (Disable to install windows NT 4.0) and
-C7 No Execute (NX) - enable/disable
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.22-rc1
+# Sun May 13 00:29:57 2007
+#
+(...)
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=y
+# CONFIG_NO_HZ is not set
+CONFIG_HIGH_RES_TIMERS=y
+# CONFIG_SMP is not set
+CONFIG_X86_PC=y
+# CONFIG_X86_ELAN is not set
+# CONFIG_X86_VOYAGER is not set
+# CONFIG_X86_NUMAQ is not set
+# CONFIG_X86_SUMMIT is not set
+# CONFIG_X86_BIGSMP is not set
+# CONFIG_X86_VISWS is not set
+# CONFIG_X86_GENERICARCH is not set
+# CONFIG_X86_ES7000 is not set
+# CONFIG_PARAVIRT is not set
+# CONFIG_M386 is not set
+# CONFIG_M486 is not set
+# CONFIG_M586 is not set
+# CONFIG_M586TSC is not set
+# CONFIG_M586MMX is not set
+# CONFIG_M686 is not set
+# CONFIG_MPENTIUMII is not set
+# CONFIG_MPENTIUMIII is not set
+# CONFIG_MPENTIUMM is not set
+# CONFIG_MCORE2 is not set
+# CONFIG_MPENTIUM4 is not set
+CONFIG_MK6=y
+# CONFIG_MK7 is not set
+# CONFIG_MK8 is not set
+# CONFIG_MCRUSOE is not set
+# CONFIG_MEFFICEON is not set
+# CONFIG_MWINCHIPC6 is not set
+# CONFIG_MWINCHIP2 is not set
+# CONFIG_MWINCHIP3D is not set
+# CONFIG_MGEODEGX1 is not set
+# CONFIG_MGEODE_LX is not set
+# CONFIG_MCYRIXIII is not set
+# CONFIG_MVIAC3_2 is not set
+# CONFIG_MVIAC7 is not set
+# CONFIG_X86_GENERIC is not set
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=5
+CONFIG_X86_XADD=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INVLPG=y
+CONFIG_X86_BSWAP=y
+CONFIG_X86_POPAD_OK=y
+CONFIG_X86_CMPXCHG64=y
+CONFIG_X86_ALIGNMENT_16=y
+CONFIG_X86_USE_PPRO_CHECKSUM=y
+CONFIG_X86_TSC=y
+CONFIG_X86_MINIMUM_CPU_MODEL=4
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_BKL=y
+# CONFIG_X86_UP_APIC is not set
+CONFIG_X86_MCE=y
+# CONFIG_X86_MCE_NONFATAL is not set
+CONFIG_VM86=y
+# CONFIG_TOSHIBA is not set
+# CONFIG_I8K is not set
+# CONFIG_X86_REBOOTFIXUPS is not set
+# CONFIG_MICROCODE is not set
+# CONFIG_X86_MSR is not set
+# CONFIG_X86_CPUID is not set
 
-I enabled both and compiled a new 2.6.22-rc1-mm1 kernel. So far so good.
-
-The problem is that the system is very unstable and crashes regularly 
-(1-3 times a day).
-After a crash the bios resets the two processor flags back to disabled. 
-But like this
-the kernel complains and does not continiue booting:
-
- > This kernel requires the following features not present on the CPU:
- > 0:8
-
-Each time this happens, I have to go to the BIOS and manually enable 
-these flags again.
-That is pretty annoying! :(
-I attached a cpuinfo.txt. When the two flags are disabled, cx8 and nx 
-are not listed there.
-
-
-Now my question is:
-
-Would it be possible to override the BIOS settings of cx8 and nx and 
-activate it with linux anyway?
-The CPU supports it and I don't see any reason to disable it.
-
-
-I already wrote several emails to VIA months ago saying that this is 
-probably a bug in their BIOS, but they
-are neitherreleasing a new BIOS nor reacting in any way. Their so called 
-support website viaarena.com
-is not helping neither. Since VIA is not helping at all, the only 
-soulution I see would be to override the
-BIOS'es decision.
-
-Concerning the crashes I already changed the memory module, but with no 
-success. I'm not sure
-wether this is a hardware or software bug.
-
-
-Many regards,
-claas
-
---------------060004010705010101030409
-Content-Type: text/plain;
- name="cpuinfo.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cpuinfo.txt"
-
-processor	: 0
-vendor_id	: CentaurHauls
-cpu family	: 6
-model		: 10
-model name	: VIA Esther processor 1500MHz
-stepping	: 9
-cpu MHz		: 799.952
-cache size	: 128 KB
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 1
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge cmov pat clflush acpi mmx fxsr sse sse2 nx pni est rng rng_en ace ace_en ace2 ace2_en phe phe_en pmm pmm_en
-bogomips	: 1601.30
-clflush size	: 64
-
-
---------------060004010705010101030409
-Content-Type: text/plain;
- name="dmesg.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="dmesg.txt"
-
-000000 (gap: 3bf00000:a4100000)
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 243571
-Kernel command line: root=/dev/sda3 ro quiet 
-mapped APIC to ffffd000 (fee00000)
-mapped IOAPIC to ffffc000 (fec00000)
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-Detected 1499.916 MHz processor.
-Console: colour VGA+ 80x25
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Memory: 969928k/981952k available (1931k kernel code, 11472k reserved, 659k data, 192k init, 64448k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xfffaa000 - 0xfffff000   ( 340 kB)
-    pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
-    vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
-    lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-      .init : 0xc038a000 - 0xc03ba000   ( 192 kB)
-      .data : 0xc02e2c3b - 0xc03879d4   ( 659 kB)
-      .text : 0xc0100000 - 0xc02e2c3b   (1931 kB)
-Checking if this processor honours the WP bit even in supervisor mode... Ok.
-Calibrating delay using timer specific routine.. 3002.19 BogoMIPS (lpj=5001917)
-Mount-cache hash table entries: 512
-CPU: After generic identify, caps: 87c9bbff 00100000 00000000 00000000 00000081 00000000 00000000
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 128K (64 bytes/line)
-CPU: After all inits, caps: 07c9bbff 00100000 00000000 00000000 00000081 00003fcc 00000000
-Compat vDSO mapped to ffffe000.
-CPU: Centaur VIA Esther processor 1500MHz stepping 09
-Checking 'hlt' instruction... OK.
-
---------------060004010705010101030409--
+-- 
+-----------------------------------------------------------------------
+Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
+rct@frus.com
+-----------------------------------------------------------------------
