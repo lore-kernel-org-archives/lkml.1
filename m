@@ -1,93 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbXEQOBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbXEQOL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbXEQOBc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbXEQOBZ
+	id S1757219AbXEQOL0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbXEQOLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:01:25 -0400
-Received: from neopsis.com ([213.239.204.14]:38201 "EHLO
-	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754761AbXEQOBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:01:25 -0400
-X-Greylist: delayed 1521 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 May 2007 10:01:24 EDT
-Message-ID: <464C5FAC.8060609@dbservice.com>
-Date: Thu, 17 May 2007 15:59:08 +0200
-From: Tomas Carnecky <tom@dbservice.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: SideWinder GameVoice driver
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------050708020904060901010409"
-X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
-X-Neopsis-MailScanner: Found to be clean
-X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.364,
-	required 5, autolearn=spam, AWL 0.23, BAYES_00 -2.60)
-X-MailScanner-From: tom@dbservice.com
+	Thu, 17 May 2007 10:11:17 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:55333 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754783AbXEQOLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 10:11:15 -0400
+Date: Thu, 17 May 2007 19:41:15 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: [PATCH 0/6][TAKE4] fallocate system call
+Message-ID: <20070517141115.GA24260@amitarora.in.ibm.com>
+References: <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426175056.GA25321@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050708020904060901010409
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Description:
+-----------
+fallocate() is a new system call being proposed here which will allow
+applications to preallocate space to any file(s) in a file system.
+Each file system implementation that wants to use this feature will need
+to support an inode operation called fallocate.
 
-Despite it's a Microsoft product, it's actually very nice and useful. A
-little pad with a few buttons and connectors for a headset. It's an USB
-device, but it doesn't represent itself as an input/HID device:
-   HID device not claimed by input or hiddev
+Applications can use this feature to avoid fragmentation to certain
+level and thus get faster access speed. With preallocation, applications
+also get a guarantee of space for particular file(s) - even if later the
+the system becomes full.
 
-I plugged it into a windows box and the USB protocol it uses looks very
-simple (see attachment): everytime I press one of the eight buttons, it
-sends one byte, a bitmap of the pressed buttons.
+Currently, glibc provides an interface called posix_fallocate() which
+can be used for similar cause. Though this has the advantage of working
+on all file systems, but it is quite slow (since it writes zeroes to
+each block that has to be preallocated). Without a doubt, file systems
+can do this more efficiently within the kernel, by implementing
+the proposed fallocate() system call. It is expected that
+posix_fallocate() will be modified to call this new system call first
+and incase the kernel/filesystem does not implement it, it should fall
+back to the current implementation of writing zeroes to the new blocks.
 
-What would be the best way to have this device appear in the system?
-Having a separate driver/device node? Or is it possible to have a small
-driver that would translate the gamevoice commands into evdev messages
-and have a new /dev/input/eventX device appear?
+Interface:
+---------
+The proposed system call's layout is:
 
-I could write something like that myself, my C skills are good enough
-for that, I'd just need some advice how to use the kernel USB/evdev
-interfaces.
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 
-tom
+fd: The descriptor of the open file.
 
---------------050708020904060901010409
-Content-Type: text/plain;
- name="gamevoice.txt"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="gamevoice.txt"
+mode*: This specifies the behavior of the system call. Currently the
+  system call supports two modes - FA_ALLOCATE and FA_DEALLOCATE.
+  FA_ALLOCATE: Applications can use this mode to preallocate blocks to
+    a given file (specified by fd). This mode changes the file size if
+    the preallocation is done beyond the EOF. It also updates the
+    ctime in the inode of the corresponding file, marking a
+    successfull allocation.
+  FA_DEALLOCATE: This mode can be used by applications to deallocate the
+    previously preallocated blocks. This also may change the file size
+    and the ctime/mtime.
+* New modes might get added in future. One such new mode which is
+  already under discussion is FA_PREALLOCATE, which when used will
+  preallocate space but will not change the filesize and [cm]time.
+  Since the semantics of this new mode is not clear and agreed upon yet,
+  this patchset does not implement it currently.
 
-Wzg4MzY1MCBtc10gVXNiU25vb3AgLSBNeURpc3BhdGNoSW50ZXJuYWxJT0NUTChmNTZiOGU4
-MCkgOiBmZG89ODJhZGI5OTgsIElycD04NDhlMDAwOCwgSVJRTD0yDQpbODgzNjUwIG1zXSAg
-Pj4+ICBVUkIgNjggZ29pbmcgZG93biAgPj4+IA0KLS0gVVJCX0ZVTkNUSU9OX0JVTEtfT1Jf
-SU5URVJSVVBUX1RSQU5TRkVSOg0KICBQaXBlSGFuZGxlICAgICAgICAgICA9IDgzYTM4ZmRj
-IFtlbmRwb2ludCAweDAwMDAwMDgxXQ0KICBUcmFuc2ZlckZsYWdzICAgICAgICA9IDAwMDAw
-MDAzIChVU0JEX1RSQU5TRkVSX0RJUkVDVElPTl9JTiwgVVNCRF9TSE9SVF9UUkFOU0ZFUl9P
-SykNCiAgVHJhbnNmZXJCdWZmZXJMZW5ndGggPSAwMDAwMDAwMQ0KICBUcmFuc2ZlckJ1ZmZl
-ciAgICAgICA9IDg1N2ZjMDc4DQogIFRyYW5zZmVyQnVmZmVyTURMICAgID0gMDAwMDAwMDAN
-CiAgVXJiTGluayAgICAgICAgICAgICAgPSAwMDAwMDAwMA0KWzg4Mzk3MCBtc10gVXNiU25v
-b3AgLSBNeUludGVybmFsSU9DVExDb21wbGV0aW9uKGY1NmI4ZGIwKSA6IGZpZG89ODQ4ZGI1
-NzgsIElycD04MmFlOWE3OCwgQ29udGV4dD04NTVjOTZkMCwgSVJRTD0yDQpbODgzOTcwIG1z
-XSAgPDw8ICBVUkIgNjcgY29taW5nIGJhY2sgIDw8PCANCi0tIFVSQl9GVU5DVElPTl9CVUxL
-X09SX0lOVEVSUlVQVF9UUkFOU0ZFUjoNCiAgUGlwZUhhbmRsZSAgICAgICAgICAgPSA4M2Ez
-OGZkYyBbZW5kcG9pbnQgMHgwMDAwMDA4MV0NCiAgVHJhbnNmZXJGbGFncyAgICAgICAgPSAw
-MDAwMDAwMyAoVVNCRF9UUkFOU0ZFUl9ESVJFQ1RJT05fSU4sIFVTQkRfU0hPUlRfVFJBTlNG
-RVJfT0spDQogIFRyYW5zZmVyQnVmZmVyTGVuZ3RoID0gMDAwMDAwMDENCiAgVHJhbnNmZXJC
-dWZmZXIgICAgICAgPSA4NTc2ODM3MA0KICBUcmFuc2ZlckJ1ZmZlck1ETCAgICA9IDgzMWYx
-M2Q4DQogICAgMDAwMDAwMDA6IDBjDQogIFVyYkxpbmsgICAgICAgICAgICAgID0gMDAwMDAw
-MDANCls4ODM5NzAgbXNdIFVzYlNub29wIC0gRGlzcGF0Y2hBbnkoZjU2Yjc2MTApIDogSVJQ
-X01KX0lOVEVSTkFMX0RFVklDRV9DT05UUk9MDQpbODgzOTcwIG1zXSBVc2JTbm9vcCAtIE15
-RGlzcGF0Y2hJbnRlcm5hbElPQ1RMKGY1NmI4ZTgwKSA6IGZkbz04MmFkYjk5OCwgSXJwPTgy
-YWU5YTc4LCBJUlFMPTINCls4ODM5NzAgbXNdICA+Pj4gIFVSQiA2OSBnb2luZyBkb3duICA+
-Pj4gDQotLSBVUkJfRlVOQ1RJT05fQlVMS19PUl9JTlRFUlJVUFRfVFJBTlNGRVI6DQogIFBp
-cGVIYW5kbGUgICAgICAgICAgID0gODNhMzhmZGMgW2VuZHBvaW50IDB4MDAwMDAwODFdDQog
-IFRyYW5zZmVyRmxhZ3MgICAgICAgID0gMDAwMDAwMDMgKFVTQkRfVFJBTlNGRVJfRElSRUNU
-SU9OX0lOLCBVU0JEX1NIT1JUX1RSQU5TRkVSX09LKQ0KICBUcmFuc2ZlckJ1ZmZlckxlbmd0
-aCA9IDAwMDAwMDAxDQogIFRyYW5zZmVyQnVmZmVyICAgICAgID0gODU3NjgzNzANCiAgVHJh
-bnNmZXJCdWZmZXJNREwgICAgPSAwMDAwMDAwMA0KICBVcmJMaW5rICAgICAgICAgICAgICA9
-IDAwMDAwMDAwDQo=
---------------050708020904060901010409--
+offset: This is the offset in bytes, from where the preallocation should
+  start.
+
+len: This is the number of bytes requested for preallocation (from
+  offset).
+ 
+RETURN VALUE: The system call returns 0 on success and an error on
+failure. This is done to keep the semantics same as of
+posix_fallocate(). 
+    
+sys_fallocate() on s390:
+-----------------------
+There is a problem with s390 ABI to implement sys_fallocate() with the
+proposed order of arguments. Martin Schwidefsky has suggested a patch to
+solve this problem which makes use of a wrapper in the kernel. This will
+require special handling of this system call on s390 in glibc as well.
+But, this seems to be the best solution so far.
+
+Known Problem:
+-------------
+mmapped writes into uninitialized extents is a known problem with the
+current ext4 patches. Like XFS, ext4 may need to implement
+->page_mkwrite() to solve this. See:
+http://lkml.org/lkml/2007/5/8/583
+
+Since there is a talk of ->fault() replacing ->page_mkwrite() and also
+with a generic block_page_mkwrite() implementation already posted, we
+can implement this later some time. See:
+http://lkml.org/lkml/2007/3/7/161
+http://lkml.org/lkml/2007/3/18/198
+
+ToDos:
+-----
+1> Implementation on other architectures (other than i386, x86_64,
+ppc64 and s390(x)). David Chinner has already posted a patch for ia64.
+2> A generic file system operation to handle fallocate
+(generic_fallocate), for filesystems that do _not_ have the fallocate
+inode operation implemented.
+3> Changes to glibc,
+   a) to support fallocate() system call
+   b) to make posix_fallocate() and posix_fallocate64() call fallocate()
+
+
+Changelog:
+---------
+Changes from Take2 to Take3:
+	1) Return type is now described in the interface description
+	   above.
+	2) Patches rebased to 2.6.22-rc1 kernel.
+
+** Each post will have an individual changelog for a particular patch.
+
+
+Following patches follow:
+Patch 1/6 : fallocate() implementation on i86, x86_64 and powerpc
+Patch 2/6 : fallocate() on s390
+Patch 3/6 : fallocate() on ia64
+Patch 4/6 : ext4: Extent overlap bugfix
+Patch 5/6 : ext4: fallocate support in ext4
+Patch 6/6 : ext4: write support for preallocated blocks
+
+--
+Regards,
+Amit Arora
