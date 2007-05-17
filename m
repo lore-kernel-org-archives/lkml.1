@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbXEQSZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbXEQSZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760836AbXEQSZS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbXEQSZB
+	id S1760952AbXEQSZm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760802AbXEQSZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:25:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48160 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756275AbXEQSY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:24:59 -0400
-Date: Thu, 17 May 2007 14:23:40 -0400
-From: Dave Jones <davej@redhat.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Daniel Drake <dsd@gentoo.org>, duaneg@dghda.com, prakash@punnoor.de,
-       jhoblitt@ifa.hawaii.edu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powernow-k8: depend on acpi-processor for SMP systems
-Message-ID: <20070517182340.GA25691@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Len Brown <lenb@kernel.org>, Daniel Drake <dsd@gentoo.org>,
-	duaneg@dghda.com, prakash@punnoor.de, jhoblitt@ifa.hawaii.edu,
-	linux-kernel@vger.kernel.org
-References: <20070516235050.9B4237B409F@zog.reactivated.net> <200705171413.42595.lenb@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705171413.42595.lenb@kernel.org>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 17 May 2007 14:25:17 -0400
+Received: from h155.mvista.com ([63.81.120.155]:25082 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760779AbXEQSZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 14:25:15 -0400
+Message-ID: <464C9E67.2020909@ru.mvista.com>
+Date: Thu, 17 May 2007 22:26:47 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: tglx@linutronix.de, mingo@elte.hu, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <200705172142.26739.sshtylyov@ru.mvista.com> <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org> <464C99FF.8080404@ru.mvista.com> <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+In-Reply-To: <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 02:13:42PM -0400, Len Brown wrote:
+Hello.
 
- > > Index: linux/arch/i386/kernel/cpu/cpufreq/Kconfig
- > > ===================================================================
- > > --- linux.orig/arch/i386/kernel/cpu/cpufreq/Kconfig
- > > +++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig
- > > @@ -81,6 +81,7 @@ config X86_POWERNOW_K7_ACPI
- > >  config X86_POWERNOW_K8
- > >  	tristate "AMD Opteron/Athlon64 PowerNow!"
- > >  	select CPU_FREQ_TABLE
- > > +	select ACPI_PROCESSOR if SMP
- > >  	depends on EXPERIMENTAL
- > >  	help
- > >  	  This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 processors.
- > 
- > Unfortunately this patch will not actually enable ACPI_PROCESSOR in
- > the SMP=y ACPI=n case.  "select" doesn't work for targets that
- > have dependencies.
+Kumar Gala wrote:
 
-I don't think we can fix this perfectly tbh, but the above at
-least gets us close for the majority of users.
+> I haven't looked at all the new clock/timer code, is there any  utility 
+> in having support for more than one clock source?
 
-Are there many x86-64 users that don't enable acpi ?
+    Of course, you may register as many as you like.
 
-	Dave
+> - k
 
--- 
-http://www.codemonkey.org.uk
+WBR, Sergei
