@@ -1,64 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761793AbXEQVg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758682AbXEQVk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761793AbXEQVg0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXEQVgS
+	id S1758682AbXEQVk5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbXEQVkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:36:18 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:59931 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754958AbXEQVgQ convert rfc822-to-8bit (ORCPT
+	Thu, 17 May 2007 17:40:51 -0400
+Received: from rwcrmhc15.comcast.net ([216.148.227.155]:49460 "EHLO
+	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754614AbXEQVku (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:36:16 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] LogFS take three
-Date: Thu, 17 May 2007 23:36:13 +0200
-User-Agent: KMail/1.9.6
-Cc: "=?utf-8?q?J=C3=B6rn?= Engel" <joern@lazybastard.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-References: <20070515151919.GA32510@lazybastard.org> <20070516132035.GJ5472@lazybastard.org> <464CC209.4060500@cs.helsinki.fi>
-In-Reply-To: <464CC209.4060500@cs.helsinki.fi>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Thu, 17 May 2007 17:40:50 -0400
+Message-ID: <464CCBCF.3010001@comcast.net>
+Date: Thu, 17 May 2007 17:40:31 -0400
+From: Ed Sweetman <safemode2@comcast.net>
+User-Agent: Icedove 1.5.0.10 (X11/20070328)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200705172336.14552.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/bWzf1bYN5U4rh6FyWYF/WSb2AGkRRzyh/NB4
- jwP2gUKr5Yk0ex8ECEA7GqmDhQq9k0xAtGYml+9t3EbSsks1v4
- MrEL8gW7FAsD8/pQdU5Jg==
+To: Dave Jones <davej@redhat.com>
+CC: Len Brown <lenb@kernel.org>, Daniel Drake <dsd@gentoo.org>,
+       duaneg@dghda.com, prakash@punnoor.de, jhoblitt@ifa.hawaii.edu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powernow-k8: depend on acpi-processor for SMP systems
+References: <20070516235050.9B4237B409F@zog.reactivated.net> <200705171413.42595.lenb@kernel.org> <20070517182340.GA25691@redhat.com> <464CC920.6030409@comcast.net>
+In-Reply-To: <464CC920.6030409@comcast.net>
+Content-Type: multipart/mixed;
+ boundary="------------090905010105050400080107"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 May 2007, Pekka Enberg wrote:
-> 
-> Jörn Engel wrote:
-> > Compressing random data will actually enlarge it.  If that happens I
-> > simply store the verbatim uncompressed data instead and mark it as such.
-> > 
-> > There is also demand for a user-controlled bit in the inode to disable
-> > compression completely.  All those .jpg, .mpg, .mp3, etc. just waste
-> > time by trying and failing to compress them.
-> 
-> So any sane way to enable compression is on per-inode basis which makes 
-> me still wonder why you need per-object compression.
+This is a multi-part message in MIME format.
+--------------090905010105050400080107
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-1. it doesn't require user interaction, the file system will do the right
-thing most of the time.
+Ed Sweetman wrote:
+> Dave Jones wrote:
+>> On Thu, May 17, 2007 at 02:13:42PM -0400, Len Brown wrote:
+>>
+>>  > > Index: linux/arch/i386/kernel/cpu/cpufreq/Kconfig
+>>  > > ===================================================================
+>>  > > --- linux.orig/arch/i386/kernel/cpu/cpufreq/Kconfig
+>>  > > +++ linux/arch/i386/kernel/cpu/cpufreq/Kconfig
+>>  > > @@ -81,6 +81,7 @@ config X86_POWERNOW_K7_ACPI
+>>  > >  config X86_POWERNOW_K8
+>>  > >      tristate "AMD Opteron/Athlon64 PowerNow!"
+>>  > >      select CPU_FREQ_TABLE
+>>  > > +    select ACPI_PROCESSOR if SMP
+>>  > >      depends on EXPERIMENTAL
+>>  > >      help
+>>  > >        This adds the CPUFreq driver for mobile AMD 
+>> Opteron/Athlon64 processors.
+>>  >  > Unfortunately this patch will not actually enable 
+>> ACPI_PROCESSOR in
+>>  > the SMP=y ACPI=n case.  "select" doesn't work for targets that
+>>  > have dependencies.
+>>
+>> I don't think we can fix this perfectly tbh, but the above at
+>> least gets us close for the majority of users.
+>>
+>> Are there many x86-64 users that don't enable acpi ?
+>>
+>>     Dave
+>>
+>>   
+> I've just always compiled acpi_processor in, it's only logical that if 
+> you are using a power management feature, that you compile in the 
+> power management interface, and if your stuff deals directly with the 
+> cpu, you may want to compile the acpi_processor driver in.  The only 
+> reason I knew to do that though, was because i go through each 
+> option.  Someone else looking to just enable cpufreq, would skip the 
+> sub-drivers of ACPI, and never know better. We dont suggest anywhere 
+> in the cpufreq driver, we dont mention restrictions or limits of the 
+> driver without acpi, and we certainly dont select it or make it 
+> dependent (except silently and invisibly to the user).
+> Every other cpufreq driver demands acpi.  In windows you have to have 
+> acpi, the p states are called acpi p states everywhere.  The problem 
+> here is that the author to the powernow_k8 driver found a way to get 
+> some cpufreq functionality without acpi.
+> So to make everyone happy, maybe we should have the silently 
+> selected/deselected driver exposed to the user, as a sub-driver.
+> ->  Powernow K8 / athlon64  cpufreq driver     y/m/n
+> ------->    ACPI support      y/m/n
+>
 
-2. enlarging data is a very bad thing because it makes the behaviour
-of the fs unpredictable. With uncompressed objects, you have a guaranteed
-upper bound on the size.
+Here's a patch
 
-	Arnd <><
+
+--------------090905010105050400080107
+Content-Type: text/x-patch;
+ name="powernow.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="powernow.patch"
+
+--- ./linux-backup/arch/x86_64/kernel/cpufreq/Kconfig	2007-02-04 13:44:54.000000000 -0500
++++ ./linux-2.6.21-rc5-mm2/arch/x86_64/kernel/cpufreq/Kconfig	2007-05-17 17:37:24.000000000 -0400
+@@ -10,7 +10,7 @@
+ 
+ comment "CPUFreq processor drivers"
+ 
+-config X86_POWERNOW_K8
++config  X86_POWERNOW_K8
+ 	tristate "AMD Opteron/Athlon64 PowerNow!"
+ 	select CPU_FREQ_TABLE
+ 	help
+@@ -21,10 +21,10 @@
+ 	  If in doubt, say N.
+ 
+ config X86_POWERNOW_K8_ACPI
+-	bool
++	tristate "ACPI support"
+ 	depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
+ 	depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
+-	default y
++
+ 
+ config X86_SPEEDSTEP_CENTRINO
+ 	tristate "Intel Enhanced SpeedStep (deprecated)"
+
+--------------090905010105050400080107--
