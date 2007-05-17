@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbXEQOvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbXEQOxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbXEQOvr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXEQOvk
+	id S1757126AbXEQOxu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXEQOxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:51:40 -0400
-Received: from smtp.nokia.com ([131.228.20.170]:28352 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754114AbXEQOvk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:51:40 -0400
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Christoph Hellwig <hch@lst.de>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070517143200.GA30850@lst.de>
-References: <20070517143200.GA30850@lst.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 17 May 2007 17:50:43 +0300
-Message-Id: <1179413443.3642.49.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 17 May 2007 14:50:44.0321 (UTC) FILETIME=[BF2A3510:01C79892]
-X-Nokia-AV: Clean
+	Thu, 17 May 2007 10:53:42 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:36958 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753965AbXEQOxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 10:53:41 -0400
+Date: Thu, 17 May 2007 16:51:09 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Greg KH <greg@kroah.com>
+cc: ark3116_driver@auctionant.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] ark3116: receive returns negative
+In-Reply-To: <Pine.LNX.4.61.0705171529570.3231@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0705171646130.3231@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705161743250.9570@yvahk01.tjqt.qr>
+ <20070517124525.GC20055@kroah.com> <Pine.LNX.4.61.0705171529570.3231@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph,
 
-On Thu, 2007-05-17 at 16:32 +0200, Christoph Hellwig wrote:
-> Kill ubis homegrown endianess handling crap and replace it with
-> the normal kernel endianess handling.
+On May 17 2007 16:10, Jan Engelhardt wrote:
+>Hi Greg,
+>
+>>But does the driver seem to work properly?
+>>Do you get data through the device properly?
 
-Err,__be32 and the company are just sparse things, while I have compiler
-checks with my struct ubi32_t and friends. JFFS2 also uses the same
-technique. Why do you force me to rely on sparse instead instead of
-compiler?
+I have taken a voltmeter and an appropriate testcase program - and yes,
+at least transmit works.
 
-Well, I see the good side of your change - no home-brewed media<->cpu
-things. Fair enough and nice. But why don't you make __be32 a struct
-(just like I do) so that compiler could complain then?
+>USB-RS232-GenderChanger-RS232-USB.
 
+A faulty setup that is. My bad.
+
+
+
+	Jan
 -- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
