@@ -1,67 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbXEQBjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbXEQBsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759312AbXEQBjx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 21:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbXEQBjq
+	id S1759468AbXEQBsy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 21:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbXEQBsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 21:39:46 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:49753 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755753AbXEQBjp (ORCPT
+	Wed, 16 May 2007 21:48:47 -0400
+Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:41955 "EHLO
+	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756382AbXEQBsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 21:39:45 -0400
-Message-ID: <464BB252.8010008@cv-sv.de>
-Date: Thu, 17 May 2007 03:39:30 +0200
-From: Christian <haveaniceday@cv-sv.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.2) Gecko/20070218 SUSE/1.1.1-5.1 SeaMonkey/1.1.1
+	Wed, 16 May 2007 21:48:47 -0400
+Message-ID: <464BB43D.2020407@gentoo.org>
+Date: Wed, 16 May 2007 21:47:41 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-CC: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org, ak@suse.de
-Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64
-References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com>
-In-Reply-To: <20070517004209.GE16810@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: kronos.it@gmail.com, linux list <linux-kernel@vger.kernel.org>,
+       Jimmy.Jazz@gmx.net
+Subject: radeonfb and X800 cards
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19amNADcxeNxRUfLUrSMkAwscGCbG7jeRDvzw1
- uZNbBzMvwVqWiCtGtByhXwz1xDu06E60dp3De04u0glQQyg+WJ
- 3UM9Jc32WgkW2+/bxMYhw==
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> The C3s all have cx8, but it needs to be enabled in an MSR first.
-> (See arch/i386/kernel/cpu/centaur.c , search for CX8)
-> 
-> Did we add code that uses cmpxchg8b before identify_cpu() gets run ?
-> I've not been paying attention to .22rc (busy trying to beat .21 into shape for F7)
-> so I may have missed something obvious. Andi?
-> 
-> 	Dave
-> 
+Hi,
 
-May I brought up a wrong reason with the command cmpxchg64.
-But disabling CONFIG_X86_CMPXCHG64 helps.
+Did anything happen to the patch titled "radeonfb: add support for newer 
+cards"?
+http://lwn.net/Articles/215965/
 
+Jimmy at http://bugs.gentoo.org/174063 has extended upon this with some 
+further fixes based on code the in X11 driver. The patches are on the 
+bug report.
 
-The via C3 EBGA datasheet R1.9 tells me this command works always:
->The CMPXCHG8B instruction is provided and always enabled, however, it appears disabled in the corresponding
->CPUID function bit 0 to avoid a bug in an early version of Windows NT. However, this default can be changed
->via a bit in the FCR MSR.
+Ben, where can the most up-to-date radeonfb code be found?
 
-
-Hmm, I should be able to add a few small "here I am" to
-the my local boot code with a little hint.
-
-Anyway I will try tomorrow to find this on my own.
-printfs for debugging are more friendly than assembler.
-
-H. Peter Anvin wrote:
-> Andi added code to verify that we can actually execute on the processor
-> before protected mode (so we can still get a message out through the
-> BIOS.)  That code presumably doesn't know of the MSR that needs to be
-> touched.
-
-
-Best regards,
-
-Christian
+Thanks,
+Daniel
