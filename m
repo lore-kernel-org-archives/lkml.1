@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbXEQRVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbXEQR3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758492AbXEQRVK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756580AbXEQRUz
+	id S1757706AbXEQR3T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbXEQR3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:20:55 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:45513 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756104AbXEQRUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:20:53 -0400
-Date: Thu, 17 May 2007 18:59:29 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-cc: David Woodhouse <dwmw2@infradead.org>, John Stoffel <john@stoffel.org>,
-       akpm@osdl.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
-       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] LogFS take three
-In-Reply-To: <20070516110933.GA5472@lazybastard.org>
-Message-ID: <Pine.LNX.4.61.0705171853120.3231@yvahk01.tjqt.qr>
-References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org>
- <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org>
- <20070516110933.GA5472@lazybastard.org>
+	Thu, 17 May 2007 13:29:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52352 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754649AbXEQR3J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:29:09 -0400
+Date: Thu, 17 May 2007 10:29:06 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 0/5] make slab gfp fair
+In-Reply-To: <1179385718.27354.17.camel@twins>
+Message-ID: <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl> 
+ <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
+ <1179385718.27354.17.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 May 2007, Peter Zijlstra wrote:
 
-On May 16 2007 13:09, Jörn Engel wrote:
->On Wed, 16 May 2007 12:54:14 +0800, David Woodhouse wrote:
->> 
->> Personally I'd just go for 'JFFS3'. After all, it has a better claim to
->> the name than either of its predecessors :)
->
->Did you ever see akpm's facial expression when he tried to pronounce
->"JFFS2"?  ;)
+> I'm really not seeing why you're making such a fuzz about it; normally
+> when you push the system this hard we're failing allocations left right
+> and center too. Its just that the block IO path has some mempools which
+> allow it to write out some (swap) pages and slowly get back to sanity.
 
-Is there something special with [dʒeɪ ɛf ɛf ɛs tuː]?
+I am weirdly confused by these patches. Among other things you told me 
+that the performance does not matter since its never (or rarely) being 
+used (why do it then?). Then we do these strange swizzles with reserve 
+slabs that may contain an indeterminate amount of objects.
 
-
-	Jan
--- 
