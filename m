@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbXEQRre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbXEQRrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbXEQRre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759518AbXEQRrU
+	id S1760172AbXEQRrq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759910AbXEQRra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:47:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51320 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759456AbXEQRrT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:47:19 -0400
-Date: Thu, 17 May 2007 10:36:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelianov <xemul@sw.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, axboe@kernel.dk,
-       herbert@gondor.apana.org.au, dmitry.torokhov@gmail.com, kkeil@suse.de,
-       trond.myklebust@fys.uio.no, chas@cmf.nrl.navy.mil, kaber@trash.net,
-       devel@openvz.org
-Subject: Re: [PATCH] Make common helpers for seq_files that work with
- list_head-s
-Message-Id: <20070517103655.b6a7054c.akpm@linux-foundation.org>
-In-Reply-To: <464C728C.8050507@sw.ru>
-References: <464C728C.8050507@sw.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 17 May 2007 13:47:30 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:52876 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759778AbXEQRr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:47:27 -0400
+Date: Thu, 17 May 2007 21:45:33 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070517174532.GA26827@2ka.mipt.ru>
+References: <20070515151919.GA32510@lazybastard.org> <20070515133759.9ee434a2.akpm@linux-foundation.org> <20070516000630.GD1220@lazybastard.org> <Pine.LNX.4.61.0705171920330.3231@yvahk01.tjqt.qr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0705171920330.3231@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 17 May 2007 21:45:52 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007 19:19:40 +0400 Pavel Emelianov <xemul@sw.ru> wrote:
+On Thu, May 17, 2007 at 07:26:07PM +0200, Jan Engelhardt (jengelh@linux01.gwdg.de) wrote:
+> >My plan was to move this code to lib/ sooner or later.  If you consider
+> >it useful in its current state, I can do it immediatly.  And if someone
+> >else merged a superior btree library I'd happily remove mine and use the
+> >new one instead.
+> >
+> >Opinions?
+> 
+> Why would we need another btree, when there is lib/rbtree.c?
+> Or does yours do something fundamentally different?
 
-> Many places in kernel use seq_file API to iterate over a regular
-> list_head. The code for such iteration is identical in all the
-> places, so it's worth introducing a common helpers.
-> 
-> This makes code more than 300 lines smaller.
-> 
-> Cc-ed are people, who maintain the code altered by the patch.
-> 
-> Signed-off-by: Pavel Emelianov <xemul@openvz.org>
-> 
->  block/genhd.c                                         |   40 +++-----
->  crypto/proc.c                                         |   17 ---
->  drivers/char/misc.c                                   |   18 ----
->  drivers/input/input.c                                 |   29 ------
->  drivers/isdn/capi/kcapi_proc.c                        |   28 ------
->  fs/afs/proc.c                                         |   81 ++----------------
->  fs/namespace.c                                        |   14 ---
->  fs/nfs/client.c                                       |   54 +-----------
->  fs/proc/proc_tty.c                                    |   15 ---
->  include/linux/seq_file.h                              |   35 +++++++
->  kernel/module.c                                       |   17 ---
->  mm/slab.c                                             |   28 +-----
->  net/atm/br2684.c                                      |   22 ----
->  net/core/sock.c                                       |   39 --------
->  net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c |   27 ------
->  net/netfilter/nf_conntrack_expect.c                   |   27 ------
->  net/rxrpc/ar-proc.c                                   |   48 +---------
->  17 files changed, 116 insertions(+), 423 deletions(-)
+It is not red-black tree, it is b+ tree.
 
-Can't complain about the diffstat.  Please experiment with uninlining
-seq_list_start(), see if that reduces overall text size.
+> 	Jan
 
-And as Dmitry indicated, it would be less disruptive if we could have the
-one core patch then a stream of per-subsystem patches, please.
+-- 
+	Evgeniy Polyakov
