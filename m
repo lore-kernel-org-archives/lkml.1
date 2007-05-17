@@ -1,71 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbXEQSRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbXEQSTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbXEQSRc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbXEQSRL
+	id S1758074AbXEQSTP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbXEQSTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:17:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35412 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbXEQSRK (ORCPT
+	Thu, 17 May 2007 14:19:00 -0400
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:9391 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753931AbXEQSTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:17:10 -0400
-Date: Thu, 17 May 2007 11:14:27 -0700
-From: Greg KH <greg@kroah.com>
-To: art@usfltd.com
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
-Message-ID: <20070517181427.GB5735@kroah.com>
-References: <20070517120544.d2hnzayns4o8scks@67.106.77.50>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070517120544.d2hnzayns4o8scks@67.106.77.50>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Thu, 17 May 2007 14:19:00 -0400
+In-Reply-To: <464C99FF.8080404@ru.mvista.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com> <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org> <464C99FF.8080404@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+Cc: tglx@linutronix.de, mingo@elte.hu, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+Date: Thu, 17 May 2007 13:17:07 -0500
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+X-Mailer: Apple Mail (2.752.2)
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 12:05:44PM -0500, art@usfltd.com wrote:
->  greg
-> 
-> >> You didn't answer my, "what distro are you using" question.  Also, what
->  package created the udev rule that creates the above symlink?
-> 
->  distro fc6
->  Linux xxx.xxx 2.6.22-rc1-200705170855cfq6-g0479ea0e #134 SMP PREEMPT Thu May 
->  17 09:13:26 CDT 2007 x86_64 x86_64 x86_64 GNU/Linux
 
-You answered the first question above, not the second :(
+On May 17, 2007, at 1:07 PM, Sergei Shtylyov wrote:
 
->  2.6.20
-> 
->  $ udevtest /class/usb_device/usbdev2.10
->  main: looking at device '/class/usb_device/usbdev2.10' from subsystem 
->  'usb_device'
->  run_program: '/bin/sh -c 'K=usbdev2.10; K=${K#usbdev}; printf 
->  bus/usb/%03i/%03i ${K%%.*} ${K#*.}''
->  run_program: '/bin/sh' (stdout) 'bus/usb/002/010'
->  run_program: '/bin/sh' returned with status 0
->  udev_rules_get_name: rule applied, 'usbdev2.10' becomes 'bus/usb/002/010'
->  udev_rules_get_name: add symlink 'scanner-usbdev2.10'
->  udev_device_event: device '/class/usb_device/usbdev2.10' already in 
->  database, validate currently present symlinks
->  udev_node_add: creating device node '/dev/bus/usb/002/010', major = '189', 
->  minor = '137', mode = '0644', uid = '0', gid = '0'
->  udev_node_add: creating symlink '/dev/scanner-usbdev2.10' to 
->  'bus/usb/002/010'
->  main: run: 'socket:/org/kernel/udev/monitor'
->  main: run: '/lib/udev/udev_run_devd'
->  main: run: 'socket:/org/freedesktop/hal/udev_event'
->  main: run: '/sbin/pam_console_apply /dev/bus/usb/002/010 
->  /dev/scanner-usbdev2.10'
+> Hello.
+>
+> Kumar Gala wrote:
+>
+>>> Index: linux-2.6/arch/powerpc/kernel/time.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/arch/powerpc/kernel/time.c
+>>> +++ linux-2.6/arch/powerpc/kernel/time.c
+> [...]
+>>> @@ -128,6 +129,83 @@ unsigned long ppc_tb_freq;
+>>>  static u64 tb_last_jiffy __cacheline_aligned_in_smp;
+>>>  static DEFINE_PER_CPU(u64, last_jiffy);
+>>>
+>>> +#ifdef CONFIG_GENERIC_CLOCKEVENTS
+>>> +
+>>> +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+>>> +#define DECREMENTER_MAX 0xffffffff
+>>> +#else
+>>> +#define DECREMENTER_MAX 0x7fffffff /* setting MSB triggers an   
+>>> interrupt */
+>>> +#endif
+>>> +
+>>> +static int decrementer_set_next_event(unsigned long evt,
+>>> +                      struct clock_event_device *dev)
+>>> +{
+>>> +#if defined(CONFIG_40x)
+>>> +    mtspr(SPRN_PIT, evt);    /* 40x has a hidden PIT auto- 
+>>> reload  register */
+>>> +#elif defined(CONFIG_BOOKE)
+>>> +    mtspr(SPRN_DECAR, evt); /* Book E has  separate auto-reload   
+>>> register */
+>>> +    set_dec(evt);
+>
+>> what's the point of setting decar if you're just going to set_dec  
+>> as  well?
+>
+>    Bothered to read the Book E specs? ;-)
 
-And if you run that 'udevtest' command on 2.6.21 what happens?
+I have :)
 
-Again, you have not shown me the udev rule that adds that symlink, is it
-something you added by hand, or something that Fedora added to the rules
-file?
+>    Loading DECAR doesn't auto-reload DEC. What I want is both set  
+> the auto-reload value and start counting down from it at the same  
+> time (if the decrementer is in auto-reload mode).
 
-thanks,
+I see you're using DECAR to make it periodic.
 
-greg k-h
+> [big cut-off]
+>
+> WBR, Sergei
+
+I haven't looked at all the new clock/timer code, is there any  
+utility in having support for more than one clock source?
+
+- k
