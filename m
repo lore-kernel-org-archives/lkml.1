@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763537AbXEQHLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760462AbXEQHW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763537AbXEQHLp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 03:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbXEQHLi
+	id S1760462AbXEQHW5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 03:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXEQHWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 03:11:38 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:41432 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754538AbXEQHLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 03:11:38 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Thu, 17 May 2007 12:41:12 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: David Miller <davem@davemloft.net>
-cc: akpm@linux-foundation.org, marcel@holtmann.org, jikos@jikos.cz,
-       gregkh@suse.de, jeremy@goop.org, maxk@qualcomm.com, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bluetooth: fix locking in hci_sock_dev_event()
-In-Reply-To: <20070516.235111.07638844.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0705171238060.10635@cselinux1.cse.iitk.ac.in>
-References: <Pine.LNX.4.64.0705171106550.9262@cselinux1.cse.iitk.ac.in>
- <20070516.235111.07638844.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 17 May 2007 03:22:49 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36984 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754052AbXEQHWt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 03:22:49 -0400
+Date: Thu, 17 May 2007 08:22:47 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Convert namespace_sem to a mutex
+Message-ID: <20070517072247.GQ4095@ftp.linux.org.uk>
+References: <20070517045041.GA4462@in.ibm.com> <20070517050046.GM4095@ftp.linux.org.uk> <20070517071720.GC4462@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070517071720.GC4462@in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, David Miller wrote:
-> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-> Date: Thu, 17 May 2007 11:13:36 +0530 (IST)
->
->> [PATCH] bluetooth: fix locking in hci_sock_dev_event()
->
-> BTW, your email client corrupted the patch spaces and tabs
-> a lot, I applied your patch by hand but I will not do that
-> next time.  Please look into getting your email client to
-> not corrupt the patches you send out, thank you.
+On Thu, May 17, 2007 at 12:47:20PM +0530, Bharata B Rao wrote:
+> Ok, I wasn't aware that this rwsem had many concurrent readers. From whatever
+> little I could see (during system boot and during kernel compilation with
+> make -j), the number of concurrent readers very rarely touched 3 and was 1
+> mostly. May be there are other concurrent readers of this sem. Any idea
+> from where they could be coming from ?
 
-Ick. That's the second time pine did that to me. Doesn't seem
-to happen consistently/reproducibly, but I'll try to fix it
-nonetheless, thanks.
+Anybody reading from /proc/mounts?  You do realize that on systems where
+/etc/mtab is a symlink to /proc/mounts every df(1), etc. - anything that
+wants to find out all mountpoints - will read through that file?
 
-Satyam
+The whole point is that we need exclusion between those who modify
+mount tree *and* between them and anyone who looks at the mount tree.
+We don't need any exclusion between several processes that happen to
+examine the current mount tree at the same time.  And since those
+are far more frequent than those who modify the tree...
