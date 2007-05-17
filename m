@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbXEQLLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbXEQLOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756602AbXEQLLr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 07:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbXEQLLj
+	id S1756471AbXEQLOb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 07:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbXEQLOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 07:11:39 -0400
-Received: from ns1.suse.de ([195.135.220.2]:49729 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754379AbXEQLLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 07:11:38 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Date: Thu, 17 May 2007 21:11:17 +1000
+	Thu, 17 May 2007 07:14:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:52661 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754866AbXEQLOU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 07:14:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=FRm2vjfKLI34S9wEupGJfCiiqwBP83V00vhhV4/HDVxHCDXh65rj1GaDqurtzyrw0UuRcRQQZcAcqGMPv3SHnlvPKHu441sHOfzL8jUSJpFjxUfPcxm88pzWF9wWyvNChiZUOsxp8HL9EHhHsU8Kc4QExS8aQHUzWBYXSJ5AABY=
+Message-ID: <464C38F5.3060802@gmail.com>
+Date: Thu, 17 May 2007 13:13:57 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Peer Chen <pchen@nvidia.com>
+CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: [PATCH] sata_nv: fix fallout of devres conversion
+References: <15F501D1A78BD343BE8F4D8DB854566B13CD8F45@hkemmail01.nvidia.com> <464A94D7.30300@garzik.org> <15F501D1A78BD343BE8F4D8DB854566B13DEF520@hkemmail01.nvidia.com>
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B13DEF520@hkemmail01.nvidia.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <17996.14421.769180.782589@notabene.brown>
-Cc: Jeff Zheng <Jeff.Zheng@endace.com>, david@lang.hm,
-       Andreas Dilger <adilger@clusterfs.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
-In-Reply-To: message from Jan Engelhardt on Thursday May 17
-References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com>
-	<20070516140452.GC5286@schatzie.adilger.int>
-	<Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm>
-	<Pine.LNX.4.61.0705162016060.9019@yvahk01.tjqt.qr>
-	<659F626D666070439A4A5965CD6EBF406B3324@gazelle.ad.endace.com>
-	<Pine.LNX.4.61.0705170918480.1791@yvahk01.tjqt.qr>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday May 17, jengelh@linux01.gwdg.de wrote:
-> XOR it (0^0=1), and hence fills up the host disk.
 
-Uhmm... you need to check your maths.
+As with all other drivers, sata_nv's hpriv is allocated with
+devm_kzalloc() and there's no need to free it explicitly.  Kill
+nv_remove_one() which incorrectly used kfree() instead of devm_kfree()
+and use ata_pci_remove_one() directly.
 
-$ perl -e 'printf "%d\n", 0^0;'
-0
+Original fix is from Peer Chen.
 
-:-)
-NeilBrown
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Peer Chen <pchen@nvidia.com>
+---
+
+I think it's prettier this way.  :-)
+
+diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
+index 4cea3ef..5be4e28 100644
+--- a/drivers/ata/sata_nv.c
++++ b/drivers/ata/sata_nv.c
+@@ -229,7 +229,6 @@ struct nv_host_priv {
+ #define NV_ADMA_CHECK_INTR(GCTL, PORT) ((GCTL) & ( 1 << (19 + (12 * (PORT)))))
+ 
+ static int nv_init_one (struct pci_dev *pdev, const struct pci_device_id *ent);
+-static void nv_remove_one (struct pci_dev *pdev);
+ #ifdef CONFIG_PM
+ static int nv_pci_device_resume(struct pci_dev *pdev);
+ #endif
+@@ -306,7 +305,7 @@ static struct pci_driver nv_pci_driver =
+ 	.suspend		= ata_pci_device_suspend,
+ 	.resume			= nv_pci_device_resume,
+ #endif
+-	.remove			= nv_remove_one,
++	.remove			= ata_pci_remove_one,
+ };
+ 
+ static struct scsi_host_template nv_sht = {
+@@ -1613,15 +1612,6 @@ static int nv_init_one (struct pci_dev *
+ 				 IRQF_SHARED, ppi[0]->sht);
+ }
+ 
+-static void nv_remove_one (struct pci_dev *pdev)
+-{
+-	struct ata_host *host = dev_get_drvdata(&pdev->dev);
+-	struct nv_host_priv *hpriv = host->private_data;
+-
+-	ata_pci_remove_one(pdev);
+-	kfree(hpriv);
+-}
+-
+ #ifdef CONFIG_PM
+ static int nv_pci_device_resume(struct pci_dev *pdev)
+ {
