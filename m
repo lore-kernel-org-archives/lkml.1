@@ -1,42 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbXEQH0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762932AbXEQH2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763288AbXEQH0H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 03:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbXEQHZ5
+	id S1762932AbXEQH2x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 03:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXEQH2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 03:25:57 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:40275 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537AbXEQHZ4 (ORCPT
+	Thu, 17 May 2007 03:28:47 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:8198 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754394AbXEQH2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 03:25:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=bEl+6vZhgjtXWeqKHJ2Jq+k69FHMn009YzWOMP9IVWkJHT2tmVSLSlYSvg3eV3y6EtWB04resVVBGjb/OZymfQw2axlpO+HoiA1bN0XWO/DQc9CkmMQEqDyju5UfNzgxoMHdBZqJCELDjbVYY+hLQKhvDPeyo566eArhRkhiHFc=
-Message-ID: <25ae38200705170025m23fe8ea9s81515ec8d1a0a137@mail.gmail.com>
-Date: Thu, 17 May 2007 12:55:53 +0530
-From: "Anand Jahagirdar" <anandjigar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fork bombing Attack
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 May 2007 03:28:46 -0400
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705161435110.11642@schroedinger.engr.sgi.com>
+References: <1179350433.2912.66.camel@lappy>
+	 <Pine.LNX.4.64.0705161435110.11642@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 17 May 2007 09:28:41 +0200
+Message-Id: <1179386921.27354.29.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Sir,
-             I just want to know whether fork bombing attack still
-exist on the machine having Distribution as Fedora Core 6 and Linux
-Kernel 2.6.x.?
+On Wed, 2007-05-16 at 14:42 -0700, Christoph Lameter wrote:
+> On Wed, 16 May 2007, Peter Zijlstra wrote:
+> 
+> > > Hmmm.. so we could simplify the scheme by storing the last rank 
+> > > somewheres.
+> > 
+> > Not sure how that would help..
+> 
+> One does not have a way of determining the current processes
+> priority? Just need to do an alloc?
 
-           additional Info :  I have set ulimit as 8000 and loged in
-as Guest User on machine having Distribution as Fedora Core 6 and
-Linux kernel 2.6.18. simple fork bombing program while(1) fork();
-killed the box and machine needed reboot. will any body please tell me
-why fork bombing attack killed the box even after setting ulimit as
-8000?
+We need that alloc anyway, to gauge the current memory pressure.
+Sure you could perhaps not do that for allocations are are entitled to
+the reserve if we still have on; but I'm not sure that is worth the
+bother.
 
-Regards
-Anand
+> If we had the current processes "rank" then we could simply compare.
+> If rank is okay give them the object. If not try to extend slab. If that
+> succeeds clear the rank. If extending fails fail the alloc. There would be 
+> no need for a reserve slab.
+> 
+> What worries me about this whole thing is
+> 
+> 
+> 1. It is designed to fail an allocation rather than guarantee that all 
+>    succeed. Is it not possible to figure out which processes are not 
+>    essential and simply put them to sleep until the situation clear up?
+
+Well, that is currently not done either (in as far as that __GFP_WAIT
+doesn't sleep indefinitely). When you run very low on memory, some
+allocations just need to fail, there is nothing very magical about that,
+the system seems to cope just fine. It happens today.
+
+Disable the __GFP_NOWARN logic and create a swap storm, see what
+happens.
+
+> 2. It seems to be based on global ordering of allocations which is
+>    not possible given large systems and the relativistic constraints
+>    of physics. Ordering of events get more expensive the bigger the
+>    system is.
+> 
+>    How does this system work if you can just order events within
+>    a processor? Or within a node? Within a zone?
+
+/me fails again..
+
+Its about ensuring ALLOC_NO_WATERMARKS memory only reaches PF_MEMALLOC
+processes, not joe random's pi calculator.
+
+> 3. I do not see how this integrates with other allocation constraints:
+>    DMA constraints, cpuset constraints, memory node constraints,
+>    GFP_THISNODE, MEMALLOC, GFP_HIGH.
+
+It works exactly as it used to; if you can currently get out of a swap
+storm you still can.
+
