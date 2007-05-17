@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbXEQTYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760768AbXEQTZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758688AbXEQTYB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 15:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbXEQTXx
+	id S1760768AbXEQTZP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 15:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbXEQTZC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 15:23:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44251 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756651AbXEQTXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 15:23:53 -0400
-Date: Thu, 17 May 2007 21:23:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?B?VPZy9ms=?= Edvin <edwintorok@gmail.com>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: CFS Scheduler and real-time tasks
-Message-ID: <20070517192343.GA24249@elte.hu>
-References: <4354d3270705171214v25bc4834t5e28a08649761e91@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4354d3270705171214v25bc4834t5e28a08649761e91@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 17 May 2007 15:25:02 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59297 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756157AbXEQTZB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 15:25:01 -0400
+Date: Thu, 17 May 2007 12:24:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 0/5] make slab gfp fair
+In-Reply-To: <1179429499.2925.26.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl> 
+ <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com> 
+ <1179385718.27354.17.camel@twins>  <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+  <20070517175327.GX11115@waste.org>  <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
+ <1179429499.2925.26.camel@lappy>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 May 2007, Peter Zijlstra wrote:
 
-* Török Edvin <edwintorok@gmail.com> wrote:
+> The proposed patch doesn't change how the kernel functions at this
+> point; it just enforces an existing rule better.
 
-> Is there something I am doing wrong, or is the precision decrease 
-> expected, when running real-time tasks too?
+Well I'd say it controls the allocation failures. And that only works if 
+one can consider the system having a single zone.
 
-yeah: real-time tasks are ueber-tasks that just get all CPU time 
-immediately. I guess we could make SCHED_RR be covered by CFS accounting 
-eventually.
+Lets say the system has two cpusets A and B. A allocs from node 1 and B 
+allocs from node 2. Two processes one in A and one in B run on the same 
+processor.
 
-> Very precise indeed, the default scheduler produces lots of different 
-> timings there.
+Node 1 gets very low in memory so your patch kicks in and sets up the 
+global memory emergency situation with the reserve slab.
 
-note: you ran it on a dual-core system and the SMP load-balancer needs 
-time to gain precision in the non-RT test - so i'd suggest to test it 
-much longer than 10 seconds: 300 seconds at least.
+Now the process in B will either fail although it has plenty of memory on 
+node 2.
 
-	Ingo
+Or it may just clear the emergency slab and then the next critical alloc 
+of the process in A that is low on memory will fail.
+
+
