@@ -1,31 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761594AbXEQUQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761270AbXEQUTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761594AbXEQUQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbXEQUQb
+	id S1761270AbXEQUTD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbXEQUSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:16:31 -0400
-Received: from dedi.luli.de ([88.198.62.74]:35330 "EHLO dedi.luli.de"
+	Thu, 17 May 2007 16:18:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:39009 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757009AbXEQUQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:16:31 -0400
-Message-ID: <464CB820.6050708@rootdir.de>
-Date: Thu, 17 May 2007 22:16:32 +0200
-From: Claas Langbehn <claas@rootdir.de>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	id S1755985AbXEQUSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 16:18:54 -0400
+Message-ID: <464CB8A9.9030700@goop.org>
+Date: Thu, 17 May 2007 13:18:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Francis Russell <francisrussell@btopenworld.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: pata_via appears to incorrectly detects 40-pin cable
-References: <990930.5739.qm@web86408.mail.ird.yahoo.com>
-In-Reply-To: <990930.5739.qm@web86408.mail.ird.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Christoph Hellwig <hch@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       David Woodhouse <dwmw2@infradead.org>, dedekind@infradead.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+References: <20070517143200.GA30850@lst.de> <1179417055.2859.506.camel@shinybook.infradead.org> <20070517181223.GA17765@lst.de> <20070517182314.GA5584@uranus.ravnborg.org> <20070517183628.GA12282@infradead.org>
+In-Reply-To: <20070517183628.GA12282@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Christoph Hellwig wrote:
+>  The attribute syntax is perfecltly
+> find to address endianess issues without introducing wrapper structs the
+> lead to horrible code generation in some situations (e.g. trying to return
+> such a value)
 
-This is bug 8142. Please see http://bugzilla.kernel.org/show_bug.cgi?id=8142
+Small structs are returned in register; it is indistinguishable from
+returning a scalar.
 
-claas
+    J
