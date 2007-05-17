@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760491AbXEQRuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbXEQRu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760491AbXEQRuB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759719AbXEQRtp
+	id S1760631AbXEQRu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760282AbXEQRt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:49:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:29579 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759572AbXEQRto (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:49:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ulImkBXLyuS1cEFltpQGg1Re/JXuOKUhuV90QJh3o9E3rmxj+zODOcS0VgdQoiA0heBNmwUc6hj2e+ALruZUCcSvlYPpE6RefrkDxy036zBN+phiSaFiV1EhT9gXOWqaEK7LwKC/+M+GfzPihXuP2+plZw9acNcu1SbUBkdfAec=
-Message-ID: <464C95AB.3020209@gmail.com>
-Date: Thu, 17 May 2007 19:49:31 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: maneesh@in.ibm.com
-CC: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Clemens Schwaighofer <cs@tequila.co.jp>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: [PATCH -stable] sysfs: disable reclamation by default
-References: <464A4F56.6080108@tequila.co.jp> <20070515185350.2e77bf21.akpm@linux-foundation.org> <464AE56F.3040101@gmail.com> <20070516082935.fe112ab5.akpm@linux-foundation.org> <464B2605.9040200@gmail.com> <20070516091346.3c76cb46.akpm@linux-foundation.org> <464B4DE4.9060100@gmail.com> <20070517120423.GE17712@kroah.com> <20070517173912.GA14370@in.ibm.com>
-In-Reply-To: <20070517173912.GA14370@in.ibm.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 13:49:57 -0400
+Received: from kanga.kvack.org ([66.96.29.28]:57915 "EHLO kanga.kvack.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760263AbXEQRtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:49:55 -0400
+Date: Thu, 17 May 2007 13:49:52 -0400
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Simon Arlott <simon@fire.lp0.eu>, Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: sysfs makes scaling suck Re: Asynchronous scsi scanning
+Message-ID: <20070517174952.GB30571@kvack.org>
+References: <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com> <1179153096.3703.23.camel@mulgrave.il.steeleye.com> <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk> <20070515172905.GJ10562@parisc-linux.org> <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com> <20070517173238.GA30571@kvack.org> <1179423924.3785.30.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179423924.3785.30.camel@mulgrave.il.steeleye.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maneesh Soni wrote:
-> On Thu, May 17, 2007 at 05:04:23AM -0700, Greg KH wrote:
->> On Wed, May 16, 2007 at 08:31:00PM +0200, Tejun Heo wrote:
->>> sd->s_dentry updates made by dentry/inode reclamation are racy and can
->>> lead to BUG() or oops.  This is already fixed in -mm and the fix is
->>> scheduled to be merged into upstream for 2.6.23 but the fix
->>> reimplements sysfs dentry dropping and is too risky for -stable
->>> kernels.
->>>
-> 
-> But was the synchronization fix tested by people facing the race? I still
-> don't understand the racy code path. The last google problem I saw had
-> s_dentry field as NULL.
+On Thu, May 17, 2007 at 01:45:24PM -0400, James Bottomley wrote:
+> But also, the sysfs with over 4,000 (and higher) devices was
+> specifically checked by OSDL (actually as part of the CGL testing) some
+> of the Manoj changes (for unpinning entries etc) were needed to get it
+> to function, but as of now, I believe an enterprise scaling test works
+> reasonably well for it ... there certainly wasn't any evidence of it
+> dying horribly in the tests.
 
-Please take a look at the following message.
+i386 exhausts lowmem very quickly.  SCSI is in a bit better shape than 
+network devices as the multiplier is only around 4 compared to 16 for network 
+devices.
 
-  http://article.gmane.org/gmane.linux.kernel/521729
+My point stands, though.  Forcing every new feature to go in via sysfs is 
+not the right thing to do.  Some people don't/can't use it, please remember 
+them.
 
-I could reproduce both races on my test machine fairly reliable with
-parallel find, cat, mount/mount while repeatedly ins/rmmoding a libata
-driver.
-
->>> This is an interim solution for -stable kernels.  sysfs reclamation is
->>> disabled by default and can be enabled by using sysfs.enable_reclaim
->>> kernel parameter.  Note that dentries are still created on demand, so
->>> attribute and symlinks nodes aren't allocated on creation.  They're
->>> allocated on first lookup and deallocated when the sysfs node is
->>> removed.
->> Ick, this is going to kill memory on big boxes (s390 and others) and I
->> don't really want to apply this it if at all possible.
->>
-> At least not make it default. This might create boot issues with these
-> boxes. 
-
-Which makes oopsing the default.  Fun!  :-)
-
->> Maneesh, any other thoughts?
->>
-> I actually wanted to investigate this oops but left it considering the
-> rework being done by Tejun. If this still make sense we can have some
-> more debug code stuffed there or get a crashdump (kdump) to get better
-> understanding of the race.
-
-The above message contains analysis of both races.  I just ported the
-fixes.  I have a different test machine now and can't reproduce the
-races with this one yet so I couldn't verify whether the patches
-actually fix the problem.  I'll post the patches anyway.  If anyone can
-reproduce these races, please verify the posted patches fix the problem.
-
-Thanks.
-
+		-ben
 -- 
-tejun
+"Time is of no importance, Mr. President, only life is important."
+Don't Email: <zyntrop@kvack.org>.
