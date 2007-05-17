@@ -1,110 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbXEQRNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbXEQROy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757486AbXEQRNW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbXEQRNM
+	id S1757972AbXEQROy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbXEQROq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:13:12 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:38691 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755850AbXEQRNK (ORCPT
+	Thu, 17 May 2007 13:14:46 -0400
+Received: from lazybastard.de ([212.112.238.170]:48163 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755222AbXEQROp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:13:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p6CZcH0IT7jBifaFOs22CjiVbREb0kHzlctnHFCKfJMbBuveIZRE9HW3IkaVbbsMnGkjiOJtNb7B5WS8mA6RGeP83UTULwKQltE4vXOXKhoJdRWhqydMPnKxy1j/M6p7vgkrLSY5ripk1QJIhor9zx5C8714SflYByX982mZVEc=
-Message-ID: <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com>
-Date: Thu, 17 May 2007 22:43:06 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Subject: Re: Asynchronous scsi scanning
-Cc: "Simon Arlott" <simon@fire.lp0.eu>,
-       "James Bottomley" <james.bottomley@steeleye.com>,
-       "Dave Jones" <davej@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-In-Reply-To: <20070516025121.GK10562@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 13:14:45 -0400
+Date: Thu, 17 May 2007 19:10:19 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: Review status (Re: [PATCH] LogFS take three)
+Message-ID: <20070517171017.GB15676@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <20070515152149.GB32059@lazybastard.org> <20070517160308.GA26643@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
-	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
-	 <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
-	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
-	 <17841.simon.1179228389@5ec7c279.invalid>
-	 <20070515120228.GI10562@parisc-linux.org>
-	 <4649E03A.1090004@simon.arlott.org.uk>
-	 <20070515172905.GJ10562@parisc-linux.org>
-	 <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
-	 <20070516025121.GK10562@parisc-linux.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070517160308.GA26643@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthew,
+On Thu, 17 May 2007 20:03:11 +0400, Evgeniy Polyakov wrote:
+> 
+> Is logfs 32bit fs or 674bit, since although you use 64bit values for
+> offsets, area management and strange converstions like described below 
+> from offset into segment number are performed in 32bit?
+> Is it enough for SSD for example to be 32bit only? Or if it is 64bit,
+> could you please explain logic behind area management?
 
-On 5/16/07, Matthew Wilcox <matthew@wil.cx> wrote:
-> [...]
-> > /sys/module/scsi_mod/parameters/wait_for_async_scans (?)
-> > Doesn't really matter, but perhaps who created the sysfs namespace
-> > for scsi in /sys/module/scsi_mod/... could be the best person to suggest.
->
-> No, it does matter.  Your suggestion doesn't work, because
-> /sys/module/scsi_mod/parameters/ belongs to the module code.  To create
-> a new attribute there, you use the module_param() code -- and there's
-> no way to have code called when your parameter is changed.
+Ignoring bugs and signed return values for error handling, it is either
+64bit or 32+32bit.
 
-Ok, thanks for pointing out that /sys/module/scsi_mod/parameters/wait...
-is _wrong_. Could you suggest something that would be _right_?
+Inode numbers and file positions are 64bit.  Offsets are 64bit as well.
+In a couple of places, offsets are also 32+32bit.  Basically the high
+bits contain the segment number, the lower bits the offset within a
+segment.
 
-> > OK, I'll get really silly here myself. I don't want even that half a second
-> > of
-> > overhead when that module is being _built_ (during make modules), not
-> > the overhead of copying / installing at modules_install time.
->
-> You're claiming that 0.7 second (I just timed it on a 3 year old
-> laptop) *inconveniences* you?
+Side note: It would be nicer if the high 32bit were segment number.
+Instead the number of bits depends on segment size.  Guess I should
+change that while the format isn't fixed yet.
 
-...
+An "area" is a segment that is currently being written.  Data is
+appended to this segment as it comes in, until the segment is full.  Any
+functions dealing with areas only need a 32bit offset, which is the
+offset within the area, not the absolute device offset.
 
-On 5/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-OK, I'll get really silly here myself. ...
+Writes within an area are also buffered.  New data first goes into the
+write buffer (wbuf) and only when this is full is it flushed to the
+device.  NAND flash and some NOR flashes require such buffering.  When
+writing to the device, the 32bit segno and the 32bit in-segment offset
+need to get converted back to a 64bit device offset.
 
-...
+> I've found that you store segment numbers as 32bit values (for example
+> in prepare_write()), and convert requested 64bit offset into segment
+> number via superblock's s_segshift.
 
-On 5/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-It's not _inconvenient_. Just that writing/building a module for accomplishing
-something like that ... is just not _right_.
+Yes, as described above.
 
-...
+> This conversation seems confusing to me in case of real 64bit offsets.
+> For example this one obtained via prepare_write:
+> 
+> 7  1 logfs_prepare_write    78  fs/logfs/file.c
+> 8  2 logfs_readpage_nolock    20  fs/logfs/file.c
+> 9  1 logfs_read_block   351  fs/logfs/readwrite.c
+> 10  1 logfs_read_loop   139  fs/logfs/readwrite.c
+> 11  2 logfs_segment_read   108  fs/logfs/readwrite.c
+> 12  1 wbuf_read         289 
+> 
+> u32 segno = ofs >> super->s_segshift;
+> 
+> ofs is originally obtained from inode's li_data array, which is filled
+> with raw segment numbers which can be 64bit (here is another issue,
+> since logfs_segment_write() returns signed, so essentially logfs is
+> 63bit filesystem).
 
-On 5/16/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-static int __init wait_scan_init(void)
-{
-        scsi_complete_async_scans();
-        return 0;
-/* BTW this could've been return scsi_complete_async_scans();
- * I see scsi_complete_async_scans() never fails, but still. */
-}
-late_initcall(wait_scan_init);
-... does _not_ deserve to be a module, and writing/building a module
-for something like this (just to run a function in some kernel subsytem)
-does not seem to be the proper way to solve the problem either.
+The filesystem format is 64bit.  The current code can only deal with
+63bit.  Eric Sandeen just fixed ext2 to actually deal with 32bit
+numbers and the same is possible for logfs.  If anyone ever cares...
 
-...
+> But here I've came to area management in logfs, and found that it is
+> 32bit only, for example __logfs_segment_write()/__logfs_get_free_bytes() 
+> returns signed 32 bit value (so it is reduced to 31 bit), which is then 
+> placed into li_data as 64bit value. The latter
+> (__logfs_get_free_bytes()) truncates 64bit data value obtained via
+> dev_ofs() into signed 32 bit value.
 
-> This whole thing is such a tempest in a teapot.  I really don't
-> understand why you care so much.
+That indeed is a bug.  __logfs_get_free_bytes() should return s64
+instead of s32.  Will fix immediatly.
 
-You're almost right here. But IMHO this is simply a case of
-doing something in some kernel subsystem in a proper/better
-way than it is being done presently.
+If anyone can find similar bugs, the bounty is a beer or non-alcoholic
+beverage of choice. :)
 
-Anyway, like I said on another thread, discussions here tend to be
-most productive only over code, so I'll try and make a patch to do
-this some other way.
+Jörn
 
-Thanks,
-Satyam
+-- 
+To announce that there must be no criticism of the President, or that we
+are to stand by the President, right or wrong, is not only unpatriotic
+and servile, but is morally treasonable to the American public.
+-- Theodore Roosevelt, Kansas City Star, 1918
