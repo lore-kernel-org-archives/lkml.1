@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbXEQRSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbXEQRUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757924AbXEQRSU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbXEQRSN
+	id S1758197AbXEQRUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbXEQRU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:18:13 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:42146 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755835AbXEQRSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:18:12 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [patch] early printk and boot console fixups.
-Date: Thu, 17 May 2007 11:18:09 -0600
-User-Agent: KMail/1.9.6
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Gerd Hoffmann <kraxel@suse.de>,
-       Andi Kleen <ak@suse.de>, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <45D5C473.4010608@suse.de> <200705161214.16426.bjorn.helgaas@hp.com> <Pine.LNX.4.64N.0705171038050.11098@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0705171038050.11098@blysk.ds.pg.gda.pl>
+	Thu, 17 May 2007 13:20:26 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47313 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756157AbXEQRUZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:20:25 -0400
+Date: Thu, 17 May 2007 11:20:23 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       James Bottomley <james.bottomley@steeleye.com>,
+       Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: Asynchronous scsi scanning
+Message-ID: <20070517172023.GL10562@parisc-linux.org>
+References: <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com> <1179153096.3703.23.camel@mulgrave.il.steeleye.com> <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk> <20070515172905.GJ10562@parisc-linux.org> <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com> <20070516025121.GK10562@parisc-linux.org> <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705171118.09413.bjorn.helgaas@hp.com>
+In-Reply-To: <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 17 May 2007 03:45:36 am Maciej W. Rozycki wrote:
-> On Wed, 16 May 2007, Bjorn Helgaas wrote:
-> > >  Given the generic name of "uart" I am assuming this will work with any 
-> > > UART driver making use of the serial_core.c core -- am I correct?
-> > 
-> > I knew somebody would ask that eventually :-)
-> > 
-> > Unfortunately, the answer is "no."  "console=uart" only works with
-> > 8250-compatible devices.
+On Thu, May 17, 2007 at 10:43:06PM +0530, Satyam Sharma wrote:
+> >No, it does matter.  Your suggestion doesn't work, because
+> >/sys/module/scsi_mod/parameters/ belongs to the module code.  To create
+> >a new attribute there, you use the module_param() code -- and there's
+> >no way to have code called when your parameter is changed.
+
+(thanks, Roland for pointing out that I'm incorrect about code being
+called)
+
+> Ok, thanks for pointing out that /sys/module/scsi_mod/parameters/wait...
+> is _wrong_. Could you suggest something that would be _right_?
+
+No, I can't, which is why I find it hard to like the idea of "use
+sysfs".  I have no particular love for using a module like this, but
+my preferred way (a new verb for /proc/scsi/scsi) isn't liked by others.
+So here we stand.
+
+> You're almost right here. But IMHO this is simply a case of
+> doing something in some kernel subsystem in a proper/better
+> way than it is being done presently.
 > 
->  But is it a design limitation or is it just that other UART drivers have 
-> to be modified to work with this option?  My point is if the former, then 
-> the option should be something like "console=8250" (the right-hand side 
-> being the name of the driver involved; others may want to add support for 
-> other drivers).  If the latter, then it's fine as is as other UART drivers 
-> may be wired to this code as a need arises.
+> Anyway, like I said on another thread, discussions here tend to be
+> most productive only over code, so I'll try and make a patch to do
+> this some other way.
 
-"console=8250" probably would have been a better choice.  I think
-this could be changed without too much hassle.
-
-It might be possible to extend "console=uart" so one could do
-"console=uart,io,0x3f8,9600n8,21285" (where "21285" is a non-8250
-UART type).  But that seems ugly to me.  I'd rather have
-"console=21285", "console=68328", etc.
-
-I just want the "console=<tag>" to explicitly identify the UART
-type so we don't have to poke at the thing and guess what it is.
-
-Bjorn
+Come up with a sensible suggestion, and I'll listen to you.  Code isn't
+the issue.  API is the issue.
