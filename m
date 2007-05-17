@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbXEQAbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762177AbXEQAdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761589AbXEQAbs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 20:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbXEQAbl
+	id S1762177AbXEQAdt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 20:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbXEQAdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 20:31:41 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60815 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755702AbXEQAbl (ORCPT
+	Wed, 16 May 2007 20:33:42 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56205 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755058AbXEQAdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 20:31:41 -0400
-Date: Wed, 16 May 2007 17:24:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 1/2] scalable rw_mutex
-Message-Id: <20070516172435.bd3270bd.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705161639010.12688@schroedinger.engr.sgi.com>
-References: <20070511131541.992688403@chello.nl>
-	<20070511132321.895740140@chello.nl>
-	<20070511093108.495feb70.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705111006470.32716@schroedinger.engr.sgi.com>
-	<20070511110522.ed459635.akpm@linux-foundation.org>
-	<p73odkpeusf.fsf@bingen.suse.de>
-	<20070512110624.9ac3aa44.akpm@linux-foundation.org>
-	<20070516162829.23f9b1c4.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705161639010.12688@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 16 May 2007 20:33:41 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <464BA28E.1020706@s5r6.in-berlin.de>
+Date: Thu, 17 May 2007 02:32:14 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
+       kbuild-devel@lists.sourceforge.net
+Subject: Re: [RFC] select and dependencies in Kconfig
+References: <E1Ho2om-0003TN-Ah@ZenIV.linux.org.uk> <20070516033335.GH4095@ftp.linux.org.uk> <464B141E.3020400@s5r6.in-berlin.de> <464B9427.1010204@freescale.com>
+In-Reply-To: <464B9427.1010204@freescale.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007 16:40:59 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Wed, 16 May 2007, Andrew Morton wrote:
+Timur Tabi wrote:
+> For example, if I want to add a new driver C that uses library B, I can
+> just add this:
 > 
-> > (I hope.  Might have race windows in which the percpu_counter_sum() count is
-> > inaccurate?)
+> C
+>     select B
 > 
-> The question is how do these race windows affect the locking scheme?
+> If I have to use "depends on", then I would have to change the Kconfig
+> option for B like this:
+> 
+> B
+>     depends on A || C
 
-The race to which I refer here is if another CPU is running
-percpu_counter_sum() in the window between the clearing of the bit in
-cpu_online_map and the CPU_DEAD callout.  Maybe that's too small to care
-about in the short-term, dunno.
+You mean, "B... serves A, C".
 
-Officially we should fix that by taking lock_cpu_hotplug() in
-percpu_counter_sum(), but I hate that thing.
-
-I was thinking of putting a cpumask into the counter.  If we do that then
-there's no race at all: everything happens under fbc->lock.  This would be
-a preferable fix, if we need to fix it.
-
-But I'd prefer that freezer-based cpu-hotplug comes along and saves us
-again.
-
-
-
-umm, actually, we can fix the race by using CPU_DOWN_PREPARE instead of
-CPU_DEAD.  Because it's OK if percpu_counter_sum() looks at a gone-away
-CPU's slot.
+However, it shouldn't matter which way around the dependencies are
+written down in the Kconfigs.  What does matter is how "make
+{old,menu,...}config" deal with it.
+-- 
+Stefan Richter
+-=====-=-=== -=-= =---=
+http://arcgraph.de/sr/
