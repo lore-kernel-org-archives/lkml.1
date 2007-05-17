@@ -1,79 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762670AbXEQFPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761192AbXEQFTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762670AbXEQFPr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 01:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759317AbXEQFPk
+	id S1761192AbXEQFTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 01:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbXEQFT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 01:15:40 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46236 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758197AbXEQFPk (ORCPT
+	Thu, 17 May 2007 01:19:26 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38964 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752276AbXEQFTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 01:15:40 -0400
-Date: Wed, 16 May 2007 22:14:20 -0700
-From: Greg KH <greg@kroah.com>
-To: art@usfltd.com
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
-Message-ID: <20070517051420.GA10934@kroah.com>
-References: <20070516145822.d1bz7paab4o8gg8c@67.106.77.50>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516145822.d1bz7paab4o8gg8c@67.106.77.50>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Thu, 17 May 2007 01:19:25 -0400
+Message-Id: <20070517051659.055631233@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 16 May 2007 22:16:59 -0700
+From: clameter@sgi.com
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-mm@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, dgc@sgi.com
+Subject: [patch 0/3] Slab Defrag / Slab Targeted Reclaim
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 02:58:22PM -0500, art@usfltd.com wrote:
->  greg
-> 
->  CONFIG_SYSFS_DEPRECATED=Y
-> 
->  check that we have
->  rwxrwxrwx 1 root root       15 May 16 13:43 scanner-usbdev2.12 -> 
->  bus/usb/002/012
-> 
->  in /dev directory after usb-scanner connection for kernel-2.6.20
->  we don't have this for kernel-2.6.22
+Initial support for Slab defragmentation and targeted reclaim. The
+functionality here is minimal. We establish a slab API to allow removal
+or moving of objects between slabs.
 
-Who creates that?  udev?  What udev rule does that?
+The only user provided here is a dentry cache reclaim capability. This is
+limited to the removal of unused dentries for now. It is planned to later
+add a similar inode reclaim capability and then extend the move/reclaim
+to support moving of dentries and inodes.
 
-Can you run 'udevtest' to see what is supposed to be matching here?
-Odds are you have a broken rule somehow.
+Slab defragmentation is performed during kmem_cache_shrink. This is usually
+triggered through the slab shrinkers but can also be manually triggered
+through the slabinfo command.
 
+Support is provided for antifrag/defrag to evict a specific slab page
+through the kmem_cache_vacate function call. Since we can only reclaim
+unused dentries for now that functionality is pretty limited (we need to
+put some work into making dentries and inode more reclaimable or movable)
+but we can increase the capabilities over time which will allow us to move
+slabs from the reclaimable area into the movable area. This will shrink
+the reclaimable area significantly. Since we can target the vacating of
+pages this may allow the antifrag code to remove a page that hinders the
+freeing of higher order page.
 
-> 
->  ----------------------------2.6.20 usb-scanner connect
-> 
->  # /usr/sbin/udevmonitor
-> 
->  UEVENT[1179340996.886805] 
->  add@/devices/pci0000:00/0000:00:0b.1/usb2/2-2/2-2.2
->  UEVENT[1179340996.886864] add@/class/usb_endpoint/usbdev2.12_ep00
->  UEVENT[1179340996.887438] 
->  add@/devices/pci0000:00/0000:00:0b.1/usb2/2-2/2-2.2/2-2.2:1.0
->  UEVENT[1179340996.887467] add@/class/usb_endpoint/usbdev2.12_ep81
->  UEVENT[1179340996.887484] add@/class/usb_endpoint/usbdev2.12_ep02
->  UEVENT[1179340996.887499] add@/class/usb_endpoint/usbdev2.12_ep83
->  UEVENT[1179340996.887514] add@/class/usb_device/usbdev2.12
->  UDEV  [1179340996.921506] 
->  add@/devices/pci0000:00/0000:00:0b.1/usb2/2-2/2-2.2
->  UDEV  [1179340996.936005] add@/class/usb_endpoint/usbdev2.12_ep00
->  UDEV  [1179340996.960144] add@/class/usb_endpoint/usbdev2.12_ep81
->  UDEV  [1179340996.963672] add@/class/usb_endpoint/usbdev2.12_ep02
->  UDEV  [1179340996.967439] add@/class/usb_endpoint/usbdev2.12_ep83
->  UDEV  [1179340997.240934] 
->  add@/devices/pci0000:00/0000:00:0b.1/usb2/2-2/2-2.2/2-2.2:1.0
->  UDEV  [1179340997.473142] add@/class/usb_device/usbdev2.12
-
-This last device is correct, and what your udev rule should be using to
-create your symlink.
-
-You didn't answer my, "what distro are you using" question.  Also, what
-package created the udev rule that creates the above symlink?
-
-thanks,
-
-greg k-h
-
+-- 
