@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762286AbXEQUda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761722AbXEQUfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762286AbXEQUda (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756626AbXEQUdY
+	id S1761722AbXEQUfZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755877AbXEQUfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:33:24 -0400
-Received: from www.osadl.org ([213.239.205.134]:48484 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755837AbXEQUdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:33:23 -0400
-Subject: RE: bug seen with dynticks from CONFIG_HARDIRQS_SW_RESEND
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Woodruff, Richard" <r-woodruff2@ti.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <3B6D69C3A9EBCA4BA5DA60D913027429010258E8@dlee13.ent.ti.com>
-References: <3B6D69C3A9EBCA4BA5DA60D913027429010253CD@dlee13.ent.ti.com>
-	 <1179396659.3764.40.camel@chaos>
-	 <3B6D69C3A9EBCA4BA5DA60D913027429010258E8@dlee13.ent.ti.com>
-Content-Type: text/plain
-Date: Thu, 17 May 2007 22:38:16 +0200
-Message-Id: <1179434296.12981.14.camel@chaos>
+	Thu, 17 May 2007 16:35:12 -0400
+Received: from main.gmane.org ([80.91.229.2]:56723 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754732AbXEQUfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 16:35:10 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthieu CASTET <castet.matthieu@free.fr>
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+Date: Thu, 17 May 2007 20:30:30 +0000 (UTC)
+Message-ID: <pan.2007.05.17.20.30.30@free.fr>
+References: <20070517143200.GA30850@lst.de>
+	<1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de>
+	<1179414590.3642.69.camel@sauron>
+	<20070517102931.6bbbad1a.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: cac94-1-81-57-151-96.fbx.proxad.net
+User-Agent: Pan/0.125 (Potzrebie)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 15:14 -0500, Woodruff, Richard wrote:
-> > which code is disabling / enabling the timer interrupt ?
+On Thu, 17 May 2007 10:29:31 -0700, Andrew Morton wrote:
+
+> On Thu, 17 May 2007 18:09:50 +0300 Artem Bityutskiy
+> <dedekind@infradead.org> wrote:
 > 
-> - No one in this case is calling enable_irq(#timer). The failure is
-> triggered from a non-tick-related enable_irq(#x). The function
-> handle_IRQ_event() always calls handle_dynamic_tick(). Thus every real
-> interrupt or fake interrupt though resend_irq will touch the timer code
-> paths.
+> umm..  I'd say what you've done in there is an improvement to the
+> exiting stuff: getting gcc to check it is better than having to use
+> sparse.
 > 
-> To better describe:
->   -0- Users space does an ioctl to driver
->   -1- This driver calls enable_irq(#x)
->   -2- This triggers a check_irq_resend()
->   -3- This causes a tasklet schedule of the resend_tasklet for #x
->   -4- This driver later does a spin_unlock_bh
->   -5- This triggers a check for softirq/tasklets
->   -6- The resend_tasklet is run and calls desc->handle_irq
->   -7- This calls handle_level_irq
->   -8- This calls handle_IRQ_event
->   -9- This first calls handle_dynamic_tick
+> I'd have expected gcc to generate poorer code with your approach but I'm
+> showing zero text size changes from Christoph's patch (gcc-4.1 and
+> gcc-3.4.5).
+> 
+>
+On which arch did you try ?
+X86 where unaligned access are ok ?
 
-This is the original ARM dyntick stuff, right ?
+On arch that don't support aligned access, packed struct access will be 
+done byte per byte (but it could be the expected behavior if there 
+unaligned access).
 
-The dyntick support on your architecture is broken. Why does it fiddle
-with the timer, when the system is not idle ?
-
-This stuff should go away ASAP. A lot of ARMs are already converted to
-clock events are using the generic NOHZ implementation, which does not
-have those problems at all.
-
-	tglx
-
-
+Matthieu
 
