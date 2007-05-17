@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760986AbXEQUNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760811AbXEQUN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760986AbXEQUNM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759655AbXEQUMz
+	id S1760811AbXEQUN2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757004AbXEQUNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:12:55 -0400
-Received: from kanga.kvack.org ([66.96.29.28]:60281 "EHLO kanga.kvack.org"
+	Thu, 17 May 2007 16:13:19 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:53321 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759541AbXEQUMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:12:53 -0400
-Date: Thu, 17 May 2007 15:43:26 -0400
-From: Benjamin LaHaise <bcrl@kvack.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, Simon Arlott <simon@fire.lp0.eu>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: Asynchronous scsi scanning
-Message-ID: <20070517194326.GC30571@kvack.org>
-References: <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com> <20070516025121.GK10562@parisc-linux.org> <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com> <20070517172023.GL10562@parisc-linux.org> <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com> <20070517182414.GA12170@infradead.org> <a781481a0705171147s1ef5c205y8873d0bfa201f928@mail.gmail.com> <20070517185115.GA13207@infradead.org> <a781481a0705171204o5b25fafdm36d5970acf9119cd@mail.gmail.com> <20070517193953.GM10562@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070517193953.GM10562@parisc-linux.org>
-User-Agent: Mutt/1.4.1i
+	id S1760267AbXEQUNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 16:13:18 -0400
+Message-ID: <464CB75B.8010006@simon.arlott.org.uk>
+Date: Thu, 17 May 2007 21:13:15 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+MIME-Version: 1.0
+To: Claas Langbehn <claas@rootdir.de>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: This kernel requires the following features not present on the
+ CPU... (on a VIA C7 CPU)
+References: <464C4A22.7040709@rootdir.de>
+In-Reply-To: <464C4A22.7040709@rootdir.de>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 01:39:54PM -0600, Matthew Wilcox wrote:
-> On Fri, May 18, 2007 at 12:34:40AM +0530, Satyam Sharma wrote:
-> > Hmmm, actually those other users could easily write and maintain
-> > a 20-line patch that does the wait for async scans thing for them
-> > using /proc/scsi/scsi in any case.
-> 
-> How about the three users who're bothered by this extra module being
-> built maintain a one-line patch to Kconfig and leave well enough alone?
+On 17/05/07 13:27, Claas Langbehn wrote:
+> Concerning the crashes I already changed the memory module, but with no 
+> success. I'm not sure
+> wether this is a hardware or software bug.
 
-The module has an added bonus that it doesn't require any new tools to 
-make work.  Doing it via sysfs/procfs means a new rev of whatever tool 
-generates the boot initrd, plus fixing up boot scripts.  Loading a module 
-can be done via a simple option to the existing boot tools.
+Get a replacement motherboard+cpu. I've had one board with rx-only 
+ethernet, and one which would only POST if I pressed reset (a full 
+size power supply made it just turn off). The third one has been 
+working fine since I got it.
 
-		-ben
 -- 
-"Time is of no importance, Mr. President, only life is important."
-Don't Email: <zyntrop@kvack.org>.
+Simon Arlott
