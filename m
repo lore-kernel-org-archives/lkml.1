@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762238AbXEQCKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbXEQCLD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762238AbXEQCKE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 22:10:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXEQCJw
+	id S1762834AbXEQCLD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 22:11:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbXEQCKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 22:09:52 -0400
-Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:36704 "EHLO
-	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754789AbXEQCJv convert rfc822-to-8bit (ORCPT
+	Wed, 16 May 2007 22:10:55 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:42239 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757908AbXEQCKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 22:09:51 -0400
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
-Date: Thu, 17 May 2007 14:09:49 +1200
-Message-ID: <659F626D666070439A4A5965CD6EBF406B33ED@gazelle.ad.endace.com>
-In-Reply-To: <17995.42562.870806.396617@notabene.brown>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
-Thread-Index: AceYHSNQDIBjB4RPT1euIqa2jj2EuwACq07g
-References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com><6bffcb0e0705151629j78920ca2r9337dccdfc1bb6a9@mail.gmail.com><17994.19043.771733.453896@notabene.brown><659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com> <17995.42562.870806.396617@notabene.brown>
-From: "Jeff Zheng" <Jeff.Zheng@endace.com>
-To: "Neil Brown" <neilb@suse.de>
-Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>, <linux-raid@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>
+	Wed, 16 May 2007 22:10:55 -0400
+Date: Wed, 16 May 2007 22:10:34 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH] Serial 8250: Handle saving the clear-on-read bits from the
+ LSR and MSR
+In-reply-to: <464B4235.5030405@acm.org>
+To: Corey Minyard <minyard@acm.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Message-id: <200705162210.34739.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070504131532.GA12265@localdomain>
+ <20070506181422.GB21158@flint.arm.linux.org.uk> <464B4235.5030405@acm.org>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 16 May 2007, Corey Minyard wrote:
+>Russell King wrote:
+>> On Sun, May 06, 2007 at 12:58:25PM -0400, Gene Heskett wrote:
+>>> [long message snipped]
+>>>
+>>> Thanks for your patience Corey.
+>>
+>> So, in one sentence or preferably one word, did Corey's patch cause a
+>> regression?
+>
+>>From what Gene said, I think the final outcome is that this patch didn't
+>seem to make any difference. It looks to me that the problems were
+>elsewhere.
+>
+>So what's the state of this patch?
+>
+>Thanks,
+>
+>-corey
 
-> The only difference of any significance between the working 
-> and non-working configurations is that in the non-working, 
-> the component devices are larger than 2Gig, and hence have 
-> sector offsets greater than 32 bits.
+Gene here.  My impression was that this patch did help in that it appeared to 
+clean up what was thought to be less than optimum code in that area.  There 
+were a few times when it didn't seem to take quite as many kills and restarts 
+of that ill-coded proprietary daemon to make things behave.
 
-Do u mean 2T here?, but in both configuartion, the component devices are
-larger than 2T (2.25T&5.5T).
- 
-> This does cause a slightly different code path in one place, 
-> but I cannot see it making a difference.  But maybe it does.
-> 
-> What architecture is this running on?
-> What C compiler are you using?
+OTOH, I get the very strong impression there is another, more serious buglet 
+someplace else that does a pretty good job of masking any black and white 
+comparisons one might make about this patch.
 
-I386(i686)
-Gcc 4.0.2 20051125, 
-Distro is Fedora core, we've tried fc4 and fc6.
+Older code, as in 4 or 5 minor kernel versions back, appeared to work 
+correctly, either on a serial port, or a usb port with a pl2303, if one could 
+tolerate the miss-fires it did occasionally.  Now of course the pl2303 seems 
+to be broken, both of the ones I have quit working at all with 2.6.21 final.
 
-> Can you try with this patch?  It is the only thing that I can 
-> find that could conceivably go wrong.
-> 
-
-OK, I will try the patach and post the result.
-
-Best Regards
-Jeff Zheng
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+* |Rain| prepares for polygon soup
+<|Rain|> sweet merciful crap, it works?
+* |Rain| faints
