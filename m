@@ -1,46 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757865AbXEQVOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbXEQVPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757865AbXEQVOh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbXEQVOa
+	id S1759512AbXEQVPO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbXEQVPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:14:30 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:14622 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754614AbXEQVO3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:14:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tqds0av92DDrRo83T+URC3HLbGCSsgURRtmPZBh8DQjIstQzOD/1t5viPkZBFoKN4mr7Yxpt3wJiaK+uSM1TXAjgT5TzEwb2su72U2N802+3+Ho0JoPAckx1xxcDT//8FqjhrL5IQ7DHxmwDcK04xULlXLRbxUAXcM9sEvCqXIw=
-Message-ID: <d120d5000705171414u55af4c03m6e6d2fbcf982e3ff@mail.gmail.com>
-Date: Thu, 17 May 2007 17:14:26 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Al Viro" <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, dedekind@infradead.org,
-       linux-kernel@vger.kernel.org, "Christoph Hellwig" <hch@lst.de>
-In-Reply-To: <20070517204234.GR4095@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070517143200.GA30850@lst.de> <1179413443.3642.49.camel@sauron>
-	 <20070517145653.GA968@lst.de> <1179414590.3642.69.camel@sauron>
-	 <20070517102931.6bbbad1a.akpm@linux-foundation.org>
-	 <20070517204234.GR4095@ftp.linux.org.uk>
+	Thu, 17 May 2007 17:15:00 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:36768 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754770AbXEQVO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 17:14:59 -0400
+Message-Id: <200705172113.l4HLDYwI025303@sous-sol.org>
+Subject: patch cpufreq-powernow-k7-fix-mhz-rounding-issue-with-perflib.patch queued to 2.6.21-stable tree
+To: linux-kernel@vger.kernel.org, chrisw@sous-sol.org, davej@redhat.com,
+       dsd@gentoo.org
+Cc: stable@kernel.org
+From: chrisw@sous-sol.org
+Date: Thu, 17 May 2007 14:13:34 -0700
+In-Reply-To: <200705151959.l4FJx3wR025926@hera.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/17/07, Al Viro <viro@ftp.linux.org.uk> wrote:
->
-> Ahem...  So what does
->        x |= y;
-> turns into with that approach?
 
-Do we want to do such kind of operations on endian-annotated data? I'd
-imagine you want to convert ot host-endianess first anyway.
+This is a note to let you know that we have just queued up the patch titled
 
--- 
-Dmitry
+     Subject: CPUFREQ: powernow-k7: fix MHz rounding issue with perflib
+
+to the 2.6.21-stable tree.  Its filename is
+
+     cpufreq-powernow-k7-fix-mhz-rounding-issue-with-perflib.patch
+
+A git repo of this tree can be found at 
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+
+>From stable-bounces@linux.kernel.org  Thu May 17 13:43:35 2007
+Date: Tue, 15 May 2007 19:59:03 GMT
+Message-Id: <200705151959.l4FJx3wR025926@hera.kernel.org>
+From: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: stable@kernel.org
+Resent-From: davej@redhat.com
+Subject: CPUFREQ: powernow-k7: fix MHz rounding issue with perflib
+
+From: Daniel Drake <dsd@gentoo.org>
+
+When the PST tables are broken, powernow-k7 uses ACPI's processor_perflib to
+deduce the available frequency multipliers from the _PSS tables.
+
+Upon frequency change, processor_perflib performs some verification on the
+frequency (checks that it's within allowable bounds).
+
+powernow-k7 deals with absolute frequencies in KHz, whereas perflib only
+deals with MHz values. When performing the above verification, perflib
+multiplies the MHz values by 1000 to obtain the KHz value.
+
+We then end up with situations like the following:
+ - powernow-k7 multiplies the multiplier by the FSB, and obtains a value
+   such as 1266768 KHz
+ - perflib belives the same state has frequency of 1266 MHz
+ - acpi_processor_ppc_notifier calls cpufreq_verify_within_limits to verify
+   that 1266768 is in the allowable range of 0 to 1266000 (i.e. 1266 * 1000)
+ - it's not, so that frequency is rejected
+ - the maximum CPU frequency is not reachable
+
+This patch solves the problem by rounding up the MHz values stored in perflib's
+tables. Additionally it corrects a broken URL.
+
+It also fixes http://bugzilla.kernel.org/show_bug.cgi?id=8255 although this
+case is a bit different: the frequencies in the _PSS tables are wildly wrong,
+but we get better results if we force ACPI to respect the fsb * multiplier
+calculations (even though it seems that the multiplier values aren't entirely
+correct either).
+
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
+Signed-off-by: Dave Jones <davej@redhat.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+
+ arch/i386/kernel/cpu/cpufreq/powernow-k7.c |   36 ++++++++++++++++++++++-------
+ 1 file changed, 28 insertions(+), 8 deletions(-)
+
+--- linux-2.6.21.1.orig/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
++++ linux-2.6.21.1/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+@@ -341,15 +341,17 @@ static int powernow_acpi_init(void)
+ 	pc.val = (unsigned long) acpi_processor_perf->states[0].control;
+ 	for (i = 0; i < number_scales; i++) {
+ 		u8 fid, vid;
+-		unsigned int speed;
++		struct acpi_processor_px *state =
++			&acpi_processor_perf->states[i];
++		unsigned int speed, speed_mhz;
+ 
+-		pc.val = (unsigned long) acpi_processor_perf->states[i].control;
++		pc.val = (unsigned long) state->control;
+ 		dprintk ("acpi:  P%d: %d MHz %d mW %d uS control %08x SGTC %d\n",
+ 			 i,
+-			 (u32) acpi_processor_perf->states[i].core_frequency,
+-			 (u32) acpi_processor_perf->states[i].power,
+-			 (u32) acpi_processor_perf->states[i].transition_latency,
+-			 (u32) acpi_processor_perf->states[i].control,
++			 (u32) state->core_frequency,
++			 (u32) state->power,
++			 (u32) state->transition_latency,
++			 (u32) state->control,
+ 			 pc.bits.sgtc);
+ 
+ 		vid = pc.bits.vid;
+@@ -360,6 +362,18 @@ static int powernow_acpi_init(void)
+ 		powernow_table[i].index |= (vid << 8); /* upper 8 bits */
+ 
+ 		speed = powernow_table[i].frequency;
++		speed_mhz = speed / 1000;
++
++		/* processor_perflib will multiply the MHz value by 1000 to
++		 * get a KHz value (e.g. 1266000). However, powernow-k7 works
++		 * with true KHz values (e.g. 1266768). To ensure that all
++		 * powernow frequencies are available, we must ensure that
++		 * ACPI doesn't restrict them, so we round up the MHz value
++		 * to ensure that perflib's computed KHz value is greater than
++		 * or equal to powernow's KHz value.
++		 */
++		if (speed % 1000 > 0)
++			speed_mhz++;
+ 
+ 		if ((fid_codes[fid] % 10)==5) {
+ 			if (have_a0 == 1)
+@@ -368,10 +382,16 @@ static int powernow_acpi_init(void)
+ 
+ 		dprintk ("   FID: 0x%x (%d.%dx [%dMHz])  "
+ 			 "VID: 0x%x (%d.%03dV)\n", fid, fid_codes[fid] / 10,
+-			 fid_codes[fid] % 10, speed/1000, vid,
++			 fid_codes[fid] % 10, speed_mhz, vid,
+ 			 mobile_vid_table[vid]/1000,
+ 			 mobile_vid_table[vid]%1000);
+ 
++		if (state->core_frequency != speed_mhz) {
++			state->core_frequency = speed_mhz;
++			dprintk("   Corrected ACPI frequency to %d\n",
++				speed_mhz);
++		}
++
+ 		if (latency < pc.bits.sgtc)
+ 			latency = pc.bits.sgtc;
+ 
+@@ -602,7 +622,7 @@ static int __init powernow_cpu_init (str
+ 			result = powernow_acpi_init();
+ 			if (result) {
+ 				printk (KERN_INFO PFX "ACPI and legacy methods failed\n");
+-				printk (KERN_INFO PFX "See http://www.codemonkey.org.uk/projects/cpufreq/powernow-k7.shtml\n");
++				printk (KERN_INFO PFX "See http://www.codemonkey.org.uk/projects/cpufreq/powernow-k7.html\n");
+ 			}
+ 		} else {
+ 			/* SGTC use the bus clock as timer */
+
+
+Patches currently in stable-queue which might be from linux-kernel@vger.kernel.org are
+
+queue-2.6.21/cpufreq-powernow-k7-fix-mhz-rounding-issue-with-perflib.patch
+queue-2.6.21/jfs-fix-race-waking-up-jfsio-kernel-thread.patch
