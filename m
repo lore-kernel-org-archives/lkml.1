@@ -1,114 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbXEQA6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763046AbXEQA7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbXEQA6r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 20:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbXEQA6h
+	id S1763046AbXEQA7A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 20:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762052AbXEQA6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 20:58:37 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:53952 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755521AbXEQA6g (ORCPT
+	Wed, 16 May 2007 20:58:48 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:34550 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761091AbXEQA6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 20:58:36 -0400
-Subject: Re: select(0, ..) is valid ?
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, sfr@canb.auug.org.au, ak@suse.de
-In-Reply-To: <20070516153703.GA26912@kryten>
-References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070515104453.f901e91f.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0705151927360.28895@blonde.wat.veritas.com>
-	 <20070516153703.GA26912@kryten>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 17:59:12 -0700
-Message-Id: <1179363553.16195.10.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Wed, 16 May 2007 20:58:46 -0400
+X-Sasl-enc: FlibU3J7DiMD/uMK+B2d/TKy/t5d4MrmmWT67BJ6aJS7 1179363526
+Date: Wed, 16 May 2007 21:58:42 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Rob Landley <rob@landley.net>
+Cc: Tejun Heo <htejun@gmail.com>, Dave Jones <davej@redhat.com>,
+       Francesco Pretto <ceztko@gmail.com>, Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+Message-ID: <20070517005842.GC600@khazad-dum.debian.net>
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <200705160129.16048.rob@landley.net> <464AEDD0.3090304@gmail.com> <200705161948.56497.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705161948.56497.rob@landley.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 10:37 -0500, Anton Blanchard wrote:
-> Hi Hugh,
-> 
-> > It's interesting that compat_core_sys_select() shows this kmalloc(0)
-> > failure but core_sys_select() does not.  That's because core_sys_select()
-> > avoids kmalloc by using a buffer on the stack for small allocations (and
-> > 0 sure is small).  Shouldn't compat_core_sys_select() do just the same?
-> > Or is SLUB going to be so efficient that doing so is a waste of time?
-> 
-> Nice catch, the original optimisation from Andi is:
-> 
-> http://git.kernel.org/git-new/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=70674f95c0a2ea694d5c39f4e514f538a09be36f
-> 
-> And I think it makes sense for the compat code to do it too.
-> 
-> Anton
+On Wed, 16 May 2007, Rob Landley wrote:
+> Ok, so the change is to get shutdown to _stop_ doing something stupid 
+> (spinning down the disk without first flushing the cache), and the correct 
+> thing for shutdown to do is keep its' mitts off the thing and let the kernel 
+> power down the darn hardware?
 
-Here it is ..
+Yes, for *all* SCSI disk devices, libata or not.
 
-Should I do one for poll() also ?
+But you need to detect if the kernel has proper SCSI device shutdown
+support, because if it does not, you have to do a cache flush and spindown
+on shutdown(8) if you can...
 
-Thanks,
-Badari
-
-Optimize select by a using stack space for small fd sets.
-core_sys_select() already has this optimization. This is
-for compat version. 
-
-Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
----
- fs/compat.c |   17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.22-rc1/fs/compat.c
-===================================================================
---- linux-2.6.22-rc1.orig/fs/compat.c	2007-05-12 18:45:56.000000000 -0700
-+++ linux-2.6.22-rc1/fs/compat.c	2007-05-16 17:50:39.000000000 -0700
-@@ -1544,9 +1544,10 @@ int compat_core_sys_select(int n, compat
- 	compat_ulong_t __user *outp, compat_ulong_t __user *exp, s64 *timeout)
- {
- 	fd_set_bits fds;
--	char *bits;
-+	void *bits;
- 	int size, max_fds, ret = -EINVAL;
- 	struct fdtable *fdt;
-+	long stack_fds[SELECT_STACK_ALLOC/sizeof(long)];
- 
- 	if (n < 0)
- 		goto out_nofds;
-@@ -1564,11 +1565,14 @@ int compat_core_sys_select(int n, compat
- 	 * since we used fdset we need to allocate memory in units of
- 	 * long-words.
- 	 */
--	ret = -ENOMEM;
- 	size = FDS_BYTES(n);
--	bits = kmalloc(6 * size, GFP_KERNEL);
--	if (!bits)
--		goto out_nofds;
-+	bits = stack_fds;
-+	if (size > sizeof(stack_fds) / 6) {
-+		bits = kmalloc(6 * size, GFP_KERNEL);
-+		ret = -ENOMEM;
-+		if (!bits)
-+			goto out_nofds;
-+	}
- 	fds.in      = (unsigned long *)  bits;
- 	fds.out     = (unsigned long *) (bits +   size);
- 	fds.ex      = (unsigned long *) (bits + 2*size);
-@@ -1600,7 +1604,8 @@ int compat_core_sys_select(int n, compat
- 	    compat_set_fd_set(n, exp, fds.res_ex))
- 		ret = -EFAULT;
- out:
--	kfree(bits);
-+	if (bits != stack_fds)
-+		kfree(bits);
- out_nofds:
- 	return ret;
- }
-
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
