@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758350AbXEQSlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbXEQSpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758350AbXEQSlV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXEQSlP
+	id S1758026AbXEQSpP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbXEQSpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:41:15 -0400
-Received: from h155.mvista.com ([63.81.120.155]:25133 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755911AbXEQSlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:41:14 -0400
-Message-ID: <464CA222.8000407@ru.mvista.com>
-Date: Thu, 17 May 2007 22:42:42 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, linuxppc-dev@ozlabs.org,
+	Thu, 17 May 2007 14:45:04 -0400
+Received: from verein.lst.de ([213.95.11.210]:34277 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754439AbXEQSpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 14:45:01 -0400
+Date: Thu, 17 May 2007 20:44:14 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Ulrich Drepper <drepper@gmail.com>
+Cc: Christoph Hellwig <hch@lst.de>, akpm@osdl.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com> <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org> <464C99FF.8080404@ru.mvista.com> <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org> <464C9E67.2020909@ru.mvista.com> <6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
-In-Reply-To: <6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] uselib: add missing MNT_NOEXEC check
+Message-ID: <20070517184414.GA19690@lst.de>
+References: <20070517135526.GA28213@lst.de> <a36005b50705170914i17bd853bj638f5098c4e7d788@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a36005b50705170914i17bd853bj638f5098c4e7d788@mail.gmail.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, May 17, 2007 at 09:14:06AM -0700, Ulrich Drepper wrote:
+> >        error = -EINVAL;
+> >+       if (nd.mnt->mnt_flags & MNT_NOEXEC)
+> >+               goto exit;
+> 
+> ... the error here should be EACCES.  Aside from that you get an ACK from 
+> me.
 
-Kumar Gala wrote:
+updated patch below:
 
->> Kumar Gala wrote:
-
->>> I haven't looked at all the new clock/timer code, is there any   
->>> utility in having support for more than one clock source?
-
->>    Of course, you may register as many as you like.
-
-> Sure, but is there any utility in registering more than the  decrementer 
-> on PPC?
-
-    Not yet. I'm not sure I know any other PPC CPU facility fitting for 
-clockevents. In theory, FIT could be used -- but its period is measured in 
-powers of 2, IIRC.
-
-> - k
-
-WBR, Sergei
+Index: linux-2.6/fs/exec.c
+===================================================================
+--- linux-2.6.orig/fs/exec.c	2007-05-17 14:43:25.000000000 +0200
++++ linux-2.6/fs/exec.c	2007-05-17 19:42:49.000000000 +0200
+@@ -134,6 +134,9 @@ asmlinkage long sys_uselib(const char __
+ 	if (error)
+ 		goto out;
+ 
++	error = -EACCES;
++	if (nd.mnt->mnt_flags & MNT_NOEXEC)
++		goto exit;
+ 	error = -EINVAL;
+ 	if (!S_ISREG(nd.dentry->d_inode->i_mode))
+ 		goto exit;
