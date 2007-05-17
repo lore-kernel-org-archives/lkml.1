@@ -1,85 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbXEQLOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbXEQL01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756471AbXEQLOb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 07:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbXEQLOV
+	id S1756301AbXEQL01 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 07:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbXEQL0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 07:14:21 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:52661 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754866AbXEQLOU (ORCPT
+	Thu, 17 May 2007 07:26:20 -0400
+Received: from m-relay.rz.uni-saarland.de ([134.96.7.3]:43659 "EHLO
+	m-relay.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755274AbXEQL0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 07:14:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=FRm2vjfKLI34S9wEupGJfCiiqwBP83V00vhhV4/HDVxHCDXh65rj1GaDqurtzyrw0UuRcRQQZcAcqGMPv3SHnlvPKHu441sHOfzL8jUSJpFjxUfPcxm88pzWF9wWyvNChiZUOsxp8HL9EHhHsU8Kc4QExS8aQHUzWBYXSJ5AABY=
-Message-ID: <464C38F5.3060802@gmail.com>
-Date: Thu, 17 May 2007 13:13:57 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Peer Chen <pchen@nvidia.com>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: [PATCH] sata_nv: fix fallout of devres conversion
-References: <15F501D1A78BD343BE8F4D8DB854566B13CD8F45@hkemmail01.nvidia.com> <464A94D7.30300@garzik.org> <15F501D1A78BD343BE8F4D8DB854566B13DEF520@hkemmail01.nvidia.com>
-In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B13DEF520@hkemmail01.nvidia.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 07:26:19 -0400
+Date: Thu, 17 May 2007 13:25:53 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86 new setup: use appropriate sections for code and data
+Message-ID: <20070517112553.GA12901@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.5.1 (m-relay.rz.uni-saarland.de [134.96.7.3]); Thu, 17 May 2007 13:26:16 +0200 (CEST)
+X-AntiVirus: checked by AntiVir Milter (version: 1.1.3-1; AVE: 7.4.0.23; VDF: 6.38.1.154; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+An intermediate elf file is generated for the 16-bit setup code.
+The generated code can be viewed using objdump -m i8086 -d. As it
+stands, it also tries to disassemble the bugger_off_msg, which
+results in garbage. This introduces two new sections to separate
+the code and the data part of the bootsector stub. It also moves
+some code from the .header section (a data section) to .inittext.
 
-As with all other drivers, sata_nv's hpriv is allocated with
-devm_kzalloc() and there's no need to free it explicitly.  Kill
-nv_remove_one() which incorrectly used kfree() instead of devm_kfree()
-and use ata_pci_remove_one() directly.
-
-Original fix is from Peer Chen.
-
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Peer Chen <pchen@nvidia.com>
+Signed-off-by: Alexander van Heukelum <heukelum@mailshack.com>
 ---
 
-I think it's prettier this way.  :-)
+Hi,
 
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index 4cea3ef..5be4e28 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -229,7 +229,6 @@ struct nv_host_priv {
- #define NV_ADMA_CHECK_INTR(GCTL, PORT) ((GCTL) & ( 1 << (19 + (12 * (PORT)))))
- 
- static int nv_init_one (struct pci_dev *pdev, const struct pci_device_id *ent);
--static void nv_remove_one (struct pci_dev *pdev);
- #ifdef CONFIG_PM
- static int nv_pci_device_resume(struct pci_dev *pdev);
+I hope the new section names are ok? Alternatives would be
+.bstext/.bsdata or .floppytext/.floppydata.
+
+Greetings,
+	Alexander
+
+
+ arch/i386/boot/header.S |   10 +++++-----
+ arch/i386/boot/setup.ld |    4 ++++
+ 2 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/arch/i386/boot/header.S b/arch/i386/boot/header.S
+index 02d0f7d..70b39cb 100644
+--- a/arch/i386/boot/header.S
++++ b/arch/i386/boot/header.S
+@@ -44,7 +44,7 @@ SWAP_DEV	= 0			/* SWAP_DEV is now written by "build" */
  #endif
-@@ -306,7 +305,7 @@ static struct pci_driver nv_pci_driver =
- 	.suspend		= ata_pci_device_suspend,
- 	.resume			= nv_pci_device_resume,
- #endif
--	.remove			= nv_remove_one,
-+	.remove			= ata_pci_remove_one,
- };
  
- static struct scsi_host_template nv_sht = {
-@@ -1613,15 +1612,6 @@ static int nv_init_one (struct pci_dev *
- 				 IRQF_SHARED, ppi[0]->sht);
- }
+ 	.code16
+-	.section ".header", "ax"
++	.section ".stubtext", "ax"
  
--static void nv_remove_one (struct pci_dev *pdev)
--{
--	struct ata_host *host = dev_get_drvdata(&pdev->dev);
--	struct nv_host_priv *hpriv = host->private_data;
+ 	.global bootsect_start
+ bootsect_start:
+@@ -82,7 +82,7 @@ bs_die:
+ 	# invoke the BIOS reset code...
+ 	ljmp	$0xf000,$0xfff0
+ 
 -
--	ata_pci_remove_one(pdev);
--	kfree(hpriv);
--}
--
- #ifdef CONFIG_PM
- static int nv_pci_device_resume(struct pci_dev *pdev)
++	.section ".stubdata", "a"
+ bugger_off_msg:
+ 	.ascii	"Direct booting from floppy is no longer supported.\r\n"
+ 	.ascii	"Please use a boot loader program instead.\r\n"
+@@ -94,7 +94,7 @@ bugger_off_msg:
+ 	# Kernel attributes; used by setup.  This is part 1 of the
+ 	# header, from the old boot sector.
+ 
+-	.org 497
++	.section ".header", "a"
+ 	.globl	hdr
+ hdr:
+ setup_sects:	.byte SETUPSECTS
+@@ -208,10 +208,11 @@ pad3:			.word 0
+ cmdline_size:   .long   COMMAND_LINE_SIZE-1     #length of the command line,
+                                                 #added with boot protocol
+                                                 #version 2.06
++start_of_setup:
+ 
+ # End of setup header #####################################################
+ 
+-start_of_setup:
++	.section ".inittext", "ax"
+ #ifdef SAFE_RESET_DISK_CONTROLLER
+ # Reset the disk controller.
+ 	movw	$0x0000, %ax		# Reset disk controller
+@@ -225,7 +226,6 @@ start_of_setup:
+ 	pushw	$setup2
+ 	lretw
+ 
+-	.section ".inittext", "ax"
+ setup2:
+ # Force %es = %ds
+ 	movw	%ds, %ax
+diff --git a/arch/i386/boot/setup.ld b/arch/i386/boot/setup.ld
+index a111572..8defc4f 100644
+--- a/arch/i386/boot/setup.ld
++++ b/arch/i386/boot/setup.ld
+@@ -10,6 +10,10 @@ ENTRY(_start)
+ SECTIONS
  {
+ 	. = 0;
++	.stubtext	: { *(.stubtext) }
++	.stubdata	: { *(.stubdata) }
++
++	. = 497;
+ 	.header		: { *(.header) }
+ 	.inittext	: { *(.inittext) }
+ 	.initdata	: { *(.initdata) }
+-- 
+1.4.4.2
+
