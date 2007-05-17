@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbXEQReU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbXEQRgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbXEQReU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbXEQReL
+	id S1758643AbXEQRgR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbXEQRgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:34:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53053 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755487AbXEQReJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:34:09 -0400
-Date: Thu, 17 May 2007 10:29:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: dedekind@infradead.org
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-Message-Id: <20070517102931.6bbbad1a.akpm@linux-foundation.org>
-In-Reply-To: <1179414590.3642.69.camel@sauron>
-References: <20070517143200.GA30850@lst.de>
-	<1179413443.3642.49.camel@sauron>
-	<20070517145653.GA968@lst.de>
-	<1179414590.3642.69.camel@sauron>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 13:36:01 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:58973 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756490AbXEQRf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:35:59 -0400
+Date: Thu, 17 May 2007 19:07:32 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: CaT <cat@zip.com.au>
+cc: J??rn Engel <joern@lazybastard.org>, Jamie Lokier <jamie@shareable.org>,
+       David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mtd@lists.infradead.org, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+In-Reply-To: <20070516120624.GA18926@zip.com.au>
+Message-ID: <Pine.LNX.4.61.0705171902530.3231@yvahk01.tjqt.qr>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org>
+ <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org>
+ <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org>
+ <20070516115003.GD5472@lazybastard.org> <20070516120624.GA18926@zip.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007 18:09:50 +0300 Artem Bityutskiy <dedekind@infradead.org> wrote:
 
-> On Thu, 2007-05-17 at 16:56 +0200, Christoph Hellwig wrote:
-> > On Thu, May 17, 2007 at 05:50:43PM +0300, Artem Bityutskiy wrote:
-> > > Christoph,
-> > > 
-> > > On Thu, 2007-05-17 at 16:32 +0200, Christoph Hellwig wrote:
-> > > > Kill ubis homegrown endianess handling crap and replace it with
-> > > > the normal kernel endianess handling.
-> > > 
-> > > Err,__be32 and the company are just sparse things, while I have compiler
-> > > checks with my struct ubi32_t and friends. JFFS2 also uses the same
-> > > technique. Why do you force me to rely on sparse instead instead of
-> > > compiler?
-> > 
-> > Yes.  Like all other code in the kernel aswell.
-> 
-> Andrew, may I please have your ack that I absolutely have to use __be32
-> instead of my own types since Christoph tends to provide no explanation
-> to his requests.
+On May 16 2007 22:06, CaT wrote:
+>On Wed, May 16, 2007 at 01:50:03PM +0200, J??rn Engel wrote:
+>> On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
+>> > 
+>> > But if akpm can't pronounce it, how about FFFS for faster flash
+>> > filesystem.... ;-)
+>> 
+>> How many of you have worked for IBM before?  Vowels are not evil. ;)
+>> 
+>> Grouping four or more consonants to name anything will cause similar
+>> expressions on people's faces.  Numbers don't help much either.
+>> 
+>> Ext2 is a great name, because "ext" actually is a pronouncable syllable.
+>> MinixFS, ChunkFS, TileFS are great too.  XFS and JFS are ok, at least
+>> they only have three consonants.  But FFS exists, so I'd rather go for a
+>> syllable.
+>
+>FlashFS?
 
-umm..  I'd say what you've done in there is an improvement to the exiting
-stuff: getting gcc to check it is better than having to use sparse.
-
-I'd have expected gcc to generate poorer code with your approach but I'm
-showing zero text size changes from Christoph's patch (gcc-4.1 and
-gcc-3.4.5).
-
-So I wouldn't be averse to creating a new, generic, kernel-wide alternative
-to the existing __be32/__le32/etc code.  It is an improvement.
-
-But I don't think we want driver-private implementations.
+Or just try once dropping all those redundant 'fs' suffixes.
+bdev, proc, cpuset, devpts, mqueue, fuse(blk|ctl), vfat, iso9660, etc.
+Then there's much more space for innovative names.
 
 
-
-We could conceivably simply switch the existing stuff to use structs, but
-quite a lot of code assumes that cpu_to_foo32(0) == 0 and just does
-open-coded assigments of zero.  They'd need fixups.
+	Jan
+-- 
