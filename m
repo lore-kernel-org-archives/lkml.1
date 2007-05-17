@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763316AbXEQHKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763482AbXEQHKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763316AbXEQHKW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 03:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbXEQHKL
+	id S1763482AbXEQHKs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 03:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbXEQHKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 03:10:11 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:41523 "EHLO e4.ny.us.ibm.com"
+	Thu, 17 May 2007 03:10:40 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47816 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755328AbXEQHKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 03:10:09 -0400
-Date: Thu, 17 May 2007 12:47:20 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Al Viro <viro@ftp.linux.org.uk>
+	id S1755809AbXEQHKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 03:10:39 -0400
+Date: Thu, 17 May 2007 09:11:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Martin Christoph <mail@da7a.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Convert namespace_sem to a mutex
-Message-ID: <20070517071720.GC4462@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070517045041.GA4462@in.ibm.com> <20070517050046.GM4095@ftp.linux.org.uk>
+Subject: Re: PROBLEM: 2.6.21 - "make modules" with GREP_OPTIONS="-C1" (and other)
+Message-ID: <20070517071136.GB3690@uranus.ravnborg.org>
+References: <464BCB66.2090205@da7a.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070517050046.GM4095@ftp.linux.org.uk>
+In-Reply-To: <464BCB66.2090205@da7a.de>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 06:00:46AM +0100, Al Viro wrote:
-> On Thu, May 17, 2007 at 10:20:41AM +0530, Bharata B Rao wrote:
-> > From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> > 
-> > namespace_sem is a rwsem. It is acquired as read sem at only one place(used
-> > by /proc/mounts, /proc/<pid>/mounts and /proc/<pid>/mountstats). In all other
-> > cases it is acquired as a write sem. So, as there is not more than one reader
-> > for this sem, this can be a generic sem (and not rwsem) and if so it can be
-> > a mutex.
+On Thu, May 17, 2007 at 05:26:30AM +0200, Martin Christoph wrote:
+> [1] Summary:
+> If i have some GREP_OPTIONS set (like -C1 or other) i get several errors
+> while trying to do "make modules".
 > 
-> Except that read accesses outnumber write ones by far and we have no reason
-> for serializing them against each other.  NAK.
+> [2] Full description:
+> With some GREP_OPTIONS set "make modules" drops several errors like that:
+> 
+> root@spot /usr/src/linux # GREP_OPTIONS="-C1" make modules
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   Building modules, stage 2.
+> [...]
+> WARNING: "aes_enc_blk" [arch/i386/crypto/aes.ko] undefined!
+> WARNING: "aes_dec_blk" [arch/i386/crypto/aes.ko] undefined!
+> [...]
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> 
+> [3] Keywords:
+> "make modules", "GREP_OPTIONS", "WARNING", "undefined"
+> 
+> [X.] Suggestion to fix:
+> Unset GREP_OPTIONS within make process.
 
-Ok, I wasn't aware that this rwsem had many concurrent readers. From whatever
-little I could see (during system boot and during kernel compilation with
-make -j), the number of concurrent readers very rarely touched 3 and was 1
-mostly. May be there are other concurrent readers of this sem. Any idea
-from where they could be coming from ?
+Thanks for reporting this - I gues this took some time to
+find the root cause of the problem.
 
-Regards,
-Bharata.
+Albeit fixing it seems simple I will consider it for a
+while. In the kernel we use several tools like:
+awk, grep, perl, ls, rm, mv, cmp etc and then
+we should audit all of these to check if similar
+things could occur.
+
+If someone steps up to do the check (including
+all the tools I missed) I would be very grateful.
+
+	Sam
