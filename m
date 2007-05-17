@@ -1,132 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbXEQImn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbXEQIm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbXEQImn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 04:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXEQImf
+	id S1755311AbXEQIm4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 04:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbXEQImh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 04:42:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:12157 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752347AbXEQIme (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 04:42:37 -0400
+Received: from verein.lst.de ([213.95.11.210]:44787 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752658AbXEQIme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 17 May 2007 04:42:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=RcSf6zaqlfahGqQp++1OuNOTE8WL4TdAPSwRdyvuB50MBseocUzYqjNeSdabbyopc4TfRwHvpvD0ALsrXx2sDdK3vBpOAISQ6h2Jqem+DshEDuWk6YsMDkZNp2FI0Q6LBtUXl+wsG2/onDQfzTX7eQSlSlzJkH0+hwDDxqXHJ18=
-Message-ID: <464C1575.8070005@gmail.com>
-Date: Thu, 17 May 2007 10:42:29 +0200
-From: Robert de Rooy <robert.de.rooy@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, alan@redhat.com
-CC: jgarzik@pobox.com
-Subject: Re: libata pcmcia failure
-References: <464A0321.3080201@gmail.com>
-In-Reply-To: <464A0321.3080201@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Thu, 17 May 2007 10:41:35 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: xfs-masters@oss.sgi.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [xfs-masters] Re: 2.6.22-rc1-mm1
+Message-ID: <20070517084135.GA8510@lst.de>
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <464B304C.5040104@googlemail.com> <20070516094133.bec04e65.akpm@linux-foundation.org> <20070517020600.GS85884050@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070517020600.GS85884050@sgi.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I installed the LiveCD to a spare HDD, and updated to the latest kernel 
-available.
-The errors stayed the same, but they took much longer (it seems the 
-timeouts changed).
+On Thu, May 17, 2007 at 12:06:00PM +1000, David Chinner wrote:
+> > static inline int put_page_testzero(struct page *page)
+> > {
+> > 	VM_BUG_ON(atomic_read(&page->_count) == 0);
+> > 	return atomic_dec_and_test(&page->_count);
+> > }
+> 
+> I haven't seen that one. I expect that it will be the noaddr buffer allocation
+> changes that have triggered this...
 
-Linux localhost.localdomain 2.6.21-1.3149.fc7 #1 SMP Fri May 11 12:12:11 
-EDT 2007 i686 i686 i386 GNU/Linux
+Yes.   xfs_buf_get_noaddr calls xfs_buf_free to free a buffer when
+something fails.  But this is wrong - we want to call xfs_buf_deallocate
+before we setup the page list, and if a page allocation fails we want to
+do out own freeing of just the pages we allocated and call
+_xfs_buf_free_pages.  Currently we do our own freeing _and_ call
+xfs_buf_free which leads to this double free.
 
-May 16 23:10:42 localhost kernel: pccard: PCMCIA card inserted into slot 0
-May 16 23:10:42 localhost kernel: cs: memory probe 
-0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
-May 16 23:10:42 localhost kernel: cs: memory probe 
-0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
-0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
-0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
-0xcfa00000-0xd01fffff
-May 16 23:10:42 localhost kernel: pcmcia: registering new device pcmcia0.0
-May 16 23:10:42 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 ctl 
-0x0001410e bmdma 0x00000000 irq 3
-May 16 23:10:42 localhost kernel: scsi2 : pata_pcmcia
-May 16 23:11:43 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 16 23:11:43 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-May 16 23:12:44 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 16 23:12:44 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-May 16 23:12:44 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
-May 16 23:13:14 localhost kernel: ATA: abnormal status 0x82 on port 
-0x00014107
-May 16 23:13:14 localhost kernel: ATA: abnormal status 0x82 on port 
-0x00014107
-May 16 23:13:44 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 16 23:13:44 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
 
-Robert de Rooy wrote:
-> Hi,
->
-> I tried Fedora 7t4 LiveCD on my ThinkPad T41 with a PCMCIA "Dazzle 
-> 4in1 Card Adapter", this adapter supports Sony Memorystick, MMC, SD 
-> and SmartMedia cards. The card had a 128MB Lexmark MemoryStick installed.
->
-> Under windows the adapter works fine, but under Linux I got a bunch of 
-> errors in syslog as shown below...
-> I do not know if it works with the Linux legacy PCMCIA IDE driver.
->
-> If I need to retrieve additional information or test something, please 
-> let me know.
->
-> Linux localhost.localdomain 2.6.20-1.3104.fc7 #1 SMP Sat Apr 21 
-> 22:20:43 EDT 2007 i686 i686 i386 GNU/Linux
->
-> Socket 0:
->  product info: "                   ", "Memory Card Adapter", "", ""
->  manfid: 0x0045, 0x0401
->  function: 4 (fixed disk)
->
-> May 14 21:46:24 localhost kernel: pccard: PCMCIA card inserted into 
-> slot 0
-> May 14 21:46:24 localhost kernel: cs: memory probe 
-> 0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
-> May 14 21:46:24 localhost kernel: cs: memory probe 
-> 0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
-> 0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
-> 0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
-> 0xcfa00000-0xd01fffff
-> May 14 21:46:24 localhost kernel: pcmcia: registering new device 
-> pcmcia0.0
-> May 14 21:46:25 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 
-> ctl 0x0001410e bmdma 0x00000000 irq 3
-> May 14 21:46:25 localhost kernel: scsi3 : pata_pcmcia
-> May 14 21:46:25 localhost kernel: ATA: abnormal status 0x80 on port 
-> 0x00014107
-> May 14 21:46:25 localhost kernel: ATA: abnormal status 0x80 on port 
-> 0x00014107
-> May 14 21:46:55 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-> May 14 21:46:55 localhost kernel: ata3.00: failed to IDENTIFY 
-> (INIT_DEV_PARAMS failed, err_mask=0x4)
-> May 14 21:46:56 localhost kernel: ATA: abnormal status 0x80 on port 
-> 0x00014107
-> May 14 21:46:56 localhost kernel: ATA: abnormal status 0x80 on port 
-> 0x00014107
-> May 14 21:47:26 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-> May 14 21:47:26 localhost kernel: ata3.00: failed to IDENTIFY 
-> (INIT_DEV_PARAMS failed, err_mask=0x4)
-> May 14 21:47:26 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
-> May 14 21:47:26 localhost kernel: ATA: abnormal status 0x80 on port 
-> 0x00014107
-> May 14 21:47:26 localhost kernel: ATA: abnormal status 0x80 on port 
-> 0x00014107
-> May 14 21:47:56 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-> May 14 21:47:56 localhost kernel: ata3.00: failed to IDENTIFY 
-> (INIT_DEV_PARAMS failed, err_mask=0x4)
-> May 14 21:47:57 localhost kernel: ATA: abnormal status 0x80 on port 
-> 0x00014107
-> May 14 21:47:57 localhost udevd-event[3946]: udev_rules_apply_format: 
-> unknown format variable '$modalias'
->
->
->
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
+
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c	2007-05-17 09:34:44.000000000 +0200
++++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c	2007-05-17 09:36:53.000000000 +0200
+@@ -792,8 +792,9 @@ xfs_buf_get_noaddr(
+  fail_free_mem:
+  	while (--i >= 0)
+ 		__free_page(bp->b_pages[i]);
++	_xfs_buf_free_pages(bp);
+  fail_free_buf:
+-	xfs_buf_free(bp);
++	xfs_buf_deallocate(bp);
+  fail:
+ 	return NULL;
+ }
+
+> 
+> > > [ 6666.719690] invalid opcode: 0000 [#1]
+> > > [ 6666.723397] PREEMPT SMP
+> > > [ 6666.725999] Modules linked in: xfs loop pktgen ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm evdev snd_timer snd soundcore intel_agp agpgart snd_page_alloc i2c_i801 ide_cd cdrom rtc unix
+> > > [ 6666.776026] CPU:    0
+> > > [ 6666.776027] EIP:    0060:[<c01693ec>]    Not tainted VLI
+> > > [ 6666.776028] EFLAGS: 00010202   (2.6.22-rc1-mm1 #3)
+> > > [ 6666.788519] EIP is at put_page+0x44/0xee
+> > > [ 6666.792491] eax: 00000001   ebx: c549f728   ecx: c04b27e0   edx: 00000001
+> > > [ 6666.799345] esi: 00000000   edi: 00000080   ebp: d067e9e0   esp: d067e9c8
+> > > [ 6666.806208] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> > > [ 6666.812104] Process mount (pid: 9419, ti=d067e000 task=d00a4070 task.ti=d067e000)
+> > > [ 6666.819486] Stack: d8980180 00000080 d067e9f0 d8980180 00000000 00000080 d067e9f0 fdc8eda3
+> > > [ 6666.828103]        fffffffc d8980180 d067ea20 fdc8f7ff fdc9b425 fdc96e5c 00080000 00000000
+> > > [ 6666.836635]        c549dfd0 00000200 ffffffff cd44b8e0 00002160 cd44b8e0 d067ea30 fdc78937
+> > > [ 6666.845253] Call Trace:
+> > > [ 6666.847939]  [<fdc8eda3>] xfs_buf_free+0x41/0x61 [xfs]
+> > > [ 6666.853247]  [<fdc8f7ff>] xfs_buf_get_noaddr+0x10c/0x118 [xfs]
+> > > [ 6666.859231]  [<fdc78937>] xlog_get_bp+0x65/0x69 [xfs]
+> 
+> Yeah - that trace implies a memory allocation failure when allocating
+> log buffer pages and the cleanup looks like it does a double free
+> of the pages that got allocated. Patch attached below that should fix
+> this problem.
+> 
+> > > [ 6667.271984] XFS: Filesystem loop1 has duplicate UUID - can't mount
+> > >
+> > > ...
+> > >
+> > > [ 6670.074487] XFS: Filesystem loop1 has duplicate UUID - can't mount
+> > > [ 6670.240395] XFS: Filesystem loop1 has duplicate UUID - can't mount
+> > > [ 6670.350305] XFS: Filesystem loop1 has duplicate UUID - can't mount
+> > > [ 6670.458773] XFS: Filesystem loop1 has duplicate UUID - can't mount
+> 
+> I assume that the thread doing the mount got killed by the BUG and so the
+> normal error handling path on log mount failure was not executed and hence the
+> uuid for the filesystem never got removed from the table used to detect
+> multiple mounts of the same filesystem....
+> 
+> Cheers,
+> 
+> Dave.
+> -- 
+> Dave Chinner
+> Principal Engineer
+> SGI Australian Software Group
+> 
+> ---
+>  fs/xfs/linux-2.6/xfs_buf.c |   21 +++++++++++++--------
+>  1 file changed, 13 insertions(+), 8 deletions(-)
+> 
+> Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_buf.c
+> ===================================================================
+> --- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_buf.c	2007-05-11 16:03:26.000000000 +1000
+> +++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_buf.c	2007-05-17 11:53:40.293585132 +1000
+> @@ -323,9 +323,16 @@ xfs_buf_free(
+>  		for (i = 0; i < bp->b_page_count; i++) {
+>  			struct page	*page = bp->b_pages[i];
+>  
+> -			if (bp->b_flags & _XBF_PAGE_CACHE)
+> +			/* handle noaddr allocation failure case */
+> +			if (!page)
+> +				break;
+> +
+> +			if (bp->b_flags & _XBF_PAGE_CACHE) {
+>  				ASSERT(!PagePrivate(page));
+> -			page_cache_release(page);
+> +				page_cache_release(page);
+> +			} else {
+> +				__free_page(page);
+> +			}
+>  		}
+>  		_xfs_buf_free_pages(bp);
+>  	}
+> @@ -766,6 +773,8 @@ xfs_buf_get_noaddr(
+>  		goto fail;
+>  	_xfs_buf_initialize(bp, target, 0, len, 0);
+>  
+> +	bp->b_flags |= _XBF_PAGES;
+> +
+>  	error = _xfs_buf_get_pages(bp, page_count, 0);
+>  	if (error)
+>  		goto fail_free_buf;
+> @@ -773,15 +782,14 @@ xfs_buf_get_noaddr(
+>  	for (i = 0; i < page_count; i++) {
+>  		bp->b_pages[i] = alloc_page(GFP_KERNEL);
+>  		if (!bp->b_pages[i])
+> -			goto fail_free_mem;
+> +			goto fail_free_buf;
+>  	}
+> -	bp->b_flags |= _XBF_PAGES;
+>  
+>  	error = _xfs_buf_map_pages(bp, XBF_MAPPED);
+>  	if (unlikely(error)) {
+>  		printk(KERN_WARNING "%s: failed to map pages\n",
+>  				__FUNCTION__);
+> -		goto fail_free_mem;
+> +		goto fail_free_buf;
+>  	}
+>  
+>  	xfs_buf_unlock(bp);
+> @@ -789,9 +797,6 @@ xfs_buf_get_noaddr(
+>  	XB_TRACE(bp, "no_daddr", len);
+>  	return bp;
+>  
+> - fail_free_mem:
+> -	while (--i >= 0)
+> -		__free_page(bp->b_pages[i]);
+>   fail_free_buf:
+>  	xfs_buf_free(bp);
+>   fail:
+> 
+---end quoted text---
