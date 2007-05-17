@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762221AbXEQU3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762529AbXEQUaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762221AbXEQU3v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760473AbXEQU3g
+	id S1762529AbXEQUaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761622AbXEQU3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:29:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56681
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760080AbXEQU3f (ORCPT
+	Thu, 17 May 2007 16:29:40 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:28544 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761516AbXEQU3j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:29:35 -0400
-Date: Thu, 17 May 2007 13:29:37 -0700 (PDT)
-Message-Id: <20070517.132937.29572252.davem@davemloft.net>
-To: tglx@linutronix.de
-Cc: mikulas@artax.karlin.mff.cuni.cz, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NOHZ: local_softirq_pending with tickless plip
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1179399131.3764.50.camel@chaos>
-References: <Pine.LNX.4.64.0705161415350.10041@artax.karlin.mff.cuni.cz>
-	<1179399131.3764.50.camel@chaos>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 17 May 2007 16:29:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SBHKJZlyPBz6O7WU8FjgG8cEqrkz5Dp6lH471IRGJ1Si0KjNhrFRs1bnGqcZ7aUhB7w9mEqW5JO24ZuedV9jFN/rH2QRw12+Cg5x8H+/1DE/3cU6Qsx3dfai7+t7vEvyBIbzLSoapCJD3/Wes/YPa0kyw88ZO+4b6TSZUuRTq3Y=
+Message-ID: <b637ec0b0705171329i6da89fa8h655976e823aef41e@mail.gmail.com>
+Date: Thu, 17 May 2007 22:29:38 +0200
+From: "Fabio Comolli" <fabio.comolli@gmail.com>
+To: "Luca Tettamanti" <kronos.it@gmail.com>
+Subject: Re: radeonfb and X800 cards
+Cc: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Daniel Drake" <dsd@gentoo.org>,
+       "linux list" <linux-kernel@vger.kernel.org>, Jimmy.Jazz@gmx.net
+In-Reply-To: <20070517195958.GA6489@dreamland.darkstar.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <464BB43D.2020407@gentoo.org>
+	 <1179367164.32247.256.camel@localhost.localdomain>
+	 <20070517195958.GA6489@dreamland.darkstar.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Thu, 17 May 2007 12:52:11 +0200
+Hi.
 
-> On Wed, 2007-05-16 at 15:00 +0200, Mikulas Patocka wrote:
-> > Hi
-> > 
-> > On one of my machines with tickless kernel and plip I get messages :
-> 
-> I bet this is a machine a P4 with Hyperthreading enabled ?
-> 
-> > NOHZ: local_softirq_pending 08
-> > 
-> > always when using plip (on other machine with tickless kernel and plip I 
-> > get no errors). Thebug happens both on 2.6.21 and 2.6.22-rc1
-> > 
-> > This patch fixes that. Note that plip calls netif_rx neither from hardware 
-> > interrupt nor from ksoftirqd, so there is no one who would wake 
-> > ksoftirqd then. netif_tx calls only 
-> > __raise_softirq_irqoff(NET_RX_SOFTIRQ), which sets softirq bit, but 
-> > doesn't wake ksoftirqd.
-> 
-> Dave, 
-> 
-> can we please get rid of __raise_softirq_irqoff() at all ? These micro
-> optimizations are causing more trouble than they are worth.
+On 5/17/07, Luca Tettamanti <kronos.it@gmail.com> wrote:
+> Il Thu, May 17, 2007 at 11:59:23AM +1000, Benjamin Herrenschmidt ha scritto:
+> > On Wed, 2007-05-16 at 21:47 -0400, Daniel Drake wrote:
+> > > Hi,
+> > >
+> > > Did anything happen to the patch titled "radeonfb: add support for newer
+> > > cards"?
+> > > http://lwn.net/Articles/215965/
+> > >
+> > > Jimmy at http://bugs.gentoo.org/174063 has extended upon this with some
+> > > further fixes based on code the in X11 driver. The patches are on the
+> > > bug report.
+> > >
+> > > Ben, where can the most up-to-date radeonfb code be found?
+> >
+> > upstream. I haven't released anything else so far. Does the patch still
+> > apply ?
+>
+> This is what I'm using here, it's still the same old patch (Solomon's
+> plus my stuff). I think I can coordinate with Jimmy.Jazz@gmx.net to
+> create an incremental patch to fix radeonfb on his hardware (provided
+> that this mega-patch is suitable as baseline that is).
+>
 
-Actually I think this is pointing out a bug, in that plip is not
-invoking things in the proper context, which will likely cause
-other problems :-)
+[long patch snipped]
 
-I'll put this on my TODO list and look into this.
+Is there a reason why this patch can't go upstream?
+
+Regards,
+Fabio
+
+> Luca
+> --
+> "New processes are created by other processes, just like new
+>  humans. New humans are created by other humans, of course,
+>  not by processes." -- Unix System Administration Handbook
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at ...
+>
+> [Message clipped]
