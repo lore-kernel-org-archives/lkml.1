@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759661AbXEQWrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761081AbXEQWsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759661AbXEQWrv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 18:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755961AbXEQWro
+	id S1761081AbXEQWsa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 18:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbXEQWsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 18:47:44 -0400
-Received: from mga03.intel.com ([143.182.124.21]:4174 "EHLO mga03.intel.com"
+	Thu, 17 May 2007 18:48:23 -0400
+Received: from mga03.intel.com ([143.182.124.21]:61866 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755450AbXEQWro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 18:47:44 -0400
+	id S1755961AbXEQWsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 18:48:22 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.14,550,1170662400"; 
-   d="scan'208";a="229295619"
+   d="scan'208";a="229295778"
 From: Jesse Barnes <jesse.barnes@intel.com>
 To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] allow console unregistration
-Date: Thu, 17 May 2007 15:47:33 -0700
+Subject: Re: [PATCH 2/3] drm modesetting core
+Date: Thu, 17 May 2007 15:48:14 -0700
 User-Agent: KMail/1.9.6
 Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
        James Simmons <jsimmons@pentafluge.infradead.org>,
        Dave Airlie <airlied@gmail.com>,
        "Jakob Bornecrantz" <wallbraker@gmail.com>,
        dri-devel@lists.sourceforge.net
-References: <200705171423.46748.jesse.barnes@intel.com> <200705171532.28799.jesse.barnes@intel.com>
-In-Reply-To: <200705171532.28799.jesse.barnes@intel.com>
+References: <200705171423.46748.jesse.barnes@intel.com> <200705171537.46639.jesse.barnes@intel.com>
+In-Reply-To: <200705171537.46639.jesse.barnes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705171547.33377.jesse.barnes@intel.com>
+Message-Id: <200705171548.15199.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, May 17, 2007 3:32 pm Jesse Barnes wrote:
-> Randy just informed me that the patch limits are bigger now, so here
-> are the actual patches.
+On Thursday, May 17, 2007 3:37 pm Jesse Barnes wrote:
+> This patch adds the core of the new DRM based modesetting system.  It
+> creates several new structures in the DRM, the primary ones being the
+> CRTC, which controls all aspects of your device's CRTC(s), output,
+> which describes and controls the various outputs on your gfx chip
+> (e.g. TMDS, LVDS, VGA, etc.), and mode, which describes graphics
+> modes in enough detail for the output and CRTC callbacks to program
+> them to hardware.
 >
-> This patch allows for proper console unregistration via the VT layer,
-> and updates the FB layer to use it.  This makes debugging new console
-> drivers much easier, since you can properly clean them up before
-> unloading. Antonio already checked it out (and suggested a tweak for
-> the fbcon side) so I think it's on its way already via the FB tree.
+> It also contains the user level IOCTL interfaces for doing graphics
+> programming (getting CRTC, output and mode lists, setting up new
+> frame buffer objects, etc.).
+>
+> It relies on the new TTM patch Dave posted recently.
 
-And before someone complains, here's the diffstat:
- drivers/char/vt.c             |   21 +++++++++++++++++++--
- drivers/video/console/fbcon.c |   17 ++++++++++++++++-
- drivers/video/fbmem.c         |    2 ++
- include/linux/console.h       |    1 +
- include/linux/fb.h            |    2 ++
- 5 files changed, 40 insertions(+), 3 deletions(-)
+ Makefile.kernel |    6
+ drmP.h          |   11
+ drm_bo.c        |    8
+ drm_bo_move.c   |    2
+ drm_bufs.c      |    3
+ drm_compat.h    |    7
+ drm_crtc.c      | 1652 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ drm_crtc.h      |  535 ++++++++++++++++++
+ drm_drv.c       |   92 ---
+ drm_edid.c      |  467 +++++++++++++++
+ drm_edid.h      |  176 +++++
+ drm_fb.c        |  201 ++++++
+ drm_fops.c      |    4
+ drm_modes.c     |  558 ++++++++++++++++++
+ drm_objects.h   |   22
+ drm_os_linux.h  |   18
+ drm_stub.c      |   21
+ drm_vm.c        |    5
+ 18 files changed, 3695 insertions(+), 93 deletions(-)
