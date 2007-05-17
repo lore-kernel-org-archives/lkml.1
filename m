@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760768AbXEQTZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbXEQTZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760768AbXEQTZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 15:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbXEQTZC
+	id S1760952AbXEQTZu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 15:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbXEQTZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 15:25:02 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59297 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756157AbXEQTZB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 15:25:01 -0400
-Date: Thu, 17 May 2007 12:24:54 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179429499.2925.26.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com> 
- <1179385718.27354.17.camel@twins>  <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-  <20070517175327.GX11115@waste.org>  <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
- <1179429499.2925.26.camel@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 May 2007 15:25:43 -0400
+Received: from mail.screens.ru ([213.234.233.54]:41268 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756875AbXEQTZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 15:25:42 -0400
+Date: Thu, 17 May 2007 23:25:37 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, David Howells <dhowells@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] revert "cancel_delayed_work: use del_timer() instead of del_timer_sync()"
+Message-ID: <20070517192537.GA969@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007, Peter Zijlstra wrote:
+As pointed out by Jarek Poplawski, the patch
 
-> The proposed patch doesn't change how the kernel functions at this
-> point; it just enforces an existing rule better.
+	[WORKQUEUE]: cancel_delayed_work: use del_timer() instead of del_timer_sync()
+	commit: 071b638689464c6b39407025eedd810d5b5e6f5d
 
-Well I'd say it controls the allocation failures. And that only works if 
-one can consider the system having a single zone.
+was wrong, it was merged by mistake after that.
 
-Lets say the system has two cpusets A and B. A allocs from node 1 and B 
-allocs from node 2. Two processes one in A and one in B run on the same 
-processor.
+>From the changelog:
 
-Node 1 gets very low in memory so your patch kicks in and sets up the 
-global memory emergency situation with the reserve slab.
+	after this patch:
+		...
+		delayed_work_timer_fn->__queue_work() in progress.
 
-Now the process in B will either fail although it has plenty of memory on 
-node 2.
+		The latter doesn't differ from the caller's POV,
 
-Or it may just clear the emergency slab and then the next critical alloc 
-of the process in A that is low on memory will fail.
+it does make a difference if the caller calls flush_workqueue() after
+cancel_delayed_work(), in that case flush_workqueue() can miss this
+work_struct.
 
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- t/include/linux/workqueue.h~	2007-05-17 22:55:59.000000000 +0400
++++ t/include/linux/workqueue.h	2007-05-17 23:03:03.000000000 +0400
+@@ -160,7 +160,7 @@ static inline int cancel_delayed_work(st
+ {
+ 	int ret;
+ 
+-	ret = del_timer(&work->timer);
++	ret = del_timer_sync(&work->timer);
+ 	if (ret)
+ 		work_clear_pending(&work->work);
+ 	return ret;
 
