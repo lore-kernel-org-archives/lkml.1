@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbXEQOk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbXEQOo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbXEQOk4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXEQOkt
+	id S1756944AbXEQOo3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbXEQOoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:40:49 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:22854 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040AbXEQOks (ORCPT
+	Thu, 17 May 2007 10:44:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33945 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbXEQOoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:40:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=DNZxGzzGp6h3AxO4ZXpyO8UDo3wwEPLiWK+h9gvcSefPhfI9PXgYIVDKgjkAT8TGUqCavYRNpRMyOsrXmayV3NWMj6r9uc+AFUGkXt1gIbWklytiF14Du4akzh126BAz42/Bc2SlBns87va0ybS4CQ58vxR9beTAOFGYBvVRf+U=
-Date: Thu, 17 May 2007 18:39:27 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Richard Henderson <rth@twiddle.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ALPHA: TITAN - check for allocated memory
-Message-ID: <20070517143927.GC8991@cvg>
-References: <20070516181332.GB16348@cvg> <20070516194101.GK4095@ftp.linux.org.uk>
-MIME-Version: 1.0
+	Thu, 17 May 2007 10:44:22 -0400
+Date: Thu, 17 May 2007 15:44:20 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Artem Bityutskiy <dedekind@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org
+Subject: Re: [PATCH 06/44 take 2] [UBI] startup code
+Message-ID: <20070517144420.GA3529@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Artem Bityutskiy <dedekind@infradead.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	akpm@osdl.org
+References: <20070217165424.5845.4390.sendpatchset@localhost.localdomain> <20070217165454.5845.30875.sendpatchset@localhost.localdomain> <20070219105927.GB16930@infradead.org> <1171976456.4039.21.camel@sauron> <20070225055828.GC9137@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070516194101.GK4095@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070225055828.GC9137@infradead.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Al Viro - Wed, May 16, 2007 at 08:41:01PM +0100]
-| On Wed, May 16, 2007 at 10:13:32PM +0400, Cyrill Gorcunov wrote:
-| > This patch adds checking for allocated memory
-| > which is used to hold AGP info. Also some whitespace
-| > cleanup.
-| 
-| Could you please not do that again?  Whitespace cleanup is nice as a separate
-| followup, but as it is it just obscures the real changes in patch.  Digging
-| out
-| 
-| > @@ -767,6 +767,11 @@ titan_agp_info(void)
-| >  	 * Allocate the info structure.
-| >  	 */
-| >  	agp = kmalloc(sizeof(*agp), GFP_KERNEL);
-| > +	if (agp == NULL) {
-| > +		printk(KERN_ERR "TITAN - cannot allocate struct of size %d bytes\n",
-| > +		       sizeof(*agp));
-| > +		return NULL;
-| > +	}
-| 
-| out of hundreds of lines in patch just makes review harder.  Incidentally,
-| %d is not size_t, it's int.  Use %zu, please.
-| 
+On Sun, Feb 25, 2007 at 05:58:28AM +0000, Christoph Hellwig wrote:
+> > Why not? We tried to avoid this but found out that this is the most
+> > decent interface. Specific advises are welcome.
+> 
+> because this type of compount interface is really painful for the user.
+> the module.param=foo syntax makes sure paramaters can be used without
+> endless documentation for each and every single of them, and makes
+> sure module writers don't introduce bugs in their own parser reimplementations.
+> 
+> Rusty, was it intentional that drivers can use __module_param_call?
+> Do you think the ubi use here is okay?
 
-I really sorry about this. Thanks for note.
+So both I and Rusty told you not to do this and you did it anyway.
 
-		Cyrill
-
+I'm quite pissed about this ignorance.  Andrew, what do we do about such
+a case?  Should we just revert ubi until they fixed their mess up?
