@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbXEQQYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbXEQQmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756944AbXEQQYn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 12:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbXEQQYf
+	id S1756941AbXEQQmv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 12:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbXEQQmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 12:24:35 -0400
-Received: from as4.cineca.com ([130.186.84.213]:43209 "EHLO as4.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755472AbXEQQYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 12:24:35 -0400
-Message-ID: <464C81B5.8070101@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070326 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: [RFC] log out-of-virtual-memory events
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
+	Thu, 17 May 2007 12:42:44 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34248 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755827AbXEQQmn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 12:42:43 -0400
+Date: Thu, 17 May 2007 09:45:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [Bug 8473] New: Oops: 0010 [1] SMP
+Message-Id: <20070517094557.c96f7e54.randy.dunlap@oracle.com>
+In-Reply-To: <1179396003.31796.4.camel@rousalka.dyndns.org>
+References: <200705132102.l4DL2onF003014@fire-2.osdl.org>
+	<20070513154718.bb338ceb.akpm@linux-foundation.org>
+	<1179098742.7322.5.camel@rousalka.dyndns.org>
+	<1179396003.31796.4.camel@rousalka.dyndns.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Date: Thu, 17 May 2007 18:24:28 +0200 (MEST)
+Content-Transfer-Encoding: 8BIT
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm looking for a way to keep track of the processes that fail to allocate new
-virtual memory. What do you think about the following approach (untested)?
+On Thu, 17 May 2007 12:00:02 +0200 Nicolas Mailhot wrote:
 
---
+> Le lundi 14 mai 2007 à 01:25 +0200, Nicolas Mailhot a écrit :
+> 
+> > It happened once so far. The load was moderate (and certainly not
+> > comparable to what I did for Mel yesterday)
+> 
+> Make that twice. The interesting thing is it was preceded by CD/DVD
+> access just before, to something is rotten there.
+> 
+> 10:52:35 ISO 9660 Extensions: RRIP_1991A
+> 11:52:36 Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP: 
+> 11:52:36 [<0000000000000000>]
+> 11:52:36 PGD 2438a067 PUD c484067 PMD 0 
+> 11:52:36 Oops: 0010 [1] SMP 
+> 11:52:36 CPU 1 
+> 11:52:36 Pid: 30655, comm: bash Not tainted 2.6.21-11.mm2.fc7.nim #1
 
-Print informations about the processes that fail to allocate virtual memory.
+so just what is this kernel?  A hybrid of -mm and -fc7 or what?
 
-Signed-off-by: Andrea Righi <a.righi@cineca.it>
+> 11:52:36 RIP: 0010:[<0000000000000000>]  [<0000000000000000>]
+> 11:52:36 RSP: 0000:ffff810006199ee0  EFLAGS: 00010296
+> 11:52:36 RAX: ffffffff804426a0 RBX: ffff81000903f800 RCX: 00007fff8a5e9874
+> 11:52:36 RDX: 0000000000005410 RSI: ffff81000903f800 RDI: ffff810006a37b88
+> 11:52:36 RBP: 00007fff8a5e9874 R08: 0000000000000000 R09: 0000000000000004
+> 11:52:36 R10: 0000000000000008 R11: 0000000000000246 R12: 0000000000005410
+> 11:52:36 R13: 00000000000000ff R14: 00000000000000ff R15: 0000000000000008
+> 11:52:36 FS:  00002b1c204ccf40(0000) GS:ffff810004017180(0000) knlGS:0000000000000000
+> 11:52:36 CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> 11:52:36 CR2: 0000000000000000 CR3: 000000000f83b000 CR4: 00000000000006e0
+> 11:52:36 Process bash (pid: 30655, threadinfo ffff810006198000, task ffff810024319c80)
+> 11:52:36 Stack:  ffffffff80285451 ffff81000903f800 00007fff8a5e9874 00007fff8a5e9874
+> 11:52:36 ffffffff802856be 0000000000005410 00000000000000ff ffff81000903f800
+> 11:52:36 0000000000000000 00007fff8a5e9874 0000000000005410 00000000000000ff
+> 11:52:36 Call Trace:
+> 11:52:36 [<ffffffff80285451>] do_ioctl+0x55/0x6b
+> 11:52:36 [<ffffffff802856be>] vfs_ioctl+0x257/0x270
+> 11:52:36 [<ffffffff80285730>] sys_ioctl+0x59/0x79
+> 11:52:36 [<ffffffff8020955c>] tracesys+0xdc/0xe1
+> 11:52:36 
+> 11:52:36 INFO: lockdep is turned off.
+> 11:52:36 
+> 11:52:36 Code:  Bad RIP value.
+> 11:52:36 RIP  [<0000000000000000>]
+> 11:52:36 RSP <ffff810006199ee0>
+> 11:52:36 CR2: 0000000000000000
+> 
+> I'd try rc2-mm1, but I don't know if the patches of Mel Gorman &
+> Christoph Lameter for bug #8464 have been merged yet
 
-diff -urpN linux-2.6.21/mm/mmap.c linux-2.6.21-vm-log-enomem/mm/mmap.c
---- linux-2.6.21/mm/mmap.c	2007-04-26 05:08:32.000000000 +0200
-+++ linux-2.6.21-vm-log-enomem/mm/mmap.c	2007-05-17 18:05:39.000000000 +0200
-@@ -77,6 +77,26 @@ int sysctl_max_map_count __read_mostly =
- atomic_t vm_committed_space = ATOMIC_INIT(0);
- 
- /*
-+ * Print current process informations when it fails to allocate new virtual
-+ * memory.
-+ */
-+static inline void log_vm_enomem(void)
-+{
-+	unsigned long total_vm = 0;
-+	struct mm_struct *mm;
-+
-+	task_lock(current);
-+	mm = current->mm;
-+	if (mm)
-+		total_vm = mm->total_vm;
-+	task_unlock(current);
-+
-+	printk(KERN_INFO
-+	       "out of virtual memory for process %d (%s): total_vm=%lu, uid=%d\n",
-+	       current->pid, current->comm, total_vm, current->uid);
-+}
-+
-+/*
-  * Check that a process has enough memory to allocate a new virtual
-  * mapping. 0 means there is enough memory for the allocation to
-  * succeed and -ENOMEM implies there is not.
-@@ -175,6 +195,7 @@ int __vm_enough_memory(long pages, int c
- 		return 0;
- error:
- 	vm_unacct_memory(pages);
-+	log_vm_enomem();
- 
- 	return -ENOMEM;
- }
+Can you boot with "kstack=32" so that we can see more of the stack?
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
