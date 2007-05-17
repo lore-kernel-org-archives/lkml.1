@@ -1,143 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbXEQOZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbXEQOZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbXEQOZU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbXEQOZB
+	id S1757521AbXEQOZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbXEQOZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:25:01 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:36177 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753959AbXEQOY7 (ORCPT
+	Thu, 17 May 2007 10:25:36 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:56042 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756057AbXEQOZf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:24:59 -0400
-Date: Thu, 17 May 2007 19:55:02 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: [PATCH 2/6][TAKE4] fallocate() on s390
-Message-ID: <20070517142502.GB28726@amitarora.in.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070517141115.GA24260@amitarora.in.ibm.com> <20070517141458.GA26641@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070517141458.GA26641@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 17 May 2007 10:25:35 -0400
+From: Hubertus Grobbel <hubertus@grobbel.net>
+To: Erik Mouw <mouw@nl.linux.org>
+Subject: Re: O_DIRECT for FAT
+Date: Thu, 17 May 2007 17:25:02 +0100
+User-Agent: KMail/1.9.5
+Cc: Linux List <linux-kernel@vger.kernel.org>
+References: <200705150103.02398.hubertus@grobbel.net> <20070515122819.GK26683@gateway.home>
+In-Reply-To: <20070515122819.GK26683@gateway.home>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1339296.H3jC1nqouX";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705171725.09620.hubertus@grobbel.net>
+X-Provags-ID: V01U2FsdGVkX19Ae9xy5iptvlBsMga/9GGtH3wEq7VoJ3dLU29
+ MXTh3ozyvQpeWyylQet1j1teI7poceix+pC3HTLd0xJ5MJQmn1
+ kjYSe/+oSdIsHUdUSEkGCxJB3VTWrBf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the patch suggested by Martin Schwidefsky to support
-sys_fallocate() on s390(x) platform.
+--nextPart1339296.H3jC1nqouX
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-He also suggested a wrapper in glibc to handle this system call on
-s390. Posting it here so that we get feedback for this too.
+Hi Alan, Erik and Hirofumi and the rest,
 
-.globl __fallocate
-ENTRY(__fallocate)
-	stm	%r6,%r7,28(%r15)	/* save %r6/%r7 on stack */
-	cfi_offset (%r7, -68)
-	cfi_offset (%r6, -72)
-	lm	%r6,%r7,96(%r15)	/* load loff_t len from stack */
-	svc	SYS_ify(fallocate)
-	lm	%r6,%r7,28(%r15)	/* restore %r6/%r7 from stack */
-	br	%r14
-PSEUDO_END(__fallocate)
+I want to inform you of my success. So first of all thanks for your help!=20
 
+Assuring, that the buffer is aligned according 4k (pagesize =3D getpagesize=
+()=20
+and multiple of sectorsize =3D blockdev --getss) using memalign or=20
+posix_memalign, did the job. Thanks a lot. A very nice feature.
 
-Here are the comments and the patch to linux kernel from him.
+The compiler option -D_GNU_SOURCE helped also to avoid including asm-header=
+ of=20
+fcntl.h.
 
--------------
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+bye
+Hubi
 
-This patch implements support of fallocate system call on s390(x)
-platform. A wrapper is added to address the issue which s390 ABI has
-with the arguments of this system call.
+--nextPart1339296.H3jC1nqouX
+Content-Type: application/pgp-signature
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
- arch/s390/kernel/compat_wrapper.S |   10 ++++++++++
- arch/s390/kernel/sys_s390.c       |   29 +++++++++++++++++++++++++++++
- arch/s390/kernel/syscalls.S       |    1 +
- include/asm-s390/unistd.h         |    3 ++-
- 4 files changed, 42 insertions(+), 1 deletion(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Index: linux-2.6.22-rc1/arch/s390/kernel/compat_wrapper.S
-===================================================================
---- linux-2.6.22-rc1.orig/arch/s390/kernel/compat_wrapper.S
-+++ linux-2.6.22-rc1/arch/s390/kernel/compat_wrapper.S
-@@ -1682,3 +1682,13 @@ compat_sys_utimes_wrapper:
- 	llgtr	%r2,%r2			# char *
- 	llgtr	%r3,%r3			# struct compat_timeval *
- 	jg	compat_sys_utimes
-+
-+	.globl  sys_fallocate_wrapper
-+sys_fallocate_wrapper:
-+	lgfr	%r2,%r2			# int
-+	lgfr	%r3,%r3			# int
-+	sllg    %r4,%r4,32		# get high word of 64bit loff_t
-+	lr      %r4,%r5			# get low word of 64bit loff_t
-+	sllg    %r5,%r6,32		# get high word of 64bit loff_t
-+	l	%r5,164(%r15)		# get low word of 64bit loff_t
-+	jg	sys_fallocate
-Index: linux-2.6.22-rc1/arch/s390/kernel/sys_s390.c
-===================================================================
---- linux-2.6.22-rc1.orig/arch/s390/kernel/sys_s390.c
-+++ linux-2.6.22-rc1/arch/s390/kernel/sys_s390.c
-@@ -265,3 +265,32 @@ s390_fadvise64_64(struct fadvise64_64_ar
- 		return -EFAULT;
- 	return sys_fadvise64_64(a.fd, a.offset, a.len, a.advice);
- }
-+
-+#ifndef CONFIG_64BIT
-+/*
-+ * This is a wrapper to call sys_fallocate(). For 31 bit s390 the last
-+ * 64 bit argument "len" is split into the upper and lower 32 bits. The
-+ * system call wrapper in the user space loads the value to %r6/%r7.
-+ * The code in entry.S keeps the values in %r2 - %r6 where they are and
-+ * stores %r7 to 96(%r15). But the standard C linkage requires that
-+ * the whole 64 bit value for len is stored on the stack and doesn't
-+ * use %r6 at all. So s390_fallocate has to convert the arguments from
-+ *   %r2: fd, %r3: mode, %r4/%r5: offset, %r6/96(%r15)-99(%r15): len
-+ * to
-+ *   %r2: fd, %r3: mode, %r4/%r5: offset, 96(%r15)-103(%r15): len
-+ */
-+asmlinkage long s390_fallocate(int fd, int mode, loff_t offset,
-+			       u32 len_high, u32 len_low)
-+{
-+	union {
-+		u64 len;
-+		struct {
-+			u32 high;
-+			u32 low;
-+		};
-+	} cv;
-+	cv.high = len_high;
-+	cv.low = len_low;
-+	return sys_fallocate(fd, mode, offset, cv.len);
-+}
-+#endif
-Index: linux-2.6.22-rc1/arch/s390/kernel/syscalls.S
-===================================================================
---- linux-2.6.22-rc1.orig/arch/s390/kernel/syscalls.S
-+++ linux-2.6.22-rc1/arch/s390/kernel/syscalls.S
-@@ -322,3 +322,4 @@ NI_SYSCALL							/* 310 sys_move_pages *
- SYSCALL(sys_getcpu,sys_getcpu,sys_getcpu_wrapper)
- SYSCALL(sys_epoll_pwait,sys_epoll_pwait,compat_sys_epoll_pwait_wrapper)
- SYSCALL(sys_utimes,sys_utimes,compat_sys_utimes_wrapper)
-+SYSCALL(s390_fallocate,sys_fallocate,sys_fallocate_wrapper)
-Index: linux-2.6.22-rc1/include/asm-s390/unistd.h
-===================================================================
---- linux-2.6.22-rc1.orig/include/asm-s390/unistd.h
-+++ linux-2.6.22-rc1/include/asm-s390/unistd.h
-@@ -251,8 +251,9 @@
- #define __NR_getcpu		311
- #define __NR_epoll_pwait	312
- #define __NR_utimes		313
-+#define __NR_fallocate		314
- 
--#define NR_syscalls 314
-+#define NR_syscalls 315
- 
- /* 
-  * There are some system calls that are not present on 64 bit, some
+iD8DBQBGTIHlAB1de4oeNLkRArdPAKDcg2ZjLoVJ6vZUUTOOYY2ZyC6jLACgnyUM
+wOtYt8Ci9uB6D9D2PqFUT8A=
+=qzdK
+-----END PGP SIGNATURE-----
+
+--nextPart1339296.H3jC1nqouX--
