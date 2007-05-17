@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbXEQLKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbXEQLLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbXEQLKg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 07:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbXEQLK3
+	id S1756602AbXEQLLr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 07:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbXEQLLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 07:10:29 -0400
-Received: from c2bthomr04.btconnect.com ([213.123.20.136]:13737 "EHLO
-	c2bthomr04.btconnect.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754866AbXEQLK2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 07:10:28 -0400
-Message-ID: <464C380E.6080604@onelan.co.uk>
-Date: Thu, 17 May 2007 12:10:06 +0100
-From: Barry Scott <barry.scott@onelan.co.uk>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 17 May 2007 07:11:39 -0400
+Received: from ns1.suse.de ([195.135.220.2]:49729 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754379AbXEQLLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 07:11:38 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Date: Thu, 17 May 2007 21:11:17 +1000
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Barry Scott <barry.scott@onelan.co.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Opss: 2.6.21-1.3116.ONELAN Kernel last sysfs file: /class/vc/vcsa7/dev
-References: <46483868.5040106@onelan.co.uk> <6bffcb0e0705140340m228e8e62n5053db88deadf5fd@mail.gmail.com> <20070514190825.GD29024@redhat.com>
-In-Reply-To: <20070514190825.GD29024@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Junkmail-Status: score=10/50, host=c2bthomr04.btconnect.com
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A090201.464C3817.00D0,ss=1,fgs=0,
-	ip=217.35.101.6,
-	so=2006-12-09 10:45:40,
-	dmn=5.3.10/2007-02-21
+Message-ID: <17996.14421.769180.782589@notabene.brown>
+Cc: Jeff Zheng <Jeff.Zheng@endace.com>, david@lang.hm,
+       Andreas Dilger <adilger@clusterfs.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
+In-Reply-To: message from Jan Engelhardt on Thursday May 17
+References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com>
+	<20070516140452.GC5286@schatzie.adilger.int>
+	<Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm>
+	<Pine.LNX.4.61.0705162016060.9019@yvahk01.tjqt.qr>
+	<659F626D666070439A4A5965CD6EBF406B3324@gazelle.ad.endace.com>
+	<Pine.LNX.4.61.0705170918480.1791@yvahk01.tjqt.qr>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Mon, May 14, 2007 at 12:40:48PM +0200, Michal Piotrowski wrote:
->  > Hi Barry,
->  > 
->  > On 14/05/07, Barry Scott <barry.scott@onelan.co.uk> wrote:
->  > > I'm testing the robustness of Xorg 1.3 server with intel 2.0 driver
->  > > by restarting the X and a set of apps every 30 seconds. After
->  > > about an hour this happened.
->  > >
->  > > 2.6.21-1.3116.ONELAN is the same as 2.6.21-1.3116 from FC7
->  > > but with the spec file change so that we can run the kernel on an FC4
->  > > system.
->  > 
->  > Ok, it's Fedora 7 kernel, so please visit
->  > https://bugzilla.redhat.com/bugzilla/index.cgi
->
-> For all intents and purposes here, that may as well be a vanilla 2.6.21.1
-> Reporting it there isn't going to get much more than a "*shrug* ask upstream"
-> from me.
->
->   
-Indeed I'm sure Fedora would point me here.
+On Thursday May 17, jengelh@linux01.gwdg.de wrote:
+> XOR it (0^0=1), and hence fills up the host disk.
 
-Anyone have any idea what wrong?
+Uhmm... you need to check your maths.
 
-Barry
+$ perl -e 'printf "%d\n", 0^0;'
+0
 
+:-)
+NeilBrown
