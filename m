@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbXEQO5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbXEQPBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbXEQO5o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXEQO5h
+	id S1756057AbXEQPBy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 11:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXEQPBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:57:37 -0400
-Received: from verein.lst.de ([213.95.11.210]:54565 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754382AbXEQO5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:57:37 -0400
-Date: Thu, 17 May 2007 16:56:53 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: Christoph Hellwig <hch@lst.de>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-Message-ID: <20070517145653.GA968@lst.de>
-References: <20070517143200.GA30850@lst.de> <1179413443.3642.49.camel@sauron>
+	Thu, 17 May 2007 11:01:48 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:59677 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754241AbXEQPBr (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 11:01:47 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Anand Jahagirdar <anandjigar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Fork Bombing Attack
+In-Reply-To: Your message of "Thu, 17 May 2007 20:15:32 +0530."
+             <25ae38200705170745t4a80e7eer413b3c2bb0c5a327@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <25ae38200705170745t4a80e7eer413b3c2bb0c5a327@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179413443.3642.49.camel@sauron>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+Content-Type: multipart/signed; boundary="==_Exmh_1179414105_3622P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 17 May 2007 11:01:45 -0400
+Message-ID: <4051.1179414105@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 05:50:43PM +0300, Artem Bityutskiy wrote:
-> Christoph,
-> 
-> On Thu, 2007-05-17 at 16:32 +0200, Christoph Hellwig wrote:
-> > Kill ubis homegrown endianess handling crap and replace it with
-> > the normal kernel endianess handling.
-> 
-> Err,__be32 and the company are just sparse things, while I have compiler
-> checks with my struct ubi32_t and friends. JFFS2 also uses the same
-> technique. Why do you force me to rely on sparse instead instead of
-> compiler?
+--==_Exmh_1179414105_3622P
+Content-Type: text/plain; charset=us-ascii
 
-Yes.  Like all other code in the kernel aswell.
+On Thu, 17 May 2007 20:15:32 +0530, Anand Jahagirdar said:
+> Hello All
+>               I have set per user process limit ( ulimit) for both
+> root and guest account as 8000 by using option ulimit -u 8000.this is
+> Hard limit.  still fork bombing attack killed the box and machine
+> needed reboot. will any body please tell me why this is so? i have
+> tried all this attack on machine with FC6 and Linux kernel 2.6.18.
 
+Convince me that your machine in fact has sufficient resources to spawn 8000
+processes.
+
+Then retry it with "ulimit -u 100", and then do a binary search from 100 to 8000
+to find out what value it stops working at.
+
+--==_Exmh_1179414105_3622P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGTG5ZcC3lWbTT17ARAjHnAJ45ifRsggAVK/K1LmDVsA50O/xsowCfet9e
+tiGwRW0Q1mkAlH4mcTJpiQk=
+=xQ6p
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1179414105_3622P--
