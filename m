@@ -1,179 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbXEQIm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbXEQIoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311AbXEQIm4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 04:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbXEQImh
+	id S1755548AbXEQIoV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 04:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbXEQIoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 04:42:37 -0400
-Received: from verein.lst.de ([213.95.11.210]:44787 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752658AbXEQIme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 04:42:34 -0400
-Date: Thu, 17 May 2007 10:41:35 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: xfs-masters@oss.sgi.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [xfs-masters] Re: 2.6.22-rc1-mm1
-Message-ID: <20070517084135.GA8510@lst.de>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <464B304C.5040104@googlemail.com> <20070516094133.bec04e65.akpm@linux-foundation.org> <20070517020600.GS85884050@sgi.com>
+	Thu, 17 May 2007 04:44:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43337 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752347AbXEQIoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 04:44:11 -0400
+Subject: Re: [PATCH] LogFS take three
+From: David Woodhouse <dwmw2@infradead.org>
+To: Dongjun Shin <djshin90@gmail.com>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+In-Reply-To: <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
+References: <20070515151919.GA32510@lazybastard.org>
+	 <20070515133759.9ee434a2.akpm@linux-foundation.org>
+	 <1179317240.2859.222.camel@shinybook.infradead.org>
+	 <20070516083408.dcd9dd78.akpm@linux-foundation.org>
+	 <1179330596.2859.248.camel@shinybook.infradead.org>
+	 <20070516164158.GB8113@lazybastard.org>
+	 <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com>
+	 <1179383117.2859.416.camel@shinybook.infradead.org>
+	 <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 17 May 2007 16:43:59 +0800
+Message-Id: <1179391440.2859.447.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070517020600.GS85884050@sgi.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 12:06:00PM +1000, David Chinner wrote:
-> > static inline int put_page_testzero(struct page *page)
-> > {
-> > 	VM_BUG_ON(atomic_read(&page->_count) == 0);
-> > 	return atomic_dec_and_test(&page->_count);
-> > }
+On Thu, 2007-05-17 at 17:20 +0900, Dongjun Shin wrote:
+> There are, of course, cases where direct access are better.
+> However, as the demand for capacity, reliability and high performance
+> for the flash storage increases, the use of FTL with embedded controller
+> would be inevitable.
 > 
-> I haven't seen that one. I expect that it will be the noaddr buffer allocation
-> changes that have triggered this...
+> - The complexity/cost of host-side SW (like JFFS2/MTD) will increase due to
+> the use of multiple flash in parallel and the use of high degree ECC algorithm.
+> There are other things like bad block handling and wear-leveling issues
+> which has been recently touched by UBI with added SW complexity.
 
-Yes.   xfs_buf_get_noaddr calls xfs_buf_free to free a buffer when
-something fails.  But this is wrong - we want to call xfs_buf_deallocate
-before we setup the page list, and if a page allocation fails we want to
-do out own freeing of just the pages we allocated and call
-_xfs_buf_free_pages.  Currently we do our own freeing _and_ call
-xfs_buf_free which leads to this double free.
+You don't get rid of that complexity by offloading it to a µcontroller. 
 
+The only thing you achieve that way is making sure it's quite likely to
+be done badly, and making it impossible to debug.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+> - In contrast to the embedded environment where CPU and flash is directly
+> connected, the I/O path between CPU and flash in PC environment is longer.
+> The latency for SW handshaking between CPU and flash will also be longer,
+> which would make the performance optimization harder.
 
+Do it the naïve way with a single byte push/pull and waggling the
+control lines separately, and what you say is true -- but you can have
+flash controllers which assist with data transfer but still give you
+essentially 'raw' access to the chip.
 
-Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
-===================================================================
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c	2007-05-17 09:34:44.000000000 +0200
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c	2007-05-17 09:36:53.000000000 +0200
-@@ -792,8 +792,9 @@ xfs_buf_get_noaddr(
-  fail_free_mem:
-  	while (--i >= 0)
- 		__free_page(bp->b_pages[i]);
-+	_xfs_buf_free_pages(bp);
-  fail_free_buf:
--	xfs_buf_free(bp);
-+	xfs_buf_deallocate(bp);
-  fail:
- 	return NULL;
- }
+With the CAFÉ controller designed for the OLPC machine, we can spew data
+across the PCI bus just as fast as we can suck it off the flash chip.
 
-> 
-> > > [ 6666.719690] invalid opcode: 0000 [#1]
-> > > [ 6666.723397] PREEMPT SMP
-> > > [ 6666.725999] Modules linked in: xfs loop pktgen ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm evdev snd_timer snd soundcore intel_agp agpgart snd_page_alloc i2c_i801 ide_cd cdrom rtc unix
-> > > [ 6666.776026] CPU:    0
-> > > [ 6666.776027] EIP:    0060:[<c01693ec>]    Not tainted VLI
-> > > [ 6666.776028] EFLAGS: 00010202   (2.6.22-rc1-mm1 #3)
-> > > [ 6666.788519] EIP is at put_page+0x44/0xee
-> > > [ 6666.792491] eax: 00000001   ebx: c549f728   ecx: c04b27e0   edx: 00000001
-> > > [ 6666.799345] esi: 00000000   edi: 00000080   ebp: d067e9e0   esp: d067e9c8
-> > > [ 6666.806208] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> > > [ 6666.812104] Process mount (pid: 9419, ti=d067e000 task=d00a4070 task.ti=d067e000)
-> > > [ 6666.819486] Stack: d8980180 00000080 d067e9f0 d8980180 00000000 00000080 d067e9f0 fdc8eda3
-> > > [ 6666.828103]        fffffffc d8980180 d067ea20 fdc8f7ff fdc9b425 fdc96e5c 00080000 00000000
-> > > [ 6666.836635]        c549dfd0 00000200 ffffffff cd44b8e0 00002160 cd44b8e0 d067ea30 fdc78937
-> > > [ 6666.845253] Call Trace:
-> > > [ 6666.847939]  [<fdc8eda3>] xfs_buf_free+0x41/0x61 [xfs]
-> > > [ 6666.853247]  [<fdc8f7ff>] xfs_buf_get_noaddr+0x10c/0x118 [xfs]
-> > > [ 6666.859231]  [<fdc78937>] xlog_get_bp+0x65/0x69 [xfs]
-> 
-> Yeah - that trace implies a memory allocation failure when allocating
-> log buffer pages and the cleanup looks like it does a double free
-> of the pages that got allocated. Patch attached below that should fix
-> this problem.
-> 
-> > > [ 6667.271984] XFS: Filesystem loop1 has duplicate UUID - can't mount
-> > >
-> > > ...
-> > >
-> > > [ 6670.074487] XFS: Filesystem loop1 has duplicate UUID - can't mount
-> > > [ 6670.240395] XFS: Filesystem loop1 has duplicate UUID - can't mount
-> > > [ 6670.350305] XFS: Filesystem loop1 has duplicate UUID - can't mount
-> > > [ 6670.458773] XFS: Filesystem loop1 has duplicate UUID - can't mount
-> 
-> I assume that the thread doing the mount got killed by the BUG and so the
-> normal error handling path on log mount failure was not executed and hence the
-> uuid for the filesystem never got removed from the table used to detect
-> multiple mounts of the same filesystem....
-> 
-> Cheers,
-> 
-> Dave.
-> -- 
-> Dave Chinner
-> Principal Engineer
-> SGI Australian Software Group
-> 
-> ---
->  fs/xfs/linux-2.6/xfs_buf.c |   21 +++++++++++++--------
->  1 file changed, 13 insertions(+), 8 deletions(-)
-> 
-> Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_buf.c
-> ===================================================================
-> --- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_buf.c	2007-05-11 16:03:26.000000000 +1000
-> +++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_buf.c	2007-05-17 11:53:40.293585132 +1000
-> @@ -323,9 +323,16 @@ xfs_buf_free(
->  		for (i = 0; i < bp->b_page_count; i++) {
->  			struct page	*page = bp->b_pages[i];
->  
-> -			if (bp->b_flags & _XBF_PAGE_CACHE)
-> +			/* handle noaddr allocation failure case */
-> +			if (!page)
-> +				break;
-> +
-> +			if (bp->b_flags & _XBF_PAGE_CACHE) {
->  				ASSERT(!PagePrivate(page));
-> -			page_cache_release(page);
-> +				page_cache_release(page);
-> +			} else {
-> +				__free_page(page);
-> +			}
->  		}
->  		_xfs_buf_free_pages(bp);
->  	}
-> @@ -766,6 +773,8 @@ xfs_buf_get_noaddr(
->  		goto fail;
->  	_xfs_buf_initialize(bp, target, 0, len, 0);
->  
-> +	bp->b_flags |= _XBF_PAGES;
-> +
->  	error = _xfs_buf_get_pages(bp, page_count, 0);
->  	if (error)
->  		goto fail_free_buf;
-> @@ -773,15 +782,14 @@ xfs_buf_get_noaddr(
->  	for (i = 0; i < page_count; i++) {
->  		bp->b_pages[i] = alloc_page(GFP_KERNEL);
->  		if (!bp->b_pages[i])
-> -			goto fail_free_mem;
-> +			goto fail_free_buf;
->  	}
-> -	bp->b_flags |= _XBF_PAGES;
->  
->  	error = _xfs_buf_map_pages(bp, XBF_MAPPED);
->  	if (unlikely(error)) {
->  		printk(KERN_WARNING "%s: failed to map pages\n",
->  				__FUNCTION__);
-> -		goto fail_free_mem;
-> +		goto fail_free_buf;
->  	}
->  
->  	xfs_buf_unlock(bp);
-> @@ -789,9 +797,6 @@ xfs_buf_get_noaddr(
->  	XB_TRACE(bp, "no_daddr", len);
->  	return bp;
->  
-> - fail_free_mem:
-> -	while (--i >= 0)
-> -		__free_page(bp->b_pages[i]);
->   fail_free_buf:
->  	xfs_buf_free(bp);
->   fail:
-> 
----end quoted text---
+> As I mentioned, some techniques like log-structured filesystem could
+> perform generally better on any kind of flash-based storage with FTL.
+> Although there are many kinds of FTL, it is commonly true that
+> it performs well under workload where sequential write is dominant.
+
+Yes, it's certainly possible that we _could_ write a file system which
+is specifically targeted at FTL -- I was just wondering why anyone would
+_bother_ :)
+
+I've seen an interesting file system which does have a kind of FTL
+internally as its lowest layer, and which build on that using 'virtual'
+sectors for file extents. Now that _does_ have its advantages -- but it
+doesn't go as far as pretending to be a 'normal' block device; it's its
+own special thing for internal use within that file system.
+ 
+> I also expect that FTL for PC environment will have better quality spec
+> than the disposable storage.
+
+There really is no reason why FTL has to be done badly; just as there's
+no _reason_ why hardware vendors have to give us crappy bsVendorCode.
+Nevertheless, that's the way the world tends to be. So good luck
+shipping with that :)
+
+-- 
+dwmw2
+
