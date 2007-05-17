@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXEQMCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbXEQMGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbXEQMCS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 08:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbXEQMCK
+	id S1756772AbXEQMGT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 08:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbXEQMGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 08:02:10 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55523 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754962AbXEQMCJ (ORCPT
+	Thu, 17 May 2007 08:06:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41063 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755181AbXEQMGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 08:02:09 -0400
-Date: Thu, 17 May 2007 13:06:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: bbpetkov@yahoo.de
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ide.c: microscopic size and readability optimization
-Message-ID: <20070517130643.39fbfe29@the-village.bc.nu>
-In-Reply-To: <20070517112554.GA32183@zmei.tnic>
-References: <20070517112554.GA32183@zmei.tnic>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 08:06:12 -0400
+Date: Thu, 17 May 2007 05:04:23 -0700
+From: Greg KH <greg@kroah.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Clemens Schwaighofer <cs@tequila.co.jp>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Maneesh Soni <maneesh@in.ibm.com>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: [PATCH -stable] sysfs: disable reclamation by default
+Message-ID: <20070517120423.GE17712@kroah.com>
+References: <464A4F56.6080108@tequila.co.jp> <20070515185350.2e77bf21.akpm@linux-foundation.org> <464AE56F.3040101@gmail.com> <20070516082935.fe112ab5.akpm@linux-foundation.org> <464B2605.9040200@gmail.com> <20070516091346.3c76cb46.akpm@linux-foundation.org> <464B4DE4.9060100@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464B4DE4.9060100@gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007 13:25:54 +0200
-Borislav Petkov <bbpetkov@yahoo.de> wrote:
-
-> -----
-> From: bbpetkov@yahoo.de
+On Wed, May 16, 2007 at 08:31:00PM +0200, Tejun Heo wrote:
+> sd->s_dentry updates made by dentry/inode reclamation are racy and can
+> lead to BUG() or oops.  This is already fixed in -mm and the fix is
+> scheduled to be merged into upstream for 2.6.23 but the fix
+> reimplements sysfs dentry dropping and is too risky for -stable
+> kernels.
 > 
-> A very small size (object file 432 bytes smaller) and readability optimization of ide.c
-> 
-> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> This is an interim solution for -stable kernels.  sysfs reclamation is
+> disabled by default and can be enabled by using sysfs.enable_reclaim
+> kernel parameter.  Note that dentries are still created on demand, so
+> attribute and symlinks nodes aren't allocated on creation.  They're
+> allocated on first lookup and deallocated when the sysfs node is
+> removed.
 
-Bad idea. Now you won't know which of the conditions caused the BUG() to
-occur.
+Ick, this is going to kill memory on big boxes (s390 and others) and I
+don't really want to apply this it if at all possible.
 
+Maneesh, any other thoughts?
+
+thanks,
+
+greg k-h
