@@ -1,65 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbXEQDkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbXEQD7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760068AbXEQDkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 23:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbXEQDjx
+	id S1760034AbXEQD7n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 23:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbXEQD7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 23:39:53 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52591 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754124AbXEQDjw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 23:39:52 -0400
-X-Sasl-enc: krC/1qLOTQjV+ZNhlQH1D27BkJEkBbEKPLHqeOEfrwPo 1179373192
-Date: Thu, 17 May 2007 00:39:47 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Rob Landley <rob@landley.net>
-Cc: Tejun Heo <htejun@gmail.com>, Dave Jones <davej@redhat.com>,
-       Francesco Pretto <ceztko@gmail.com>, Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-Message-ID: <20070517033947.GA24757@khazad-dum.debian.net>
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <200705161948.56497.rob@landley.net> <20070517005842.GC600@khazad-dum.debian.net> <200705162305.11755.rob@landley.net>
+	Wed, 16 May 2007 23:59:36 -0400
+Received: from erazor-zone.de ([81.169.131.33]:34688 "EHLO erazor-zone.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754511AbXEQD7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 23:59:35 -0400
+X-Greylist: delayed 1870 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 May 2007 23:59:34 EDT
+Message-ID: <464BCB66.2090205@da7a.de>
+Date: Thu, 17 May 2007 05:26:30 +0200
+From: Martin Christoph <mail@da7a.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705162305.11755.rob@landley.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: 2.6.21 - "make modules" with GREP_OPTIONS="-C1" (and other)
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=3AEB7D5D;
+	url=http://da7a.de/files/mail_da7a.de.asc
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEU1JBhuVkF+VSqdfmXB
+ m4bcuKH21sBNIIpcAAACYElEQVQ4y02UQZLjIAxFbWcOYIJnb8MF2ogDdBrR66kK+ATB9z/CfAln
+ eqhyFnp+EhImg3NuHX7W6OZhQEx/7orWScGE2CTAe2esvDVtjmjb5K2pGwhsbrNkYy1MZtIgDHIU
+ dp9rrQ0PJ3efB6nrfHCG+Ghnq0eFY7a5G24bPeUT61DwMVyGW0fieh6CkIz3QbYlBrLlevYFZddG
+ uhHzcQEoj+ENBsv1Ag1Kmvt2A0Cs7QKtKZi6ccv1v1RvA4/n4w2O+s/Arn79bIpzLR/jZaw+XYQT
+ UZRGrl1tnkhyvYhKIt5HBcGthsh/A5R4nK1w6oYHQOKsbWNXGcAknCOGaGXmCpAol8cQ+QuGXxci
+ GeNZ+LHQdzKG0wM1grFElvkozCly3smwGC4YShyZjleVlKhhsOVuFJTIR21NWi/RZP7CYQRvaz1a
+ PnVgON5EtWC0IWBXGDcjqFMsyVZG206321rGyI8OiNlt6MNFvFpRo+fiZPENOWmQAF71rOUCexUQ
+ QlgQeOHRubQEIyCVCxQliPk1rY7ZA4jhF30bnWfp45kM4jA8oTimjfHp15vT7pwWJysfM1bhUgTc
+ JzE8jk/iMQNgAcxvg7JEACQfDmV13Ug2F4xXvnQcS5Em1PBkYtM5pBRB635XA5kM5YojAmHZBnUj
+ 4K55rpKrSAVcqekyUnCUe10VjFMAwzi9sIoYgO5qRLLOxB7P/CRjl3QVp7uxYkjfKc248LP0QYnM
+ 7cZaAJ3sBuBzMDB2MyzIpQBfm2Uf/wwjDFyU33vEmdfy3M0YcRU+cUG9wc/ysNffAoTkM8BfjPb9
+ 0b+560sAAAAASUVORK5CYII=
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="------------enig75EAB88E0FBE1B069D85A098"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 May 2007, Rob Landley wrote:
-> > But you need to detect if the kernel has proper SCSI device shutdown
-> > support, because if it does not, you have to do a cache flush and spindown
-> > on shutdown(8) if you can...
-> 
-> Or (and this is just a thought), you could upgrade your kernel so it correctly 
-> handles your hardware, treating this just like any other driver bug or other 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig75EAB88E0FBE1B069D85A098
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-The distros can't update kernels that easily on their stable branches.
+[1] Summary:
+If i have some GREP_OPTIONS set (like -C1 or other) i get several errors
+while trying to do "make modules".
 
-And in the userland side, we are not breaking things any further for users
-of kernels before 2.6.22 anyway.  Don't expect shutdown(8) to remove support
-for <2.6.22 any time soon, at least in Debian.  That will happen only when
-we are forced by some other reason to completely break compatibility with
-such kernels.
+[2] Full description:
+With some GREP_OPTIONS set "make modules" drops several errors like that:=
 
-> Last I checked you didn't have to spin down a USB flash key.  If SATA is 
 
-But you have to spin down an USB HD...  el-cheapo USB enclosures will NOT do
-it for you.  It is not an easy problem.
+root@spot /usr/src/linux # GREP_OPTIONS=3D"-C1" make modules
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  Building modules, stage 2.
+[...]
+WARNING: "aes_enc_blk" [arch/i386/crypto/aes.ko] undefined!
+WARNING: "aes_dec_blk" [arch/i386/crypto/aes.ko] undefined!
+[...]
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-> SCSI, what the heck is SAS?  (Answer: a cynical marketing hack to bleed SCSI 
-> bigots for the huge margins they've always been bled for.  But oh well.)  It 
+[3] Keywords:
+"make modules", "GREP_OPTIONS", "WARNING", "undefined"
 
-Actually, in my limited experience, SAS is marginally less crappy than SATA,
-and has a higher MTBF, probably because the manufacturers try to cut less
-corners.  But if one can get high-quality SATA drives (where?!), I don't
-know why SAS would be superior to SATA.
+[X.] Suggestion to fix:
+Unset GREP_OPTIONS within make process.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+
+
+--------------enig75EAB88E0FBE1B069D85A098
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.2 (GNU/Linux)
+
+iD8DBQFGS8ttpMtXzTrrfV0RCmWGAJ9p3GnYaRuypoxmj/nxN9zcdGSNYQCgovLd
+nZLPvbR5rOHLFRR8dHoA1a0=
+=PG6o
+-----END PGP SIGNATURE-----
+
+--------------enig75EAB88E0FBE1B069D85A098--
