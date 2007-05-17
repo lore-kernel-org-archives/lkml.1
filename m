@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762070AbXEQCHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762238AbXEQCKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762070AbXEQCHx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 16 May 2007 22:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758250AbXEQCHr
+	id S1762238AbXEQCKE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 16 May 2007 22:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXEQCJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 16 May 2007 22:07:47 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43195 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754789AbXEQCHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 16 May 2007 22:07:46 -0400
-From: Neil Brown <neilb@suse.de>
-To: koan <koan00@gmail.com>
-Date: Thu, 17 May 2007 12:07:39 +1000
+	Wed, 16 May 2007 22:09:52 -0400
+Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:36704 "EHLO
+	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754789AbXEQCJv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 16 May 2007 22:09:51 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17995.47339.651121.146258@notabene.brown>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.20.11] File system corruption with degraded md/RAID-5 device
-In-Reply-To: message from koan on Wednesday May 16
-References: <64d833020705161326m51922f63n31ef5b528a514ed7@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: Software raid0 will crash the file-system, when each disk is 5TB
+Date: Thu, 17 May 2007 14:09:49 +1200
+Message-ID: <659F626D666070439A4A5965CD6EBF406B33ED@gazelle.ad.endace.com>
+In-Reply-To: <17995.42562.870806.396617@notabene.brown>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
+Thread-Index: AceYHSNQDIBjB4RPT1euIqa2jj2EuwACq07g
+References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com><6bffcb0e0705151629j78920ca2r9337dccdfc1bb6a9@mail.gmail.com><17994.19043.771733.453896@notabene.brown><659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com> <17995.42562.870806.396617@notabene.brown>
+From: "Jeff Zheng" <Jeff.Zheng@endace.com>
+To: "Neil Brown" <neilb@suse.de>
+Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>, <linux-raid@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday May 16, koan00@gmail.com wrote:
+
+> The only difference of any significance between the working 
+> and non-working configurations is that in the non-working, 
+> the component devices are larger than 2Gig, and hence have 
+> sector offsets greater than 32 bits.
+
+Do u mean 2T here?, but in both configuartion, the component devices are
+larger than 2T (2.25T&5.5T).
+ 
+> This does cause a slightly different code path in one place, 
+> but I cannot see it making a difference.  But maybe it does.
 > 
-> Here is what I am doing to test:
+> What architecture is this running on?
+> What C compiler are you using?
+
+I386(i686)
+Gcc 4.0.2 20051125, 
+Distro is Fedora core, we've tried fc4 and fc6.
+
+> Can you try with this patch?  It is the only thing that I can 
+> find that could conceivably go wrong.
 > 
-> fdisk /dev/sda1 and /dev/sb1 to type fd/Linux raid auto
-> mdadm --create /dev/md1 -c 128 -l 5 -n 3 /dev/sda1 /dev/sdb1 missing
-> mke2fs -j -b 4096 -R stride=32 /dev/md1
-> e2fsck -f /dev/md1
-> ---------------------
-> Result: FAILS - fsck errors (Example: "Inode 3930855 is in use, but
-> has dtime set.")
 
-Very odd.  I cannot reproduce this, but then my drives are somewhat
-smaller than yours (though I'm not sure how that could be
-significant).
+OK, I will try the patach and post the result.
 
-Can you try a raid0 across 2 drives?  That would be more like the
-raid5 layout than raid1.
+Best Regards
+Jeff Zheng
 
-My guess is some subtle hardware problem,  as I would be very
-surprised in the raid5 code is causing this.  Maybe run memtest86? 
-
-NeilBrown
