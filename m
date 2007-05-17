@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbXEQRgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbXEQRjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758643AbXEQRgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbXEQRgB
+	id S1758843AbXEQRjF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbXEQRiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:36:01 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:58973 "EHLO mailer.gwdg.de"
+	Thu, 17 May 2007 13:38:52 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:48779 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756490AbXEQRf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:35:59 -0400
-Date: Thu, 17 May 2007 19:07:32 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: CaT <cat@zip.com.au>
-cc: J??rn Engel <joern@lazybastard.org>, Jamie Lokier <jamie@shareable.org>,
-       David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-       John Stoffel <john@stoffel.org>, linux-kernel@vger.kernel.org,
-       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mtd@lists.infradead.org, linux-fsdevel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] LogFS take three
-In-Reply-To: <20070516120624.GA18926@zip.com.au>
-Message-ID: <Pine.LNX.4.61.0705171902530.3231@yvahk01.tjqt.qr>
-References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org>
- <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org>
- <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org>
- <20070516115003.GD5472@lazybastard.org> <20070516120624.GA18926@zip.com.au>
+	id S1756545AbXEQRiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 13:38:51 -0400
+Date: Thu, 17 May 2007 12:38:46 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, tglx@linutronix.de, cbe-oss-dev@ozlabs.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Resending: RT patches expose netdev race [was Re: [RFC] [patch 2/2] powerpc 2.6.21-rt1: fix kernel hang and/or panic
+Message-ID: <20070517173846.GF4325@austin.ibm.com>
+References: <20070517002751.GC4325@austin.ibm.com> <1179362985.32247.252.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179362985.32247.252.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 17, 2007 at 10:49:45AM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > I do not know why sk_buff->head would be null, or
+> > would be set in a racy kind of way, or why the rt patches
+> > would cause this. But the evidence implicates that.
+> 
+> Would it be possible that a locking bug in spidernet would cause it
+> under some circumstances to get a stale skb pointer ?
 
-On May 16 2007 22:06, CaT wrote:
->On Wed, May 16, 2007 at 01:50:03PM +0200, J??rn Engel wrote:
->> On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
->> > 
->> > But if akpm can't pronounce it, how about FFFS for faster flash
->> > filesystem.... ;-)
->> 
->> How many of you have worked for IBM before?  Vowels are not evil. ;)
->> 
->> Grouping four or more consonants to name anything will cause similar
->> expressions on people's faces.  Numbers don't help much either.
->> 
->> Ext2 is a great name, because "ext" actually is a pronouncable syllable.
->> MinixFS, ChunkFS, TileFS are great too.  XFS and JFS are ok, at least
->> they only have three consonants.  But FFS exists, so I'd rather go for a
->> syllable.
->
->FlashFS?
+The skb pointer should be brand-spanking new/fresh. 
+It is passed to spidernet by the netdev->hard_start_xmit
+callback:
 
-Or just try once dropping all those redundant 'fs' suffixes.
-bdev, proc, cpuset, devpts, mqueue, fuse(blk|ctl), vfat, iso9660, etc.
-Then there's much more space for innovative names.
+    netdev->hard_start_xmit = &spider_net_xmit;
 
+I'd expect that anything that hard_start_xmit() passed to 
+a device driver should have a fully valid skb.  Locking
+problems in spidernet could cause it to work with the wrong 
+skb; however, in this case, the skb pointer is passed 
+unmodified, directly to the spot where it fails.
 
-	Jan
--- 
+Maybe there is some "make ip header fresh and clean on skb" call
+that should have been made; if so, I don't know what it is. 
+
+--linas
