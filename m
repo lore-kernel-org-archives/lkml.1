@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757726AbXEQOhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758080AbXEQOiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757726AbXEQOhb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 10:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbXEQOhY
+	id S1758080AbXEQOiX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 10:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbXEQOiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 10:37:24 -0400
-Received: from 125.14.124.24.cm.sunflower.com ([24.124.14.125]:4386 "EHLO
-	mail.atipa.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754303AbXEQOhY (ORCPT
+	Thu, 17 May 2007 10:38:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:19415 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754241AbXEQOiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 10:37:24 -0400
-Message-ID: <464C68A0.2050003@atipa.com>
-Date: Thu, 17 May 2007 09:37:20 -0500
-From: Roger Heflin <rheflin@atipa.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
+	Thu, 17 May 2007 10:38:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=XuTuLQXS29Ot/Cq0Vg4lopF3peDmlwKM3I1WmS8O4eC+RP5AOF2HyecQ3X6ff+OGCwv2g40nM3nkwOwSftUdQ8FR5TmkhzYzK3kyFBaCHqzdPCbM0aaDHxe5OnHbvhrWF6in57x70/XFG1TeAfxPr5CRc5Hk4ZAk7BEq3ff0JBI=
+Date: Thu, 17 May 2007 18:37:12 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Richard Henderson <rth@twiddle.net>,
+       linux-kernel-list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ALPHA: MARVEL - check for allocated memory
+Message-ID: <20070517143712.GA8991@cvg>
+References: <20070516181214.GA16348@cvg> <20070516114455.c0ee691e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: Re: Apparent Deadlock with nfsd/jfs on 2.6.21.1 under bonnie.
-References: <4649BED9.6090207@atipa.com> <pan.2007.05.15.22.03.07.359081@linux.vnet.ibm.com>
-In-Reply-To: <pan.2007.05.15.22.03.07.359081@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 May 2007 14:39:56.0937 (UTC) FILETIME=[3D4B3F90:01C79891]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070516114455.c0ee691e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Kleikamp wrote:
+[Andrew Morton - Wed, May 16, 2007 at 11:44:55AM -0700]
+| On Wed, 16 May 2007 22:12:14 +0400
+| Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > This patch adds checking for allocated memory
+| > which is used to hold AGP info. Also some whitespace
+| > cleanup.
+| 
+| The inclusion of all the whitespace fixies makes it rather hard to
+| see what the patch actually does.
+| 
+| I'm not sure that I can be bothered with this, really.  afaict the
+| checks you're adding are for boot-time allocations which we tend
+| to assume won't fail, and they're kmalloc(small-amount, GFP_KERNEL)
+| which is basically infallible, and it only affects, err, alpha.
+| 
 
-> 
-> I don't have an answer to an ext3 deadlock, but this looks like a jfs
-> problem that was recently fixed in linux-2.6.22-rc1.  I had intended to
-> send it to the stable kernel after it was picked up in mainline, but
-> hadn't gotten to it yet.
-> 
-> The patch is here:
-> http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=05ec9e26be1f668ccba4ca54d9a4966c6208c611
-> 
+So you think we could leave all as is? I mean sould I just drop the patch?
 
-Dave,
+		Cyrill
 
-That appears to have fixed the JFS hangup.
-
-MTBF before was about 1 hour, under the same test I am over 20 hours
-and things appear to still be holding together.
-
-                             Roger
