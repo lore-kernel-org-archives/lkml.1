@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760471AbXEQXpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762026AbXEQXpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760471AbXEQXpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 19:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757560AbXEQXpL
+	id S1762026AbXEQXpi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 19:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760406AbXEQXpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 19:45:11 -0400
-Received: from omta05ps.mx.bigpond.com ([144.140.83.195]:32376 "EHLO
-	omta05ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755649AbXEQXpK (ORCPT
+	Thu, 17 May 2007 19:45:23 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:16922 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759786AbXEQXpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 19:45:10 -0400
-Message-ID: <464CE8FD.4070205@bigpond.net.au>
-Date: Fri, 18 May 2007 09:45:01 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v12
-References: <20070513153853.GA19846@elte.hu> <464A6698.3080400@bigpond.net.au> <20070516063625.GA9058@elte.hu>
-In-Reply-To: <20070516063625.GA9058@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 May 2007 19:45:22 -0400
+Date: Thu, 17 May 2007 16:49:06 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Further update of the i386 boot documentation
+Message-Id: <20070517164906.c7b96fe9.randy.dunlap@oracle.com>
+In-Reply-To: <464CE5A4.3040106@goop.org>
+References: <200705172250.l4HMol8f004870@tazenda.hos.anvin.org>
+	<464CE105.7030808@goop.org>
+	<464CE38B.8010802@zytor.com>
+	<464CE5A4.3040106@goop.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta05ps.mx.bigpond.com from [144.131.192.218] using ID pwil3058@bigpond.net.au at Thu, 17 May 2007 23:45:06 +0000
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Peter Williams <pwil3058@bigpond.net.au> wrote:
+On Thu, 17 May 2007 16:30:44 -0700 Jeremy Fitzhardinge wrote:
+
+> >>> +  If set to a nonzero value, contains a pointer to a null-terminated
+> >>>   
+> >>>       
+> >> "nil-terminated"? "\0-terminated"?
+> >>     
+> >
+> > Uh?  That seems more than a little silly.  Yes, I guess formally
+> > speaking we're talking about "NUL-terminated", but the term
+> > "null-terminated" has over 800,000 hits on Google -- 10 times as many as
+> > "NUL-terminated" -- and is hardly an ambiguous term ("NUL-terminated" is
+> > ugly, and "zero-terminated" is ambiguous.)
+> >   
 > 
->> Load balancing appears to be badly broken in this version.  When I 
->> started 4 hard spinners on my 2 CPU machine one ended up on one CPU 
->> and the other 3 on the other CPU and they stayed there.
-> 
-> could you try to debug this a bit more?
+> 0x00 or \0-terminated is idiomatic and unambigous.  Not a big deal
+> either way.
 
-I've now done this test on a number of kernels: 2.6.21 and 2.6.22-rc1 
-with and without CFS; and the problem is always present.  It's not 
-"nice" related as the all four tasks are run at nice == 0.
+I've mostly seen it as NUL-terminated.
 
-It's possible that this problem has been in the kernel for a while with 
-out being noticed as, even with totally random allocation of tasks to 
-CPUs without any (attempt to balance), there's a quite high probability 
-of the desirable 2/2 split occurring.  So one needs to repeat the test 
-several times to have reasonable assurance that the problem is not 
-present.  I.e. this has the characteristics of an intermittent bug with 
-all the debugging problems that introduces.
-
-The probabilities for the 3 split possibilities for random allocation are:
-
-	2/2 (the desired outcome) is 3/8 likely,
-	1/3 is 4/8 likely, and
-	0/4 is 1/8 likely.
-
-I'm pretty sure that this problem wasn't present when smpnice went into 
-the kernel which is the last time I did a lot of load balance testing.
-
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
