@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbXEQG1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbXEQG2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762811AbXEQG1s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 02:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbXEQG1k
+	id S1763288AbXEQG2J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 02:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbXEQG14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 02:27:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60917 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754783AbXEQG1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 02:27:39 -0400
-Date: Thu, 17 May 2007 08:27:30 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [rfc] optimise unlock_page
-Message-ID: <20070517062729.GA14350@wotan.suse.de>
-References: <Pine.LNX.4.64.0705101935590.18496@blonde.wat.veritas.com> <20070511085424.GA15352@wotan.suse.de> <Pine.LNX.4.64.0705111357120.3350@blonde.wat.veritas.com> <20070513033210.GA3667@wotan.suse.de> <Pine.LNX.4.64.0705130535410.3015@blonde.wat.veritas.com> <20070513065246.GA15071@wotan.suse.de> <Pine.LNX.4.64.0705161838080.16762@blonde.wat.veritas.com> <20070516181847.GD5883@wotan.suse.de> <Pine.LNX.4.64.0705161946170.28185@blonde.wat.veritas.com> <alpine.LFD.0.98.0705161242520.3890@woody.linux-foundation.org>
+	Thu, 17 May 2007 02:27:56 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57525 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755050AbXEQG1z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 02:27:55 -0400
+Subject: [PATCH] NS16550A: Restore HS settings in EXCR2 on resume
+From: David Woodhouse <dwmw2@infradead.org>
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Thu, 17 May 2007 14:27:39 +0800
+Message-Id: <1179383259.2859.420.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705161242520.3890@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 12:47:54PM -0700, Linus Torvalds wrote:
-> 
-> On Wed, 16 May 2007, Hugh Dickins wrote:
-> 
-> > > The other option of moving the bit into ->mapping hopefully avoids all
-> > > the issues, and would probably be a little faster again on the P4, at the
-> > > expense of being a more intrusive (but it doesn't look too bad, at first
-> > > glance)...
-> > 
-> > Hmm, I'm so happy with PG_swapcache in there, that I'm reluctant to
-> > cede it to your PG_locked, though I can't deny your use should take
-> > precedence.  Perhaps we could enforce 8-byte alignment of struct
-> > address_space and struct anon_vma to make both bits available
-> > (along with the anon bit).
-> 
-> We probably could. It should be easy enough to mark "struct address_space" 
-> to be 8-byte aligned.
+After a suspend/resume cycle, the UART may have been reset into
+low-speed mode -- either because it's actually been reset, or because
+the firmware pokes at the old-style divisor registers. If we detected it
+as a NS16550A SuperIO chip in the first place and set baud_base to
+921600, then we should do so again in the resume path.
 
-Yeah, it might be worthwhile, because I agree that PG_swapcache would
-work nicely there too.
+This patch adds that code to serial8250_resume_port(), and also makes
+serial8250_resume() actually call serial8250_resume_port() for each port
+instead of just calling uart_resume_port() directly. And thus fixes
+serial port operation after suspend/resume.
 
+It also fixes a bogus comment where we write the EXCR2 register with a
+comment saying /* EXCR1 */
 
-> > But I think you may not be appreciating how intrusive PG_locked
-> > will be.  There are many references to page->mapping (often ->host)
-> > throughout fs/ : when we keep anon/swap flags in page->mapping, we
-> > know the filesystems will never see those bits set in their pages,
-> > so no page_mapping-like conversion is needed; just a few places in
-> > common code need to adapt.
-> 
-> You're right, it could be really painful. We'd have to rename the field, 
-> and use some inline function to access it (which masks off the low bits).
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-Yeah, I realise that the change is intrusive in terms of lines touched,
-but AFAIKS, it should not be much more complex than a search/replace...
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 48e259a..c84dab0 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -894,7 +894,7 @@ static void autoconfig_16550a(struct uart_8250_port *up)
+ 			quot = serial_dl_read(up);
+ 			quot <<= 3;
+ 
+-			status1 = serial_in(up, 0x04); /* EXCR1 */
++			status1 = serial_in(up, 0x04); /* EXCR2 */
+ 			status1 &= ~0xB0; /* Disable LOCK, mask out PRESL[01] */
+ 			status1 |= 0x10;  /* 1.625 divisor for baud_base --> 921600 */
+ 			serial_outp(up, 0x04, status1);
+@@ -2617,7 +2617,22 @@ void serial8250_suspend_port(int line)
+  */
+ void serial8250_resume_port(int line)
+ {
+-	uart_resume_port(&serial8250_reg, &serial8250_ports[line].port);
++	struct uart_8250_port *up = &serial8250_ports[line];
++
++	if (up->capabilities & UART_NATSEMI) {
++		unsigned char tmp;
++
++		/* Ensure it's still in high speed mode */
++		serial_outp(up, UART_LCR, 0xE0);
++
++		tmp = serial_in(up, 0x04); /* EXCR2 */
++		tmp &= ~0xB0; /* Disable LOCK, mask out PRESL[01] */
++		tmp |= 0x10;  /* 1.625 divisor for baud_base --> 921600 */
++		serial_outp(up, 0x04, tmp);
++
++		serial_outp(up, UART_LCR, 0);
++	}
++	uart_resume_port(&serial8250_reg, &up->port);
+ }
+ 
+ /*
+@@ -2694,7 +2709,7 @@ static int serial8250_resume(struct platform_device *dev)
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+ 		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
+-			uart_resume_port(&serial8250_reg, &up->port);
++			serial8250_resume_port(i);
+ 	}
+ 
+ 	return 0;
 
-As far as deprecating things goes... I don't think we have to wait too
-long, its more for features, drivers, or more fundamental APIs isn't it?
-If we just point out that one must use set_page_mapping/page_mapping
-rather than page->mapping, it is trivial to fix any out of tree breakage.
+-- 
+dwmw2
 
