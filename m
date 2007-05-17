@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbXEQTIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbXEQTLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757680AbXEQTIg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 15:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbXEQTI3
+	id S1758473AbXEQTLA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 15:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbXEQTKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 15:08:29 -0400
-Received: from web86408.mail.ird.yahoo.com ([217.146.188.125]:41431 "HELO
-	web86408.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754183AbXEQTI1 (ORCPT
+	Thu, 17 May 2007 15:10:52 -0400
+Received: from web86405.mail.ird.yahoo.com ([217.146.188.122]:25909 "HELO
+	web86405.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755492AbXEQTKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 15:08:27 -0400
-X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 May 2007 15:08:26 EDT
+	Thu, 17 May 2007 15:10:51 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=btopenworld.com;
   h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=IzpF45lhDfIljftrzgeFsPVJDX50mwIxA9ofyU0fEUcDbk7LsC+X9SB/3BU9r1nBBuuhdOaE12XdN3COBplbSlXakQX7yMTkFpe3C6U6EjsZHZVb2+8hqk03MzE9p7/DtJjJvl9+f8hZNuRUQ7v09MVNI9wsVNLyEllWuBSLrcU=;
-X-YMail-OSG: WguWt4cVM1mxkOWRz_VH_Dool8jrKXIv0ET3Q5BKYWwOk56eXbcQfTkOH.yeoPvrgUtAq5llrQ--
+  b=gbgYLslRPdwSyLhJ1eOuT9FWIvKSeTfpOb8cMl10qZpej777TuRgSUpaFTdhibe/ezP/KFSelz/wvBBVo6AT64CkXT1cIhsIcQqQOK5NZ8LdSzZcR+8xUrkp3CXb/xer1cwfOUvZtsQDxHKMY4Y5M+y/+No/xTSvss/h6Nz51nU=;
+X-YMail-OSG: MmqbC_AVM1koBRoPCaDQ1F0xEKCKRlyieCERBbfW9I51Btt0TAu1XUlJbeetGT1taw--
 X-Mailer: YahooMailRC/478 YahooMailWebService/0.7.41.10
-Date: Thu, 17 May 2007 19:01:43 +0000 (GMT)
+Date: Thu, 17 May 2007 19:04:06 +0000 (GMT)
 From: Francis Russell <francisrussell@btopenworld.com>
 Subject: pata_via appears to incorrectly detects 40-pin cable
 To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-2022837673-1179428503=:5739"
-Message-ID: <990930.5739.qm@web86408.mail.ird.yahoo.com>
+Content-Type: multipart/mixed; boundary="0-309130349-1179428646=:34462"
+Message-ID: <800196.34462.qm@web86405.mail.ird.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0-2022837673-1179428503=:5739
+--0-309130349-1179428646=:34462
 Content-Type: text/plain; charset=ascii
 
 I'm testing Linux kernel version 2.6.22-rc1 using Debian Testing on an Acer Ferrari 3400 Laptop. This has a VIA IDE controller with the internal HDD and DVD writer attached. The via_pata module and SCSI disk support is compiled into the kernel and the old ATA subsystem is not. At bootup the log messages state that the main HDD is detected as being connected using a 40-pin cable which causes its speed to be limited to UDMA33 rather then UDMA100, the limit of the HD.  This works fine under the old ATA system.
@@ -48,7 +47,7 @@ Francis Russell
 
 
 
---0-2022837673-1179428503=:5739
+--0-309130349-1179428646=:34462
 Content-Type: text/plain; name="=?utf-8?q?dmesg.txt?="
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="=?utf-8?q?dmesg.txt?="
@@ -398,7 +397,7 @@ cApbZHJtXSBMb2FkaW5nIFIzMDAgTWljcm9jb2RlCltkcm1dIHdyaXRlYmFj
 ayB0ZXN0IHN1Y2NlZWRlZCBpbiAxIHVzZWNzCmV0aDE6IG5vIElQdjYgcm91
 dGVycyBwcmVzZW50Cg==
 
---0-2022837673-1179428503=:5739
+--0-309130349-1179428646=:34462
 Content-Type: text/plain; name="=?utf-8?q?lspci.txt?="
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="=?utf-8?q?lspci.txt?="
@@ -702,7 +701,7 @@ dXJyZW50PTBtQSBQTUUoRDAtLEQxLSxEMi0sRDNob3QtLEQzY29sZC0pCgkJ
 U3RhdHVzOiBEMCBQTUUtRW5hYmxlLSBEU2VsPTAgRFNjYWxlPTAgUE1FLQoK
 
 
---0-2022837673-1179428503=:5739
+--0-309130349-1179428646=:34462
 Content-Type: text/plain; name="=?utf-8?q?lshw.txt?="
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="=?utf-8?q?lshw.txt?="
@@ -1019,4 +1018,4 @@ IGFuc2l2ZXJzaW9uPTIKICAgICAgICAgICAqLWRpc2MKICAgICAgICAgICAg
 ICAgIHBoeXNpY2FsIGlkOiAwCiAgICAgICAgICAgICAgICBsb2dpY2FsIG5h
 bWU6IC9kZXYvc2RiCg==
 
---0-2022837673-1179428503=:5739--
+--0-309130349-1179428646=:34462--
