@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbXEQRyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbXEQRy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760757AbXEQRyF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 13:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbXEQRxw
+	id S1760248AbXEQRy5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 13:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756373AbXEQRyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 13:53:52 -0400
-Received: from smtp.nokia.com ([131.228.20.171]:46166 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756312AbXEQRxv convert rfc822-to-8bit (ORCPT
+	Thu, 17 May 2007 13:54:50 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:40498 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756646AbXEQRyt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 13:53:51 -0400
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20070517102931.6bbbad1a.akpm@linux-foundation.org>
-References: <20070517143200.GA30850@lst.de>
-	 <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de>
-	 <1179414590.3642.69.camel@sauron>
-	 <20070517102931.6bbbad1a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 17 May 2007 20:46:46 +0300
-Message-Id: <1179424006.3642.84.camel@sauron>
+	Thu, 17 May 2007 13:54:49 -0400
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705171029500.17245@schroedinger.engr.sgi.com>
+References: <1179350433.2912.66.camel@lappy>
+	 <Pine.LNX.4.64.0705161435110.11642@schroedinger.engr.sgi.com>
+	 <1179386921.27354.29.camel@twins>
+	 <Pine.LNX.4.64.0705171029500.17245@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 17 May 2007 19:53:50 +0200
+Message-Id: <1179424430.2925.7.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 17 May 2007 17:46:46.0759 (UTC) FILETIME=[56DE5770:01C798AB]
-X-Nokia-AV: Clean
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 10:29 -0700, Andrew Morton wrote:
-> umm..  I'd say what you've done in there is an improvement to the exiting
-> stuff: getting gcc to check it is better than having to use sparse.
+On Thu, 2007-05-17 at 10:30 -0700, Christoph Lameter wrote:
+> On Thu, 17 May 2007, Peter Zijlstra wrote:
 > 
-> I'd have expected gcc to generate poorer code with your approach but I'm
-> showing zero text size changes from Christoph's patch (gcc-4.1 and
-> gcc-3.4.5).
+> > > 2. It seems to be based on global ordering of allocations which is
+> > >    not possible given large systems and the relativistic constraints
+> > >    of physics. Ordering of events get more expensive the bigger the
+> > >    system is.
+> > > 
+> > >    How does this system work if you can just order events within
+> > >    a processor? Or within a node? Within a zone?
+> > 
+> > /me fails again..
+> > 
+> > Its about ensuring ALLOC_NO_WATERMARKS memory only reaches PF_MEMALLOC
+> > processes, not joe random's pi calculator.
 > 
-> So I wouldn't be averse to creating a new, generic, kernel-wide alternative
-> to the existing __be32/__le32/etc code.  It is an improvement.
-> 
-> We could conceivably simply switch the existing stuff to use structs, but
-> quite a lot of code assumes that cpu_to_foo32(0) == 0 and just does
-> open-coded assigments of zero.  They'd need fixups.
+> Watermarks are per zone?
 
-Andrew,
-
-thanks for answer. I personally do not think this should be applied
-before we have better __be32 and friends. Thus, if I can do so, I will
-just sit and wait for your decision - whether you include this patch to
--mm or not :-) .
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+Yes, but the page allocator might address multiple zones in order to
+obtain a page.
 
