@@ -1,109 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbXEQKM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757135AbXEQKMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756917AbXEQKM3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 06:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbXEQKMH
+	id S1757135AbXEQKMw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 06:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbXEQKMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 06:12:07 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:46268 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755095AbXEQKMG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 06:12:06 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Message-Id: <20070517101203.3113.81852.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20070517101022.3113.15456.sendpatchset@skynet.skynet.ie>
-References: <20070517101022.3113.15456.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 5/5] Mark page cache pages as __GFP_PAGECACHE instead of __GFP_MOVABLE
-Date: Thu, 17 May 2007 11:12:03 +0100 (IST)
+	Thu, 17 May 2007 06:12:40 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50124 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757193AbXEQKMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 06:12:36 -0400
+Date: Thu, 17 May 2007 15:42:19 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Proposed update of the i386 boot document
+Message-ID: <20070517101219.GE28280@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <464BABB2.5020104@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464BABB2.5020104@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 16, 2007 at 06:11:14PM -0700, H. Peter Anvin wrote:
+> I have noticed that a few items in the i386 boot document have become a
+> bit incoherent and/or dated over the years.  Attached is an attempt at
+> rewriting a few of the sections; the main things is a field-by-field
+> description for the setup header.
+> 
+> I would appreciate comments as to if this makes it easier to follow or not.
+> 
 
-This patch marks page cache allocations as __GFP_PAGECACHE instead of
-__GFP_MOVABLE. To make code easier to read, a set of three GFP flags are
-added called GFP_PAGECACHE, GFP_NOFS_PAGECACHE and GFP_HIGHUSER_PAGECACHE.
+Overall looks good to me. Especially for relocatable kernel, to a boot
+loader now it is more clear what is the meaning of different fields
+and need to modify code32_start if protected mode kernel was loaded
+at non 1MB address.
 
-grow_dev_page() is changed to use GFP_NOFS_PAGECACHE instead of
-__GFP_RECLAIMABLE. Marking them as __GFP_RECLAIMABLE was a mistake as
-they should be grouped with other pagecache pages. bdget() no longer uses
-mobility flags after this patch because it is does not appear that any pages
-allocated on behalf of the mapping are movable so it needs to be revisited
-separately. The allocations required for radix trees are still treated as
-RECLAIMABLE after this patch is applied.
+Thanks
+Vivek
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Acked-by: Andy Whitcroft <apw@shadowen.org>
-Acked-by: Christoph Lameter <clameter@sgi.com>
----
-
- fs/block_dev.c      |    2 +-
- fs/buffer.c         |    2 +-
- fs/inode.c          |    4 ++--
- include/linux/gfp.h |    6 ++++++
- 4 files changed, 10 insertions(+), 4 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc1-mm1-025_gfphighuser/fs/block_dev.c linux-2.6.22-rc1-mm1-030_pagecache_mark/fs/block_dev.c
---- linux-2.6.22-rc1-mm1-025_gfphighuser/fs/block_dev.c	2007-05-16 10:54:18.000000000 +0100
-+++ linux-2.6.22-rc1-mm1-030_pagecache_mark/fs/block_dev.c	2007-05-16 23:07:30.000000000 +0100
-@@ -576,7 +576,7 @@ struct block_device *bdget(dev_t dev)
- 		inode->i_rdev = dev;
- 		inode->i_bdev = bdev;
- 		inode->i_data.a_ops = &def_blk_aops;
--		mapping_set_gfp_mask(&inode->i_data, GFP_USER|__GFP_MOVABLE);
-+		mapping_set_gfp_mask(&inode->i_data, GFP_USER);
- 		inode->i_data.backing_dev_info = &default_backing_dev_info;
- 		spin_lock(&bdev_lock);
- 		list_add(&bdev->bd_list, &all_bdevs);
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc1-mm1-025_gfphighuser/fs/buffer.c linux-2.6.22-rc1-mm1-030_pagecache_mark/fs/buffer.c
---- linux-2.6.22-rc1-mm1-025_gfphighuser/fs/buffer.c	2007-05-16 22:55:50.000000000 +0100
-+++ linux-2.6.22-rc1-mm1-030_pagecache_mark/fs/buffer.c	2007-05-16 23:07:30.000000000 +0100
-@@ -1009,7 +1009,7 @@ grow_dev_page(struct block_device *bdev,
- 	struct buffer_head *bh;
- 
- 	page = find_or_create_page(inode->i_mapping, index,
--					GFP_NOFS|__GFP_RECLAIMABLE);
-+					GFP_NOFS_PAGECACHE);
- 	if (!page)
- 		return NULL;
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc1-mm1-025_gfphighuser/fs/inode.c linux-2.6.22-rc1-mm1-030_pagecache_mark/fs/inode.c
---- linux-2.6.22-rc1-mm1-025_gfphighuser/fs/inode.c	2007-05-16 23:05:45.000000000 +0100
-+++ linux-2.6.22-rc1-mm1-030_pagecache_mark/fs/inode.c	2007-05-16 23:07:30.000000000 +0100
-@@ -154,7 +154,7 @@ static struct inode *alloc_inode(struct 
- 		mapping->a_ops = &empty_aops;
-  		mapping->host = inode;
- 		mapping->flags = 0;
--		mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
-+		mapping_set_gfp_mask(mapping, GFP_HIGHUSER_PAGECACHE);
- 		mapping->assoc_mapping = NULL;
- 		mapping->backing_dev_info = &default_backing_dev_info;
- 
-@@ -535,7 +535,7 @@ repeat:
-  *	@sb: superblock
-  *
-  *	Allocates a new inode for given superblock. The default gfp_mask
-- *	for allocations related to inode->i_mapping is GFP_HIGHUSER_MOVABLE.
-+ *	for allocations related to inode->i_mapping is GFP_HIGHUSER_PAGECACHE.
-  *	If HIGHMEM pages are unsuitable or it is known that pages allocated
-  *	for the page cache are not reclaimable or migratable,
-  *	mapping_set_gfp_mask() must be called with suitable flags on the
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc1-mm1-025_gfphighuser/include/linux/gfp.h linux-2.6.22-rc1-mm1-030_pagecache_mark/include/linux/gfp.h
---- linux-2.6.22-rc1-mm1-025_gfphighuser/include/linux/gfp.h	2007-05-16 23:05:45.000000000 +0100
-+++ linux-2.6.22-rc1-mm1-030_pagecache_mark/include/linux/gfp.h	2007-05-16 23:07:30.000000000 +0100
-@@ -79,6 +79,12 @@ struct vm_area_struct;
- #define GFP_HIGHUSER_MOVABLE	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
- 				 __GFP_HARDWALL | __GFP_HIGHMEM | \
- 				 __GFP_MOVABLE)
-+#define GFP_NOFS_PAGECACHE	(__GFP_WAIT | __GFP_IO | __GFP_MOVABLE)
-+#define GFP_USER_PAGECACHE	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
-+				 __GFP_HARDWALL | __GFP_MOVABLE)
-+#define GFP_HIGHUSER_PAGECACHE	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
-+				 __GFP_HARDWALL | __GFP_HIGHMEM | \
-+				 __GFP_MOVABLE)
- 
- #ifdef CONFIG_NUMA
- #define GFP_THISNODE	(__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
