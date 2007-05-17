@@ -1,34 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXEQPTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbXEQPeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbXEQPTl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 11:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXEQPTb
+	id S1756369AbXEQPeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 11:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXEQPe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 11:19:31 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39207 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757121AbXEQPTa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 11:19:30 -0400
-Date: Thu, 17 May 2007 16:24:03 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Claas Langbehn <claas@rootdir.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: This kernel requires the following features not present on the
- CPU... (on a VIA C7 CPU)
-Message-ID: <20070517162403.2ff0e3b5@the-village.bc.nu>
-In-Reply-To: <464C4A22.7040709@rootdir.de>
-References: <464C4A22.7040709@rootdir.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 11:34:28 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:42992 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753863AbXEQPe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 11:34:27 -0400
+Date: Thu, 17 May 2007 17:30:26 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Neil Brown <neilb@suse.de>
+cc: Jeff Zheng <Jeff.Zheng@endace.com>, david@lang.hm,
+       Andreas Dilger <adilger@clusterfs.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: RE: Software raid0 will crash the file-system, when each disk is
+ 5TB
+In-Reply-To: <17996.14421.769180.782589@notabene.brown>
+Message-ID: <Pine.LNX.4.61.0705171724500.3231@yvahk01.tjqt.qr>
+References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com>
+ <20070516140452.GC5286@schatzie.adilger.int> <Pine.LNX.4.64.0705161058430.1280@asgard.lang.hm>
+ <Pine.LNX.4.61.0705162016060.9019@yvahk01.tjqt.qr>
+ <659F626D666070439A4A5965CD6EBF406B3324@gazelle.ad.endace.com>
+ <Pine.LNX.4.61.0705170918480.1791@yvahk01.tjqt.qr> <17996.14421.769180.782589@notabene.brown>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Concerning the crashes I already changed the memory module, but with no 
-> success. I'm not sure
-> wether this is a hardware or software bug.
 
-Testing with memtest86 should help tell you if the problem is a dodgy
-DIMM specifically rather than another hardware or software fault. 
+On May 17 2007 21:11, Neil Brown wrote:
+>On Thursday May 17, jengelh@linux01.gwdg.de wrote:
+>> XOR it (0^0=1), and hence fills up the host disk.
+>
+>Uhmm... you need to check your maths.
+>
+>$ perl -e 'printf "%d\n", 0^0;'
+>0
+>
+>:-)
+
+(ouch)
+You know just as I that ^ is the power operator!
+I just... wrongly named it XOR :p
+
+$ echo '0^0' | bc -l
+1
+
+
+Well, right, setting up a blank raid5 array inside vmware will not make
+the host file significantly larger, making it easy to build megatera
+arrays with gigabyte range host disks.
+
+
+	Jan
+-- 
