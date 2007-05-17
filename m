@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763482AbXEQHKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763537AbXEQHLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763482AbXEQHKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 03:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbXEQHKk
+	id S1763537AbXEQHLp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 03:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbXEQHLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 03:10:40 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:47816 "EHLO pasmtpB.tele.dk"
+	Thu, 17 May 2007 03:11:38 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:41432 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755809AbXEQHKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 03:10:39 -0400
-Date: Thu, 17 May 2007 09:11:36 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Martin Christoph <mail@da7a.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.21 - "make modules" with GREP_OPTIONS="-C1" (and other)
-Message-ID: <20070517071136.GB3690@uranus.ravnborg.org>
-References: <464BCB66.2090205@da7a.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464BCB66.2090205@da7a.de>
-User-Agent: Mutt/1.4.2.1i
+	id S1754538AbXEQHLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 03:11:38 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Thu, 17 May 2007 12:41:12 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, marcel@holtmann.org, jikos@jikos.cz,
+       gregkh@suse.de, jeremy@goop.org, maxk@qualcomm.com, clg@fr.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bluetooth: fix locking in hci_sock_dev_event()
+In-Reply-To: <20070516.235111.07638844.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0705171238060.10635@cselinux1.cse.iitk.ac.in>
+References: <Pine.LNX.4.64.0705171106550.9262@cselinux1.cse.iitk.ac.in>
+ <20070516.235111.07638844.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 05:26:30AM +0200, Martin Christoph wrote:
-> [1] Summary:
-> If i have some GREP_OPTIONS set (like -C1 or other) i get several errors
-> while trying to do "make modules".
-> 
-> [2] Full description:
-> With some GREP_OPTIONS set "make modules" drops several errors like that:
-> 
-> root@spot /usr/src/linux # GREP_OPTIONS="-C1" make modules
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   Building modules, stage 2.
-> [...]
-> WARNING: "aes_enc_blk" [arch/i386/crypto/aes.ko] undefined!
-> WARNING: "aes_dec_blk" [arch/i386/crypto/aes.ko] undefined!
-> [...]
-> make[1]: *** [__modpost] Error 1
-> make: *** [modules] Error 2
-> 
-> [3] Keywords:
-> "make modules", "GREP_OPTIONS", "WARNING", "undefined"
-> 
-> [X.] Suggestion to fix:
-> Unset GREP_OPTIONS within make process.
+On Wed, 16 May 2007, David Miller wrote:
+> From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> Date: Thu, 17 May 2007 11:13:36 +0530 (IST)
+>
+>> [PATCH] bluetooth: fix locking in hci_sock_dev_event()
+>
+> BTW, your email client corrupted the patch spaces and tabs
+> a lot, I applied your patch by hand but I will not do that
+> next time.  Please look into getting your email client to
+> not corrupt the patches you send out, thank you.
 
-Thanks for reporting this - I gues this took some time to
-find the root cause of the problem.
+Ick. That's the second time pine did that to me. Doesn't seem
+to happen consistently/reproducibly, but I'll try to fix it
+nonetheless, thanks.
 
-Albeit fixing it seems simple I will consider it for a
-while. In the kernel we use several tools like:
-awk, grep, perl, ls, rm, mv, cmp etc and then
-we should audit all of these to check if similar
-things could occur.
-
-If someone steps up to do the check (including
-all the tools I missed) I would be very grateful.
-
-	Sam
+Satyam
