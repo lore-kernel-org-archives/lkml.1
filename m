@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbXEQSTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbXEQSUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758074AbXEQSTP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbXEQSTA
+	id S1758842AbXEQSUu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbXEQSUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:19:00 -0400
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:9391 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753931AbXEQSTA (ORCPT
+	Thu, 17 May 2007 14:20:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54698 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753931AbXEQSUm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:19:00 -0400
-In-Reply-To: <464C99FF.8080404@ru.mvista.com>
-References: <200705172142.26739.sshtylyov@ru.mvista.com> <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org> <464C99FF.8080404@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-Cc: tglx@linutronix.de, mingo@elte.hu, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
+	Thu, 17 May 2007 14:20:42 -0400
+Date: Thu, 17 May 2007 11:18:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: dedekind@infradead.org
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+Message-Id: <20070517111838.842a29ca.akpm@linux-foundation.org>
+In-Reply-To: <1179424006.3642.84.camel@sauron>
+References: <20070517143200.GA30850@lst.de>
+	<1179413443.3642.49.camel@sauron>
+	<20070517145653.GA968@lst.de>
+	<1179414590.3642.69.camel@sauron>
+	<20070517102931.6bbbad1a.akpm@linux-foundation.org>
+	<1179424006.3642.84.camel@sauron>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-Date: Thu, 17 May 2007 13:17:07 -0500
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 17 May 2007 20:46:46 +0300
+Artem Bityutskiy <dedekind@infradead.org> wrote:
 
-On May 17, 2007, at 1:07 PM, Sergei Shtylyov wrote:
+> On Thu, 2007-05-17 at 10:29 -0700, Andrew Morton wrote:
+> > umm..  I'd say what you've done in there is an improvement to the exiting
+> > stuff: getting gcc to check it is better than having to use sparse.
+> > 
+> > I'd have expected gcc to generate poorer code with your approach but I'm
+> > showing zero text size changes from Christoph's patch (gcc-4.1 and
+> > gcc-3.4.5).
+> > 
+> > So I wouldn't be averse to creating a new, generic, kernel-wide alternative
+> > to the existing __be32/__le32/etc code.  It is an improvement.
+> > 
+> > We could conceivably simply switch the existing stuff to use structs, but
+> > quite a lot of code assumes that cpu_to_foo32(0) == 0 and just does
+> > open-coded assigments of zero.  They'd need fixups.
+> 
+> Andrew,
+> 
+> thanks for answer. I personally do not think this should be applied
+> before we have better __be32 and friends. Thus, if I can do so, I will
+> just sit and wait for your decision - whether you include this patch to
+> -mm or not :-) .
+> 
 
-> Hello.
->
-> Kumar Gala wrote:
->
->>> Index: linux-2.6/arch/powerpc/kernel/time.c
->>> ===================================================================
->>> --- linux-2.6.orig/arch/powerpc/kernel/time.c
->>> +++ linux-2.6/arch/powerpc/kernel/time.c
-> [...]
->>> @@ -128,6 +129,83 @@ unsigned long ppc_tb_freq;
->>>  static u64 tb_last_jiffy __cacheline_aligned_in_smp;
->>>  static DEFINE_PER_CPU(u64, last_jiffy);
->>>
->>> +#ifdef CONFIG_GENERIC_CLOCKEVENTS
->>> +
->>> +#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
->>> +#define DECREMENTER_MAX 0xffffffff
->>> +#else
->>> +#define DECREMENTER_MAX 0x7fffffff /* setting MSB triggers an   
->>> interrupt */
->>> +#endif
->>> +
->>> +static int decrementer_set_next_event(unsigned long evt,
->>> +                      struct clock_event_device *dev)
->>> +{
->>> +#if defined(CONFIG_40x)
->>> +    mtspr(SPRN_PIT, evt);    /* 40x has a hidden PIT auto- 
->>> reload  register */
->>> +#elif defined(CONFIG_BOOKE)
->>> +    mtspr(SPRN_DECAR, evt); /* Book E has  separate auto-reload   
->>> register */
->>> +    set_dec(evt);
->
->> what's the point of setting decar if you're just going to set_dec  
->> as  well?
->
->    Bothered to read the Book E specs? ;-)
+Drat, and here was I hoping I'd lured you into implementing the generic
+code.
 
-I have :)
-
->    Loading DECAR doesn't auto-reload DEC. What I want is both set  
-> the auto-reload value and start counting down from it at the same  
-> time (if the decrementer is in auto-reload mode).
-
-I see you're using DECAR to make it periodic.
-
-> [big cut-off]
->
-> WBR, Sergei
-
-I haven't looked at all the new clock/timer code, is there any  
-utility in having support for more than one clock source?
-
-- k
