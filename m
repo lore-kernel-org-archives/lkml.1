@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbXEQVay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbXEQVcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760085AbXEQVay (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbXEQVaq
+	id S1760767AbXEQVcH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXEQVb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:30:46 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:53042 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754614AbXEQVap (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:30:45 -0400
-Date: Thu, 17 May 2007 15:30:43 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Benjamin LaHaise <bcrl@kvack.org>
-Cc: James Bottomley <james.bottomley@steeleye.com>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org
-Subject: Re: Asynchronous scsi scanning
-Message-ID: <20070517213043.GN10562@parisc-linux.org>
-References: <20070516025121.GK10562@parisc-linux.org> <a781481a0705171013j7ddc48edxfb4bdba515a3f53c@mail.gmail.com> <20070517172023.GL10562@parisc-linux.org> <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com> <20070517182414.GA12170@infradead.org> <a781481a0705171147s1ef5c205y8873d0bfa201f928@mail.gmail.com> <20070517185115.GA13207@infradead.org> <a781481a0705171204o5b25fafdm36d5970acf9119cd@mail.gmail.com> <20070517193953.GM10562@parisc-linux.org> <20070517194326.GC30571@kvack.org>
+	Thu, 17 May 2007 17:31:56 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:39191 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754892AbXEQVb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 17:31:56 -0400
+Date: Thu, 17 May 2007 23:31:53 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Tomas Carnecky <tom@dbservice.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: SideWinder GameVoice driver
+In-Reply-To: <464CA34F.8090509@dbservice.com>
+Message-ID: <Pine.LNX.4.64.0705172309240.27422@twin.jikos.cz>
+References: <464C5FAC.8060609@dbservice.com> <Pine.LNX.4.64.0705171623280.27422@twin.jikos.cz>
+ <464C708C.6090808@dbservice.com> <464CA34F.8090509@dbservice.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070517194326.GC30571@kvack.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 03:43:26PM -0400, Benjamin LaHaise wrote:
-> On Thu, May 17, 2007 at 01:39:54PM -0600, Matthew Wilcox wrote:
-> > On Fri, May 18, 2007 at 12:34:40AM +0530, Satyam Sharma wrote:
-> > > Hmmm, actually those other users could easily write and maintain
-> > > a 20-line patch that does the wait for async scans thing for them
-> > > using /proc/scsi/scsi in any case.
-> > 
-> > How about the three users who're bothered by this extra module being
-> > built maintain a one-line patch to Kconfig and leave well enough alone?
-> 
-> The module has an added bonus that it doesn't require any new tools to 
-> make work.  Doing it via sysfs/procfs means a new rev of whatever tool 
-> generates the boot initrd, plus fixing up boot scripts.  Loading a module 
-> can be done via a simple option to the existing boot tools.
+On Thu, 17 May 2007, Tomas Carnecky wrote:
 
-That was what James and I thought.  However, the distros seem unhappy
-with it.  Of course, they won't actually *comment* on it, they just
-disable the async scan and won't talk about why.
+> Additional info: HID device has two collections (whatever those are, I
+> have _no_ idea):
 
-What's the point of this kernel-packagers list if not this kind of issue?
+If you are interested what usages and collections are (and if you are 
+going to write the support for this device, you probably are :) ), please 
+see http://www.usb.org/developers/hidpage - namely
+http://www.usb.org/developers/devclass_docs/HID1_11.pdf and possibly also 
+http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
+
+> The culprit is the IS_INPUT_APPLICATION() macro, which only accepts 
+> certain 'usage' types. Should it also accept this particular one, too, 
+> or even the whole 'Telephony' group? Or maybe add a (configurable) 
+> 'quirk' to enable the GameVoice device?
+
+We don't want neither the 'Telephony' nor 'LEDs' usages to be claimed by 
+the hid-input system, that seems to make a little sense. 
+
+So either the device is bogus and has broken report descriptor (which we 
+could fix in runtime), or it really can't be handled by hid-input (I have 
+no idea about the purpose and internal working of the device in question, 
+sorry).
+
+Either we can fix the hiddev_connect() so that the device would be claimed 
+by hiddev (*) and you can write the driver for this device easily in 
+userland, or you could try to write generic in-kernel hid-telephony.c 
+handler of all telephony devices (but I doubt this is doable in a 
+reasonable way).
+
+(*) I currently have no idea why this device is not claimed by hiddev 
+though - it seems to have all collections of type 
+HID_COLLECTION_APPLICATION which obviously are not IS_INPUT_APPLICATION() 
+... could you please put debugging output into hiddev_connect() to examine 
+why your device is not being claimed by hiddev?
+
+Thanks,
+
+-- 
+Jiri Kosina
