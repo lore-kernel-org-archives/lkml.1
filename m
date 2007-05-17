@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbXEQVcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbXEQVdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760767AbXEQVcH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 17:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXEQVb4
+	id S1761204AbXEQVdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 17:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbXEQVdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 17:31:56 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:39191 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754892AbXEQVb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 17:31:56 -0400
-Date: Thu, 17 May 2007 23:31:53 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Tomas Carnecky <tom@dbservice.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: SideWinder GameVoice driver
-In-Reply-To: <464CA34F.8090509@dbservice.com>
-Message-ID: <Pine.LNX.4.64.0705172309240.27422@twin.jikos.cz>
-References: <464C5FAC.8060609@dbservice.com> <Pine.LNX.4.64.0705171623280.27422@twin.jikos.cz>
- <464C708C.6090808@dbservice.com> <464CA34F.8090509@dbservice.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 17 May 2007 17:33:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52306
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754972AbXEQVdc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 17:33:32 -0400
+Date: Thu, 17 May 2007 14:33:34 -0700 (PDT)
+Message-Id: <20070517.143334.38710608.davem@davemloft.net>
+To: dmitry.torokhov@gmail.com
+Cc: viro@ftp.linux.org.uk, akpm@linux-foundation.org, dedekind@infradead.org,
+       linux-kernel@vger.kernel.org, hch@lst.de
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <d120d5000705171414u55af4c03m6e6d2fbcf982e3ff@mail.gmail.com>
+References: <20070517102931.6bbbad1a.akpm@linux-foundation.org>
+	<20070517204234.GR4095@ftp.linux.org.uk>
+	<d120d5000705171414u55af4c03m6e6d2fbcf982e3ff@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007, Tomas Carnecky wrote:
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Date: Thu, 17 May 2007 17:14:26 -0400
 
-> Additional info: HID device has two collections (whatever those are, I
-> have _no_ idea):
+> On 5/17/07, Al Viro <viro@ftp.linux.org.uk> wrote:
+> >
+> > Ahem...  So what does
+> >        x |= y;
+> > turns into with that approach?
+> 
+> Do we want to do such kind of operations on endian-annotated data? I'd
+> imagine you want to convert ot host-endianess first anyway.
 
-If you are interested what usages and collections are (and if you are 
-going to write the support for this device, you probably are :) ), please 
-see http://www.usb.org/developers/hidpage - namely
-http://www.usb.org/developers/devclass_docs/HID1_11.pdf and possibly also 
-http://www.usb.org/developers/devclass_docs/Hut1_12.pdf
-
-> The culprit is the IS_INPUT_APPLICATION() macro, which only accepts 
-> certain 'usage' types. Should it also accept this particular one, too, 
-> or even the whole 'Telephony' group? Or maybe add a (configurable) 
-> 'quirk' to enable the GameVoice device?
-
-We don't want neither the 'Telephony' nor 'LEDs' usages to be claimed by 
-the hid-input system, that seems to make a little sense. 
-
-So either the device is bogus and has broken report descriptor (which we 
-could fix in runtime), or it really can't be handled by hid-input (I have 
-no idea about the purpose and internal working of the device in question, 
-sorry).
-
-Either we can fix the hiddev_connect() so that the device would be claimed 
-by hiddev (*) and you can write the driver for this device easily in 
-userland, or you could try to write generic in-kernel hid-telephony.c 
-handler of all telephony devices (but I doubt this is doable in a 
-reasonable way).
-
-(*) I currently have no idea why this device is not claimed by hiddev 
-though - it seems to have all collections of type 
-HID_COLLECTION_APPLICATION which obviously are not IS_INPUT_APPLICATION() 
-... could you please put debugging output into hiddev_connect() to examine 
-why your device is not being claimed by hiddev?
-
-Thanks,
-
--- 
-Jiri Kosina
+Generally you don't, if 'x' and 'y' are both in the needed
+endinaness already, there is no reason to convert anything.
