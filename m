@@ -1,59 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbXEQScY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758790AbXEQSdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbXEQScY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 14:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXEQScR
+	id S1758790AbXEQSdF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 14:33:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXEQScz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 14:32:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57016 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753886AbXEQScQ (ORCPT
+	Thu, 17 May 2007 14:32:55 -0400
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:52382 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbXEQScy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 14:32:16 -0400
-Date: Thu, 17 May 2007 11:23:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
-       Kirill Korotaev <dev@sw.ru>, devel@openvz.org,
-       Linux Containers <containers@lists.osdl.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: RSS controller v2 Test results (lmbench )
-Message-Id: <20070517112357.7adc4763.akpm@linux-foundation.org>
-In-Reply-To: <464C95D4.7070806@linux.vnet.ibm.com>
-References: <464C95D4.7070806@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 17 May 2007 14:32:54 -0400
+X-IronPort-AV: i="4.14,549,1170662400"; 
+   d="scan'208"; a="1245947:sNHT17292774"
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       openib-general@openib.org, raisch@de.ibm.com
+Subject: Re: [PATCH 2.6.22] ehca: return proper error code if register_mr fails
+X-Message-Flag: Warning: May contain useful information
+References: <200705161450.55848.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 17 May 2007 11:32:52 -0700
+In-Reply-To: <200705161450.55848.hnguyen@linux.vnet.ibm.com> (Hoang-Nam Nguyen's message of "Wed, 16 May 2007 14:50:55 +0200")
+Message-ID: <adar6pfjo6j.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 17 May 2007 18:32:52.0327 (UTC) FILETIME=[C7468770:01C798B1]
+Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim7002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007 23:20:12 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> A meaningful container size does not hamper performance. I am in the process
-> of getting more results (with varying container sizes). Please let me know
-> what you think of the results? Would you like to see different benchmarks/
-> tests/configuration results?
-> 
-> Any feedback, suggestions to move this work forward towards identifying
-> and correcting bottlenecks or to help improve it is highly appreciated.
-
-<wakes up>
-
-Memory reclaim tends not to consume much CPU.  Because in steady state it
-tends to be the case that the memory reclaim rate (and hopefully the
-scanning rate) is equal to the disk IO rate.
-
-Often the most successful way to identify performance problems in there is
-by careful code inspection followed by development of exploits.
-
-Is this RSS controller built on Paul's stuff, or is it standalone?
-
-Where do we stand on all of this now anyway?  I was thinking of getting Paul's
-changes into -mm soon, see what sort of calamities that brings about.
-
+thanks, applied
