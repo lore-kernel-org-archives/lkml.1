@@ -1,192 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbXEQUP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbXEQUPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760895AbXEQUP0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 16:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbXEQUPP
+	id S1757126AbXEQUPv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 16:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbXEQUPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 16:15:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:53500 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754377AbXEQUPN (ORCPT
+	Thu, 17 May 2007 16:15:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33093 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757552AbXEQUPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 16:15:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=IUZs/kf64sPrUC1rkKtQirmZ9UNbRbsU9sN2sNka70MTP5XALdkOJeGIk5JCVgj+HUgyFgS+dmLNIu3TzsMmoCaTFmEYQzd1mHMkSlCIOcI7tdZnPIxtRBjT5wFiCKh1Iy6vi6MmTXCOoFzM+dM4t1Uk4FT8yuLgC/dCr3Y6P3k=
-Message-ID: <464CB7C9.2080807@gmail.com>
-Date: Thu, 17 May 2007 22:15:05 +0200
-From: Robert de Rooy <robert.de.rooy@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, alan@redhat.com, bzolnier@gmail.com
-CC: jgarzik@pobox.com
-Subject: libata and legacy ide pcmcia failure
-References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com>
-In-Reply-To: <464C1575.8070005@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 May 2007 16:15:43 -0400
+Date: Thu, 17 May 2007 13:12:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Peer Chen" <pchen@nvidia.com>
+Cc: <linux-kernel@vger.kernel.org>, "Jeff Garzik" <jeff@garzik.org>,
+       "Robert Hancock" <hancockr@shaw.ca>, "Kuan Luo" <kluo@nvidia.com>
+Subject: Re: [PATCH] drivers/ata: Add the SW NCQ support to sata_nv for
+ MCP51/MCP55/MCP61
+Message-Id: <20070517131235.8f9445cc.akpm@linux-foundation.org>
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B13F197C0@hkemmail01.nvidia.com>
+References: <15F501D1A78BD343BE8F4D8DB854566B13CD8F45@hkemmail01.nvidia.com>
+	<464A94D7.30300@garzik.org>
+	<15F501D1A78BD343BE8F4D8DB854566B13F197C0@hkemmail01.nvidia.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I tried 2.6.22rc1-git5 with both the libata pcmcia and the legacy ide 
-pcmcia support, both failed as can be seen below...
+On Thu, 17 May 2007 18:15:45 +0800
+"Peer Chen" <pchen@nvidia.com> wrote:
 
-Linux localhost.localdomain 2.6.22-rc1-git5 #5 SMP Thu May 17 21:23:42 
-CEST 2007 i686 i686 i386 GNU/Linux
+>  Add the Software NCQ support to sata_nv.c for MCP51/MCP55/MCP61 SATA
+> controller.
+> 
+> This patch base on sata_nv.c file from kernel 2.6.22-rc1
+> 
+> See attachment for the patch.
+> 
+> Signed-off-by: Kuan Luo <kluo@nvidia.com>
+> Signed-off-by: Peer Chen <pchen@nvidia.com>
 
-** libata **
-May 17 21:55:06 localhost kernel: pccard: PCMCIA card inserted into slot 0
-May 17 21:55:06 localhost kernel: cs: memory probe 
-0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
-May 17 21:55:06 localhost kernel: cs: memory probe 
-0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
-0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
-0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
-0xcfa00000-0xd01fffff
-May 17 21:55:06 localhost kernel: pcmcia: registering new device pcmcia0.0
-May 17 21:55:07 localhost kernel: scsi2 : pata_pcmcia
-May 17 21:55:07 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 ctl 
-0x0001410e bmdma 0x00000000 irq 0
-May 17 21:55:37 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 17 21:55:37 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-May 17 21:56:08 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 17 21:56:08 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-May 17 21:56:08 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
-May 17 21:56:18 localhost kernel: ata3: SRST failed (errno=-16)
-May 17 21:56:28 localhost kernel: ata3: SRST failed (errno=-16)
-May 17 21:56:58 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 17 21:56:58 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-May 17 21:56:59 localhost udevd-event[2653]: udev_rules_apply_format: 
-unknown format variable '$modalias'
+Please don't send patches as application/octet-stream attachments.  Inlined
+in the body is preferred, or at least text/plain attachments.
 
-** legacy ide **
-May 17 15:29:25 localhost kernel: pccard: PCMCIA card inserted into slot 0
-May 17 15:29:25 localhost kernel: cs: memory probe 
-0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
-May 17 15:29:25 localhost kernel: cs: memory probe 
-0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
-0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
-0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
-0xcfa00000-0xd01fffff
-May 17 15:29:25 localhost kernel: pcmcia: registering new device pcmcia0.0
-May 17 15:29:26 localhost kernel: hde: Memory Card Adapter, CFA DISK drive
-May 17 15:29:26 localhost kernel: ide2 at 0x4100-0x4107,0x410e on irq 3
-May 17 15:29:26 localhost kernel: hde: max request size: 128KiB
-May 17 15:29:26 localhost kernel: hde: 253696 sectors (129 MB) w/1KiB 
-Cache, CHS=991/16/16
-May 17 15:29:56 localhost kernel:  hde:<4>hde: lost interrupt
-May 17 15:30:26 localhost kernel: hde: lost interrupt
-May 17 15:31:06 localhost last message repeated 2 times
-May 17 15:32:36 localhost last message repeated 3 times
+The patch generates warnings:
 
-Robert de Rooy wrote:
-> I installed the LiveCD to a spare HDD, and updated to the latest 
-> kernel available.
-> The errors stayed the same, but they took much longer (it seems the 
-> timeouts changed).
->
-> Linux localhost.localdomain 2.6.21-1.3149.fc7 #1 SMP Fri May 11 
-> 12:12:11 EDT 2007 i686 i686 i386 GNU/Linux
->
-> May 16 23:10:42 localhost kernel: pccard: PCMCIA card inserted into 
-> slot 0
-> May 16 23:10:42 localhost kernel: cs: memory probe 
-> 0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
-> May 16 23:10:42 localhost kernel: cs: memory probe 
-> 0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
-> 0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
-> 0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
-> 0xcfa00000-0xd01fffff
-> May 16 23:10:42 localhost kernel: pcmcia: registering new device 
-> pcmcia0.0
-> May 16 23:10:42 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 
-> ctl 0x0001410e bmdma 0x00000000 irq 3
-> May 16 23:10:42 localhost kernel: scsi2 : pata_pcmcia
-> May 16 23:11:43 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-> May 16 23:11:43 localhost kernel: ata3.00: failed to IDENTIFY 
-> (INIT_DEV_PARAMS failed, err_mask=0x4)
-> May 16 23:12:44 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-> May 16 23:12:44 localhost kernel: ata3.00: failed to IDENTIFY 
-> (INIT_DEV_PARAMS failed, err_mask=0x4)
-> May 16 23:12:44 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
-> May 16 23:13:14 localhost kernel: ATA: abnormal status 0x82 on port 
-> 0x00014107
-> May 16 23:13:14 localhost kernel: ATA: abnormal status 0x82 on port 
-> 0x00014107
-> May 16 23:13:44 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-> May 16 23:13:44 localhost kernel: ata3.00: failed to IDENTIFY 
-> (INIT_DEV_PARAMS failed, err_mask=0x4)
->
-> Robert de Rooy wrote:
->> Hi,
->>
->> I tried Fedora 7t4 LiveCD on my ThinkPad T41 with a PCMCIA "Dazzle 
->> 4in1 Card Adapter", this adapter supports Sony Memorystick, MMC, SD 
->> and SmartMedia cards. The card had a 128MB Lexmark MemoryStick 
->> installed.
->>
->> Under windows the adapter works fine, but under Linux I got a bunch 
->> of errors in syslog as shown below...
->> I do not know if it works with the Linux legacy PCMCIA IDE driver.
->>
->> If I need to retrieve additional information or test something, 
->> please let me know.
->>
->> Linux localhost.localdomain 2.6.20-1.3104.fc7 #1 SMP Sat Apr 21 
->> 22:20:43 EDT 2007 i686 i686 i386 GNU/Linux
->>
->> Socket 0:
->>  product info: "                   ", "Memory Card Adapter", "", ""
->>  manfid: 0x0045, 0x0401
->>  function: 4 (fixed disk)
->>
->> May 14 21:46:24 localhost kernel: pccard: PCMCIA card inserted into 
->> slot 0
->> May 14 21:46:24 localhost kernel: cs: memory probe 
->> 0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
->> May 14 21:46:24 localhost kernel: cs: memory probe 
->> 0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
->> 0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
->> 0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
->> 0xcfa00000-0xd01fffff
->> May 14 21:46:24 localhost kernel: pcmcia: registering new device 
->> pcmcia0.0
->> May 14 21:46:25 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 
->> ctl 0x0001410e bmdma 0x00000000 irq 3
->> May 14 21:46:25 localhost kernel: scsi3 : pata_pcmcia
->> May 14 21:46:25 localhost kernel: ATA: abnormal status 0x80 on port 
->> 0x00014107
->> May 14 21:46:25 localhost kernel: ATA: abnormal status 0x80 on port 
->> 0x00014107
->> May 14 21:46:55 localhost kernel: ata3.00: qc timeout (cmd 0x91)
->> May 14 21:46:55 localhost kernel: ata3.00: failed to IDENTIFY 
->> (INIT_DEV_PARAMS failed, err_mask=0x4)
->> May 14 21:46:56 localhost kernel: ATA: abnormal status 0x80 on port 
->> 0x00014107
->> May 14 21:46:56 localhost kernel: ATA: abnormal status 0x80 on port 
->> 0x00014107
->> May 14 21:47:26 localhost kernel: ata3.00: qc timeout (cmd 0x91)
->> May 14 21:47:26 localhost kernel: ata3.00: failed to IDENTIFY 
->> (INIT_DEV_PARAMS failed, err_mask=0x4)
->> May 14 21:47:26 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
->> May 14 21:47:26 localhost kernel: ATA: abnormal status 0x80 on port 
->> 0x00014107
->> May 14 21:47:26 localhost kernel: ATA: abnormal status 0x80 on port 
->> 0x00014107
->> May 14 21:47:56 localhost kernel: ata3.00: qc timeout (cmd 0x91)
->> May 14 21:47:56 localhost kernel: ata3.00: failed to IDENTIFY 
->> (INIT_DEV_PARAMS failed, err_mask=0x4)
->> May 14 21:47:57 localhost kernel: ATA: abnormal status 0x80 on port 
->> 0x00014107
->> May 14 21:47:57 localhost udevd-event[3946]: udev_rules_apply_format: 
->> unknown format variable '$modalias'
->>
->>
->>
->
->
+drivers/ata/sata_nv.c:2118: warning: cast from pointer to integer of different size
+drivers/ata/sata_nv.c:2118: warning: cast to pointer from integer of different size
+
+due to some quite suspicious-looknig code:
+
+        prd = (struct ata_prd*)((u64)pp->prd + ATA_PRD_TBL_SZ*qc->tag);
+
+we have
+
+struct ata_prd {
+	        u32                     addr;
+	        u32                     flags_len;
+};
+
+and the code is casting a pointer to this into a pointer to u64, then
+adding stuff to it, then casting it back to the correct type.
+
+Can't we simply do this?
+
+--- a/drivers/ata/sata_nv.c~drivers-ata-add-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61-fix
++++ a/drivers/ata/sata_nv.c
+@@ -2115,7 +2115,7 @@ static void nv_fill_sg(struct ata_queued
+ 	WARN_ON(qc->__sg == NULL);
+ 	WARN_ON(qc->n_elem == 0 && qc->pad_len == 0);
+ 
+-	prd = (struct ata_prd*)((u64)pp->prd + ATA_PRD_TBL_SZ*qc->tag);
++	prd = pp->prd + ATA_PRD_TBL_SZ*qc->tag;
+ 
+ 	idx = 0;
+ 	ata_for_each_sg(sg, qc) {
+_
+
+
+Also, please please please do not do this:
+
+static void nv_fill_sg(struct ata_queued_cmd *qc)
+{
+	struct ata_port *ap = qc->ap;
+	struct scatterlist *sg;
+	unsigned int idx;
+
+	struct nv_port_priv *pp = ap->private_data;
+
+	struct ata_prd *prd;
+
+	WARN_ON(qc->__sg == NULL);
+	WARN_ON(qc->n_elem == 0 && qc->pad_len == 0);
+
+
+the random meaningless blank lines between the definitions of the local
+variables makes it quite hard to read the code.  I actually had to do a
+text search to find the definition of "pp" because that trick hid it so
+well.
+
+Your patch added tremendous amounts of new trailing whitespace.
+
+One function was indented an extra tabstop.
+
+Some whitespace was broken.
+
+
+
+
+diff -puN drivers/ata/sata_nv.c~drivers-ata-add-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61-fix-tidy drivers/ata/sata_nv.c
+--- a/drivers/ata/sata_nv.c~drivers-ata-add-sw-ncq-support-to-sata_nv-for-mcp51-mcp55-mcp61-fix-tidy
++++ a/drivers/ata/sata_nv.c
+@@ -2107,9 +2107,7 @@ static void nv_fill_sg(struct ata_queued
+ 	struct ata_port *ap = qc->ap;
+ 	struct scatterlist *sg;
+ 	unsigned int idx;
+-
+ 	struct nv_port_priv *pp = ap->private_data;
+-
+ 	struct ata_prd *prd;
+ 
+ 	WARN_ON(qc->__sg == NULL);
+@@ -2194,11 +2192,10 @@ static unsigned int nv_qc_issue_prot(str
+ {
+ 	struct ata_port *ap = qc->ap;
+ 	struct nv_port_priv *pp = ap->private_data;
+-
+ 	struct ata_taskfile	*tf = &(qc->tf);
+ 	struct ata_taskfile *ttf, rtf;
+-
+ 	u32 fis, stat0, stat1;
++
+ 	ttf = &rtf;
+ 
+ 	if (qc->tf.protocol != ATA_PROT_NCQ)
+@@ -2338,32 +2335,29 @@ static void fis_dump(struct ata_port *ap
+ 
+ void ncq_hotplug(struct ata_port *ap, u32 fis)
+ {
++	u32 serror;
++	struct ata_eh_info *ehi = &ap->eh_info;
+ 
+-		u32 serror;
+-		struct ata_eh_info *ehi = &ap->eh_info;
++	ata_ehi_clear_desc(ehi);
+ 
+-		ata_ehi_clear_desc(ehi);
+-
+-		/* AHCI needs SError cleared; otherwise, it might lock up */
+-		sata_scr_read(ap, SCR_ERROR, &serror);
+-		sata_scr_write(ap, SCR_ERROR, serror);
++	/* AHCI needs SError cleared; otherwise, it might lock up */
++	sata_scr_read(ap, SCR_ERROR, &serror);
++	sata_scr_write(ap, SCR_ERROR, serror);
+ 
+-		/* analyze @irq_stat */
+-		ata_ehi_push_desc(ehi, "fis_stat 0x%08x", fis);
++	/* analyze @irq_stat */
++	ata_ehi_push_desc(ehi, "fis_stat 0x%08x", fis);
+ 
+-		ata_ehi_hotplugged(ehi);
++	ata_ehi_hotplugged(ehi);
+ 
+-		/* okay, let's hand over to EH */
+-		ehi->serror |= serror;
++	/* okay, let's hand over to EH */
++	ehi->serror |= serror;
+ 
+-		ata_port_freeze(ap);
++	ata_port_freeze(ap);
+ }
+ 
+-
+ static int ncq_interrupt(struct ata_port *ap, u32 fis)
+ {
+ 	struct nv_port_priv *pp = ap->private_data;
+-
+ 	u32 rc = 0;
+ 	u32 tag;
+ 	u8 ata_stat;
+@@ -2371,7 +2365,6 @@ static int ncq_interrupt(struct ata_port
+ 	if (!fis)
+ 		return 0;
+ 
+-
+ 	ata_stat = ap->ops->check_status(ap);
+ 
+ 	ap->ops->irq_clear(ap); /* clear bm irq */
+@@ -2398,7 +2391,7 @@ static int ncq_interrupt(struct ata_port
+ 		set_back_byte(pp, pp->current_tag);
+ 		NPRINTK("BACK OUT FIS:%x \n", fis);
+ 		rc = 1;
+-	 } /* first handle back out */
++	} /* first handle back out */
+ 
+ 	if (fis & NV_INT_SDBFIS_MCP55) {
+ 		pp->ops->clear_singlefis(ap, NV_INT_SDBFIS_MCP55 | NV_INT_DEV_MCP55);
+_
 
