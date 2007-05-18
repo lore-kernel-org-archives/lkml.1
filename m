@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbXERSGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761182AbXERSJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760883AbXERSGB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbXERSFz
+	id S1761182AbXERSJd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbXERSJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:05:55 -0400
-Received: from www.osadl.org ([213.239.205.134]:34210 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752403AbXERSFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 14:05:54 -0400
-Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: AT91/AT32 LCD
-	Controller framebuffer driver
-From: Jan Altenberg <jan.altenberg@linutronix.de>
-To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       Andrew Victor <andrew@sanpeople.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-In-Reply-To: <4641E1E2.6040808@rfo.atmel.com>
-References: <463F3388.7020102@rfo.atmel.com>
-	 <1178574017.4674.30.camel@daplas>  <4641E1E2.6040808@rfo.atmel.com>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 20:05:31 +0200
-Message-Id: <1179511541.3811.16.camel@bender>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 18 May 2007 14:09:27 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:31459 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100AbXERSJ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 14:09:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZSWF02QQWGvvsKLrV4bQwTN03OKGWluVP6X8SFKKZqK2tXLWwzIzXb4XYI8nDQu8fqgQmQCVE5eb172QsWIJFJtJ/lnKv6/aDT7s9I1n57MmKDHvrAd0PYg6hM/3eUxgWHuJMzkxAqP5rZeklTvHqyyxGZVrqNlNGojtLGBQuzs=
+Message-ID: <86802c440705181109h458232a1rd85f3794cffa3ff1@mail.gmail.com>
+Date: Fri, 18 May 2007 11:09:25 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu, ak@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Zou, Nanhai" <nanhai.zou@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Packard, Keith" <keith.packard@intel.com>
+In-Reply-To: <m1abw2105a.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070517230324.GB8089@linux-os.sc.intel.com>
+	 <m1ejlf0y96.fsf@ebiederm.dsl.xmission.com>
+	 <20070518010119.GB12088@linux-os.sc.intel.com>
+	 <m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440705181030m6d72edf6w87749275c46c7c93@mail.gmail.com>
+	 <m1abw2105a.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nicolas,
+On 5/18/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> We can solve the problem without doing that, and keeping the same
+> vector number during migration keeps x86 from scaling.
 
-> +	info->fix.line_length = info->var.xres_virtual * (info->var.bits_per_pixel / 8);
+I mean ioapic level irq couls be limited. new device could use MSI or
+HT irq directly and less irq routing problem.
 
-line_length will always be 0 for bits_per_pixel < 8.
+> Personally I would prefer to disallow irq migration.
+? typo?
+For amd platform with different hypertransport chain on different
+nodes, irq migration is needed.
 
-	Jan
-
+YH
