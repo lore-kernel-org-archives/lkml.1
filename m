@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbXERUtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbXERU4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbXERUtx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 16:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXERUtp
+	id S1755603AbXERU4x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 16:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXERU4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 16:49:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38488 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257AbXERUtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 16:49:43 -0400
-Message-ID: <464E110A.30701@redhat.com>
-Date: Fri, 18 May 2007 16:48:10 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 18 May 2007 16:56:46 -0400
+Received: from cmsout02.mbox.net ([165.212.64.32]:61092 "EHLO
+	cmsout02.mbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbXERU4p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 16:56:45 -0400
+X-Greylist: delayed 566 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 May 2007 16:56:45 EDT
+X-USANET-Source: 165.212.11.138  IN   avcp-lkmail@usa.net cmsapps02.cms.usa.net
+X-USANET-MsgId: XID855LeRuvR8165X02
+X-USANET-Auth: 205.247.13.101  AUTH codepro@usa.net MUMBA
+From: "Alex Volkov" <avcp-lkmail@usa.net>
+To: "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Jeff Garzik'" <jeff@garzik.org>
+Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: RE: aio is unlikely
+Date: Fri, 18 May 2007 16:49:49 -0400
+Message-ID: <058f01c7998e$1406e370$650df7cd@MUMBA>
 MIME-Version: 1.0
-To: Luca Tettamanti <kronos.it@gmail.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot - crypto?
-References: <d1af83620705100410n482f4f9h428b7cab5501d963@mail.gmail.com> <20070514173823.GA7137@dreamland.darkstar.lan> <20070515014344.GA8850@gondor.apana.org.au> <20070515185212.GA18783@dreamland.darkstar.lan> <20070518031931.GA13048@gondor.apana.org.au> <68676e00705180509s64b737e2k37c5b2e713c96932@mail.gmail.com> <20070518131455.GA20918@gondor.apana.org.au> <20070518191645.GA10815@dreamland.darkstar.lan>
-In-Reply-To: <20070518191645.GA10815@dreamland.darkstar.lan>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <20070509151831.f5956b66.akpm@linux-foundation.org>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Thread-Index: AceSiCxQRdhLuphwRQKb3UJVSUO6yQHBHi1Q
+Z-USANET-MsgId: XID813LeRuvP0129X38
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luca Tettamanti wrote:
-> Il Fri, May 18, 2007 at 11:14:55PM +1000, Herbert Xu ha scritto: 
->> On Fri, May 18, 2007 at 02:09:54PM +0200, Luca wrote:
->>> Well, pretty sure. The OOPS says 2.6.22-rc1-libata-g705962cc-dirty,
->>> git agrees and I've done a full rebuild. The .config is generated
->>> using 'make oldconfig' using the 2.6.21 as baseline, maybe ALGAPI is
->>> coming from there?
->> Sorry, my mistake.  That bug only happens if you have padlock turned on.
->>
->> Anyway, if possible could you post the complete dmesg when it crashes?
->> I'd like to see what has happened up to the point where it crashes.
-> 
-> Output from serial console is enlightening (sort of...):
-> 
-> Loading IPsec SA/SP database from /etc/ipsec-tools.conf: BUG: unable to
-> handle kernel paging request at virtual address 6b6b6ceb printing eip:
-> b0141aef
-> [oops]
-> 
 
-module_put() is trying to decrease the refcount of a module that's
-already been freed, AFAICT.
+Andrew Morton wrote:
+>     aio is unlikely
+>     Stick an unlikely() around is_aio(): I assert that most IO is
+synchronous.
+>
+> -#define in_aio() !is_sync_wait(current->io_wait)
+> +#define in_aio() (unlikely(!is_sync_wait(current->io_wait)))
+
+> Jeff Garzik <jeff@garzik.org> wrote:
+> 
+> > > -#define in_aio() !is_sync_wait(current->io_wait)
+> > > +#define in_aio() (unlikely(!is_sync_wait(current->io_wait)))
+> > 
+> > Please revert.  Workload-dependent "likelihood" should not cause 
+> > programmers to add such markers.
+> a) disagree with the above
+> 
+> b) if in_aio() ever returns true we do
+> 
+> 	printk(KERN_ERR "%s(%s:%d) called in async context!\n",
+> 		__FUNCTION__, __FILE__, __LINE__);
+> 
+>    so I sure hope it's unlikely for all workloads. 
+
+Shouldn't unlikely() go where in_aio() is actually used, if we printk(error)
+there?
+Isn't putting likely/unlikely into a boolean function-like macro itself
+asking for later trouble?
+
+--Alex.
+
 
