@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759376AbXERToi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762859AbXERTpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759376AbXERToi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 15:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110AbXERTob
+	id S1762859AbXERTpM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 15:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759958AbXERTo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 15:44:31 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35945 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754964AbXERToa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 15:44:30 -0400
-Date: Fri, 18 May 2007 12:44:28 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Frank Sorenson <frank@tuxrocks.com>
-cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alistair John Strachan <s0348365@sms.ed.ac.uk>
-Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v5
-In-Reply-To: <464D23CC.1040906@tuxrocks.com>
-Message-ID: <Pine.LNX.4.64.0705181242520.12983@schroedinger.engr.sgi.com>
-References: <1178485128.31213.98.camel@localhost.localdomain>
- <1179309789.3764.20.camel@chaos> <464B5FF7.5070701@tuxrocks.com>
- <464BD945.2070007@tuxrocks.com> <464CA90B.20100@tuxrocks.com>
- <Pine.LNX.4.64.0705171219140.3043@schroedinger.engr.sgi.com>
- <464D23CC.1040906@tuxrocks.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 May 2007 15:44:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51197 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754964AbXERTo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 15:44:57 -0400
+Date: Fri, 18 May 2007 15:44:44 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Henry Su <henry.su@amd.com>, alan@lxorguk.ukuu.org.uk, greg@kroah.com,
+       bzolnier@gmail.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, xiaosuzi520@hotmail.com
+Subject: Re: [patch] Add the device IDs for AMD/ATI SB700
+Message-ID: <20070518194444.GA27229@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jeff Garzik <jeff@garzik.org>, Henry Su <henry.su@amd.com>,
+	alan@lxorguk.ukuu.org.uk, greg@kroah.com, bzolnier@gmail.com,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+	xiaosuzi520@hotmail.com
+References: <FFECF24D2A7F6D418B9511AF6F3586020197F6A6@shacnexch2.atitech.com> <4641C066.8080100@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4641C066.8080100@garzik.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007, Frank Sorenson wrote:
+On Wed, May 09, 2007 at 08:36:54AM -0400, Jeff Garzik wrote:
+ > Henry Su wrote:
+ > > From: henry.su@amd.com
+ > > Adding the device ID for AMD/ATI SB700.
+ > > Signed-off-by:henry su <henry.su@amd.com>
+ > 
+ > Time to train new people...
+ > 
+ > You need to split up your patches:
+ > * send I2C and PCI quirk patches to GregKH
+ > * send drivers/ide/* stuff to Bart
+ > * send drivers/ata/* patches to me
 
-> > Please boot with slub_debug.
-> 
-> No debugging output at all.  Still hangs with only:
-> 	Kernel alive
-> 	Kernel direct mapping tables up to 100000000 @ 8000-d000
+Additionally, these patches seem to be hurrendously MIME damaged.
+patch(1) sees this..
 
-Hmmmm..... No other output? Could it be that early console output is not 
-available? Try earlyprintk=xx? Try another platform that has working early 
-printk support (x86_64 seems broken to me)?
+diff -Nur linux-2.6.21.1.orig/include/linux/pci+AF8-ids.h linux-2.6.21.1/include/linux/pci+AF8-ids.h
+--- linux-2.6.21.1.orig/include/linux/pci+AF8-ids.h 2007-05-16 13:28:54.405386000 +-0800
++-+-+- linux-2.6.21.1/include/linux/pci+AF8-ids.h      2007-05-16 13:45:29.936636000 +-0800
++AEAAQA- -371,6 +-371,9 +AEAAQA-
++ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-SRAID 0x4381
++ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-SMBUS 0x4385
++ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-IDE   0x438c
++-+ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-SATA  0x4390
++-+ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-SMBUS 0x4395
++-+ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-IDE   0x439c
 
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
