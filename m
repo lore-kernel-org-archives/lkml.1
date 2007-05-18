@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbXERFF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbXERFMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758788AbXERFF4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 01:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755179AbXERFFs
+	id S1759504AbXERFMz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 01:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbXERFMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 01:05:48 -0400
-Received: from gate.crashing.org ([63.228.1.57]:56038 "EHLO gate.crashing.org"
+	Fri, 18 May 2007 01:12:47 -0400
+Received: from ns.suse.de ([195.135.220.2]:55877 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755107AbXERFFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 01:05:48 -0400
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	 <f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
-	 <464CB071.5050504@ru.mvista.com>
-	 <9095839480a9686d9c40aa6143edb804@kernel.crashing.org>
-	 <464CB460.40905@ru.mvista.com>
-	 <97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 15:04:49 +1000
-Message-Id: <1179464690.32247.370.camel@localhost.localdomain>
+	id S1755050AbXERFMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 01:12:46 -0400
+Date: Fri, 18 May 2007 07:12:38 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070518051238.GA7696@wotan.suse.de>
+References: <20070518040854.GA15654@wotan.suse.de> <20070517.214740.51856086.davem@davemloft.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070517.214740.51856086.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
+On Thu, May 17, 2007 at 09:47:40PM -0700, David Miller wrote:
+> From: Nick Piggin <npiggin@suse.de>
+> Date: Fri, 18 May 2007 06:08:54 +0200
 > 
-> Yes, on some implementations there can be other conditions that
-> make a decrementer exception go away; there is no contradiction
-> here (thankfully).  My wording was sloppy.
+> > I'd like to be the first to propose an increase to the size of struct page
+> > just for the sake of increasing it!
+> > 
+> > If we add 8 bytes to struct page on 64-bit machines, it becomes 64 bytes,
+> > which is quite a nice number for cache purposes.
+> > 
+> > However we don't have to let those 8 bytes go to waste: we can use them
+> > to store the virtual address of the page, which kind of makes sense for
+> > 64-bit, because they can likely to use complicated memory models.
+> > 
+> > I'd say all up this is going to decrease overall cache footprint in 
+> > fastpaths, both by reducing text and data footprint of page_address and
+> > related operations, and by reducing cacheline footprint of most batched
+> > operations on struct pages.
+> > 
+> > Flame away :)
+> 
+> I've toyed with this several times on sparc64, and in my experience
+> the extra memory reference on page->virtual costs on average about the
+> same as the non-power-of-2 pointer arithmetic.
 
-Some CPUs have the DEC exceptions basically edge triggered (yeah I know
-it sucks). That's why, among others, the IRQ soft-disable code has code
-to re-trigger DEC exceptions ASAP (by setting it to 1.. note that we
-could probably use 0 here, we've been a bit conservative).
+Of course it is likely to be in the same cacheline, however if your L1
+cache latency or throughput simply isn't up to it, FLATMEM systems
+definitely could just not use ->virtual, but still add the extra padding
+in the struct page for performance reasons... then they get to use
+power-of-2 arithmetic to boot.
 
-Ben.
+The page->virtual thing is just a bonus (although have you seen what
+sort of hoops SPARSEMEM has to go through to find page_address?! It
+will definitely be a win on those architectures).
 
+ 
+> The decision is absolutely arbitrary performance wise, but if you
+> consider the memory wastage on enormous systems going without
+> page->virtual I think is clearly better.
+
+0.2% of memory, or 2MB per GB. But considering we already use 14MB per
+GB for the page structures, it isn't like I'm introducing an order of
+magnitude problem.
+
+The real benefit I see comes from cache footprint reduction of operations
+on struct page. Consider with a 64 byte cacheline and 56 byte struct page,
+then every 8 struct pages, 6 span 2 cachelines (75%). If you consider an
+operation like reclaim that uses first and last fields, and assume that
+pages are going to end up being random, then you're going to touch 75%
+more cachelines.  Ditto for allocating and freeing pages.
 
