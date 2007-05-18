@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763244AbXERSDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbXERSGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763244AbXERSDf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761958AbXERSDA
+	id S1760883AbXERSGB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbXERSFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:03:00 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50202 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761580AbXERSC7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 14:02:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu, ak@suse.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Zou, Nanhai" <nanhai.zou@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Packard, Keith" <keith.packard@intel.com>
-Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
-References: <20070517230324.GB8089@linux-os.sc.intel.com>
-	<m1ejlf0y96.fsf@ebiederm.dsl.xmission.com>
-	<20070518010119.GB12088@linux-os.sc.intel.com>
-	<m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
-	<86802c440705181030m6d72edf6w87749275c46c7c93@mail.gmail.com>
-Date: Fri, 18 May 2007 12:01:37 -0600
-In-Reply-To: <86802c440705181030m6d72edf6w87749275c46c7c93@mail.gmail.com>
-	(Yinghai Lu's message of "Fri, 18 May 2007 10:30:08 -0700")
-Message-ID: <m1abw2105a.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 May 2007 14:05:55 -0400
+Received: from www.osadl.org ([213.239.205.134]:34210 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752403AbXERSFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 14:05:54 -0400
+Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: AT91/AT32 LCD
+	Controller framebuffer driver
+From: Jan Altenberg <jan.altenberg@linutronix.de>
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       Andrew Victor <andrew@sanpeople.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
+In-Reply-To: <4641E1E2.6040808@rfo.atmel.com>
+References: <463F3388.7020102@rfo.atmel.com>
+	 <1178574017.4674.30.camel@daplas>  <4641E1E2.6040808@rfo.atmel.com>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 20:05:31 +0200
+Message-Id: <1179511541.3811.16.camel@bender>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+Hi Nicolas,
 
-> Eric,
->
-> ioapic_level irq is limited, So if we keep vector number not changed
-> when imgration to other cpus.  It that could help.
+> +	info->fix.line_length = info->var.xres_virtual * (info->var.bits_per_pixel / 8);
 
-We can solve the problem without doing that, and keeping the same
-vector number during migration keeps x86 from scaling.  Personally
-I would prefer to disallow irq migration.
+line_length will always be 0 for bits_per_pixel < 8.
 
-> it will need modify a little with assign_irq_vector and
-> irq_complete_move/smp_irq_move_cleanup_interrupt. because it assume
-> vector must be changed.
+	Jan
 
-Yes it does.
-
-Eric
