@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763525AbXERSMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763432AbXERSMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763525AbXERSMT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbXERSLY
+	id S1763432AbXERSMf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbXERSLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:11:24 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34559 "EHLO
+	Fri, 18 May 2007 14:11:25 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34562 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756264AbXERSLU (ORCPT
+	with ESMTP id S1756342AbXERSLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 May 2007 14:11:20 -0400
-Message-Id: <20070518181040.465335396@sgi.com>
+Message-Id: <20070518181119.764521535@sgi.com>
+References: <20070518181040.465335396@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 May 2007 11:10:40 -0700
+Date: Fri, 18 May 2007 11:10:45 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
 Cc: dgc@sgi.com
 Cc: Hugh Dickins <hugh@veritas.com>
-Subject: [patch 00/10] Slab defragmentation V2
+Subject: [patch 05/10] reiserfs: inode defragmentation support
+Content-Disposition: inline; filename=fs_reiser
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh: Could you have a look at this? There is lots of critical locking
-here....
+Add inode defrag support
 
-Support for Slab defragmentation and targeted reclaim. The current
-state of affairs is that a large portion of inode and dcache slab caches
-can be effectively reclaimed. The remaining problems are:
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-1. We cannot reclaim dentries / inodes that are in active use.
-   Probably inadvisable anyways and maybe impossible if we cannot track
-   down all the references to dentries. The active dentries / inodes are
-   usually only a small subset of the inode / dentries in the system.
+---
+ fs/reiserfs/super.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-2. Directory reclaim is an issue both for dentries and inodes. A solution
-   here may be complex. However, the majority of dentries and inodes are
-   *not* directories. So I think that we are fine even without being
-   able to reclaim slabs with directory entries in them. These slabs
-   will move to the head of the partial list and soon be filled up with
-   other entries. This means that the directory entries will tend to
-   aggregate over time in certain slabs.
-
-Slab defragmentation is performed during kmem_cache_shrink. This is usually
-triggered through the slab shrinkers but can also be manually triggered
-through the slabinfo command by running "slabinfo -s".
-
-Support is also provided for antifrag/defrag to evict a specific slab page
-through the kmem_cache_vacate function call.  Since we can now target the
-freeing of slab pages we may now be able to remove a page that hinders
-the freeing of a higher order page in the antifrag/defrag code.
-
-V1->V2
-- Clean up control flow using a state variable. Simplify API. Back to 2
-  functions that now take arrays of objects.
-- Inode defrag support for a set of filesystems
-- Fix up dentry defrag support to work on negative dentries by adding
-  a new dentry flag that indicates that a dentry is not in the process
-  of being freed or allocated.
+Index: slub/fs/reiserfs/super.c
+===================================================================
+--- slub.orig/fs/reiserfs/super.c	2007-05-18 00:54:30.000000000 -0700
++++ slub/fs/reiserfs/super.c	2007-05-18 00:57:12.000000000 -0700
+@@ -520,6 +520,17 @@ static void init_once(void *foo, struct 
+ #endif
+ }
+ 
++static void *reiserfs_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++			offsetof(struct reiserfs_inode_info, vfs_inode));
++}
++
++struct kmem_cache_ops reiserfs_kmem_cache_ops = {
++	.get = reiserfs_get_inodes,
++	.kick = kick_inodes
++};
++
+ static int init_inodecache(void)
+ {
+ 	reiserfs_inode_cachep = kmem_cache_create("reiser_inode_cache",
+@@ -527,7 +538,8 @@ static int init_inodecache(void)
+ 							 reiserfs_inode_info),
+ 						  0, (SLAB_RECLAIM_ACCOUNT|
+ 							SLAB_MEM_SPREAD),
+-						  init_once, NULL);
++						  init_once,
++						  &reiserfs_kmem_cache_ops);
+ 	if (reiserfs_inode_cachep == NULL)
+ 		return -ENOMEM;
+ 	return 0;
 
 -- 
