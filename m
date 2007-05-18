@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbXERDTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759812AbXERDYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760741AbXERDTq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 23:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbXERDTk
+	id S1759812AbXERDYY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 23:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbXERDYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 23:19:40 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3350 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755457AbXERDTk (ORCPT
+	Thu, 17 May 2007 23:24:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:54289 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753049AbXERDYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 23:19:40 -0400
-Date: Fri, 18 May 2007 13:19:31 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot - crypto?
-Message-ID: <20070518031931.GA13048@gondor.apana.org.au>
-References: <d1af83620705100410n482f4f9h428b7cab5501d963@mail.gmail.com> <20070514173823.GA7137@dreamland.darkstar.lan> <20070515014344.GA8850@gondor.apana.org.au> <20070515185212.GA18783@dreamland.darkstar.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 17 May 2007 23:24:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=qZNRnFc5b7de3h85uC1Kf1LyajV9lupYXDFTsCbQRQ0hYq9U0gpVAyE8om5wFKSIIvXSTg5hcUcNSejKuuVqgn/u1Po9YuBA5B+Vcr2oX9WxgIhLsLDnlZQpeii1mcYVJKPi5xQQK2cMrV+w7Oy71iBMrWsAZZT9LV6T4O02pQc=
+Message-ID: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
+Date: Thu, 17 May 2007 23:24:15 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: galak@kernel.crashing.org, tglx@linutronix.de, mingo@elte.hu,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       sshtylyov@ru.mvista.com
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070515185212.GA18783@dreamland.darkstar.lan>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 at 08:52:12PM +0200, Luca Tettamanti wrote:
+Sergei Shtylyov writes:
+> Kumar Gala wrote:
+>> [Sergei Shtylyov]
+>>> Kumar Gala wrote:
+
+>>>> I haven't looked at all the new clock/timer code, is there any
+>>>> utility in having support for more than one clock source?
+>>>
+>>> Of course, you may register as many as you like.
+>>
+>> Sure, but is there any utility in registering more than the
+>> decrementer on PPC?
 >
-> CONFIG_CRYPTO_ALGAPI=m
+> Not yet. I'm not sure I know any other PPC CPU facility fitting
+> for clockevents. In theory, FIT could be used -- but its period
+> is measured in powers of 2, IIRC.
 
-Are you sure you're actually running 2.6.22-rc1? Due to a bug
-in the padlock patch present in 2.6.22-rc1 it shouldn't be
-possible to select ALGAPI as a module.
+I'd really like to have that as an option. It would allow oprofile
+to safely use hardware events on the MPC74xx "G4" processors.
+Alternately it would allow thermal events. It is safe to use at
+most one of the three (decrementer,profiling,thermal) interrupts.
+If two were to hit at the same time, badness happens.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+It's possible to wrapper the interrupt in something that divides
+down, calling the normal code only some of the time. I think one
+of the FIT choices is about 4 kHz on my system, which would be OK.
+
+Full oprofile functionality would be wonderful.
