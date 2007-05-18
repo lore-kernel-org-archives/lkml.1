@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbXERNrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbXERNvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759461AbXERNrN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 09:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXERNrE
+	id S1757984AbXERNvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 09:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXERNvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 09:47:04 -0400
-Received: from h155.mvista.com ([63.81.120.155]:31217 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754522AbXERNrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 09:47:04 -0400
-Message-ID: <464DAEB2.8080703@ru.mvista.com>
-Date: Fri, 18 May 2007 17:48:34 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 18 May 2007 09:51:10 -0400
+Received: from ribosome.natur.cuni.cz ([195.113.57.20]:36225 "EHLO
+	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754522AbXERNvJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 09:51:09 -0400
+Date: Fri, 18 May 2007 15:51:08 +0200
+From: Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>
+To: Kalpak Shah <kalpak@linsyssoft.com>
+Cc: linux-kernel@vger.kernel.org, ext3-users@redhat.com
+Subject: Re: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted
+Message-ID: <20070518135108.GB14225@ribosome.natur.cuni.cz>
+References: <20070518090604.GA10841@ribosome.natur.cuni.cz> <1179488826.4305.3.camel@garfield.linsyssoft.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de,
-       Dave Liu <r63238@freescale.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>	<464CB071.5050504@ru.mvista.com>	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>	<464CB460.40905@ru.mvista.com>	<97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>	<1179464690.32247.370.camel@localhost.localdomain>	<1179466769.3658.0.camel@localhost.localdomain>	<1179472096.32247.394.camel@localhost.localdomain> <464DAD06.2060504@ru.mvista.com>
-In-Reply-To: <464DAD06.2060504@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179488826.4305.3.camel@garfield.linsyssoft.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Fri, May 18, 2007 at 05:17:06PM +0530, Kalpak Shah wrote:
+> On Fri, 2007-05-18 at 11:06 +0200, Martin Mokrejs wrote:
+> > Hi,
+> >   I just tried the 2.6.22-r1 candidate to test whether some bug I have 
+> > hit in the past still exists. I did use 2.6.20.6 so far. So, I have 
+> > cleanly rebooted to use the new kernel, after the machine came up I 
+> > tried to mess with the bug, and had to reboot again to play with kernel 
+> > commandline parameters. Unfortunately, on the next reboot fsck was 
+> > schedules on my filesystem after 38 clean mounts. :( And the problem 
+> > started. The fsck found some unused inodes, but probably did not know 
+> > where do they belong to, but it deleted them automagically. Finally, the 
+> > fsck died because it cannot fine some '..' entry.
+> > 
+> > /dev/hda3: Entry '..' in .../??? (5701636) has deleted/unused inode
+> > 5570561. CLEARED.
+> > Unconnected directory inode 5570567 (...)
+> > 
+> > /dev/hda3: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
+> >                   (i.e., without -a or -p options)
+> > 
+> 
+> This means that e2fsck has reached a point where it needs user
+> intervention. So you should not run e2fsck with -p, -a or -y options.
+> Look up the e2fsck man page for more on this.
 
->>>>>Yes, on some implementations there can be other conditions that
->>>>>make a decrementer exception go away; there is no contradiction
->>>>>here (thankfully).  My wording was sloppy.
-
->>>>Some CPUs have the DEC exceptions basically edge triggered (yeah I know
-
->>>for example?
-
->>>>it sucks). That's why, among others, the IRQ soft-disable code has code
->>>>to re-trigger DEC exceptions ASAP (by setting it to 1.. note that we
->>>>could probably use 0 here, we've been a bit conservative).
-
->     Yeah, the classic decrementer is programmed off-by-one.
-
->>I'm not 100% certain... Paulus thinks all the old 6xx are like that, and
->>maybe POWER4. If I look at the oldest BookIV I can find (the 601), it
-
->     From the "PowerPC Operating Environment Architecture" that I've already 
-> quoated t follows that POWER4-compatible decremented exception *must* be edge 
-> triggered.
-
-    ... and cleared when delivered.
-
->>says that an exception is generated when the MSB transitions from 0 to
->>1. It's not clear wether the exception sticks while that bit is 1 or is
->>indeed considered as an "edge" event that gets cleared as soon as
->>delivered.
-
-WBR, Sergei
+Yeah, stupid init.d script in Gentoo. I will report at Gentoo as well but
+how can I revert the changes? Can you say which directories were affected?
+Thanks,
+Martin
