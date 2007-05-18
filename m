@@ -1,316 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbXERKmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762495AbXERKmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759631AbXERKmQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 06:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbXERKmD
+	id S1762495AbXERKmb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 06:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760222AbXERKmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 06:42:03 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:35152 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754335AbXERKmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 06:42:00 -0400
-Date: Fri, 18 May 2007 12:42:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 05/14] all-archs: consolidate .data section definition in asm-generic
-Message-ID: <20070518104257.GA13811@uranus.ravnborg.org>
-References: <20070518065257.GE12284@uranus.ravnborg.org> <20070518.001604.23011298.davem@davemloft.net> <20070518094231.GA13390@uranus.ravnborg.org> <20070518.032126.93383845.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 May 2007 06:42:23 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:48041 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760186AbXERKmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 06:42:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=a2v28OGM1FTrAqF9WIpV9psYXn0KqpSBTJklEdy42aDvsQ64++gRxeP6SWCgOFCew4NhWlqTpTpe2ZJcZrW8MXd0kH9wp+zbZnItnlmOLviM8+6MWpE7GzFXcFY3HzfDLGX5w2dXViAeb1gKGL/4sokirFvFyfCTk8JPGCVIGtA=
+Message-ID: <84144f020705180342j4ff44d96iea5b73c23a69df0f@mail.gmail.com>
+Date: Fri, 18 May 2007 13:42:20 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Nitin Gupta" <nitingupta910@gmail.com>
+Subject: Re: [RFC] LZO1X de/compression support
+Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>
+In-Reply-To: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070518.032126.93383845.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
+X-Google-Sender-Auth: 9de73061853d8678
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 03:21:26AM -0700, David Miller wrote:
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Fri, 18 May 2007 11:42:31 +0200
-> 
-> > On Fri, May 18, 2007 at 12:16:04AM -0700, David Miller wrote:
-> > > 
-> > > Looking at these patches reminds me of a quirk in the generic
-> > > RODATA definition:
-> > > 
-> > > >  #define RODATA								\
-> > > >  	. = ALIGN(4096);						\
-> > > >  	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
-> > > 
-> > > It uses ALIGN(4096) which is likely supposed to be something
-> > > like ALIGN(PAGE_SIZE).  Perhaps we should handle this by
-> > > definiting a LD_PAGE_SIZE at the top of vmlinux.ld.S files
-> > > that need a value other than 4096, and define the default of
-> > > 4096 in asm-generic/vmlinux.lds.h?
-> > 
-> > I would much rather use PAGE_SIZE direct since we have access to that symbol.
-> 
-> I completely agree, that seems to be what platforms which have
-> a configurable page size such as powerpc, ia64, etc. are already
-> using in their vmlinux.lds.S files, and I'll likely follow suit on
-> sparc64. :-)
+On 5/18/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
+> +   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
 
-If you hold of a bit I would like to use sparc64 as template for
-a bit more consolidation.
-Most likely I will try to consolidate vmlinux.lds for sparc64 and ARM
-at the same time and then take the other arch's one by one.
+[snip]
 
-In the process the vmlinux.lds will start to use a consistent
-indenting like the following.
+So how about making that a little less verbose. Say like:
 
-Sample diff only on top of -linus.
-I will redo it when I have my current patch-set applied.
+Copyright (c) 1996-2005 Markus Franz Xaver and Johannes Oberhumer
 
-	Sam
+> +#define DX2(p,s1,s2) \
+> +       (((((size_t)((p)[2]) << (s2)) ^ (p)[1]) << (s1)) ^ (p)[0])
+> +#define DX3(p,s1,s2,s3) ((DX2((p)+1,s2,s3) << (s1)) ^ (p)[0])
+> +#define DMUL(a,b)      ((size_t) ((a) * (b)))
+> +#define DMS(v,s)       ((size_t) (((v) & (D_MASK >> (s))) << (s)))
+> +#define DM(v)          DMS(v,0)
+> +
+> +#define D_BITS         14
+> +#define DINDEX1(d,p)   d = DM(DMUL(0x21,DX3(p,5,5,6)) >> 5)
+> +#define DINDEX2(d,p)   d = (d & (D_MASK & 0x7ff)) ^ (D_HIGH | 0x1f)
+> +#define DENTRY(p,in)   (p)
 
-diff --git a/arch/sparc64/kernel/vmlinux.lds.S b/arch/sparc64/kernel/vmlinux.lds.S
-index 13fa2a2..e9469ea 100644
---- a/arch/sparc64/kernel/vmlinux.lds.S
-+++ b/arch/sparc64/kernel/vmlinux.lds.S
-@@ -9,105 +9,149 @@ ENTRY(_start)
- jiffies = jiffies_64;
- SECTIONS
- {
--  swapper_low_pmd_dir = 0x0000000000402000;
--  . = 0x4000;
--  .text 0x0000000000404000 :
--  {
--    _text = .;
--    *(.text)
--    SCHED_TEXT
--    LOCK_TEXT
--    KPROBES_TEXT
--    *(.gnu.warning)
--  } =0
--  _etext = .;
--  PROVIDE (etext = .);
--
--  RODATA
--
--  .data    :
--  {
--    *(.data)
--    CONSTRUCTORS
--  }
--  .data1   : { *(.data1) }
--  . = ALIGN(64);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
--  . = ALIGN(64);
--  .data.read_mostly : { *(.data.read_mostly) }
--  _edata  =  .;
--  PROVIDE (edata = .);
--  .fixup   : { *(.fixup) }
--
--  . = ALIGN(16);
--  __start___ex_table = .;
--  __ex_table : { *(__ex_table) }
--  __stop___ex_table = .;
--
--  . = ALIGN(8192);
--  __init_begin = .;
--  .init.text : { 
--	_sinittext = .;
--	*(.init.text)
--	_einittext = .;
--  }
--  .init.data : { *(.init.data) }
--  . = ALIGN(16);
--  __setup_start = .;
--  .init.setup : { *(.init.setup) }
--  __setup_end = .;
--  __initcall_start = .;
--  .initcall.init : {
--	INITCALLS
--  }
--  __initcall_end = .;
--  __con_initcall_start = .;
--  .con_initcall.init : { *(.con_initcall.init) }
--  __con_initcall_end = .;
--  SECURITY_INIT
--  . = ALIGN(4);
--  __tsb_ldquad_phys_patch = .;
--  .tsb_ldquad_phys_patch : { *(.tsb_ldquad_phys_patch) }
--  __tsb_ldquad_phys_patch_end = .;
--  __tsb_phys_patch = .;
--  .tsb_phys_patch : { *(.tsb_phys_patch) }
--  __tsb_phys_patch_end = .;
--  __cpuid_patch = .;
--  .cpuid_patch : { *(.cpuid_patch) }
--  __cpuid_patch_end = .;
--  __sun4v_1insn_patch = .;
--  .sun4v_1insn_patch : { *(.sun4v_1insn_patch) }
--  __sun4v_1insn_patch_end = .;
--  __sun4v_2insn_patch = .;
--  .sun4v_2insn_patch : { *(.sun4v_2insn_patch) }
--  __sun4v_2insn_patch_end = .;
-+	swapper_low_pmd_dir = 0x0000000000402000;
-+	. = 0x4000;
-+	.text 0x0000000000404000 : {
-+		_text = .;
-+		*(.text)
-+		SCHED_TEXT
-+		LOCK_TEXT
-+		KPROBES_TEXT
-+		*(.gnu.warning)
-+	} =0
-+	_etext = .;
-+	PROVIDE (etext = .);
-+
-+	RODATA
-+
-+	.data : {
-+		*(.data)
-+		CONSTRUCTORS
-+	}
-+	.data1 : {
-+		*(.data1)
-+	}
-+
-+	. = ALIGN(64);
-+	.data.cacheline_aligned : {
-+		*(.data.cacheline_aligned)
-+	}
-+
-+	. = ALIGN(64);
-+	.data.read_mostly : {
-+		*(.data.read_mostly)
-+	}
-+	_edata  =  .;
-+	PROVIDE (edata = .);
-+	.fixup : {
-+		*(.fixup)
-+	}
-+
-+	. = ALIGN(16);
-+	__start___ex_table = .;
-+	__ex_table : {
-+		*(__ex_table)
-+	}
-+	__stop___ex_table = .;
-+
-+	. = ALIGN(8192);
-+	__init_begin = .;
-+	.init.text : {
-+		_sinittext = .;
-+		*(.init.text)
-+		_einittext = .;
-+	}
-+
-+	.init.data : {
-+		*(.init.data)
-+	}
-+
-+	. = ALIGN(16);
-+	__setup_start = .;
-+	.init.setup : {
-+		*(.init.setup)
-+	}
-+	__setup_end = .;
-+
-+	__initcall_start = .;
-+	.initcall.init : {
-+		INITCALLS
-+	}
-+	__initcall_end = .;
-+
-+	__con_initcall_start = .;
-+	.con_initcall.init : {
-+		*(.con_initcall.init)
-+	}
-+	__con_initcall_end = .;
-+	SECURITY_INIT
-+
-+	. = ALIGN(4);
-+	__tsb_ldquad_phys_patch = .;
-+	.tsb_ldquad_phys_patch : {
-+		*(.tsb_ldquad_phys_patch)
-+	}
-+	__tsb_ldquad_phys_patch_end = .;
-+
-+	__tsb_phys_patch = .;
-+	.tsb_phys_patch : {
-+		*(.tsb_phys_patch)
-+	}
-+	__tsb_phys_patch_end = .;
-+
-+	__cpuid_patch = .;
-+	.cpuid_patch : {
-+		*(.cpuid_patch)
-+	}
-+	__cpuid_patch_end = .;
-+
-+	__sun4v_1insn_patch = .;
-+	.sun4v_1insn_patch : {
-+		*(.sun4v_1insn_patch)
-+	}
-+	__sun4v_1insn_patch_end = .;
-+	__sun4v_2insn_patch = .;
-+	.sun4v_2insn_patch : {
-+		*(.sun4v_2insn_patch)
-+	}
-+	__sun4v_2insn_patch_end = .;
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--  . = ALIGN(8192); 
--  __initramfs_start = .;
--  .init.ramfs : { *(.init.ramfs) }
--  __initramfs_end = .;
-+	. = ALIGN(8192); 
-+	__initramfs_start = .;
-+	.init.ramfs : {
-+		*(.init.ramfs)
-+	}
-+	__initramfs_end = .;
- #endif
- 
--  . = ALIGN(8192);
--  __per_cpu_start = .;
--  .data.percpu  : { *(.data.percpu) }
--  __per_cpu_end = .;
--  . = ALIGN(8192);
--  __init_end = .;
--  __bss_start = .;
--  .sbss      : { *(.sbss) *(.scommon) }
--  .bss       :
--  {
--   *(.dynbss)
--   *(.bss)
--   *(COMMON)
--  }
--  _end = . ;
--  PROVIDE (end = .);
--  /DISCARD/ : { *(.exit.text) *(.exit.data) *(.exitcall.exit) }
--
--  STABS_DEBUG
--
--  DWARF_DEBUG
-+	. = ALIGN(8192);
-+	__per_cpu_start = .;
-+	.data.percpu  : {
-+		*(.data.percpu)
-+	}
-+	__per_cpu_end = .;
-+	. = ALIGN(8192);
-+	__init_end = .;
-+	__bss_start = .;
-+	.sbss : {
-+		*(.sbss)
-+		*(.scommon)
-+	}
-+	.bss : {
-+		*(.dynbss)
-+		*(.bss)
-+		*(COMMON)
-+	}
-+	_end = . ;
-+	PROVIDE (end = .);
-+
-+	/DISCARD/ : {
-+		*(.exit.text)
-+		*(.exit.data)
-+		*(.exitcall.exit)
-+	}
-+
-+	STABS_DEBUG
-+	DWARF_DEBUG
- }
+Please make these static inline functions.
+
+> +#define PTR(a)         ((unsigned long) (a))
+> +#define PTR_LT(a,b)    (PTR(a) < PTR(b))
+> +#define PTR_GE(a,b)    (PTR(a) >= PTR(b))
+> +#define PTR_DIFF(a,b)  (PTR(a) - PTR(b))
+> +#define pd(a,b)                ((size_t) ((a)-(b)))
+
+[snip]
+
+> +#define COPY4(dst,src) *(uint32_t *)(dst) = *(uint32_t *)(src)
+
+Please drop these.
