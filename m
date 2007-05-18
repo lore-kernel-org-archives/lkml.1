@@ -1,104 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbXEQX7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761827AbXERAB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761423AbXEQX7g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 19:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbXEQX7a
+	id S1761827AbXERAB7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 20:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbXERABu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 19:59:30 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58294 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755450AbXEQX73 (ORCPT
+	Thu, 17 May 2007 20:01:50 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:14701 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754646AbXERABt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 19:59:29 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, ak@suse.de, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, nanhai.zou@intel.com,
-       asit.k.mallick@intel.com, keith.packard@intel.com
-Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
-References: <20070517230324.GB8089@linux-os.sc.intel.com>
-Date: Thu, 17 May 2007 17:58:02 -0600
-In-Reply-To: <20070517230324.GB8089@linux-os.sc.intel.com> (Suresh B. Siddha's
-	message of "Thu, 17 May 2007 16:03:24 -0700")
-Message-ID: <m1irar0zqt.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 17 May 2007 20:01:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PiKibzbO/dlY1G4hSHbn2Jbh4xxrKNwKuvhYHqMTKpwXdLPWdAhmjQzhpbnaBvTORbOVb7vyjrW+Zq7KREykwiAJfWRs+LicYbR48B1OIOQbZVbXtH0i05eDWdYc2/sWeIDsh7IgZJOsNeHF+jIfWaVgWdHaJhOajZpaa7Cgk0Y=
+Message-ID: <7fe698080705171701w533767fdo6642bb772ed64273@mail.gmail.com>
+Date: Fri, 18 May 2007 09:01:48 +0900
+From: "Dongjun Shin" <djshin90@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [PATCH] LogFS take three
+Cc: "David Woodhouse" <dwmw2@infradead.org>,
+       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@lazybastard.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, "Albert Cahalan" <acahalan@gmail.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, "Greg KH" <greg@kroah.com>,
+       "Ingo Oeser" <ioe-lkml@rameria.de>
+In-Reply-To: <20070517201847.GA5032@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070515151919.GA32510@lazybastard.org>
+	 <20070515133759.9ee434a2.akpm@linux-foundation.org>
+	 <1179317240.2859.222.camel@shinybook.infradead.org>
+	 <20070516083408.dcd9dd78.akpm@linux-foundation.org>
+	 <1179330596.2859.248.camel@shinybook.infradead.org>
+	 <20070516164158.GB8113@lazybastard.org>
+	 <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com>
+	 <1179383117.2859.416.camel@shinybook.infradead.org>
+	 <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
+	 <20070517201847.GA5032@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Siddha, Suresh B" <suresh.b.siddha@intel.com> writes:
+Hi,
 
-> on x86_64 kernel, level triggered irq migration gets initiated in the context
-> of that interrupt(after executing the irq handler) and following steps are
-> followed to do the irq migration.
+On 5/18/07, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
 >
-> 1. mask IOAPIC RTE entry;     // write to IOAPIC RTE
-> 2. EOI;                       // processor EOI write
-> 3. reprogram IOAPIC RTE entry // write to IOAPIC RTE with new destination and
->                               // and interrupt vector due to per cpu vector
->                               // allocation.
-> 4. unmask IOAPIC RTE entry;   // write to IOAPIC RTE
 >
-> Because of the per cpu vector allocation in x86_64 kernels, when the irq
-> migrates to a different cpu, new vector(corresponding to the new cpu) will
-> get allocated.
+> Hmm.. so operating your camera on batteries should be against the
+> warranty, since batteries commonly run empty while storing pictures?
 >
-> An EOI write to local APIC has a side effect of generating an EOI write 
-> for level trigger interrupts (normally this is a broadcast to all IOAPICs). 
-> The EOI broadcast generated as a side effect of EOI write to processor may 
-> be delayed while the other IOAPIC writes (step 3 and 4) can go through.
 >
-> Normally, the EOI generated by local APIC for level trigger interrupt
-> contains vector number. The IOAPIC will take this vector number and
-> search the IOAPIC RTE entries for an entry with matching vector number and
-> clear the remote IRR bit (indicate EOI). However, if the vector number is
-> changed (as in step 3) the IOAPIC will not find the RTE entry when the EOI
-> is received later. This will cause the remote IRR to get stuck causing the
-> interrupt hang (no more interrupt from this RTE).
->
-> Current x86_64 kernel assumes that remote IRR bit is cleared by the time
-> IOAPIC RTE is reprogrammed. Fix this assumption by checking for remote IRR
-> bit and if it still set, delay the irq migration to the next interrupt
-> arrival event(hopefully, next time remote IRR bit will get cleared
-> before the IOAPIC RTE is reprogrammed).
->
-> Initial analysis and patch from Nanhai.
 
-In essence this makes sense, and it may be the best work around for
-buggy hardware available.   However I am not convinced that the remote
-IRR on ioapics works reliably enough to be used for anything.   I
-tested this earlier and I could not successfully poll the remote irr
-bit to see if an ioapic had received an irq acknowledgement.  Instead
-I locked up irq controllers.
-
-If remote IRR worked reliably I could have pulled the irq migration
-out of irq context.  So this fix looks dubious to me.
-
-Why is the EOI delayed?  Can we work around that?
-
-It would be nice if ioapics and local apics actually obeyed the pci
-ordering rules where a read would flush all traffic.  And we do have a
-read in there.
-
-I'm assuming the symptom you are seeing on current kernels is that occasionally
-the irq gets stuck and never fires again?
-
-
-I'm not certain I like the patch either, but I need to look more closely.
-You are mixing changes to generic and arch specific code together.
-
-I think pending_eoi should not try to reuse __DO_ACTION as that
-helper bit of code does not seem appropriate.
-
-It would probably be best if the pending_eoi check was in
-ack_apic_level with the rest of the weird logic we are working around.
-
-Could we please have more detail on this hardware behavior.  Why is
-the EIO write write delayed?   Why can't we just issue reads in
-appropriate places to flush the write?
-
-I need to think about this some more to see if there are any other
-possible ways we could address this issue that would be more robust.
-
-Eric
+AFAIK, the camera stops writing to the flash card and automatically
+turns off when it's low on battery (before empty).
