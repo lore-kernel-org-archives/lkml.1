@@ -1,100 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763226AbXERRL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763364AbXERRMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763226AbXERRL6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 13:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbXERRLv
+	id S1763364AbXERRMc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 13:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbXERRMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 13:11:51 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59486 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757355AbXERRLu (ORCPT
+	Fri, 18 May 2007 13:12:25 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:60259 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760054AbXERRMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 13:11:50 -0400
-Date: Fri, 18 May 2007 10:11:50 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179482054.2925.52.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0705181002400.9372@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com> 
- <1179385718.27354.17.camel@twins>  <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-  <20070517175327.GX11115@waste.org>  <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
-  <1179429499.2925.26.camel@lappy>  <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
-  <1179437209.2925.29.camel@lappy>  <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
- <1179482054.2925.52.camel@lappy>
+	Fri, 18 May 2007 13:12:24 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Fri, 18 May 2007 13:11:02 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Protect include/linux/console_struct.h against multiple
+ inclusion.
+Message-ID: <Pine.LNX.4.64.0705181305560.30719@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007, Peter Zijlstra wrote:
 
-> On Thu, 2007-05-17 at 15:27 -0700, Christoph Lameter wrote:
+Protect the header file include/linux/console_struct.h against
+multiple inclusion, since not doing this causes one of the example
+module programs in the Linux Kernel Module Programming Guide to fail
+to build due to a bogus "redeclaration" of some structures.
 
-> Isn't the zone mask the same for all allocations from a specific slab?
-> If so, then the slab wide ->reserve_slab will still dtrt (barring
-> cpusets).
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-All allocations from a single slab have the same set of allowed types of 
-zones. I.e. a DMA slab can access only ZONE_DMA a regular slab 
-ZONE_NORMAL, ZONE_DMA32 and ZONE_DMA.
+---
 
+diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+index a461f76..e4c1f65 100644
+--- a/include/linux/console_struct.h
++++ b/include/linux/console_struct.h
+@@ -1,3 +1,5 @@
++#ifndef _LINUX_CONSOLE_STRUCT_H
++#define _LINUX_CONSOLE_STRUCT_H
+ /*
+  * console_struct.h
+  *
+@@ -130,3 +132,5 @@ extern void vc_SAK(struct work_struct *work);
+ #define CUR_DEFAULT CUR_UNDERLINE
 
-> > On x86_64 systems you have the additional complication that there are 
-> > even multiple DMA32 or NORMAL zones per node. Some will have DMA32 and 
-> > NORMAL, others DMA32 alone or NORMAL alone. Which watermarks are we 
-> > talking about?
-> 
-> Watermarks like used by the page allocator given the slabs zone mask.
-> The page allocator will only fall back to ALLOC_NO_WATERMARKS when all
-> target zones are exhausted.
+ #define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp)
++
++#endif // _LINUX_CONSOLE_STRUCT_H
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-That works if zones do not vary between slab requests. So on SMP (without 
-extra gfp flags) we may be fine. But see other concerns below.
-
-> > The use of ALLOC_NO_WATERMARKS depends on the contraints of the allocation 
-> > in all cases. You can only compare the stresslevel (rank?) of allocations 
-> > that have the same allocation constraints. The allocation constraints are
-> > a result of gfp flags,
-> 
-> The gfp zone mask is constant per slab, no? It has to, because the zone
-> mask is only used when the slab is extended, other allocations live off
-> whatever was there before them.
-
-The gfp zone mask is used to select the zones in a SMP config. But not in 
-a NUMA configuration there the zones can come from multiple nodes.
-
-Ok in an SMP configuration the zones are determined by the allocation 
-flags. But then there are also the gfp flags that influence reclaim 
-behavior. These also have an influence on the memory pressure.
-
-These are
-
-__GFP_IO
-__GFP_FS
-__GFP_NOMEMMALLOC
-__GFP_NOFAIL
-__GFP_NORETRY
-__GFP_REPEAT
-
-An allocation that can call into a filesystem or do I/O will have much 
-less memory pressure to contend with. Are the ranks for an allocation
-with __GFP_IO|__GFP_FS really comparable with an allocation that does not 
-have these set?
-
-> >  cpuset configuration and memory policies in effect.
-> 
-> Yes, I see now that these might become an issue, I will have to think on
-> this.
-
-Note that we have not yet investigated what weird effect memory policy 
-constraints can have on this. There are issues with memory policies only 
-applying to certain zones.....
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
