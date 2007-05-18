@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763314AbXERS1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763525AbXERS2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763314AbXERS1S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbXERS1K
+	id S1763525AbXERS2d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbXERS21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:27:10 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:41641 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753742AbXERS1J (ORCPT
+	Fri, 18 May 2007 14:28:27 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:40084 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753742AbXERS20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 14:27:09 -0400
-Date: Fri, 18 May 2007 14:27:08 -0400
-To: Rob Landley <rob@landley.net>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Tejun Heo <htejun@gmail.com>,
-       Dave Jones <davej@redhat.com>, Francesco Pretto <ceztko@gmail.com>,
-       Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-Message-ID: <20070518182708.GC10006@csclub.uwaterloo.ca>
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <20070517033947.GA24757@khazad-dum.debian.net> <20070517150420.GA10008@csclub.uwaterloo.ca> <200705180316.45969.rob@landley.net>
+	Fri, 18 May 2007 14:28:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pruOHqZXCnsOsh1luAm1ChHpZWbKQrm79bI/vcWgjQOQUyYnxsi50WRCG8uyruUElWTCZCdt1ctCKPbxozEfgq0DM9n0FNS/+KiR5X48deg0tByJJNTJTy3ntjqxvEsWJMjHGpM5QsbEFUVuP5U1vJVH6QIRWr1WQ5Be58N7WJI=
+Message-ID: <86802c440705181128t28652911w39d6de0c43d99a45@mail.gmail.com>
+Date: Fri, 18 May 2007 11:28:25 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu, ak@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Zou, Nanhai" <nanhai.zou@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Packard, Keith" <keith.packard@intel.com>
+In-Reply-To: <20070518180749.GA26081@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200705180316.45969.rob@landley.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <20070518010119.GB12088@linux-os.sc.intel.com>
+	 <m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
+	 <20070518180749.GA26081@linux-os.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 03:16:45AM -0400, Rob Landley wrote:
-> Because the controller's far more likely to go than the moving parts...
+On 5/18/07, Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
+>
+> If the vector number stays same during irq migration and if we reset remote
+> IRR bit using the above method(edge and then back to level) during
+> irq migration, then we have a problem. A new interrupt arriving on a new
+> cpu will set the remote IRR bit and now the old inflight EOI broadcast
+> reaches IOAPIC RTE(resetting the remote IRR bit, because the vector in the
+> broadcast msg is same), while the kernel code still assumes that the remote
+> IRR bit is still set. This will lead to more problems and issues.
 
-Having redundant everything would be preferable.  But cables do
-sometimes fail.  Not sure about the controllers, but if the controller
-went you might loose the whole raid.
+coud add some line __assign_irq_vector. to make sure old_vector!=vector.
 
-> On the models I saw they also literally gold plated the connectors, spun the 
-> disks faster, and basically did everything they could think of to make the 
-> same basic bundle of components more expensive.  (Of course the fundamental 
-> thing you do to make it more expensive is have smaller production runs in the 
-> first place...)
-
-Well I guess the theory is that a gold plated connector won't corrode as
-much so the connection is less likely to fail.  Not sure if there is any
-proof to backup that theory.
-
---
-Len Sorensen
+YH
