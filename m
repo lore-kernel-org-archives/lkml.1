@@ -1,87 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbXERGu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762584AbXERGu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762303AbXERGu2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 02:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbXERGuR
+	id S1762584AbXERGu5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 02:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756737AbXERGus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 02:50:17 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33567 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755112AbXERGuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 02:50:15 -0400
-Date: Fri, 18 May 2007 08:51:11 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
-Cc: Li Yang <leoli@freescale.com>
-Subject: [PATCH 03/14] kbuild: add "Section mismatch" warning whitelist for powerpc
-Message-ID: <20070518065111.GC12284@uranus.ravnborg.org>
+	Fri, 18 May 2007 02:50:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60674
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755029AbXERGur (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 02:50:47 -0400
+Date: Thu, 17 May 2007 23:50:49 -0700 (PDT)
+Message-Id: <20070517.235049.45744179.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       rmk+kernel@arm.linux.org.uk
+Subject: Re: [PATCH 01/14] kbuild: make modpost section warnings clearer
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070518064918.GA12284@uranus.ravnborg.org>
 References: <20070518064126.GA12193@uranus.ravnborg.org>
+	<20070518064918.GA12284@uranus.ravnborg.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070518064126.GA12193@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From bdfeed222963cadd30cbfcad799c89f3a7b94e02 Mon Sep 17 00:00:00 2001
-From: Li Yang <leoli@freescale.com>
-Date: Mon, 14 May 2007 18:04:28 +0800
-Subject: [PATCH 03/14] kbuild: add "Section mismatch" warning whitelist for powerpc
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Fri, 18 May 2007 08:49:18 +0200
 
-This patch fixes the following class of "Section mismatch" warnings when
-building powerpc platforms.
+> >From 4dba30ccfdb911b0810f6527de66b1515349d8c4 Mon Sep 17 00:00:00 2001
+> From: Russell King <rmk+lkml@arm.linux.org.uk>
+> Date: Thu, 10 May 2007 23:03:25 +0100
+> Subject: [PATCH 01/14] kbuild: make modpost section warnings clearer
+> 
+> Change modpost section mismatch warnings to be less confusing;
+> model them on the binutils linker warnings which we all know how
+> to interpret.
+> 
+> Also, fix the wrong ordering of arguments for the final case -
+> fromsec and refsymname were reversed.
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from prom_entry (offset 0x0)
-WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.text:mpc8313_rdb_probe from .machine.desc after 'mach_mpc8313_rdb' (at offset 0x4)
-....
-
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- scripts/mod/modpost.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
-
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index ecb0a15..b394629 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -650,9 +650,10 @@ static int strrcmp(const char *s, const char *sub)
-  *  tosec    = .init.text
-  *
-  * Pattern 10:
-- *  ia64 has machvec table for each platform. It is mixture of function
-- *  pointer of .init.text and .text.
-- *  fromsec  = .machvec
-+ *  ia64 has machvec table for each platform and
-+ *  powerpc has a machine desc table for each platform.
-+ *  It is mixture of function pointers of .init.text and .text.
-+ *  fromsec  = .machvec | .machine.desc
-  **/
- static int secref_whitelist(const char *modname, const char *tosec,
- 			    const char *fromsec, const char *atsym,
-@@ -751,7 +752,8 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 				return 1;
- 
- 	/* Check for pattern 10 */
--	if (strcmp(fromsec, ".machvec") == 0)
-+	if ((strcmp(fromsec, ".machvec") == 0) ||
-+	    (strcmp(fromsec, ".machine.desc") == 0))
- 		return 1;
- 
- 	return 0;
-@@ -887,6 +889,11 @@ static void warn_sec_mismatch(const char *modname, const char *fromsec,
- 			     elf->strtab + before->st_name, refsymname))
- 		return;
- 
-+	/* fromsec whitelist - without a valid 'before'
-+	 * powerpc has a GOT table in .got2 section */
-+	if (strcmp(fromsec, ".got2") == 0)
-+		return;
-+
- 	if (before && after) {
- 		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s "
- 		     "(between '%s' and '%s')\n",
--- 
-1.5.1.rc3.20.gaa453
-
+Acked-by: David S. Miller <davem@davemloft.net>
