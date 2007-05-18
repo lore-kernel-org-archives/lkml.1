@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXERU13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbXERU1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbXERU13 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 16:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXERU1X
+	id S1757355AbXERU1o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 16:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXERU1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 16:27:23 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:54000 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbXERU1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 16:27:22 -0400
-Date: Fri, 18 May 2007 22:27:06 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: John Sigler <linux.kernel@free.fr>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Dumping the checksums in a module
-In-Reply-To: <464DC019.6010008@free.fr>
-Message-ID: <Pine.LNX.4.61.0705182225450.9015@yvahk01.tjqt.qr>
-References: <464DC019.6010008@free.fr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Fri, 18 May 2007 16:27:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53326
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756173AbXERU1c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 16:27:32 -0400
+Date: Fri, 18 May 2007 13:27:34 -0700 (PDT)
+Message-Id: <20070518.132734.34602464.davem@davemloft.net>
+To: galak@kernel.crashing.org
+Cc: tglx@linutronix.de, matt@genesi-usa.com, sshtylyov@ru.mvista.com,
+       linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       r.schwebel@pengutronix.de
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
+References: <464DB800.40702@genesi-usa.com>
+	<1179499713.12981.75.camel@chaos>
+	<32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Fri, 18 May 2007 11:31:19 -0500
 
-On May 18 2007 17:02, John Sigler wrote:
->
-> I'm getting "disagrees about version of symbol struct_module" messages,
-> and I'm trying to understand why.
->
-> As far as I understand (which is not very far), if I define
-> CONFIG_MODVERSIONS, then checksums for various functions (all exported
-> functions?) and various structures (which ones?) will be included inside
-> the kernel image, and written to Module.symvers. When an out-of-tree
-> module is built, it will also include these checksums.
->
-> How do I list the checksums within a module?
->
-> Is there a simpler way to list all the checksums?
+> I asked this earlier, but figured you might have a better insight.   
+> Is their value in having 'drivers' for more than one clock source?   
+> I'd say most (of not all) the PPC SoCs have timers on the system side  
+> that we could provide drivers for, I'm just not sure if that does  
+> anything for anyone.
 
-22:25 ichi:~ > modinfo aes
-srcversion:     8CB82B3A254D5A950FD0D14
-
-I think this one checksum is computed out of all functions that
-the module uses.
-
-
-	Jan
--- 
+I'm in a similar situation on sparc64, so I'm interested in
+this as well :-)
