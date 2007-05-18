@@ -1,91 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbXERXlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbXERXuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755058AbXERXlR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 19:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbXERXlH
+	id S1761329AbXERXuN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 19:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbXERXuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 19:41:07 -0400
-Received: from mail-in-06.arcor-online.net ([151.189.21.46]:51344 "EHLO
-	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755094AbXERXlE (ORCPT
+	Fri, 18 May 2007 19:50:00 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:57096 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755003AbXERXuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 19:41:04 -0400
-In-Reply-To: <20070518152935.b5a4b3bf.akpm@linux-foundation.org>
-References: <200705181941.l4IJfOtf018049@fire-2.osdl.org> <20070518152935.b5a4b3bf.akpm@linux-foundation.org>
+	Fri, 18 May 2007 19:50:00 -0400
+In-Reply-To: <1179530872.32247.423.camel@localhost.localdomain>
+References: <200705172142.26739.sshtylyov@ru.mvista.com> <f9afbdb49bc1f935153305315770bccd@kernel.crashing.org> <464CB071.5050504@ru.mvista.com> <9095839480a9686d9c40aa6143edb804@kernel.crashing.org> <464CB460.40905@ru.mvista.com> <97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org> <1179464690.32247.370.camel@localhost.localdomain> <1179466769.3658.0.camel@localhost.localdomain> <1179472096.32247.394.camel@localhost.localdomain> <464DAD06.2060504@ru.mvista.com> <1179530872.32247.423.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <57324fd6fd39b00a9eb1889343fa0330@kernel.crashing.org>
+Message-Id: <51b3a75638604c9dd7ed60a10f0ed934@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-Cc: malitzke@metronets.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Dave Liu <r63238@freescale.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
+       tglx@linutronix.de
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Bug 8501] udivdi3  absence with gcc-4.3.0 on kernels 2.6.20.11 & 2.6.22.-rc1
-Date: Sat, 19 May 2007 01:39:43 +0200
-To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+Date: Sat, 19 May 2007 01:49:59 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> gcc-4.3 appears to have cunningly converted this:
->
-> static inline void timespec_add_ns(struct timespec *a, u64 ns)
-> {
-> 	ns += a->tv_nsec;
-> 	while(unlikely(ns >= NSEC_PER_SEC)) {
-> 		ns -= NSEC_PER_SEC;
-> 		a->tv_sec++;
-> 	}
-> 	a->tv_nsec = ns;
-> }
->
-> into a divide-by-1000000000 operation, so it emits a call to udivdi3 
-> and we
-> don't link.
+> I find it extremely silly to implement it as edge anyway. The EE line 
+> is
+> level triggered, and having a mix of edge and level on the same
+> exception without a clean way to retrigger the DEC one other than
+> waiting one tick is just causing trouble.
 
-Exactly.  It obviously is a bug in the kernel that it depends
-on certain compiler optimisations that it doesn't have direct
-control over to happen or not.  OTOH, GCC's behaviour here is
-probably a non-optimal code issue; it doesn't seem to take the
-unlikely() into account when doing the loop transform.
-
-> I expect that this optimisation will remain in gcc-4.3
-
-If someone files a *useable* problem report it most likely
-will be taken care of, actually.
-
-> and we'll end up
-> having major kernel releases which don't build on i386 with major gcc
-> releases, which isn't altogether desirable.
-
-Yeah, like 4.2.0 with powerpc.  Seems like no one tested it :-(
-
-> I suspect we'll need to fix this
-> fairly urgently, and to backport the fix into a number of kernel 
-> releases.
-
-If it is 4.3 only, you could instead try to work *with* the GCC
-people.  It _is_ very fragile code of course, it wouldn't hurt
-to replace it with something better.
-
-> We use the above idiom in several places.  A suitable fix might be to 
-> hunt
-> down those various sites and then make them call a helper function 
-> which
-> does
->
-> 	if (unlikely(ns >= NSEC_PER_SEC)) {
-> 		do_div(...)
-> 	}
->
-> (Better would be to inline the comparison and to uninline the do_div(),
-> if it's a 32-bit arch.  Doing all this in a backportable fashion may
-> prove tricky)
-
-Perhaps putting a compiler barrier in there would be enough -- like
-an empty asm() that takes the loop variable as input.
+It isn't edge triggered, it just automatically clears the
+decrementer exception condition at its source when taken
+(on certain implementations -- others leave it to software
+to clear it).
 
 
 Segher
