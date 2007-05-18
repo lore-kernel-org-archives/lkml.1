@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760345AbXERGvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762726AbXERGwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760345AbXERGvZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 02:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759209AbXERGvE
+	id S1762726AbXERGwS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 02:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756315AbXERGwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 02:51:04 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:52852 "EHLO pasmtpA.tele.dk"
+	Fri, 18 May 2007 02:52:03 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60793 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755293AbXERGvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 02:51:00 -0400
-Date: Fri, 18 May 2007 08:51:56 +0200
+	id S1755220AbXERGwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 02:52:01 -0400
+Date: Fri, 18 May 2007 08:52:57 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
-Subject: [PATCH 04/14] all-archs: consolidate .text section definition in asm-generic
-Message-ID: <20070518065156.GD12284@uranus.ravnborg.org>
+Subject: [PATCH 05/14] all-archs: consolidate .data section definition in asm-generic
+Message-ID: <20070518065257.GE12284@uranus.ravnborg.org>
 References: <20070518064126.GA12193@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,12 +23,13 @@ User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From abe82ff8e73db114634b38ef1cd24e121643a2e9 Mon Sep 17 00:00:00 2001
+>From 653bc43c6c2c292e6abc98860fd241eb12e2c80f Mon Sep 17 00:00:00 2001
 From: Sam Ravnborg <sam@ravnborg.org>
-Date: Sun, 13 May 2007 00:31:33 +0200
-Subject: [PATCH 04/14] all-archs: consolidate .text section definition in asm-generic
+Date: Thu, 17 May 2007 13:38:44 +0200
+Subject: [PATCH 05/14] all-archs: consolidate .data section definition in asm-generic
 
-Move definition of .text section to asm-generic.
+With this consolidation we can now modify the .data
+section definition in one spot for all archs.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
@@ -41,418 +42,415 @@ Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
  arch/frv/kernel/vmlinux.lds.S              |    3 ++-
  arch/h8300/kernel/vmlinux.lds.S            |    2 +-
  arch/i386/kernel/vmlinux.lds.S             |    2 +-
- arch/ia64/kernel/vmlinux.lds.S             |    2 +-
+ arch/ia64/kernel/vmlinux.lds.S             |    7 ++++++-
  arch/m32r/kernel/vmlinux.lds.S             |    2 +-
  arch/m68k/kernel/vmlinux-std.lds           |    2 +-
  arch/m68k/kernel/vmlinux-sun3.lds          |    2 +-
  arch/m68knommu/kernel/vmlinux.lds.S        |    2 +-
  arch/mips/kernel/vmlinux.lds.S             |    2 +-
  arch/parisc/kernel/vmlinux.lds.S           |    2 +-
- arch/powerpc/kernel/vmlinux.lds.S          |    3 ++-
+ arch/powerpc/kernel/vmlinux.lds.S          |    2 +-
  arch/ppc/kernel/vmlinux.lds.S              |    2 +-
  arch/s390/kernel/vmlinux.lds.S             |    2 +-
  arch/sh/kernel/vmlinux.lds.S               |    2 +-
  arch/sh64/kernel/vmlinux.lds.S             |    2 +-
  arch/sparc/kernel/vmlinux.lds.S            |    2 +-
  arch/sparc64/kernel/vmlinux.lds.S          |    2 +-
- arch/um/kernel/dyn.lds.S                   |    2 +-
+ arch/um/kernel/dyn.lds.S                   |    3 ++-
  arch/um/kernel/uml.lds.S                   |    2 +-
  arch/v850/kernel/vmlinux.lds.S             |    2 +-
  arch/x86_64/kernel/vmlinux.lds.S           |    2 +-
  arch/xtensa/kernel/vmlinux.lds.S           |    3 ++-
- include/asm-generic/vmlinux.lds.h          |    6 ++++++
- 29 files changed, 37 insertions(+), 28 deletions(-)
+ include/asm-generic/vmlinux.lds.h          |    4 ++++
+ 29 files changed, 40 insertions(+), 28 deletions(-)
 
 diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index cf1e6fc..ab60e81 100644
+index ab60e81..449e76f 100644
 --- a/arch/alpha/kernel/vmlinux.lds.S
 +++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -15,7 +15,7 @@ SECTIONS
+@@ -89,7 +89,7 @@ SECTIONS
  
-   _text = .;					/* Text and read-only data */
-   .text : { 
--	*(.text) 
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	*(.fixup)
+   _data = .;
+   .data : {					/* Data */
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
+   }
+ 
 diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
-index e4156e7..8d4e248 100644
+index 8d4e248..2b7a8f5 100644
 --- a/arch/arm/kernel/vmlinux.lds.S
 +++ b/arch/arm/kernel/vmlinux.lds.S
-@@ -90,7 +90,7 @@ SECTIONS
- 			__exception_text_start = .;
- 			*(.exception.text)
- 			__exception_text_end = .;
--			*(.text)
-+			TEXT_TEXT
- 			SCHED_TEXT
- 			LOCK_TEXT
- #ifdef CONFIG_MMU
+@@ -158,7 +158,7 @@ SECTIONS
+ 		/*
+ 		 * and the usual data section
+ 		 */
+-		*(.data)
++		DATA_DATA
+ 		CONSTRUCTORS
+ 
+ 		_edata = .;
 diff --git a/arch/arm26/kernel/vmlinux-arm26-xip.lds.in b/arch/arm26/kernel/vmlinux-arm26-xip.lds.in
-index 046a850..89c806a 100644
+index 89c806a..4ec715c 100644
 --- a/arch/arm26/kernel/vmlinux-arm26-xip.lds.in
 +++ b/arch/arm26/kernel/vmlinux-arm26-xip.lds.in
-@@ -64,7 +64,7 @@ SECTIONS
+@@ -111,7 +111,7 @@ SECTIONS
+ 		/*
+ 		 * and the usual data section
+ 		 */
+-		*(.data)
++		DATA_DATA
+ 		CONSTRUCTORS
  
- 	.text : {			/* Real text segment		*/
- 		_text = .;		/* Text and read-only data	*/
--			*(.text)
-+			TEXT_TEXT
- 			SCHED_TEXT
- 			LOCK_TEXT       /* FIXME - borrowed from arm32 - check*/
- 			*(.fixup)
+ 		*(.init.data)
 diff --git a/arch/arm26/kernel/vmlinux-arm26.lds.in b/arch/arm26/kernel/vmlinux-arm26.lds.in
-index 1d2949e..e3f9b18 100644
+index e3f9b18..6c44f6a 100644
 --- a/arch/arm26/kernel/vmlinux-arm26.lds.in
 +++ b/arch/arm26/kernel/vmlinux-arm26.lds.in
-@@ -65,7 +65,7 @@ SECTIONS
+@@ -106,7 +106,7 @@ SECTIONS
+ 		/*
+ 		 * and the usual data section
+ 		 */
+-		*(.data)
++		DATA_DATA
+ 		CONSTRUCTORS
  
- 	.text : {			/* Real text segment		*/
- 		_text = .;		/* Text and read-only data	*/
--			*(.text)
-+			TEXT_TEXT
- 			SCHED_TEXT
- 			LOCK_TEXT
- 			*(.fixup)
+ 		_edata = .;
 diff --git a/arch/avr32/kernel/vmlinux.lds.c b/arch/avr32/kernel/vmlinux.lds.c
-index e7f72c9..dbba391 100644
+index dbba391..db0438f 100644
 --- a/arch/avr32/kernel/vmlinux.lds.c
 +++ b/arch/avr32/kernel/vmlinux.lds.c
-@@ -76,7 +76,7 @@ SECTIONS
- 		. = 0x100;
- 		*(.scall.text)
- 		*(.irq.text)
--		*(.text)
-+		TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
- 		KPROBES_TEXT
+@@ -112,7 +112,7 @@ SECTIONS
+ 
+ 		/* And the rest... */
+ 		*(.data.rel*)
+-		*(.data)
++		DATA_DATA
+ 		CONSTRUCTORS
+ 
+ 		_edata = .;
 diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
-index 6ae9ebb..36fcc77 100644
+index 36fcc77..86fe679 100644
 --- a/arch/blackfin/kernel/vmlinux.lds.S
 +++ b/arch/blackfin/kernel/vmlinux.lds.S
-@@ -54,7 +54,7 @@ SECTIONS
- 	{
- 		 _text = .;
- 		 __stext = .;
--		*(.text)
-+		TEXT_TEXT
- 		SCHED_TEXT
- 		*(.text.lock)
- 		. = ALIGN(16);
+@@ -200,7 +200,7 @@ SECTIONS
+ 		 __sdata = .;
+ 		. = ALIGN(0x2000);
+ 		*(.data.init_task)
+-		*(.data)
++		DATA_DATA
+ 
+ 		. = ALIGN(32);
+ 		*(.data.cacheline_aligned)
 diff --git a/arch/frv/kernel/vmlinux.lds.S b/arch/frv/kernel/vmlinux.lds.S
-index 28eae97..7e0998f 100644
+index 7e0998f..481dc13 100644
 --- a/arch/frv/kernel/vmlinux.lds.S
 +++ b/arch/frv/kernel/vmlinux.lds.S
-@@ -101,13 +101,14 @@ SECTIONS
-   _stext = .;
-   .text : {
- 	*(
--		.text.start .text .text.*
-+		.text.start .text.*
- #ifdef CONFIG_DEBUG_INFO
- 	.init.text
- 	.exit.text
- 	.exitcall.exit
- #endif
- 	)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	*(.fixup)
+@@ -136,7 +136,8 @@ SECTIONS
+ 
+   _sdata = .;
+   .data : {			/* Data */
+-	*(.data .data.*)
++	DATA_DATA
++	*(.data.*)
+ 	*(.exit.data)
+ 	CONSTRUCTORS
+ 	}
 diff --git a/arch/h8300/kernel/vmlinux.lds.S b/arch/h8300/kernel/vmlinux.lds.S
-index 65f1cdc..4365162 100644
+index 4365162..a2e72d4 100644
 --- a/arch/h8300/kernel/vmlinux.lds.S
 +++ b/arch/h8300/kernel/vmlinux.lds.S
-@@ -75,7 +75,7 @@ SECTIONS
- 	*(.int_redirect)
- #endif
- 	__stext = . ;
--        	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	__etext = . ;
+@@ -103,7 +103,7 @@ SECTIONS
+ 	. = ALIGN(0x2000) ;
+ 		*(.data.init_task)
+ 	. = ALIGN(0x4) ;
+-		*(.data)
++		DATA_DATA
+ 	. = ALIGN(0x4) ;
+ 		*(.data.*)	
+ 
 diff --git a/arch/i386/kernel/vmlinux.lds.S b/arch/i386/kernel/vmlinux.lds.S
-index 80bec66..dfc439a 100644
+index dfc439a..aa87b06 100644
 --- a/arch/i386/kernel/vmlinux.lds.S
 +++ b/arch/i386/kernel/vmlinux.lds.S
-@@ -44,7 +44,7 @@ SECTIONS
+@@ -74,7 +74,7 @@ SECTIONS
+   /* writeable */
+   . = ALIGN(4096);
+   .data : AT(ADDR(.data) - LOAD_OFFSET) {	/* Data */
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
+ 	} :data
  
-   /* read-only */
-   .text : AT(ADDR(.text) - LOAD_OFFSET) {
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	KPROBES_TEXT
 diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index 6923826..19108d0 100644
+index 19108d0..5a65965 100644
 --- a/arch/ia64/kernel/vmlinux.lds.S
 +++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -44,7 +44,7 @@ SECTIONS
-   .text : AT(ADDR(.text) - LOAD_OFFSET)
-     {
- 	IVT_TEXT
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	KPROBES_TEXT
+@@ -214,7 +214,12 @@ SECTIONS
+ 
+   data : { } :data
+   .data : AT(ADDR(.data) - LOAD_OFFSET)
+-	{ *(.data) *(.data1) *(.gnu.linkonce.d*) CONSTRUCTORS }
++	{
++		DATA_DATA
++		*(.data1)
++		*(.gnu.linkonce.d*)
++		CONSTRUCTORS
++	}
+ 
+   . = ALIGN(16);	/* gp must be 16-byte aligned for exc. table */
+   .got : AT(ADDR(.got) - LOAD_OFFSET)
 diff --git a/arch/m32r/kernel/vmlinux.lds.S b/arch/m32r/kernel/vmlinux.lds.S
-index 6c73bca..bb1a2f5 100644
+index bb1a2f5..4e2d5b9 100644
 --- a/arch/m32r/kernel/vmlinux.lds.S
 +++ b/arch/m32r/kernel/vmlinux.lds.S
-@@ -27,7 +27,7 @@ SECTIONS
-   _text = .;			/* Text and read-only data */
-   .boot : { *(.boot) } = 0
-   .text : {
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	*(.fixup)
-diff --git a/arch/m68k/kernel/vmlinux-std.lds b/arch/m68k/kernel/vmlinux-std.lds
-index 437b4f8..a65cef8 100644
---- a/arch/m68k/kernel/vmlinux-std.lds
-+++ b/arch/m68k/kernel/vmlinux-std.lds
-@@ -11,7 +11,7 @@ SECTIONS
-   . = 0x1000;
-   _text = .;			/* Text and read-only data */
-   .text : {
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	*(.fixup)
-diff --git a/arch/m68k/kernel/vmlinux-sun3.lds b/arch/m68k/kernel/vmlinux-sun3.lds
-index 2868e20..fa44d6c 100644
---- a/arch/m68k/kernel/vmlinux-sun3.lds
-+++ b/arch/m68k/kernel/vmlinux-sun3.lds
-@@ -12,7 +12,7 @@ SECTIONS
-   _text = .;			/* Text and read-only data */
-   .text : {
- 	*(.head)
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	*(.fixup)
-diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
-index c86a1bf..6d4585e 100644
---- a/arch/m68knommu/kernel/vmlinux.lds.S
-+++ b/arch/m68knommu/kernel/vmlinux.lds.S
-@@ -62,7 +62,7 @@ SECTIONS {
- 	.text : {
- 		_text = .;
- 		_stext = . ;
--        	*(.text)
-+		TEXT_TEXT
- 		SCHED_TEXT
-         	*(.text.lock)
- 
-diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
-index 043f637..cfe4b67 100644
---- a/arch/mips/kernel/vmlinux.lds.S
-+++ b/arch/mips/kernel/vmlinux.lds.S
-@@ -27,7 +27,7 @@ SECTIONS
-   /* read-only */
-   _text = .;			/* Text and read-only data */
-   .text : {
--    *(.text)
-+    TEXT_TEXT
-     SCHED_TEXT
-     LOCK_TEXT
-     *(.fixup)
-diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
-index c745859..321de82 100644
---- a/arch/parisc/kernel/vmlinux.lds.S
-+++ b/arch/parisc/kernel/vmlinux.lds.S
-@@ -51,7 +51,7 @@ SECTIONS
- 
-   _text = .;			/* Text and read-only data */
-   .text ALIGN(16) : {
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	*(.text.do_softirq)
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 1320673..f266209 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -34,7 +34,8 @@ SECTIONS
- 	/* Text and gots */
- 	.text : {
- 		_text = .;
--		*(.text .text.*)
-+		*(.text.*)
-+		TEXT_TEXT
- 		SCHED_TEXT
- 		LOCK_TEXT
- 		KPROBES_TEXT
-diff --git a/arch/ppc/kernel/vmlinux.lds.S b/arch/ppc/kernel/vmlinux.lds.S
-index 44cd128..419ef7e 100644
---- a/arch/ppc/kernel/vmlinux.lds.S
-+++ b/arch/ppc/kernel/vmlinux.lds.S
-@@ -32,7 +32,7 @@ SECTIONS
-   .text      :
-   {
-     _text = .;
--    *(.text)
-+    TEXT_TEXT
-     SCHED_TEXT
-     LOCK_TEXT
-     *(.fixup)
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index e9d3432..89c2ec5 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -21,7 +21,7 @@ SECTIONS
-   . = 0x00000000;
-   _text = .;			/* Text and read-only data */
-   .text : {
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	KPROBES_TEXT
-diff --git a/arch/sh/kernel/vmlinux.lds.S b/arch/sh/kernel/vmlinux.lds.S
-index d83143c..2367869 100644
---- a/arch/sh/kernel/vmlinux.lds.S
-+++ b/arch/sh/kernel/vmlinux.lds.S
-@@ -22,7 +22,7 @@ SECTIONS
- 	*(.empty_zero_page)
- 	} = 0
-   .text : {
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	*(.fixup)
-diff --git a/arch/sh64/kernel/vmlinux.lds.S b/arch/sh64/kernel/vmlinux.lds.S
-index 4f9616f..fdf72ce 100644
---- a/arch/sh64/kernel/vmlinux.lds.S
-+++ b/arch/sh64/kernel/vmlinux.lds.S
-@@ -54,7 +54,7 @@ SECTIONS
- 	} = 0
- 
-   .text : C_PHYS(.text) {
--	*(.text)
-+	TEXT_TEXT
- 	*(.text64)
-         *(.text..SHmedia32)
- 	SCHED_TEXT
-diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
-index f0bb6e6..5cb600e 100644
---- a/arch/sparc/kernel/vmlinux.lds.S
-+++ b/arch/sparc/kernel/vmlinux.lds.S
-@@ -12,7 +12,7 @@ SECTIONS
-   .text 0xf0004000 :
-   {
-     _text = .;
--    *(.text)
-+    TEXT_TEXT
-     SCHED_TEXT
-     LOCK_TEXT
-     *(.gnu.warning)
-diff --git a/arch/sparc64/kernel/vmlinux.lds.S b/arch/sparc64/kernel/vmlinux.lds.S
-index 13fa2a2..f06da20 100644
---- a/arch/sparc64/kernel/vmlinux.lds.S
-+++ b/arch/sparc64/kernel/vmlinux.lds.S
-@@ -14,7 +14,7 @@ SECTIONS
-   .text 0x0000000000404000 :
-   {
-     _text = .;
--    *(.text)
-+    TEXT_TEXT
-     SCHED_TEXT
-     LOCK_TEXT
-     KPROBES_TEXT
-diff --git a/arch/um/kernel/dyn.lds.S b/arch/um/kernel/dyn.lds.S
-index 87a4e44..ec8477d 100644
---- a/arch/um/kernel/dyn.lds.S
-+++ b/arch/um/kernel/dyn.lds.S
-@@ -62,7 +62,7 @@ SECTIONS
-   } =0x90909090
-   .plt            : { *(.plt) }
-   .text           : {
--    *(.text)
-+    TEXT_TEXT
-     SCHED_TEXT
-     LOCK_TEXT
-     *(.fixup)
-diff --git a/arch/um/kernel/uml.lds.S b/arch/um/kernel/uml.lds.S
-index bc59f97..8435105 100644
---- a/arch/um/kernel/uml.lds.S
-+++ b/arch/um/kernel/uml.lds.S
-@@ -37,7 +37,7 @@ SECTIONS
- 
-   .text      :
-   {
--    *(.text)
-+    TEXT_TEXT
-     SCHED_TEXT
-     LOCK_TEXT
-     *(.fixup)
-diff --git a/arch/v850/kernel/vmlinux.lds.S b/arch/v850/kernel/vmlinux.lds.S
-index 3563082..9e2b4bc 100644
---- a/arch/v850/kernel/vmlinux.lds.S
-+++ b/arch/v850/kernel/vmlinux.lds.S
-@@ -92,7 +92,7 @@
- #define TEXT_CONTENTS							      \
- 		_text = .;						      \
- 		__stext = . ;						      \
--        	*(.text)						      \
-+		TEXT_TEXT						      \
- 		SCHED_TEXT						      \
- 			*(.exit.text)	/* 2.5 convention */		      \
- 			*(.text.exit)	/* 2.4 convention */		      \
-diff --git a/arch/x86_64/kernel/vmlinux.lds.S b/arch/x86_64/kernel/vmlinux.lds.S
-index 88cfa50..c77142d 100644
---- a/arch/x86_64/kernel/vmlinux.lds.S
-+++ b/arch/x86_64/kernel/vmlinux.lds.S
-@@ -31,7 +31,7 @@ SECTIONS
- 	*(.bootstrap.text)
- 	_stext = .;
- 	/* Then the rest */
--	*(.text)
-+	TEXT_TEXT
- 	SCHED_TEXT
- 	LOCK_TEXT
- 	KPROBES_TEXT
-diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
-index 4fbd66a..7d2dfb2 100644
---- a/arch/xtensa/kernel/vmlinux.lds.S
-+++ b/arch/xtensa/kernel/vmlinux.lds.S
-@@ -84,7 +84,8 @@ SECTIONS
-   {
-     /* The .head.text section must be the first section! */
-     *(.head.text)
--    *(.literal .text)
-+    *(.literal)
-+    TEXT_TEXT
-     *(.srom.text)
-     VMLINUX_SYMBOL(__sched_text_start) = .;
-     *(.sched.literal .sched.text)
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f3806a7..a464227 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -139,6 +139,12 @@
- 		VMLINUX_SYMBOL(__security_initcall_end) = .;		\
+@@ -50,7 +50,7 @@ SECTIONS
+   .data : {			/* Data */
+ 	*(.spu)
+ 	*(.spi)
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
  	}
  
-+/* .text section. Map to function alignment to avoid address changes
-+ * during second ld run in second ld pass when generating System.map */
-+#define TEXT_TEXT							\
-+		ALIGN_FUNCTION();					\
-+		*(.text)
+diff --git a/arch/m68k/kernel/vmlinux-std.lds b/arch/m68k/kernel/vmlinux-std.lds
+index a65cef8..78f1392 100644
+--- a/arch/m68k/kernel/vmlinux-std.lds
++++ b/arch/m68k/kernel/vmlinux-std.lds
+@@ -28,7 +28,7 @@ SECTIONS
+   _etext = .;			/* End of text section */
+ 
+   .data : {			/* Data */
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
+ 	}
+ 
+diff --git a/arch/m68k/kernel/vmlinux-sun3.lds b/arch/m68k/kernel/vmlinux-sun3.lds
+index fa44d6c..c8999b2 100644
+--- a/arch/m68k/kernel/vmlinux-sun3.lds
++++ b/arch/m68k/kernel/vmlinux-sun3.lds
+@@ -23,7 +23,7 @@ SECTIONS
+   _etext = .;			/* End of text section */
+ 
+   .data : {			/* Data */
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
+ 	. = ALIGN(16);		/* Exception table */
+ 	__start___ex_table = .;
+diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
+index 6d4585e..07a0055 100644
+--- a/arch/m68knommu/kernel/vmlinux.lds.S
++++ b/arch/m68knommu/kernel/vmlinux.lds.S
+@@ -133,7 +133,7 @@ SECTIONS {
+ 	.data DATA_ADDR : {
+ 		. = ALIGN(4);
+ 		_sdata = . ;
+-		*(.data)
++		DATA_DATA
+ 		. = ALIGN(8192) ;
+ 		*(.data.init_task)
+ 		_edata = . ;
+diff --git a/arch/mips/kernel/vmlinux.lds.S b/arch/mips/kernel/vmlinux.lds.S
+index cfe4b67..9b9992c 100644
+--- a/arch/mips/kernel/vmlinux.lds.S
++++ b/arch/mips/kernel/vmlinux.lds.S
+@@ -62,7 +62,7 @@ SECTIONS
+     . = ALIGN(_PAGE_SIZE);
+     *(.data.init_task)
+ 
+-    *(.data)
++    DATA_DATA
+ 
+     CONSTRUCTORS
+   }
+diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
+index 321de82..4d96ba4 100644
+--- a/arch/parisc/kernel/vmlinux.lds.S
++++ b/arch/parisc/kernel/vmlinux.lds.S
+@@ -91,7 +91,7 @@ SECTIONS
+ 
+   . = ALIGN(L1_CACHE_BYTES);
+   .data : {			/* Data */
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
+ 	}
+ 
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index f266209..f7d7bf1 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -168,7 +168,7 @@ SECTIONS
+ #ifdef CONFIG_PPC32
+ 	.data    :
+ 	{
+-		*(.data)
++		DATA_DATA
+ 		*(.sdata)
+ 		*(.got.plt) *(.got)
+ 	}
+diff --git a/arch/ppc/kernel/vmlinux.lds.S b/arch/ppc/kernel/vmlinux.lds.S
+index 419ef7e..19db874 100644
+--- a/arch/ppc/kernel/vmlinux.lds.S
++++ b/arch/ppc/kernel/vmlinux.lds.S
+@@ -67,7 +67,7 @@ SECTIONS
+   . = ALIGN(4096);
+   .data    :
+   {
+-    *(.data)
++    DATA_DATA
+     *(.data1)
+     *(.sdata)
+     *(.sdata2)
+diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
+index 89c2ec5..7158a80 100644
+--- a/arch/s390/kernel/vmlinux.lds.S
++++ b/arch/s390/kernel/vmlinux.lds.S
+@@ -48,7 +48,7 @@ SECTIONS
+   BUG_TABLE
+ 
+   .data : {			/* Data */
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
+ 	}
+ 
+diff --git a/arch/sh/kernel/vmlinux.lds.S b/arch/sh/kernel/vmlinux.lds.S
+index 2367869..4c5b57e 100644
+--- a/arch/sh/kernel/vmlinux.lds.S
++++ b/arch/sh/kernel/vmlinux.lds.S
+@@ -41,7 +41,7 @@ SECTIONS
+   BUG_TABLE
+ 
+   .data : {			/* Data */
+-	*(.data)
++	DATA_DATA
+ 
+  	 /* Align the initial ramdisk image (INITRD) on page boundaries. */
+  	 . = ALIGN(PAGE_SIZE);
+diff --git a/arch/sh64/kernel/vmlinux.lds.S b/arch/sh64/kernel/vmlinux.lds.S
+index fdf72ce..02aea86 100644
+--- a/arch/sh64/kernel/vmlinux.lds.S
++++ b/arch/sh64/kernel/vmlinux.lds.S
+@@ -78,7 +78,7 @@ SECTIONS
+   _etext = .;			/* End of text section */
+ 
+   .data : C_PHYS(.data) {			/* Data */
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
+ 	}
+ 
+diff --git a/arch/sparc/kernel/vmlinux.lds.S b/arch/sparc/kernel/vmlinux.lds.S
+index 5cb600e..f75a1b8 100644
+--- a/arch/sparc/kernel/vmlinux.lds.S
++++ b/arch/sparc/kernel/vmlinux.lds.S
+@@ -22,7 +22,7 @@ SECTIONS
+   RODATA
+   .data    :
+   {
+-    *(.data)
++    DATA_DATA
+     CONSTRUCTORS
+   }
+   .data1   : { *(.data1) }
+diff --git a/arch/sparc64/kernel/vmlinux.lds.S b/arch/sparc64/kernel/vmlinux.lds.S
+index f06da20..fb648de 100644
+--- a/arch/sparc64/kernel/vmlinux.lds.S
++++ b/arch/sparc64/kernel/vmlinux.lds.S
+@@ -27,7 +27,7 @@ SECTIONS
+ 
+   .data    :
+   {
+-    *(.data)
++    DATA_DATA
+     CONSTRUCTORS
+   }
+   .data1   : { *(.data1) }
+diff --git a/arch/um/kernel/dyn.lds.S b/arch/um/kernel/dyn.lds.S
+index ec8477d..2454774 100644
+--- a/arch/um/kernel/dyn.lds.S
++++ b/arch/um/kernel/dyn.lds.S
+@@ -99,7 +99,8 @@ SECTIONS
+     *(.data.init_task)
+     . = ALIGN(KERNEL_STACK_SIZE);
+     *(.data.init_irqstack)
+-    *(.data .data.* .gnu.linkonce.d.*)
++    DATA_DATA
++    *(.data.* .gnu.linkonce.d.*)
+     SORT(CONSTRUCTORS)
+   }
+   .data1          : { *(.data1) }
+diff --git a/arch/um/kernel/uml.lds.S b/arch/um/kernel/uml.lds.S
+index 8435105..307b937 100644
+--- a/arch/um/kernel/uml.lds.S
++++ b/arch/um/kernel/uml.lds.S
+@@ -61,7 +61,7 @@ SECTIONS
+     *(.data.init_task)
+     . = ALIGN(KERNEL_STACK_SIZE);
+     *(.data.init_irqstack)
+-    *(.data)
++    DATA_DATA
+     *(.gnu.linkonce.d*)
+     CONSTRUCTORS
+   }
+diff --git a/arch/v850/kernel/vmlinux.lds.S b/arch/v850/kernel/vmlinux.lds.S
+index 9e2b4bc..6172599 100644
+--- a/arch/v850/kernel/vmlinux.lds.S
++++ b/arch/v850/kernel/vmlinux.lds.S
+@@ -113,7 +113,7 @@
+ /* Kernel data segment.  */
+ #define DATA_CONTENTS							      \
+ 		__sdata = . ;						      \
+-        	*(.data)						      \
++		DATA_DATA						      \
+ 			*(.exit.data)	/* 2.5 convention */		      \
+ 			*(.data.exit)	/* 2.4 convention */		      \
+ 		. = ALIGN (16) ;					      \
+diff --git a/arch/x86_64/kernel/vmlinux.lds.S b/arch/x86_64/kernel/vmlinux.lds.S
+index c77142d..dbccfda 100644
+--- a/arch/x86_64/kernel/vmlinux.lds.S
++++ b/arch/x86_64/kernel/vmlinux.lds.S
+@@ -55,7 +55,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);        /* Align data segment to page size boundary */
+ 				/* Data */
+   .data : AT(ADDR(.data) - LOAD_OFFSET) {
+-	*(.data)
++	DATA_DATA
+ 	CONSTRUCTORS
+ 	} :data
+ 
+diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
+index 7d2dfb2..4b7b4ff 100644
+--- a/arch/xtensa/kernel/vmlinux.lds.S
++++ b/arch/xtensa/kernel/vmlinux.lds.S
+@@ -145,7 +145,8 @@ SECTIONS
+   _fdata = .;
+   .data :
+   {
+-    *(.data) CONSTRUCTORS
++    DATA_DATA
++    CONSTRUCTORS
+     . = ALIGN(XCHAL_ICACHE_LINESIZE);
+     *(.data.cacheline_aligned)
+   }
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index a464227..52e2d69 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -9,6 +9,10 @@
+ /* Align . to a 8 byte boundary equals to maximum function alignment. */
+ #define ALIGN_FUNCTION()  . = ALIGN(8)
+ 
++/* .data section */
++#define DATA_DATA							\
++	*(.data)
 +
- /* sched.text is aling to function alignment to secure we have same
-  * address even at second ld pass when generating System.map */
- #define SCHED_TEXT							\
+ #define RODATA								\
+ 	. = ALIGN(4096);						\
+ 	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
 -- 
 1.5.1.rc3.20.gaa453
 
