@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbXERO70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbXERPCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbXERO70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 10:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbXERO7U
+	id S1755492AbXERPCN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 11:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbXERPB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 10:59:20 -0400
-Received: from h155.mvista.com ([63.81.120.158]:37860 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752992AbXERO7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 10:59:19 -0400
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Daniel Walker <dwalker@mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, tglx@linutronix.de,
-       mingo@elte.hu, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	 <464C99FF.8080404@ru.mvista.com>
-	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 07:56:57 -0700
-Message-Id: <1179500217.20519.53.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 18 May 2007 11:01:59 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58729 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754665AbXERPB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 11:01:59 -0400
+Date: Fri, 18 May 2007 17:01:51 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: maxk@qualcomm.com, bluez-devel@lists.sourceforge.net,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [oops] in bluetooth
+Message-ID: <20070518150151.GA2735@elf.ucw.cz>
+References: <20070518141342.GA3692@elf.ucw.cz> <1179497988.10069.198.camel@violet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179497988.10069.198.camel@violet>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-17 at 13:17 -0500, Kumar Gala wrote:
+Hi!
 
+> > I played with rfcomm here -- I'm trying to emulate bluetooth gps using
+> > normal pc -- and got couple of oopses.
+> > 
+> > pavel@amd:~$ uname -a
+> > Linux amd 2.6.21 #421 SMP Fri Apr 27 15:06:54 CEST 2007 i686 GNU/Linux
+> > pavel@amd:~$
+> > 
 > 
-> I haven't looked at all the new clock/timer code, is there any  
-> utility in having support for more than one clock source?
+> can you try with 2.6.22-rc1. I have seen this before, but never actually
+> found the root cause for it. It might be inside the sysfs layer.
 
-There is if the main clocksource has some issues where it can't be used.
-On x86 there are lots of different issues with the clocks, so they have
-to get switches once in a while. For instance, if the TSC changes
-frequencies then it can't be used, or if the TSC stops in different
-power states , it can't be used.. 
-
-Anything like that on PowerPC?
-
-Daniel
-
+I'm afraid it is not reproducible :-(.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
