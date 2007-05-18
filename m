@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbXERKfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbXERKgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758125AbXERKfZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 06:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbXERKfP
+	id S1759811AbXERKgg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 06:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXERKga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 06:35:15 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:59059 "EHLO
+	Fri, 18 May 2007 06:36:30 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:59582 "EHLO
 	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755705AbXERKfN (ORCPT
+	with ESMTP id S1755578AbXERKg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 06:35:13 -0400
+	Fri, 18 May 2007 06:36:29 -0400
 To: akpm@linux-foundation.org
 CC: linux-kernel@vger.kernel.org
-Subject: [patch 1/2] fuse: generic_write_checks() for direct_io
-Message-Id: <E1Hozmu-0003qO-00@dorka.pomaz.szeredi.hu>
+In-reply-to: <E1Hozmu-0003qO-00@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Fri, 18 May 2007 12:34:20 +0200)
+Subject: [patch 2/2] fuse: delete inode on drop
+References: <E1Hozmu-0003qO-00@dorka.pomaz.szeredi.hu>
+Message-Id: <E1HozoB-0003qj-00@dorka.pomaz.szeredi.hu>
 From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 18 May 2007 12:34:20 +0200
+Date: Fri, 18 May 2007 12:35:39 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
-
-These are for 2.6.22, please apply.
-
-Thanks.
-
-----
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-This fixes O_APPEND in direct IO mode.  Also checks writes against
-file size limits, notably rlimits.
+When inode is dropped (no more references) delete it from cache.
 
-Reported by Greg Bruno.
+There's not much point in keeping it cached, when a new lookup will
+refresh the attributes anyway.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
 
-Index: linux/fs/fuse/file.c
+Index: linux/fs/fuse/inode.c
 ===================================================================
---- linux.orig/fs/fuse/file.c	2007-04-26 12:54:32.000000000 +0200
-+++ linux/fs/fuse/file.c	2007-05-02 20:17:27.000000000 +0200
-@@ -609,7 +609,9 @@ static ssize_t fuse_direct_write(struct 
- 	ssize_t res;
- 	/* Don't allow parallel writes to the same file */
- 	mutex_lock(&inode->i_mutex);
--	res = fuse_direct_io(file, buf, count, ppos, 1);
-+	res = generic_write_checks(file, ppos, &count, 0);
-+	if (!res)
-+		res = fuse_direct_io(file, buf, count, ppos, 1);
- 	mutex_unlock(&inode->i_mutex);
- 	return res;
- }
+--- linux.orig/fs/fuse/inode.c	2007-05-18 11:32:21.000000000 +0200
++++ linux/fs/fuse/inode.c	2007-05-18 11:47:36.000000000 +0200
+@@ -470,6 +470,7 @@ static const struct super_operations fus
+ 	.destroy_inode  = fuse_destroy_inode,
+ 	.read_inode	= fuse_read_inode,
+ 	.clear_inode	= fuse_clear_inode,
++	.drop_inode	= generic_delete_inode,
+ 	.remount_fs	= fuse_remount_fs,
+ 	.put_super	= fuse_put_super,
+ 	.umount_begin	= fuse_umount_begin,
