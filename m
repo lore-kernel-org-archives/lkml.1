@@ -1,66 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbXERJzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbXERJzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757438AbXERJzJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 05:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbXERJy6
+	id S1760843AbXERJzg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 05:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755599AbXERJz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 05:54:58 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:47609 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754567AbXERJy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 05:54:58 -0400
-Date: Fri, 18 May 2007 11:54:54 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH] MM : alloc_large_system_hash() can free some memory for non
- power-of-two bucketsize
-Message-Id: <20070518115454.d3e32f4d.dada1@cosmosbay.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+	Fri, 18 May 2007 05:55:27 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:41754 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754656AbXERJzZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 05:55:25 -0400
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl>
+	 <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
+	 <1179385718.27354.17.camel@twins>
+	 <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+	 <20070517175327.GX11115@waste.org>
+	 <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
+	 <1179429499.2925.26.camel@lappy>
+	 <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
+	 <1179437209.2925.29.camel@lappy>
+	 <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 11:54:14 +0200
+Message-Id: <1179482054.2925.52.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alloc_large_system_hash() is called at boot time to allocate space for several large hash tables.
+On Thu, 2007-05-17 at 15:27 -0700, Christoph Lameter wrote:
+> On Thu, 17 May 2007, Peter Zijlstra wrote:
+> 
+> > The way I read the cpuset page allocator, it will only respect the
+> > cpuset if there is memory aplenty. Otherwise it will grab whatever. So
+> > still, it will only ever use ALLOC_NO_WATERMARKS if the whole system is
+> > in distress.
+> 
+> Sorry no. The purpose of the cpuset is to limit memory for an application. 
+> If the boundaries would be fluid then we would not need cpusets.
 
-Lately, TCP hash table was changed and its bucketsize is not a power-of-two anymore.
+Right, I see that I missed an ALLOC_CPUSET yesterday; but like Paul
+said, cpusets are ignored when in dire straights for an kernel alloc.
 
-On most setups, alloc_large_system_hash() allocates one big page (order > 0) with __get_free_pages(GFP_ATOMIC, order). This single high_order page has a power-of-two size, bigger than the needed size.
+Just not enough to make inter-cpuset interaction on slabs go away wrt
+ALLOC_NO_WATERMARK :-/
 
-We can free all pages that wont be used by the hash table.
+> But the same principles also apply for allocations to different zones in a 
+> SMP system. There are 4 zones DMA DMA32 NORMAL and HIGHMEM and we have 
+> general slabs for DMA and NORMAL. A slab that uses zone NORMAL falls back 
+> to DMA32 and DMA depending on the watermarks of the 3 zones. So a 
+> ZONE_NORMAL slab can exhaust memory available for ZONE_DMA.
+> 
+> Again the question is the watermarks of which zone? In case of the 
+> ZONE_NORMAL allocation you have 3 to pick from. Its the last one? Then its 
+> the same as ZONE_DMA, and you got a collision with the corresponding
+> DMA slab. Depending the system deciding on a zone where we allocate the 
+> page from you may get a different watermark situation.
 
-On a 1GB i386 machine, this patch saves 128 KB of LOWMEM memory.
+Isn't the zone mask the same for all allocations from a specific slab?
+If so, then the slab wide ->reserve_slab will still dtrt (barring
+cpusets).
 
-TCP established hash table entries: 32768 (order: 6, 393216 bytes)
+> On x86_64 systems you have the additional complication that there are 
+> even multiple DMA32 or NORMAL zones per node. Some will have DMA32 and 
+> NORMAL, others DMA32 alone or NORMAL alone. Which watermarks are we 
+> talking about?
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
----
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ae96dd8..2e0ba08 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -3350,6 +3350,20 @@ void *__init alloc_large_system_hash(const char *tablename,
- 			for (order = 0; ((1UL << order) << PAGE_SHIFT) < size; order++)
- 				;
- 			table = (void*) __get_free_pages(GFP_ATOMIC, order);
-+			/*
-+			 * If bucketsize is not a power-of-two, we may free
-+			 * some pages at the end of hash table.
-+			 */
-+			if (table) {
-+				unsigned long alloc_end = (unsigned long)table +
-+						(PAGE_SIZE << order);
-+				unsigned long used = (unsigned long)table +
-+						PAGE_ALIGN(size);
-+				while (used < alloc_end) {
-+					free_page(used);
-+					used += PAGE_SIZE;
-+				}
-+			}
- 		}
- 	} while (!table && size > PAGE_SIZE && --log2qty);
- 
+Watermarks like used by the page allocator given the slabs zone mask.
+The page allocator will only fall back to ALLOC_NO_WATERMARKS when all
+target zones are exhausted.
+
+> The use of ALLOC_NO_WATERMARKS depends on the contraints of the allocation 
+> in all cases. You can only compare the stresslevel (rank?) of allocations 
+> that have the same allocation constraints. The allocation constraints are
+> a result of gfp flags,
+
+The gfp zone mask is constant per slab, no? It has to, because the zone
+mask is only used when the slab is extended, other allocations live off
+whatever was there before them.
+
+>  cpuset configuration and memory policies in effect.
+
+Yes, I see now that these might become an issue, I will have to think on
+this.
+
