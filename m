@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbXERS00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763314AbXERS1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759541AbXERS00 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbXERS0U
+	id S1763314AbXERS1S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbXERS1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:26:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59616 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753742AbXERS0T (ORCPT
+	Fri, 18 May 2007 14:27:10 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:41641 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753742AbXERS1J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 14:26:19 -0400
-Date: Fri, 18 May 2007 11:26:19 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, dgc@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 06/10] xfs: inode defragmentation support
-In-Reply-To: <20070518181119.997242349@sgi.com>
-Message-ID: <Pine.LNX.4.64.0705181124430.11881@schroedinger.engr.sgi.com>
-References: <20070518181040.465335396@sgi.com> <20070518181119.997242349@sgi.com>
+	Fri, 18 May 2007 14:27:09 -0400
+Date: Fri, 18 May 2007 14:27:08 -0400
+To: Rob Landley <rob@landley.net>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Tejun Heo <htejun@gmail.com>,
+       Dave Jones <davej@redhat.com>, Francesco Pretto <ceztko@gmail.com>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+Message-ID: <20070518182708.GC10006@csclub.uwaterloo.ca>
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <20070517033947.GA24757@khazad-dum.debian.net> <20070517150420.GA10008@csclub.uwaterloo.ca> <200705180316.45969.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705180316.45969.rob@landley.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rats. Missing a piece due to the need to change the parameters of
-kmem_zone_init_flags (Isnt it possible to use kmem_cache_create 
-directly?).
+On Fri, May 18, 2007 at 03:16:45AM -0400, Rob Landley wrote:
+> Because the controller's far more likely to go than the moving parts...
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Having redundant everything would be preferable.  But cables do
+sometimes fail.  Not sure about the controllers, but if the controller
+went you might loose the whole raid.
 
-Index: slub/fs/xfs/xfs_vfsops.c
-===================================================================
---- slub.orig/fs/xfs/xfs_vfsops.c	2007-05-18 11:23:27.000000000 -0700
-+++ slub/fs/xfs/xfs_vfsops.c	2007-05-17 22:14:34.000000000 -0700
-@@ -109,13 +109,13 @@ xfs_init(void)
- 	xfs_inode_zone =
- 		kmem_zone_init_flags(sizeof(xfs_inode_t), "xfs_inode",
- 					KM_ZONE_HWALIGN | KM_ZONE_RECLAIM |
--					KM_ZONE_SPREAD, NULL);
-+					KM_ZONE_SPREAD, NULL, NULL);
- 	xfs_ili_zone =
- 		kmem_zone_init_flags(sizeof(xfs_inode_log_item_t), "xfs_ili",
--					KM_ZONE_SPREAD, NULL);
-+					KM_ZONE_SPREAD, NULL, NULL);
- 	xfs_chashlist_zone =
- 		kmem_zone_init_flags(sizeof(xfs_chashlist_t), "xfs_chashlist",
--					KM_ZONE_SPREAD, NULL);
-+					KM_ZONE_SPREAD, NULL, NULL);
- 
- 	/*
- 	 * Allocate global trace buffers.
+> On the models I saw they also literally gold plated the connectors, spun the 
+> disks faster, and basically did everything they could think of to make the 
+> same basic bundle of components more expensive.  (Of course the fundamental 
+> thing you do to make it more expensive is have smaller production runs in the 
+> first place...)
 
+Well I guess the theory is that a gold plated connector won't corrode as
+much so the connection is less likely to fail.  Not sure if there is any
+proof to backup that theory.
+
+--
+Len Sorensen
