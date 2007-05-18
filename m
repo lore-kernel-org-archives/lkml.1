@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbXERLKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761100AbXERLK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758032AbXERLKZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 07:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbXERLKQ
+	id S1761100AbXERLK6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 07:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXERLKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 07:10:16 -0400
-Received: from ns1.suse.de ([195.135.220.2]:48214 "EHLO mx1.suse.de"
+	Fri, 18 May 2007 07:10:51 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:50804 "EHLO smtp01.cdmon.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754649AbXERLKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 07:10:14 -0400
-Date: Fri, 18 May 2007 13:10:07 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Pavel Emelianov <xemul@sw.ru>
-Subject: Re: [PATCH 7/15] Make ISDN CAPI use seq_list_xxx helpers
-Message-ID: <20070518111007.GA16940@pingi.kke.suse.de>
-Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	devel@openvz.org, Pavel Emelianov <xemul@sw.ru>
+	id S1755724AbXERLKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 07:10:50 -0400
+Date: Fri, 18 May 2007 13:12:45 +0200
+From: DervishD <lkml@dervishd.net>
+To: Heikki Orsila <shdl@zakalwe.fi>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: usb-storage nice value
+Message-ID: <20070518111245.GB4871@DervishD>
+Mail-Followup-To: Heikki Orsila <shdl@zakalwe.fi>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070517100308.GA14667@DervishD> <20070518094632.GF10873@zakalwe.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.27-0.6-smp x86_64
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070518094632.GF10873@zakalwe.fi>
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The similar code exists here and is called capi_driver_get_idx().
-Use generic helpers now and remember to convert list_head to
-struct capi_driver in .show callback.
+    Hi Heikki :)
 
-Acked-by: Karsten Keil <kkeil@suse.de>
-Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+ * Heikki Orsila <shdl@zakalwe.fi> dixit:
+> On Thu, May 17, 2007 at 12:03:08PM +0200, DervishD wrote:
+> >     I'm having problems when reading/writing to external USB
+> >     harddisks: my *internal* harddisk stalls from time to time, so
+> >     watching a movie while copying data is a PITA (well, if the
+> >     movie is bad, the leaps help a bit...).
+> 
+> I've had a similar problem that is caused due to USB write caching.
+> When a process rapidly writes to a USB device, the whole memory gets
+> filled with write cache. When the memory is full of write cache for
+> USB, it is very slow to get clean pages as the USB device is slow.
+> This stalls the entire system performance.
 
----
+    I'm not sure if this is my problem, since the external USB disks
+seem to be at least as fast as the internal one (I've not noticed the
+device to be slow at all). I'm going to use the same sets of disks in
+another system that doesn't have an old VIA chipset, to see if the
+problem is the PCI-fill one.
 
-diff --git a/drivers/isdn/capi/kcapi_proc.c b/drivers/isdn/capi/kcapi_proc.c
-index 31f4fd8..845a797 100644
---- a/drivers/isdn/capi/kcapi_proc.c
-+++ b/drivers/isdn/capi/kcapi_proc.c
-@@ -243,36 +243,15 @@ create_seq_entry(char *name, mode_t mode
- 
- // ---------------------------------------------------------------------------
- 
--
--static __inline__ struct capi_driver *capi_driver_get_idx(loff_t pos)
--{
--	struct capi_driver *drv = NULL;
--	struct list_head *l;
--	loff_t i;
--
--	i = 0;
--	list_for_each(l, &capi_drivers) {
--		drv = list_entry(l, struct capi_driver, list);
--		if (i++ == pos)
--			return drv;
--	}
--	return NULL;
--}
--
- static void *capi_driver_start(struct seq_file *seq, loff_t *pos)
- {
--	struct capi_driver *drv;
- 	read_lock(&capi_drivers_list_lock);
--	drv = capi_driver_get_idx(*pos);
--	return drv;
-+	return seq_list_start(&capi_drivers, *pos);
- }
- 
- static void *capi_driver_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	struct capi_driver *drv = (struct capi_driver *)v;
--	++*pos;
--	if (drv->list.next == &capi_drivers) return NULL;
--	return list_entry(drv->list.next, struct capi_driver, list);
-+	return seq_list_next(v, &capi_drivers, pos);
- }
- 
- static void capi_driver_stop(struct seq_file *seq, void *v)
-@@ -282,7 +261,8 @@ static void capi_driver_stop(struct seq_
- 
- static int capi_driver_show(struct seq_file *seq, void *v)
- {
--	struct capi_driver *drv = (struct capi_driver *)v;
-+	struct capi_driver *drv = list_entry(v, struct capi_driver, list);
-+
- 	seq_printf(seq, "%-32s %s\n", drv->name, drv->revision);
- 	return 0;
- }
+    BTW, using "sync" mount option doesn't help: it just makes the data
+copying slower, but when the data is burst-written, the internal hard
+disk stalls for a bit. The stalls are shorter, though.
+
+> Would it be possible to limit per device write caching to N pages from 
+> userspace? Having just 128 MiB of write cache for a USB device would be 
+> sufficient for high performance, but yet have plenty of clean pages for 
+> other purposes.
+
+    Probably the "dirty_ratio" setting will help, I'm going to test it
+this weekend. I don't know if there are a per-device setting to tell how
+many pages can be used as cache.
+
+    Thanks for answering :)
+
+    Raúl Núñez de Arenas Coronado
 
 -- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
