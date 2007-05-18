@@ -1,200 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbXERJtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbXERJzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760631AbXERJtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 05:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXERJtI
+	id S1757438AbXERJzJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 05:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbXERJy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 05:49:08 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:7054 "EHLO relay.sw.ru"
+	Fri, 18 May 2007 05:54:58 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:47609 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754656AbXERJtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 05:49:07 -0400
-Message-ID: <464D7789.5030306@sw.ru>
-Date: Fri, 18 May 2007 13:53:13 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, devel@openvz.org
-Subject: [PATCH 10/15] Make some network-related proc files use seq_list_xxx
- helpers
-References: <464D6E87.7060605@sw.ru>
-In-Reply-To: <464D6E87.7060605@sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754567AbXERJy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 05:54:58 -0400
+Date: Fri, 18 May 2007 11:54:54 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH] MM : alloc_large_system_hash() can free some memory for non
+ power-of-two bucketsize
+Message-Id: <20070518115454.d3e32f4d.dada1@cosmosbay.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This includes /proc/net/protocols, /proc/net/rxrpc_calls
-and /proc/net/rxrpc_connections files.
+alloc_large_system_hash() is called at boot time to allocate space for several large hash tables.
 
-All three need seq_list_start_head to show some header.
+Lately, TCP hash table was changed and its bucketsize is not a power-of-two anymore.
 
-Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+On most setups, alloc_large_system_hash() allocates one big page (order > 0) with __get_free_pages(GFP_ATOMIC, order). This single high_order page has a power-of-two size, bigger than the needed size.
 
+We can free all pages that wont be used by the hash table.
+
+On a 1GB i386 machine, this patch saves 128 KB of LOWMEM memory.
+
+TCP established hash table entries: 32768 (order: 6, 393216 bytes)
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 ---
-
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 22183c2..528f65b 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1839,46 +1839,15 @@ void proto_unregister(struct proto *prot
- EXPORT_SYMBOL(proto_unregister);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index ae96dd8..2e0ba08 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3350,6 +3350,20 @@ void *__init alloc_large_system_hash(const char *tablename,
+ 			for (order = 0; ((1UL << order) << PAGE_SHIFT) < size; order++)
+ 				;
+ 			table = (void*) __get_free_pages(GFP_ATOMIC, order);
++			/*
++			 * If bucketsize is not a power-of-two, we may free
++			 * some pages at the end of hash table.
++			 */
++			if (table) {
++				unsigned long alloc_end = (unsigned long)table +
++						(PAGE_SIZE << order);
++				unsigned long used = (unsigned long)table +
++						PAGE_ALIGN(size);
++				while (used < alloc_end) {
++					free_page(used);
++					used += PAGE_SIZE;
++				}
++			}
+ 		}
+ 	} while (!table && size > PAGE_SIZE && --log2qty);
  
- #ifdef CONFIG_PROC_FS
--static inline struct proto *__proto_head(void)
--{
--	return list_entry(proto_list.next, struct proto, node);
--}
--
--static inline struct proto *proto_head(void)
--{
--	return list_empty(&proto_list) ? NULL : __proto_head();
--}
--
--static inline struct proto *proto_next(struct proto *proto)
--{
--	return proto->node.next == &proto_list ? NULL :
--		list_entry(proto->node.next, struct proto, node);
--}
--
--static inline struct proto *proto_get_idx(loff_t pos)
--{
--	struct proto *proto;
--	loff_t i = 0;
--
--	list_for_each_entry(proto, &proto_list, node)
--		if (i++ == pos)
--			goto out;
--
--	proto = NULL;
--out:
--	return proto;
--}
--
- static void *proto_seq_start(struct seq_file *seq, loff_t *pos)
- {
- 	read_lock(&proto_list_lock);
--	return *pos ? proto_get_idx(*pos - 1) : SEQ_START_TOKEN;
-+	return seq_list_start_head(&proto_list, *pos);
- }
- 
- static void *proto_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	++*pos;
--	return v == SEQ_START_TOKEN ? proto_head() : proto_next(v);
-+	return seq_list_next(v, &proto_list, pos);
- }
- 
- static void proto_seq_stop(struct seq_file *seq, void *v)
-@@ -1926,7 +1895,7 @@ static void proto_seq_printf(struct seq_
- 
- static int proto_seq_show(struct seq_file *seq, void *v)
- {
--	if (v == SEQ_START_TOKEN)
-+	if (v == &proto_list)
- 		seq_printf(seq, "%-9s %-4s %-8s %-6s %-5s %-7s %-4s %-10s %s",
- 			   "protocol",
- 			   "size",
-@@ -1938,7 +1907,7 @@ static int proto_seq_show(struct seq_fil
- 			   "module",
- 			   "cl co di ac io in de sh ss gs se re sp bi br ha uh gp em\n");
- 	else
--		proto_seq_printf(seq, v);
-+		proto_seq_printf(seq, list_entry(v, struct proto, node));
- 	return 0;
- }
- 
-diff --git a/net/rxrpc/ar-proc.c b/net/rxrpc/ar-proc.c
-index 1c0be0e..56a5317 100644
---- a/net/rxrpc/ar-proc.c
-+++ b/net/rxrpc/ar-proc.c
-@@ -30,31 +30,13 @@ static const char *rxrpc_conn_states[] =
-  */
- static void *rxrpc_call_seq_start(struct seq_file *seq, loff_t *_pos)
- {
--	struct list_head *_p;
--	loff_t pos = *_pos;
--
- 	read_lock(&rxrpc_call_lock);
--	if (!pos)
--		return SEQ_START_TOKEN;
--	pos--;
--
--	list_for_each(_p, &rxrpc_calls)
--		if (!pos--)
--			break;
--
--	return _p != &rxrpc_calls ? _p : NULL;
-+	return seq_list_start_head(&rxrpc_calls, *_pos);
- }
- 
- static void *rxrpc_call_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	struct list_head *_p;
--
--	(*pos)++;
--
--	_p = v;
--	_p = (v == SEQ_START_TOKEN) ? rxrpc_calls.next : _p->next;
--
--	return _p != &rxrpc_calls ? _p : NULL;
-+	return seq_list_next(v, &rxrpc_calls, pos);
- }
- 
- static void rxrpc_call_seq_stop(struct seq_file *seq, void *v)
-@@ -68,7 +50,7 @@ static int rxrpc_call_seq_show(struct se
- 	struct rxrpc_call *call;
- 	char lbuff[4 + 4 + 4 + 4 + 5 + 1], rbuff[4 + 4 + 4 + 4 + 5 + 1];
- 
--	if (v == SEQ_START_TOKEN) {
-+	if (v == &rxrpc_calls) {
- 		seq_puts(seq,
- 			 "Proto Local                  Remote                "
- 			 " SvID ConnID   CallID   End Use State    Abort   "
-@@ -129,32 +111,14 @@ struct file_operations rxrpc_call_seq_fo
-  */
- static void *rxrpc_connection_seq_start(struct seq_file *seq, loff_t *_pos)
- {
--	struct list_head *_p;
--	loff_t pos = *_pos;
--
- 	read_lock(&rxrpc_connection_lock);
--	if (!pos)
--		return SEQ_START_TOKEN;
--	pos--;
--
--	list_for_each(_p, &rxrpc_connections)
--		if (!pos--)
--			break;
--
--	return _p != &rxrpc_connections ? _p : NULL;
-+	return seq_list_start_head(&rxrpc_connections, *_pos);
- }
- 
- static void *rxrpc_connection_seq_next(struct seq_file *seq, void *v,
- 				       loff_t *pos)
- {
--	struct list_head *_p;
--
--	(*pos)++;
--
--	_p = v;
--	_p = (v == SEQ_START_TOKEN) ? rxrpc_connections.next : _p->next;
--
--	return _p != &rxrpc_connections ? _p : NULL;
-+	return seq_list_next(v, &rxrpc_connections, pos);
- }
- 
- static void rxrpc_connection_seq_stop(struct seq_file *seq, void *v)
-@@ -168,7 +132,7 @@ static int rxrpc_connection_seq_show(str
- 	struct rxrpc_transport *trans;
- 	char lbuff[4 + 4 + 4 + 4 + 5 + 1], rbuff[4 + 4 + 4 + 4 + 5 + 1];
- 
--	if (v == SEQ_START_TOKEN) {
-+	if (v == &rxrpc_connections) {
- 		seq_puts(seq,
- 			 "Proto Local                  Remote                "
- 			 " SvID ConnID   Calls    End Use State    Key     "
-
