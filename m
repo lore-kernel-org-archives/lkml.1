@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbXERVqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbXERVsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758536AbXERVqQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 17:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbXERVqJ
+	id S1757980AbXERVsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 17:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbXERVsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 17:46:09 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:41320 "EHLO ishtar.tlinx.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754516AbXERVqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 17:46:08 -0400
-Message-ID: <464E1E9A.8060605@tlinx.org>
-Date: Fri, 18 May 2007 14:46:02 -0700
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: building i386 requires s390: "driver/crypto/Kconfig" sourcing
- s390 arch
-References: <464DFF5F.5010905@tlinx.org> <20070518141735.aae3921a.randy.dunlap@oracle.com>
-In-Reply-To: <20070518141735.aae3921a.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 18 May 2007 17:48:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35833 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754078AbXERVsK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 17:48:10 -0400
+Date: Fri, 18 May 2007 14:46:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Misc: phantom, move to unlocked_ioctl
+Message-Id: <20070518144654.2ff459c1.akpm@linux-foundation.org>
+In-Reply-To: <4af2d03a0705181425o1ba78307uef3deb4970bb954d@mail.gmail.com>
+References: <20644182862815412171@wsc.cz>
+	<20070518140314.4cabb926.akpm@linux-foundation.org>
+	<4af2d03a0705181425o1ba78307uef3deb4970bb954d@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Fri, 18 May 2007 12:32:47 -0700 Linda Walsh wrote:
->
->   
->> Seems there is an include of s390 based config in file
->> drivers/crypto/Kconfig: source "arch/s390/crypto/Kconfig"
->>
->> The line doesn't seem to be need for an i386 build (haven't
->> tried x86_64 though).
->>
->> I take it that this was a braino?
->>     
->
-> Does it cause a problem?  If yes, what problem?
->   
-----
-    Yes.  My source tree has unrelated architectures removed,
-as a result when building i386 or x86_64, the config tools try to
-include files from the s390 architecture.  It isn't there. 
-I'm building x86, why should I be including files from other
-architectures.  It is hierarchically unclean.
+On Fri, 18 May 2007 23:25:52 +0200
+"Jiri Slaby" <jirislaby@gmail.com> wrote:
 
-    Perhaps the s390 device needs to be moved under the crypto with
-the other crypto devices?   If the standard that other architectures are
-using is to put their devices in the crypto directory, then one might
-expect all crypto devices to be there.  Why should s390 stick out and
-put its crypto device someplace under the s390 tree, forcing parts of the
-s390 tree to be included when building other architectures? 
-> It looks like someone thought that all Hardware crypto devices
-> should be listed under the same menu heading.  Makes some sense.
->   
-I thought the idea was the menu reflected the options available in
-the specific parts/branches -- i.e. if you have the menu option in
-the crypto tree, then the source code should be there as well.
+> On 5/18/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Fri, 18 May 2007 22:34:53 +0200 (CEST)
+> > Jiri Slaby <jirislaby@gmail.com> wrote:
+> >
+> > > @@ -118,7 +125,9 @@ static int phantom_ioctl(struct inode *inode, struct file *file, u_int cmd,
+> > >               if (r.reg > 7)
+> > >                       return -EINVAL;
+> > >
+> > > +             spin_lock(&dev->ioctl_lock);
+> > >               r.value = ioread32(dev->iaddr + r.reg);
+> > > +             spin_unlock(&dev->ioctl_lock);
+> >
+> > What is that locking protecting in here?
+> 
+> Well, what led me to do it is that I didn't know how much atomic are
+> ioread and iowrite. If concurrent process writes something to the
+> place in that space while the other one is reading it, doesn't matter,
+> correct?
+> 
 
-I'm not sure how flexible the include system is, but can't it be
-"not included" unless compiling for ARCH_s390?
+I don't think there are any atomicity concerns with the IO operation
+itself: it's just a 32-bit read or write against a PCI device.
 
+But there may be issues at a higher level: if some other thread of control
+can be writing that register then this read is basically meaningless, as
+the value which it returns can become wrong at any time.
 
+But that's just the nature of the ioctl API which is being implemented -
+there isn't much we can do about that, apart from perhaps deciding not to
+implement it at all.  This is a "read an arbitrary register" interface,
+yes?  I dunno what it's there for, but it is obviously racy against the
+write-a-register ioctls, so userspace just has to be aware of that.
+
+umm, assuming that this interface is actually valuable to userspace then
+I'd say that we can remove the spin_lock() and leave the rest alone.
+
+It _may_ make sense to change the SET_REGS operations to do a dummy read
+from the device though: PCI posting could cause the user's register-write
+to not actually hit the device for an arbitrarily long period after the
+ioctl has returned.
