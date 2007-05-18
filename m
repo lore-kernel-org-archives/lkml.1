@@ -1,66 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbXERU2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXERUad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756451AbXERU2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 16:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXERU2F
+	id S1755894AbXERUad (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 16:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXERUa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 16:28:05 -0400
-Received: from mail.screens.ru ([213.234.233.54]:45135 "EHLO mail.screens.ru"
+	Fri, 18 May 2007 16:30:26 -0400
+Received: from smtp2-g19.free.fr ([212.27.42.28]:59586 "EHLO smtp2-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbXERU2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 16:28:04 -0400
-Date: Sat, 19 May 2007 00:28:05 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Zilvinas Valinskas <zilvinas@wilibox.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel NFS lockd freezes notebook on shutdown (Linux 2.6.22-rc1 + CFS v12)
-Message-ID: <20070518202805.GA298@tv-sign.ru>
-References: <1179338441.4265.13.camel@zv.wilibox.com> <20070516121538.7b108c10.akpm@linux-foundation.org> <20070516225543.GA337@tv-sign.ru> <1179390065.4760.5.camel@zv.wilibox.com> <20070517184556.GA81@tv-sign.ru> <1179485230.3800.20.camel@zv.wilibox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179485230.3800.20.camel@zv.wilibox.com>
-User-Agent: Mutt/1.5.11
+	id S1752100AbXERUaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 16:30:25 -0400
+Message-ID: <464E0CDF.3030703@free.fr>
+Date: Fri, 18 May 2007 22:30:23 +0200
+From: matthieu castet <castet.matthieu@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070217 Iceape/1.1.1 (Debian-1.1.1-2)
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+References: <20070517143200.GA30850@lst.de>	 <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de>	 <1179414590.3642.69.camel@sauron>	 <20070517102931.6bbbad1a.akpm@linux-foundation.org>	 <pan.2007.05.17.20.30.30@free.fr> <1179455959.2859.527.camel@shinybook.infradead.org>
+In-Reply-To: <1179455959.2859.527.camel@shinybook.infradead.org>
+Content-Type: multipart/mixed;
+ boundary="------------020207000607070509010609"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/18, Zilvinas Valinskas wrote:
->
-> On Thu, 2007-05-17 at 22:45 +0400, Oleg Nesterov wrote:
-> >
-> > However, I can't understand why cleanup_workqueue_thread() hangs anyway.
-> > It shouldn't. Looks like rpciod/1 was preempted, and can't get CPU. According
-> > to kernel-nfs-freeze.log it is TASK_RUNNING. Strange.
-> >
-> > It is very sad, because this code was supposed to be cleanuped anyway,
-> > but if it is really buggy, it would be great to know why.
->
-> Can this be related to :
->
-> CONFIG_PREEMPT=y
+This is a multi-part message in MIME format.
+--------------020207000607070509010609
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Yes, but this preemption should be very unlikely, but it happens every time
-for you, strange. lockd in turn spins with preemption enabled, but somehow
-rpciod/1 can't make progress. system_state == SYSTEM_HALT, but this shouldn't
-affect preempt_schedule_irq(). So I think there is something else.
+Hi,
 
-> workqueue.objdump - without any patch.
+David Woodhouse wrote:
+> On Thu, 2007-05-17 at 20:30 +0000, Matthieu CASTET wrote:
+>> On arch that don't support aligned access, packed struct access will be 
+>> done byte per byte (but it could be the expected behavior if there 
+>> unaligned access).
+> 
+> When I tested this on ARM, the output for je32_to_cpu et al was fine.
+> For _other_ structures where I'd used __attribute__((packed)) to be
+> safe, gcc would emit code to handle unaligned loads. But not in the
+> simple case where the struct has only one member.
+> 
+> Are you suggesting that this has changed since I did my testing?
+> 
+here a small example I made and try with a sourcery 2006q3-27
 
-So it hangs waiting for cwq->thread == NULL, as expected.
 
-OK. I still can't see how this code could be wrong, but it is bad anyway and
-should be changed. The 2nd patch was done more than a month ago, but was
-delayed for some stupid reasons. I'll send it today.
+/tmp/arm-2006q3/bin/arm-none-linux-gnueabi-gcc -S test.c -O3 -o 
+test.s.packed
+/tmp/arm-2006q3/bin/arm-none-linux-gnueabi-gcc -S test.c -DNOP -O3 -o test.s
 
-Still, it is not clear to me what happens, and you have other crashes with
-nfs stop/start
+$diff test.s test.s.packed                                     19,23c19,34
+<       @ link register save eliminated.
+<       ldrh    r2, [r1, #0]
+<       ldrh    r1, [r0, #2]
+<       ldr     r0, [r0, #4]
+<       @ lr needed for prologue
+---
+ >       stmfd   sp!, {r4, r5, r6, lr}
+ >       ldrb    r2, [r0, #5]    @ zero_extendqisi2
+ >       ldrb    r3, [r0, #4]    @ zero_extendqisi2
+ >       mov     lr, r1
+ >       ldrb    r4, [r0, #6]    @ zero_extendqisi2
+ >       ldrb    r5, [r0, #3]    @ zero_extendqisi2
+ >       ldrb    r6, [r1, #1]    @ zero_extendqisi2
+ >       orr     r3, r3, r2, asl #8
+ >       ldrb    r1, [r0, #2]    @ zero_extendqisi2
+ >       ldrb    ip, [r0, #7]    @ zero_extendqisi2
+ >       ldrb    r2, [lr, #0]    @ zero_extendqisi2
+ >       orr     r3, r3, r4, asl #16
+ >       orr     r0, r3, ip, asl #24
+ >       orr     r1, r1, r5, asl #8
+ >       orr     r2, r2, r6, asl #8
+ >       ldmfd   sp!, {r4, r5, r6, lr}
 
-	http://marc.info/?l=linux-kernel&m=117939027602591
-	http://marc.info/?l=linux-kernel&m=117939257630947
 
-which probaly need some attention.
+Matthieu
 
-Thanks!
+--------------020207000607070509010609
+Content-Type: text/x-csrc;
+ name="test.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="test.c"
 
-Oleg.
+#include <stdint.h>
+#ifdef NOP
+#define jint32_t uint32_t
+#define jint16_t uint16_t
 
+#define je16_to_cpu(x) ((x))
+#define je32_to_cpu(x) ((x))
+#else
+
+typedef struct {
+    uint32_t v32;
+} __attribute__((packed)) jint32_t;
+
+typedef struct {
+    uint16_t v16;
+} __attribute__((packed)) jint16_t;
+#define je16_to_cpu(x) ((x).v16)
+#define je32_to_cpu(x) ((x).v32)
+#endif
+struct jffs2_sum_unknown_flash
+{
+	    jint16_t nodetype;  /* node type */
+};
+
+struct jffs2_unknown_node
+{
+    /* All start like this */
+    jint16_t magic;
+    jint16_t nodetype;
+    jint32_t totlen; /* So we can skip over nodes we don't grok */
+    jint32_t hdr_crc;
+};
+
+
+int boo(struct jffs2_unknown_node *node, void *sp)
+{
+	
+	foo(je32_to_cpu(node->totlen), je16_to_cpu(node->nodetype), je16_to_cpu(((struct jffs2_sum_unknown_flash *)sp)->nodetype));
+}
+
+--------------020207000607070509010609--
