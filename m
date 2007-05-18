@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbXERNeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXERNkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbXERNeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 09:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbXERNeL
+	id S1757847AbXERNkM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 09:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbXERNkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 09:34:11 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:13786 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754483AbXERNeK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 09:34:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Dzbpimn1aEl0trSFaRjJ+gHojaMghfPcK9wO3pqS3ZkPc8iRpk1iFHSjlrFiWhuG4RST5kfAFYFb6jmm4HZ7eMia0YKsO7aCr4yul9OAmzPyucFc42C08jZ1GdBI/Yl1IusMfhWy8bjHIRYxmbkk648Rn+ElYsqlBwMBJyYvBFM=
-Message-ID: <464DAB3D.4020000@gmail.com>
-Date: Fri, 18 May 2007 15:33:49 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Fri, 18 May 2007 09:40:00 -0400
+Received: from h155.mvista.com ([63.81.120.155]:31159 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753949AbXERNj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 09:39:59 -0400
+Message-ID: <464DAD06.2060504@ru.mvista.com>
+Date: Fri, 18 May 2007 17:41:26 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-CC: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
-       Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
-References: <46448965.7070500@gmail.com> <20070511145345.GA240@tv-sign.ru> <4645559D.4050602@gmail.com> <20070513192753.GA3014@tv-sign.ru> <46477239.9030007@gmail.com> <20070514194446.GA159@tv-sign.ru> <46496EC1.3090109@gmail.com> <20070515220024.GA615@tv-sign.ru> <464AEA47.7030600@gmail.com> <20070516185203.GB81@tv-sign.ru> <20070518073517.GB1573@ff.dom.local>
-In-Reply-To: <20070518073517.GB1573@ff.dom.local>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Dave Liu <r63238@freescale.com>, linuxppc-dev@ozlabs.org,
+       tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <200705172142.26739.sshtylyov@ru.mvista.com>	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>	<464CB071.5050504@ru.mvista.com>	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>	<464CB460.40905@ru.mvista.com>	<97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>	<1179464690.32247.370.camel@localhost.localdomain>	<1179466769.3658.0.camel@localhost.localdomain> <1179472096.32247.394.camel@localhost.localdomain>
+In-Reply-To: <1179472096.32247.394.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hello.
 
-Jarek Poplawski wrote:
-> 2. IMHO the current solution with smp barriers is very good:
-> these barriers are really needed and they should be enough.
-> Oleg repeats all the time he hates barriers, but I think
-> it's wrong approach - they should be seen as something
-> natural for programming modern processors and trying to
-> change the code only to avoid them is wrong (unless it
-> could be done with some minor changes).
-> 
-> 3. The alternative solution without barriers, based on the
-> idea of Tejun Heo and presented in the patch proposal from
-> 2007-05-13, could be probably a little faster (for some
-> processors), after some changes:
-> 
-> - I think, instead of separate __set_bit and __clear_bit,
-> WORK_STRUCT_QUEUED bit should be changed during set_wq_data
-> (additional parameter or new variant eg: set_wq_data_queued),
-> and similarly something like  work_clear_pending_queued -
-> so, without additional operations instead of these barriers.
-> 
-> - changing this if condition in try_to_grab_pending.
-> 
-> But there is a question - is this worth of one (last) bit
-> occupied only for optimisation (but not always)?
+Benjamin Herrenschmidt wrote:
 
-I wasn't really aiming for performance optimization.  I agree that we
-have to live with barriers but it's also true that they and other
-synchronization constructs can be difficult to understand and thus to
-verify, so IMHO, when it comes to synchronization constructs, it's best
-stick to or make things look similar to more established ways, so that
-people can categorize the usage and understand it more easily.
+>>>>Yes, on some implementations there can be other conditions that
+>>>>make a decrementer exception go away; there is no contradiction
+>>>>here (thankfully).  My wording was sloppy.
 
-Locked enter/leave model, where each cpu has its own lock and whatever
-entity enters and leaves a cpu while holding the respective per-cpu
-lock, guarantees that while holding a per-cpu lock, no one enters or
-leaves the cpu.  It's conceptually simple and basically the semantic
-that we're all trying to achieve here.
+>>>Some CPUs have the DEC exceptions basically edge triggered (yeah I know
 
-I think things can be made more similar to the locked enter/leave model
-using the extra bit by putting manipulation and testing of the bit into
-accesor functions, so readability was my primary concern not
-performance.  But, then again, we can probably make the barrier() model
-readable enough too with proper accessor functions and plenty of
-comments above them.
+>>for example?
 
--- 
-tejun
+>>>it sucks). That's why, among others, the IRQ soft-disable code has code
+>>>to re-trigger DEC exceptions ASAP (by setting it to 1.. note that we
+>>>could probably use 0 here, we've been a bit conservative).
+
+    Yeah, the classic decrementer is programmed off-by-one.
+
+> I'm not 100% certain... Paulus thinks all the old 6xx are like that, and
+> maybe POWER4. If I look at the oldest BookIV I can find (the 601), it
+
+    From the "PowerPC Operating Environment Architecture" that I've already 
+quoated t follows that POWER4-compatible decremented exception *must* be edge 
+triggered.
+
+> says that an exception is generated when the MSB transitions from 0 to
+> 1. It's not clear wether the exception sticks while that bit is 1 or is
+
+    Freescale MPC 7450 manual says the same, for example.
+
+> indeed considered as an "edge" event that gets cleared as soon as
+> delivered.
+
+> Ben.
+
+WBR, Sergei
