@@ -1,52 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbXERXHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761630AbXERXIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762967AbXERXHK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 19:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbXERXHA
+	id S1761630AbXERXIz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 19:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbXERXIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 19:07:00 -0400
-Received: from www.osadl.org ([213.239.205.134]:48586 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755626AbXERXG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 19:06:59 -0400
-Subject: Re: [Bug 8501] udivdi3  absence with gcc-4.3.0 on kernels
-	2.6.20.11 & 2.6.22.-rc1
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-kernel@vger.kernel.org, malitzke@metronets.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20070518152935.b5a4b3bf.akpm@linux-foundation.org>
-References: <200705181941.l4IJfOtf018049@fire-2.osdl.org>
-	 <20070518152935.b5a4b3bf.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 19 May 2007 01:12:23 +0200
-Message-Id: <1179529943.12981.106.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 18 May 2007 19:08:48 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:55762 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755626AbXERXIr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 19:08:47 -0400
+Message-ID: <464E31F8.7010701@zytor.com>
+Date: Fri, 18 May 2007 16:08:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070507)
+MIME-Version: 1.0
+To: Philipp Kohlbecher <pk031698@uni-greifswald.de>
+CC: Dave Jones <davej@codemonkey.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org, linux-assembly@vger.kernel.org
+Subject: Re: [PATCH 2.6.21.1] i386: save registers before intra-privilege
+ syscall
+References: <20070517220638.GA6532@localhost.localdomain> <464CD44A.5000307@zytor.com> <464CE4CA.8000704@uni-greifswald.de> <464CE653.4020006@zytor.com> <464D64B2.6050104@uni-greifswald.de> <464E2B97.9040205@zytor.com>
+In-Reply-To: <464E2B97.9040205@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-18 at 15:29 -0700, Andrew Morton wrote:
-> We use the above idiom in several places.  A suitable fix might be to hunt
-> down those various sites and then make them call a helper function which
-> does
-> 
-> 	if (unlikely(ns >= NSEC_PER_SEC)) {
-> 		do_div(...)
-> 	}
-> 
-> (Better would be to inline the comparison and to uninline the do_div(),
-> if it's a 32-bit arch.  Doing all this in a backportable fashion may
-> prove tricky)
+H. Peter Anvin wrote:
+> Sticking kernel mode values in those fields would add no value, except
+> as a poison (since %ss == KERNEL_DS and would cause a #GP(0) if it ever
+> reached IRET.)
 
-A suitable fix would be to slap the gcc maintainers with a large trout
-to fix this nonsense. At least they should provide a command line option
-to prevent this extra intelligent optimization.
+#SS(0), rather, of course.
 
-	tglx
-
-
+	-hpa
