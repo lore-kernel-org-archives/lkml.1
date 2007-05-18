@@ -1,112 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbXERRed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbXERRmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867AbXERRed (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 13:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXERRe1
+	id S1757447AbXERRmm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 13:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXERRmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 13:34:27 -0400
-Received: from mail.zelnet.ru ([80.92.97.13]:34356 "EHLO mail.zelnet.ru"
+	Fri, 18 May 2007 13:42:35 -0400
+Received: from pat.uio.no ([129.240.10.15]:44670 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751581AbXERRe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 13:34:26 -0400
-Message-ID: <464DE395.9060207@namesys.com>
-Date: Fri, 18 May 2007 21:34:13 +0400
-From: Edward Shishkin <edward@namesys.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Richard Purdie <rpurdie@openedhand.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc1-mm1
-References: <20070515201914.16944e04.akpm@linux-foundation.org>  <20070516095018.6f0048bc.randy.dunlap@oracle.com>  <1179334843.5854.28.camel@localhost.localdomain>  <20070516100632.391f5459.akpm@linux-foundation.org> <1179345653.5854.41.camel@localhost.localdomain>
-In-Reply-To: <1179345653.5854.41.camel@localhost.localdomain>
-X-Enigmail-Version: 0.86.0.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	id S1754614AbXERRme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 13:42:34 -0400
+Subject: Re: [PATCH 12/15] Make NFS client use seq_list_xxx helpers
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+In-Reply-To: <464D7A47.7000204@sw.ru>
+References: <464D6E87.7060605@sw.ru>  <464D7A47.7000204@sw.ru>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 13:42:02 -0400
+Message-Id: <1179510122.6488.101.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.200)
+X-UiO-Scanned: 8A0A718110081DDA820634264464A34624788A0E
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 402 total 1808829 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Purdie wrote:
+On Fri, 2007-05-18 at 14:04 +0400, Pavel Emelianov wrote:
+> This includes /proc/fs/nfsfs/servers and /proc/fs/nfsfs/volumes
+> entries.
+> 
+> Both need to show the header and use the list_head.
+> 
+> Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
->On Wed, 2007-05-16 at 10:06 -0700, Andrew Morton wrote:
+Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+
+> 
+> ---
+> 
+> diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+> index 50c6821..10355ec 100644
+> --- a/fs/nfs/client.c
+> +++ b/fs/nfs/client.c
+> @@ -1232,23 +1232,9 @@ static int nfs_server_list_open(struct i
+>   */
+>  static void *nfs_server_list_start(struct seq_file *m, loff_t *_pos)
+>  {
+> -	struct list_head *_p;
+> -	loff_t pos = *_pos;
+> -
+>  	/* lock the list against modification */
+>  	spin_lock(&nfs_client_lock);
+> -
+> -	/* allow for the header line */
+> -	if (!pos)
+> -		return SEQ_START_TOKEN;
+> -	pos--;
+> -
+> -	/* find the n'th element in the list */
+> -	list_for_each(_p, &nfs_client_list)
+> -		if (!pos--)
+> -			break;
+> -
+> -	return _p != &nfs_client_list ? _p : NULL;
+> +	return seq_list_start_head(&nfs_client_list, *_pos);
+>  }
 >  
->
->>On Wed, 16 May 2007 18:00:43 +0100 Richard Purdie <rpurdie@openedhand.com> wrote:
->>
->>    
->>
->>>On Wed, 2007-05-16 at 09:50 -0700, Randy Dunlap wrote:
->>>      
->>>
->>>>On Tue, 15 May 2007 20:19:14 -0700 Andrew Morton wrote:
->>>>
->>>>        
->>>>
->>>>>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
->>>>>          
->>>>>
->>>>LZO build fails on allyesconfig:
->>>>
->>>>lib/built-in.o: In function `lzo1x_1_compress':
->>>>lib/lzo/minilzo.c:724: multiple definition of `lzo1x_1_compress'                           fs/built-in.o:fs/reiser4/plugin/compress/minilzo.c:1307: first defined here
->>>>ld: Warning: size of symbol `lzo1x_1_compress' changed from 1541 in fs/built-in.o to 244 in lib/built-in.o
->>>>lib/built-in.o: In function `lzo1x_decompress':                                            lib/lzo/minilzo.c:885: multiple definition of `lzo1x_decompress'
->>>>fs/built-in.o:fs/reiser4/plugin/compress/minilzo.c:1466: first defined here                ld: Warning: size of symbol `lzo1x_decompress' changed from 1047 in fs/built-in.o to 678 in lib/built-in.o
->>>>make: *** [.tmp_vmlinux1] Error 1
->>>>make: Target `all' not remade because of errors.
->>>>        
->>>>
->>>Looks like reiser4 contains a copy of minilzo used as some kind of
->>>compression plugin. It can be dropped in favour of the version in
->>>lib/lzo/, they'll be compatible.
->>>
->>>Andrew: Do you want a patch to remove it from reiser4?
->>>
->>>      
->>>
->>yes please.
->>    
->>
->
->Sent.
->
->I also noticed that reiser4 is using lzo1x_decompress(), not
->lzo1x_decompress_safe(). The unsafe version is open to buffer overflows
->through malicious data since it performs no validation of where it
->writes output to.
->
-
-Hm, if you accept unknown drive, then yes, it is open..
-
-> I'm not sure whether thats acceptable in filesystem
->code, I'd suspect not?
+>  /*
+> @@ -1256,14 +1242,7 @@ static void *nfs_server_list_start(struc
+>   */
+>  static void *nfs_server_list_next(struct seq_file *p, void *v, loff_t *pos)
+>  {
+> -	struct list_head *_p;
+> -
+> -	(*pos)++;
+> -
+> -	_p = v;
+> -	_p = (v == SEQ_START_TOKEN) ? nfs_client_list.next : _p->next;
+> -
+> -	return _p != &nfs_client_list ? _p : NULL;
+> +	return seq_list_next(v, &nfs_client_list, pos);
+>  }
 >  
->
-
-Ok, we will consider safe decompression,
-moreover, as I remember, it doesn't lead to
-sensible performance drop..
-
-Thanks for this point,
-Edward.
-
->Fixing it is a case of s/lzo1x_decompress(/lzo1x_decompress_safe(/ in 
->fs/reiser4/plugin/compress/compress.c...
->
->Richard
->
->
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->
->
->
+>  /*
+> @@ -1282,7 +1261,7 @@ static int nfs_server_list_show(struct s
+>  	struct nfs_client *clp;
 >  
->
+>  	/* display header on line 1 */
+> -	if (v == SEQ_START_TOKEN) {
+> +	if (v == &nfs_client_list) {
+>  		seq_puts(m, "NV SERVER   PORT USE HOSTNAME\n");
+>  		return 0;
+>  	}
+> @@ -1323,23 +1302,9 @@ static int nfs_volume_list_open(struct i
+>   */
+>  static void *nfs_volume_list_start(struct seq_file *m, loff_t *_pos)
+>  {
+> -	struct list_head *_p;
+> -	loff_t pos = *_pos;
+> -
+>  	/* lock the list against modification */
+>  	spin_lock(&nfs_client_lock);
+> -
+> -	/* allow for the header line */
+> -	if (!pos)
+> -		return SEQ_START_TOKEN;
+> -	pos--;
+> -
+> -	/* find the n'th element in the list */
+> -	list_for_each(_p, &nfs_volume_list)
+> -		if (!pos--)
+> -			break;
+> -
+> -	return _p != &nfs_volume_list ? _p : NULL;
+> +	return seq_list_start_head(&nfs_volume_list, *_pos);
+>  }
+>  
+>  /*
+> @@ -1347,14 +1312,7 @@ static void *nfs_volume_list_start(struc
+>   */
+>  static void *nfs_volume_list_next(struct seq_file *p, void *v, loff_t *pos)
+>  {
+> -	struct list_head *_p;
+> -
+> -	(*pos)++;
+> -
+> -	_p = v;
+> -	_p = (v == SEQ_START_TOKEN) ? nfs_volume_list.next : _p->next;
+> -
+> -	return _p != &nfs_volume_list ? _p : NULL;
+> +	return seq_list_next(v, &nfs_volume_list, pos);
+>  }
+>  
+>  /*
+> @@ -1375,7 +1333,7 @@ static int nfs_volume_list_show(struct s
+>  	char dev[8], fsid[17];
+>  
+>  	/* display header on line 1 */
+> -	if (v == SEQ_START_TOKEN) {
+> +	if (v == &nfs_volume_list) {
+>  		seq_puts(m, "NV SERVER   PORT DEV     FSID\n");
+>  		return 0;
+>  	}
+> 
 
