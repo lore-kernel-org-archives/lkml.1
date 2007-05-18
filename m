@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbXERVyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760799AbXERV5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762071AbXERVyc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 17:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbXERVy0
+	id S1760799AbXERV5J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 17:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbXERV4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 17:54:26 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:56300 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754995AbXERVyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 17:54:25 -0400
-Message-ID: <464E2098.8020900@cfl.rr.com>
-Date: Fri, 18 May 2007 17:54:32 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Alex Volkov <avcp-lkmail@usa.net>, "'Jeff Garzik'" <jeff@garzik.org>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: Re: aio is unlikely
-References: <20070509151831.f5956b66.akpm@linux-foundation.org> <058f01c7998e$1406e370$650df7cd@MUMBA> <20070518140624.1a4db517.akpm@linux-foundation.org>
-In-Reply-To: <20070518140624.1a4db517.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 18 May 2007 17:56:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34853 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754693AbXERV4y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 17:56:54 -0400
+Date: Fri, 18 May 2007 14:54:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz =?ISO-8859-1?Q?Koz=5F=5Fowski?= <m.kozlowski@tuxland.pl>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] net driver updates
+Message-Id: <20070518145425.369cb9ff.akpm@linux-foundation.org>
+In-Reply-To: <200705182346.21835.m.kozlowski@tuxland.pl>
+References: <20070508063337.GA12474@havoc.gtf.org>
+	<200705182346.21835.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 May 2007 21:54:41.0045 (UTC) FILETIME=[230C0450:01C79997]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15184.001
-X-TM-AS-Result: No--5.468600-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Yes, if you agree with Jeff's original point.
-> 
-> But I don't, actually.  Sure, on some machines+workloads, AIO is more
-> common than sync IO.  But I expect that when we sum across all the
-> machines+workloads in the world, sync IO is more common and is hence the
-> case we should optimise for.
-> 
-> That's assuming that the unlikely() actually does something.
+On Fri, 18 May 2007 23:46:21 +0200
+Mariusz Koz__owski <m.kozlowski@tuxland.pl> wrote:
 
-But as Jeff said, that's not what unlikely is for.  It should only be 
-used when it is unlikely for everybody, all the time, because when it is 
-right, it helps rather little, but when it is wrong, it hurts a lot.
+> Hello, 
+> 
+> > diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
+> > index 7053026..111f23d 100644
+> > --- a/drivers/net/smc91x.h
+> > +++ b/drivers/net/smc91x.h
+> > @@ -279,6 +279,40 @@ SMC_outw(u16 val, void __iomem *ioaddr, int reg)
+> 
+> ...
+> 
+> > +#define SMC_outb(v, a, r) __ __ __outw(((inw((a)+((r)&~1))*(0xff<<8*(r%2)))) | ((v)<<(8*(r&2)))), (a) + ((r)&~1))
+> 
+> This one has unbalanced parenthesis.
+> 
 
+I dunno how you can tell - I can't count that high.
+
+Can this be programmed in C, rather than in cpp?
