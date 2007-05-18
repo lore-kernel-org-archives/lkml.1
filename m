@@ -1,53 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761074AbXERPEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760607AbXERPG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761074AbXERPEl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 11:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbXERPEe
+	id S1760607AbXERPG0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 11:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbXERPGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 11:04:34 -0400
-Received: from h155.mvista.com ([63.81.120.155]:31587 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755724AbXERPEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 11:04:34 -0400
-Message-ID: <464DC0DC.7050809@ru.mvista.com>
-Date: Fri, 18 May 2007 19:06:04 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>, tglx@linutronix.de, mingo@elte.hu,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	 <464C99FF.8080404@ru.mvista.com>	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org> <1179500217.20519.53.camel@imap.mvista.com>
-In-Reply-To: <1179500217.20519.53.camel@imap.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 18 May 2007 11:06:18 -0400
+Received: from adelie.ubuntu.com ([82.211.81.139]:40131 "EHLO
+	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755321AbXERPGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 11:06:17 -0400
+Subject: [PATCH/REDIFF] Cleanup libata HPA support
+From: Ben Collins <ben.collins@ubuntu.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@lxorguk.ukuu.org.uk, Kyle McMartin <kyle@ubuntu.com>,
+       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>
+Content-Type: text/plain
+Organization: Canonical
+Date: Fri, 18 May 2007 11:06:23 -0400
+Message-Id: <1179500783.6510.226.camel@cunning>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
+(Rediffed against latest git)
 
->>I haven't looked at all the new clock/timer code, is there any  
->>utility in having support for more than one clock source?
+The original HPA patch that Kyle worked on has gone into current git
+without some fixes that we worked through late in the Ubuntu feisty
+release. Here's the main copy of the notes I sent to Alan a few weeks
+ago in regards to the original patch, and a repatch against current git
+to fix things up. Note we have released feisty with the patch attached
+(albeit we have HPA enabled by default), and we have not had any reports
+directly attributed to it. However, in gutsy (devel for next release,
+based on current stock linux-2.6.git), we are already seeing reports of
+the same issues we already fixed. 
 
-> There is if the main clocksource has some issues where it can't be used.
+The issues we saw were mainly that some controllers didn't return the
+correct size from the SET_MAX command (sata_nv is a good example). So I
+added a re IDENTIFY after the SET_MAX, and compared all the numbers. If
+re-id was correct, but return value from SET_MAX wasn't we print a
+warning and use the IDENTIFY value regardless (since that's what the
+device is going to use).
 
-    You mean, having more than one clocksource is *useful* in this case?
+ata_hpa_resize() was changed to handle everything in a single call (checks
+for HPA support of the device, and whether ignore_hpa is set or not), and
+it also sets dev->n_sectors before returning.
 
-> On x86 there are lots of different issues with the clocks, so they have
-> to get switches once in a while. For instance, if the TSC changes
-> frequencies then it can't be used, or if the TSC stops in different
-> power states , it can't be used.. 
+So far with this patch, we were able to fix all the problems we were
+seeing with it (except the sata_nv issue where we had to revert to not
+using adma for NO_DATA transactions, already reported to libata-dev).
+We've not had any reports of further problems.
 
-    Yeah, and there's the rating systems for both clock sources/events.
+CC: Kyle McMartin <kyle@ubuntu.com>
+CC: linux-ide@vger.kernel.org
+CC: alan@lxorguk.ukuu.org.uk
+CC: Jeff Garzik <jgarzik@pobox.com>
+Signed-off-by: Ben Collins <bcollins@ubuntu.com>
 
-> Anything like that on PowerPC?
+ libata-core.c |  134 ++++++++++++++++++++++++++++++++++++++++------------------
+ 1 file changed, 93 insertions(+), 41 deletions(-)
 
-    Well, the decrementer frequency may change, at least in theory (if the bus 
-clock changes).
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index d3ea7f5..9a6962b 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -814,16 +814,19 @@ void ata_id_c_string(const u16 *id, unsigned char *s,
+ 
+ static u64 ata_tf_to_lba48(struct ata_taskfile *tf)
+ {
+-	u64 sectors = 0;
++	u64 sectors;
++	u32 high, low;
+ 
+-	sectors |= ((u64)(tf->hob_lbah & 0xff)) << 40;
+-	sectors |= ((u64)(tf->hob_lbam & 0xff)) << 32;
+-	sectors |= (tf->hob_lbal & 0xff) << 24;
+-	sectors |= (tf->lbah & 0xff) << 16;
+-	sectors |= (tf->lbam & 0xff) << 8;
+-	sectors |= (tf->lbal & 0xff);
++	high = (tf->hob_lbah << 16) |
++	       (tf->hob_lbam <<  8) |
++		tf->hob_lbal;
++	low  = (tf->lbah << 16) |
++	       (tf->lbam <<  8) |
++		tf->lbal;
+ 
+-	return ++sectors;
++	sectors = ((u64)high << 24) | low;
++
++	return sectors + 1;
+ }
+ 
+ static u64 ata_tf_to_lba(struct ata_taskfile *tf)
+@@ -965,52 +968,101 @@ static u64 ata_set_native_max_address(struct ata_device *dev, u64 new_sectors)
+ }
+ 
+ /**
++ *	ata_hpa_get_native_size	-	Get the native size of a disk
++ *	@dev: Device to get the size for
++ *
++ *	Read the size of an LBA28 or LBA48 disk with HPA features and
++ *	return the native size. Caller must check that the drive has HPA
++ *	feature set enabled.
++ */
++static u64 ata_hpa_get_native_size(struct ata_device *dev)
++{
++	if (ata_id_has_lba48(dev->id))
++		return ata_read_native_max_address_ext(dev);
++	else
++		return ata_read_native_max_address(dev);
++}
++
++
++static u64 ata_hpa_set_native_size(struct ata_device *dev, u64 new_sectors)
++{
++	if (ata_id_has_lba48(dev->id))
++		return ata_set_native_max_address_ext(dev, new_sectors);
++	else
++		return ata_set_native_max_address(dev, new_sectors);
++}
++
++static unsigned long long sectors_to_MB(unsigned long long n)
++{
++	n <<= 9;		/* make it bytes */
++	do_div(n, 1000000);	/* make it MB */
++	return n;
++}
++
++static u64 ata_id_n_sectors(const u16 *id);
++
++/**
+  *	ata_hpa_resize		-	Resize a device with an HPA set
+  *	@dev: Device to resize
+  *
+  *	Read the size of an LBA28 or LBA48 disk with HPA features and resize
+- *	it if required to the full size of the media. The caller must check
+- *	the drive has the HPA feature set enabled.
++ *	it if required to the full size of the media.
+  */
+ 
+-static u64 ata_hpa_resize(struct ata_device *dev)
++static void ata_hpa_resize(struct ata_device *dev)
+ {
+-	u64 sectors = dev->n_sectors;
+ 	u64 hpa_sectors;
+-	
+-	if (ata_id_has_lba48(dev->id))
+-		hpa_sectors = ata_read_native_max_address_ext(dev);
+-	else
+-		hpa_sectors = ata_read_native_max_address(dev);
+ 
++	if (!ata_id_hpa_enabled(dev->id) || !ata_ignore_hpa)
++		return;
++
++	hpa_sectors = ata_hpa_get_native_size(dev);
++	
+ 	/* if no hpa, both should be equal */
+-	ata_dev_printk(dev, KERN_INFO, "%s 1: sectors = %lld, "
+-				"hpa_sectors = %lld\n",
+-		__FUNCTION__, (long long)sectors, (long long)hpa_sectors);
++	ata_dev_printk(dev, KERN_INFO, "%s 1: sectors = %lld, hpa_sectors = %lld\n",
++		__FUNCTION__, dev->n_sectors, hpa_sectors);
++
++	if (hpa_sectors > dev->n_sectors) {
++		u64 ret_sectors;
+ 
+-	if (hpa_sectors > sectors) {
+ 		ata_dev_printk(dev, KERN_INFO,
+-			"Host Protected Area detected:\n"
+-			"\tcurrent size: %lld sectors\n"
+-			"\tnative size: %lld sectors\n",
+-			(long long)sectors, (long long)hpa_sectors);
+-
+-		if (ata_ignore_hpa) {
+-			if (ata_id_has_lba48(dev->id))
+-				hpa_sectors = ata_set_native_max_address_ext(dev, hpa_sectors);
+-			else
+-				hpa_sectors = ata_set_native_max_address(dev,
+-								hpa_sectors);
+-
+-			if (hpa_sectors) {
+-				ata_dev_printk(dev, KERN_INFO, "native size "
+-					"increased to %lld sectors\n",
+-					(long long)hpa_sectors);
+-				return hpa_sectors;
++			"Host Protected Area detected.\n"
++			"     current size : %llu sectors (%llu MB)\n"
++			"     native  size : %llu sectors (%llu MB)\n",
++			dev->n_sectors, sectors_to_MB(dev->n_sectors),
++			hpa_sectors, sectors_to_MB(hpa_sectors));
++
++		ret_sectors = ata_hpa_set_native_size(dev, hpa_sectors);
++		if (ret_sectors != hpa_sectors) {
++			ata_dev_printk(dev, KERN_ERR,
++				"SET of native returned %llu, expected %llu\n",
++				ret_sectors, hpa_sectors);
++		}
++
++		if (ret_sectors) {
++			u16 *id = (void *)dev->ap->sector_buf;
++			int rc;
++
++			/* Re read the IDENTITY to see if the set took */
++			rc = ata_dev_read_id(dev, &dev->class,
++					     ATA_READID_POSTRESET, id);
++
++			dev->n_sectors = ata_id_n_sectors(id);
++
++			if (dev->n_sectors == hpa_sectors) {
++				ata_dev_printk(dev, KERN_INFO,
++					"Native size increased to %llu sectors\n",
++					hpa_sectors);
++				memcpy(dev->id, id, sizeof(id[0]) * ATA_ID_WORDS);
++			} else {
++				ata_dev_printk(dev, KERN_ERR,
++					"Failed to set native size, "
++					"drive reports %llu sectors\n",
++					dev->n_sectors);
+ 			}
+ 		}
+ 	}
+-	return sectors;
++	return;
+ }
+ 
+ static u64 ata_id_n_sectors(const u16 *id)
+@@ -1939,8 +1991,8 @@ int ata_dev_configure(struct ata_device *dev)
+ 					dev->flags |= ATA_DFLAG_FLUSH_EXT;
+ 			}
+ 
+-			if (ata_id_hpa_enabled(dev->id))
+-				dev->n_sectors = ata_hpa_resize(dev);
++			/* Check for HPA, and resize if requested */
++			ata_hpa_resize(dev);
+ 
+ 			/* config NCQ */
+ 			ata_dev_config_ncq(dev, ncq_desc, sizeof(ncq_desc));
 
-> Daniel
+-- 
+Ubuntu   : http://www.ubuntu.com/
+Linux1394: http://wiki.linux1394.org/
 
-WBR, Sergei
