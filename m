@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761229AbXEROs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759070AbXEROvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761229AbXEROs2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 10:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbXEROsN
+	id S1759070AbXEROvU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 10:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbXEROvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 10:48:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37501 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756890AbXEROsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 10:48:12 -0400
-Date: Fri, 18 May 2007 07:45:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-cc: Davi Arnaut <davi@haxent.com.br>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] timerfd/eventfd context lock doesn't protect against
- poll_wait
-In-Reply-To: <Pine.LNX.4.64.0705172258400.5705@alien.or.mcafeemobile.com>
-Message-ID: <alpine.LFD.0.98.0705180744040.3890@woody.linux-foundation.org>
-References: <464D2142.3070705@haxent.com.br>
- <Pine.LNX.4.64.0705172258400.5705@alien.or.mcafeemobile.com>
+	Fri, 18 May 2007 10:51:14 -0400
+Received: from h155.mvista.com ([63.81.120.155]:31502 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754315AbXEROvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 10:51:13 -0400
+Message-ID: <464DBDBA.3060801@ru.mvista.com>
+Date: Fri, 18 May 2007 18:52:42 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: galak@kernel.crashing.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
+In-Reply-To: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
+Albert Cahalan wrote:
 
-On Thu, 17 May 2007, Davide Libenzi wrote:
-> 
-> Thx Davi, patch is correct. Nice catch. But at this point instead of 
-> ending up getting two locks, we may look into using Andrew suggestion of 
-> reusing the waitqueue lock. Is it universally considered a "legal" 
-> operation?
+>>>>> I haven't looked at all the new clock/timer code, is there any
+>>>>> utility in having support for more than one clock source?
 
-Yes. Perhaps not for drivers etc, but stuff that is deeply involved in 
-waitqueue handling anyway, sure.
+>>>> Of course, you may register as many as you like.
 
-		Linus
+>>> Sure, but is there any utility in registering more than the
+>>> decrementer on PPC?
+
+>> Not yet. I'm not sure I know any other PPC CPU facility fitting
+>> for clockevents. In theory, FIT could be used -- but its period
+>> is measured in powers of 2, IIRC.
+
+> I'd really like to have that as an option. It would allow oprofile
+> to safely use hardware events on the MPC74xx "G4" processors.
+> Alternately it would allow thermal events. It is safe to use at
+> most one of the three (decrementer,profiling,thermal) interrupts.
+> If two were to hit at the same time, badness happens.
+
+    Unfortunately, FIT exists only on Book E CPUs and MPC74xx aren't Book E, IIUC.
+
+> It's possible to wrapper the interrupt in something that divides
+> down, calling the normal code only some of the time. I think one
+> of the FIT choices is about 4 kHz on my system, which would be OK.
+
+    Erm, are you sure you have FIT (or is your system not MPC74xx based)?
+
+> Full oprofile functionality would be wonderful.
+
+WBR, Sergei
