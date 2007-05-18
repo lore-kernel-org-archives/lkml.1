@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760484AbXERPmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759056AbXERPql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760484AbXERPmn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 11:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbXERPmg
+	id S1759056AbXERPql (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 11:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbXERPqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 11:42:36 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50652 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754356AbXERPme (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 11:42:34 -0400
-Date: Fri, 18 May 2007 16:42:10 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-In-Reply-To: <20070518040854.GA15654@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0705181633240.24071@blonde.wat.veritas.com>
-References: <20070518040854.GA15654@wotan.suse.de>
+	Fri, 18 May 2007 11:46:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35774 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754356AbXERPqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 11:46:34 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18XKfoQYhsXyZSsWPPRg5LTNjQ81CvEFHNJH6f3hx
+	0IQFye7w7uxZCa
+Date: Fri, 18 May 2007 17:46:29 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: tglx@linutronix.de
+Cc: mingo@elte.hu, yi.zhu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@infradead.org
+Subject: Increased ipw2200 power usage with dynticks
+Message-ID: <20070518154629.GA27105@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	tglx@linutronix.de, mingo@elte.hu, yi.zhu@intel.com,
+	linux-kernel@vger.kernel.org, arjan@infradead.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 18 May 2007 15:42:33.0615 (UTC) FILETIME=[26DC91F0:01C79963]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AG5waWdnaW5Ac3VzZS5kZQBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGxpbnV4LWFyY2hAdmdlci5rZXJuZWwub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007, Nick Piggin wrote:
-> 
-> If we add 8 bytes to struct page on 64-bit machines, it becomes 64 bytes,
-> which is quite a nice number for cache purposes.
-> 
-> However we don't have to let those 8 bytes go to waste: we can use them
-> to store the virtual address of the page, which kind of makes sense for
-> 64-bit, because they can likely to use complicated memory models.
+Hi,
 
-Sooner rather than later, don't we need those 8 bytes to expand from
-atomic_t to atomic64_t _count and _mapcount?  Not that we really need
-all 64 bits of both, but I don't know how to work atomically with less.
+while playing around with powertop, I noticed that my power usage wasn't
+what it used to be. In total idle mode, everything was fine, but as soon
+as I loaded the ipw2200 module and bring up the device, power usage
+rises to about 16.8W, while kernel up to 2.6.20 used only about 15.3W. A
+day worth of bisecting later, I could put my finger on dynticks, tested
+2.6.22-rc1 without dynticks and power usage was at least down to about
+15.5-15.6W, not perfect, but a lot better.
 
-(Why do I have this sneaking feeling that you're actually wanting
-to stick something into the lower bits of page->virtual?)
+It seems that ipw2200 wants to do something about its power usage, but
+dynticks stops it from doing so, as holding down the "Fn" key, and
+thereby generating about 60 additional wakeups per second, brings the
+power usage down to about the same as in the non-dynticks case.
 
-Hugh
+Powertop also revealed, that with dynticks, my CPU is spending 99% in C2
+when the power usage is high, but about 50% in C3 when I hold down "Fn".
+
+Let me know if you need further details.
+
+Thanks,
+Björn
