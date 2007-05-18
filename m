@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXERJQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbXERJR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061AbXERJQR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 05:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXERJQL
+	id S1758851AbXERJR7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 05:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbXERJRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 05:16:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35241 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753957AbXERJQK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 05:16:10 -0400
-Date: Fri, 18 May 2007 04:16:07 -0500
-From: Robin Holt <holt@sgi.com>
-To: Andrea Righi <righiandr@users.sourceforge.net>
-Cc: Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [RFC] log out-of-virtual-memory events
-Message-ID: <20070518091606.GA1010@lnx-holt.americas.sgi.com>
-References: <464C81B5.8070101@users.sourceforge.net> <464C9D82.60105@redhat.com> <464D5AA4.8080900@users.sourceforge.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464D5AA4.8080900@users.sourceforge.net>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 18 May 2007 05:17:52 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:27773 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754776AbXERJRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 05:17:52 -0400
+Message-ID: <464D7005.6030504@sw.ru>
+Date: Fri, 18 May 2007 13:21:09 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dhowells@redhat.com, chas@cmf.nrl.navy.mil, axboe@kernel.dk,
+       herbert@gondor.apana.org.au, dmitry.torokhov@gmail.com, kkeil@suse.de,
+       David Miller <davem@davemloft.net>, Patrick McHardy <kaber@trash.net>,
+       viro@zeniv.linux.org.uk, devel@openvz.org
+Subject: [PATCH 1/15] The helper functions itselves
+References: <464D6E87.7060605@sw.ru>
+In-Reply-To: <464D6E87.7060605@sw.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 09:50:03AM +0200, Andrea Righi wrote:
-> Rik van Riel wrote:
-> > Andrea Righi wrote:
-> >> I'm looking for a way to keep track of the processes that fail to
-> >> allocate new
-> >> virtual memory. What do you think about the following approach
-> >> (untested)?
-> >
-> > Looks like an easy way for users to spam syslogd over and
-> > over and over again.
-> >
-> > At the very least, shouldn't this be dependant on print_fatal_signals?
-> >
-> 
-> Anyway, with print-fatal-signals enabled a user could spam syslogd too, simply
-> with a (char *)0 = 0 program, but we could always identify the spam attempts
-> logging the process uid...
-> 
-> In any case, I agree, it should depend on that patch...
-> 
-> What about adding a simple msleep_interruptible(SOME_MSECS) at the end of
-> log_vm_enomem() or, at least, a might_sleep() to limit the potential spam/second
-> rate?
+Many places in kernel use seq_file API to iterate over a regular
+list_head. The code for such iteration is identical in all the
+places, so it's worth introducing a common helpers.
 
-An msleep will slow down this process, but do nothing about slowing
-down the amount of logging.  Simply fork a few more processes and all
-you are doing with msleep is polluting the pid space.
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
-What about a throttling similar to what ia64 does for floating point
-assist faults (handle_fpu_swa()).  There is a thread flag to not log
-the events at all.  It is rate throttled globally, but uses per cpu
-variables for early exits.  This algorithm scaled well to a thousand
-cpus.
+---
 
-I think this may be a good fit.
+diff --git a/fs/seq_file.c b/fs/seq_file.c
+index 0ac22af..49194a4 100644
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -447,3 +447,37 @@ int seq_puts(struct seq_file *m, const c
+ 	return -1;
+ }
+ EXPORT_SYMBOL(seq_puts);
++
++struct list_head *seq_list_start(struct list_head *head, loff_t pos)
++{
++	struct list_head *lh;
++
++	list_for_each(lh, head)
++		if (pos-- == 0)
++			return lh;
++
++	return NULL;
++}
++
++EXPORT_SYMBOL(seq_list_start);
++
++struct list_head *seq_list_start_head(struct list_head *head, loff_t pos)
++{
++	if (!pos)
++		return head;
++
++	return seq_list_start(head, pos - 1);
++}
++
++EXPORT_SYMBOL(seq_list_start_head);
++
++struct list_head *seq_list_next(void *v, struct list_head *head, loff_t *ppos)
++{
++	struct list_head *lh;
++
++	lh = ((struct list_head *)v)->next;
++	++*ppos;
++	return lh == head ? NULL : lh;
++}
++
++EXPORT_SYMBOL(seq_list_next);
+diff --git a/include/linux/seq_file.h b/include/linux/seq_file.h
+index 3e3cccb..83783ab 100644
+--- a/include/linux/seq_file.h
++++ b/include/linux/seq_file.h
+@@ -50,5 +50,16 @@ int seq_release_private(struct inode *, 
+ 
+ #define SEQ_START_TOKEN ((void *)1)
+ 
++/*
++ * Helpers for iteration over list_head-s in seq_files
++ */
++
++extern struct list_head *seq_list_start(struct list_head *head,
++		loff_t pos);
++extern struct list_head *seq_list_start_head(struct list_head *head,
++		loff_t pos);
++extern struct list_head *seq_list_next(void *v, struct list_head *head,
++		loff_t *ppos);
++
+ #endif
+ #endif
 
-Good Luck,
-Robin
