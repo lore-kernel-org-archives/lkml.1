@@ -1,128 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762934AbXERGyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763088AbXERGye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762934AbXERGyU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 02:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbXERGyJ
+	id S1763088AbXERGye (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 02:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762381AbXERGyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 02:54:09 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33028 "EHLO pasmtpA.tele.dk"
+	Fri, 18 May 2007 02:54:16 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:59604 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755063AbXERGyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 02:54:07 -0400
-Date: Fri, 18 May 2007 08:55:04 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
-Subject: [PATCH 08/14] mm: fix section mismatch warnings
-Message-ID: <20070518065504.GH12284@uranus.ravnborg.org>
+	id S1762195AbXERGyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 02:54:14 -0400
+Date: Fri, 18 May 2007 08:52:31 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH 01/14] kbuild: make modpost section warnings clearer
+In-Reply-To: <20070518064918.GA12284@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.61.0705180851200.3231@yvahk01.tjqt.qr>
 References: <20070518064126.GA12193@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070518064126.GA12193@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+ <20070518064918.GA12284@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 90deffab03386508abfa1529fe4926a2fc7300f2 Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Thu, 17 May 2007 23:29:25 +0200
-Subject: [PATCH 08/14] mm: fix section mismatch warnings
 
-modpost had two cases hardcoded for mm/
-Shift over to __init_refok and kill the
-hardcoded function names in modpost.
+On May 18 2007 08:49, Sam Ravnborg wrote:
+>index 113dc77..acd28ab 100644
+>--- a/scripts/mod/modpost.c
+>+++ b/scripts/mod/modpost.c
+>@@ -885,29 +885,28 @@ static void warn_sec_mismatch(const char *modname, const char *fromsec,
+> 		return;
+> 
+> 	if (before && after) {
+>-		warn("%s - Section mismatch: reference to %s:%s from %s "
+>-		     "between '%s' (at offset 0x%llx) and '%s'\n",
+>-		     modname, secname, refsymname, fromsec,
+>+		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s "
+>+		     "(between '%s' and '%s')\n",
+>+		     modname, fromsec, (long long)r.r_offset,
+>+		     secname, refsymname,
 
-This has the drawback that the functions
-will always be kept no matter configuration.
-With previous code the function were placed in
-init section if configuration allowed it.
+%x always takes unsigned. %llx => (unsigned long long)r.r_offset.
+Ditto below.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- mm/page_alloc.c       |    4 ++--
- mm/sparse.c           |    2 +-
- scripts/mod/modpost.c |   19 -------------------
- 3 files changed, 3 insertions(+), 22 deletions(-)
+> 		     elf->strtab + before->st_name,
+>-		     (long long)r.r_offset,
+> 		     elf->strtab + after->st_name);
+> 	} else if (before) {
+>-		warn("%s - Section mismatch: reference to %s:%s from %s "
+>-		     "after '%s' (at offset 0x%llx)\n",
+>-		     modname, secname, refsymname, fromsec,
+>-		     elf->strtab + before->st_name,
+>-		     (long long)r.r_offset);
+>+		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s "
+>+		     "(after '%s')\n",
+>+		     modname, fromsec, (long long)r.r_offset,
+>+		     secname, refsymname,
+>+		     elf->strtab + before->st_name);
+[more occurences]
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ae96dd8..8b000d6 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2165,7 +2165,7 @@ void __init setup_per_cpu_pageset(void)
- 
- #endif
- 
--static __meminit noinline
-+static noinline __init_refok
- int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
- {
- 	int i;
-@@ -2678,7 +2678,7 @@ static void __meminit free_area_init_core(struct pglist_data *pgdat,
- 	}
- }
- 
--static void __meminit alloc_node_mem_map(struct pglist_data *pgdat)
-+static void __init_refok alloc_node_mem_map(struct pglist_data *pgdat)
- {
- 	/* Skip empty nodes */
- 	if (!pgdat->node_spanned_pages)
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 6f3fff9..1302f83 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -44,7 +44,7 @@ EXPORT_SYMBOL(page_to_nid);
- #endif
- 
- #ifdef CONFIG_SPARSEMEM_EXTREME
--static struct mem_section noinline *sparse_index_alloc(int nid)
-+static struct mem_section noinline __init_refok *sparse_index_alloc(int nid)
- {
- 	struct mem_section *section = NULL;
- 	unsigned long array_size = SECTIONS_PER_ROOT *
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index ec056cf..4fc0ab8 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -641,12 +641,6 @@ static int strrcmp(const char *s, const char *sub)
-  *  tosec   = .init.text
-  *  fromsec  = .paravirtprobe
-  *
-- * Pattern 9:
-- *  Some of functions are common code between boot time and hotplug
-- *  time. The bootmem allocater is called only boot time in its
-- *  functions. So it's ok to reference.
-- *  tosec    = .init.text
-- *
-  * Pattern 10:
-  *  ia64 has machvec table for each platform and
-  *  powerpc has a machine desc table for each platform.
-@@ -678,12 +672,6 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 		NULL
- 	};
- 
--	const char *pat4sym[] = {
--		"sparse_index_alloc",
--		"zone_wait_table_init",
--		NULL
--	};
--
- 	/* Check for pattern 0 */
- 	if ((strcmp(fromsec, ".text.init.refok") == 0) ||
- 	    (strcmp(fromsec, ".data.init.refok") == 0))
-@@ -741,13 +729,6 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 	    (strcmp(fromsec, ".paravirtprobe") == 0))
- 		return 1;
- 
--	/* Check for pattern 9 */
--	if ((strcmp(tosec, ".init.text") == 0) &&
--	    (strcmp(fromsec, ".text") == 0))
--		for (s = pat4sym; *s; s++)
--			if (strcmp(atsym, *s) == 0)
--				return 1;
--
- 	/* Check for pattern 10 */
- 	if ((strcmp(fromsec, ".machvec") == 0) ||
- 	    (strcmp(fromsec, ".machine.desc") == 0))
+
+	Jan
 -- 
-1.5.1.rc3.20.gaa453
-
