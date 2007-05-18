@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbXEREKC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbXERENA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762195AbXEREKC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 00:10:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbXEREJy
+	id S1761011AbXERENA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 00:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXEREMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 00:09:54 -0400
-Received: from alnrmhc13.comcast.net ([206.18.177.53]:39130 "EHLO
-	alnrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755789AbXEREJx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 00:09:53 -0400
-Message-ID: <464D2702.1060001@comcast.net>
-Date: Fri, 18 May 2007 00:09:38 -0400
-From: Ed Sweetman <safemode2@comcast.net>
-User-Agent: Icedove 1.5.0.10 (X11/20070328)
+	Fri, 18 May 2007 00:12:54 -0400
+Received: from holomorphy.com ([66.93.40.71]:38301 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755726AbXEREMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 00:12:53 -0400
+Date: Thu, 17 May 2007 21:13:09 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Bill Huey <billh@gnuppy.monkey.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>
+Subject: Re: [patch] CFS scheduler, -v12
+Message-ID: <20070518041309.GA19966@holomorphy.com>
+References: <20070513153853.GA19846@elte.hu> <20070518001841.GA21140@gnuppy.monkey.org>
 MIME-Version: 1.0
-To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
-CC: Dave Jones <davej@redhat.com>, Duane Griffin <duaneg@dghda.com>,
-       Prakash Punnoor <prakash@punnoor.de>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
- driver
-References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <20070516204807.GA23751@redhat.com> <20070518030436.GB20793@ifa.hawaii.edu>
-In-Reply-To: <20070518030436.GB20793@ifa.hawaii.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070518001841.GA21140@gnuppy.monkey.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the previous post i keep referring you to has a patch that was mangled 
-...here is the non-mangled version
+On Sun, May 13, 2007 at 05:38:53PM +0200, Ingo Molnar wrote:
+>> So i've added a yield workaround to -v12, which makes it work similar to 
+>> how the vanilla scheduler and SD does it. (Xorg has been notified and 
+>> this bug should be fixed there too. This took some time to debug because 
+>> the 3D driver i'm using for testing does not use sys_sched_yield().) The 
+>> workaround is activated by default so -v12 should work 'out of the box'.
 
---- ./linux-backup/arch/x86_64/kernel/cpufreq/Kconfig   2007-02-04 
-13:44:54.000000000 -0500
-+++ ./linux-2.6.21-rc5-mm2/arch/x86_64/kernel/cpufreq/Kconfig 
-2007-05-17 18:13:07.000000000 -0400
-@@ -10,20 +10,27 @@
+On Thu, May 17, 2007 at 05:18:41PM -0700, Bill Huey wrote:
+> This is an incorrect analysis. OpenGL has the ability to "yield" after
+> every frame specifically for SGI IRIX (React/Pro) frame scheduler (driven
+> by the system vertical retrace interrupt) so that it can free up CPU
+> resources for other tasks to run. The problem here is that the yield
+> behavior is treated generally instead of specifically to a particular
+> proportion scheduler policy.
+> The correct solution is for the app to use a directed yield and a policy
+> that can directly support it so that OpenGL can guaratee a frame rate
+> governed by CPU bandwidth allocated by the scheduler.
+> Will is working on such a mechanism now.
 
-  comment "CPUFreq processor drivers"
-
--config X86_POWERNOW_K8
-+config  X86_POWERNOW_K8
-         tristate "AMD Opteron/Athlon64 PowerNow!"
-         select CPU_FREQ_TABLE
-         help
-           This adds the CPUFreq driver for mobile AMD Opteron/Athlon64 
-processors.
-+         An acpi interface is available if acpi support has been selected.
-+         This is required for multi-socket and other systems but not 
-necessarily required for UP single socket systems.
-
-           For details, take a look at <file:Documentation/cpu-freq/>.
-
-           If in doubt, say N.
-
-  config X86_POWERNOW_K8_ACPI
--       bool
--       depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
--       depends on !(X86_POWERNOW_K8 = y && ACPI_PROCESSOR = m)
-+       bool "ACPI Support"
-+       select ACPI_PROCESSOR
-+       depends on X86_POWERNOW_K8
-+       help
-+           This provides access to the acpi tables for full p-state 
-functionality. This driver is also required
-+           for cpufreq to work with multi-socket and other smp systems.
-+
-+           It is safe to say Y here.
-         default y
-
-  config X86_SPEEDSTEP_CENTRINO
+What? AFAIK the CFS patches already implement directed yields.
 
 
-
+-- wli
