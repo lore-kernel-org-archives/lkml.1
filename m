@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbXERUqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbXERUtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbXERUqB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 16:46:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXERUpy
+	id S1756833AbXERUtx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 16:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXERUtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 16:45:54 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:34380 "EHLO pasmtpB.tele.dk"
+	Fri, 18 May 2007 16:49:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38488 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbXERUpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 16:45:53 -0400
-Date: Fri, 18 May 2007 22:46:50 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: John Sigler <linux.kernel@free.fr>, linux-kernel@vger.kernel.org
-Subject: Re: Dumping the checksums in a module
-Message-ID: <20070518204650.GA17343@uranus.ravnborg.org>
-References: <464DC019.6010008@free.fr> <Pine.LNX.4.61.0705182225450.9015@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0705182225450.9015@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.4.2.1i
+	id S1752257AbXERUtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 16:49:43 -0400
+Message-ID: <464E110A.30701@redhat.com>
+Date: Fri, 18 May 2007 16:48:10 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Luca Tettamanti <kronos.it@gmail.com>
+CC: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot - crypto?
+References: <d1af83620705100410n482f4f9h428b7cab5501d963@mail.gmail.com> <20070514173823.GA7137@dreamland.darkstar.lan> <20070515014344.GA8850@gondor.apana.org.au> <20070515185212.GA18783@dreamland.darkstar.lan> <20070518031931.GA13048@gondor.apana.org.au> <68676e00705180509s64b737e2k37c5b2e713c96932@mail.gmail.com> <20070518131455.GA20918@gondor.apana.org.au> <20070518191645.GA10815@dreamland.darkstar.lan>
+In-Reply-To: <20070518191645.GA10815@dreamland.darkstar.lan>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 10:27:06PM +0200, Jan Engelhardt wrote:
+Luca Tettamanti wrote:
+> Il Fri, May 18, 2007 at 11:14:55PM +1000, Herbert Xu ha scritto: 
+>> On Fri, May 18, 2007 at 02:09:54PM +0200, Luca wrote:
+>>> Well, pretty sure. The OOPS says 2.6.22-rc1-libata-g705962cc-dirty,
+>>> git agrees and I've done a full rebuild. The .config is generated
+>>> using 'make oldconfig' using the 2.6.21 as baseline, maybe ALGAPI is
+>>> coming from there?
+>> Sorry, my mistake.  That bug only happens if you have padlock turned on.
+>>
+>> Anyway, if possible could you post the complete dmesg when it crashes?
+>> I'd like to see what has happened up to the point where it crashes.
 > 
-> On May 18 2007 17:02, John Sigler wrote:
-> >
-> > I'm getting "disagrees about version of symbol struct_module" messages,
-> > and I'm trying to understand why.
-> >
-> > As far as I understand (which is not very far), if I define
-> > CONFIG_MODVERSIONS, then checksums for various functions (all exported
-> > functions?) and various structures (which ones?) will be included inside
-> > the kernel image, and written to Module.symvers. When an out-of-tree
-> > module is built, it will also include these checksums.
-> >
-> > How do I list the checksums within a module?
-> >
-> > Is there a simpler way to list all the checksums?
+> Output from serial console is enlightening (sort of...):
 > 
-> 22:25 ichi:~ > modinfo aes
-> srcversion:     8CB82B3A254D5A950FD0D14
+> Loading IPsec SA/SP database from /etc/ipsec-tools.conf: BUG: unable to
+> handle kernel paging request at virtual address 6b6b6ceb printing eip:
+> b0141aef
+> [oops]
 > 
-> I think this one checksum is computed out of all functions that
-> the module uses.
-It is computed based on all files used for the module.
-Check help for "Loadable module support | Source Checksum for all modules"
 
-	Sam
+module_put() is trying to decrease the refcount of a module that's
+already been freed, AFAICT.
+
