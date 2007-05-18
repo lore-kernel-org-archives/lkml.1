@@ -1,95 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbXERVfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbXERVoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794AbXERVfU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 17:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbXERVfJ
+	id S1755951AbXERVoq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 17:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbXERVoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 17:35:09 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:56671 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbXERVfI (ORCPT
+	Fri, 18 May 2007 17:44:39 -0400
+Received: from neopsis.com ([213.239.204.14]:47036 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753742AbXERVoj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 17:35:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:references;
-        b=FW5GlQEJVDaUMWAvFlIv7HonJcOnvbLz2vk2m4Lv3UXFYbHIpX8nKzsRjm3CWCpj2a0tmrNya02bM7fufADS29KypdiXsK94ta3FkbttVAFqrFG1l/jbUp5xr5s280uJQNet8vGr2kZFwvrWhV+ttti9Agq8Z6FZaHDEcB1sb/0=
-Message-ID: <d9b9d95f0705181435h40377f9cl8a573f8743d35eaf@mail.gmail.com>
-Date: Fri, 18 May 2007 22:35:06 +0100
-From: "Renato Golin" <rengolin@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: joydev.c and saitek cyborg evo force
-In-Reply-To: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
+	Fri, 18 May 2007 17:44:39 -0400
+Message-ID: <464E23CA.8040400@dbservice.com>
+Date: Sat, 19 May 2007 00:08:10 +0200
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_37236_4425778.1179524106054"
-References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
+To: Jiri Kosina <jikos@jikos.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: SideWinder GameVoice driver
+References: <464C5FAC.8060609@dbservice.com> <Pine.LNX.4.64.0705171623280.27422@twin.jikos.cz> <464C708C.6090808@dbservice.com> <464CA34F.8090509@dbservice.com> <Pine.LNX.4.64.0705172309240.27422@twin.jikos.cz> <464D4F31.6000100@dbservice.com> <Pine.LNX.4.64.0705182304400.27422@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0705182304400.27422@twin.jikos.cz>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.369,
+	required 5, autolearn=spam, AWL 0.23, BAYES_00 -2.60)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_37236_4425778.1179524106054
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Jiri Kosina wrote:
+> On Fri, 18 May 2007, Tomas Carnecky wrote:
+>> GameVoice is used for VoIP communication between players. It consists of 
+>> a software and the small pad with eight buttons and connectors for the 
+>> headset. One of the buttons can be used to mute the microphone, the 
+>> others are labeled '1' - '4', 'TEAM', 'ALL' and 'COMMAND'. The idea is 
+>> that you can have up to four 'groups' of players and communicate only to
+>>  certain groups by 'activating' the buttons, you can also speak to your
+>> whole team or all players. The command button is used for voice commands
+>> (for example, you press the button, say 'throw grenade' and the software
+>> translates it to a predefined key sequence). That's more or less how
+>> it's supposed to work.
+> 
+> But all this is handled actually by userspace applications, right? Or do 
+> you want this whole functionality to go into a specialized kernel driver? 
+> Or does this require some interaction/processing between hardware and the 
+> driver?
 
-On 18/05/07, Renato Golin <rengolin@gmail.com> wrote:
-> Problem is, on joydev_connect, when defining the corrections for every
-> axis, the joystick is reporting dev->absmax = 127 and dev->absmin =
-> -127 for both axis 0 and 1, so the correction is based on a signed
-> range when the joystick is actually sending an unsigned range.
+There's no further processing needed in the kernel. The userspace
+application would receive these input events and act accordingly, like:
+read data from the soundcard and send it to the VoIP server, or only
+certain channels based on which buttons are currently pressed etc.
 
-Quick fix so I can play flightgear:
+> Well, if the only purpose of this device is to pass status of pressed 
+> buttons into userspace driver (which is the case, as far as I understand 
+> it), it's just broken that it has 05 0b (i.e. Telephony/Headset) in its 
+> report descriptor.
+> 
+> Either fixing the report descriptor on the fly or adding a special quirk 
+> to force hid-input to claim the device would be needed. Would you care to 
+> create such patch?
 
-on joydev_connect, created absmin and absmax to avoid messing dev
-variables (pointer)
+I already thought about this option (to whitelist this particular
+vendor/device ID as an hid-input device), but I first wanted some
+feedback on the whole situation. As for the patch, I have zero knowledge
+of the hid subsystem.. but if you give me a go on this, I'll try to dig
+into the code and make a patch :)
 
-if current position (dev->abs) is not in range:
+> Or did I just get it wrong and the device has also other purposes that 
+> should be handled by the kernel driver, than just trivial mapping of a few 
+> buttons into corresponding input events?
 
-if (dev->abs[j] > dev->absmax[j] || dev->abs[j] < dev->absmin[j]) {
-     absmin = 0;
-     absmax = dev->abs[j] * 2;
-}
+This pad has no other purposes than just having eight buttons. Mapping
+these buttons into input events is all that is needed to make a useful
+userspace application for it.
 
-problems:
- - it only works when joy is centred at connection
- - it assumes the joy will report correct positions (instead of uncalibrated)
+Considering how many users actually have this device and try to get it
+working under Linux (probably only me), I wouldn't be mad if you
+rejected a patch. I don't even know if I will ever write an userspace
+application for it! But, I have this device lying around on my table and
+in my old Windows days it was quite useful, so I'd like to share my
+findings with others.
 
-Now I'll figure out how to turn off button 12...
-
-cheers,
---renato
-
-Reclaim your digital rights, eliminate DRM, learn more at
-http://www.defectivebydesign.org/what_is_drm
-
-------=_Part_37236_4425778.1179524106054
-Content-Type: text/x-patch; name=joydev.patch; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f1v63qx1
-Content-Disposition: attachment; filename="joydev.patch"
-
-LS0tIGpveWRldi5jCTIwMDctMDQtMTIgMTg6MTU6NTYuMDAwMDAwMDAwICswMTAwCisrKyAvdXNy
-L3NyYy9saW51eC9kcml2ZXJzL2lucHV0L2pveWRldi5jCTIwMDctMDUtMTggMjI6MjE6MjYuMDAw
-MDAwMDAwICswMTAwCkBAIC00NzEsNiArNDcxLDcgQEAKIAlzdHJ1Y3Qgam95ZGV2ICpqb3lkZXY7
-CiAJc3RydWN0IGNsYXNzX2RldmljZSAqY2RldjsKIAlpbnQgaSwgaiwgdCwgbWlub3I7CisJaW50
-IGFic21pbiwgYWJzbWF4OwogCiAJZm9yIChtaW5vciA9IDA7IG1pbm9yIDwgSk9ZREVWX01JTk9S
-UyAmJiBqb3lkZXZfdGFibGVbbWlub3JdOyBtaW5vcisrKTsKIAlpZiAobWlub3IgPT0gSk9ZREVW
-X01JTk9SUykgewpAQCAtNTIwLDExICs1MjEsMjAgQEAKIAkJCWpveWRldi0+YWJzW2ldID0gZGV2
-LT5hYnNbal07CiAJCQljb250aW51ZTsKIAkJfQorCQkvKiBTb21lIGpveXN0aWNrcyBkb24ndCBy
-ZXBvcnQgbWF4L21pbiBjb3JyZWN0bHkgKi8KKwkJaWYgKGRldi0+YWJzW2pdID4gZGV2LT5hYnNt
-YXhbal0gfHwgZGV2LT5hYnNbal0gPCBkZXYtPmFic21pbltqXSkgeworCQkJLyogYXNzdW1lIGpv
-eXN0aWNrIGlzIGNlbnRlcmVkICovCisJCQlhYnNtaW4gPSAwOworCQkJYWJzbWF4ID0gZGV2LT5h
-YnNbal0gKiAyOworCQl9IGVsc2UgeworCQkJYWJzbWluID0gZGV2LT5hYnNtaW5bal07CisJCQlh
-YnNtYXggPSBkZXYtPmFic21heFtqXTsKKwkJfQogCQlqb3lkZXYtPmNvcnJbaV0udHlwZSA9IEpT
-X0NPUlJfQlJPS0VOOwogCQlqb3lkZXYtPmNvcnJbaV0ucHJlYyA9IGRldi0+YWJzZnV6eltqXTsK
-LQkJam95ZGV2LT5jb3JyW2ldLmNvZWZbMF0gPSAoZGV2LT5hYnNtYXhbal0gKyBkZXYtPmFic21p
-bltqXSkgLyAyIC0gZGV2LT5hYnNmbGF0W2pdOwotCQlqb3lkZXYtPmNvcnJbaV0uY29lZlsxXSA9
-IChkZXYtPmFic21heFtqXSArIGRldi0+YWJzbWluW2pdKSAvIDIgKyBkZXYtPmFic2ZsYXRbal07
-Ci0JCWlmICghKHQgPSAoKGRldi0+YWJzbWF4W2pdIC0gZGV2LT5hYnNtaW5bal0pIC8gMiAtIDIg
-KiBkZXYtPmFic2ZsYXRbal0pKSkKKwkJam95ZGV2LT5jb3JyW2ldLmNvZWZbMF0gPSAoYWJzbWF4
-ICsgYWJzbWluKSAvIDIgLSBkZXYtPmFic2ZsYXRbal07CisJCWpveWRldi0+Y29ycltpXS5jb2Vm
-WzFdID0gKGFic21heCArIGFic21pbikgLyAyICsgZGV2LT5hYnNmbGF0W2pdOworCQlpZiAoISh0
-ID0gKChhYnNtYXggLSBhYnNtaW4pIC8gMiAtIDIgKiBkZXYtPmFic2ZsYXRbal0pKSkKIAkJCWNv
-bnRpbnVlOwogCQlqb3lkZXYtPmNvcnJbaV0uY29lZlsyXSA9ICgxIDw8IDI5KSAvIHQ7CiAJCWpv
-eWRldi0+Y29ycltpXS5jb2VmWzNdID0gKDEgPDwgMjkpIC8gdDsK
-------=_Part_37236_4425778.1179524106054--
+tom
