@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbXEROhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760885AbXEROiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760247AbXEROhr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 10:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbXEROhk
+	id S1760885AbXEROiz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 10:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXEROis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 10:37:40 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:50244 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755004AbXEROhj (ORCPT
+	Fri, 18 May 2007 10:38:48 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:33661 "EHLO
+	outbound2-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755490AbXEROir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 10:37:39 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=s8aNN0MDf0OiW5gEl11G4wsAZIVK+1LwAkQmv3Sq4O7Q+NaMLweQ9nLtz3Rdu562F
-	Wr5ttLCBdlsv8UaH6soxg==
-Message-ID: <6599ad830705180737m6aee5ca2x9c39613f782cda67@mail.gmail.com>
-Date: Fri, 18 May 2007 07:37:28 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Fix a simple issue w.r.t mounting of containers
-Cc: "Paul Jackson" <pj@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20070518123916.21450.21761.sendpatchset@balbir-laptop>
+	Fri, 18 May 2007 10:38:47 -0400
+X-BigFish: VP
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Organization: AMD
+To: rct@gherkin.frus.com
+Subject: Re: [BUG] (regression) AMD k6-III/450 won't boot w/2.6.22-rc1
+Date: Fri, 18 May 2007 16:38:27 +0200
+User-Agent: KMail/1.9.6
+cc: "Andi Kleen" <ak@suse.de>, "Chuck Ebbert" <cebbert@redhat.com>,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+References: <20070517233813.266B6DBA1@gherkin.frus.com>
+In-Reply-To: <20070517233813.266B6DBA1@gherkin.frus.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-ID: <200705181638.29657.joachim.deguara@amd.com>
+X-OriginalArrivalTime: 18 May 2007 14:38:32.0126 (UTC)
+ FILETIME=[3527DDE0:01C7995A]
+X-WSS-ID: 6A5365E11OC2127295-01-01
+Content-Type: text/plain;
+ charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070518123916.21450.21761.sendpatchset@balbir-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks. I've added that to my tree.
+On Friday 18 May 2007 01:38:13 rct@gherkin.frus.com wrote:
+> Andi Kleen wrote:
+> > Hmpf.
+> >
+> > We cold either use rdmsr_safe or add a family check again or clear it
+> > in k6 setup.  I think clearing it in setup is cleanest.
+> >
+> > Does this patch work?
+> >
+> > -Andi
+> >
+> > Clear MCE flag on AMD K6
+> >
+> > It reports machine check capability in CPUID, but doesn't actually
+> > implement all the necessary MSRs of the standard Intel machine
+> > check architecture.
+> >
+> > This fixes a boot failure recently introduced.
+> >
+> > Signed-off-by: Andi Kleen <ak@suse.de>
+>
+> ACK.  I reinstalled Joachim's patch (default 2.6.22-rc1 state), and
+> added your patch.  Life is good: we have a fix/workaround.
 
-Paul
+Great, thanks for finding this and Andi for the patch.  I'll talk to our labs 
+about dusting off old systems for testing ;)
 
-On 5/18/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->
-> Fix containers mounting issue. With the current v9 patches if a container
-> hierarchy is mounted and then umounted. A second mount of the hierarchy
-> fails
->
-> Steps to reproduce the problem
->
-> 1. mount -t container container /<mnt point>
-> 2. umount /<mnt point>
-> 3. mount -t container container /<mnt point>
->
-> Step 3 fails with -EBUSY. This is due to the fact that when we unmount,
-> in container_put_super(), we need to delete the current root from the roots
-> list.
->
-> The patch below fixes the issue
->
->
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
->
->  kernel/container.c |    1 +
->  1 file changed, 1 insertion(+)
->
-> diff -puN kernel/container.c~fix-remount-issue kernel/container.c
-> --- linux-2.6.21-mm1/kernel/container.c~fix-remount-issue       2007-05-18 17:59:40.000000000 +0530
-> +++ linux-2.6.21-mm1-balbir/kernel/container.c  2007-05-18 18:00:02.000000000 +0530
-> @@ -574,6 +574,7 @@ static void container_put_super(struct s
->         ret = rebind_subsystems(root, 0);
->         BUG_ON(ret);
->
-> +       list_del(&root->root_list);
->         kfree(root);
->         mutex_unlock(&container_mutex);
->  }
-> _
->
-> --
->         Warm Regards,
->         Balbir Singh
->         Linux Technology Center
->         IBM, ISTL
->
+-Joachim
+
+
