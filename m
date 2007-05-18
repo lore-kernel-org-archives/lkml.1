@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbXERNoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbXERNrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758031AbXERNoP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 09:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbXERNoD
+	id S1759461AbXERNrN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 09:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXERNrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 09:44:03 -0400
-Received: from h155.mvista.com ([63.81.120.155]:31202 "EHLO imap.sh.mvista.com"
+	Fri, 18 May 2007 09:47:04 -0400
+Received: from h155.mvista.com ([63.81.120.155]:31217 "EHLO imap.sh.mvista.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755176AbXERNoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 09:44:00 -0400
-Message-ID: <464DADFC.3080802@ru.mvista.com>
-Date: Fri, 18 May 2007 17:45:32 +0400
+	id S1754522AbXERNrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 09:47:04 -0400
+Message-ID: <464DAEB2.8080703@ru.mvista.com>
+Date: Fri, 18 May 2007 17:48:34 +0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Organization: MontaVista Software Inc.
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
 X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: Matt Sealey <matt@genesi-usa.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de,
+       Dave Liu <r63238@freescale.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-References: <200705172142.26739.sshtylyov@ru.mvista.com>	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	<464C99FF.8080404@ru.mvista.com>	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>	<464C9E67.2020909@ru.mvista.com>	<6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org> <464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
-In-Reply-To: <464D9E7E.3090605@genesi-usa.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>	<f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>	<464CB071.5050504@ru.mvista.com>	<9095839480a9686d9c40aa6143edb804@kernel.crashing.org>	<464CB460.40905@ru.mvista.com>	<97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>	<1179464690.32247.370.camel@localhost.localdomain>	<1179466769.3658.0.camel@localhost.localdomain>	<1179472096.32247.394.camel@localhost.localdomain> <464DAD06.2060504@ru.mvista.com>
+In-Reply-To: <464DAD06.2060504@ru.mvista.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hello, I wrote:
 
-Matt Sealey wrote:
+>>>>>Yes, on some implementations there can be other conditions that
+>>>>>make a decrementer exception go away; there is no contradiction
+>>>>>here (thankfully).  My wording was sloppy.
 
->>>>>I haven't looked at all the new clock/timer code, is there any   
->>>>>utility in having support for more than one clock source?
+>>>>Some CPUs have the DEC exceptions basically edge triggered (yeah I know
 
->>>>   Of course, you may register as many as you like.
+>>>for example?
 
->>>Sure, but is there any utility in registering more than the  decrementer 
->>>on PPC?
+>>>>it sucks). That's why, among others, the IRQ soft-disable code has code
+>>>>to re-trigger DEC exceptions ASAP (by setting it to 1.. note that we
+>>>>could probably use 0 here, we've been a bit conservative).
 
->>    Not yet. I'm not sure I know any other PPC CPU facility fitting for 
->>clockevents. In theory, FIT could be used -- but its period is measured in 
->>powers of 2, IIRC.
+>     Yeah, the classic decrementer is programmed off-by-one.
 
-> Wouldn't it be possible to use SoC timer functionality, too, and not limit
-> this to what is only present on the CPU die?
+>>I'm not 100% certain... Paulus thinks all the old 6xx are like that, and
+>>maybe POWER4. If I look at the oldest BookIV I can find (the 601), it
 
-    If you have some SoC timers, you're welcome to add support for it. :-)
+>     From the "PowerPC Operating Environment Architecture" that I've already 
+> quoated t follows that POWER4-compatible decremented exception *must* be edge 
+> triggered.
 
-> I guess the real question is, how high resolution does a high resolution
-> timer need to be,
+    ... and cleared when delivered.
 
-    In the order of microseconds.
-
- > and how often do you want to be handling interrupts?
-
-    That depends on a kind of functionality you need: HRT and/or dynamic tick...
-
-> The 52XX has 8 general purpose timers and 2 slice timers. Both will
-> generate an interrupt once the clock hits a preset value, the timing
-> of which is determined by prescalers and the IPB clock..
+>>says that an exception is generated when the MSB transitions from 0 to
+>>1. It's not clear wether the exception sticks while that bit is 1 or is
+>>indeed considered as an "edge" event that gets cleared as soon as
+>>delivered.
 
 WBR, Sergei
