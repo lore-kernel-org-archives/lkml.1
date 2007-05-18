@@ -1,101 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbXERJM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXERJQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759357AbXERJM4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 05:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbXERJMr
+	id S1758061AbXERJQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 05:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXERJQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 05:12:47 -0400
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:42726 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754297AbXERJMq (ORCPT
+	Fri, 18 May 2007 05:16:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35241 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753957AbXERJQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 05:12:46 -0400
-Date: Fri, 18 May 2007 11:06:04 +0200
-From: Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>
-To: linux-kernel@vger.kernel.org, ext3-users@redhat.com
-Subject: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted
-Message-ID: <20070518090604.GA10841@ribosome.natur.cuni.cz>
-MIME-Version: 1.0
+	Fri, 18 May 2007 05:16:10 -0400
+Date: Fri, 18 May 2007 04:16:07 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andrea Righi <righiandr@users.sourceforge.net>
+Cc: Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [RFC] log out-of-virtual-memory events
+Message-ID: <20070518091606.GA1010@lnx-holt.americas.sgi.com>
+References: <464C81B5.8070101@users.sourceforge.net> <464C9D82.60105@redhat.com> <464D5AA4.8080900@users.sourceforge.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <464D5AA4.8080900@users.sourceforge.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  I just tried the 2.6.22-r1 candidate to test whether some bug I have 
-hit in the past still exists. I did use 2.6.20.6 so far. So, I have 
-cleanly rebooted to use the new kernel, after the machine came up I 
-tried to mess with the bug, and had to reboot again to play with kernel 
-commandline parameters. Unfortunately, on the next reboot fsck was 
-schedules on my filesystem after 38 clean mounts. :( And the problem 
-started. The fsck found some unused inodes, but probably did not know 
-where do they belong to, but it deleted them automagically. Finally, the 
-fsck died because it cannot fine some '..' entry.
+On Fri, May 18, 2007 at 09:50:03AM +0200, Andrea Righi wrote:
+> Rik van Riel wrote:
+> > Andrea Righi wrote:
+> >> I'm looking for a way to keep track of the processes that fail to
+> >> allocate new
+> >> virtual memory. What do you think about the following approach
+> >> (untested)?
+> >
+> > Looks like an easy way for users to spam syslogd over and
+> > over and over again.
+> >
+> > At the very least, shouldn't this be dependant on print_fatal_signals?
+> >
+> 
+> Anyway, with print-fatal-signals enabled a user could spam syslogd too, simply
+> with a (char *)0 = 0 program, but we could always identify the spam attempts
+> logging the process uid...
+> 
+> In any case, I agree, it should depend on that patch...
+> 
+> What about adding a simple msleep_interruptible(SOME_MSECS) at the end of
+> log_vm_enomem() or, at least, a might_sleep() to limit the potential spam/second
+> rate?
 
-  Here is retyped what happened as recorded by my camera. ;)
+An msleep will slow down this process, but do nothing about slowing
+down the amount of logging.  Simply fork a few more processes and all
+you are doing with msleep is polluting the pid space.
 
+What about a throttling similar to what ia64 does for floating point
+assist faults (handle_fpu_swa()).  There is a thread flag to not log
+the events at all.  It is rate throttled globally, but uses per cpu
+variables for early exits.  This algorithm scaled well to a thousand
+cpus.
 
-/dev/hda3 has been mounted 38 times without being checked, check forced
-HTREE directory inode 1163319 has an invalid root node.
-HTREE INDEX CLEARED
-Entry '..' in .../??? (5570587) has deleted/unused inode 5570561. 
-CLEARED.
-/dev/hda3: Entry '..' in .../??? (5570620) has deleted/unused inode 
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5570625) has deleted/unused inode
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5570567) has deleted/unused inode
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5570614) has deleted/unused inode
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5570603) has deleted/unused inode
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5586948) has deleted/unused inode
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5586957) has deleted/unused inode
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5701636) has deleted/unused inode
-5570561. CLEARED.
-Unconnected directory inode 5570567 (...)
+I think this may be a good fit.
 
-/dev/hda3: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
-                  (i.e., without -a or -p options)
-
-
-
-
-  Turning off the power and booting back with 2.6.20.6 and obviously 
-running same fsck gives me:
-
-/dev/hda3 contains a file system with errors, check forced.
-Missing '..' in direcotry inode 5570587.
-
-/dev/hda3: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
-                  (i.e., without -a or -p options)
-
-
-  What do you recommend me now?
-
-  I cannot say what is the fsck version, but I can tell you this is a 
-Gentoo linux box in the ~x86 tree, so whatever is in the "unstable" 
-branch. :(
-
-  I do use ext2/ext3 windows driver from http://www.fs-driver.org/ to 
-access the filesystem. Even now, when the filesystem should be marked as 
-dirty I can access it from windows and see the files. Does the extfs.sys 
-ignore the mark? ;) Anyway, since that time there is a directory 
-'Recycled' at the top level of the filesystem. ;-)
-
-  I do remember recently that possibly one of the system packages in 
-Gentoo installed some kind of a hash into the filesystem, or hashing 
-support, something like that. Sorry, I do not remember the details.
-Am just think what could have made the fsck think there is something 
-wrong.
-
-  I think IO would like to restore the filesystem to the previous stage 
-before running the fsck. How can I do it? No, I do not have a backup of 
-the filesystem. :(
-
-I subscribed to the email lists but please send me Cc: anyway. Many thanks.
-Martin
+Good Luck,
+Robin
