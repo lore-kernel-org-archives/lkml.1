@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbXEROdO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760062AbXEROez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbXEROdO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 10:33:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXEROdA
+	id S1760062AbXEROez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 10:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbXEROes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 10:33:00 -0400
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:44222 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752992AbXEROdA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 10:33:00 -0400
-Date: Fri, 18 May 2007 16:32:58 +0200
-From: Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>
-To: Kalpak Shah <kalpak@linsyssoft.com>
-Cc: linux-kernel@vger.kernel.org, ext3-users@redhat.com
-Subject: Re: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted
-Message-ID: <20070518143258.GA14611@ribosome.natur.cuni.cz>
-References: <20070518090604.GA10841@ribosome.natur.cuni.cz> <1179488826.4305.3.camel@garfield.linsyssoft.com> <20070518135108.GB14225@ribosome.natur.cuni.cz> <1179497298.4305.9.camel@garfield.linsyssoft.com>
+	Fri, 18 May 2007 10:34:48 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49101 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755321AbXEROer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 10:34:47 -0400
+Message-ID: <464DB97B.8030204@garzik.org>
+Date: Fri, 18 May 2007 10:34:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179497298.4305.9.camel@garfield.linsyssoft.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Robert Hancock <hancockr@shaw.ca>, Zoltan Boszormenyi <zboszor@dunaweb.hu>,
+       Peer Chen <pchen@nvidia.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] drivers/ata: Add the SW NCQ support to sata_nv for MCP51/MCP55/MCP61
+References: <fa.iernIz8Xcuvw0SBwi4A99Ju0g2o@ifi.uio.no>	<464D0855.20703@shaw.ca> <20070518133456.5f1392e9@the-village.bc.nu>
+In-Reply-To: <20070518133456.5f1392e9@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 07:38:18PM +0530, Kalpak Shah wrote:
-> On Fri, 2007-05-18 at 15:51 +0200, Martin Mokrejs wrote:
-> > On Fri, May 18, 2007 at 05:17:06PM +0530, Kalpak Shah wrote:
-> > > On Fri, 2007-05-18 at 11:06 +0200, Martin Mokrejs wrote:
-> > > > Hi,
-> > > >   I just tried the 2.6.22-r1 candidate to test whether some bug I have 
-> > > > hit in the past still exists. I did use 2.6.20.6 so far. So, I have 
-> > > > cleanly rebooted to use the new kernel, after the machine came up I 
-> > > > tried to mess with the bug, and had to reboot again to play with kernel 
-> > > > commandline parameters. Unfortunately, on the next reboot fsck was 
-> > > > schedules on my filesystem after 38 clean mounts. :( And the problem 
-> > > > started. The fsck found some unused inodes, but probably did not know 
-> > > > where do they belong to, but it deleted them automagically. Finally, the 
-> > > > fsck died because it cannot fine some '..' entry.
-> > > > 
-> > > > /dev/hda3: Entry '..' in .../??? (5701636) has deleted/unused inode
-> > > > 5570561. CLEARED.
-> > > > Unconnected directory inode 5570567 (...)
-> > > > 
-> > > > /dev/hda3: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
-> > > >                   (i.e., without -a or -p options)
-> > > > 
-> > > 
-> > > This means that e2fsck has reached a point where it needs user
-> > > intervention. So you should not run e2fsck with -p, -a or -y options.
-> > > Look up the e2fsck man page for more on this.
-> > 
-> > Yeah, stupid init.d script in Gentoo. I will report at Gentoo as well but
-> > how can I revert the changes? Can you say which directories were affected?
+Alan Cox wrote:
+>> That shouldn't be a problem, libata default DMA mask is 32 bits (which 
+>> isn't overridden with this controller) and so the block layer will 
+>> bounce any data being read/written above that point with IOMMU or 
+>> swiotlb. The comment is a bit unnecessarily scary.
 > 
-> No there is nothing wrong with your script, most problems get solved by
-> -a or -p and hence your init.d script is correct in using these options.
-> 
-> I don't understand what you mean by reverting your changes. 
+> Adding a BUG_ON for this would be wise. Its trivial to check and a BUG
+> rather than corruption if this assumption ever changes would be far
+> preferable
 
-I would like to boot with another/previous/tested kernel and run another,
-stable fsck version. Yes, I cannot say how it happened that ext3 had broken
-directory, but for sure before making changes to the filesystem I would
-boot with a tested kernel and tools.
+The default DMA mask -everywhere- is 32 bits.
 
-> 
-> An unconnected directory inode means that this directory (inode 5570567)
-> does not have a valid ".." entry (which is the backpointer to its
-> parent). So this directory will be moved to lost+found.
+A lot of code will break if this assumption ever changes, not just libata.
 
-And those original "errors"? Did not those modifications cause this in turn?
+	Jeff
 
 
-/dev/hda3 has been mounted 38 times without being checked, check forced
-HTREE directory inode 1163319 has an invalid root node.
-HTREE INDEX CLEARED
-Entry '..' in .../??? (5570587) has deleted/unused inode 5570561. 
-CLEARED.
-/dev/hda3: Entry '..' in .../??? (5570620) has deleted/unused inode 
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5570625) has deleted/unused inode
-5570561. CLEARED.
-/dev/hda3: Entry '..' in .../??? (5570567) has deleted/unused inode
-5570561. CLEARED.
-[cut]
 
-Martin
