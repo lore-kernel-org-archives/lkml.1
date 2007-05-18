@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbXERLEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbXERLKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759415AbXERLEV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 07:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbXERLEM
+	id S1758032AbXERLKZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 07:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbXERLKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 07:04:12 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:54282 "EHLO e4.ny.us.ibm.com"
+	Fri, 18 May 2007 07:10:16 -0400
+Received: from ns1.suse.de ([195.135.220.2]:48214 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755060AbXERLEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 07:04:10 -0400
-Date: Fri, 18 May 2007 16:40:42 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jan Blunck <j.blunck@tu-harburg.de>
-Subject: Re: [RFC][PATCH 10/14] In-kernel file copy between union mounted filesystems
-Message-ID: <20070518111042.GC4869@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070514093722.GB4139@in.ibm.com> <20070514094329.GL4139@in.ibm.com> <Pine.LNX.4.61.0705160951140.9570@yvahk01.tjqt.qr>
+	id S1754649AbXERLKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 07:10:14 -0400
+Date: Fri, 18 May 2007 13:10:07 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       Pavel Emelianov <xemul@sw.ru>
+Subject: Re: [PATCH 7/15] Make ISDN CAPI use seq_list_xxx helpers
+Message-ID: <20070518111007.GA16940@pingi.kke.suse.de>
+Mail-Followup-To: Andrew Morton <akpm@osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	devel@openvz.org, Pavel Emelianov <xemul@sw.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0705160951140.9570@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.4.2.1i
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.27-0.6-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 09:57:28AM +0200, Jan Engelhardt wrote:
-> 
-> On May 14 2007 15:13, Bharata B Rao wrote:
-> >+
-> >+	if (flag & 0x2) {
-> >+		error = union_copyup(nd, flag);
-> >+		if (error)
-> >+			goto exit;
-> >+	}
-> 
-> What I dislike (and that also goes for fs/namei.c and such) that they use
-> numeral constants, i.e. 0x2. That seems error-prone. Could this (and
-> the in-kernel users of 0x1/0x2/0x4) be turned into some constant?
-> 
-> >+	if (IS_DEADDIR(parent->d_inode))
-> >+		goto error;
-> >+	err = -EACCES;	/* shouldn't it be ENOSYS? */
-> 
-> I do not think so. ENOSYS means Syscall not implemented. But it is
-> implemented. If ->i_op is not there does not imply ENOSYS.
-> 
-> Though, now that I grep through fs/*, I see that namei.c also
-> has that comment "shouldn't it be ENOSYS", so it's all at odds.
-> 
-> >+	if (!parent->d_inode->i_op || !parent->d_inode->i_op->create)
-> >+		goto error;
-> 
-> >+struct dentry * union_create_topmost(struct nameidata *nd, struct dentry *old)
-> >+{
-> >+	struct dentry *dentry;
-> >+	struct dentry *parent = nd->dentry;
-> >+
-> >+	UM_DEBUG_UID("dentry=%s\n", old->d_name.name);
-> >+
-> >+	BUG_ON(parent->d_sb == old->d_sb);
-> >+	if (!S_ISREG(old->d_inode->i_mode)) {
-> >+		UM_DEBUG("This filetype isn't supported!\n");
-> 
-> Does that mean I cannot create block devices, etc.?
-> 
+The similar code exists here and is called capi_driver_get_idx().
+Use generic helpers now and remember to convert list_head to
+struct capi_driver in .show callback.
 
-Not really. This is called during copyup of a file residing in a lower
-layer. And that is done only for regular files.
+Acked-by: Karsten Keil <kkeil@suse.de>
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
-Regards,
-Bharata.
+---
+
+diff --git a/drivers/isdn/capi/kcapi_proc.c b/drivers/isdn/capi/kcapi_proc.c
+index 31f4fd8..845a797 100644
+--- a/drivers/isdn/capi/kcapi_proc.c
++++ b/drivers/isdn/capi/kcapi_proc.c
+@@ -243,36 +243,15 @@ create_seq_entry(char *name, mode_t mode
+ 
+ // ---------------------------------------------------------------------------
+ 
+-
+-static __inline__ struct capi_driver *capi_driver_get_idx(loff_t pos)
+-{
+-	struct capi_driver *drv = NULL;
+-	struct list_head *l;
+-	loff_t i;
+-
+-	i = 0;
+-	list_for_each(l, &capi_drivers) {
+-		drv = list_entry(l, struct capi_driver, list);
+-		if (i++ == pos)
+-			return drv;
+-	}
+-	return NULL;
+-}
+-
+ static void *capi_driver_start(struct seq_file *seq, loff_t *pos)
+ {
+-	struct capi_driver *drv;
+ 	read_lock(&capi_drivers_list_lock);
+-	drv = capi_driver_get_idx(*pos);
+-	return drv;
++	return seq_list_start(&capi_drivers, *pos);
+ }
+ 
+ static void *capi_driver_next(struct seq_file *seq, void *v, loff_t *pos)
+ {
+-	struct capi_driver *drv = (struct capi_driver *)v;
+-	++*pos;
+-	if (drv->list.next == &capi_drivers) return NULL;
+-	return list_entry(drv->list.next, struct capi_driver, list);
++	return seq_list_next(v, &capi_drivers, pos);
+ }
+ 
+ static void capi_driver_stop(struct seq_file *seq, void *v)
+@@ -282,7 +261,8 @@ static void capi_driver_stop(struct seq_
+ 
+ static int capi_driver_show(struct seq_file *seq, void *v)
+ {
+-	struct capi_driver *drv = (struct capi_driver *)v;
++	struct capi_driver *drv = list_entry(v, struct capi_driver, list);
++
+ 	seq_printf(seq, "%-32s %s\n", drv->name, drv->revision);
+ 	return 0;
+ }
+
+-- 
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
