@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbXERNvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbXERNyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbXERNvQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 09:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXERNvK
+	id S1759351AbXERNyW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 09:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXERNyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 09:51:10 -0400
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:36225 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754522AbXERNvJ (ORCPT
+	Fri, 18 May 2007 09:54:15 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:32972 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754522AbXERNyO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 09:51:09 -0400
-Date: Fri, 18 May 2007 15:51:08 +0200
-From: Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>
-To: Kalpak Shah <kalpak@linsyssoft.com>
-Cc: linux-kernel@vger.kernel.org, ext3-users@redhat.com
-Subject: Re: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted
-Message-ID: <20070518135108.GB14225@ribosome.natur.cuni.cz>
-References: <20070518090604.GA10841@ribosome.natur.cuni.cz> <1179488826.4305.3.camel@garfield.linsyssoft.com>
+	Fri, 18 May 2007 09:54:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=e0rjtbAlcz7/46uc+27/YtH5GRwHiKgYoAsoZQHiQfFhJML8garL6q4a1H+1WfcNoiHHFm0oCnQI2hDP8xyMhJC/0U+OU9uKU6C6++QsNGV9yBBjKpQ2UM6UPYHF5oF0LBlDjVwDXfTx6ZXulG1RTO6dT2uMXq+F1WO/p64psas=
+Message-ID: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
+Date: Fri, 18 May 2007 14:54:13 +0100
+From: "Renato Golin" <rengolin@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: joydev.c and saitek cyborg evo force
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1179488826.4305.3.camel@garfield.linsyssoft.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 05:17:06PM +0530, Kalpak Shah wrote:
-> On Fri, 2007-05-18 at 11:06 +0200, Martin Mokrejs wrote:
-> > Hi,
-> >   I just tried the 2.6.22-r1 candidate to test whether some bug I have 
-> > hit in the past still exists. I did use 2.6.20.6 so far. So, I have 
-> > cleanly rebooted to use the new kernel, after the machine came up I 
-> > tried to mess with the bug, and had to reboot again to play with kernel 
-> > commandline parameters. Unfortunately, on the next reboot fsck was 
-> > schedules on my filesystem after 38 clean mounts. :( And the problem 
-> > started. The fsck found some unused inodes, but probably did not know 
-> > where do they belong to, but it deleted them automagically. Finally, the 
-> > fsck died because it cannot fine some '..' entry.
-> > 
-> > /dev/hda3: Entry '..' in .../??? (5701636) has deleted/unused inode
-> > 5570561. CLEARED.
-> > Unconnected directory inode 5570567 (...)
-> > 
-> > /dev/hda3: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
-> >                   (i.e., without -a or -p options)
-> > 
-> 
-> This means that e2fsck has reached a point where it needs user
-> intervention. So you should not run e2fsck with -p, -a or -y options.
-> Look up the e2fsck man page for more on this.
+Hi,
 
-Yeah, stupid init.d script in Gentoo. I will report at Gentoo as well but
-how can I revert the changes? Can you say which directories were affected?
-Thanks,
-Martin
+I'm a kernel newbie so please, pardon my French.
+
+I have a Saitek Cyborg Evo Force, a very good joystick with force-
+feedback. Problem is, on Windows it works well (its drivers know its
+own idiosyncrasies) but on Linux it gets a bit fuzzy.
+
+The behaviour is that, all axis are working fine, except up/down
+(elevator) and left/right (aileron) that gives me "random"
+signed/unsigned values.
+
+A smaller problem is that it's reporting 8 axis but have 6 only and 13
+buttons but have only 12 and the 12th button is always pressed,
+messing fgjs setup utility.
+
+Digging drivers/input/joydev.c I found out that if I remove the
+correction (setting
+JS_CORR_NONE) the values come correct, in a range from 0 to 4096.
+
+Problem is, on joydev_connect, when defining the corrections for every
+axis, the joystick is reporting dev->absmax = 127 and dev->absmin =
+-127 for both axis 0 and 1, so the correction is based on a signed
+range when the joystick is actually sending an unsigned range.
+
+Also, because the module was expecting up to 127 on value and is getting
+4094, when the correction does a left shift it might be setting the
+signal bit (leftmost) and that could explain why I'm getting random
+signed/unsigned values.
+
+The only way to know what is the real range is when you're actually
+pushing and pulling the stick so the change I'm willing to make is to
+recalibrate (ie. redefine the correction) whenever the raw value goes
+off limits. But that would only extend 127 to 4096 but won't change -127
+to 0.
+
+Another alternative is to do a dynamic calibration whenever you move the
+stick from the beginning and not do it based on what the joystick is
+telling you to (ie. at connect time). But that might be a lot of useless
+work when the control gives you the correct range in the first place.
+
+At last, hardcoding "if (saitek)" is quite ugly but can be done for the
+sake of performance.
+
+comments, please.
+
+cheers,
+--renato
+
+Reclaim your digital rights, eliminate DRM, learn more at
+http://www.defectivebydesign.org/what_is_drm
