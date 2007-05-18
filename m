@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbXERPIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbXERPUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761344AbXERPIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 11:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbXERPIN
+	id S1757839AbXERPUh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 11:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbXERPUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 11:08:13 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39450 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755903AbXERPIM (ORCPT
+	Fri, 18 May 2007 11:20:30 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:22143 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754417AbXERPU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 11:08:12 -0400
-Date: Fri, 18 May 2007 16:12:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, Zoltan Boszormenyi <zboszor@dunaweb.hu>,
-       Peer Chen <pchen@nvidia.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drivers/ata: Add the SW NCQ support to sata_nv for
- MCP51/MCP55/MCP61
-Message-ID: <20070518161228.7e89b6dc@the-village.bc.nu>
-In-Reply-To: <464DB97B.8030204@garzik.org>
-References: <fa.iernIz8Xcuvw0SBwi4A99Ju0g2o@ifi.uio.no>
-	<464D0855.20703@shaw.ca>
-	<20070518133456.5f1392e9@the-village.bc.nu>
-	<464DB97B.8030204@garzik.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 May 2007 11:20:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=uQIlGUzIm9bpx11rSmLXLe6E0zOkMASkMhUuKyvTo9AMl6uATdYCBbuLwlrAkA5m6dEWUJtet0utVSBfyEF4LR/lFZW6QXmVlyOeN8rWwqMuB6lPRcsfKTHOP7GmF3FCxsah1FBvisi2IftrDr+Hdptj3OpEYtl/5VltZtfBxu4=
+Message-ID: <fc94aae90705180820n5265c1e8rf80698f090308c34@mail.gmail.com>
+Date: Fri, 18 May 2007 16:20:27 +0100
+From: "Michael Lothian" <mike@fireburn.co.uk>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v13
+Cc: linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Con Kolivas" <kernel@kolivas.org>, "Nick Piggin" <npiggin@suse.de>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "Peter Williams" <pwil3058@bigpond.net.au>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20070517174533.GA538@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070517174533.GA538@elte.hu>
+X-Google-Sender-Auth: b8e537368e5f9ead
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007 10:34:35 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+Just thought I'd let you know that CFS is working on the PS3
 
-> Alan Cox wrote:
-> >> That shouldn't be a problem, libata default DMA mask is 32 bits (which 
-> >> isn't overridden with this controller) and so the block layer will 
-> >> bounce any data being read/written above that point with IOMMU or 
-> >> swiotlb. The comment is a bit unnecessarily scary.
-> > 
-> > Adding a BUG_ON for this would be wise. Its trivial to check and a BUG
-> > rather than corruption if this assumption ever changes would be far
-> > preferable
-> 
-> The default DMA mask -everywhere- is 32 bits.
-> 
-> A lot of code will break if this assumption ever changes, not just libata.
 
-Little lesson from history..
+neutrino boot # dmesg
+Using PS3 machine description
+Page orders: linear mapping = 24, virtual = 12, io = 12
+Starting Linux PPC64 #1 SMP Fri May 18 09:26:38 UTC 2007
+-----------------------------------------------------
+ppc64_pft_size                = 0x14
+physicalMemorySize            = 0x8000000
+ppc64_caches.dcache_line_size = 0x80
+ppc64_caches.icache_line_size = 0x80
+htab_address                  = 0x0000000000000000
+htab_hash_mask                = 0x1fff
+-----------------------------------------------------
+Linux version 2.6.22-rc1-cfs-v13 (root@localhost) (gcc version 4.1.1
+(Gentoo 4.1.1-r3)) #1 SMP Fri May 18 09:26:38 UTC 2007
 
-Over ten years ago someone (Eric Youngdale I guess) stuck a panic check
-for DMA over 16MBytes in the AHA 1542 ISA SCSI driver. Last year it
-triggered. The panic probably saved someone from corruption and meant the
-bug could be fixed.
+It feels more responsive but I shall do more testing and see if there
+are any real benefits
 
-Alan
+On 17/05/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> i'm pleased to announce release -v13 of the CFS scheduler patchset.
+>
+> The CFS patch against v2.6.22-rc1, v2.6.21.1 or v2.6.20.10 can be
+> downloaded from the usual place:
+>
+>      http://people.redhat.com/mingo/cfs-scheduler/
+>
+> -v13 is a fixes-only release. It fixes a smaller accounting bug, so if
+> you saw small lags during desktop use under certain workloads then
+> please re-check that workload under -v13 too. It also tweaks SMP
+> load-balancing a bit. (Note: the load-balancing artifact reported by
+> Peter Williams is not a CFS-specific problem and he reproduced it in
+> v2.6.21 too. Nevertheless -v13 should be less prone to such artifacts.)
+>
+> I know about no open CFS regression at the moment, so please re-test
+> -v13 and if you still see any problem please re-report it. Thanks!
+>
+> Changes since -v12:
+>
+>  - small tweak: made the "fork flow" of reniced tasks zero-sum
+>
+>  - debugging update: /proc/<PID>/sched is now seqfile based and echoing
+>    0 to it clears the maximum-tracking counters.
+>
+>  - more debugging counters
+>
+>  - small rounding fix to make the statistical average of rounding errors
+>    zero
+>
+>  - scale both the runtime limit and the granularity on SMP too, and make
+>    it dependent on HZ
+>
+>  - misc cleanups
+>
+> As usual, any sort of feedback, bugreport, fix and suggestion is more
+> than welcome,
+>
+>         Ingo
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
