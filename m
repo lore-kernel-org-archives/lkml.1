@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761827AbXERAB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762484AbXERACU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761827AbXERAB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 20:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbXERABu
+	id S1762484AbXERACU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 20:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761253AbXERACK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 20:01:50 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:14701 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754646AbXERABt (ORCPT
+	Thu, 17 May 2007 20:02:10 -0400
+Received: from mail4.webhostingstar.com ([67.106.77.50]:49652 "HELO
+	mail4.webhostingstar.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761198AbXERACJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 20:01:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PiKibzbO/dlY1G4hSHbn2Jbh4xxrKNwKuvhYHqMTKpwXdLPWdAhmjQzhpbnaBvTORbOVb7vyjrW+Zq7KREykwiAJfWRs+LicYbR48B1OIOQbZVbXtH0i05eDWdYc2/sWeIDsh7IgZJOsNeHF+jIfWaVgWdHaJhOajZpaa7Cgk0Y=
-Message-ID: <7fe698080705171701w533767fdo6642bb772ed64273@mail.gmail.com>
-Date: Fri, 18 May 2007 09:01:48 +0900
-From: "Dongjun Shin" <djshin90@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: [PATCH] LogFS take three
-Cc: "David Woodhouse" <dwmw2@infradead.org>,
-       "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@lazybastard.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, "Albert Cahalan" <acahalan@gmail.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>, "Greg KH" <greg@kroah.com>,
-       "Ingo Oeser" <ioe-lkml@rameria.de>
-In-Reply-To: <20070517201847.GA5032@ucw.cz>
+	Thu, 17 May 2007 20:02:09 -0400
+Message-ID: <20070517190058.w2oyxzf9wko4w8k8@67.106.77.50>
+Date: Thu, 17 May 2007 19:00:58 -0500
+From: art@usfltd.com
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@osdl.org, greg@kroah.com
+Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
 Content-Disposition: inline
-References: <20070515151919.GA32510@lazybastard.org>
-	 <20070515133759.9ee434a2.akpm@linux-foundation.org>
-	 <1179317240.2859.222.camel@shinybook.infradead.org>
-	 <20070516083408.dcd9dd78.akpm@linux-foundation.org>
-	 <1179330596.2859.248.camel@shinybook.infradead.org>
-	 <20070516164158.GB8113@lazybastard.org>
-	 <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com>
-	 <1179383117.2859.416.camel@shinybook.infradead.org>
-	 <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
-	 <20070517201847.GA5032@ucw.cz>
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+greg
 
-On 5/18/07, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->
-> Hmm.. so operating your camera on batteries should be against the
-> warranty, since batteries commonly run empty while storing pictures?
->
->
+and part of /etc/udev/rules.d/60-libsane.rules
 
-AFAIK, the camera stops writing to the flash card and automatically
-turns off when it's low on battery (before empty).
+...
+ACTION!="add", GOTO="libsane_rules_end"
+SUBSYSTEM!="usb_device", GOTO="libsane_rules_end"
+
+# Hewlett-Packard ScanJet 4100C
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0101", SYMLINK+="scanner-%k"
+# Hewlett-Packard Photosmart S20 (C5101A) | Hewlett-Packard Photosmart  
+S20xi (C7150A)
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0102", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 4200C | Hewlett-Packard ScanJet 4200Cxi |  
+Hewlett-Packard ScanJet 4200Cse
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0105", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 6200C | Hewlett-Packard ScanJet 6250C
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0201", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 3300c
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0205", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 4300c
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0305", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 5200C
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0401", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 3400c
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0405", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 2100C
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0505", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 6300C | Hewlett-Packard ScanJet 6350C |  
+Hewlett-Packard ScanJet 6390C
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0601", SYMLINK+="scanner-%k"
+# Hewlett-Packard ScanJet 2200C
+SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0605", SYMLINK+="scanner-%k"
+
+...
+# Dell 1600n
+SYSFS{idVendor}=="413c", SYSFS{idProduct}=="5250", SYMLINK+="scanner-%k"
+
+LABEL="libsane_rules_end"
+
+
+xboom
+
