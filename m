@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbXERIKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbXERIUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbXERIKX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 04:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbXERIKI
+	id S1756918AbXERIUR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 04:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbXERIUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 04:10:08 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:39706 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753745AbXERIKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 04:10:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=I7ttNR322XVXVl3gGlLNuFiAh0ABufl2qRUtmnq9hIxbAFE41Fozjyh/pLwRDTGmIdemTOEyUNVlIINcF7mDNTUrldS0hwmWlvWn1sKi45ikYmExXQMtmBA1e8b/WriDdF8+EGGATNXxqfUzenZy5/CbnI5+cPcmZqVLkKwHGGw=
-Message-ID: <2cf1ee820705180110y740de989ma48553d4b2188845@mail.gmail.com>
-Date: Fri, 18 May 2007 11:10:05 +0300
-From: "emin ak" <eminak71@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: v2.6.21-rt3
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <1179474804.12981.57.camel@chaos>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 18 May 2007 04:20:04 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:52209 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753078AbXERIUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 04:20:01 -0400
+Date: Fri, 18 May 2007 10:21:58 +0200
+From: DervishD <lkml@dervishd.net>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
+Subject: Re: usb-storage nice value
+Message-ID: <20070518082158.GA2307@DervishD>
+Mail-Followup-To: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	linux-kernel@vger.kernel.org
+References: <20070517100308.GA14667@DervishD> <464CB2B3.50506@s5r6.in-berlin.de> <20070518061512.GA32730@DervishD> <Pine.LNX.4.61.0705180829120.3231@yvahk01.tjqt.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20070517194143.GA25394@elte.hu>
-	 <2cf1ee820705180039l1d72005fq2169f8fa36e12377@mail.gmail.com>
-	 <1179474804.12981.57.camel@chaos>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.61.0705180829120.3231@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, 2.6.21 was compiled and boot successfully for ppc, Is 85xx family
-supported for powerpc arch?
-Thanks.
+    Hi Jan :)
 
-2007/5/18, Thomas Gleixner <tglx@linutronix.de>:
-> On Fri, 2007-05-18 at 10:39 +0300, emin ak wrote:
-> > Hi,
-> > I have tried to compile -rt3 patch for ppc (mpc8540ads) and it failed
-> > with undefined referance errors on ppc/kernel/asm-offsets.c. Here is
-> > the compiler outputs:
->
-> arch/ppc is known to be broken. Does it even compile on 2.6.21 vanilla ?
->
->         tglx
->
->
->
+ * Jan Engelhardt <jengelh@linux01.gwdg.de> dixit:
+> Try ionice.
+
+    I didn't know about it, probably I didn't install it the last time I
+built util-linux. Anyway, I've seen an ionice in
+Documentation/block/ioprio.txt (which, BTW, I missed when searching for
+information about my problem).
+
+> Or try echo 10 >/proc/sys/kernel/dirty_ratio
+
+    Not in my proc :?? Perhaps /proc/sys/vm/dirty_ratio? Mine is 40,
+which I think is too high.
+
+    Thanks!
+
+    Raúl Núñez de Arenas Coronado
+
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
