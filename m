@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760047AbXEROnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbXEROsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760047AbXEROnY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 10:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbXEROnR
+	id S1758216AbXEROsO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 10:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbXEROsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 10:43:17 -0400
-Received: from www.osadl.org ([213.239.205.134]:36711 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754443AbXEROnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 10:43:17 -0400
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Matt Sealey <matt@genesi-usa.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Robert Schwebel <r.schwebel@pengutronix.de>
-In-Reply-To: <464DB800.40702@genesi-usa.com>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	 <464C99FF.8080404@ru.mvista.com>
-	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	 <464C9E67.2020909@ru.mvista.com>
-	 <6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
-	 <464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
-	 <464DADFC.3080802@ru.mvista.com>  <464DB800.40702@genesi-usa.com>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 16:48:33 +0200
-Message-Id: <1179499713.12981.75.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 18 May 2007 10:48:00 -0400
+Received: from relay1.mentorg.com ([192.94.38.131]:54024 "EHLO
+	relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752992AbXEROsA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 10:48:00 -0400
+X-Greylist: delayed 2109 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 May 2007 10:48:00 EDT
+Message-ID: <464DB45C.8070200@mentorg.com>
+Date: Fri, 18 May 2007 19:42:44 +0530
+From: Pranith Kumar D <pranith-kumar_d@mentor.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
+MIME-Version: 1.0
+To: greg@kroah.com, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       debiandev@gmail.com
+Subject: [PATCH 1/1] FIX HOWTO: removing duplicated entry.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 May 2007 14:12:44.0622 (UTC) FILETIME=[9AC57EE0:01C79956]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-18 at 15:28 +0100, Matt Sealey wrote:
-> >> I guess the real question is, how high resolution does a high resolution
-> >> timer need to be,
-> > 
-> >    In the order of microseconds.
-> 
-> I think both the MPC52xx GPT0-7 and the SLT0-1 fulfil this fairly
-> easily.
+Hello,
+    Sorry for submitting the previous patch without description, name 
+signed off line.
 
-There is some basic work for MPC5200 available:
+This removes the duplicated paragraph in the Documentation/HOWTO file.
 
-http://www.pengutronix.de/oselas/bsp/phytec/index_en.html#phyCORE-MPC5200B-tiny
+Signed-off-by: D Pranith Kumar<pranith-kumar_d@mentorg.com>
 
-	tglx
+--- linux-2.6.21.1/Documentation/HOWTO.orig	2007-05-18 18:54:18.000000000 +0530
++++ linux-2.6.21.1/Documentation/HOWTO	2007-05-18 18:55:03.000000000 +0530
+@@ -383,26 +383,6 @@ One of the best ways to put into practic
+ bugs reported by other people. Not only you will help to make the kernel
+ more stable, you'll learn to fix real world problems and you will improve
+ your skills, and other developers will be aware of your presence. Fixing
+-bugs is one of the best ways to earn merit amongst the developers, because
+-not many people like wasting time fixing other people's bugs.
+-
+-To work in the already reported bug reports, go to http://bugzilla.kernel.org.
+-If you want to be advised of the future bug reports, you can subscribe to the
+-bugme-new mailing list (only new bug reports are mailed here) or to the
+-bugme-janitor mailing list (every change in the bugzilla is mailed here)
+-
+-	http://lists.osdl.org/mailman/listinfo/bugme-new
+-	http://lists.osdl.org/mailman/listinfo/bugme-janitors
+-
+-
+-
+-Managing bug reports
+---------------------
+-
+-One of the best ways to put into practice your hacking skills is by fixing
+-bugs reported by other people. Not only you will help to make the kernel
+-more stable, you'll learn to fix real world problems and you will improve
+-your skills, and other developers will be aware of your presence. Fixing
+ bugs is one of the best ways to get merits among other developers, because
+ not many people like wasting time fixing other people's bugs.
+ 
+
 
 
