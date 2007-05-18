@@ -1,136 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbXERTCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763279AbXERTE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763445AbXERTCz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 15:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758526AbXERTCg
+	id S1763279AbXERTE1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 15:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXERTEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 15:02:36 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:4272 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756212AbXERTCf (ORCPT
+	Fri, 18 May 2007 15:04:20 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48707 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754397AbXERTET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 15:02:35 -0400
-X-AuthUser: davidel@xmailserver.org
-From: Davide Libenzi <davidel@xmailserver.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Davi Arnaut <davi@haxent.com.br>, Thomas Gleixner <tglx@linutronix.de>
-Date: Fri, 18 May 2007 12:02:33 -0700
-Subject: [patch 2/2] timerfd use waitqueue lock ...
+	Fri, 18 May 2007 15:04:19 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, mingo@elte.hu, ak@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Zou, Nanhai" <nanhai.zou@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Packard, Keith" <keith.packard@intel.com>
+Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
+References: <20070518010119.GB12088@linux-os.sc.intel.com>
+	<m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
+	<20070518180749.GA26081@linux-os.sc.intel.com>
+	<86802c440705181128t28652911w39d6de0c43d99a45@mail.gmail.com>
+	<20070518183941.GA28957@linux-os.sc.intel.com>
+Date: Fri, 18 May 2007 13:02:16 -0600
+In-Reply-To: <20070518183941.GA28957@linux-os.sc.intel.com> (Suresh
+	B. Siddha's message of "Fri, 18 May 2007 11:39:41 -0700")
+Message-ID: <m1wsz6ymyv.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.6638.1179514954.2>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The timerfd was using the unlocked waitqueue operations, but it was
-using a different lock, so poll_wait() would race with it. This patch
-makes timerfd directly use the waitqueue lock.
+"Siddha, Suresh B" <suresh.b.siddha@intel.com> writes:
 
+> On Fri, May 18, 2007 at 11:28:25AM -0700, Yinghai Lu wrote:
+>> On 5/18/07, Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
+>> >
+>> > If the vector number stays same during irq migration and if we reset remote
+>> > IRR bit using the above method(edge and then back to level) during
+>> > irq migration, then we have a problem. A new interrupt arriving on a new
+>> > cpu will set the remote IRR bit and now the old inflight EOI broadcast
+>> > reaches IOAPIC RTE(resetting the remote IRR bit, because the vector in the
+>> > broadcast msg is same), while the kernel code still assumes that the remote
+>> > IRR bit is still set. This will lead to more problems and issues.
+>> 
+>> coud add some line __assign_irq_vector. to make sure old_vector!=vector.
+>
+> hmm..
+> what happens when there is second(and very quick) irq migration which brings the
+> irq back to old cpu(or to a third cpu) with old vector.
+>
+> Point is, we are not taking care of the inflight messages(which can perhaps,
+> theoretically, can get delayed for long time)
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+I will look closer but I do believe that from the ioapic to the cpu the 2.6.21
+code should be fairly robust with respect to inflight messages from the ioapic
+to the local apics and the cpus.  What I failed to consider were inflight
+messages in the other direction arriving out of order.
 
+Part of the problem in the general case is the only way you can tell an inflight
+message was transmitted is that a message that you can prove followed the first
+message arrives somewhere.
 
-- Davide
-
-
-Index: linux-2.6.mod/fs/timerfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/timerfd.c	2007-05-18 11:11:09.000000000 -0700
-+++ linux-2.6.mod/fs/timerfd.c	2007-05-18 11:11:16.000000000 -0700
-@@ -24,7 +24,6 @@
- struct timerfd_ctx {
- 	struct hrtimer tmr;
- 	ktime_t tintv;
--	spinlock_t lock;
- 	wait_queue_head_t wqh;
- 	int expired;
- };
-@@ -39,10 +38,10 @@
- 	struct timerfd_ctx *ctx = container_of(htmr, struct timerfd_ctx, tmr);
- 	unsigned long flags;
+I'm in the middle of tracking two other problems so I can't review this in
+detail until later today at the earliest.
  
--	spin_lock_irqsave(&ctx->lock, flags);
-+	spin_lock_irqsave(&ctx->wqh.lock, flags);
- 	ctx->expired = 1;
- 	wake_up_locked(&ctx->wqh);
--	spin_unlock_irqrestore(&ctx->lock, flags);
-+	spin_unlock_irqrestore(&ctx->wqh.lock, flags);
- 
- 	return HRTIMER_NORESTART;
- }
-@@ -83,10 +82,10 @@
- 
- 	poll_wait(file, &ctx->wqh, wait);
- 
--	spin_lock_irqsave(&ctx->lock, flags);
-+	spin_lock_irqsave(&ctx->wqh.lock, flags);
- 	if (ctx->expired)
- 		events |= POLLIN;
--	spin_unlock_irqrestore(&ctx->lock, flags);
-+	spin_unlock_irqrestore(&ctx->wqh.lock, flags);
- 
- 	return events;
- }
-@@ -101,7 +100,7 @@
- 
- 	if (count < sizeof(ticks))
- 		return -EINVAL;
--	spin_lock_irq(&ctx->lock);
-+	spin_lock_irq(&ctx->wqh.lock);
- 	res = -EAGAIN;
- 	if (!ctx->expired && !(file->f_flags & O_NONBLOCK)) {
- 		__add_wait_queue(&ctx->wqh, &wait);
-@@ -115,9 +114,9 @@
- 				res = -ERESTARTSYS;
- 				break;
- 			}
--			spin_unlock_irq(&ctx->lock);
-+			spin_unlock_irq(&ctx->wqh.lock);
- 			schedule();
--			spin_lock_irq(&ctx->lock);
-+			spin_lock_irq(&ctx->wqh.lock);
- 		}
- 		__remove_wait_queue(&ctx->wqh, &wait);
- 		__set_current_state(TASK_RUNNING);
-@@ -139,7 +138,7 @@
- 		} else
- 			ticks = 1;
- 	}
--	spin_unlock_irq(&ctx->lock);
-+	spin_unlock_irq(&ctx->wqh.lock);
- 	if (ticks)
- 		res = put_user(ticks, buf) ? -EFAULT: sizeof(ticks);
- 	return res;
-@@ -176,7 +175,6 @@
- 			return -ENOMEM;
- 
- 		init_waitqueue_head(&ctx->wqh);
--		spin_lock_init(&ctx->lock);
- 
- 		timerfd_setup(ctx, clockid, flags, &ktmr);
- 
-@@ -202,10 +200,10 @@
- 		 * it to the new values.
- 		 */
- 		for (;;) {
--			spin_lock_irq(&ctx->lock);
-+			spin_lock_irq(&ctx->wqh.lock);
- 			if (hrtimer_try_to_cancel(&ctx->tmr) >= 0)
- 				break;
--			spin_unlock_irq(&ctx->lock);
-+			spin_unlock_irq(&ctx->wqh.lock);
- 			cpu_relax();
- 		}
- 		/*
-@@ -213,7 +211,7 @@
- 		 */
- 		timerfd_setup(ctx, clockid, flags, &ktmr);
- 
--		spin_unlock_irq(&ctx->lock);
-+		spin_unlock_irq(&ctx->wqh.lock);
- 		fput(file);
- 	}
- 
-
+Eric
