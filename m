@@ -1,56 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbXERLYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760726AbXERL1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758997AbXERLYs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 07:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbXERLYj
+	id S1760726AbXERL1f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 07:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbXERL13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 07:24:39 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:58578 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756034AbXERLYi (ORCPT
+	Fri, 18 May 2007 07:27:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:41299 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756039AbXERL12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 07:24:38 -0400
-Date: Fri, 18 May 2007 05:24:37 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org
-Subject: Re: Asynchronous scsi scanning
-Message-ID: <20070518112437.GQ10562@parisc-linux.org>
-References: <20070517172023.GL10562@parisc-linux.org> <a781481a0705171041y3c3b7fe1m2aa6a8805807942c@mail.gmail.com> <20070517182414.GA12170@infradead.org> <a781481a0705171147s1ef5c205y8873d0bfa201f928@mail.gmail.com> <20070517185115.GA13207@infradead.org> <a781481a0705171204o5b25fafdm36d5970acf9119cd@mail.gmail.com> <20070517193953.GM10562@parisc-linux.org> <20070517194326.GC30571@kvack.org> <20070517213043.GN10562@parisc-linux.org> <a781481a0705172228j34e0b3eblade96458163475cb@mail.gmail.com>
+	Fri, 18 May 2007 07:27:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dyx9U7Uz2Dw03vY0DclugBvy80N1HwWrralMlqI15za+AJs4yvDmdTtcVXXJ9GDRFcd0JDLoMHavWVGvEEm2EU6ZSuHkdJved61TXWG9I2ROxd9H6SpJo24KhLO88Y69plQU6usMxOyI1zTRCcvoLbide3KFSKAMkZllZKZzFE4=
+Message-ID: <4cefeab80705180427u54110396mfb3acd96c6c446bd@mail.gmail.com>
+Date: Fri, 18 May 2007 16:57:25 +0530
+From: "Nitin Gupta" <nitingupta910@gmail.com>
+To: "Heikki Orsila" <shdl@zakalwe.fi>
+Subject: Re: [RFC] LZO1X de/compression support
+Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
+       "Markus F.X.J. Oberhumer" <markus@oberhumer.com>
+In-Reply-To: <20070518101449.GH10873@zakalwe.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <a781481a0705172228j34e0b3eblade96458163475cb@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
+	 <20070518101449.GH10873@zakalwe.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 10:58:05AM +0530, Satyam Sharma wrote:
-> [ BTW, this is the last time I'll try explaining this to you. ]
+Hi,
 
-Oh good.  Perhaps you can just drop the idea entirely and give up?
+Thanks for review. My comments inline.
 
-> The one-line patch you're suggesting *would*not*allow* one to use the async
-> scanning _at_all_. If one really wants to use async scanning reliably (even 
-> in
-> the future, as it can be turned on at boot-time later, like you very well 
-> know),
-> that module *must* be built. Making it user-visible and/or optional would 
-> *not*
-> be a solution but a *problem*. What I have been suggesting is *not* to make
-> this *dummy module* user-visible and/or optional but to _not_ use this
-> *dummy module* for this purpose in the first place.
+On 5/18/07, Heikki Orsila <shdl@zakalwe.fi> wrote:
+> Good work..
+>
+> On Fri, May 18, 2007 at 03:28:31PM +0530, Nitin Gupta wrote:
+> > Facts for LZO (at least for original code. Should hold true for this
+> > port also - hence the RFC!):
+> > - The compressor can never overrun buffer.
+> > - The "non-safe" version of decompressor can never overrun buffer if
+> > compressed data is unmodified. I am not sure about this if compressed
+> > data is malicious (to be confirmed from the author).
+> > - The "safe" version can never crash (buffer overrun etc.) - confirmed
+> > from the author.
+>
+> What's the proof?
 
-That's simply not true.  There are other ways of using async scanning
-reliably -- as Peter Jones pointed out.  If you're relying on the earlier
-semantics of "modprobe returned, therefore scanning is complete", then
-yes, it's unreliable.  But if you're using kevents/udev/etc to find out
-when devices have been discovered, then it's not unreliable.
+I confirmned these from the author - I just ported this code. I think
+he can answer you better - CC'ed him  :-)
 
-> [ This time, I don't see the subject changing, nor a "change in the general
-> direction of the thread blah blah blah", and still you feel compelled to not
-> maintain the CC list. Wow. ]
+>
+> > +/* LZO1X_1 compression */
+> > +int
+> > +lzo1x_compress(const unsigned char *src, size_t src_len,
+> > +             unsigned char *dst, size_t *dst_len,
+> > +             void *workmem);
+>
+> int lzo1x_compress(const unsigned char *src, size_t src_len,
+>                    unsigned char *dst, size_t *dst_len,
+>                    void *workmem);
+>
+> is the preferred style.
+>
 
-I see trimming the CC list as a courtesy to those who've had enough of
-this pointless thread landing in their mailboxes.
+OK. Changed.
+
+<snip>
+> > +     register const unsigned char *ip;
+>
+> Is the register directive really useful? Or any subsequent usage of that
+> directive?
+
+The author must be having some performance gain with this directive.
+Though I didn't test performance changes with/without this directive.
+
+> > +             DINDEX1(dindex,ip);
+>
+> Put a space after the delimiter: DINDEX1(dindex, ip); This happens in
+> many places in the source, fix them all.
+
+OK.
+
+> Useless brackets: (unsigned char) tt
+>
+OK.
+
+> > +             }
+> > +             do *op++ = *ii++; while (--t > 0);
+>
+> memcpy(op, ii, t); ? Happens in other places as well.
+
+I looked more carefully into such cases. Following type of code blocks
+are repeated at several places:
+
+---
+                COPY4(op,ip);
+                op += 4;
+                ip += 4;
+                if (--t > 0) {
+                        if (t >= 4) {
+                                do {
+                                        COPY4(op,ip);
+                                        op += 4; ip += 4; t -= 4;
+                                } while (t >= 4);
+                                if (t > 0)
+                                        do
+                                                *op++ = *ip++;
+                                        while (--t > 0);
+                        } else
+                                do
+                                        *op++ = *ip++;
+                                while (--t > 0);
+                }
+---
+Such entire blocks can be replaced by simple:
+memcpy(op, ip, t + 4);
+Since kernel has separate memcpy() implementation optimized for
+specific archs, we shouldn't loose on perf while having simpler (and
+shorter) code.
+
+I will work on this and post again.
+
+
+> > +#define COPY4(dst,src)       *(uint32_t *)(dst) = *(uint32_t *)(src)
+>
+> Use u32.
+>
+
+What is the problem with uint32_t? Anyhow, I think COPY4 will
+disappear after those memcpy changes :)
+
+Thanks for comments. I will post revised patch soon.
+
+
+Cheers,
+Nitin
