@@ -1,193 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763223AbXERSMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763713AbXERSNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763223AbXERSMu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761482AbXERSL0
+	id S1763713AbXERSNM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762222AbXERSL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 18 May 2007 14:11:26 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34561 "EHLO
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58624 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756325AbXERSLV (ORCPT
+	with ESMTP id S1756380AbXERSLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 18 May 2007 14:11:21 -0400
-Message-Id: <20070518181119.327980685@sgi.com>
+Message-Id: <20070518181120.266687200@sgi.com>
 References: <20070518181040.465335396@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 18 May 2007 11:10:43 -0700
+Date: Fri, 18 May 2007 11:10:47 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
 Cc: dgc@sgi.com
 Cc: Hugh Dickins <hugh@veritas.com>
-Subject: [patch 03/10] Dentry defragmentation
-Content-Disposition: inline; filename=dentry_targeted_reclaim
+Subject: [patch 07/10] procfs: inode defragmentation support
+Content-Disposition: inline; filename=fs_proc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows the removal of unused or negative dentry entries in a
-partially populated slab page.
-
-get() uses the dcache lock and then works with dget_locked to obtain a
-reference to the dentry. An additional complication is that the dentry
-may be in process of being freed or it may just have been allocated.
-We add an additional flag to d_flags to be able to determined the
-status of an object.
-
-kick() is called after get() has been used and after the slab has dropped
-all of its own locks. The dentry pruning for unused entries works in a
-straighforward way.
+Hmmm... Do we really need this?
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/dcache.c            |  100 +++++++++++++++++++++++++++++++++++++++++++++----
- include/linux/dcache.h |    4 +
- 2 files changed, 96 insertions(+), 8 deletions(-)
+ fs/proc/inode.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Index: slub/fs/dcache.c
+Index: slub/fs/proc/inode.c
 ===================================================================
---- slub.orig/fs/dcache.c	2007-05-18 10:53:01.000000000 -0700
-+++ slub/fs/dcache.c	2007-05-18 10:58:38.000000000 -0700
-@@ -136,6 +136,7 @@ static struct dentry *d_kill(struct dent
+--- slub.orig/fs/proc/inode.c	2007-05-18 00:54:30.000000000 -0700
++++ slub/fs/proc/inode.c	2007-05-18 01:00:36.000000000 -0700
+@@ -111,14 +111,25 @@ static void init_once(void * foo, struct
  
- 	list_del(&dentry->d_u.d_child);
- 	dentry_stat.nr_dentry--;	/* For d_free, below */
-+	dentry->d_flags &= ~DCACHE_ENTRY_VALID;
- 	/*drops the locks, at that point nobody can reach this dentry */
- 	dentry_iput(dentry);
- 	parent = dentry->d_parent;
-@@ -952,6 +953,7 @@ struct dentry *d_alloc(struct dentry * p
- 	if (parent)
- 		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
- 	dentry_stat.nr_dentry++;
-+	dentry->d_flags |= DCACHE_ENTRY_VALID;
- 	spin_unlock(&dcache_lock);
- 
- 	return dentry;
-@@ -2114,18 +2116,100 @@ static void __init dcache_init_early(voi
- 		INIT_HLIST_HEAD(&dentry_hashtable[loop]);
+ 	inode_init_once(&ei->vfs_inode);
  }
- 
-+/*
-+ * The slab is holding off frees. Thus we can safely examine
-+ * the object without the danger of it vanishing from under us.
-+ */
-+static void *get_dentries(struct kmem_cache *s, int nr, void **v)
+- 
++
++static void *proc_get_inodes(struct kmem_cache *s, int nr, void **v)
 +{
-+	struct dentry *dentry;
-+	unsigned long abort = 0;
-+	int i;
-+
-+	spin_lock(&dcache_lock);
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+		/*
-+		 * if DCACHE_ENTRY_VALID is not set then the dentry
-+		 * may be already in the process of being freed.
-+		 */
-+		if (abort || !(dentry->d_flags & DCACHE_ENTRY_VALID))
-+			v[i] = NULL;
-+		else {
-+			dget_locked(dentry);
-+			abort = atomic_read(&dentry->d_count) > 1;
-+		}
-+	}
-+	spin_unlock(&dcache_lock);
-+	return (void *)abort;
-+}
-+
-+/*
-+ * Slab has dropped all the locks. Get rid of the
-+ * refcount we obtained earlier and also rid of the
-+ * object.
-+ */
-+static void kick_dentries(struct kmem_cache *s, int nr, void **v, void *private)
-+{
-+	struct dentry *dentry;
-+	unsigned long abort = (unsigned long)private;
-+	int i;
-+
-+	spin_lock(&dcache_lock);
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+		if (!dentry)
-+			continue;
-+
-+		if (abort)
-+			goto put_dentry;
-+
-+		spin_lock(&dentry->d_lock);
-+		if (atomic_read(&dentry->d_count) > 1) {
-+			/*
-+			 * Reference count was increased.
-+			 * We need to abandon the freeing of
-+			 * objects.
-+			 */
-+			abort = 1;
-+			spin_unlock(&dentry->d_lock);
-+put_dentry:
-+			spin_unlock(&dcache_lock);
-+			dput(dentry);
-+			spin_lock(&dcache_lock);
-+			continue;
-+		}
-+
-+		/* Remove from LRU */
-+		if (!list_empty(&dentry->d_lru)) {
-+			dentry_stat.nr_unused--;
-+			list_del_init(&dentry->d_lru);
-+		}
-+		/* Drop the entry */
-+		prune_one_dentry(dentry, 1);
-+	}
-+	spin_unlock(&dcache_lock);
-+	/*
-+	 * dentries are freed using RCU so we need to wait until RCU
-+	 * operations arei complete
-+	 */
-+	if (!abort)
-+		synchronize_rcu();
-+}
-+
-+static struct kmem_cache_ops dentry_kmem_cache_ops = {
-+	.get = get_dentries,
-+	.kick = kick_dentries,
++	return fs_get_inodes(s, nr, v,
++			offsetof(struct proc_inode, vfs_inode));
 +};
 +
- static void __init dcache_init(unsigned long mempages)
- {
- 	int loop;
- 
--	/* 
--	 * A constructor could be added for stable state like the lists,
--	 * but it is probably not worth it because of the cache nature
--	 * of the dcache. 
--	 */
--	dentry_cache = KMEM_CACHE(dentry,
--		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD);
--	
-+	dentry_cache = KMEM_CACHE_OPS(dentry,
-+		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD,
-+		&dentry_kmem_cache_ops);
++static struct kmem_cache_ops proc_kmem_cache_ops = {
++	.get = proc_get_inodes,
++	.kick = kick_inodes
++};
 +
- 	register_shrinker(&dcache_shrinker);
- 
- 	/* Hash may have been set up in dcache_init_early */
-Index: slub/include/linux/dcache.h
-===================================================================
---- slub.orig/include/linux/dcache.h	2007-05-18 10:53:01.000000000 -0700
-+++ slub/include/linux/dcache.h	2007-05-18 10:58:07.000000000 -0700
-@@ -177,6 +177,10 @@ d_iput:		no		no		no       yes
- 
- #define DCACHE_INOTIFY_PARENT_WATCHED	0x0020 /* Parent inode is watched */
- 
-+#define DCACHE_ENTRY_VALID	0x0040	/*
-+					 * Entry is valid and not in the process of
-+					 * being created or destroyed
-+					 */
- extern spinlock_t dcache_lock;
- 
- /**
+ int __init proc_init_inodecache(void)
+ {
+ 	proc_inode_cachep = kmem_cache_create("proc_inode_cache",
+ 					     sizeof(struct proc_inode),
+ 					     0, (SLAB_RECLAIM_ACCOUNT|
+ 						SLAB_MEM_SPREAD),
+-					     init_once, NULL);
++					     init_once, &proc_kmem_cache_ops);
+ 	if (proc_inode_cachep == NULL)
+ 		return -ENOMEM;
+ 	return 0;
 
 -- 
