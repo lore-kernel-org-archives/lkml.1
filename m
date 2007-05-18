@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbXERQpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759730AbXERQwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbXERQpt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 12:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbXERQpm
+	id S1759730AbXERQwj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 12:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbXERQwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 12:45:42 -0400
-Received: from www.osadl.org ([213.239.205.134]:45692 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754665AbXERQpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 12:45:41 -0400
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Matt Sealey <matt@genesi-usa.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Robert Schwebel <r.schwebel@pengutronix.de>
-In-Reply-To: <32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	 <464C99FF.8080404@ru.mvista.com>
-	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	 <464C9E67.2020909@ru.mvista.com>
-	 <6E0D5E13-C939-4FCE-81A3-F29DFA6436A2@kernel.crashing.org>
-	 <464CA222.8000407@ru.mvista.com> <464D9E7E.3090605@genesi-usa.com>
-	 <464DADFC.3080802@ru.mvista.com>  <464DB800.40702@genesi-usa.com>
-	 <1179499713.12981.75.camel@chaos>
-	 <32E780BE-58B7-4303-AA49-1852C4C7EB50@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 18:50:59 +0200
-Message-Id: <1179507059.12981.81.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 18 May 2007 12:52:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36768 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754630AbXERQwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 12:52:30 -0400
+Message-ID: <464DD957.9040803@redhat.com>
+Date: Sat, 19 May 2007 00:50:31 +0800
+From: Eugene Teo <eteo@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: jeff@garzik.org
+Subject: [2.6 patch] drivers/net/wireless/libertas/rx.c: fix use-after-free
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-18 at 11:31 -0500, Kumar Gala wrote:
-> I asked this earlier, but figured you might have a better insight.   
-> Is their value in having 'drivers' for more than one clock source?   
-> I'd say most (of not all) the PPC SoCs have timers on the system side  
-> that we could provide drivers for, I'm just not sure if that does  
-> anything for anyone.
+libertas_upload_rx_packet() calls netif_rx() before returning, and it always return 0.
+Also within libertas_upload_rx_packet(), it will initialize skb->protocol anyways.
 
-Not necessarily for the tick/highres stuff, but clock events allows
-other users as well to utilize such facilities. We have no users yet,
-but there are drivers, which utilize special timer hardware with nice
-#ifdeffery to allow the driver to be shared. This might be a useful
-thing for such stuff.
+Spotted by the Coverity checker.
 
-	tglx
+Signed-off-by: Eugene Teo <eteo@redhat.com>
 
+diff --git a/drivers/net/wireless/libertas/rx.c b/drivers/net/wireless/libertas/rx.c
+index d17924f..1d8d5e4 100644
+--- a/drivers/net/wireless/libertas/rx.c
++++ b/drivers/net/wireless/libertas/rx.c
+@@ -269,15 +269,12 @@ int libertas_process_rxed_packet(wlan_private * priv, struct sk_buff *skb)
+        wlan_compute_rssi(priv, p_rx_pd);
+
+        lbs_pr_debug(1, "RX Data: size of actual packet = %d\n", skb->len);
+-       if (libertas_upload_rx_packet(priv, skb)) {
+-               lbs_pr_debug(1, "RX error: libertas_upload_rx_packet"
+-                      " returns failure\n");
+-               ret = -1;
+-               goto done;
+-       }
++
+        priv->stats.rx_bytes += skb->len;
+        priv->stats.rx_packets++;
+
++       libertas_upload_rx_packet(priv, skb);
++
+        ret = 0;
+ done:
+        LEAVE();
+@@ -439,21 +436,14 @@ static int process_rxed_802_11_packet(wlan_private * priv, struct
+sk_buff *skb)
+
+        lbs_pr_debug(1, "RX Data: size of actual packet = %d\n", skb->len);
+
+-       if (libertas_upload_rx_packet(priv, skb)) {
+-               lbs_pr_debug(1, "RX error: libertas_upload_rx_packet "
+-                       "returns failure\n");
+-               ret = -1;
+-               goto done;
+-       }
+-
+        priv->stats.rx_bytes += skb->len;
+        priv->stats.rx_packets++;
+
++       libertas_upload_rx_packet(priv, skb);
++
+        ret = 0;
+ done:
+        LEAVE();
+
+-       skb->protocol = __constant_htons(0x0019);       /* ETH_P_80211_RAW */
+-
 
