@@ -1,35 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763310AbXERSbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763668AbXERSdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763310AbXERSbz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbXERSbs
+	id S1763668AbXERSdF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:33:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbXERScw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:31:48 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:47334 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754053AbXERSbs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 14:31:48 -0400
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org
-In-reply-to: <20070518105318.ae611edc.akpm@linux-foundation.org> (message from
-	Andrew Morton on Fri, 18 May 2007 10:53:18 -0700)
-Subject: Re: [patch] fix unused setup_nr_node_ids
-References: <E1Hozre-0003rZ-00@dorka.pomaz.szeredi.hu> <20070518105318.ae611edc.akpm@linux-foundation.org>
-Message-Id: <E1Hp7Dg-0004lK-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 18 May 2007 20:30:28 +0200
+	Fri, 18 May 2007 14:32:52 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3221 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755383AbXERScv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 14:32:51 -0400
+Date: Fri, 18 May 2007 14:13:55 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Eugene Teo <eteo@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/net/wireless/libertas/fw.c: fix use-before-check
+Message-ID: <20070518181355.GD3492@tuxdriver.com>
+References: <464DDD29.3000009@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464DDD29.3000009@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That doesn't do much to inprove overall readability.
+On Sat, May 19, 2007 at 01:06:49AM +0800, Eugene Teo wrote:
+> NULL checks should be performed before the dereference.
 > 
-> I suspect the warning was only there because the stubbed version of
-> setup_nr_node_ids() forgot to be declared static inline, yes?
+> Spotted by the Coverity checker.
 > 
-> How about this?
+> Signed-off-by: Eugene Teo <eteo@redhat.com>
 
-Yes, looks good.
+This does not apply against 2.6.22-rc1.  Please rediff and repost.
 
 Thanks,
-Miklos
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
