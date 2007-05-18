@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbXERAsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759173AbXERA5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760068AbXERAsd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 20:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757260AbXERAs0
+	id S1759173AbXERA5P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 20:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbXERA5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 20:48:26 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59744 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756491AbXERAsZ (ORCPT
+	Thu, 17 May 2007 20:57:01 -0400
+Received: from outbound-mail-05.bluehost.com ([69.89.21.15]:38617 "HELO
+	outbound-mail-05.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754336AbXERA5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 20:48:25 -0400
-X-Greylist: delayed 82020 seconds by postgrey-1.27 at vger.kernel.org; Thu, 17 May 2007 20:48:24 EDT
-Date: Fri, 18 May 2007 09:48:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com
-Subject: Re: [PATCH] fix kmalloc(0) in arch/ia64/pci/pci.c
-Message-Id: <20070518094857.572e804e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070517121959.b1b374fa.akpm@linux-foundation.org>
-References: <20070517110056.779944a2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070517121959.b1b374fa.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 17 May 2007 20:57:00 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 1/3] allow console unregistration
+Date: Thu, 17 May 2007 17:56:47 -0700
+User-Agent: KMail/1.9.6
+Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       James Simmons <jsimmons@pentafluge.infradead.org>,
+       Dave Airlie <airlied@gmail.com>,
+       Jakob Bornecrantz <wallbraker@gmail.com>,
+       dri-devel@lists.sourceforge.net
+References: <200705171423.46748.jesse.barnes@intel.com> <200705171532.28799.jesse.barnes@intel.com> <1179444190.5092.4.camel@daplas>
+In-Reply-To: <1179444190.5092.4.camel@daplas>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705171756.48079.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007 12:19:59 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thursday, May 17, 2007, Antonino A. Daplas wrote:
+> On Thu, 2007-05-17 at 15:32 -0700, Jesse Barnes wrote:
+> > Randy just informed me that the patch limits are bigger now, so here
+> > are the actual patches.
+> >
+> > This patch allows for proper console unregistration via the VT layer,
+> > and updates the FB layer to use it.  This makes debugging new console
+> > drivers much easier, since you can properly clean them up before
+> > unloading. Antonio already checked it out (and suggested a tweak for
+> > the fbcon side) so I think it's on its way already via the FB tree.
+>
+> Sorry, I was busy and got sidetracked so I wasn't able to work on this
+> for 2 weeks.  Yes, this should work for now, at least for debugging
+> purposes. I'll work on refining on fbcon side, hopefully for
+> 2.6.22-2.6.23 time frame.
 
-> > +	if (!windows)
-> > +		goto out2;
-> >  	controller->window = kmalloc_node(sizeof(*controller->window) * windows,
-> >  			GFP_KERNEL, controller->node);
-> >  	if (!controller->window)
-> > 
-> 
-> This is a significant change in functionality.  Can you please explain why
-> it doesn't break things?
-> 
-Sorry for long RTT. I found no problem on my machine, but....
-I realized I misunderstood how kmalloc(0) works....sorry, please drop patch.
+No problem, I don't expect the rest of the code to be ready for awhile... 
+This patch should be pretty close (modulo debugging statements and other 
+bogons) to what we discussed earlier.  I think the main change that's 
+needed is to only unregister the specific console that was registered, 
+rather than all of them.
 
-I'll ask a pci guy to fix this.
-
--Kame
-
+Thanks,
+Jesse
