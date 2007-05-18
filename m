@@ -1,67 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762495AbXERKmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbXERKrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762495AbXERKmb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 06:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760222AbXERKmX
+	id S1758183AbXERKrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 06:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbXERKrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 06:42:23 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:48041 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760186AbXERKmV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 06:42:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=a2v28OGM1FTrAqF9WIpV9psYXn0KqpSBTJklEdy42aDvsQ64++gRxeP6SWCgOFCew4NhWlqTpTpe2ZJcZrW8MXd0kH9wp+zbZnItnlmOLviM8+6MWpE7GzFXcFY3HzfDLGX5w2dXViAeb1gKGL/4sokirFvFyfCTk8JPGCVIGtA=
-Message-ID: <84144f020705180342j4ff44d96iea5b73c23a69df0f@mail.gmail.com>
-Date: Fri, 18 May 2007 13:42:20 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Subject: Re: [RFC] LZO1X de/compression support
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>
-In-Reply-To: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 18 May 2007 06:47:13 -0400
+Received: from barclay.balt.net ([195.14.162.78]:48397 "EHLO barclay.balt.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754685AbXERKrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 06:47:12 -0400
+Subject: Re: Kernel NFS lockd freezes notebook on shutdown (Linux
+	2.6.22-rc1 + CFS v12)
+From: Zilvinas Valinskas <zilvinas@wilibox.com>
+Reply-To: zilvinas@wilibox.com
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070517184556.GA81@tv-sign.ru>
+References: <1179338441.4265.13.camel@zv.wilibox.com>
+	 <20070516121538.7b108c10.akpm@linux-foundation.org>
+	 <20070516225543.GA337@tv-sign.ru> <1179390065.4760.5.camel@zv.wilibox.com>
+	 <20070517184556.GA81@tv-sign.ru>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 13:47:10 +0300
+Message-Id: <1179485230.3800.20.camel@zv.wilibox.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
-X-Google-Sender-Auth: 9de73061853d8678
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/18/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> +   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
-> +   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
+Hello Oleg,
 
-[snip]
+On Thu, 2007-05-17 at 22:45 +0400, Oleg Nesterov wrote:
+> Hello Zilvinas,
+> 
+> On 05/17, Zilvinas Valinskas wrote:
+> > 
+> > Patch seems to help and it seems kernel doesn't free anymore. I've
+> > booted new kernel and did :
+> 
+> OK, thank you very much. So, we have some other problems, and I _think_
+> that workqueue.c is not the source of them.
 
-So how about making that a little less verbose. Say like:
+You are welcome. I wish I could determine and fix the problem myself. I
+will try to help, debug the problem as long as there is any progress or
+ideas to try out.
 
-Copyright (c) 1996-2005 Markus Franz Xaver and Johannes Oberhumer
+> However, I can't understand why cleanup_workqueue_thread() hangs anyway.
+> It shouldn't. Looks like rpciod/1 was preempted, and can't get CPU. According
+> to kernel-nfs-freeze.log it is TASK_RUNNING. Strange.
+> 
+> It is very sad, because this code was supposed to be cleanuped anyway,
+> but if it is really buggy, it would be great to know why.
 
-> +#define DX2(p,s1,s2) \
-> +       (((((size_t)((p)[2]) << (s2)) ^ (p)[1]) << (s1)) ^ (p)[0])
-> +#define DX3(p,s1,s2,s3) ((DX2((p)+1,s2,s3) << (s1)) ^ (p)[0])
-> +#define DMUL(a,b)      ((size_t) ((a) * (b)))
-> +#define DMS(v,s)       ((size_t) (((v) & (D_MASK >> (s))) << (s)))
-> +#define DM(v)          DMS(v,0)
-> +
-> +#define D_BITS         14
-> +#define DINDEX1(d,p)   d = DM(DMUL(0x21,DX3(p,5,5,6)) >> 5)
-> +#define DINDEX2(d,p)   d = (d & (D_MASK & 0x7ff)) ^ (D_HIGH | 0x1f)
-> +#define DENTRY(p,in)   (p)
+Can this be related to :
 
-Please make these static inline functions.
+CONFIG_PREEMPT=y
+# CONFIG_PREEMPT_BKL is not set
 
-> +#define PTR(a)         ((unsigned long) (a))
-> +#define PTR_LT(a,b)    (PTR(a) < PTR(b))
-> +#define PTR_GE(a,b)    (PTR(a) >= PTR(b))
-> +#define PTR_DIFF(a,b)  (PTR(a) - PTR(b))
-> +#define pd(a,b)                ((size_t) ((a)-(b)))
 
-[snip]
+> Perhaps, we can understand the problem with your help. Could you please
+> revert the patch I sent, and send me (privately) the output of
+> 
+> 	objdump -d kernel/workqueue.o
 
-> +#define COPY4(dst,src) *(uint32_t *)(dst) = *(uint32_t *)(src)
 
-Please drop these.
+I have uploaded files at http://barclay.balt.net/~zilvinas/oops/ 
+
+workqueue.objdump - without any patch.
+workqueue+oleg-old.objdump - with older patch Oleg sent on Thu, 17 May.
+workqueue+oleg-new.objdump - with the newest patch from Oleg applied.
+
+For what it's worth, I am using Debian/Unstable 
+$ gcc -v
+Using built-in specs.
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --enable-languages=c,c
+++,fortran,objc,obj-c++,treelang --prefix=/usr --enable-shared
+--with-system-zlib --libexecdir=/usr/lib --without-included-gettext
+--enable-threads=posix --enable-nls
+--with-gxx-include-dir=/usr/include/c++/4.1.3 --program-suffix=-4.1
+--enable-__cxa_atexit --enable-clocale=gnu --enable-libstdcxx-debug
+--enable-mpfr --enable-checking=release x86_64-linux-gnu
+Thread model: posix
+gcc version 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+
+$ ld -V
+GNU ld (GNU Binutils for Debian) 2.17.50.20070426
+  Supported emulations:
+   elf_x86_64
+   elf_i386
+   i386linux
+
+> ? I doubt very much I'll see something interesting, but who knows...
+> 
+> Thanks!
+> 
+> Oleg.
+> 
+
