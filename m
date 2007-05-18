@@ -1,149 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbXERRdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbXERRed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbXERRdV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 13:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXERRdO
+	id S1756867AbXERRed (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 13:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXERRe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 13:33:14 -0400
-Received: from [207.189.120.14] ([207.189.120.14]:37841 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750893AbXERRdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 13:33:13 -0400
-Date: Fri, 18 May 2007 10:29:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Kratochvil <honza@jikos.cz>
-Cc: Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RESEND] PIE randomization
-Message-Id: <20070518102918.4b9272e9.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
-References: <alpine.LRH.0.98.0705111338230.22353@twin.jikos.cz>
-	<20070511125629.3df919cf.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
-	<20070511133651.63f8a14d.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz>
-	<Pine.LNX.4.64.0705161851120.25986@twin.jikos.cz>
-	<alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 May 2007 13:34:27 -0400
+Received: from mail.zelnet.ru ([80.92.97.13]:34356 "EHLO mail.zelnet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751581AbXERRe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 13:34:26 -0400
+Message-ID: <464DE395.9060207@namesys.com>
+Date: Fri, 18 May 2007 21:34:13 +0400
+From: Edward Shishkin <edward@namesys.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Richard Purdie <rpurdie@openedhand.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc1-mm1
+References: <20070515201914.16944e04.akpm@linux-foundation.org>  <20070516095018.6f0048bc.randy.dunlap@oracle.com>  <1179334843.5854.28.camel@localhost.localdomain>  <20070516100632.391f5459.akpm@linux-foundation.org> <1179345653.5854.41.camel@localhost.localdomain>
+In-Reply-To: <1179345653.5854.41.camel@localhost.localdomain>
+X-Enigmail-Version: 0.86.0.0
+X-Enigmail-Supports: pgp-inline, pgp-mime
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007 22:24:11 +0200 (CEST)
-Jan Kratochvil <honza@jikos.cz> wrote:
+Richard Purdie wrote:
 
-> This patch is using mmap()'s randomization functionality in such a way 
-> that it maps the main executable of (specially compiled/linked -pie/-fpie) 
-> ET_DYN binaries onto a random address (in cases in which mmap() is allowed 
-> to perform a randomization).
-> 
-> Origin of this patch is in exec-shield (http://people.redhat.com/mingo/exec-shield/)
+>On Wed, 2007-05-16 at 10:06 -0700, Andrew Morton wrote:
+>  
+>
+>>On Wed, 16 May 2007 18:00:43 +0100 Richard Purdie <rpurdie@openedhand.com> wrote:
+>>
+>>    
+>>
+>>>On Wed, 2007-05-16 at 09:50 -0700, Randy Dunlap wrote:
+>>>      
+>>>
+>>>>On Tue, 15 May 2007 20:19:14 -0700 Andrew Morton wrote:
+>>>>
+>>>>        
+>>>>
+>>>>>ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
+>>>>>          
+>>>>>
+>>>>LZO build fails on allyesconfig:
+>>>>
+>>>>lib/built-in.o: In function `lzo1x_1_compress':
+>>>>lib/lzo/minilzo.c:724: multiple definition of `lzo1x_1_compress'                           fs/built-in.o:fs/reiser4/plugin/compress/minilzo.c:1307: first defined here
+>>>>ld: Warning: size of symbol `lzo1x_1_compress' changed from 1541 in fs/built-in.o to 244 in lib/built-in.o
+>>>>lib/built-in.o: In function `lzo1x_decompress':                                            lib/lzo/minilzo.c:885: multiple definition of `lzo1x_decompress'
+>>>>fs/built-in.o:fs/reiser4/plugin/compress/minilzo.c:1466: first defined here                ld: Warning: size of symbol `lzo1x_decompress' changed from 1047 in fs/built-in.o to 678 in lib/built-in.o
+>>>>make: *** [.tmp_vmlinux1] Error 1
+>>>>make: Target `all' not remade because of errors.
+>>>>        
+>>>>
+>>>Looks like reiser4 contains a copy of minilzo used as some kind of
+>>>compression plugin. It can be dropped in favour of the version in
+>>>lib/lzo/, they'll be compatible.
+>>>
+>>>Andrew: Do you want a patch to remove it from reiser4?
+>>>
+>>>      
+>>>
+>>yes please.
+>>    
+>>
+>
+>Sent.
+>
+>I also noticed that reiser4 is using lzo1x_decompress(), not
+>lzo1x_decompress_safe(). The unsafe version is open to buffer overflows
+>through malicious data since it performs no validation of where it
+>writes output to.
+>
 
+Hm, if you accept unknown drive, then yes, it is open..
 
-From: Andrew Morton <akpm@linux-foundation.org>
+> I'm not sure whether thats acceptable in filesystem
+>code, I'd suspect not?
+>  
+>
 
-- the compiler knows how to inline things
+Ok, we will consider safe decompression,
+moreover, as I remember, it doesn't lead to
+sensible performance drop..
 
-- return -EINVAL on zero-size, not -EIO
+Thanks for this point,
+Edward.
 
-- reduce scope of local `interp_map_addr', remove unneeded initialisation,
-  add needed comment.
-
-- coding-style repairs
-
-Cc: Jan Kratochvil <honza@jikos.cz>
-Cc: Jiri Kosina <jkosina@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Jakub Jelinek <jakub@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- fs/binfmt_elf.c |   26 +++++++++++++++++---------
- 1 files changed, 17 insertions(+), 9 deletions(-)
-
-diff -puN fs/binfmt_elf.c~pie-randomization-fix fs/binfmt_elf.c
---- a/fs/binfmt_elf.c~pie-randomization-fix
-+++ a/fs/binfmt_elf.c
-@@ -322,17 +322,17 @@ static unsigned long elf_map(struct file
- 
- #endif /* !elf_map */
- 
--static inline unsigned long total_mapping_size(struct elf_phdr *cmds, int nr)
-+static unsigned long total_mapping_size(struct elf_phdr *cmds, int nr)
- {
- 	int i, first_idx = -1, last_idx = -1;
- 
--	for (i = 0; i < nr; i++)
-+	for (i = 0; i < nr; i++) {
- 		if (cmds[i].p_type == PT_LOAD) {
- 			last_idx = i;
- 			if (first_idx == -1)
- 				first_idx = i;
- 		}
--
-+	}
- 	if (first_idx == -1)
- 		return 0;
- 
-@@ -396,8 +396,10 @@ static unsigned long load_elf_interp(str
- 	}
- 
- 	total_size = total_mapping_size(elf_phdata, interp_elf_ex->e_phnum);
--	if (!total_size)
-+	if (!total_size) {
-+		error = -EINVAL;
- 		goto out_close;
-+	}
- 
- 	eppnt = elf_phdata;
- 	for (i = 0; i < interp_elf_ex->e_phnum; i++, eppnt++) {
-@@ -586,7 +588,8 @@ static int load_elf_binary(struct linux_
- 	int elf_exec_fileno;
- 	int retval, i;
- 	unsigned int size;
--	unsigned long elf_entry, interp_load_addr = 0, interp_map_addr = 0;
-+	unsigned long elf_entry;
-+	unsigned long interp_load_addr = 0;
- 	unsigned long start_code, end_code, start_data, end_data;
- 	unsigned long reloc_func_desc = 0;
- 	char passed_fileno[6];
-@@ -908,7 +911,7 @@ static int load_elf_binary(struct linux_
- 			 * default mmap base, as well as whatever program they
- 			 * might try to exec.  This is because the brk will
- 			 * follow the loader, and is not movable.  */
--#if defined(__i386__) || defined(__x86_64__)
-+#ifdef CONFIG_X86
- 			load_bias = 0;
- #else
- 			load_bias = ELF_PAGESTART(ELF_ET_DYN_BASE - vaddr);
-@@ -992,16 +995,21 @@ static int load_elf_binary(struct linux_
- 	}
- 
- 	if (elf_interpreter) {
--		if (interpreter_type == INTERPRETER_AOUT)
-+		if (interpreter_type == INTERPRETER_AOUT) {
- 			elf_entry = load_aout_interp(&loc->interp_ex,
- 						     interpreter);
--		else {
-+		} else {
-+			unsigned long interp_map_addr;	/* unused */
-+
- 			elf_entry = load_elf_interp(&loc->interp_elf_ex,
- 						    interpreter,
- 						    &interp_map_addr,
- 						    load_bias);
- 			if (!BAD_ADDR(elf_entry)) {
--				/* load_elf_interp() returns relocation adjustment */
-+				/*
-+				 * load_elf_interp() returns relocation
-+				 * adjustment
-+				 */
- 				interp_load_addr = elf_entry;
- 				elf_entry += loc->interp_elf_ex.e_entry;
- 			}
-_
+>Fixing it is a case of s/lzo1x_decompress(/lzo1x_decompress_safe(/ in 
+>fs/reiser4/plugin/compress/compress.c...
+>
+>Richard
+>
+>
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>
+>
+>  
+>
 
