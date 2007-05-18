@@ -1,141 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760726AbXERL1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbXERLnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760726AbXERL1f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 07:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbXERL13
+	id S1756289AbXERLnq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 07:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbXERLnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 07:27:29 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:41299 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756039AbXERL12 (ORCPT
+	Fri, 18 May 2007 07:43:40 -0400
+Received: from svr68.ehostpros.com ([67.15.48.48]:52298 "EHLO
+	svr68.ehostpros.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754275AbXERLnj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 07:27:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dyx9U7Uz2Dw03vY0DclugBvy80N1HwWrralMlqI15za+AJs4yvDmdTtcVXXJ9GDRFcd0JDLoMHavWVGvEEm2EU6ZSuHkdJved61TXWG9I2ROxd9H6SpJo24KhLO88Y69plQU6usMxOyI1zTRCcvoLbide3KFSKAMkZllZKZzFE4=
-Message-ID: <4cefeab80705180427u54110396mfb3acd96c6c446bd@mail.gmail.com>
-Date: Fri, 18 May 2007 16:57:25 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Heikki Orsila" <shdl@zakalwe.fi>
-Subject: Re: [RFC] LZO1X de/compression support
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
-       "Markus F.X.J. Oberhumer" <markus@oberhumer.com>
-In-Reply-To: <20070518101449.GH10873@zakalwe.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 18 May 2007 07:43:39 -0400
+Subject: Re: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted
+From: Kalpak Shah <kalpak@linsyssoft.com>
+To: Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>
+Cc: linux-kernel@vger.kernel.org, ext3-users@redhat.com
+In-Reply-To: <20070518090604.GA10841@ribosome.natur.cuni.cz>
+References: <20070518090604.GA10841@ribosome.natur.cuni.cz>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 17:17:06 +0530
+Message-Id: <1179488826.4305.3.camel@garfield.linsyssoft.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
-	 <20070518101449.GH10873@zakalwe.fi>
+X-Antivirus-Scanner: Clean mail though you should still use an Antivirus
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - svr68.ehostpros.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - linsyssoft.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2007-05-18 at 11:06 +0200, Martin Mokrejs wrote:
+> Hi,
+>   I just tried the 2.6.22-r1 candidate to test whether some bug I have 
+> hit in the past still exists. I did use 2.6.20.6 so far. So, I have 
+> cleanly rebooted to use the new kernel, after the machine came up I 
+> tried to mess with the bug, and had to reboot again to play with kernel 
+> commandline parameters. Unfortunately, on the next reboot fsck was 
+> schedules on my filesystem after 38 clean mounts. :( And the problem 
+> started. The fsck found some unused inodes, but probably did not know 
+> where do they belong to, but it deleted them automagically. Finally, the 
+> fsck died because it cannot fine some '..' entry.
+> 
+> /dev/hda3: Entry '..' in .../??? (5701636) has deleted/unused inode
+> 5570561. CLEARED.
+> Unconnected directory inode 5570567 (...)
+> 
+> /dev/hda3: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
+>                   (i.e., without -a or -p options)
+> 
 
-Thanks for review. My comments inline.
+This means that e2fsck has reached a point where it needs user
+intervention. So you should not run e2fsck with -p, -a or -y options.
+Look up the e2fsck man page for more on this.
 
-On 5/18/07, Heikki Orsila <shdl@zakalwe.fi> wrote:
-> Good work..
->
-> On Fri, May 18, 2007 at 03:28:31PM +0530, Nitin Gupta wrote:
-> > Facts for LZO (at least for original code. Should hold true for this
-> > port also - hence the RFC!):
-> > - The compressor can never overrun buffer.
-> > - The "non-safe" version of decompressor can never overrun buffer if
-> > compressed data is unmodified. I am not sure about this if compressed
-> > data is malicious (to be confirmed from the author).
-> > - The "safe" version can never crash (buffer overrun etc.) - confirmed
-> > from the author.
->
-> What's the proof?
+Thanks,
+Kalpak.
 
-I confirmned these from the author - I just ported this code. I think
-he can answer you better - CC'ed him  :-)
+<< snip >>
+>   I do remember recently that possibly one of the system packages in 
+> Gentoo installed some kind of a hash into the filesystem, or hashing 
+> support, something like that. Sorry, I do not remember the details.
+> Am just think what could have made the fsck think there is something 
+> wrong.
+> 
+>   I think IO would like to restore the filesystem to the previous stage 
+> before running the fsck. How can I do it? No, I do not have a backup of 
+> the filesystem. :(
+> 
+> I subscribed to the email lists but please send me Cc: anyway. Many thanks.
+> Martin
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
->
-> > +/* LZO1X_1 compression */
-> > +int
-> > +lzo1x_compress(const unsigned char *src, size_t src_len,
-> > +             unsigned char *dst, size_t *dst_len,
-> > +             void *workmem);
->
-> int lzo1x_compress(const unsigned char *src, size_t src_len,
->                    unsigned char *dst, size_t *dst_len,
->                    void *workmem);
->
-> is the preferred style.
->
-
-OK. Changed.
-
-<snip>
-> > +     register const unsigned char *ip;
->
-> Is the register directive really useful? Or any subsequent usage of that
-> directive?
-
-The author must be having some performance gain with this directive.
-Though I didn't test performance changes with/without this directive.
-
-> > +             DINDEX1(dindex,ip);
->
-> Put a space after the delimiter: DINDEX1(dindex, ip); This happens in
-> many places in the source, fix them all.
-
-OK.
-
-> Useless brackets: (unsigned char) tt
->
-OK.
-
-> > +             }
-> > +             do *op++ = *ii++; while (--t > 0);
->
-> memcpy(op, ii, t); ? Happens in other places as well.
-
-I looked more carefully into such cases. Following type of code blocks
-are repeated at several places:
-
----
-                COPY4(op,ip);
-                op += 4;
-                ip += 4;
-                if (--t > 0) {
-                        if (t >= 4) {
-                                do {
-                                        COPY4(op,ip);
-                                        op += 4; ip += 4; t -= 4;
-                                } while (t >= 4);
-                                if (t > 0)
-                                        do
-                                                *op++ = *ip++;
-                                        while (--t > 0);
-                        } else
-                                do
-                                        *op++ = *ip++;
-                                while (--t > 0);
-                }
----
-Such entire blocks can be replaced by simple:
-memcpy(op, ip, t + 4);
-Since kernel has separate memcpy() implementation optimized for
-specific archs, we shouldn't loose on perf while having simpler (and
-shorter) code.
-
-I will work on this and post again.
-
-
-> > +#define COPY4(dst,src)       *(uint32_t *)(dst) = *(uint32_t *)(src)
->
-> Use u32.
->
-
-What is the problem with uint32_t? Anyhow, I think COPY4 will
-disappear after those memcpy changes :)
-
-Thanks for comments. I will post revised patch soon.
-
-
-Cheers,
-Nitin
