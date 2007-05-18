@@ -1,115 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbXERDNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759114AbXERDSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758770AbXERDNa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 23:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbXERDNW
+	id S1759114AbXERDSQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 23:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbXERDSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 23:13:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:1976 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754646AbXERDNV (ORCPT
+	Thu, 17 May 2007 23:18:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37246 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755457AbXERDSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 23:13:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=j82a91/KYQrgODEy1vWoZ2QfAKWwleZLU6M1UGNRuEG7xyVxGYbbppuNbVoTXAtTF+92nUwlxXqGpa7Lg9XUFmmC38EULtKE2EjMP6HHzF19PqHp78i7sMSIbDXWYrr6/Ec+9se4Eb+9OG1l3cysafJl88ufzr7CCZCdyGXx66U=
-Message-ID: <a781481a0705172013k1536e586u6908ded5c8f8df@mail.gmail.com>
-Date: Fri, 18 May 2007 08:43:17 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Bill Davidsen" <davidsen@tmr.com>
-Subject: Re: [PATCH] "volatile considered harmful", take 3
-Cc: 7eggert@gmx.de, "H. Peter Anvin" <hpa@zytor.com>,
-       "Jonathan Corbet" <corbet@lwn.net>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Johannes Stezenbach" <js@linuxtv.org>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Heikki Orsila" <shdl@zakalwe.fi>,
-       "jimmy bahuleyan" <knight.camelot@gmail.com>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-In-Reply-To: <464CEA70.1080908@tmr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 May 2007 23:18:01 -0400
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+From: David Woodhouse <dwmw2@infradead.org>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+Cc: Matthieu CASTET <castet.matthieu@free.fr>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.0.99.0705172254560.27207@sigma.j-a-k-j.com>
+References: <20070517143200.GA30850@lst.de>
+	 <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de>
+	 <1179414590.3642.69.camel@sauron>
+	 <20070517102931.6bbbad1a.akpm@linux-foundation.org>
+	 <pan.2007.05.17.20.30.30@free.fr>
+	 <1179455959.2859.527.camel@shinybook.infradead.org>
+	 <alpine.DEB.0.99.0705172254560.27207@sigma.j-a-k-j.com>
+Content-Type: text/plain
+Date: Fri, 18 May 2007 11:17:54 +0800
+Message-Id: <1179458274.2859.538.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8jHg3-1T2-5@gated-at.bofh.it> <8jQt5-7As-3@gated-at.bofh.it>
-	 <8jSuQ-28J-21@gated-at.bofh.it> <8jT7y-39x-9@gated-at.bofh.it>
-	 <E1Hn1VO-0001Gp-Ka@be1.lrz>
-	 <a781481a0705132037v2229e675p1f51a9f18222b46b@mail.gmail.com>
-	 <464CEA70.1080908@tmr.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bill,
+On Thu, 2007-05-17 at 22:57 -0400, John Anthony Kazos Jr. wrote:
+> Wouldn't the appropriate test be to demonstrate that the same program text 
+> opcodes are generated in both cases for all architectures? 
 
-On 5/18/07, Bill Davidsen <davidsen@tmr.com> wrote:
-> Satyam Sharma wrote:
->
-> > *Unfortunately* (the trouble with C itself, is that a *committee* has made
-> > it into ... something ... that it should not have made it into) -- anyway,
-> > unfortunately C took it upon itself to solve a problem that it did not
-> > have (and does not even bring about) in the first place: and the
-> > half-hearted (or vague, call it what you will) attempt _then_ ends up
-> > being a problem -- by making people _feel_ as if they are doing things
-> > right, when that is probably not the case.
-> >
-> > [ And we've not even touched the issue of whether the _same_ compiler's
-> > implementation of volatile across archs/platforms is consistent. ]
+No, empirical testing with the compiler is never the _correct_ thing to
+do. It's just expedient.
 
-> It was a fun experience, where I first learned the modern equivalent of
-> Occam's Razor, Plauger's "Law of least astonishment," which compiler
-> writers regularly violate :-(
+> If that's not the case, even if the generation isn't -worse-, it shows
+> that the compiler is doing different things with each, which means
+> different versions of the compiler could do different things with it,
 
-Well, here it was a case of the standard committee violating the principle
-of solving a problem _where_ it exists in the first place. As far as volatile
-is concerned, the _language_ itself had absolutely no problems that
-needed fixing ...
+Well yes, but even it _is_ generating precisely the same output today,
+there's no reason why the compiler shouldn't behave differently under a
+different phase of the moon.
 
-> Pardon, I was GE's representative to the original X3J11 committee, and
-> 'volatile' was added to "codify existing practice" which is one of the
-> goals of a standard. The extension existed, in at least two forms, to
-> allow handling of memory mapped hardware. So the committee did not take
-> it upon itself, it was a part of the defined duty of the committee.
->
-> The intents was simple, clear, and limited, to tell the compiler that
-> every read of a variable in source code should result in a read, at that
-> point in the logic, and similar for writes. In other words, the code
-> should not be moved and should generate a real memory access every time.
-> People have tried to do many things with that limited concept since,
-> some with "clarification" and some with assuming the compiler knows when
-> to ignore volatile.
+The _correct_ thing to do is act upon my mutterings at the time I
+removed the '__attribute__((packed))' from various JFFS2 structures to
+improve the generated code on ARM -- actually implement an attribute for
+GCC which has the same "don't insert any padding" meaning, but without
+the unwanted "assume arbitrary alignment" implications.
 
-In fact I wish the standard just left this functionality entirely up to the
-implementation.
+It'd actually be nice if GCC knew about endianness too. I don't want to
+have to do:
 
-After all, C (the _language_) does not mandate memory access
-reordering / optimization by implementations so dumb compilers
-(5.1.2.3:1) that do not do any are still conformant and hence
-don't require the volatile extension (5.1.2.3:8). Implementations that
-do perform optimization, otoh, _must_ then solve the possible problems
-_themselves_ by providing an extension that allows the programmer
-to turn it off (wherever necessary) to prevent those side-effects that the
-implementation itself brought about by performing optimization in the
-first place. That _compiler extension_ could then of course be called
-anything (volatile, foo, bar, barrier, ...) and implemented in any way --
-whatever is appropriate for that compiler [1].
+   *x = le32_to_cpu(cpu_to_le32(*x) + 5);
 
-[ Analogically, C (or any language) does not mandate the hardware
-it runs on to reorder / optimize memory accesses. Those that do, must
-clearly then also provide instructions like lfence/sfence/mfence as part
-of their instruction set to solve potential issues that _their_ behaviour
-brings about in the first place. How horribly wrong it would be for a
-_language_ to try and go about solving this problem ... ]
+I just want 
 
-So the way I see it, it's just a case of solving a problem _where_ it
-exists in the first place.
+  uint32_t __attribute__((littleendian)) *x;
 
-Satyam
+  *x += 5;
 
-[1] Which begs the question, so if we wished (note past tense here)
-to keep generic kernel code compiler-independent, what do we do in
-situations where we want to disable _compiler optimizations_ temporarily
-for some piece of code? => By defining macros / some API as part of
-our codebase in implementation-specific headers that does whatever
-needs to be done for _that_ compiler. => Which is precisely what we
-have already and why I like/prefer that.
+I know we can hack around it for masks, with '*x |= cpu_to_le32(X_BAR);'
+and such like, and we can load it into local native-endian variables and
+then copy it back again later -- but it's better just to let the
+compiler know what's going on and do its own optimisation. Especially on
+architectures which have 'load-and-swap' or 'store-and-swap'
+instructions.
+
+-- 
+dwmw2
+
