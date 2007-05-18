@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbXERSCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762082AbXERSDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbXERSCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbXERSCI
+	id S1762082AbXERSDB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbXERSCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:02:08 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38081 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753742AbXERSCH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 14:02:07 -0400
-Date: Fri, 18 May 2007 20:01:54 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Matt LaPlante <kernel1@cyberdogtech.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] 2.6.21-git15 - Kconfig Cleanup
-Message-ID: <20070518180154.GA6291@stusta.de>
-References: <20070511220501.02181278.kernel1@cyberdogtech.com> <20070518130441.060a9190.kernel1@cyberdogtech.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 18 May 2007 14:02:52 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3671 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755964AbXERSCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 14:02:50 -0400
+Date: Fri, 18 May 2007 13:47:21 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Eugene Teo <eteo@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/net/wireless/libertas/fw.c: fix use-before-check
+Message-ID: <20070518174721.GB3492@tuxdriver.com>
+References: <464DDD29.3000009@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070518130441.060a9190.kernel1@cyberdogtech.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <464DDD29.3000009@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 01:04:41PM -0400, Matt LaPlante wrote:
+This should be sent to linux-wireless (and CC'ed to me) as well...
 
-> ping?
-
-Noone disagreed, and trivial patches will be forwarded again during the 
-2.6.23 merge window.
-
-cu
-Adrian
+On Sat, May 19, 2007 at 01:06:49AM +0800, Eugene Teo wrote:
+> NULL checks should be performed before the dereference.
+> 
+> Spotted by the Coverity checker.
+> 
+> Signed-off-by: Eugene Teo <eteo@redhat.com>
+> 
+> diff --git a/drivers/net/wireless/libertas/fw.c b/drivers/net/wireless/libertas/fw.c
+> index 441123c..5c63c9b 100644
+> --- a/drivers/net/wireless/libertas/fw.c
+> +++ b/drivers/net/wireless/libertas/fw.c
+> @@ -333,18 +333,22 @@ static void command_timer_fn(unsigned long data)
+>         unsigned long flags;
+> 
+>         ptempnode = adapter->cur_cmd;
+> +       if (ptempnode == NULL) {
+> +               lbs_pr_debug(1, "PTempnode Empty\n");
+> +               return;
+> +       }
+> +
+>         cmd = (struct cmd_ds_command *)ptempnode->bufvirtualaddr;
+> +       if (!cmd) {
+> +               lbs_pr_debug(1, "cmd is NULL\n");
+> +               return;
+> +       }
+> 
+>         lbs_pr_info("command_timer_fn fired (%x)\n", cmd->command);
+> 
+>         if (!adapter->fw_ready)
+>                 return;
+> 
+> -       if (ptempnode == NULL) {
+> -               lbs_pr_debug(1, "PTempnode Empty\n");
+> -               return;
+> -       }
+> -
+>         spin_lock_irqsave(&adapter->driver_lock, flags);
+>         adapter->cur_cmd = NULL;
+>         spin_unlock_irqrestore(&adapter->driver_lock, flags);
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+John W. Linville
+linville@tuxdriver.com
