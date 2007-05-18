@@ -1,57 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbXERV0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759708AbXERVaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbXERV0A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 17:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbXERVZx
+	id S1759708AbXERVaS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 17:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXERVaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 17:25:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:8995 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbXERVZx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 17:25:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DMfRZmtBM7mHTh42Zp15pYADWYGdYSbuW6uyLc20CicKyZY3rOHo8GVhEGfHwWlzMIXh2c/bgjzDubHOY3dZFOS81O6McoQyPDQ0Vw1Pea410NWjspIxhhVPcsQUUWJd/o39880v6eJDp9x530ilKJc7+DfKWBkUmeB4BfAATQ4=
-Message-ID: <4af2d03a0705181425o1ba78307uef3deb4970bb954d@mail.gmail.com>
-Date: Fri, 18 May 2007 23:25:52 +0200
-From: "Jiri Slaby" <jirislaby@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] Misc: phantom, move to unlocked_ioctl
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070518140314.4cabb926.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20644182862815412171@wsc.cz>
-	 <20070518140314.4cabb926.akpm@linux-foundation.org>
+	Fri, 18 May 2007 17:30:07 -0400
+Received: from quechua.inka.de ([193.197.184.2]:59089 "EHLO mail.inka.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752652AbXERVaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 17:30:06 -0400
+From: Bernd Eckenfels <ecki@lina.inka.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: aio is unlikely
+Organization: Private Site running Debian GNU/Linux
+In-Reply-To: <058f01c7998e$1406e370$650df7cd@MUMBA>
+X-Newsgroups: ka.lists.linux.kernel
+User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
+Message-Id: <E1HpA1U-0002jQ-00@calista.eckenfels.net>
+Date: Fri, 18 May 2007 23:30:04 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/18/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 18 May 2007 22:34:53 +0200 (CEST)
-> Jiri Slaby <jirislaby@gmail.com> wrote:
->
-> > @@ -118,7 +125,9 @@ static int phantom_ioctl(struct inode *inode, struct file *file, u_int cmd,
-> >               if (r.reg > 7)
-> >                       return -EINVAL;
-> >
-> > +             spin_lock(&dev->ioctl_lock);
-> >               r.value = ioread32(dev->iaddr + r.reg);
-> > +             spin_unlock(&dev->ioctl_lock);
->
-> What is that locking protecting in here?
+In article <058f01c7998e$1406e370$650df7cd@MUMBA> you wrote:
+>> -#define in_aio() !is_sync_wait(current->io_wait)
+>> +#define in_aio() (unlikely(!is_sync_wait(current->io_wait)))
+> 
+> Shouldn't unlikely() go where in_aio() is actually used, if we printk(error)
+> there?
 
-Well, what led me to do it is that I didn't know how much atomic are
-ioread and iowrite. If concurrent process writes something to the
-place in that space while the other one is reading it, doesn't matter,
-correct?
+Actually I would just remove that define and use the method directly, if
+this is the only place where it is used. If it is used in multiple places,
+the unlikely is most likely wrong .)
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Gruss
+Bernd
