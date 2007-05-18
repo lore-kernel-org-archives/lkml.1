@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbXERJjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbXERJlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbXERJjo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 05:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXERJji
+	id S1760065AbXERJlm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 05:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbXERJlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 05:39:38 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:10809 "EHLO relay.sw.ru"
+	Fri, 18 May 2007 05:41:35 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:54620 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753078AbXERJjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 05:39:37 -0400
-Message-ID: <464D7554.8030004@sw.ru>
-Date: Fri, 18 May 2007 13:43:48 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
-Subject: [PATCH 8/15] Make /proc/misc use seq_list_xxx helpers
-References: <464D6E87.7060605@sw.ru>
-In-Reply-To: <464D6E87.7060605@sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1754656AbXERJle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 05:41:34 -0400
+Date: Fri, 18 May 2007 11:42:31 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 05/14] all-archs: consolidate .data section definition in asm-generic
+Message-ID: <20070518094231.GA13390@uranus.ravnborg.org>
+References: <20070518064126.GA12193@uranus.ravnborg.org> <20070518065257.GE12284@uranus.ravnborg.org> <20070518.001604.23011298.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070518.001604.23011298.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simple and stupid - just use the helpers.
+On Fri, May 18, 2007 at 12:16:04AM -0700, David Miller wrote:
+> 
+> Looking at these patches reminds me of a quirk in the generic
+> RODATA definition:
+> 
+> >  #define RODATA								\
+> >  	. = ALIGN(4096);						\
+> >  	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
+> 
+> It uses ALIGN(4096) which is likely supposed to be something
+> like ALIGN(PAGE_SIZE).  Perhaps we should handle this by
+> definiting a LD_PAGE_SIZE at the top of vmlinux.ld.S files
+> that need a value other than 4096, and define the default of
+> 4096 in asm-generic/vmlinux.lds.h?
 
-Sorry for no maintainer in Cc: - I haven't found any.
+I would much rather use PAGE_SIZE direct since we have access to that symbol.
+I would require a small modification in most asm-*/page.h files
+so ld can parse them:
 
-Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+#define PAGE_SIZE (1UL << PAGE_SHIFT)
+will become
+#define PAGE_SIZE (_AC(1,UL) << PAGE_SHIFT)
 
----
+This will allow the arch's to use that symbol in assembler too
+which is a win.
 
-diff --git a/drivers/char/misc.c b/drivers/char/misc.c
-index 4e6fb96..71c8cd7 100644
---- a/drivers/char/misc.c
-+++ b/drivers/char/misc.c
-@@ -67,25 +67,13 @@ extern int pmu_device_init(void);
- #ifdef CONFIG_PROC_FS
- static void *misc_seq_start(struct seq_file *seq, loff_t *pos)
- {
--	struct miscdevice *p;
--	loff_t off = 0;
--
- 	mutex_lock(&misc_mtx);
--	list_for_each_entry(p, &misc_list, list) {
--		if (*pos == off++) 
--			return p;
--	}
--	return NULL;
-+	return seq_list_start(&misc_list, *pos);
- }
- 
- static void *misc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	struct list_head *n = ((struct miscdevice *)v)->list.next;
--
--	++*pos;
--
--	return (n != &misc_list) ? list_entry(n, struct miscdevice, list)
--		 : NULL;
-+	return seq_list_next(v, &misc_list, pos);
- }
- 
- static void misc_seq_stop(struct seq_file *seq, void *v)
-@@ -95,7 +83,7 @@ static void misc_seq_stop(struct seq_fil
- 
- static int misc_seq_show(struct seq_file *seq, void *v)
- {
--	const struct miscdevice *p = v;
-+	const struct miscdevice *p = list_entry(v, struct miscdevice, list);
- 
- 	seq_printf(seq, "%3i %s\n", p->minor, p->name ? p->name : "");
- 	return 0;
+Then we could do something like:
 
+#define RODATA(alignment)	\
+	ALIGN(alignment)	\
+
+And on the call site we will most likely use
+
+	RODATA(PAGE_SIZE)
+
+But the architecture can override it.
+Full flexibility and acceptable documentation.
+
+> 
+> If you could take care of this I'd really appreciate it.
+Will do.
+And may expend the effort a bit further when attacking the .lds files.
+
+It will be a week or two before I get at it.
+
+	Sam
