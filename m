@@ -1,127 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761196AbXERDpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761537AbXERDrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761196AbXERDpZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 23:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbXERDpN
+	id S1761537AbXERDrM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 23:47:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbXERDq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 23:45:13 -0400
-Received: from haxent.com ([65.99.219.155]:2115 "EHLO haxent.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756328AbXERDpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 23:45:12 -0400
-Message-ID: <464D2142.3070705@haxent.com.br>
-Date: Fri, 18 May 2007 00:45:06 -0300
-From: Davi Arnaut <davi@haxent.com.br>
+	Thu, 17 May 2007 23:46:59 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:35455 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755796AbXERDq7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 23:46:59 -0400
+Message-ID: <464D21A6.2070103@linux.vnet.ibm.com>
+Date: Fri, 18 May 2007 09:16:46 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] timerfd/eventfd context lock doesn't protect against poll_wait
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
+       Kirill Korotaev <dev@sw.ru>, devel@openvz.org,
+       Linux Containers <containers@lists.osdl.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: RSS controller v2 Test results (lmbench )
+References: <464C95D4.7070806@linux.vnet.ibm.com> <20070517112357.7adc4763.akpm@linux-foundation.org>
+In-Reply-To: <20070517112357.7adc4763.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Andrew Morton wrote:
+> On Thu, 17 May 2007 23:20:12 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> A meaningful container size does not hamper performance. I am in the process
+>> of getting more results (with varying container sizes). Please let me know
+>> what you think of the results? Would you like to see different benchmarks/
+>> tests/configuration results?
+>>
+>> Any feedback, suggestions to move this work forward towards identifying
+>> and correcting bottlenecks or to help improve it is highly appreciated.
+> 
+> <wakes up>
+> 
+> Memory reclaim tends not to consume much CPU.  Because in steady state it
+> tends to be the case that the memory reclaim rate (and hopefully the
+> scanning rate) is equal to the disk IO rate.
+> 
 
-poll_wait() callback may modify the waitqueue without holding the
-context private lock.
+With the memory controller, I suspect memory reclaim will become a function
+of the memory the container tries to touch that lies outside its limit.
+If a container requires 512 MB of memory and we configure the container
+size as 256 MB, then we might see aggressive memory reclaim. We do provide
+some statistics to help the user figure out if the reclaim is aggressive,
+we'll try and add more statistics.
 
-Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
+> Often the most successful way to identify performance problems in there is
+> by careful code inspection followed by development of exploits.
+> 
 
-diff --git a/fs/eventfd.c b/fs/eventfd.c
-index 480e2b3..9c672be 100644
---- a/fs/eventfd.c
-+++ b/fs/eventfd.c
-@@ -50,7 +50,7 @@ int eventfd_signal(struct file *file, int n)
- 		n = (int) (ULLONG_MAX - ctx->count);
- 	ctx->count += n;
- 	if (waitqueue_active(&ctx->wqh))
--		wake_up_locked(&ctx->wqh);
-+		wake_up(&ctx->wqh);
- 	spin_unlock_irqrestore(&ctx->lock, flags);
- 
- 	return n;
-@@ -98,7 +98,7 @@ static ssize_t eventfd_read(struct file *file, char __user *buf, size_t count,
- 	if (ucnt > 0)
- 		res = sizeof(ucnt);
- 	else if (!(file->f_flags & O_NONBLOCK)) {
--		__add_wait_queue(&ctx->wqh, &wait);
-+		add_wait_queue(&ctx->wqh, &wait);
- 		for (res = 0;;) {
- 			set_current_state(TASK_INTERRUPTIBLE);
- 			if (ctx->count > 0) {
-@@ -114,13 +114,13 @@ static ssize_t eventfd_read(struct file *file, char __user *buf, size_t count,
- 			schedule();
- 			spin_lock_irq(&ctx->lock);
- 		}
--		__remove_wait_queue(&ctx->wqh, &wait);
-+		remove_wait_queue(&ctx->wqh, &wait);
- 		__set_current_state(TASK_RUNNING);
- 	}
- 	if (res > 0) {
- 		ctx->count = 0;
- 		if (waitqueue_active(&ctx->wqh))
--			wake_up_locked(&ctx->wqh);
-+			wake_up(&ctx->wqh);
- 	}
- 	spin_unlock_irq(&ctx->lock);
- 	if (res > 0 && put_user(ucnt, (__u64 __user *) buf))
-@@ -148,7 +148,7 @@ static ssize_t eventfd_write(struct file *file, const char __user *buf, size_t c
- 	if (ULLONG_MAX - ctx->count > ucnt)
- 		res = sizeof(ucnt);
- 	else if (!(file->f_flags & O_NONBLOCK)) {
--		__add_wait_queue(&ctx->wqh, &wait);
-+		add_wait_queue(&ctx->wqh, &wait);
- 		for (res = 0;;) {
- 			set_current_state(TASK_INTERRUPTIBLE);
- 			if (ULLONG_MAX - ctx->count > ucnt) {
-@@ -163,13 +163,13 @@ static ssize_t eventfd_write(struct file *file, const char __user *buf, size_t c
- 			schedule();
- 			spin_lock_irq(&ctx->lock);
- 		}
--		__remove_wait_queue(&ctx->wqh, &wait);
-+		remove_wait_queue(&ctx->wqh, &wait);
- 		__set_current_state(TASK_RUNNING);
- 	}
- 	if (res > 0) {
- 		ctx->count += ucnt;
- 		if (waitqueue_active(&ctx->wqh))
--			wake_up_locked(&ctx->wqh);
-+			wake_up(&ctx->wqh);
- 	}
- 	spin_unlock_irq(&ctx->lock);
- 
-diff --git a/fs/timerfd.c b/fs/timerfd.c
-index e329e37..e48eae7 100644
---- a/fs/timerfd.c
-+++ b/fs/timerfd.c
-@@ -41,8 +41,8 @@ static enum hrtimer_restart timerfd_tmrproc(struct hrtimer *htmr)
- 
- 	spin_lock_irqsave(&ctx->lock, flags);
- 	ctx->expired = 1;
--	wake_up_locked(&ctx->wqh);
- 	spin_unlock_irqrestore(&ctx->lock, flags);
-+	wake_up(&ctx->wqh);
- 
- 	return HRTIMER_NORESTART;
- }
-@@ -104,7 +104,7 @@ static ssize_t timerfd_read(struct file *file, char __user *buf, size_t count,
- 	spin_lock_irq(&ctx->lock);
- 	res = -EAGAIN;
- 	if (!ctx->expired && !(file->f_flags & O_NONBLOCK)) {
--		__add_wait_queue(&ctx->wqh, &wait);
-+		add_wait_queue(&ctx->wqh, &wait);
- 		for (res = 0;;) {
- 			set_current_state(TASK_INTERRUPTIBLE);
- 			if (ctx->expired) {
-@@ -119,7 +119,7 @@ static ssize_t timerfd_read(struct file *file, char __user *buf, size_t count,
- 			schedule();
- 			spin_lock_irq(&ctx->lock);
- 		}
--		__remove_wait_queue(&ctx->wqh, &wait);
-+		remove_wait_queue(&ctx->wqh, &wait);
- 		__set_current_state(TASK_RUNNING);
- 	}
- 	if (ctx->expired) {
+> Is this RSS controller built on Paul's stuff, or is it standalone?
+> 
+
+It's built on top of the containers infrastructure. Version 2 was posted
+on top of containers v8.
+
+> Where do we stand on all of this now anyway?  I was thinking of getting Paul's
+> changes into -mm soon, see what sort of calamities that brings about.
+> 
+
+The RSS controller was posted by Pavel based on some initial patches by me,
+so we are in agreement w.r.t approach to memory control. Vaidy is working
+on a page cache controller, we are able to use the existing RSS infrastructure
+for writing the page cache controller (unmapped). All the stake holders are
+on cc, I would request them to speak out on the issues and help build a way
+to take this forward.
+
+I've been reviewing and testing Paul's containers v9 patches. As and when
+I find more issues, I plan to send out fixes. It'll be good to have the
+containers infrastructure in -mm, so that we can start posting controllers
+against them for review and acceptance.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
