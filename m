@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761014AbXERGki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbXERGl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761014AbXERGki (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 02:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbXERGkb
+	id S1761550AbXERGl2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 02:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbXERGlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 02:40:31 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56355 "EHLO pasmtpA.tele.dk"
+	Fri, 18 May 2007 02:41:19 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:53573 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753278AbXERGk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 02:40:29 -0400
-Date: Fri, 18 May 2007 08:41:26 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
-Cc: sam@ravnborg.org
-Subject: kbuild fixes for -rc1 (touches all arch .lds files)
-Message-ID: <20070518064126.GA12193@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	id S1754564AbXERGlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 02:41:18 -0400
+Date: Fri, 18 May 2007 08:17:30 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Dongjun Shin <djshin90@gmail.com>
+cc: Pavel Machek <pavel@ucw.cz>, David Woodhouse <dwmw2@infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+In-Reply-To: <7fe698080705171701w533767fdo6642bb772ed64273@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705180816430.3231@yvahk01.tjqt.qr>
+References: <20070515151919.GA32510@lazybastard.org> 
+ <20070515133759.9ee434a2.akpm@linux-foundation.org> 
+ <1179317240.2859.222.camel@shinybook.infradead.org> 
+ <20070516083408.dcd9dd78.akpm@linux-foundation.org> 
+ <1179330596.2859.248.camel@shinybook.infradead.org>  <20070516164158.GB8113@lazybastard.org>
+  <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com> 
+ <1179383117.2859.416.camel@shinybook.infradead.org> 
+ <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com> 
+ <20070517201847.GA5032@ucw.cz> <7fe698080705171701w533767fdo6642bb772ed64273@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have following set of fixes queued for -rc1.
-I no major comments are raised I will request for
-inclusion tomorrow.
+
+On May 18 2007 09:01, Dongjun Shin wrote:
+> On 5/18/07, Pavel Machek <pavel@ucw.cz> wrote:
+>> 
+>> Hmm.. so operating your camera on batteries should be against the
+>> warranty, since batteries commonly run empty while storing pictures?
+>
+> AFAIK, the camera stops writing to the flash card and automatically
+> turns off when it's low on battery (before empty).
+
+But then, one should also consider the case where a cam is connected to
+AC and someone inadvertently trips on the power cord.
 
 
-This patchset include the discussed infrastructure to silence
-section mismatch warnings in the legitimite cases.
-Included are also a few section mismatch fixes so my x86_64
-and i386 defconfig builds are with no section mismatchs warnings.
-modpost saw various improvements too.
-
-Mike Frysinger have improved gen_initramfs.list and made the
-source in scripts/ a tad more portable.
-
-The most important bugfix is the MODALIAS fix for powerpc.
-
-
-Patches will follow.
-
-	Sam
-
-
-Git repository:
-  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
-
-
-Atsushi Nemoto (1):
-      kbuild: make better section mismatch reports on i386, arm and mips
-
-Li Yang (1):
-      kbuild: add "Section mismatch" warning whitelist for powerpc
-
-Mike Frysinger (4):
-      kbuild: add support for reading stdin with gen_init_cpio
-      kbuild: add support for squashing uid/gid in gen_initramfs_list.sh
-      kbuild: include limits.h in sumversion.c for PATH_MAX
-      kconfig: search harder for curses library in check-lxdialog.sh
-
-Russell King (1):
-      kbuild: make modpost section warnings clearer
-
-Sam Ravnborg (6):
-      all-archs: consolidate .text section definition in asm-generic
-      all-archs: consolidate .data section definition in asm-generic
-      kbuild: introduce __init_refok/__initdata_refok to supress section mismatch warnings
-      init/main: use __init_refok to fix section mismatch
-      mm: fix section mismatch warnings
-      mm/slab: fix section mismatch warning
-
-Sylvain Munaut (1):
-      powerpc: Fix the MODALIAS generation in modpost for of devices
-
- arch/alpha/kernel/vmlinux.lds.S            |    4 +-
- arch/arm/kernel/vmlinux.lds.S              |    4 +-
- arch/arm26/kernel/vmlinux-arm26-xip.lds.in |    4 +-
- arch/arm26/kernel/vmlinux-arm26.lds.in     |    4 +-
- arch/avr32/kernel/vmlinux.lds.c            |    4 +-
- arch/blackfin/kernel/vmlinux.lds.S         |    4 +-
- arch/frv/kernel/vmlinux.lds.S              |    6 +-
- arch/h8300/kernel/vmlinux.lds.S            |    4 +-
- arch/i386/kernel/vmlinux.lds.S             |    4 +-
- arch/ia64/kernel/vmlinux.lds.S             |    9 +-
- arch/m32r/kernel/vmlinux.lds.S             |    4 +-
- arch/m68k/kernel/vmlinux-std.lds           |    4 +-
- arch/m68k/kernel/vmlinux-sun3.lds          |    4 +-
- arch/m68knommu/kernel/vmlinux.lds.S        |    4 +-
- arch/mips/kernel/vmlinux.lds.S             |    4 +-
- arch/parisc/kernel/vmlinux.lds.S           |    4 +-
- arch/powerpc/kernel/vmlinux.lds.S          |    5 +-
- arch/ppc/kernel/vmlinux.lds.S              |    4 +-
- arch/s390/kernel/vmlinux.lds.S             |    4 +-
- arch/sh/kernel/vmlinux.lds.S               |    4 +-
- arch/sh64/kernel/vmlinux.lds.S             |    4 +-
- arch/sparc/kernel/vmlinux.lds.S            |    4 +-
- arch/sparc64/kernel/vmlinux.lds.S          |    4 +-
- arch/um/kernel/dyn.lds.S                   |    5 +-
- arch/um/kernel/uml.lds.S                   |    4 +-
- arch/v850/kernel/vmlinux.lds.S             |    4 +-
- arch/x86_64/kernel/vmlinux.lds.S           |    4 +-
- arch/xtensa/kernel/vmlinux.lds.S           |    6 +-
- include/asm-generic/vmlinux.lds.h          |   12 ++
- include/linux/init.h                       |   13 ++
- init/main.c                                |    2 +-
- mm/page_alloc.c                            |    4 +-
- mm/slab.c                                  |    2 +-
- mm/sparse.c                                |    2 +-
- scripts/gen_initramfs_list.sh              |   12 +-
- scripts/kconfig/lxdialog/check-lxdialog.sh |   24 ++---
- scripts/mod/file2alias.c                   |   11 ++-
- scripts/mod/modpost.c                      |  169 +++++++++++++++++++---------
- scripts/mod/modpost.h                      |    3 +
- scripts/mod/sumversion.c                   |    1 +
- usr/gen_init_cpio.c                        |    4 +-
- 41 files changed, 243 insertions(+), 139 deletions(-)
+	Jan
+-- 
