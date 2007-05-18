@@ -1,163 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbXEREHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbXEREIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbXEREHo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 00:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbXEREHh
+	id S1761550AbXEREIT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 00:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbXEREIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 00:07:37 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:50500 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755796AbXEREHg (ORCPT
+	Fri, 18 May 2007 00:08:09 -0400
+Received: from rwcrmhc15.comcast.net ([204.127.192.85]:64867 "EHLO
+	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756820AbXEREII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 00:07:36 -0400
-Message-ID: <464D267A.50107@linux.vnet.ibm.com>
-Date: Fri, 18 May 2007 09:37:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Fri, 18 May 2007 00:08:08 -0400
+Message-ID: <464D2697.5040902@comcast.net>
+Date: Fri, 18 May 2007 00:07:51 -0400
+From: Ed Sweetman <safemode2@comcast.net>
+User-Agent: Icedove 1.5.0.10 (X11/20070328)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Pavel Emelianov <xemul@sw.ru>, Paul Menage <menage@google.com>,
-       Kirill Korotaev <dev@sw.ru>, devel@openvz.org,
-       Linux Containers <containers@lists.osdl.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: RSS controller v2 Test results (lmbench )
-References: <464C95D4.7070806@linux.vnet.ibm.com> <464D1599.1000506@redhat.com>
-In-Reply-To: <464D1599.1000506@redhat.com>
-Content-Type: multipart/mixed;
- boundary="------------090506080404050703080701"
+To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+CC: Dave Jones <davej@redhat.com>, Duane Griffin <duaneg@dghda.com>,
+       Prakash Punnoor <prakash@punnoor.de>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
+ driver
+References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <20070516204807.GA23751@redhat.com> <20070518030436.GB20793@ifa.hawaii.edu>
+In-Reply-To: <20070518030436.GB20793@ifa.hawaii.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090506080404050703080701
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Joshua Hoblitt wrote:
+> I think it's pretty clear that Dave and Daniel were both correct and
+> that ACPI_PROCESSOR is the correct dependency for multi-socket systems.
+> However, it's worth noting that this dependency seems to be unrelated to
+> SMP support.  Ed Sweetman has reported that his single-socket but
+> multi-core system doesn't require ACPI_PROCESSOR for powernow support.
+> I just tried booting 2.6.21 w/o SMP support and w/o ACPI_PROCESSOR on
+> one of my multi-socket/multi-core systems.  Sure enough, powernow 
+> won't work without ACPI_PROCESSOR:
+>
+>   
 
-Rik van Riel wrote:
-> Balbir Singh wrote:
-> 
->> A meaningful container size does not hamper performance. I am in the
->> process
->> of getting more results (with varying container sizes). Please let me
->> know
->> what you think of the results? Would you like to see different
->> benchmarks/
->> tests/configuration results?
-> 
-> AIM7 results might be interesting, especially when run to crossover.
-> 
+I said before and originally, in response to the original post by you, 
+that i didn't need acpi p-states driver, which is what this thread was 
+suggesting.  We later determined that the thread title was misleading, 
+this thread should be titled   "Kconfig powernow-k8 driver should depend 
+on ACPI_PROCESSOR driver"
 
-I'll try and get hold of AIM7, I have some AIM9 results (please
-see the attachment, since the results overflow 80 columns, I've
-attached them).
+I've always compiled acpi_processor in the kernel, i use acpi, i have a 
+processor, it seemed to fit.
+> powernow-k8: Found 1 Dual-Core AMD Opteron(tm) Processor 2220 processors (version 2.00.00)
+> powernow-k8: BIOS error - no PSB or ACPI _PSS objects
+>
+> I suppose this means that the BIOS does something different to enable
+> SMP on a multi-core single socket and multi-socket systems.  Anyways, I
+> believe the question that needs to be answered is: is it reasonable for
+> X86_POWERNOW_K8 to select ACPI_PROCESSOR if SMP is set?  I'm not sure we
+> can do anything more intelligent unless Kconfig had more knowledge of
+> how the hardware other than just SMP/!SMP.
+>
+> -J
+>
+>   
 
-> OTOH, AIM7 can make the current VM explode spectacularly :)
-> 
-> I saw it swap out 1.4GB of memory in one run, on my 2GB memory test
-> system.  That's right, it swapped out almost 75% of memory.
-> 
+My patch does the most intelligent thing thus far, it lets the user 
+decide.  If the user is smart enough to enable cpufreq's powernow-k8 
+driver, then the user is smart enough to decide if he wants/needs to use 
+the acpi support of that driver.    I'm just exposing the driver that is 
+causing all of this confusion to the user, since this is the driver that 
+gets enabled/disabled behind the scenes depending on acpi_processor 
+being selected.  Now it's not automatically handled, the user can enable 
+acpi support or disable it (in the powernow driver), even if 
+acpi_processor is compiled in.
 
-This would make a good test case for the RSS and the unmapped page
-cache controller. Thanks for bringing it to my attention.
+you should be able to use the acpi support of Powernow-k8 even in UP 
+situations, so only enabling it for SMP is wrong.  Enabling it whenever 
+you have acpi compiled in and acpi_processor compiled in is wrong, 
+because the user may be using a UP system and not want to lookup the 
+acpi tables for powernow for some ungodly reason.   Just allowing the 
+user to handle it works best.  See my previous post for the patch. 
 
-> Presumably all the AIM7 processes got stuck in the pageout code
-> simultaneously and all decided they needed to swap some pages out.
-> However, the shell got stuck too so I could not get sysrq output
-> on time.
-> 
+> --
+> On Wed, May 16, 2007 at 04:48:07PM -0400, Dave Jones wrote:
+>   
+>> On Wed, May 16, 2007 at 08:53:13PM +0100, Duane Griffin wrote:
+>>  > On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
+>>  > > Maybe you want to give a hint in the p states driver help text?
+>>  > 
+>>  > I think a hint is the right thing to do, but in the PowerNow! driver
+>>  > rather than the p states one. How about adding something like this to
+>>  > the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
+>>
+>> The mobile K7s which had powernow support weren't SMP capable, so they're
+>> irrelevant.
+>>
+>>  > "ACPI support is required for non-UP systems and requires ACPI_PROCESSOR
+>>  >  to be selected. If ACPI_PROCESSOR is compiled as a module then this
+>>  >  option must be too in order for ACPI support to be available."
+>>
+>> X86_POWERNOW_K8_ACPI is already 'default y'. I think the problem lies in
+>> that people aren't enabling its dependancy, ACPI_PROCESSOR.
+>>
+>> We want something along the lines of..
+>>
+>> config X86_POWERNOW_K8_ACPI
+>> 	bool
+>> 	if SMP & X86_POWERNOW_K8_ACPI
+>> 	  select ACPI_PROCESSOR
+>>
+>> kconfig language quirks aside..
+>>
+>>
+>> 	Dave
+>>
+>> -- 
+>> http://www.codemonkey.org.uk
+>>     
 
-oops! I wonder if AIM7 creates too many processes and exhausts all
-memory. I've seen a case where during an upgrade of my tetex on my
-laptop, the setup process failed and continued to fork processes
-filling up 4GB of swap.
-
-> I am trying out a little VM patch to fix that now, carefully watching
-> vmstat output.  Should be fun...
-> 
-
-VM debugging is always fun!
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
-
---------------090506080404050703080701
-Content-Type: text/plain;
- name="aim9"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="aim9"
-
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-CiBUZXN0ICAgICAgICBUZXN0ICAgICAgICBFbGFwc2VkICBJdGVyYXRpb24gICAgSXRlcmF0
-aW9uICAgICAgICAgIE9wZXJhdGlvbgpOdW1iZXIgICAgICAgTmFtZSAgICAgIFRpbWUgKHNl
-YykgICBDb3VudCAgIFJhdGUgKGxvb3BzL3NlYykgICAgUmF0ZSAob3BzL3NlYykKLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgICAg
-MSBjcmVhdC1jbG8gICAgICAgICAgIDYwLjAwICAgICAgIDg4ODUgIDE0OC4wODMzMyAgICAg
-ICAxNDgwODMuMzMgRmlsZSBDcmVhdGlvbnMgYW5kIENsb3Nlcy9zZWNvbmQgICgyNTYgTUIg
-Y29udGFpbmVyKQogICAgIDEgY3JlYXQtY2xvICAgICAgICAgICA2MC4wMSAgICAgICA4NTQ3
-ICAxNDIuNDI2MjYgICAgICAgMTQyNDI2LjI2IEZpbGUgQ3JlYXRpb25zIGFuZCBDbG9zZXMv
-c2Vjb25kICAodW5saW1pdGVkIGNvbnRhaW5lcikKICAgICAxIGNyZWF0LWNsbyAgICAgICAg
-ICAgNjAuMDEgICAgICAgODYzMiAgMTQzLjg0MjY5ICAgICAgIDE0Mzg0Mi42OSBGaWxlIENy
-ZWF0aW9ucyBhbmQgQ2xvc2VzL3NlY29uZCAgKGNvbnRhaW5lciBub3QgbW91bnRlZCkKICAg
-ICAyIHBhZ2VfdGVzdCAgICAgICAgICAgNjAuMDAgICAgICAgNjA2OCAgMTAxLjEzMzMzICAg
-ICAgIDE3MTkyNi42NyBTeXN0ZW0gQWxsb2NhdGlvbnMgJiBQYWdlcy9zZWNvbmQgKDI1NiBN
-QiBjb250YWluZXIpCiAgICAgMiBwYWdlX3Rlc3QgICAgICAgICAgIDYwLjAwICAgICAgIDUy
-NzUgICA4Ny45MTY2NyAgICAgICAxNDk0NTguMzMgU3lzdGVtIEFsbG9jYXRpb25zICYgUGFn
-ZXMvc2Vjb25kICAodW5saW1pdGVkIGNvbnRhaW5lcikKICAgICAyIHBhZ2VfdGVzdCAgICAg
-ICAgICAgNjAuMDEgICAgICAgNTQxMSAgIDkwLjE2ODMxICAgICAgIDE1MzI4Ni4xMiBTeXN0
-ZW0gQWxsb2NhdGlvbnMgJiBQYWdlcy9zZWNvbmQgIChjb250YWluZXIgbm90IG1vdW50ZWQp
-CiAgICAgMyBicmtfdGVzdCAgICAgICAgICAgIDYwLjAxICAgICAgIDkxNTEgIDE1Mi40OTEy
-NSAgICAgIDI1OTIzNTEuMjcgU3lzdGVtIE1lbW9yeSBBbGxvY2F0aW9ucy9zZWNvbmQgICgy
-NTYgTUIgY29udGFpbmVyKQogICAgIDMgYnJrX3Rlc3QgICAgICAgICAgICA2MC4wMiAgICAg
-ICA3NDA0ICAxMjMuMzU4ODggICAgICAyMDk3MTAwLjk3IFN5c3RlbSBNZW1vcnkgQWxsb2Nh
-dGlvbnMvc2Vjb25kICAodW5saW1pdGVkIGNvbnRhaW5lcikKICAgICAzIGJya190ZXN0ICAg
-ICAgICAgICAgNjAuMDEgICAgICAgODI5NCAgMTM4LjIxMDMwICAgICAgMjM0OTU3NS4wNyBT
-eXN0ZW0gTWVtb3J5IEFsbG9jYXRpb25zL3NlY29uZCAgKGNvbnRhaW5lciBub3QgbW91bnRl
-ZCkKICAgICA0IGptcF90ZXN0ICAgICAgICAgICAgNjAuMDEgICAgIDk4MzA2MiAxNjM4MS42
-MzYzOSAgICAgMTYzODE2MzYuMzkgTm9uLWxvY2FsIGdvdG9zL3NlY29uZCAgKDI1NiBNQiBj
-b250YWluZXIpCiAgICAgNCBqbXBfdGVzdCAgICAgICAgICAgIDYwLjAwICAgICA5ODMwODQg
-MTYzODQuNzMzMzMgICAgIDE2Mzg0NzMzLjMzIE5vbi1sb2NhbCBnb3Rvcy9zZWNvbmQgICh1
-bmxpbWl0ZWQgY29udGFpbmVyKQogICAgIDQgam1wX3Rlc3QgICAgICAgICAgICA2MC4wMCAg
-ICAgOTgyOTA0IDE2MzgxLjczMzMzICAgICAxNjM4MTczMy4zMyBOb24tbG9jYWwgZ290b3Mv
-c2Vjb25kICAoY29udGFpbmVyIG5vdCBtb3VudGVkKQogICAgIDUgc2lnbmFsX3Rlc3QgICAg
-ICAgICA2MC4wMSAgICAgIDI4MDEzICA0NjYuODA1NTMgICAgICAgNDY2ODA1LjUzIFNpZ25h
-bCBUcmFwcy9zZWNvbmQgICgyNTYgTUIgY29udGFpbmVyKQogICAgIDUgc2lnbmFsX3Rlc3Qg
-ICAgICAgICA2MC4wMCAgICAgIDI4MzYwICA0NzIuNjY2NjcgICAgICAgNDcyNjY2LjY3IFNp
-Z25hbCBUcmFwcy9zZWNvbmQgICh1bmxpbWl0ZWQgY29udGFpbmVyKQogICAgIDUgc2lnbmFs
-X3Rlc3QgICAgICAgICA2MC4wMSAgICAgIDI4NTkzICA0NzYuNDcwNTkgICAgICAgNDc2NDcw
-LjU5IFNpZ25hbCBUcmFwcy9zZWNvbmQgIChjb250YWluZXIgbm90IG1vdW50ZWQpCiAgICAg
-NiBleGVjX3Rlc3QgICAgICAgICAgIDYwLjAyICAgICAgIDI1OTYgICA0My4yNTIyNSAgICAg
-ICAgICAyMTYuMjYgUHJvZ3JhbSBMb2Fkcy9zZWNvbmQgICgyNTYgTUIgY29udGFpbmVyKQog
-ICAgIDYgZXhlY190ZXN0ICAgICAgICAgICA2MC4wMiAgICAgICAyNTM5ICAgNDIuMzAyNTcg
-ICAgICAgICAgMjExLjUxIFByb2dyYW0gTG9hZHMvc2Vjb25kICAodW5saW1pdGVkIGNvbnRh
-aW5lcikKICAgICA2IGV4ZWNfdGVzdCAgICAgICAgICAgNjAuMDEgICAgICAgMjUzNiAgIDQy
-LjI1OTYyICAgICAgICAgIDIxMS4zMCBQcm9ncmFtIExvYWRzL3NlY29uZCAgKGNvbnRhaW5l
-ciBub3QgbW91bnRlZCkKICAgICA3IGZvcmtfdGVzdCAgICAgICAgICAgNjAuMDEgICAgICAg
-MjExOCAgIDM1LjI5NDEyICAgICAgICAgMzUyOS40MSBUYXNrIENyZWF0aW9ucy9zZWNvbmQg
-ICgyNTYgTUIgY29udGFpbmVyKQogICAgIDcgZm9ya190ZXN0ICAgICAgICAgICA2MC4wMyAg
-ICAgICAyMTMwICAgMzUuNDgyMjYgICAgICAgICAzNTQ4LjIzIFRhc2sgQ3JlYXRpb25zL3Nl
-Y29uZCAgKHVubGltaXRlZCBjb250YWluZXIpCiAgICAgNyBmb3JrX3Rlc3QgICAgICAgICAg
-IDYwLjAxICAgICAgIDIxMzAgICAzNS40OTQwOCAgICAgICAgIDM1NDkuNDEgVGFzayBDcmVh
-dGlvbnMvc2Vjb25kICAoY29udGFpbmVyIG5vdCBtb3VudGVkKQogICAgIDggbGlua190ZXN0
-ICAgICAgICAgICA2MC4wMiAgICAgIDQ3NzYwICA3OTUuNzM0NzYgICAgICAgIDUwMTMxLjI5
-IExpbmsvVW5saW5rIFBhaXJzL3NlY29uZCAgKDI1NiBNQiBjb250YWluZXIpCiAgICAgOCBs
-aW5rX3Rlc3QgICAgICAgICAgIDYwLjAyICAgICAgNDgxNTYgIDgwMi4zMzI1NiAgICAgICAg
-NTA1NDYuOTUgTGluay9VbmxpbmsgUGFpcnMvc2Vjb25kICAodW5saW1pdGVkIGNvbnRhaW5l
-cikKICAgICA4IGxpbmtfdGVzdCAgICAgICAgICAgNjAuMDAgICAgICA0OTc3OCAgODI5LjYz
-MzMzICAgICAgICA1MjI2Ni45MCBMaW5rL1VubGluayBQYWlycy9zZWNvbmQgIChjb250YWlu
-ZXIgbm90IG1vdW50ZWQpCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLQo=
---------------090506080404050703080701--
