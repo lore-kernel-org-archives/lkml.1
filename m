@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbXERVPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763129AbXERVQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760059AbXERVPK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 17:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXERVPA
+	id S1763129AbXERVQA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 17:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbXERVPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 17:15:00 -0400
-Received: from khc.piap.pl ([195.187.100.11]:41117 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752652AbXERVO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 17:14:59 -0400
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>
-Subject: Re: [RFC] LZO1X de/compression support
-References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 18 May 2007 23:14:57 +0200
-In-Reply-To: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com> (Nitin Gupta's message of "Fri, 18 May 2007 15:28:31 +0530")
-Message-ID: <m3646pg7fy.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 May 2007 17:15:53 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:25597 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752652AbXERVPx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 17:15:53 -0400
+Date: Fri, 18 May 2007 14:17:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Linda Walsh <lkml@tlinx.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: building i386 requires s390: "driver/crypto/Kconfig" sourcing
+ s390 arch
+Message-Id: <20070518141735.aae3921a.randy.dunlap@oracle.com>
+In-Reply-To: <464DFF5F.5010905@tlinx.org>
+References: <464DFF5F.5010905@tlinx.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Nitin Gupta" <nitingupta910@gmail.com> writes:
+On Fri, 18 May 2007 12:32:47 -0700 Linda Walsh wrote:
 
-> Facts for LZO (at least for original code. Should hold true for this
-> port also - hence the RFC!):
-> - The compressor can never overrun buffer.
-> - The "non-safe" version of decompressor can never overrun buffer if
-> compressed data is unmodified. I am not sure about this if compressed
-> data is malicious (to be confirmed from the author).
-> - The "safe" version can never crash (buffer overrun etc.) - confirmed
-> from the author.
+> Seems there is an include of s390 based config in file
+> drivers/crypto/Kconfig: source "arch/s390/crypto/Kconfig"
+> 
+> The line doesn't seem to be need for an i386 build (haven't
+> tried x86_64 though).
+> 
+> I take it that this was a braino?
 
-I'm certainly missing something but what are the advantages of this
-code (over current gzip etc.), and what will be using it?
--- 
-Krzysztof Halasa
+Does it cause a problem?  If yes, what problem?
+
+It looks like someone thought that all Hardware crypto devices
+should be listed under the same menu heading.  Makes some sense.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
