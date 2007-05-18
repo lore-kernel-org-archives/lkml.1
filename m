@@ -1,67 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759837AbXERC6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761253AbXERC7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759837AbXERC6K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 22:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbXERC56
+	id S1761253AbXERC7S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 22:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbXERC7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 22:57:58 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:38946 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755984AbXERC56 (ORCPT
+	Thu, 17 May 2007 22:59:11 -0400
+Received: from moa.IfA.Hawaii.Edu ([128.171.168.48]:36163 "EHLO
+	moa.ifa.hawaii.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755984AbXERC7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 22:57:58 -0400
-Date: Thu, 17 May 2007 22:57:48 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Matthieu CASTET <castet.matthieu@free.fr>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-In-Reply-To: <1179455959.2859.527.camel@shinybook.infradead.org>
-Message-ID: <alpine.DEB.0.99.0705172254560.27207@sigma.j-a-k-j.com>
-References: <20070517143200.GA30850@lst.de>  <1179413443.3642.49.camel@sauron>
- <20070517145653.GA968@lst.de>  <1179414590.3642.69.camel@sauron> 
- <20070517102931.6bbbad1a.akpm@linux-foundation.org>  <pan.2007.05.17.20.30.30@free.fr>
- <1179455959.2859.527.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 17 May 2007 22:59:11 -0400
+Date: Thu, 17 May 2007 17:04:36 -1000
+From: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+To: Dave Jones <davej@redhat.com>
+Cc: Duane Griffin <duaneg@dghda.com>, Prakash Punnoor <prakash@punnoor.de>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>,
+       Ed Sweetman <safemode2@comcast.net>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
+Message-ID: <20070518030436.GB20793@ifa.hawaii.edu>
+References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <20070516204807.GA23751@redhat.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="cmJC7u66zC7hs+87"
+Content-Disposition: inline
+In-Reply-To: <20070516204807.GA23751@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007, David Woodhouse wrote:
-> On Thu, 2007-05-17 at 20:30 +0000, Matthieu CASTET wrote:
-> > On Thu, 17 May 2007 10:29:31 -0700, Andrew Morton wrote:
-> > 
-> > > On Thu, 17 May 2007 18:09:50 +0300 Artem Bityutskiy
-> > > <dedekind@infradead.org> wrote:
-> > > 
-> > > umm..  I'd say what you've done in there is an improvement to the
-> > > exiting stuff: getting gcc to check it is better than having to use
-> > > sparse.
-> > > 
-> > > I'd have expected gcc to generate poorer code with your approach but I'm
-> > > showing zero text size changes from Christoph's patch (gcc-4.1 and
-> > > gcc-3.4.5).
-> > > 
-> > >
-> > On which arch did you try ?
-> > X86 where unaligned access are ok ?
-> > 
-> > On arch that don't support aligned access, packed struct access will be 
-> > done byte per byte (but it could be the expected behavior if there 
-> > unaligned access).
-> 
-> When I tested this on ARM, the output for je32_to_cpu et al was fine.
-> For _other_ structures where I'd used __attribute__((packed)) to be
-> safe, gcc would emit code to handle unaligned loads. But not in the
-> simple case where the struct has only one member.
-> 
-> Are you suggesting that this has changed since I did my testing?
 
-Wouldn't the appropriate test be to demonstrate that the same program text 
-opcodes are generated in both cases for all architectures? If that's not 
-the case, even if the generation isn't -worse-, it shows that the compiler 
-is doing different things with each, which means different versions of the 
-compiler could do different things with it, and all of a sudden another 
-nice programming construct which helps compile-time issues ends up 
-increasing the number of cases where compiler differences generate faster 
-or slower kernels with the same code, whereas in the test cases it was "no 
-better, no worse" so deemed fine.
+--cmJC7u66zC7hs+87
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+I think it's pretty clear that Dave and Daniel were both correct and
+that ACPI_PROCESSOR is the correct dependency for multi-socket systems.
+However, it's worth noting that this dependency seems to be unrelated to
+SMP support.  Ed Sweetman has reported that his single-socket but
+multi-core system doesn't require ACPI_PROCESSOR for powernow support.
+I just tried booting 2.6.21 w/o SMP support and w/o ACPI_PROCESSOR on
+one of my multi-socket/multi-core systems.  Sure enough, powernow=20
+won't work without ACPI_PROCESSOR:
+
+powernow-k8: Found 1 Dual-Core AMD Opteron(tm) Processor 2220 processors (v=
+ersion 2.00.00)
+powernow-k8: BIOS error - no PSB or ACPI _PSS objects
+
+I suppose this means that the BIOS does something different to enable
+SMP on a multi-core single socket and multi-socket systems.  Anyways, I
+believe the question that needs to be answered is: is it reasonable for
+X86_POWERNOW_K8 to select ACPI_PROCESSOR if SMP is set?  I'm not sure we
+can do anything more intelligent unless Kconfig had more knowledge of
+how the hardware other than just SMP/!SMP.
+
+-J
+
+--
+On Wed, May 16, 2007 at 04:48:07PM -0400, Dave Jones wrote:
+> On Wed, May 16, 2007 at 08:53:13PM +0100, Duane Griffin wrote:
+>  > On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
+>  > > Maybe you want to give a hint in the p states driver help text?
+>  >=20
+>  > I think a hint is the right thing to do, but in the PowerNow! driver
+>  > rather than the p states one. How about adding something like this to
+>  > the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
+>=20
+> The mobile K7s which had powernow support weren't SMP capable, so they're
+> irrelevant.
+>=20
+>  > "ACPI support is required for non-UP systems and requires ACPI_PROCESS=
+OR
+>  >  to be selected. If ACPI_PROCESSOR is compiled as a module then this
+>  >  option must be too in order for ACPI support to be available."
+>=20
+> X86_POWERNOW_K8_ACPI is already 'default y'. I think the problem lies in
+> that people aren't enabling its dependancy, ACPI_PROCESSOR.
+>=20
+> We want something along the lines of..
+>=20
+> config X86_POWERNOW_K8_ACPI
+> 	bool
+> 	if SMP & X86_POWERNOW_K8_ACPI
+> 	  select ACPI_PROCESSOR
+>=20
+> kconfig language quirks aside..
+>=20
+>=20
+> 	Dave
+>=20
+> --=20
+> http://www.codemonkey.org.uk
+
+--cmJC7u66zC7hs+87
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFGTRfEWa2BU+b7tU0RAtHOAKCX1fluHXzkd5pwncYu3mu+a3tfgACgmWM/
+55jkBF6d1AaxLAgOEpQUu3Y=
+=c7DC
+-----END PGP SIGNATURE-----
+
+--cmJC7u66zC7hs+87--
