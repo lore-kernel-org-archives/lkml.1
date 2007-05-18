@@ -1,62 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbXERSKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763017AbXERSLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762715AbXERSKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbXERSKm
+	id S1763017AbXERSLc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756720AbXERSLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:10:42 -0400
-Received: from mga02.intel.com ([134.134.136.20]:15230 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754336AbXERSKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 14:10:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,553,1170662400"; 
-   d="scan'208";a="244747408"
-Date: Fri, 18 May 2007 11:07:49 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu, ak@suse.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Zou, Nanhai" <nanhai.zou@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Packard, Keith" <keith.packard@intel.com>
-Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
-Message-ID: <20070518180749.GA26081@linux-os.sc.intel.com>
-References: <20070518010119.GB12088@linux-os.sc.intel.com> <m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 18 May 2007 14:11:21 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58613 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756253AbXERSLU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 14:11:20 -0400
+Message-Id: <20070518181119.534255343@sgi.com>
+References: <20070518181040.465335396@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 18 May 2007 11:10:44 -0700
+From: clameter@sgi.com
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org
+Cc: dgc@sgi.com
+Cc: Hugh Dickins <hugh@veritas.com>
+Subject: [patch 04/10] Generic inode defragmentation
+Content-Disposition: inline; filename=inode_targeted_reclaim
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric,
+This implements the ability to remove a list of inodes from the inode
+cache. In order to remove an inode we may have to write out the pages
+of an inode, the inode itself and remove the dentries referring to the
+node.
 
-On Fri, May 18, 2007 at 07:40:53AM -0700, Eric W. Biederman wrote:
-> Still in any of those I don't see a problem with switching to edge
-> triggered mode and then back again.  Either Remote IRR will keep
-> it's current state or it will be cleared.   Remote IRR should not
-> get set (when it was clear) by such a procedure because that
-> would mess up the normal interrupt enable sequence that happens
-> on boot.  So I'm pretty certain toggling the edge bit is harmless
-> and it may actually clear Remote IRR for us.
-...
-> 
-> I think going more the way that this code has gone on arch/i386 with
-> real functions is preferable.
+Provide generic functionality that can be used by filesystems that have
+their own inode caches to also tie into the defragmentation functions
+that are made available here.
 
-There is an issue with this suggestion. We have an inflight
-EOI broadcast msg to this IOAPIC (that got delayed but still alive) and
-that can cause problem if we use edge and back to level to reset remote IRR bit.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-If the vector number stays same during irq migration and if we reset remote
-IRR bit using the above method(edge and then back to level) during
-irq migration, then we have a problem. A new interrupt arriving on a new
-cpu will set the remote IRR bit and now the old inflight EOI broadcast
-reaches IOAPIC RTE(resetting the remote IRR bit, because the vector in the
-broadcast msg is same), while the kernel code still assumes that the remote
-IRR bit is still set. This will lead to more problems and issues.
+---
+ fs/inode.c         |   92 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/fs.h |    5 ++
+ 2 files changed, 96 insertions(+), 1 deletion(-)
 
-thanks,
-suresh
+Index: slub/fs/inode.c
+===================================================================
+--- slub.orig/fs/inode.c	2007-05-18 00:50:36.000000000 -0700
++++ slub/fs/inode.c	2007-05-18 00:55:40.000000000 -0700
+@@ -1361,6 +1361,96 @@ static int __init set_ihash_entries(char
+ }
+ __setup("ihash_entries=", set_ihash_entries);
+ 
++static void *get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	int i;
++
++	spin_lock(&inode_lock);
++	for (i = 0; i < nr; i++) {
++		struct inode *inode = v[i];
++
++		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
++			v[i] = NULL;
++		else
++			__iget(inode);
++	}
++	spin_unlock(&inode_lock);
++	return NULL;
++}
++
++/*
++ * Function for filesystems that embedd struct inode into their own
++ * structures. The offset is the offset of the struct inode in the fs inode.
++ */
++void *fs_get_inodes(struct kmem_cache *s, int nr, void **v, unsigned long offset)
++{
++	int i;
++
++	for (i = 0; i < nr; i++)
++		v[i] += offset;
++
++	return get_inodes(s, nr, v);
++}
++EXPORT_SYMBOL(fs_get_inodes);
++
++void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
++{
++	struct inode *inode;
++	int i;
++	int abort = 0;
++	LIST_HEAD(freeable);
++	struct super_block *sb;
++
++	for (i = 0; i < nr; i++) {
++		inode = v[i];
++		if (!inode)
++			continue;
++
++		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
++			if (remove_inode_buffers(inode))
++				invalidate_mapping_pages(&inode->i_data,
++								0, -1);
++		}
++
++		if (inode->i_state & I_DIRTY)
++			write_inode_now(inode, 1);
++
++		if (atomic_read(&inode->i_count) > 1)
++			d_prune_aliases(inode);
++	}
++
++	mutex_lock(&iprune_mutex);
++	for (i = 0; i < nr; i++) {
++		inode = v[i];
++		if (!inode)
++			continue;
++
++		sb = inode->i_sb;
++		iput(inode);
++		if (abort || !(sb->s_flags & MS_ACTIVE))
++			continue;
++
++		spin_lock(&inode_lock);
++		if (!can_unuse(inode)) {
++			abort = 1;
++			spin_unlock(&inode_lock);
++			continue;
++		}
++		list_move(&inode->i_list, &freeable);
++		inode->i_state |= I_FREEING;
++		inodes_stat.nr_unused--;
++		spin_unlock(&inode_lock);
++	}
++	dispose_list(&freeable);
++	mutex_unlock(&iprune_mutex);
++}
++EXPORT_SYMBOL(kick_inodes);
++
++static struct kmem_cache_ops inode_kmem_cache_ops = {
++	.get = get_inodes,
++	.kick = kick_inodes
++};
++
+ /*
+  * Initialize the waitqueues and inode hash table.
+  */
+@@ -1399,7 +1489,7 @@ void __init inode_init(unsigned long mem
+ 					 (SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
+ 					 SLAB_MEM_SPREAD),
+ 					 init_once,
+-					 NULL);
++					 &inode_kmem_cache_ops);
+ 	register_shrinker(&icache_shrinker);
+ 
+ 	/* Hash may have been set up in inode_init_early */
+Index: slub/include/linux/fs.h
+===================================================================
+--- slub.orig/include/linux/fs.h	2007-05-18 00:50:36.000000000 -0700
++++ slub/include/linux/fs.h	2007-05-18 00:54:33.000000000 -0700
+@@ -1608,6 +1608,11 @@ static inline void insert_inode_hash(str
+ 	__insert_inode_hash(inode, inode->i_ino);
+ }
+ 
++/* Helpers to realize inode defrag support in filesystems */
++extern void kick_inodes(struct kmem_cache *, int, void **, void *);
++extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
++						unsigned long offset);
++
+ extern struct file * get_empty_filp(void);
+ extern void file_move(struct file *f, struct list_head *list);
+ extern void file_kill(struct file *f);
+
+-- 
