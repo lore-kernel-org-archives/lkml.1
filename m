@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760562AbXERA6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbXERBCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760562AbXERA6W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 20:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757260AbXERA6O
+	id S1760191AbXERBCd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 21:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbXERBC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 20:58:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43705 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756579AbXERA6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 20:58:13 -0400
-Message-ID: <464CFA22.1090600@garzik.org>
-Date: Thu, 17 May 2007 20:58:10 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 17 May 2007 21:02:26 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:55944
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755110AbXERBC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 21:02:26 -0400
+Date: Thu, 17 May 2007 18:01:11 -0700
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, William Lee Irwin III <wli@holomorphy.com>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [patch] CFS scheduler, -v12
+Message-ID: <20070518010111.GE2017@gnuppy.monkey.org>
+References: <20070513153853.GA19846@elte.hu> <20070518001841.GA21140@gnuppy.monkey.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Peer Chen <pchen@nvidia.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] sata_nv: fix fallout of devres conversion
-References: <15F501D1A78BD343BE8F4D8DB854566B13CD8F45@hkemmail01.nvidia.com> <464A94D7.30300@garzik.org> <15F501D1A78BD343BE8F4D8DB854566B13DEF520@hkemmail01.nvidia.com> <464C38F5.3060802@gmail.com>
-In-Reply-To: <464C38F5.3060802@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070518001841.GA21140@gnuppy.monkey.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> As with all other drivers, sata_nv's hpriv is allocated with
-> devm_kzalloc() and there's no need to free it explicitly.  Kill
-> nv_remove_one() which incorrectly used kfree() instead of devm_kfree()
-> and use ata_pci_remove_one() directly.
+On Thu, May 17, 2007 at 05:18:41PM -0700, Bill Huey wrote:
+> On Sun, May 13, 2007 at 05:38:53PM +0200, Ingo Molnar wrote:
+> > Even a simple 3D app like glxgears does a sys_sched_yield() for every 
+> > frame it generates (!) on certain 3D cards, which in essence punishes 
+> > any scheduler that implements sys_sched_yield() in a sane manner. This 
+> > interaction of CFS's yield implementation with this user-space bug could 
+> > be the main reason why some testers reported SD to be handling 3D games 
+> > better than CFS. (SD uses a yield implementation similar to the vanilla 
+> > scheduler.)
+> > 
+> > So i've added a yield workaround to -v12, which makes it work similar to 
+> > how the vanilla scheduler and SD does it. (Xorg has been notified and 
+> > this bug should be fixed there too. This took some time to debug because 
+> > the 3D driver i'm using for testing does not use sys_sched_yield().) The 
+> > workaround is activated by default so -v12 should work 'out of the box'.
 > 
-> Original fix is from Peer Chen.
+> This is an incorrect analysis. OpenGL has the ability to "yield" after
+> every frame specifically for SGI IRIX (React/Pro) frame scheduler (driven
+> by the system vertical retrace interrupt) so that it can free up CPU
+> resources for other tasks to run. The problem here is that the yield
+> behavior is treated generally instead of specifically to a particular
+> proportion scheduler policy.
 > 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Peer Chen <pchen@nvidia.com>
-> ---
+> The correct solution is for the app to use a directed yield and a policy
+> that can directly support it so that OpenGL can guaratee a frame rate
+> governed by CPU bandwidth allocated by the scheduler.
 > 
-> I think it's prettier this way.  :-)
+> Will is working on such a mechanism now.
 
-applied
+Follow up:
 
-you forgot diffstat :)
+http://techpubs.sgi.com/library/tpl/cgi-bin/getdoc.cgi/0650/bks/SGI_Developer/books/REACT_PG/sgi_html/ch04.html
 
+bill
 
