@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbXERAd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbXERAf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758795AbXERAd6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 20:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXERAdw
+	id S1759203AbXERAf2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 20:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXERAfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 20:33:52 -0400
-Received: from mail.tmr.com ([64.65.253.246]:40647 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754917AbXERAdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 20:33:51 -0400
-Message-ID: <464CF450.20502@tmr.com>
-Date: Thu, 17 May 2007 20:33:20 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org,
-       Antonino Ingargiola <tritemio@gmail.com>
-Subject: Re: [1/2] 2.6.22-rc1: known regressions
-References: <46475595.4050105@googlemail.com> <20070514082207.5df59f6e@hyperion.delvare>
-In-Reply-To: <20070514082207.5df59f6e@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 May 2007 20:35:22 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50196 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754995AbXERAfW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 20:35:22 -0400
+Date: Fri, 18 May 2007 01:39:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Francis Russell <francisrussell@btopenworld.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: pata_via appears to incorrectly detects 40-pin cable
+Message-ID: <20070518013955.41df5765@the-village.bc.nu>
+In-Reply-To: <990930.5739.qm@web86408.mail.ird.yahoo.com>
+References: <990930.5739.qm@web86408.mail.ird.yahoo.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> Hi Michal,
-> 
-> On Sun, 13 May 2007 20:14:45 +0200, Michal Piotrowski wrote:
->> I2C
->>
->> Subject    : "Sensors Applet" give an error message "No chip detected"
->> References : http://lkml.org/lkml/2007/5/13/109
->> Submitter  : Antonino Ingargiola <tritemio@gmail.com>
->> Status     : Unknown
-> 
-> There is currently zero proof that this has anything to do with I2C.
-> 
-I believe in another thread this has been traced to a change in the 
-interface and can be solved with an upgrade for the applet.
+On Thu, 17 May 2007 19:01:43 +0000 (GMT)
+Francis Russell <francisrussell@btopenworld.com> wrote:
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+> I'm testing Linux kernel version 2.6.22-rc1 using Debian Testing on an Acer Ferrari 3400 Laptop. This has a VIA IDE controller with the internal HDD and DVD writer attached. The via_pata module and SCSI disk support is compiled into the kernel and the old ATA subsystem is not. At bootup the log messages state that the main HDD is detected as being connected using a 40-pin cable which causes its speed to be limited to UDMA33 rather then UDMA100, the limit of the HD.  This works fine under the old ATA system.
+
+The old drivers won't bother to tell you if they are limiting to UDMA33,
+but they do also contain some BIOS mode snooping hacks which are unsafe
+for hotplug, suspend/resume etc and libata doesn't use.
+
+Does the laptop actually have 80 wire cables - did you see UDMA100
+actually being used. If so can you send me an lspci -vxx and a dmesg.
+Probably we need to add it to the list of devices using short 40 wire
+cable tricks.
+
+Alan
