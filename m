@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760213AbXERPDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761074AbXERPEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760213AbXERPDg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 11:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbXERPDa
+	id S1761074AbXERPEl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 11:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbXERPEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 11:03:30 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:44670 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754504AbXERPD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 11:03:29 -0400
-Message-ID: <464DC019.6010008@free.fr>
-Date: Fri, 18 May 2007 17:02:49 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Fri, 18 May 2007 11:04:34 -0400
+Received: from h155.mvista.com ([63.81.120.155]:31587 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755724AbXERPEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 11:04:34 -0400
+Message-ID: <464DC0DC.7050809@ru.mvista.com>
+Date: Fri, 18 May 2007 19:06:04 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Dumping the checksums in a module
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>, tglx@linutronix.de, mingo@elte.hu,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+References: <200705172142.26739.sshtylyov@ru.mvista.com>	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>	 <464C99FF.8080404@ru.mvista.com>	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org> <1179500217.20519.53.camel@imap.mvista.com>
+In-Reply-To: <1179500217.20519.53.camel@imap.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Daniel Walker wrote:
 
-I'm getting "disagrees about version of symbol struct_module" messages, 
-and I'm trying to understand why.
+>>I haven't looked at all the new clock/timer code, is there any  
+>>utility in having support for more than one clock source?
 
-As far as I understand (which is not very far), if I define 
-CONFIG_MODVERSIONS, then checksums for various functions (all exported 
-functions?) and various structures (which ones?) will be included inside 
-the kernel image, and written to Module.symvers. When an out-of-tree 
-module is built, it will also include these checksums.
+> There is if the main clocksource has some issues where it can't be used.
 
-How do I list the checksums within a module?
+    You mean, having more than one clocksource is *useful* in this case?
 
-$ /sbin/modinfo -V
-module-init-tools version 3.2.2
+> On x86 there are lots of different issues with the clocks, so they have
+> to get switches once in a while. For instance, if the TSC changes
+> frequencies then it can't be used, or if the TSC stops in different
+> power states , it can't be used.. 
 
-$ uname -a
-Linux venus 2.6.18.6 #1 PREEMPT Thu Feb 8 18:04:49 CET 2007 i686 
-pentium4 i386 GNU/Linux
+    Yeah, and there's the rating systems for both clock sources/events.
 
-$ /sbin/modinfo test.ko
-filename:       test.ko
-vermagic:       2.6.20.7-rt8 preempt mod_unload PENTIUMIII REGPARM
-depends:
-parm:           pConfig_file:charp
-parm:           allocator_himem:An integer (int)
-parm:           EnableIdleMode:An integer (int)
-parm:           Board_ID:An integer (int)
-parm:           Diagnostic:An integer (int)
+> Anything like that on PowerPC?
 
-$ hexdump -C test.ko | grep -A2 struct_
-000752e0  17 98 07 0e 73 74 72 75  63 74 5f 6d 6f 64 75 6c 
-|....struct_modul|
-000752f0  65 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 
-|e...............|
-00075300  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 
-|................|
+    Well, the decrementer frequency may change, at least in theory (if the bus 
+clock changes).
 
-I think this means that, in this module, the checksum for symbol 
-struct_module is 0x1798070e, right?
+> Daniel
 
-Is there a simpler way to list all the checksums?
-
-Regards.
+WBR, Sergei
