@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbXERIj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbXERIrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757634AbXERIj0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 04:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbXERIjT
+	id S1757184AbXERIrk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 04:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXERIrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 04:39:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45864 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbXERIjT (ORCPT
+	Fri, 18 May 2007 04:47:33 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:56703 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755142AbXERIrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 04:39:19 -0400
-Date: Fri, 18 May 2007 09:38:35 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Artem Bityutskiy <dedekind@yandex.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, dedekind@infradead.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-Message-ID: <20070518083835.GX4095@ftp.linux.org.uk>
-References: <20070517143200.GA30850@lst.de> <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de> <1179414590.3642.69.camel@sauron> <20070517102931.6bbbad1a.akpm@linux-foundation.org> <20070517204234.GR4095@ftp.linux.org.uk> <20070517205339.GS4095@ftp.linux.org.uk> <464D4E91.1000000@yandex.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464D4E91.1000000@yandex.ru>
-User-Agent: Mutt/1.4.1i
+	Fri, 18 May 2007 04:47:32 -0400
+X-Auth-Info: e0GNAW8jEecYByNb3wjpIOivlF+D2gwhIaAFXZkvzEU=
+X-Auth-Info: e0GNAW8jEecYByNb3wjpIOivlF+D2gwhIaAFXZkvzEU=
+X-Auth-Info: e0GNAW8jEecYByNb3wjpIOivlF+D2gwhIaAFXZkvzEU=
+X-Auth-Info: e0GNAW8jEecYByNb3wjpIOivlF+D2gwhIaAFXZkvzEU=
+X-Auth-Info: e0GNAW8jEecYByNb3wjpIOivlF+D2gwhIaAFXZkvzEU=
+Message-ID: <464D6951.9050909@grandegger.com>
+Date: Fri, 18 May 2007 10:52:33 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: emin ak <eminak71@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: v2.6.21-rt3
+References: <20070517194143.GA25394@elte.hu>	 <2cf1ee820705180039l1d72005fq2169f8fa36e12377@mail.gmail.com>	 <1179474804.12981.57.camel@chaos>	 <2cf1ee820705180110y740de989ma48553d4b2188845@mail.gmail.com> <1179477092.12981.61.camel@chaos>
+In-Reply-To: <1179477092.12981.61.camel@chaos>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 09:58:25AM +0300, Artem Bityutskiy wrote:
-> Al Viro wrote:
-> >BTW, you can simply typedef __be16 ubi16_t; etc. and define conversion
-> >functions as cpu_to_ubi16(x) being (__force ubi16_t)cpu_to_be16(x), etc.
-> >
-> >sparse will do all checks just fine, you still have bitwise operations
-> >(might or might be not relevant in your case) and for gcc it simply
-> >becomes __be16, etc - i.e. an integer type.
+Thomas Gleixner wrote:
+> Please do not top post !
 > 
-> Err, what is the benefit of it? If we relied on sparce, why not would we be
-> just using __be16 directly?
+> On Fri, 2007-05-18 at 11:10 +0300, emin ak wrote:
+>> Yes, 2.6.21 was compiled and boot successfully for ppc, Is 85xx family
+>> supported for powerpc arch?
+> 
+> I don't know. You might ask the folks on the ppc mailing list.
 
-Because you might legitimately want your type to be *not* mixed with whatever
-other big-endian 16bit types you have out there?
+E.g. check http://lxr.free-electrons.com/source/arch/powerpc/configs/. 
+Even your board seems supported. But you need a boot loader aware of the 
+  Open Firmware Flat Device Tree.
+
+Wolfgang.
+
