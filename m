@@ -1,71 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbXERKDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbXERKGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759362AbXERKDi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 06:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXERKDb
+	id S1760315AbXERKGW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 06:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXERKGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 06:03:31 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:32225 "EHLO relay.sw.ru"
+	Fri, 18 May 2007 06:06:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58606 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754529AbXERKDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 06:03:31 -0400
-Message-ID: <464D7AE4.1080103@sw.ru>
-Date: Fri, 18 May 2007 14:07:32 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
-Subject: [PATCH 13/15] Make /proc/tty/drivers use seq_list_xxx helpers
-References: <464D6E87.7060605@sw.ru>
-In-Reply-To: <464D6E87.7060605@sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1754529AbXERKGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 06:06:15 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <464D7005.6030504@sw.ru>
+References: <464D7005.6030504@sw.ru> <464D6E87.7060605@sw.ru>
+To: Pavel Emelianov <xemul@sw.ru>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chas@cmf.nrl.navy.mil, axboe@kernel.dk, herbert@gondor.apana.org.au,
+       dmitry.torokhov@gmail.com, kkeil@suse.de,
+       David Miller <davem@davemloft.net>, Patrick McHardy <kaber@trash.net>,
+       viro@zeniv.linux.org.uk, devel@openvz.org
+Subject: Re: [PATCH 1/15] The helper functions itselves
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Fri, 18 May 2007 10:59:08 +0100
+Message-ID: <7990.1179482348@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simple and stupid like some previous ones. Just use new API.
+Pavel Emelianov <xemul@sw.ru> wrote:
 
-Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+> Many places in kernel use seq_file API to iterate over a regular
+> list_head. The code for such iteration is identical in all the
+> places, so it's worth introducing a common helpers.
 
----
+And the documentation for this?
 
-diff --git a/fs/proc/proc_tty.c b/fs/proc/proc_tty.c
-index b3a473b..2284622 100644
---- a/fs/proc/proc_tty.c
-+++ b/fs/proc/proc_tty.c
-@@ -69,7 +69,7 @@ static void show_tty_range(struct seq_fi
- 
- static int show_tty_driver(struct seq_file *m, void *v)
- {
--	struct tty_driver *p = v;
-+	struct tty_driver *p = list_entry(v, struct tty_driver, tty_drivers);
- 	dev_t from = MKDEV(p->major, p->minor_start);
- 	dev_t to = from + p->num;
- 
-@@ -106,22 +106,13 @@ static int show_tty_driver(struct seq_fi
- /* iterator */
- static void *t_start(struct seq_file *m, loff_t *pos)
- {
--	struct list_head *p;
--	loff_t l = *pos;
--
- 	mutex_lock(&tty_mutex);
--	list_for_each(p, &tty_drivers)
--		if (!l--)
--			return list_entry(p, struct tty_driver, tty_drivers);
--	return NULL;
-+	return seq_list_start(&tty_drivers, *pos);
- }
- 
- static void *t_next(struct seq_file *m, void *v, loff_t *pos)
- {
--	struct list_head *p = ((struct tty_driver *)v)->tty_drivers.next;
--	(*pos)++;
--	return p==&tty_drivers ? NULL :
--			list_entry(p, struct tty_driver, tty_drivers);
-+	return seq_list_next(v, &tty_drivers, pos);
- }
- 
- static void t_stop(struct seq_file *m, void *v)
-
+David
