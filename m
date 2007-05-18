@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760540AbXERTSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763358AbXERTVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760540AbXERTSR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 15:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbXERTSH
+	id S1763358AbXERTVQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 15:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbXERTVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 15:18:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44733 "EHLO mx1.redhat.com"
+	Fri, 18 May 2007 15:21:07 -0400
+Received: from mga09.intel.com ([134.134.136.24]:59282 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754737AbXERTSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 15:18:06 -0400
-Message-ID: <464DFBE0.5060904@redhat.com>
-Date: Fri, 18 May 2007 15:17:52 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: eugene@ns.armcci.am
-CC: linux-kernel@vger.kernel.org
-Subject: Re: ht CPU flag
-References: <Pine.LNX.4.64.0705182131030.25685@ns.armcci.am>
-In-Reply-To: <Pine.LNX.4.64.0705182131030.25685@ns.armcci.am>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754515AbXERTVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 15:21:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,553,1170662400"; 
+   d="scan'208";a="88244118"
+Date: Fri, 18 May 2007 12:18:13 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, mingo@elte.hu, ak@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Zou, Nanhai" <nanhai.zou@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Packard, Keith" <keith.packard@intel.com>
+Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
+Message-ID: <20070518191813.GC28957@linux-os.sc.intel.com>
+References: <20070518183941.GA28957@linux-os.sc.intel.com> <m1wsz6ymyv.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1wsz6ymyv.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-eugene@ns.armcci.am wrote:
-> ---------------------------------------------------------------------------
-> 
-> I have Pentium D CPU, which many Windows utilities like cpuz, wcpuid, 
-> everest identify as D 930 (Dual Core, 3GHz). From Intel site I find out 
-> that it has no HT feature, nor Windows XP identify it as HT.
-> 
-> Why do I have "ht" flag in cpuinfo?
-> -----------------------------------
+On Fri, May 18, 2007 at 12:02:16PM -0700, Eric W. Biederman wrote:
+> I will look closer but I do believe that from the ioapic to the cpu the 2.6.21
+> code should be fairly robust with respect to inflight messages from the ioapic
+> to the local apics and the cpus.  What I failed to consider were inflight
+> messages in the other direction arriving out of order.
 
-The "ht" flag merely means "I know how to report hyperthreaded logical 
-processors if I have them."  My Woodcrest Xeon 5110 and my Athlon64 X2 both have 
-the "ht" flag, and correctly report the zero hyperthreaded logical processors 
-they each have.
+Yes. Inflight messages from cpu to ioapic was what I was referring to.
 
-	-- Chris
+thanks,
+suresh
