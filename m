@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbXERHs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758715AbXERHuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758217AbXERHs1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 03:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbXERHsV
+	id S1758715AbXERHuS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 03:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbXERHuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 03:48:21 -0400
-Received: from www.osadl.org ([213.239.205.134]:48251 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755121AbXERHsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 03:48:20 -0400
-Subject: Re: v2.6.21-rt3
-From: Thomas Gleixner <tglx@linutronix.de>
-To: emin ak <eminak71@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <2cf1ee820705180039l1d72005fq2169f8fa36e12377@mail.gmail.com>
-References: <20070517194143.GA25394@elte.hu>
-	 <2cf1ee820705180039l1d72005fq2169f8fa36e12377@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 09:53:24 +0200
-Message-Id: <1179474804.12981.57.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Fri, 18 May 2007 03:50:07 -0400
+Received: from as4.cineca.com ([130.186.84.213]:39964 "EHLO as4.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755509AbXERHuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 03:50:06 -0400
+Message-ID: <464D5AA4.8080900@users.sourceforge.net>
+From: Andrea Righi <righiandr@users.sourceforge.net>
+Reply-To: righiandr@users.sourceforge.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070326 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [RFC] log out-of-virtual-memory events
+References: <464C81B5.8070101@users.sourceforge.net> <464C9D82.60105@redhat.com>
+In-Reply-To: <464C9D82.60105@redhat.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=77CEF397;
+	url=keyserver.veridis.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Date: Fri, 18 May 2007 09:50:03 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-18 at 10:39 +0300, emin ak wrote:
-> Hi,
-> I have tried to compile -rt3 patch for ppc (mpc8540ads) and it failed
-> with undefined referance errors on ppc/kernel/asm-offsets.c. Here is
-> the compiler outputs:
+Rik van Riel wrote:
+> Andrea Righi wrote:
+>> I'm looking for a way to keep track of the processes that fail to
+>> allocate new
+>> virtual memory. What do you think about the following approach
+>> (untested)?
+>
+> Looks like an easy way for users to spam syslogd over and
+> over and over again.
+>
+> At the very least, shouldn't this be dependant on print_fatal_signals?
+>
 
-arch/ppc is known to be broken. Does it even compile on 2.6.21 vanilla ?
+Anyway, with print-fatal-signals enabled a user could spam syslogd too, simply
+with a (char *)0 = 0 program, but we could always identify the spam attempts
+logging the process uid...
 
-	tglx
+In any case, I agree, it should depend on that patch...
 
+What about adding a simple msleep_interruptible(SOME_MSECS) at the end of
+log_vm_enomem() or, at least, a might_sleep() to limit the potential spam/second
+rate?
 
+-Andrea
