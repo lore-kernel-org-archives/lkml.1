@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763282AbXERWl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761769AbXERWrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763282AbXERWl4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 18:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbXERWlr
+	id S1761769AbXERWrS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 18:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXERWrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 18:41:47 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:46021 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755487AbXERWlp (ORCPT
+	Fri, 18 May 2007 18:47:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57194 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754880AbXERWrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 18:41:45 -0400
-Message-ID: <464E2B97.9040205@zytor.com>
-Date: Fri, 18 May 2007 15:41:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Philipp Kohlbecher <pk031698@uni-greifswald.de>
-CC: Dave Jones <davej@codemonkey.org.uk>, Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel@vger.kernel.org, linux-assembly@vger.kernel.org
-Subject: Re: [PATCH 2.6.21.1] i386: save registers before intra-privilege
- syscall
-References: <20070517220638.GA6532@localhost.localdomain> <464CD44A.5000307@zytor.com> <464CE4CA.8000704@uni-greifswald.de> <464CE653.4020006@zytor.com> <464D64B2.6050104@uni-greifswald.de>
-In-Reply-To: <464D64B2.6050104@uni-greifswald.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 18 May 2007 18:47:05 -0400
+Date: Fri, 18 May 2007 15:45:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christian Leber <christian@leber.de>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [BUG] acpi double resume and fail
+Message-Id: <20070518154507.30ebfdcb.akpm@linux-foundation.org>
+In-Reply-To: <20070518213701.GA810@core>
+References: <20070518213701.GA810@core>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philipp Kohlbecher wrote:
->>
->> In other words, your patch doesn't actually fix anything, it *masks*
->> potential bugs which would also be triggered by interrupts in kernel
->> mode.  This is bad.
+On Fri, 18 May 2007 23:37:01 +0200
+Christian Leber <christian@leber.de> wrote:
+
+> Hello,
 > 
-> I am not sure these potential bugs would also be triggered by interrupts
-> in kernel mode. After all, kernel_execve is a special case: It is the
-> only case (AFAIK) where a software interrupt is generated while in
-> kernel mode (intra-privilege interrupt), but (if all goes right) the
-> iret "returns" to user mode (inter-privilege return).
+> i hit a problem with suspend to ram and especially resume.
+> Hardware: Dell Latitude D810 (some Intel 915 with Intel Pentium M)
 > 
-> This iret will pop the ss and esp registers off the stack, so
-> start_thread (include/asm-i386/processor.h:444) needs to put the correct
-> values in these stack positions, which it does.
+> With 2.6.19.7 suspend to ram works reliable, but with 2.6.20-rc4
+> it stopped working reliable.
 
-Yes, and it *BETTER*, because those are user-mode values which refer to
-the newly created task.
+argh, that sounds like an ACPI regression.
 
-Sticking kernel mode values in those fields would add no value, except
-as a poison (since %ss == KERNEL_DS and would cause a #GP(0) if it ever
-reached IRET.)  If anything, those fields should be pushed as zero or
-some other poison bits.  That would be slightly better than what's there
-now, which is whatever garbage happens to be on the stack.  Pushing the
-kernel SS:ESP is just plain wrong (not to mention that the way you do it
-doesn't even produce the right value for ESP -- you'd have to save away
-ESP before you push SS.)
+> I still can suspend, but after the first resume it goes back to sleep
+> directly again, when resuming again it works.
+> After the second suspend it won't resume at all.
+> 
+> The problem is that i can't try out the kernel versions <rc4, because
+> rc1, rc2 and rc3 doesn't boot at all, so git-bisect also won't help.
+> 
+> Has somebody an idea what i could try out?
+> 
+> (the distribution is in this case ubuntu feisty)
+> 
 
-	-hpa
+The fact that bisection broke really does make it hard.  What you would
+need to do is to find the patch which fixed that doesn't-boot problem, then
+reapply it each time you perform an iteration.  That's all doable, if you
+have the time.  Use git-bisect for it.
+
+Have you tested 2.6.21 and/or 2.6.22-rc1?
+
+We had one other report earlier today that 2.6.22-rc1 does an immediate
+resume after suspend-to-RAM - perhaps that is related.
+
+
+Of course the alternative way of debugging this is just to debug it, rather
+than the difficult bisecting.  Perhaps an ACPI developer can help with
+that.
 
