@@ -1,94 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbXERQFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761987AbXERQGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760383AbXERQFZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 12:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbXERQFR
+	id S1761987AbXERQGQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 12:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbXERQGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 12:05:17 -0400
-Received: from as4.cineca.com ([130.186.84.213]:56290 "EHLO as4.cineca.com"
+	Fri, 18 May 2007 12:06:01 -0400
+Received: from zakalwe.fi ([80.83.5.154]:34524 "EHLO zakalwe.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755435AbXERQFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 12:05:15 -0400
-Message-ID: <464DCEAB.3090905@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070326 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+	id S1754887AbXERQGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 12:06:00 -0400
+Date: Fri, 18 May 2007 19:05:07 +0300
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Richard Purdie <richard@openedhand.com>
+Cc: akpm <akpm@linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nitin Gupta <nitingupta910@gmail.com>
+Subject: Re: [PATCH -mm] LZO: Further cleanup of the kernel LZO library headers
+Message-ID: <20070518160507.GI10873@zakalwe.fi>
+References: <1179499886.5876.30.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-Cc: Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] log out-of-virtual-memory events
-References: <464C81B5.8070101@users.sourceforge.net> <464C9D82.60105@redhat.com> <464D5AA4.8080900@users.sourceforge.net> <20070518091606.GA1010@lnx-holt.americas.sgi.com> <464DCC52.7090403@users.sourceforge.net>
-In-Reply-To: <464DCC52.7090403@users.sourceforge.net>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Date: Fri, 18 May 2007 18:05:11 +0200 (MEST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1179499886.5876.30.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> Robin Holt wrote:
->> On Fri, May 18, 2007 at 09:50:03AM +0200, Andrea Righi wrote:
->>> Rik van Riel wrote:
->>>> Andrea Righi wrote:
->>>>> I'm looking for a way to keep track of the processes that fail to
->>>>> allocate new
->>>>> virtual memory. What do you think about the following approach
->>>>> (untested)?
->>>> Looks like an easy way for users to spam syslogd over and
->>>> over and over again.
->>>>
->>>> At the very least, shouldn't this be dependant on print_fatal_signals?
->>>>
->>> Anyway, with print-fatal-signals enabled a user could spam syslogd too, simply
->>> with a (char *)0 = 0 program, but we could always identify the spam attempts
->>> logging the process uid...
->>>
->>> In any case, I agree, it should depend on that patch...
->>>
->>> What about adding a simple msleep_interruptible(SOME_MSECS) at the end of
->>> log_vm_enomem() or, at least, a might_sleep() to limit the potential spam/second
->>> rate?
->> An msleep will slow down this process, but do nothing about slowing
->> down the amount of logging.  Simply fork a few more processes and all
->> you are doing with msleep is polluting the pid space.
->>
-> 
-> Very true.
-> 
->> What about a throttling similar to what ia64 does for floating point
->> assist faults (handle_fpu_swa()).  There is a thread flag to not log
->> the events at all.  It is rate throttled globally, but uses per cpu
->> variables for early exits.  This algorithm scaled well to a thousand
->> cpus.
-> 
-> Actually using printk_ratelimit() should be enough... BTW print_fatal_signals()
-> should use it too.
-> 
+On Fri, May 18, 2007 at 03:51:26PM +0100, Richard Purdie wrote:
+> A further cleanup of the kernel LZO library headers which untangles and
+> removes ~400 lines of defines. This doesn't change the core minilzo code
+> so diffability is maintained.
 
-I mean, something like this...
+You should just throw away that. Guptas implementation is much cleaner, 
+work with that. Putting a few bound checks into Guptas version will 
+solve crashes and overruns by returning an error.
 
----
-
-Limit the rate of the printk()s in print_fatal_signal() to avoid potential DoS
-problems.
-
-Signed-off-by: Andrea Righi <a.righi@cineca.it>
-
-diff -urpN linux-2.6.22-rc1-mm1/kernel/signal.c linux-2.6.22-rc1-mm1-limit-print_fatal_signals-rate/kernel/signal.c
---- linux-2.6.22-rc1-mm1/kernel/signal.c	2007-05-18 17:48:55.000000000 +0200
-+++ linux-2.6.22-rc1-mm1-limit-print_fatal_signals-rate/kernel/signal.c	2007-05-18 17:58:13.000000000 +0200
-@@ -790,6 +790,9 @@ static void print_vmas(void)
- 
- static void print_fatal_signal(struct pt_regs *regs, int signr)
- {
-+	if (unlikely(!printk_ratelimit()))
-+		return;
-+
- 	printk("%s/%d: potentially unexpected fatal signal %d.\n",
- 		current->comm, current->pid, signr);
- 
+-- 
+Heikki Orsila			Barbie's law:
+heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
+http://www.iki.fi/shd
