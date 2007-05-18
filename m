@@ -1,58 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759812AbXERDYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761671AbXERDYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759812AbXERDYY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 23:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbXERDYR
+	id S1761671AbXERDYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 23:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbXERDYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 23:24:17 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:54289 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753049AbXERDYQ (ORCPT
+	Thu, 17 May 2007 23:24:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57838 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757535AbXERDYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 23:24:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=qZNRnFc5b7de3h85uC1Kf1LyajV9lupYXDFTsCbQRQ0hYq9U0gpVAyE8om5wFKSIIvXSTg5hcUcNSejKuuVqgn/u1Po9YuBA5B+Vcr2oX9WxgIhLsLDnlZQpeii1mcYVJKPi5xQQK2cMrV+w7Oy71iBMrWsAZZT9LV6T4O02pQc=
-Message-ID: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
-Date: Thu, 17 May 2007 23:24:15 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: galak@kernel.crashing.org, tglx@linutronix.de, mingo@elte.hu,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       sshtylyov@ru.mvista.com
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 17 May 2007 23:24:40 -0400
+Date: Thu, 17 May 2007 20:22:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zou Nan hai <nanhai.zou@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ak@suse.de, suresh.b.siddha@intel.com
+Subject: Re: [Patch] Allocate sparsemem memmap above 4G on X86_64
+Message-Id: <20070517202211.4471b97b.akpm@linux-foundation.org>
+In-Reply-To: <1179456777.2633.8.camel@linux-znh>
+References: <1179369607.4103.158.camel@linux-znh>
+	<20070517123216.184104a8.akpm@linux-foundation.org>
+	<1179456777.2633.8.camel@linux-znh>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov writes:
-> Kumar Gala wrote:
->> [Sergei Shtylyov]
->>> Kumar Gala wrote:
+On 18 May 2007 10:52:57 +0800 Zou Nan hai <nanhai.zou@intel.com> wrote:
 
->>>> I haven't looked at all the new clock/timer code, is there any
->>>> utility in having support for more than one clock source?
->>>
->>> Of course, you may register as many as you like.
->>
->> Sure, but is there any utility in registering more than the
->> decrementer on PPC?
->
-> Not yet. I'm not sure I know any other PPC CPU facility fitting
-> for clockevents. In theory, FIT could be used -- but its period
-> is measured in powers of 2, IIRC.
+> On Fri, 2007-05-18 at 03:32, Andrew Morton wrote:
+> > On 17 May 2007 10:40:07 +0800
+> > Zou Nan hai <nanhai.zou@intel.com> wrote:
+> > 
+> > > 
+> > Please always prefer to use static inline functions rather than macros. 
+> > They are more readable, they are more likely to have comments attached to
+> > them and they provide typechecking.
+> > 
+> > Please prefer to uninline functions by default.  One reason for this is
+> > that adding inlines to headers increases include complexity.  This code is
+> > all __init anyway, so the possible few bytes of text will get removed.
+> > 
+> > 
+> > Try to avoid using the ARCH_HAS_FOO thing.  We have two alternatives:
+> > 
+> > a) use __attribute__((weak))
+> > 
+> > b) do:
+> > 
+> > 	extern void foo(void);
+> > 	#define foo foo
+> > 
+> >    then, elsewhere,
+> > 
+> > 	#ifndef foo
+> > 	#define foo() bar()
+> > 	#endif
+> > 
+> > Both tricks avoid the introduction of two new symbols into the global
+> > namespace to solve a single problem.
+>   On systems with huge amount of physical memory, VFS cache and memory
+> memmap may eat all available system memory under 4G, then the system may
+> fail to allocate swiotlb bounce buffer.
+>   There was a fix for this issue in arch/x86_64/mm/numa.c, but that fix
+> dose not cover sparsemem model.
+>   This patch add fix to sparsemem model by first try to allocate memmap
+> above 4G.
+> 
+> Signed-off-by:	Zou Nan hai <nanhai.zou@intel.com>
+> Acked-by:	Suresh Siddha <suresh.b.siddha@intel.com>
+> ---
+>  arch/x86_64/mm/init.c |    6 ++++++
+>  mm/sparse.c           |   11 +++++++++++
+>  2 files changed, 17 insertions(+)
+> 
+> diff -Nraup a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
+> --- a/arch/x86_64/mm/init.c	2007-05-19 16:54:46.000000000 +0800
+> +++ b/arch/x86_64/mm/init.c	2007-05-19 17:43:47.000000000 +0800
+> @@ -761,3 +761,9 @@ int in_gate_area_no_task(unsigned long a
+>  {
+>  	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
+>  }
+> +
+> +void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+> +{
+> +	return __alloc_bootmem_core(pgdat->bdata, size,
+> +			SMP_CACHE_BYTES, (4UL*1024*1024*1024), 0);
+> +}
+> diff -Nraup a/mm/sparse.c b/mm/sparse.c
+> --- a/mm/sparse.c	2007-05-19 16:54:48.000000000 +0800
+> +++ b/mm/sparse.c	2007-05-19 17:44:01.000000000 +0800
+> @@ -209,6 +209,12 @@ static int __meminit sparse_init_one_sec
+>  	return 1;
+>  }
+>  
+> +__attribute__((weak))
+> +void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size)
+> +{
+> +	return NULL;
+> +}
+> +
+>  static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+>  {
+>  	struct page *map;
+> @@ -219,6 +225,11 @@ static struct page __init *sparse_early_
+>  	if (map)
+>  		return map;
+>  
+> +  	map = alloc_bootmem_high_node(NODE_DATA(nid),
+> +                       sizeof(struct page) * PAGES_PER_SECTION);
+> +	if (map)
+> +		return map;
+> +
+>  	map = alloc_bootmem_node(NODE_DATA(nid),
+>  			sizeof(struct page) * PAGES_PER_SECTION);
+>  	if (map)
 
-I'd really like to have that as an option. It would allow oprofile
-to safely use hardware events on the MPC74xx "G4" processors.
-Alternately it would allow thermal events. It is safe to use at
-most one of the three (decrementer,profiling,thermal) interrupts.
-If two were to hit at the same time, badness happens.
+Fair enough.  But we should ensure that there's a prototype in a header
+file which is included by both definition sites and by all callers.  So the
+compiler checks that everything is consistent:
 
-It's possible to wrapper the interrupt in something that divides
-down, calling the normal code only some of the time. I think one
-of the FIT choices is about 4 kHz on my system, which would be OK.
+--- a/include/linux/bootmem.h~x86_64-allocate-sparsemem-memmap-above-4g-fix
++++ a/include/linux/bootmem.h
+@@ -59,6 +59,7 @@ extern void *__alloc_bootmem_core(struct
+ 				  unsigned long align,
+ 				  unsigned long goal,
+ 				  unsigned long limit);
++extern void *alloc_bootmem_high_node(pg_data_t *pgdat, unsigned long size);
+ 
+ #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+ extern void reserve_bootmem(unsigned long addr, unsigned long size);
+_
 
-Full oprofile functionality would be wonderful.
+
+Andi, does this all look OK for 2.6.22 and for 2.6.21?
