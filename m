@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbXERGAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbXERGGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759143AbXERGAZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 02:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbXERGAP
+	id S1760946AbXERGGT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 02:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbXERGGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 02:00:15 -0400
-Received: from ik-out-1112.google.com ([66.249.90.179]:6405 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200AbXERGAN (ORCPT
+	Fri, 18 May 2007 02:06:12 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50399 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752389AbXERGGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 02:00:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fVA1Djqc4K6V+oiXi0H36b2XXhv+Dbs//u4Wu04b2AefFhvp4nQDWS3KVcp92kSh0T0SUYOcldjWepgLOj65kAk6uqcK+J4xUwFcL+46GO+n1XAwAEIcBFioIIWMJU8PRyE1F1TWZPOhAhMkAzYsGqehNFOkcAwdsgCxpwMzMLY=
-Message-ID: <a781481a0705172300l5be15a13hb6d64a5b708d5471@mail.gmail.com>
-Date: Fri, 18 May 2007 11:30:10 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
+	Fri, 18 May 2007 02:06:11 -0400
+Date: Thu, 17 May 2007 23:04:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: BUG in mm/slab.c
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
+Message-Id: <20070517230455.ffed5138.akpm@linux-foundation.org>
 In-Reply-To: <464D3F50.3080505@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 References: <464D3F50.3080505@garzik.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+On Fri, 18 May 2007 01:53:20 -0400 Jeff Garzik <jeff@garzik.org> wrote:
 
-On 5/18/07, Jeff Garzik <jeff@garzik.org> wrote:
->
 > Platform:  Fedora Core 6/x86-64 (lspci, kconfig, dmesg attached)
->
+> 
 > dmesg shows:
 > > PCI: Using ACPI for IRQ routing
 > > PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
 > > BUG: at mm/slab.c:777 __find_general_cachep()
-> >
+> > 
 > > Call Trace:
 > >  [<ffffffff802819b7>] __kmalloc+0xa7/0xe0
 > >  [<ffffffff8021b7bd>] cache_k8_northbridges+0x9d/0x120
@@ -55,14 +48,62 @@ On 5/18/07, Jeff Garzik <jeff@garzik.org> wrote:
 > >  [<ffffffff803212ac>] acpi_ds_init_one_object+0x0/0x7c
 > >  [<ffffffff8052c580>] kernel_init+0x0/0x330
 > >  [<ffffffff8020a94e>] child_rip+0x0/0x12
-> >
+> > 
 > > PCI-GART: No AMD northbridge found.
 > > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
 > > hpet0: 3 64-bit timers, 14318180 Hz
->
-> but the machine continues to work (I'm typing on it right now).  In
+> 
+> but the machine continues to work (I'm typing on it right now).  In 
 > fact, I only noticed while checking on some SATA stuff :)
 
-Does http://lkml.org/lkml/2007/5/16/350 fix this?
+Yep, it's just a WARN_ON, no other effect.
 
-Satyam
+I have a cure queued up:
+
+
+From: Ben Collins <ben.collins@ubuntu.com>
+
+kmalloc for flush_words resulted in zero size allocation when no
+k8_northbridges existed.  Short circuit the code path for this case.
+
+Also remove uneeded zeroing of num_k8_northbridges just after checking if
+it is zero.
+
+Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Dave Jones <davej@codemonkey.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86_64/kernel/k8.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletion(-)
+
+diff -puN arch/x86_64/kernel/k8.c~avoid-zero-size-allocation-in-cache_k8_northbridges arch/x86_64/kernel/k8.c
+--- a/arch/x86_64/kernel/k8.c~avoid-zero-size-allocation-in-cache_k8_northbridges
++++ a/arch/x86_64/kernel/k8.c
+@@ -39,10 +39,10 @@ int cache_k8_northbridges(void)
+ {
+ 	int i;
+ 	struct pci_dev *dev;
++
+ 	if (num_k8_northbridges)
+ 		return 0;
+ 
+-	num_k8_northbridges = 0;
+ 	dev = NULL;
+ 	while ((dev = next_k8_northbridge(dev)) != NULL)
+ 		num_k8_northbridges++;
+@@ -52,6 +52,11 @@ int cache_k8_northbridges(void)
+ 	if (!k8_northbridges)
+ 		return -ENOMEM;
+ 
++	if (!num_k8_northbridges) {
++		k8_northbridges[0] = NULL;
++		return 0;
++	}
++
+ 	flush_words = kmalloc(num_k8_northbridges * sizeof(u32), GFP_KERNEL);
+ 	if (!flush_words) {
+ 		kfree(k8_northbridges);
+_
+
