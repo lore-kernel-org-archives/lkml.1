@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbXERENA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbXERE2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761011AbXERENA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 00:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXEREMy
+	id S1759569AbXERE2E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 00:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbXERE1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 00:12:54 -0400
-Received: from holomorphy.com ([66.93.40.71]:38301 "EHLO holomorphy.com"
+	Fri, 18 May 2007 00:27:55 -0400
+Received: from mx1.suse.de ([195.135.220.2]:54746 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755726AbXEREMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 00:12:53 -0400
-Date: Thu, 17 May 2007 21:13:09 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Bill Huey <billh@gnuppy.monkey.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>
-Subject: Re: [patch] CFS scheduler, -v12
-Message-ID: <20070518041309.GA19966@holomorphy.com>
-References: <20070513153853.GA19846@elte.hu> <20070518001841.GA21140@gnuppy.monkey.org>
+	id S1756106AbXERE1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 00:27:54 -0400
+From: Andi Kleen <ak@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] INPUT: Sanitize PIT locking in pcspkr
+Date: Fri, 18 May 2007 06:27:00 +0200
+User-Agent: KMail/1.9.1
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Ralf Baechle <ralf@linux-mips.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Richard Henderson <rth@twiddle.net>
+References: <1179408962.3764.72.camel@chaos> <d120d5000705170736q4e9eb5d4jab82732e01e377c@mail.gmail.com> <1179413375.3764.86.camel@chaos>
+In-Reply-To: <1179413375.3764.86.camel@chaos>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070518001841.GA21140@gnuppy.monkey.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200705180627.01224.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 13, 2007 at 05:38:53PM +0200, Ingo Molnar wrote:
->> So i've added a yield workaround to -v12, which makes it work similar to 
->> how the vanilla scheduler and SD does it. (Xorg has been notified and 
->> this bug should be fixed there too. This took some time to debug because 
->> the 3D driver i'm using for testing does not use sys_sched_yield().) The 
->> workaround is activated by default so -v12 should work 'out of the box'.
+On Thursday 17 May 2007 16:49, Thomas Gleixner wrote:
 
-On Thu, May 17, 2007 at 05:18:41PM -0700, Bill Huey wrote:
-> This is an incorrect analysis. OpenGL has the ability to "yield" after
-> every frame specifically for SGI IRIX (React/Pro) frame scheduler (driven
-> by the system vertical retrace interrupt) so that it can free up CPU
-> resources for other tasks to run. The problem here is that the yield
-> behavior is treated generally instead of specifically to a particular
-> proportion scheduler policy.
-> The correct solution is for the app to use a directed yield and a policy
-> that can directly support it so that OpenGL can guaratee a frame rate
-> governed by CPU bandwidth allocated by the scheduler.
-> Will is working on such a mechanism now.
+> Both read the PIT directly, which will lead to interesting results. The
+> PIT is either stopped or it can be used in one shot mode with per event
+> changing intervals due to the changes introduced by the clock events
+> layer.
+>
+> This code should use ktime_get() and not fiddle in the hardware itself.
 
-What? AFAIK the CFS patches already implement directed yields.
+The gameport code also does TSC accesses directly which is similarly
+broken. I remember complaining about that some time ago, but it never
+got fixed in the end.
 
-
--- wli
+-Andi
