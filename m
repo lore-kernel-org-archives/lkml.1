@@ -1,101 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762851AbXERXbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763554AbXERXcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762851AbXERXbb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 19:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXERXbZ
+	id S1763554AbXERXcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 19:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXERXcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 19:31:25 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:38644 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754767AbXERXbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 19:31:24 -0400
-Date: Sat, 19 May 2007 01:31:21 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Tomas Carnecky <tom@dbservice.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: SideWinder GameVoice driver
-In-Reply-To: <464E23CA.8040400@dbservice.com>
-Message-ID: <Pine.LNX.4.64.0705190111310.27422@twin.jikos.cz>
-References: <464C5FAC.8060609@dbservice.com> <Pine.LNX.4.64.0705171623280.27422@twin.jikos.cz>
- <464C708C.6090808@dbservice.com> <464CA34F.8090509@dbservice.com>
- <Pine.LNX.4.64.0705172309240.27422@twin.jikos.cz> <464D4F31.6000100@dbservice.com>
- <Pine.LNX.4.64.0705182304400.27422@twin.jikos.cz> <464E23CA.8040400@dbservice.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 May 2007 19:32:06 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:48133 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754767AbXERXcE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 19:32:04 -0400
+Date: Fri, 18 May 2007 17:31:48 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] drivers/ata: Add the SW NCQ support to sata_nv for
+ MCP51/MCP55/MCP61
+In-reply-to: <fa.NGBsZzMiMJ9x7V/pv+sqAv36hwA@ifi.uio.no>
+To: Kuan Luo <kluo@nvidia.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Peer Chen <pchen@nvidia.com>,
+       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Message-id: <464E3764.90900@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.NGBsZzMiMJ9x7V/pv+sqAv36hwA@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 May 2007, Tomas Carnecky wrote:
+Kuan Luo wrote:
+> Thanks for your comment, see the explaination inline.
+> We'll apply your advice in later patch.
 
-> There's no further processing needed in the kernel. The userspace 
-> application would receive these input events and act accordingly, like: 
-> read data from the soundcard and send it to the VoIP server, or only 
-> certain channels based on which buttons are currently pressed etc.
+...
 
-Thanks. Now it's clear that the HID report descriptor of the device is 
-just bogus, it simply makes no sense to claim this kind of device to be 
-'Telephony/Headset'.
+> Please don't duplicate this code in the driver, this is part of libata 
+> core in libata-scsi.c. Add an export for these functions if you need to 
+> use them in the driver.
+> [kuan]: These calls are declared in static type . I can't export them
+> and don't want to
+> modify libata code.
 
-> I already thought about this option (to whitelist this particular
-> vendor/device ID as an hid-input device), but I first wanted some
-> feedback on the whole situation. As for the patch, I have zero knowledge
-> of the hid subsystem.. but if you give me a go on this, I'll try to dig
-> into the code and make a patch :)
+If you really need these functions then they should be made non-static 
+and exported. Duplicating the code is not a solution.
 
-Adding a HID_QUIRK_HIDINPUT quirk makes maybe a more sense than fixing 
-this particular report descriptor to stop pretending that the device is 
-Telephony/Headset - we might in future discover that there are more 
-devices that have broken report descriptors and that we want to be forced 
-to be handled by hid-input subsystem.
+I'm not so sure you actually need all that, though. I suspect you can 
+likely handle the deferring of commands if you detect an FPDMA data 
+phase inside the qc_issue function only (like you already do in some 
+cases) instead of having to mess with deferring them at the SCSI layer.
 
-So, could you please test whether the quick and untested patch below 
-(against 2.6.22-rc1) works as expected with the device?
+> I'm still puzzling out how this stuff all works, but it looks like this 
+> code makes you stop sending new commands if:
+> 
+> -the port is in the FPDMA Data Phase (DMA Setup FIS received but the 
+> transfer is not complete yet) - I assume the hardware doesn't handle 
+> this itself, which seems rather unique
+> -we previously deferred a command inside of qc_issue because we were in 
+> the FPDMA data phase
+> -we previously saw dhfis_flags not equal to qc_active, or we got a 
+> BACKOUT interrupt (whatever exactly that means), both of which set some 
+> value in the back_byte
+> [kuan]: 
+> -If we got BACKOUT interrupt, it means that a command just sent by
+> driver
+> backed out.The driver should resend the command.So new commands should
+> be defered.
+> -If dhfis_flags != qc_active, it indicates that the last command doesn't
+> generate a device to host register FIS .
+> After sending some commands, I found that the last command sometimes has
+> this problem 
+> but previous commands are normal.In this case, we need resend the last
+> command.
+> Both cases set back_byte. 
 
-diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index 7f81789..8696dbe 100644
---- a/drivers/hid/hid-input.c
-+++ b/drivers/hid/hid-input.c
-@@ -976,7 +976,7 @@ int hidinput_connect(struct hid_device *
- 			if (IS_INPUT_APPLICATION(hid->collection[i].usage))
- 				break;
- 
--	if (i == hid->maxcollection)
-+	if (i == hid->maxcollection && (hid->quirks & HID_QUIRK_HIDINPUT) == 0)
- 		return -1;
- 
- 	if (hid->quirks & HID_QUIRK_SKIP_OUTPUT_REPORTS)
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index f6c4145..62a7f1e 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -209,6 +209,9 @@
- #define USB_DEVICE_ID_MGE_UPS		0xffff
- #define USB_DEVICE_ID_MGE_UPS1		0x0001
- 
-+#define USB_VENDOR_ID_MICROSOFT		0x045e
-+#define USB_DEVICE_ID_SIDEWINDER_GV	0x003b
-+
- #define USB_VENDOR_ID_NEC		0x073e
- #define USB_DEVICE_ID_NEC_USB_GAME_PAD	0x0301
- 
-@@ -290,6 +293,7 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_DINOVO_EDGE, HID_QUIRK_DUPLICATE_USAGES },
- 
- 	{ USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM, HID_QUIRK_HIDDEV },
-+	{ USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_SIDEWINDER_GV, HID_QUIRK_HIDINPUT },
- 
- 	{ USB_VENDOR_ID_AIPTEK, USB_DEVICE_ID_AIPTEK_01, HID_QUIRK_IGNORE },
- 	{ USB_VENDOR_ID_AIPTEK, USB_DEVICE_ID_AIPTEK_10, HID_QUIRK_IGNORE },
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index 827ee74..6e45d10 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -276,6 +276,7 @@ struct hid_item {
- #define HID_QUIRK_DUPLICATE_USAGES		0x00200000
- #define HID_QUIRK_RESET_LEDS			0x00400000
- #define HID_QUIRK_SWAPPED_MIN_MAX		0x00800000
-+#define HID_QUIRK_HIDINPUT			0x01000000
- 
- /*
-  * This is the global environment of the parser. This information is
+The case where the command didn't generate a D2H FIS should likely be 
+investigated further, otherwise we don't necessarily know that this 
+workaround will work in all cases?
+
+> This code seems a bit odd. Isn't this tossing out a bunch of potential 
+> error status, etc?
+> [kuan]:
+> If there are commands in queue, the driver can  send  a new command 
+> only after receiving dhfis intr of previous command and before receiving
+> any dmasetup fis intr.
+> In this place,  i do the last check before sending the command.
+
+But the D2H FIS can contain an error indication, correct? If that 
+happens here it won't detect this. In this situation error handling 
+should be triggered.
+
+> 	+	done_mask = pp->qc_active ^ sactive;
+> 	+	if (unlikely(done_mask & sactive)) {
+> 	+		ata_port_printk(ap, KERN_ERR, "illegal qc_active
+> transition "
+> 	+				"(%08x->%08x)\n", ap->qc_active,
+> sactive);
+> 	+		return -EINVAL;
+> 	+	}	
+> 
+> Shouldn't this trigger error handling if it happens instead of just 
+> printing an error?
+> [kuan]:
+> I think the error handling can be triggered by timeout. In fact, 
+> this case should seldom happen.
+
+There have been reports of some drives with bad NCQ implementations that 
+return completion status for commands that were not issued. If we detect 
+this case we should raise an HSM violation which will disable NCQ on 
+this drive if it happens repeatedly. See the code in ahci.c in 
+ahci_host_intr.
+
+This comment still applies:
+
+> Additional/general comments:
+> 
+> Think you need some code to handle suspend and resume (re-enable SATA 
+> MMIO space, etc.)
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
