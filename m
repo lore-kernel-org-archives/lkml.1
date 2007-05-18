@@ -1,39 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760215AbXERVEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762692AbXERVEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760215AbXERVEe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 17:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXERVE2
+	id S1762692AbXERVEr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 17:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756028AbXERVEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 17:04:28 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40175 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753152AbXERVE1 (ORCPT
+	Fri, 18 May 2007 17:04:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36419 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755174AbXERVEb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 17:04:27 -0400
-Date: Fri, 18 May 2007 14:04:27 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, dgc@sgi.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 08/10] shmem: inode defragmentation support
-In-Reply-To: <Pine.LNX.4.61.0705182233120.9015@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.64.0705181403370.13256@schroedinger.engr.sgi.com>
-References: <20070518181040.465335396@sgi.com> <20070518181120.477184338@sgi.com>
- <Pine.LNX.4.61.0705182233120.9015@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 May 2007 17:04:31 -0400
+Date: Fri, 18 May 2007 14:03:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] Misc: phantom, move to unlocked_ioctl
+Message-Id: <20070518140314.4cabb926.akpm@linux-foundation.org>
+In-Reply-To: <20644182862815412171@wsc.cz>
+References: <20644182862815412171@wsc.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007, Jan Engelhardt wrote:
+On Fri, 18 May 2007 22:34:53 +0200 (CEST)
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-> Do we need *this*? (compare procfs)
-> 
-> I believe that shmfs's inodes remain "more" in memory than those of
-> procfs. That is, procfs ones can find their way out (we can regenerate
-> it), while shmfs/tmpfs/ramfs/etc. should not do that (we'd lose the
-> file).
+> @@ -118,7 +125,9 @@ static int phantom_ioctl(struct inode *inode, struct file *file, u_int cmd,
+>  		if (r.reg > 7)
+>  			return -EINVAL;
+>  
+> +		spin_lock(&dev->ioctl_lock);
+>  		r.value = ioread32(dev->iaddr + r.reg);
+> +		spin_unlock(&dev->ioctl_lock);
 
-Ahh... Okay so shmem inodes are not defraggable.
-
+What is that locking protecting in here?
