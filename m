@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbXERIe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757634AbXERIj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757922AbXERIe6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 04:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXERIeu
+	id S1757634AbXERIj0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 04:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbXERIjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 04:34:50 -0400
-Received: from web86902.mail.ukl.yahoo.com ([217.12.13.54]:44021 "HELO
-	web86902.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755142AbXERIet (ORCPT
+	Fri, 18 May 2007 04:39:19 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45864 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753957AbXERIjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 04:34:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=J9EmcgANZ1+o2ZHIrH/t3ethokNiBuj1exGosoMkxDxvJ/B106jP6XqcbkY0moJI219lYrmIL7SfBA12LQN5xkqB8teWB1s6zBZKmdiRfPFJTHNyzIQAd89UJPhJPXzbxdvSMsYp1MdvQgmsGafoI54QBKYXaAMVrD6vSYJ+e9g=;
-X-YMail-OSG: czXk8MEVM1nbbBarUfDnE8kRBjyOPZoInNqvTPsF8ixgWO5AxYmFLHZ6TnVG4wvo64m7qIRY4LKwdS.zxDx23AYkH8fpNdwP4WXLWp5zOpre.NYSSEfTbU7XRUewHfrZC7bZbaZRk5aICg--
-Date: Fri, 18 May 2007 10:28:06 +0200 (CEST)
-From: Borislav Petkov <bbpetkov@yahoo.de>
-Subject: Re: [PATCH] ide.c: microscopic size and readability optimization
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070517130643.39fbfe29@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <50515.61115.qm@web86902.mail.ukl.yahoo.com>
+	Fri, 18 May 2007 04:39:19 -0400
+Date: Fri, 18 May 2007 09:38:35 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Artem Bityutskiy <dedekind@yandex.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, dedekind@infradead.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+Message-ID: <20070518083835.GX4095@ftp.linux.org.uk>
+References: <20070517143200.GA30850@lst.de> <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de> <1179414590.3642.69.camel@sauron> <20070517102931.6bbbad1a.akpm@linux-foundation.org> <20070517204234.GR4095@ftp.linux.org.uk> <20070517205339.GS4095@ftp.linux.org.uk> <464D4E91.1000000@yandex.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464D4E91.1000000@yandex.ru>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Alan Cox <alan@lxorguk.ukuu.org.uk> schrieb:
-
-> On Thu, 17 May 2007 13:25:54 +0200
-> Borislav Petkov <bbpetkov@yahoo.de> wrote:
+On Fri, May 18, 2007 at 09:58:25AM +0300, Artem Bityutskiy wrote:
+> Al Viro wrote:
+> >BTW, you can simply typedef __be16 ubi16_t; etc. and define conversion
+> >functions as cpu_to_ubi16(x) being (__force ubi16_t)cpu_to_be16(x), etc.
+> >
+> >sparse will do all checks just fine, you still have bitwise operations
+> >(might or might be not relevant in your case) and for gcc it simply
+> >becomes __be16, etc - i.e. an integer type.
 > 
-> > -----
-> > From: bbpetkov@yahoo.de
-> > 
-> > A very small size (object file 432 bytes smaller)
-> and readability optimization of ide.c
-> > 
-> > Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-> 
-> Bad idea. Now you won't know which of the conditions
-> caused the BUG() to
-> occur.
+> Err, what is the benefit of it? If we relied on sparce, why not would we be
+> just using __be16 directly?
 
-Ups, sorry, that I hadn't considered. Nevermind the
-noise.
-
-Boris. 
-
-
-
-		
-___________________________________________________________ 
-Telefonate ohne weitere Kosten vom PC zum PC: http://messenger.yahoo.de
+Because you might legitimately want your type to be *not* mixed with whatever
+other big-endian 16bit types you have out there?
