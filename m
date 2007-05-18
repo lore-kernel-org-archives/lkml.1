@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbXERU4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761222AbXERU5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbXERU4x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 16:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXERU4q
+	id S1761222AbXERU5P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 16:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbXERU46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 16:56:46 -0400
-Received: from cmsout02.mbox.net ([165.212.64.32]:61092 "EHLO
-	cmsout02.mbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbXERU4p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 16:56:45 -0400
-X-Greylist: delayed 566 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 May 2007 16:56:45 EDT
-X-USANET-Source: 165.212.11.138  IN   avcp-lkmail@usa.net cmsapps02.cms.usa.net
-X-USANET-MsgId: XID855LeRuvR8165X02
-X-USANET-Auth: 205.247.13.101  AUTH codepro@usa.net MUMBA
-From: "Alex Volkov" <avcp-lkmail@usa.net>
-To: "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Jeff Garzik'" <jeff@garzik.org>
-Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: RE: aio is unlikely
-Date: Fri, 18 May 2007 16:49:49 -0400
-Message-ID: <058f01c7998e$1406e370$650df7cd@MUMBA>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+	Fri, 18 May 2007 16:56:58 -0400
+Received: from mga01.intel.com ([192.55.52.88]:27934 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756833AbXERU4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 16:56:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,553,1170662400"; 
+   d="scan'208";a="247212469"
+Date: Fri, 18 May 2007 13:53:26 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: lenb@kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ACPI: bay: send envp with uevent
+Message-Id: <20070518135326.52aa7e91.kristen.c.accardi@intel.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <20070509151831.f5956b66.akpm@linux-foundation.org>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: AceSiCxQRdhLuphwRQKb3UJVSUO6yQHBHi1Q
-Z-USANET-MsgId: XID813LeRuvP0129X38
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Make the bay driver send env information on bay events.  
 
-Andrew Morton wrote:
->     aio is unlikely
->     Stick an unlikely() around is_aio(): I assert that most IO is
-synchronous.
->
-> -#define in_aio() !is_sync_wait(current->io_wait)
-> +#define in_aio() (unlikely(!is_sync_wait(current->io_wait)))
+Upon any bay event, we will send the string "BAY_EVENT=%d" along with the 
+KOBJ_CHANGE, and report the event number.  What the event number means will 
+be platform specific.  Event 3 is always an eject request, but an insert 
+may be either event 1, or it may be event 0.  Event 1 may also be a
+remove request.  It would be best if you check the number of your event 
+with udevmonitor before writing any udev scripts for inserting and 
+removing drive bays.
 
-> Jeff Garzik <jeff@garzik.org> wrote:
-> 
-> > > -#define in_aio() !is_sync_wait(current->io_wait)
-> > > +#define in_aio() (unlikely(!is_sync_wait(current->io_wait)))
-> > 
-> > Please revert.  Workload-dependent "likelihood" should not cause 
-> > programmers to add such markers.
-> a) disagree with the above
-> 
-> b) if in_aio() ever returns true we do
-> 
-> 	printk(KERN_ERR "%s(%s:%d) called in async context!\n",
-> 		__FUNCTION__, __FILE__, __LINE__);
-> 
->    so I sure hope it's unlikely for all workloads. 
+Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc:  Stephan Berberig <s.berberig@arcor.de>
 
-Shouldn't unlikely() go where in_aio() is actually used, if we printk(error)
-there?
-Isn't putting likely/unlikely into a boolean function-like macro itself
-asking for later trouble?
-
---Alex.
-
-
+Index: 2.6-git/drivers/acpi/bay.c
+===================================================================
+--- 2.6-git.orig/drivers/acpi/bay.c
++++ 2.6-git/drivers/acpi/bay.c
+@@ -328,18 +328,12 @@ static void bay_notify(acpi_handle handl
+ {
+ 	struct bay *bay_dev = (struct bay *)data;
+ 	struct device *dev = &bay_dev->pdev->dev;
++	char event_string[12];
++	char *envp[] = { event_string, NULL };
+ 
+ 	bay_dprintk(handle, "Bay event");
+-
+-	switch(event) {
+-	case ACPI_NOTIFY_BUS_CHECK:
+-	case ACPI_NOTIFY_DEVICE_CHECK:
+-	case ACPI_NOTIFY_EJECT_REQUEST:
+-		kobject_uevent(&dev->kobj, KOBJ_CHANGE);
+-		break;
+-	default:
+-		printk(KERN_ERR PREFIX "Bay: unknown event %d\n", event);
+-	}
++	sprintf(event_string, "BAY_EVENT=%d\n", event);
++	kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
+ }
+ 
+ static acpi_status
