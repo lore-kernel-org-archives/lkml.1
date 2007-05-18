@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762779AbXERQ6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbXERQ7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762779AbXERQ6j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 12:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbXERQ6b
+	id S1762189AbXERQ7z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 12:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbXERQ7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 12:58:31 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58561 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756287AbXERQ6a (ORCPT
+	Fri, 18 May 2007 12:59:50 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:54256 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754630AbXERQ7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 12:58:30 -0400
-Date: Fri, 18 May 2007 09:58:27 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Frank Sorenson <frank@tuxrocks.com>
-cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alistair John Strachan <s0348365@sms.ed.ac.uk>
-Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v5
-In-Reply-To: <464D23CC.1040906@tuxrocks.com>
-Message-ID: <Pine.LNX.4.64.0705180957350.9352@schroedinger.engr.sgi.com>
-References: <1178485128.31213.98.camel@localhost.localdomain>
- <1179309789.3764.20.camel@chaos> <464B5FF7.5070701@tuxrocks.com>
- <464BD945.2070007@tuxrocks.com> <464CA90B.20100@tuxrocks.com>
- <Pine.LNX.4.64.0705171219140.3043@schroedinger.engr.sgi.com>
- <464D23CC.1040906@tuxrocks.com>
+	Fri, 18 May 2007 12:59:49 -0400
+Date: Fri, 18 May 2007 17:59:48 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: young dave <hidave.darkstar@gmail.com>, Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>
+Subject: Re: 2.6.22-rc1-mm1
+In-Reply-To: <464DDA40.6010101@zytor.com>
+Message-ID: <Pine.LNX.4.64.0705181756010.1125@skynet.skynet.ie>
+References: <20070515201914.16944e04.akpm@linux-foundation.org> 
+ <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com> 
+ <a8e1da0705180154v37e8ec5fs2cc4de9417cd44d2@mail.gmail.com>
+ <a8e1da0705180307m60a91996r91c8bfcd1c863a94@mail.gmail.com> <464DDA40.6010101@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007, Frank Sorenson wrote:
+On Fri, 18 May 2007, H. Peter Anvin wrote:
 
-> >> I've tracked down this hang to a kzalloc in the hpet code that never
-> >> returns.  But only when using SLUB.  Using SLAB, the highres/dyntick
-> >> patch boots without problem.
-> >>
-> >> ...adding Christoph to the CC list...
-> > 
-> > Please boot with slub_debug.
-> 
-> No debugging output at all.  Still hangs with only:
-> 	Kernel alive
-> 	Kernel direct mapping tables up to 100000000 @ 8000-d000
+> young dave wrote:
+>> Hi,
+>>
+>> After installation the new mm1 kernel, My system can not boot, the rc1
+>> kernel works ok.
+>>
+>> The cursor just blinks after appearing "Bios data check successful"
+>> message.
+>>
+>> what do you think about this?
+>
+> "Bios data check successful" is not a message that comes from Linux, nor
+> from the boot loader.
+>
+> Since you have left absolutely zero details about your system or
+> anything else, there isn't much anyone can do about it.
+>
 
-Is there some way you can get a stack trace?
+It sounds vagely similar to the silent failure on elm3b132. I'm still 
+bisecting this on the side. It's taking an age because the target machine 
+is so slow and using a faster machine with a different compiler does not 
+reproduce the problem. I don't think it's git-newsetup that is the problem 
+though for what that's worth.
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
