@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbXERBCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbXERBDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760191AbXERBCd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 17 May 2007 21:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbXERBC0
+	id S1761272AbXERBDR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 17 May 2007 21:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbXERBDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 17 May 2007 21:02:26 -0400
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:55944
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755110AbXERBC0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 17 May 2007 21:02:26 -0400
-Date: Thu, 17 May 2007 18:01:11 -0700
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 17 May 2007 21:03:05 -0400
+Received: from smtpout.mac.com ([17.250.248.185]:49586 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755110AbXERBDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 17 May 2007 21:03:04 -0400
+In-Reply-To: <20070517174532.GA26827@2ka.mipt.ru>
+References: <20070515151919.GA32510@lazybastard.org> <20070515133759.9ee434a2.akpm@linux-foundation.org> <20070516000630.GD1220@lazybastard.org> <Pine.LNX.4.61.0705171920330.3231@yvahk01.tjqt.qr> <20070517174532.GA26827@2ka.mipt.ru>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D458F595-921F-4FC0-88FC-38EEF1DCC920@mac.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, William Lee Irwin III <wli@holomorphy.com>,
-       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: [patch] CFS scheduler, -v12
-Message-ID: <20070518010111.GE2017@gnuppy.monkey.org>
-References: <20070513153853.GA19846@elte.hu> <20070518001841.GA21140@gnuppy.monkey.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070518001841.GA21140@gnuppy.monkey.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+       linux-fsdevel@vger.kernel.org,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH] LogFS take three
+Date: Thu, 17 May 2007 21:00:44 -0400
+To: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 05:18:41PM -0700, Bill Huey wrote:
-> On Sun, May 13, 2007 at 05:38:53PM +0200, Ingo Molnar wrote:
-> > Even a simple 3D app like glxgears does a sys_sched_yield() for every 
-> > frame it generates (!) on certain 3D cards, which in essence punishes 
-> > any scheduler that implements sys_sched_yield() in a sane manner. This 
-> > interaction of CFS's yield implementation with this user-space bug could 
-> > be the main reason why some testers reported SD to be handling 3D games 
-> > better than CFS. (SD uses a yield implementation similar to the vanilla 
-> > scheduler.)
-> > 
-> > So i've added a yield workaround to -v12, which makes it work similar to 
-> > how the vanilla scheduler and SD does it. (Xorg has been notified and 
-> > this bug should be fixed there too. This took some time to debug because 
-> > the 3D driver i'm using for testing does not use sys_sched_yield().) The 
-> > workaround is activated by default so -v12 should work 'out of the box'.
-> 
-> This is an incorrect analysis. OpenGL has the ability to "yield" after
-> every frame specifically for SGI IRIX (React/Pro) frame scheduler (driven
-> by the system vertical retrace interrupt) so that it can free up CPU
-> resources for other tasks to run. The problem here is that the yield
-> behavior is treated generally instead of specifically to a particular
-> proportion scheduler policy.
-> 
-> The correct solution is for the app to use a directed yield and a policy
-> that can directly support it so that OpenGL can guaratee a frame rate
-> governed by CPU bandwidth allocated by the scheduler.
-> 
-> Will is working on such a mechanism now.
+On May 17, 2007, at 13:45:33, Evgeniy Polyakov wrote:
+> On Thu, May 17, 2007 at 07:26:07PM +0200, Jan Engelhardt  
+> (jengelh@linux01.gwdg.de) wrote:
+>>> My plan was to move this code to lib/ sooner or later.  If you  
+>>> consider it useful in its current state, I can do it immediatly.   
+>>> And if someone else merged a superior btree library I'd happily  
+>>> remove mine and use the new one instead.
+>>>
+>>> Opinions?
+>>
+>> Why would we need another btree, when there is lib/rbtree.c?  Or  
+>> does yours do something fundamentally different?
+>
+> It is not red-black tree, it is b+ tree.
 
-Follow up:
+It might be better to use the prefix "bptree" to help prevent  
+confusion.  A quick google search on "bp-tree" reveals only the perl B 
++-tree module "Tree::BPTree", a U-Maryland Java CS project on B+- 
+trees, and a news article about a "BP tree-top protest".
 
-http://techpubs.sgi.com/library/tpl/cgi-bin/getdoc.cgi/0650/bks/SGI_Developer/books/REACT_PG/sgi_html/ch04.html
-
-bill
+Cheers,
+Kyle Moffett
 
