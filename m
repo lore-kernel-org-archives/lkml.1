@@ -1,64 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760069AbXERGsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbXERGsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760069AbXERGsD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 02:48:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbXERGry
+	id S1762071AbXERGsc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 02:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759165AbXERGsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 02:47:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58941 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754977AbXERGrx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 02:47:53 -0400
-Subject: Re: [PATCH] LogFS take three
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Dongjun Shin <djshin90@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-In-Reply-To: <Pine.LNX.4.61.0705180816430.3231@yvahk01.tjqt.qr>
-References: <20070515151919.GA32510@lazybastard.org>
-	 <20070515133759.9ee434a2.akpm@linux-foundation.org>
-	 <1179317240.2859.222.camel@shinybook.infradead.org>
-	 <20070516083408.dcd9dd78.akpm@linux-foundation.org>
-	 <1179330596.2859.248.camel@shinybook.infradead.org>
-	 <20070516164158.GB8113@lazybastard.org>
-	 <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com>
-	 <1179383117.2859.416.camel@shinybook.infradead.org>
-	 <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
-	 <20070517201847.GA5032@ucw.cz>
-	 <7fe698080705171701w533767fdo6642bb772ed64273@mail.gmail.com>
-	 <Pine.LNX.4.61.0705180816430.3231@yvahk01.tjqt.qr>
-Content-Type: text/plain
-Date: Fri, 18 May 2007 14:47:21 +0800
-Message-Id: <1179470841.2859.550.camel@shinybook.infradead.org>
+	Fri, 18 May 2007 02:48:22 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52440 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755080AbXERGsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 02:48:21 -0400
+Date: Fri, 18 May 2007 08:49:18 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [PATCH 01/14] kbuild: make modpost section warnings clearer
+Message-ID: <20070518064918.GA12284@uranus.ravnborg.org>
+References: <20070518064126.GA12193@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070518064126.GA12193@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-18 at 08:17 +0200, Jan Engelhardt wrote:
-> > AFAIK, the camera stops writing to the flash card and automatically
-> > turns off when it's low on battery (before empty).
-> 
-> But then, one should also consider the case where a cam is connected to
-> AC and someone inadvertently trips on the power cord. 
+>From 4dba30ccfdb911b0810f6527de66b1515349d8c4 Mon Sep 17 00:00:00 2001
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Date: Thu, 10 May 2007 23:03:25 +0100
+Subject: [PATCH 01/14] kbuild: make modpost section warnings clearer
 
-So you stick a bloody great cap on board to give you enough time to shut
-it down cleanly. I've known people do this -- and it helps, but the
-devices still manage to crap themselves occasionally even then.
+Change modpost section mismatch warnings to be less confusing;
+model them on the binutils linker warnings which we all know how
+to interpret.
 
-They're _disposable_. As are your data :)
+Also, fix the wrong ordering of arguments for the final case -
+fromsec and refsymname were reversed.
 
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ scripts/mod/modpost.c |   33 ++++++++++++++++-----------------
+ 1 files changed, 16 insertions(+), 17 deletions(-)
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 113dc77..acd28ab 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -885,29 +885,28 @@ static void warn_sec_mismatch(const char *modname, const char *fromsec,
+ 		return;
+ 
+ 	if (before && after) {
+-		warn("%s - Section mismatch: reference to %s:%s from %s "
+-		     "between '%s' (at offset 0x%llx) and '%s'\n",
+-		     modname, secname, refsymname, fromsec,
++		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s "
++		     "(between '%s' and '%s')\n",
++		     modname, fromsec, (long long)r.r_offset,
++		     secname, refsymname,
+ 		     elf->strtab + before->st_name,
+-		     (long long)r.r_offset,
+ 		     elf->strtab + after->st_name);
+ 	} else if (before) {
+-		warn("%s - Section mismatch: reference to %s:%s from %s "
+-		     "after '%s' (at offset 0x%llx)\n",
+-		     modname, secname, refsymname, fromsec,
+-		     elf->strtab + before->st_name,
+-		     (long long)r.r_offset);
++		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s "
++		     "(after '%s')\n",
++		     modname, fromsec, (long long)r.r_offset,
++		     secname, refsymname,
++		     elf->strtab + before->st_name);
+ 	} else if (after) {
+-		warn("%s - Section mismatch: reference to %s:%s from %s "
++		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s "
+ 		     "before '%s' (at offset -0x%llx)\n",
+-		     modname, secname, refsymname, fromsec,
+-		     elf->strtab + after->st_name,
+-		     (long long)r.r_offset);
++		     modname, fromsec, (long long)r.r_offset,
++		     secname, refsymname,
++		     elf->strtab + after->st_name);
+ 	} else {
+-		warn("%s - Section mismatch: reference to %s:%s from %s "
+-		     "(offset 0x%llx)\n",
+-		     modname, secname, fromsec, refsymname,
+-		     (long long)r.r_offset);
++		warn("%s(%s+0x%llx): Section mismatch: reference to %s:%s\n",
++		     modname, fromsec, (long long)r.r_offset,
++		     secname, refsymname);
+ 	}
+ }
+ 
 -- 
-dwmw2
+1.5.1.rc3.20.gaa453
 
