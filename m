@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbXERR0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbXERRaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760197AbXERR0c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 13:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbXERR0Z
+	id S1755579AbXERRaV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 13:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXERRaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 13:26:25 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:60519 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753665AbXERR0Y (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 13:26:24 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: debian developer <debiandev@gmail.com>, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - 1/1] Documentation/HOWTO
-In-Reply-To: Your message of "Fri, 18 May 2007 12:01:41 EDT."
-             <Pine.LNX.4.64.0705181200440.18186@localhost.localdomain>
-From: Valdis.Kletnieks@vt.edu
-References: <f24d23310705180629x50c56ayfdcde357f0373fc4@mail.gmail.com>
-            <Pine.LNX.4.64.0705181200440.18186@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1179509181_4061P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 18 May 2007 13:30:10 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:39744 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbXERRaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 13:30:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ThjFLjVtiTDsMLeynToscjN8yxejJFGdSm1F4e3GAHXJ/JDVJHkAoVwvn9O+2YDVjyGF8CZdony6dyerZXfOZzufPquF9dVDZvCn9UbU6FQUVPMwQaVLBFb2eCvY1kDYzQg3KKIqbrA1P0c0ophB4xBbc9ZIgGzCrLY7oewSxuw=
+Message-ID: <86802c440705181030m6d72edf6w87749275c46c7c93@mail.gmail.com>
+Date: Fri, 18 May 2007 10:30:08 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu, ak@suse.de,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Zou, Nanhai" <nanhai.zou@intel.com>,
+       "Mallick, Asit K" <asit.k.mallick@intel.com>,
+       "Packard, Keith" <keith.packard@intel.com>
+In-Reply-To: <m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Fri, 18 May 2007 13:26:21 -0400
-Message-ID: <10867.1179509181@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <20070517230324.GB8089@linux-os.sc.intel.com>
+	 <m1ejlf0y96.fsf@ebiederm.dsl.xmission.com>
+	 <20070518010119.GB12088@linux-os.sc.intel.com>
+	 <m1veeqjitm.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1179509181_4061P
-Content-Type: text/plain; charset=us-ascii
+Eric,
 
-On Fri, 18 May 2007 12:01:41 EDT, "Robert P. J. Day" said:
-> On Fri, 18 May 2007, debian developer wrote:
+ioapic_level irq is limited, So if we keep vector number not changed
+when imgration to other cpus.  It that could help.
 
-> > -your skills, and other developers will be aware of your presence. Fixing
-> > bugs is one of the best ways to get merits among other developers, because
-> > not many people like wasting time fixing other people's bugs.
->                        ^^^^^^^ ^^^^
-> you might want to find a less demeaning term for debugging than
-> "wasting time."  just a thought.
+it will need modify a little with assign_irq_vector and
+irq_complete_move/smp_irq_move_cleanup_interrupt. because it assume
+vector must be changed.
 
-Wasn't his text, not his fault.  At least his patch is an improvement - now
-HOWTO only equates it with "wasting time" once, rather than twice. ;)
-
---==_Exmh_1179509181_4061P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGTeG9cC3lWbTT17ARArZJAKDRdHe38PTq9dCtezOZoQ0+/hLMAQCeOnUo
-3H4ombkWmRjAenid7CFJu14=
-=w7JH
------END PGP SIGNATURE-----
-
---==_Exmh_1179509181_4061P--
+YH
