@@ -1,38 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763360AbXERTpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763557AbXERTqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763360AbXERTpl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 15:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756996AbXERTpd
+	id S1763557AbXERTqN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 15:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbXERTp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 15:45:33 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:44522 "EHLO ishtar.tlinx.org"
+	Fri, 18 May 2007 15:45:58 -0400
+Received: from quechua.inka.de ([193.197.184.2]:56570 "EHLO mail.inka.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755492AbXERTpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 15:45:33 -0400
-X-Greylist: delayed 766 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 May 2007 15:45:32 EDT
-Message-ID: <464DFF5F.5010905@tlinx.org>
-Date: Fri, 18 May 2007 12:32:47 -0700
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: building i386 requires s390: "driver/crypto/Kconfig" sourcing s390
- arch
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1756676AbXERTp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 15:45:57 -0400
+Date: Fri, 18 May 2007 21:45:54 +0200
+From: Bernd Eckenfels <be-mail2007@lina.inka.de>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: ht CPU flag
+Message-ID: <20070518194554.GA8088@lina.inka.de>
+References: <E1Hp6er-0001aX-00@calista.eckenfels.net> <464DF467.8080108@zytor.com> <20070518190709.GB28957@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070518190709.GB28957@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems there is an include of s390 based config in file
-drivers/crypto/Kconfig: source "arch/s390/crypto/Kconfig"
+On Fri, May 18, 2007 at 12:07:09PM -0700, Siddha, Suresh B wrote:
+> On Fri, May 18, 2007 at 11:45:59AM -0700, H. Peter Anvin wrote:
+> > IIRC, the HT flag is also reported for multicore CPUs.
+> 
+> Yes. Thats correct.
 
-The line doesn't seem to be need for an i386 build (haven't
-tried x86_64 though).
+And for some Single-Core Non-HT CPUs.
 
-I take it that this was a braino?
-
-
-
-
-
-
+Gruss
+Bernd
+-- 
+  (OO)     -- Bernd_Eckenfels@Mörscher_Strasse_8.76185Karlsruhe.de --
+ ( .. )    ecki@{inka.de,linux.de,debian.org}  http://www.eckes.org/
+  o--o   1024D/E383CD7E  eckes@IRCNet  v:+497211603874  f:+49721151516129
+(O____O)  When cryptography is outlawed, bayl bhgynjf jvyy unir cevinpl!
