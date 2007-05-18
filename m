@@ -1,118 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761550AbXEREIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761014AbXEREJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761550AbXEREIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 00:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbXEREIJ
+	id S1761014AbXEREJM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 00:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbXEREI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 00:08:09 -0400
-Received: from rwcrmhc15.comcast.net ([204.127.192.85]:64867 "EHLO
-	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756820AbXEREII (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 00:08:08 -0400
-Message-ID: <464D2697.5040902@comcast.net>
-Date: Fri, 18 May 2007 00:07:51 -0400
-From: Ed Sweetman <safemode2@comcast.net>
-User-Agent: Icedove 1.5.0.10 (X11/20070328)
-MIME-Version: 1.0
-To: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
-CC: Dave Jones <davej@redhat.com>, Duane Griffin <duaneg@dghda.com>,
-       Prakash Punnoor <prakash@punnoor.de>,
-       LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>
-Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States
- driver
-References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <20070516204807.GA23751@redhat.com> <20070518030436.GB20793@ifa.hawaii.edu>
-In-Reply-To: <20070518030436.GB20793@ifa.hawaii.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 18 May 2007 00:08:57 -0400
+Received: from mx2.suse.de ([195.135.220.15]:36490 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756585AbXEREI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 00:08:56 -0400
+Date: Fri, 18 May 2007 06:08:54 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: [rfc] increase struct page size?!
+Message-ID: <20070518040854.GA15654@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joshua Hoblitt wrote:
-> I think it's pretty clear that Dave and Daniel were both correct and
-> that ACPI_PROCESSOR is the correct dependency for multi-socket systems.
-> However, it's worth noting that this dependency seems to be unrelated to
-> SMP support.  Ed Sweetman has reported that his single-socket but
-> multi-core system doesn't require ACPI_PROCESSOR for powernow support.
-> I just tried booting 2.6.21 w/o SMP support and w/o ACPI_PROCESSOR on
-> one of my multi-socket/multi-core systems.  Sure enough, powernow 
-> won't work without ACPI_PROCESSOR:
->
->   
+Hi,
 
-I said before and originally, in response to the original post by you, 
-that i didn't need acpi p-states driver, which is what this thread was 
-suggesting.  We later determined that the thread title was misleading, 
-this thread should be titled   "Kconfig powernow-k8 driver should depend 
-on ACPI_PROCESSOR driver"
+I'd like to be the first to propose an increase to the size of struct page
+just for the sake of increasing it!
 
-I've always compiled acpi_processor in the kernel, i use acpi, i have a 
-processor, it seemed to fit.
-> powernow-k8: Found 1 Dual-Core AMD Opteron(tm) Processor 2220 processors (version 2.00.00)
-> powernow-k8: BIOS error - no PSB or ACPI _PSS objects
->
-> I suppose this means that the BIOS does something different to enable
-> SMP on a multi-core single socket and multi-socket systems.  Anyways, I
-> believe the question that needs to be answered is: is it reasonable for
-> X86_POWERNOW_K8 to select ACPI_PROCESSOR if SMP is set?  I'm not sure we
-> can do anything more intelligent unless Kconfig had more knowledge of
-> how the hardware other than just SMP/!SMP.
->
-> -J
->
->   
+If we add 8 bytes to struct page on 64-bit machines, it becomes 64 bytes,
+which is quite a nice number for cache purposes.
 
-My patch does the most intelligent thing thus far, it lets the user 
-decide.  If the user is smart enough to enable cpufreq's powernow-k8 
-driver, then the user is smart enough to decide if he wants/needs to use 
-the acpi support of that driver.    I'm just exposing the driver that is 
-causing all of this confusion to the user, since this is the driver that 
-gets enabled/disabled behind the scenes depending on acpi_processor 
-being selected.  Now it's not automatically handled, the user can enable 
-acpi support or disable it (in the powernow driver), even if 
-acpi_processor is compiled in.
+However we don't have to let those 8 bytes go to waste: we can use them
+to store the virtual address of the page, which kind of makes sense for
+64-bit, because they can likely to use complicated memory models.
 
-you should be able to use the acpi support of Powernow-k8 even in UP 
-situations, so only enabling it for SMP is wrong.  Enabling it whenever 
-you have acpi compiled in and acpi_processor compiled in is wrong, 
-because the user may be using a UP system and not want to lookup the 
-acpi tables for powernow for some ungodly reason.   Just allowing the 
-user to handle it works best.  See my previous post for the patch. 
+I'd say all up this is going to decrease overall cache footprint in 
+fastpaths, both by reducing text and data footprint of page_address and
+related operations, and by reducing cacheline footprint of most batched
+operations on struct pages.
 
-> --
-> On Wed, May 16, 2007 at 04:48:07PM -0400, Dave Jones wrote:
->   
->> On Wed, May 16, 2007 at 08:53:13PM +0100, Duane Griffin wrote:
->>  > On 16/05/07, Prakash Punnoor <prakash@punnoor.de> wrote:
->>  > > Maybe you want to give a hint in the p states driver help text?
->>  > 
->>  > I think a hint is the right thing to do, but in the PowerNow! driver
->>  > rather than the p states one. How about adding something like this to
->>  > the X86_POWERNOW_K8 (and X86_POWERNOW_K7?) help text:
->>
->> The mobile K7s which had powernow support weren't SMP capable, so they're
->> irrelevant.
->>
->>  > "ACPI support is required for non-UP systems and requires ACPI_PROCESSOR
->>  >  to be selected. If ACPI_PROCESSOR is compiled as a module then this
->>  >  option must be too in order for ACPI support to be available."
->>
->> X86_POWERNOW_K8_ACPI is already 'default y'. I think the problem lies in
->> that people aren't enabling its dependancy, ACPI_PROCESSOR.
->>
->> We want something along the lines of..
->>
->> config X86_POWERNOW_K8_ACPI
->> 	bool
->> 	if SMP & X86_POWERNOW_K8_ACPI
->> 	  select ACPI_PROCESSOR
->>
->> kconfig language quirks aside..
->>
->>
->> 	Dave
->>
->> -- 
->> http://www.codemonkey.org.uk
->>     
+Flame away :)
 
+--
+
+Many batch operations on struct page are completely random, and as such, I
+think it is better if each struct page fits completely into a single
+cacheline even if it means being slightly larger.
+
+Don't let this space go to waste though, we can use page->virtual in order
+to optimise page_address operations.
+
+Interestingly, the irony of 32-bit architectures setting WANT_PAGE_VIRTUAL
+because they have slow multiplications is that without WANT_PAGE_VIRTUAL, the
+struct is 32-bytes and so page_address can usually be calculated with a shift.
+So WANT_PAGE_VIRTUAL just bloats up the size of struct page for those guys!
+
+
+Index: linux-2.6/include/linux/mm_types.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm_types.h
++++ linux-2.6/include/linux/mm_types.h
+@@ -9,6 +9,14 @@
+ struct address_space;
+ 
+ /*
++ * WANT_PAGE_VIRTUAL on 64-bit machines gives a nice 64 byte alignment,
++ * so a struct page will fit entirely into a cacheline on modern CPUs.
++ */
++#if BITS_PER_LONG == 64
++# define WANT_PAGE_VIRTUAL
++#endif
++
++/*
+  * Each physical page in the system has a struct page associated with
+  * it to keep track of whatever it is we are using the page for at the
+  * moment. Note that we have no way to track which tasks are using
+Index: linux-2.6/include/linux/bootmem.h
+===================================================================
+--- linux-2.6.orig/include/linux/bootmem.h
++++ linux-2.6/include/linux/bootmem.h
+@@ -91,7 +91,7 @@ extern void free_bootmem_node(pg_data_t 
+ 
+ #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+ #define alloc_bootmem_node(pgdat, x) \
+-	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
++	__alloc_bootmem_node(pgdat, x, L1_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
+ #define alloc_bootmem_pages_node(pgdat, x) \
+ 	__alloc_bootmem_node(pgdat, x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
+ #define alloc_bootmem_low_pages_node(pgdat, x) \
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -2717,6 +2717,9 @@ static void __meminit alloc_node_mem_map
+ 	}
+ #endif
+ #endif /* CONFIG_FLAT_NODE_MEM_MAP */
++
++	if ((unsigned long)pgdat->node_mem_map & (L1_CACHE_BYTES - 1))
++		printk(KERN_WARNING "node_mem_map is not cacheline aligned!\n");
+ }
+ 
+ void __meminit free_area_init_node(int nid, struct pglist_data *pgdat,
