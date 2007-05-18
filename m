@@ -1,109 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbXERGGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbXERGNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760946AbXERGGT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 02:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbXERGGM
+	id S1758617AbXERGNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 02:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbXERGNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 02:06:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50399 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752389AbXERGGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 02:06:11 -0400
-Date: Thu, 17 May 2007 23:04:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: BUG in mm/slab.c
-Message-Id: <20070517230455.ffed5138.akpm@linux-foundation.org>
-In-Reply-To: <464D3F50.3080505@garzik.org>
-References: <464D3F50.3080505@garzik.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 18 May 2007 02:13:16 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:64679 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752389AbXERGNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 02:13:15 -0400
+Date: Fri, 18 May 2007 08:15:12 +0200
+From: DervishD <lkml@dervishd.net>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: usb-storage nice value
+Message-ID: <20070518061512.GA32730@DervishD>
+Mail-Followup-To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	linux-kernel@vger.kernel.org
+References: <20070517100308.GA14667@DervishD> <464CB2B3.50506@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <464CB2B3.50506@s5r6.in-berlin.de>
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007 01:53:20 -0400 Jeff Garzik <jeff@garzik.org> wrote:
+    Hi Stefan :)
 
-> Platform:  Fedora Core 6/x86-64 (lspci, kconfig, dmesg attached)
+ * Stefan Richter <stefanr@s5r6.in-berlin.de> dixit:
+> DervishD wrote:
+> >     I'm having problems when reading/writing to external USB harddisks:
+> > my *internal* harddisk stalls from time to time, so watching a movie
+> > while copying data is a PITA (well, if the movie is bad, the leaps help
+> > a bit...).
 > 
-> dmesg shows:
-> > PCI: Using ACPI for IRQ routing
-> > PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a report
-> > BUG: at mm/slab.c:777 __find_general_cachep()
-> > 
-> > Call Trace:
-> >  [<ffffffff802819b7>] __kmalloc+0xa7/0xe0
-> >  [<ffffffff8021b7bd>] cache_k8_northbridges+0x9d/0x120
-> >  [<ffffffff8053bb03>] gart_iommu_init+0x33/0x5b0
-> >  [<ffffffff80228673>] __wake_up+0x43/0x70
-> >  [<ffffffff803e01a0>] genl_rcv+0x0/0x70
-> >  [<ffffffff803de768>] netlink_kernel_create+0x158/0x170
-> >  [<ffffffff803dffd0>] genl_unlock+0x10/0x50
-> >  [<ffffffff80535879>] pci_iommu_init+0x9/0x20
-> >  [<ffffffff8052c6d4>] kernel_init+0x154/0x330
-> >  [<ffffffff8020a958>] child_rip+0xa/0x12
-> >  [<ffffffff803212ac>] acpi_ds_init_one_object+0x0/0x7c
-> >  [<ffffffff8052c580>] kernel_init+0x0/0x330
-> >  [<ffffffff8020a94e>] child_rip+0x0/0x12
-> > 
-> > PCI-GART: No AMD northbridge found.
-> > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-> > hpet0: 3 64-bit timers, 14318180 Hz
+> If the internal harddisk is source or target of these copy operations...
+
+    Not...
+ 
+> ...
+> > is there any way of modifying the pdflush behaviour so
+> > large buffered writes are less "agressive" and doesn't block apps which
+> > are just reading?
 > 
-> but the machine continues to work (I'm typing on it right now).  In 
-> fact, I only noticed while checking on some SATA stuff :)
+> ...then switching to another IO scheduler might perhaps help.
+> 
+> # cat /sys/block/hda/queue/scheduler
+> 
+> # echo deadline > /sys/block/hda/queue/scheduler
 
-Yep, it's just a WARN_ON, no other effect.
+    That's another thing I wanted to test, but I'm already using
+"deadline" scheduler. How about changing "read_ahead_kb" to a much
+higher value so there's plenty of data buffered? The problem seems to
+be, according to Alan Cox, that my VIA mobo fills completely the PCI bus
+when doing IO bursts, so I can take advantage of that "bug" and fill the
+bus when reading.
 
-I have a cure queued up:
+    My only doubt is if it will affect performance negatively in other
+usage patterns (e.g. while writing CD's, since the hard disk will take
+the bus on each read operation, and will read more than the current 128
+kB).
 
+    Thanks a lot for your answer :)
 
-From: Ben Collins <ben.collins@ubuntu.com>
+    Raúl Núñez de Arenas Coronado
 
-kmalloc for flush_words resulted in zero size allocation when no
-k8_northbridges existed.  Short circuit the code path for this case.
-
-Also remove uneeded zeroing of num_k8_northbridges just after checking if
-it is zero.
-
-Signed-off-by: Ben Collins <bcollins@ubuntu.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Dave Jones <davej@codemonkey.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/x86_64/kernel/k8.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletion(-)
-
-diff -puN arch/x86_64/kernel/k8.c~avoid-zero-size-allocation-in-cache_k8_northbridges arch/x86_64/kernel/k8.c
---- a/arch/x86_64/kernel/k8.c~avoid-zero-size-allocation-in-cache_k8_northbridges
-+++ a/arch/x86_64/kernel/k8.c
-@@ -39,10 +39,10 @@ int cache_k8_northbridges(void)
- {
- 	int i;
- 	struct pci_dev *dev;
-+
- 	if (num_k8_northbridges)
- 		return 0;
- 
--	num_k8_northbridges = 0;
- 	dev = NULL;
- 	while ((dev = next_k8_northbridge(dev)) != NULL)
- 		num_k8_northbridges++;
-@@ -52,6 +52,11 @@ int cache_k8_northbridges(void)
- 	if (!k8_northbridges)
- 		return -ENOMEM;
- 
-+	if (!num_k8_northbridges) {
-+		k8_northbridges[0] = NULL;
-+		return 0;
-+	}
-+
- 	flush_words = kmalloc(num_k8_northbridges * sizeof(u32), GFP_KERNEL);
- 	if (!flush_words) {
- 		kfree(k8_northbridges);
-_
-
+-- 
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
