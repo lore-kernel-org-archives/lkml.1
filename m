@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbXERSml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762159AbXERSqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761273AbXERSml (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 14:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbXERSme
+	id S1762159AbXERSqP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 14:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbXERSqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 14:42:34 -0400
-Received: from mga03.intel.com ([143.182.124.21]:8484 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755315AbXERSme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 14:42:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,553,1170662400"; 
-   d="scan'208";a="229613770"
-Date: Fri, 18 May 2007 11:39:41 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu, ak@suse.de,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Zou, Nanhai" <nanhai.zou@intel.com>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>,
-       "Packard, Keith" <keith.packard@intel.com>
-Subject: Re: [patch] x86_64, irq: check remote IRR bit before migrating level triggered irq
-Message-ID: <20070518183941.GA28957@linux-os.sc.intel.com>
-References: <20070518010119.GB12088@linux-os.sc.intel.com> <m1veeqjitm.fsf@ebiederm.dsl.xmission.com> <20070518180749.GA26081@linux-os.sc.intel.com> <86802c440705181128t28652911w39d6de0c43d99a45@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440705181128t28652911w39d6de0c43d99a45@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 18 May 2007 14:46:05 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:42037 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756424AbXERSqE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 14:46:04 -0400
+Message-ID: <464DF467.8080108@zytor.com>
+Date: Fri, 18 May 2007 11:45:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Bernd Eckenfels <ecki@lina.inka.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ht CPU flag
+References: <E1Hp6er-0001aX-00@calista.eckenfels.net>
+In-Reply-To: <E1Hp6er-0001aX-00@calista.eckenfels.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 11:28:25AM -0700, Yinghai Lu wrote:
-> On 5/18/07, Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
-> >
-> > If the vector number stays same during irq migration and if we reset remote
-> > IRR bit using the above method(edge and then back to level) during
-> > irq migration, then we have a problem. A new interrupt arriving on a new
-> > cpu will set the remote IRR bit and now the old inflight EOI broadcast
-> > reaches IOAPIC RTE(resetting the remote IRR bit, because the vector in the
-> > broadcast msg is same), while the kernel code still assumes that the remote
-> > IRR bit is still set. This will lead to more problems and issues.
+Bernd Eckenfels wrote:
+> In article <Pine.LNX.4.64.0705182131030.25685@ns.armcci.am> you wrote:
+>> I have Pentium D CPU, which many Windows utilities like cpuz, wcpuid, 
+>> everest identify as D 930 (Dual Core, 3GHz). From Intel site I find out 
+>> that it has no HT feature, nor Windows XP identify it as HT.
 > 
-> coud add some line __assign_irq_vector. to make sure old_vector!=vector.
+> the ht flag reported by the CPU and cpuinfo is not a reliable detection if
+> HT is available on your CPU or your motherboard/bios.
+> 
+>> Why do I have "ht" flag in cpuinfo?
+> 
+> Because your CPU reports it. You will see that also in cpuz output.
+> 
+> However, you can see ht in the sibblings value (for a single core it will be
+> 2 if you have HT, I am not sure if it is 4 for a dual core CPU)
 
-hmm..
-what happens when there is second(and very quick) irq migration which brings the
-irq back to old cpu(or to a third cpu) with old vector.
+IIRC, the HT flag is also reported for multicore CPUs.
 
-Point is, we are not taking care of the inflight messages(which can perhaps,
-theoretically, can get delayed for long time)
-
-thanks,
-suresh
+	-hpa
