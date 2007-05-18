@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762044AbXERWdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbXERWiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762044AbXERWdZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 18:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbXERWdR
+	id S1756753AbXERWiE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 18:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbXERWhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 18:33:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46583 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755545AbXERWdQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 18:33:16 -0400
-Date: Fri, 18 May 2007 15:29:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Cc: "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-kernel@vger.kernel.org, malitzke@metronets.com,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug 8501] udivdi3  absence with gcc-4.3.0 on kernels 2.6.20.11
- & 2.6.22.-rc1
-Message-Id: <20070518152935.b5a4b3bf.akpm@linux-foundation.org>
-In-Reply-To: <200705181941.l4IJfOtf018049@fire-2.osdl.org>
-References: <200705181941.l4IJfOtf018049@fire-2.osdl.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 18 May 2007 18:37:55 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52333 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755618AbXERWhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 18:37:55 -0400
+Message-ID: <464E2AA6.3080402@garzik.org>
+Date: Fri, 18 May 2007 18:37:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Phillip Susi <psusi@cfl.rr.com>, Alex Volkov <avcp-lkmail@usa.net>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: Re: aio is unlikely
+References: <20070509151831.f5956b66.akpm@linux-foundation.org>	<058f01c7998e$1406e370$650df7cd@MUMBA>	<20070518140624.1a4db517.akpm@linux-foundation.org>	<464E2098.8020900@cfl.rr.com> <20070518151259.319e09da.akpm@linux-foundation.org>
+In-Reply-To: <20070518151259.319e09da.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007 12:41:24 -0700
-bugme-daemon@bugzilla.kernel.org wrote:
+Andrew Morton wrote:
+> On Fri, 18 May 2007 17:54:32 -0400
+> Phillip Susi <psusi@cfl.rr.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>> Yes, if you agree with Jeff's original point.
+>>>
+>>> But I don't, actually.  Sure, on some machines+workloads, AIO is more
+>>> common than sync IO.  But I expect that when we sum across all the
+>>> machines+workloads in the world, sync IO is more common and is hence the
+>>> case we should optimise for.
+>>>
+>>> That's assuming that the unlikely() actually does something.
+>> But as Jeff said, that's not what unlikely is for.  It should only be 
+>> used when it is unlikely for everybody, all the time, because when it is 
+>> right, it helps rather little, but when it is wrong, it hurts a lot.
+> 
+> It does?  Tell us more.
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8501
+It is difficult to quantify either way.  The details are both 
+CPU-specific and compiler-specific.  The best information can be culled 
+from the gcc list archives, which is where I obtained my knowledge on 
+the subject (which is now ~2 years old).
 
-Problem.
+Under the hood, likely() and unlikely() are implemented as percentage 
+predictions.  likely() is implemented in the kernel as a 99-100% chance 
+of success, and unlikely() is implemented as a 0-1% chance of success.
 
-gcc-4.3 appears to have cunningly converted this:
+As such, for our purposes, likely() and unlikely() should only be used 
+when a situation is [likely | unlikely] across all runtime 
+configurations.  So if you mark a branch unlikely() when it is hit often 
+by 1% of your users, that is an incorrect usage.
 
-static inline void timespec_add_ns(struct timespec *a, u64 ns)
-{
-	ns += a->tv_nsec;
-	while(unlikely(ns >= NSEC_PER_SEC)) {
-		ns -= NSEC_PER_SEC;
-		a->tv_sec++;
-	}
-	a->tv_nsec = ns;
-}
+The effects are probably most dramatic on older CPUs.  Repeatedly 
+hitting an unlikely() can cause a pipeline stall on every single access. 
+  Branch delay slots are filled improperly, with obvious implications.
 
-into a divide-by-1000000000 operation, so it emits a call to udivdi3 and we
-don't link.
+But on modern hardware, I would /guess/ that the effect of repeatedly 
+hitting an unlikely() would be mitigated by smarter branch prediction.
 
-I expect that this optimisation will remain in gcc-4.3 and we'll end up
-having major kernel releases which don't build on i386 with major gcc
-releases, which isn't altogether desirable.  I suspect we'll need to fix this
-fairly urgently, and to backport the fix into a number of kernel releases.
+We really need a GCC expert to answer this question in any more detail.
 
-We use the above idiom in several places.  A suitable fix might be to hunt
-down those various sites and then make them call a helper function which
-does
+	Jeff
 
-	if (unlikely(ns >= NSEC_PER_SEC)) {
-		do_div(...)
-	}
 
-(Better would be to inline the comparison and to uninline the do_div(),
-if it's a 32-bit arch.  Doing all this in a backportable fashion may
-prove tricky)
