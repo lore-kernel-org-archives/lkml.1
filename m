@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbXEROfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbXEROhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760631AbXEROfi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 10:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXEROfb
+	id S1760247AbXEROhr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 10:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbXEROhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 10:35:31 -0400
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:36472 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755382AbXEROfa (ORCPT
+	Fri, 18 May 2007 10:37:40 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:50244 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755004AbXEROhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 10:35:30 -0400
-Date: Fri, 18 May 2007 16:35:29 +0200
-From: Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: linux-kernel@vger.kernel.org, ext3-users@redhat.com
-Subject: Re: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted
-Message-ID: <20070518143529.GB14611@ribosome.natur.cuni.cz>
-References: <20070518090604.GA10841@ribosome.natur.cuni.cz> <9a8748490705180720u3baf9785l910581a2a76a6eb@mail.gmail.com>
+	Fri, 18 May 2007 10:37:39 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=s8aNN0MDf0OiW5gEl11G4wsAZIVK+1LwAkQmv3Sq4O7Q+NaMLweQ9nLtz3Rdu562F
+	Wr5ttLCBdlsv8UaH6soxg==
+Message-ID: <6599ad830705180737m6aee5ca2x9c39613f782cda67@mail.gmail.com>
+Date: Fri, 18 May 2007 07:37:28 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fix a simple issue w.r.t mounting of containers
+Cc: "Paul Jackson" <pj@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20070518123916.21450.21761.sendpatchset@balbir-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <9a8748490705180720u3baf9785l910581a2a76a6eb@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+References: <20070518123916.21450.21761.sendpatchset@balbir-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 04:20:39PM +0200, Jesper Juhl wrote:
->  On 18/05/07, Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz> wrote:
-> > Hi,
-> >   I just tried the 2.6.22-r1 candidate to test whether some bug I have
-> > hit in the past still exists. I did use 2.6.20.6 so far. So, I have
-> > cleanly rebooted to use the new kernel, after the machine came up I
-> > tried to mess with the bug, and had to reboot again to play with kernel
-> > commandline parameters. Unfortunately, on the next reboot fsck was
-> > schedules on my filesystem after 38 clean mounts. :( And the problem
-> > started. The fsck found some unused inodes, but probably did not know
-> > where do they belong to, but it deleted them automagically. Finally, the
-> > fsck died because it cannot fine some '..' entry.
-> >
-> 
->  How do you know that the corruption was caused by 2.6.21-rc1 ?
->  Isn't it possible that the corruption was created by an earlier
->  kernel, but only detected when a forced fsck was run - which just
->  happened to be while you were running 2.6.21-rc1 ...
-> 
->  My point is that, as far as I can see, there's nothing tying
->  2.6.21-rc1 specifically to this corruption... or?
+Thanks. I've added that to my tree.
 
-You might be right, but I thought maybe more probably is the cause in kernel
-as that is what I have changed recently. ;) Or maybe someone can at leats say
-"No, no changes to be considered between 2.6.20.6 and 2.6.22-rc1.". ;)
+Paul
 
-Martin
+On 5/18/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+>
+> Fix containers mounting issue. With the current v9 patches if a container
+> hierarchy is mounted and then umounted. A second mount of the hierarchy
+> fails
+>
+> Steps to reproduce the problem
+>
+> 1. mount -t container container /<mnt point>
+> 2. umount /<mnt point>
+> 3. mount -t container container /<mnt point>
+>
+> Step 3 fails with -EBUSY. This is due to the fact that when we unmount,
+> in container_put_super(), we need to delete the current root from the roots
+> list.
+>
+> The patch below fixes the issue
+>
+>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+>
+>  kernel/container.c |    1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff -puN kernel/container.c~fix-remount-issue kernel/container.c
+> --- linux-2.6.21-mm1/kernel/container.c~fix-remount-issue       2007-05-18 17:59:40.000000000 +0530
+> +++ linux-2.6.21-mm1-balbir/kernel/container.c  2007-05-18 18:00:02.000000000 +0530
+> @@ -574,6 +574,7 @@ static void container_put_super(struct s
+>         ret = rebind_subsystems(root, 0);
+>         BUG_ON(ret);
+>
+> +       list_del(&root->root_list);
+>         kfree(root);
+>         mutex_unlock(&container_mutex);
+>  }
+> _
+>
+> --
+>         Warm Regards,
+>         Balbir Singh
+>         Linux Technology Center
+>         IBM, ISTL
+>
