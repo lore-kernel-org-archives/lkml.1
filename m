@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbXEREqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbXERErq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758756AbXEREqt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 00:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbXEREql
+	id S1760952AbXERErq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 00:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbXERErj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 00:46:41 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:32928 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754750AbXEREql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 00:46:41 -0400
-Date: Fri, 18 May 2007 13:45:59 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH -rt] futex_performance_hack sysctl build fix
-Message-ID: <20070518044559.GB22660@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 18 May 2007 00:47:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48359
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755219AbXEREri (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 00:47:38 -0400
+Date: Thu, 17 May 2007 21:47:40 -0700 (PDT)
+Message-Id: <20070517.214740.51856086.davem@davemloft.net>
+To: npiggin@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070518040854.GA15654@wotan.suse.de>
+References: <20070518040854.GA15654@wotan.suse.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--rt adds a futex_performance_hack sysctl, which is only defined if
-kernel/futex.c is built in. This fixes the build in the CONFIG_FUTEX=n
-case.
+From: Nick Piggin <npiggin@suse.de>
+Date: Fri, 18 May 2007 06:08:54 +0200
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> I'd like to be the first to propose an increase to the size of struct page
+> just for the sake of increasing it!
+> 
+> If we add 8 bytes to struct page on 64-bit machines, it becomes 64 bytes,
+> which is quite a nice number for cache purposes.
+> 
+> However we don't have to let those 8 bytes go to waste: we can use them
+> to store the virtual address of the page, which kind of makes sense for
+> 64-bit, because they can likely to use complicated memory models.
+> 
+> I'd say all up this is going to decrease overall cache footprint in 
+> fastpaths, both by reducing text and data footprint of page_address and
+> related operations, and by reducing cacheline footprint of most batched
+> operations on struct pages.
+> 
+> Flame away :)
 
---
+I've toyed with this several times on sparc64, and in my experience
+the extra memory reference on page->virtual costs on average about the
+same as the non-power-of-2 pointer arithmetic.
 
- kernel/sysctl.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- linux-2.6.21-rt3/kernel/sysctl.c	2007-05-18 13:27:16.000000000 +0900
-+++ linux-2.6.21-rt3-sh/kernel/sysctl.c	2007-05-18 13:41:23.000000000 +0900
-@@ -226,6 +226,7 @@
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#ifdef CONFIG_FUTEX
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "futex_performance_hack",
-@@ -234,6 +235,7 @@
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#endif
- 	{
- 		.ctl_name	= KERN_PANIC,
- 		.procname	= "prof_pid",
+The decision is absolutely arbitrary performance wise, but if you
+consider the memory wastage on enormous systems going without
+page->virtual I think is clearly better.
