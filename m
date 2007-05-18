@@ -1,42 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763557AbXERTqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbXERTvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763557AbXERTqN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 15:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbXERTp6
+	id S1760888AbXERTvw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 15:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbXERTvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 15:45:58 -0400
-Received: from quechua.inka.de ([193.197.184.2]:56570 "EHLO mail.inka.de"
+	Fri, 18 May 2007 15:51:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53099 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756676AbXERTp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 15:45:57 -0400
-Date: Fri, 18 May 2007 21:45:54 +0200
-From: Bernd Eckenfels <be-mail2007@lina.inka.de>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+	id S1754357AbXERTvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 15:51:44 -0400
+Message-ID: <464E03C5.6040507@redhat.com>
+Date: Fri, 18 May 2007 15:51:33 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: eugene@ns.armcci.am
+CC: linux-kernel@vger.kernel.org
 Subject: Re: ht CPU flag
-Message-ID: <20070518194554.GA8088@lina.inka.de>
-References: <E1Hp6er-0001aX-00@calista.eckenfels.net> <464DF467.8080108@zytor.com> <20070518190709.GB28957@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070518190709.GB28957@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.9i
+References: <Pine.LNX.4.64.0705182131030.25685@ns.armcci.am> <464DFBE0.5060904@redhat.com> <Pine.LNX.4.64.0705190023420.25685@ns.armcci.am>
+In-Reply-To: <Pine.LNX.4.64.0705190023420.25685@ns.armcci.am>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 12:07:09PM -0700, Siddha, Suresh B wrote:
-> On Fri, May 18, 2007 at 11:45:59AM -0700, H. Peter Anvin wrote:
-> > IIRC, the HT flag is also reported for multicore CPUs.
+eugene@ns.armcci.am wrote:
 > 
-> Yes. Thats correct.
+> 
+> On Fri, 18 May 2007, Chris Snook wrote:
+> 
+>> eugene@ns.armcci.am wrote:
+>>>  --------------------------------------------------------------------------- 
+>>>
+>>>
+>>>  I have Pentium D CPU, which many Windows utilities like cpuz, wcpuid,
+>>>  everest identify as D 930 (Dual Core, 3GHz). From Intel site I find out
+>>>  that it has no HT feature, nor Windows XP identify it as HT.
+>>>
+>>>  Why do I have "ht" flag in cpuinfo?
+>>>  -----------------------------------
+>>
+>> The "ht" flag merely means "I know how to report hyperthreaded logical 
+>> processors if I have them."  My Woodcrest Xeon 5110 and my Athlon64 X2 
+>> both have the "ht" flag, and correctly report the zero hyperthreaded 
+>> logical processors they each have.
+>>
+>>     -- Chris
+>>
+>>
+> 
+> Thanks, Chris.
+> 
+> Am I right that is chipset on mainboard, who is saying - "I know....", 
+> not CPU itself? Is it better to switch off HT support in BIOS?
+> Is it possible to generate CPU name as: "Pentium D 930" in /proc/cpuinfo?
+> On the other server I have some 2GHz HT Xeons which can't be identified 
+> on Intel site because of strange naming pattern.
+> I tried to find any utility for Linux to solve this, but it looks like 
+> everybody are using /pros/cpuinfo, which is not enough :)
+> 
+> Regards, Eugene.
 
-And for some Single-Core Non-HT CPUs.
+While the BIOS can disable HT, the ability to *report* HT or the lack thereof is 
+within the CPU itself.  I doubt my socket AM2 board has the faintest clue what 
+HT is.
 
-Gruss
-Bernd
--- 
-  (OO)     -- Bernd_Eckenfels@Mörscher_Strasse_8.76185Karlsruhe.de --
- ( .. )    ecki@{inka.de,linux.de,debian.org}  http://www.eckes.org/
-  o--o   1024D/E383CD7E  eckes@IRCNet  v:+497211603874  f:+49721151516129
-(O____O)  When cryptography is outlawed, bayl bhgynjf jvyy unir cevinpl!
+As for human-readable names, the model name in /proc/cpuinfo comes from the 
+processor name string, and includes however much or little information the 
+vendor thinks the lay user wants to know.  If you want more detail, you can 
+always interpret the model, stepping, and other related fields to determine the 
+model number.
+
+If you don't want to manually look up model info on a CPU version table, x86info 
+and dmidecode will give you more information.
+
+	-- Chris
