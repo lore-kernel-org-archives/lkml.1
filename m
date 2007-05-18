@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbXERHQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbXERHRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbXERHQR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 03:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbXERHQF
+	id S1757493AbXERHRU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 03:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbXERHRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 03:16:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59511
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754052AbXERHQC (ORCPT
+	Fri, 18 May 2007 03:17:11 -0400
+Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:45554 "EHLO
+	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139AbXERHRK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 03:16:02 -0400
-Date: Fri, 18 May 2007 00:16:04 -0700 (PDT)
-Message-Id: <20070518.001604.23011298.davem@davemloft.net>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 05/14] all-archs: consolidate .data section definition
- in asm-generic
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070518065257.GE12284@uranus.ravnborg.org>
-References: <20070518064126.GA12193@uranus.ravnborg.org>
-	<20070518065257.GE12284@uranus.ravnborg.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 18 May 2007 03:17:10 -0400
+Date: Fri, 18 May 2007 16:15:24 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org
+Subject: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after STR
+Message-ID: <20070518071523.GA3195@inferi.kami.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.22-rc1-mm1-2 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Fri, 18 May 2007 08:52:57 +0200
+Hello,
 
-> >From 653bc43c6c2c292e6abc98860fd241eb12e2c80f Mon Sep 17 00:00:00 2001
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Thu, 17 May 2007 13:38:44 +0200
-> Subject: [PATCH 05/14] all-archs: consolidate .data section definition in asm-generic
-> 
-> With this consolidation we can now modify the .data
-> section definition in one spot for all archs.
-> 
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+After finally catching fw-{ohci,core} to be problematic during resume,
+I'm now experiencing an immediate resume after suspending.
 
-Thanks for doing these kinds of consolidations Sam, most of
-us arch maintainers really appreciate it.
+2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
+kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
+2.6.21-rc6-mm* after the cpuidle fixes).
 
-Looking at these patches reminds me of a quirk in the generic
-RODATA definition:
+my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
+and a str cycle with PM_DEBUG=y:
+http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
 
->  #define RODATA								\
->  	. = ALIGN(4096);						\
->  	.rodata           : AT(ADDR(.rodata) - LOAD_OFFSET) {		\
+So this is on a vaio Sz72B,
+00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS/940GML and 945GT Express Memory Controller Hub (rev 03)
+00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
+00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/940GML Express Integrated Graphics Controller (rev 03)
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 02)
+00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 02)
+00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 02)
+00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 (rev 02)
+00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 4 (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 02)
+00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 02)
+00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 02)
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
+00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface Bridge (rev 02)
+00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE Controller (rev 02)
+00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family) Serial ATA Storage Controller IDE (rev 02)
+00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
+06:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG Network Connection (rev 02)
+07:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8036 PCI-E Fast Ethernet Controller (rev 15)
+09:04.0 CardBus bridge: Texas Instruments PCIxx12 Cardbus Controller
+09:04.1 FireWire (IEEE 1394): Texas Instruments PCIxx12 OHCI Compliant IEEE 1394 Host Controller
+09:04.2 Mass storage controller: Texas Instruments 5-in-1 Multimedia Card Reader (SD/MMC/MS/MS PRO/xD)
 
-It uses ALIGN(4096) which is likely supposed to be something
-like ALIGN(PAGE_SIZE).  Perhaps we should handle this by
-definiting a LD_PAGE_SIZE at the top of vmlinux.ld.S files
-that need a value other than 4096, and define the default of
-4096 in asm-generic/vmlinux.lds.h?
-
-If you could take care of this I'd really appreciate it.
+Any idea where to start from? (bisecting is ok, but it'll take some
+time...)
+-- 
+mattia
+:wq!
