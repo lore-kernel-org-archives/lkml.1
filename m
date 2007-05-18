@@ -1,44 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbXERWat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762044AbXERWdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbXERWat (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 18:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbXERWam
+	id S1762044AbXERWdZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 18:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbXERWdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 18:30:42 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:36578 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755123AbXERWam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 18:30:42 -0400
-Date: Sat, 19 May 2007 00:30:34 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Lee Revell <rlrevell@joe-job.com>
-cc: Tomas Carnecky <tom@dbservice.com>, linux-kernel@vger.kernel.org
-Subject: Re: SideWinder GameVoice driver
-In-Reply-To: <75b66ecd0705181520p5c306e6dm146ccb4792853acd@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705190028100.27422@twin.jikos.cz>
-References: <464C5FAC.8060609@dbservice.com>
- <75b66ecd0705181520p5c306e6dm146ccb4792853acd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 18 May 2007 18:33:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46583 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755545AbXERWdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 18:33:16 -0400
+Date: Fri, 18 May 2007 15:29:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org, malitzke@metronets.com,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Bug 8501] udivdi3  absence with gcc-4.3.0 on kernels 2.6.20.11
+ & 2.6.22.-rc1
+Message-Id: <20070518152935.b5a4b3bf.akpm@linux-foundation.org>
+In-Reply-To: <200705181941.l4IJfOtf018049@fire-2.osdl.org>
+References: <200705181941.l4IJfOtf018049@fire-2.osdl.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007, Lee Revell wrote:
+On Fri, 18 May 2007 12:41:24 -0700
+bugme-daemon@bugzilla.kernel.org wrote:
 
-> > Despite it's a Microsoft product, it's actually very nice and useful. A
-> > little pad with a few buttons and connectors for a headset. It's an USB
-> > device, but it doesn't represent itself as an input/HID device:
-> >    HID device not claimed by input or hiddev
-> Is the audio part of the device USB audio class compliant?
+> http://bugzilla.kernel.org/show_bug.cgi?id=8501
 
-Seems like the device is a bit strange - it in fact, as far as my 
-understanding goes (see the previous posts in this thread), doesn't have 
-any noticeable USB audio capabilities at all - it is just a HID device 
-with a few buttons (plus additional audio connector, which only "forwards" 
-the sound to a real audio device).
+Problem.
 
-So it's just a trivial HID device with probably a bit strange report 
-descriptor, it seems to me. It even has only one interface (the HID one).
+gcc-4.3 appears to have cunningly converted this:
 
--- 
-Jiri Kosina
+static inline void timespec_add_ns(struct timespec *a, u64 ns)
+{
+	ns += a->tv_nsec;
+	while(unlikely(ns >= NSEC_PER_SEC)) {
+		ns -= NSEC_PER_SEC;
+		a->tv_sec++;
+	}
+	a->tv_nsec = ns;
+}
+
+into a divide-by-1000000000 operation, so it emits a call to udivdi3 and we
+don't link.
+
+I expect that this optimisation will remain in gcc-4.3 and we'll end up
+having major kernel releases which don't build on i386 with major gcc
+releases, which isn't altogether desirable.  I suspect we'll need to fix this
+fairly urgently, and to backport the fix into a number of kernel releases.
+
+We use the above idiom in several places.  A suitable fix might be to hunt
+down those various sites and then make them call a helper function which
+does
+
+	if (unlikely(ns >= NSEC_PER_SEC)) {
+		do_div(...)
+	}
+
+(Better would be to inline the comparison and to uninline the do_div(),
+if it's a 32-bit arch.  Doing all this in a backportable fashion may
+prove tricky)
