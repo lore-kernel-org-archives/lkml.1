@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbXESBa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbXESBpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757846AbXESBa1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 21:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbXESBaT
+	id S1756168AbXESBpu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 21:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbXESBpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 21:30:19 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40989 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753170AbXESBaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 21:30:18 -0400
-Date: Sat, 19 May 2007 03:30:13 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: David Howells <dhowells@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070519013013.GC15569@wotan.suse.de>
-References: <20070518040854.GA15654@wotan.suse.de> <7554.1179481350@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 18 May 2007 21:45:43 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:8148 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753103AbXESBpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 21:45:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AYa+3HGqN32Ugsxo/gse2cGBcvheGmTeIHI+q4+d5urjikGzwOEkdrza8S7qpqPvv7b9Ta29m5kcnJgNCrnr8Jb2p2R2ivNgEQ2ROkR99MAoQt7BEvoZ/kE8+5yDw2GjNTg3S8iWBzNfywPCFc6a7Wkthf/b2GKsCB+eFqEY45w=
+Message-ID: <787b0d920705181845h355eed4fk2bf93323332a9d90@mail.gmail.com>
+Date: Fri, 18 May 2007 21:45:37 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+Cc: galak@kernel.crashing.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <464DBDBA.3060801@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7554.1179481350@redhat.com>
-User-Agent: Mutt/1.5.9i
+References: <787b0d920705172024g723412b4n8f82d3cd78e0f702@mail.gmail.com>
+	 <464DBDBA.3060801@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 10:42:30AM +0100, David Howells wrote:
-> Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > I'd like to be the first to propose an increase to the size of struct page
-> > just for the sake of increasing it!
-> 
-> Heh.  I'm surprised you haven't got more adverse reactions.
-> 
-> > If we add 8 bytes to struct page on 64-bit machines, it becomes 64 bytes,
-> > which is quite a nice number for cache purposes.
-> 
-> Whilst that's true, if you have to deal with a run of contiguous page structs
-> (eg: the page allocator, perhaps) it's actually less efficient because it
-> takes more cache to do it.  But, hey, it's a compromise whatever.
-> 
-> In the scheme of things, if we're mostly dealing with individual page structs
-> (as I think we are), then yes, I think it's probably a good thing to do -
-> especially with larger page sizes.
+On 5/18/07, Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+> Albert Cahalan wrote:
 
-Yeah, we would end up eating about 12.5% more cachelines for contiguous
-runs of pages... but that only kicks in after we've touched 8 of them I
-think, and by that point the accesses should be very prefetchable.
+> >>> Sure, but is there any utility in registering more than the
+> >>> decrementer on PPC?
+>
+> >> Not yet. I'm not sure I know any other PPC CPU facility fitting
+> >> for clockevents. In theory, FIT could be used -- but its period
+> >> is measured in powers of 2, IIRC.
+>
+> > I'd really like to have that as an option. It would allow oprofile
+> > to safely use hardware events on the MPC74xx "G4" processors.
+> > Alternately it would allow thermal events. It is safe to use at
+> > most one of the three (decrementer,profiling,thermal) interrupts.
+> > If two were to hit at the same time, badness happens.
+>
+> Unfortunately, FIT exists only on Book E CPUs and MPC74xx aren't Book E, IIUC.
 
-I think the average of 75% more cachelines touched for random accesses
-is going to outweigh the contiguous batch savings, but that's just a
-guess at this point.
+By the name "FIT" perhaps, but MPC74xx has essentially
+the same thing.
+
+> > It's possible to wrapper the interrupt in something that divides
+> > down, calling the normal code only some of the time. I think one
+> > of the FIT choices is about 4 kHz on my system, which would be OK.
+>
+>     Erm, are you sure you have FIT (or is your system not MPC74xx based)?
+
+Set MMCR0[TBEE], set MMCR0[PMXE], and choose a TBL bit via MMCR0[TBSEL].
+TBSEL is a 2-bit field which selects a timebase bit to use. The timebase
+bits that can be chosen are numbered 15, 19, 23, and 31. In the notation
+used by every other CPU vendor those would be bits 0, 8, 12, and 16.
+
+Example: My system uses a TBL frequency of 24907667. This gives choices
+of 12453833, 48648, 3040, and 190 Hz. The lowest three of those could
+be useful, with 48648 only for profiling and extreme real-time.
+
+It's also possible to trigger on the CPU cycle counter, but this would
+cost one of the performance counters. MPC7400 has 4, later CPUs have 6
+or more, and I think xPC7x0 had only 2. This method is a bit nicer,
+since then one could trigger interrupts on arbitrary clock cycles
+without needing to write the timebase register.
