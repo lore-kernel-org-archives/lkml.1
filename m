@@ -1,32 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764814AbXESWIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765066AbXESWIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764814AbXESWIT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 18:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764813AbXESWHO
+	id S1765066AbXESWIc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 18:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764680AbXESWHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 18:07:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:9019 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764808AbXESWHJ (ORCPT
+	Sat, 19 May 2007 18:07:20 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:21902 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761416AbXESWHR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 18:07:09 -0400
+	Sat, 19 May 2007 18:07:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=qWYwnUO30GEEPOa8jlpxLA9Dnh4MDNUt8XyPTnPIlfKz1l1m6qthaGAQJUnGL/Fnhraowero/9vSJPfHAB2tqQD9xRGXTPxQOFSxkN7h9wdH76GzxpibLP8j/ocYdNRPtE27DbSamFiFj42oPOj5NYLqPMgfnpnULhQPD/xYcsc=
-Message-ID: <464F74F2.8090207@googlemail.com>
-Date: Sun, 20 May 2007 00:06:42 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=AGsGYR8LDs2yhRrm47EqA9ujYQtwlcwB1P0fjUFlKfK/ResjlAbZ9la7THxMmWWeqrG586unDx4GH5/I3r0QDKFC12uy8f/rxJ3yFEyX/38K38XhtX3ZmddWmqhNtPJfzyEsYDzcoIsCVlOn1gooyymag+L3rQw5utFfB7HAKZY=
+Message-ID: <464F74FC.8000800@googlemail.com>
+Date: Sun, 20 May 2007 00:06:52 +0200
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Bob Tracy <rct@gherkin.frus.com>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Christian Volkmann <haveaniceday@cv-sv.de>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-crypto@vger.kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Luca Tettamanti <kronos.it@gmail.com>
-Subject: [1/2] 2.6.22-rc2: known regressions with patches
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com,
+       David Chinner <dgc@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrea Righi <righiandr@users.sourceforge.net>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Avuton Olrich <avuton@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [2/2] 2.6.22-rc2: known regressions with patches
+References: <464F7400.2070701@googlemail.com>
+In-Reply-To: <464F7400.2070701@googlemail.com>
 X-Enigmail-Version: 0.94.1.1
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -44,36 +48,32 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Unclassified
+File systems
 
-Subject    : 2.6.22-rc2: section mismatch
-References : http://lkml.org/lkml/2007/5/19/59
-Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
-Handled-By : Sam Ravnborg <sam@ravnborg.org>
-Status     : fixed in kbuild-git.git
-
-Subject    : VIA C3_2 does only boot with M386/M486 kernel. Not with M586.../MVIAC3_2
-References : http://lkml.org/lkml/2007/5/16/499
-Submitter  : Christian Volkmann <haveaniceday@cv-sv.de>
-Patch      : http://lkml.org/lkml/2007/5/16/499
-Status     : different patches in thread.
-
-Subject    : AMD k6-III/450 won't boot w/2.6.22-rc1
-References : http://lkml.org/lkml/2007/5/16/192
-Submitter  : Bob Tracy <rct@gherkin.frus.com>
-Handled-By : Dave Jones <davej@codemonkey.org.uk>
-Patch      : http://lkml.org/lkml/2007/5/17/122
+Subject    : 2.6.21-git10/11: files getting truncated on xfs
+References : http://lkml.org/lkml/2007/5/9/410
+Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
+Handled-By : David Chinner <dgc@sgi.com>
+Patch      : http://lkml.org/lkml/2007/5/12/93
 Status     : patch available
 
 
 
-Cryptography
+Memory management
 
-Subject    : cryptomgr oops
-References : http://lkml.org/lkml/2007/5/14/283
-Submitter  : Luca Tettamanti <kronos.it@gmail.com>
-Handled-By : Herbert Xu <herbert@gondor.apana.org.au>
-Patch      : http://lkml.org/lkml/2007/5/19/3
+Subject    : bug in i386 MTRR initialization
+References : http://lkml.org/lkml/2007/5/19/93
+Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
+Status     : patch available
+
+
+
+Suspend
+
+Subject    : resume after suspend-to-disk broken when USB compiled in
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8498
+Submitter  : Avuton Olrich <avuton@gmail.com>
+Patch      : http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-04-usb/usb-make-the-autosuspend-workqueue-thread-freezable.patch
 Status     : patch available
 
 
