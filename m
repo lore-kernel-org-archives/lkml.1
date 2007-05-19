@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbXESHxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXESIBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761134AbXESHxW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 03:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXESHxP
+	id S1760091AbXESIBR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 04:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbXESIBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 03:53:15 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:53693 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754078AbXESHxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 03:53:15 -0400
-Date: Sat, 19 May 2007 09:52:57 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Philip Pemberton <usenet07@philpem.me.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: IPv6: 6to4 tunnel randomly cutting out on 2.6.8.1 - any   patches?
-In-Reply-To: <f2iif3$3u3$1@sea.gmane.org>
-Message-ID: <Pine.LNX.4.61.0705190950370.9015@yvahk01.tjqt.qr>
-References: <f2ifnf$ooh$1@sea.gmane.org> <20070517.143409.102123884.davem@davemloft.net>
- <f2iif3$3u3$1@sea.gmane.org>
+	Sat, 19 May 2007 04:01:06 -0400
+Received: from neopsis.com ([213.239.204.14]:49474 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754078AbXESIBF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 04:01:05 -0400
+Message-ID: <464EB44D.2040802@dbservice.com>
+Date: Sat, 19 May 2007 10:24:45 +0200
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Jiri Kosina <jikos@jikos.cz>
+CC: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
+Subject: Re: SideWinder GameVoice driver
+References: <464C5FAC.8060609@dbservice.com> <75b66ecd0705181520p5c306e6dm146ccb4792853acd@mail.gmail.com> <Pine.LNX.4.64.0705190028100.27422@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0705190028100.27422@twin.jikos.cz>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.37,
+	required 5, autolearn=spam, AWL 0.23, BAYES_00 -2.60)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jiri Kosina wrote:
+> On Fri, 18 May 2007, Lee Revell wrote:
+> 
+>>> Despite it's a Microsoft product, it's actually very nice and useful. A
+>>> little pad with a few buttons and connectors for a headset. It's an USB
+>>> device, but it doesn't represent itself as an input/HID device:
+>>>    HID device not claimed by input or hiddev
+>> Is the audio part of the device USB audio class compliant?
+> 
+> Seems like the device is a bit strange - it in fact, as far as my 
+> understanding goes (see the previous posts in this thread), doesn't have 
+> any noticeable USB audio capabilities at all - it is just a HID device 
+> with a few buttons (plus additional audio connector, which only "forwards" 
+> the sound to a real audio device).
 
-On May 17 2007 22:46, Philip Pemberton wrote:
->> >   I'm currently trying to set IPv6 up on a Linux-based router. The
->> > aforementioned router runs kernel 2.6.8.1, and just about all the
->> > hardware driver modules are binary modules. For the record, I'd love
->> > to upgrade the router to one of the newer kernels, but AIUI I can't do
->> > it because I don't have the source to the bmods. But anyway...
->> 
->> Then don't come here looking for support, because we can't
->> help you.
->
-> All I said was "I can't upgrade the kernel". There's nothing stopping me
-> patching it, as long as nothing happens to the Ethernet and ATM driver
-> interface side of things - this is all protocol-layer stuff and should be well
-> away from the EDI.
+Exactly, it isn't a 'sound' device at all. It has a USB plug and plain
+old headset/microphone cables which have to be put into the soundcard.
+The pad itself has connectors for the headset/microphone, but those are
+simply forwarded to the soundcard (there's the 'mute' button which can
+be used to mute the microphone, and a volume wheel, but that's all it
+can do with the sound).
 
-How can you tell? The binary blobs may have a glitch, flaw, bug, that
-makes them write more-or-less random values to random memory locations,
-thereby inadvertently killing the functionality of other modules (such
-as the ipv6 tunnel).
+> 
+> So it's just a trivial HID device with probably a bit strange report 
+> descriptor, it seems to me. It even has only one interface (the HID one).
+> 
 
-If the bug happens without the blobs, _then_ one may start figuring out
-what (non-binary) modules may cause interaction problems with the ipv6
-tunnel (or if it's the tunnel module itself).
+Someone at Microsoft probably thought, Hey, there's this
+Telephony/Headset category, why not use that?
 
-
-	Jan
--- 
+tom
