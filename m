@@ -1,116 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764195AbXESXdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764779AbXESXgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764195AbXESXdK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 19:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbXESXc6
+	id S1764779AbXESXgo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 19:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbXESXgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 19:32:58 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:20017 "EHLO
+	Sat, 19 May 2007 19:36:37 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:22539 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755610AbXESXc5 (ORCPT
+	with ESMTP id S1758011AbXESXgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 19:32:57 -0400
+	Sat, 19 May 2007 19:36:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p07ZefLiTjE8CBud5UYE5wotwk5dBcqqkepn2aSJrOwekZAt87Ln4FOvmQBQRXR9ybuerdpkKOsrk6+dCRrmuHXxcdpIpBPipgXhb8ZyK2KTrh9ynIv5jsCkUXhpvoZzRJ5s5aVL+cpbk+lWM1ongyhXR3V3Qzfo/XXql5VUf4M=
-Message-ID: <a781481a0705191632l5d57a044r46317321ac463f88@mail.gmail.com>
-Date: Sun, 20 May 2007 05:02:55 +0530
+        b=aHMM0lZMa1BJeNdOzFVHRTR5mqZEZ+fp8+nx/obWsmFGRGspSgtC4pSZSCUUJArIeO1LpDpg8Ex66F3QFYv28Jud8qw91wj7cSoEBB7cPTgYt4fJs5bMOeBqoP8doYuVI96PPNirQiPP/hxN40DuRjBfEZiEnVmAjvLCp8j7sAM=
+Message-ID: <a781481a0705191636i371da96fxc0e9805778afad78@mail.gmail.com>
+Date: Sun, 20 May 2007 05:06:33 +0530
 From: "Satyam Sharma" <satyam.sharma@gmail.com>
 To: "Adrian Bunk" <bunk@stusta.de>
 Subject: Re: RFC: kconfig select warnings bogus?
 Cc: "Andrew Morton" <akpm@linux-foundation.org>,
        "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>
-In-Reply-To: <20070519232900.GM6291@stusta.de>
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Kumar Gala" <galak@kernel.crashing.org>,
+       "Simon Horman" <horms@verge.net.au>
+In-Reply-To: <20070519232542.GL6291@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <20070519151523.GA26724@uranus.ravnborg.org>
 	 <20070519110944.2a52061e.akpm@linux-foundation.org>
-	 <20070519230537.GI6291@stusta.de>
-	 <a781481a0705191617g7709f323p15cbc28fa7603e1c@mail.gmail.com>
-	 <a781481a0705191621w28e97a6bv32931ff0d46b08f5@mail.gmail.com>
-	 <20070519232900.GM6291@stusta.de>
+	 <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com>
+	 <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>
+	 <20070519230940.GJ6291@stusta.de>
+	 <a781481a0705191617v901ac64nfa7040ff302d2da1@mail.gmail.com>
+	 <20070519232542.GL6291@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> On Sun, May 20, 2007 at 04:51:44AM +0530, Satyam Sharma wrote:
-> > On 5/20/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> >> On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> >> > On Sat, May 19, 2007 at 11:09:44AM -0700, Andrew Morton wrote:
-> >> > > On Sat, 19 May 2007 17:15:23 +0200 Sam Ravnborg <sam@ravnborg.org>
-> >> wrote:
-> >> > >
-> >> > > > We see a lot of these lately:
-> >> > > >   GEN     /home/bor/build/linux-2.6.22/Makefile
-> >> > > > scripts/kconfig/conf -s arch/i386/Kconfig
-> >> > > > drivers/macintosh/Kconfig:116:warning: 'select' used by config
-> >> symbol 'PMAC_APM_EMU' refers to undefined symbol
-> >> 'SYS_SUPPORTS_APM_EMULATION'
-> >> > > > drivers/net/Kconfig:2283:warning: 'select' used by config symbol
-> >> 'UCC_GETH' refers to undefined symbol 'UCC_FAST'
-> >> > > > drivers/input/keyboard/Kconfig:170:warning: 'select' used by config
-> >> symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-> >> > > > drivers/input/mouse/Kconfig:182:warning: 'select' used by config
-> >> symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-> >> > > >
-> >> > > >
-> >> > > > Do this warning really add any value or should we just ignore them
-> >> like this?
-> >> > > >
-> >> > >
-> >> > > They always indicate Kconfig bugs, don't they?  If so, we should keep
-> >> the
-> >> > > warning.
-> >> > >...
+> On Sun, May 20, 2007 at 04:47:52AM +0530, Satyam Sharma wrote:
+> > On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
+> >> On Sun, May 20, 2007 at 04:19:12AM +0530, Satyam Sharma wrote:
+> >> >...
+> >> > A combined patch for all of those on top of 22-rc2 (adding
+> >> Signed-off-by's
+> >> > for original authors too):
+> >> >...
+> >> > --- a/arch/m68k/Kconfig       2007-05-20 04:11:47.000000000 +0530
+> >> > +++ b/arch/m68k/Kconfig       2007-05-20 04:23:57.000000000 +0530
+> >> > @@ -411,6 +411,7 @@ config STRAM_PROC
 > >> >
-> >> > No, they aren't always.
-> >> >
-> >> > Look for example at the last one in drivers/input/mouse/Kconfig:
-> >> >
+> >> > config ATARI_KBD_CORE
+> >> >       bool
+> >> > +     default y if KEYBOARD_ATARI || MOUSE_ATARI
+> >> >...
+> >> > --- a/drivers/input/keyboard/Kconfig  2007-05-20 04:11:55.000000000
+> >> +0530
+> >> > +++ b/drivers/input/keyboard/Kconfig  2007-05-20 04:24:54.000000000
+> >> +0530
+> >> > @@ -167,7 +167,6 @@ config KEYBOARD_AMIGA
+> >> > config KEYBOARD_ATARI
+> >> >       tristate "Atari keyboard"
+> >> >       depends on ATARI
+> >> > -     select ATARI_KBD_CORE
+> >> >       help
+> >> >         Say Y here if you are running Linux on any Atari and have a
+> >> keyboard
+> >> >         attached.
+> >> > diff -ruNp a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
+> >> > --- a/drivers/input/mouse/Kconfig     2007-05-20 04:11:55.000000000
+> >> +0530
+> >> > +++ b/drivers/input/mouse/Kconfig     2007-05-20 04:25:09.000000000
+> >> +0530
+> >> > @@ -179,7 +179,6 @@ config MOUSE_AMIGA
 > >> > config MOUSE_ATARI
-> >> >         tristate "Atari mouse"
-> >> >         depends on ATARI
-> >> >         select ATARI_KBD_CORE
-> >> >
-> >> > This is perfectly correct (the select'ed symbol is only unavailable when
-> >> > the dependency can't be fulfilled), and all things to "fix" the warning
-> >> > will make it worse.
+> >> >       tristate "Atari mouse"
+> >> >       depends on ATARI
+> >> > -     select ATARI_KBD_CORE
+> >> >       help
+> >> >         Say Y here if you have an Atari and want its native mouse
+> >> >         supported by the kernel.
+> >> >...
 > >>
-> >> Not sure what you mean here. The select'ed symbol here is unavailable
-> >> because not all arch's define it. However, the symbol that selects it is
-> >> in drivers/input/... and hence run for all arch's. That's the simple issue
-> >> here that is resolved by this fix.
+> >> This is a good example how "fixing" the warnings makes things worse...
 > >
-> > And by the way, this is precisely the case for _all_ the select issues in
-> > this
-> > patch (the four that were raised by Sam) -- i.e. only one arch defining a
-> > config option that is selected by stuff in drivers/... which is common for
-> > all archs, and hence the warnings on other archs.
-> >
-> > I don't see any problem at all that is introduced / "made worse" by the
-> > patch, it just rectifies the problem to get rid of the warnings.
+> > How?
 >
-> There's no doubt that it gets rid of the warnings.
-
-Ah, ok, so you're saying that these warnings would not lead to build
-failures in any case, so we might as well not print the warnings at all?
-I can't confirm that, have never tried to build these drivers here (don't
-have m68k / powerpc boxen), so perhaps you're right.
-
-> But the warnings don't point to problems and the "fixes" for the
-> warnings make the Kconfig's worse.
+> Consider ATARI_KBD_CORE was used by 20 drivers.
 >
-> If fixing warnings makes something not better but worse, it's always
-> worth a thought whether to disable the warning.
+> Using select for such not user visible helper variables is a really nice
+> thing, and much more readable (and therefore much less likely to contain
+> bugs) than dependencies with tons of "||"'s.
 
-There is nothing that is "made worse" by the "select -> default .. if .."
-kind of conversion here.
-
-In any case, the problem with Sam's patch is that it gets rid of
-warnings for all cases where someone is trying to "select" a config
-option that does not exist at all (and perhaps some of those cases
-_could_ lead to build breakages).
+Well, the "default .. if .." kind of idiom is fairly common (I could say
+almost standard), in arch/.../config's. It's been used for some time,
+and for several symbols over there. But you're right that if 20 drivers
+used ATARI_KBD_CORE, we'd get tons of ugly "||"'s there, so
+perhaps we do need some kind of fix for this.
