@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763987AbXESVbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764482AbXESVeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763987AbXESVbV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 17:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXESVbO
+	id S1764482AbXESVeP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 17:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXESVeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 17:31:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58248 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754709AbXESVbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 17:31:13 -0400
-Message-ID: <464F6C9F.4060503@garzik.org>
-Date: Sat, 19 May 2007 17:31:11 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] sata_sil: Greatly improve DMA support
-References: <fa.SqfRJHzGgf3m6sdJPwJTwHDPSuw@ifi.uio.no> <464F2D83.6000506@shaw.ca> <464F6BB1.9050609@garzik.org>
-In-Reply-To: <464F6BB1.9050609@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 19 May 2007 17:34:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43630
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755324AbXESVeC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 17:34:02 -0400
+Date: Sat, 19 May 2007 14:34:05 -0700 (PDT)
+Message-Id: <20070519.143405.11626880.davem@davemloft.net>
+To: tglx@linutronix.de
+Cc: mikulas@artax.karlin.mff.cuni.cz, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NOHZ: local_softirq_pending with tickless plip
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1179399131.3764.50.camel@chaos>
+References: <Pine.LNX.4.64.0705161415350.10041@artax.karlin.mff.cuni.cz>
+	<1179399131.3764.50.camel@chaos>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> rotfl.  Boy am I dumb.  I -thought- my patch, written months ago, 
-> included that bit.  But obviously it does not.  Let's add that...
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Thu, 17 May 2007 12:52:11 +0200
 
-Or not.  It just gets rid of the 64k boundary -and- allows for larger 
-scatter/gather entries.  LBT does not add 64-bit DMA support.
+> On Wed, 2007-05-16 at 15:00 +0200, Mikulas Patocka wrote:
+> > Hi
+> > 
+> > On one of my machines with tickless kernel and plip I get messages :
+> 
+> I bet this is a machine a P4 with Hyperthreading enabled ?
+> 
+> > NOHZ: local_softirq_pending 08
+> > 
+> > always when using plip (on other machine with tickless kernel and plip I 
+> > get no errors). Thebug happens both on 2.6.21 and 2.6.22-rc1
+> > 
+> > This patch fixes that. Note that plip calls netif_rx neither from hardware 
+> > interrupt nor from ksoftirqd, so there is no one who would wake 
+> > ksoftirqd then. netif_tx calls only 
+> > __raise_softirq_irqoff(NET_RX_SOFTIRQ), which sets softirq bit, but 
+> > doesn't wake ksoftirqd.
+> 
+> Dave, 
+> 
+> can we please get rid of __raise_softirq_irqoff() at all ? These micro
+> optimizations are causing more trouble than they are worth.
 
-That answers that :)  Thanks for poking me to take a trip down memory 
-lane...
+I looked some more and really I think this is a bug in plip,
+netif_rx() should only be invoked from software or hardware
+interrupts.
 
-	Jeff
+If you look, the function invoking netif_rx() is called plip_bh() and
+indeed I believe with that kind of funtion name it did run from
+software interrupts (of BH's as they used to be called) at one point
+but someone changed it over to execute from a workqueue for some
+reason.
 
-
+We really shouldn't punish all callers of netif_rx() just because
+one call site doesn't invoke it in the correct context.
