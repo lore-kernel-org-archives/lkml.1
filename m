@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbXESNRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760435AbXESN0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760001AbXESNRY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 09:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbXESNRQ
+	id S1760435AbXESN0h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 09:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbXESN0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 09:17:16 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:38117 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1757388AbXESNRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 09:17:16 -0400
-Message-ID: <379580628.01003@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Sat, 19 May 2007 21:17:13 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Pratt <slpratt@austin.ibm.com>, Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH 9/9] readahead: remove the old algorithm
-Message-ID: <20070519131713.GA6510@mail.ustc.edu.cn>
-Mail-Followup-To: Andi Kleen <andi@firstfloor.org>,
-	Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	Jens Axboe <jens.axboe@oracle.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-	Steven Pratt <slpratt@austin.ibm.com>,
-	Ram Pai <linuxram@us.ibm.com>
-References: <20070516224752.500812933@mail.ustc.edu.cn> <20070516224819.420933490@mail.ustc.edu.cn> <20070519121855.GC25563@one.firstfloor.org>
-MIME-Version: 1.0
+	Sat, 19 May 2007 09:26:30 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46713 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757483AbXESN0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 09:26:30 -0400
+Date: Sat, 19 May 2007 15:27:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2: section mismatch
+Message-ID: <20070519132727.GA23370@uranus.ravnborg.org>
+References: <200705191443.27161.arvidjaar@mail.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070519121855.GC25563@one.firstfloor.org>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200705191443.27161.arvidjaar@mail.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 19, 2007 at 02:18:55PM +0200, Andi Kleen wrote:
-> On Thu, May 17, 2007 at 06:48:01AM +0800, Fengguang Wu wrote:
-> > Remove the old readahead algorithm.
-> 
-> FWIW - i read the complete patchkit. While I'm not a particular expert
-> on that code i didn't see anything I didn't like
+On Sat, May 19, 2007 at 02:43:21PM +0400, Andrey Borzenkov wrote:
+>   MODPOST vmlinux
+> WARNING: init/built-in.o - Section mismatch: reference to .init.text: 
+> from .text between 'rest_init' (at offset 0x11b) and 'try_name'
+Fixed in kbuild.fix.git.
 
-Thank you.
+> WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference 
+> to .init.text:amd_init_mtrr from .text between 'mtrr_bp_init' (at offset 
+> 0x967a) and 'mtrr_attrib_to_str'
+> WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference 
+> to .init.text:cyrix_init_mtrr from .text between 'mtrr_bp_init' (at offset 
+> 0x967f) and 'mtrr_attrib_to_str'
+> WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference 
+> to .init.text:centaur_init_mtrr from .text between 'mtrr_bp_init' (at offset 
+> 0x9684) and 'mtrr_attrib_to_str'
 
-Wu
+mtrr_bp_init() should be declared __init
+
+> WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference 
+> to .init.text: from .text between 'get_mtrr_state' (at offset 0xa735) 
+> and 'generic_get_mtrr'
+> WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference 
+> to .init.text: from .text between 'get_mtrr_state' (at offset 0xa749) 
+> and 'generic_get_mtrr'
+> WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference 
+> to .init.text: from .text between 'get_mtrr_state' (at offset 0xa770) 
+> and 'generic_get_mtrr'
+
+get_mtrr_state should be declared __init
+
+> WARNING: mm/built-in.o - Section mismatch: reference to .init.text: from .text 
+> between 'kmem_cache_create' (at offset 0x1bffd) and 'cache_reap'
+> WARNING: mm/built-in.o - Section mismatch: reference to .init.text: from .text 
+> between 'kmem_cache_create' (at offset 0x1c232) and 'cache_reap'
+
+Fixed in kbuild-git.git
+
+	Sam
 
