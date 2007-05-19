@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765066AbXESWIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764808AbXESWK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765066AbXESWIc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 18:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764680AbXESWHU
+	id S1764808AbXESWK7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 18:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbXESWKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 18:07:20 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:21902 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761416AbXESWHR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 18:07:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=AGsGYR8LDs2yhRrm47EqA9ujYQtwlcwB1P0fjUFlKfK/ResjlAbZ9la7THxMmWWeqrG586unDx4GH5/I3r0QDKFC12uy8f/rxJ3yFEyX/38K38XhtX3ZmddWmqhNtPJfzyEsYDzcoIsCVlOn1gooyymag+L3rQw5utFfB7HAKZY=
-Message-ID: <464F74FC.8000800@googlemail.com>
-Date: Sun, 20 May 2007 00:06:52 +0200
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 19 May 2007 18:10:53 -0400
+Received: from neon.samage.net ([85.17.153.66]:46149 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757931AbXESWKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 18:10:52 -0400
+Message-ID: <1447.81.207.0.53.1179612647.squirrel@secure.samage.net>
+In-Reply-To: <20070519193307.GA26156@kroah.com>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+    <3642.81.207.0.53.1179584891.squirrel@secure.samage.net>
+    <Pine.LNX.4.64.0705191119460.17008@schroedinger.engr.sgi.com>
+    <20070519193307.GA26156@kroah.com>
+Date: Sun, 20 May 2007 00:10:47 +0200 (CEST)
+Subject: Re: [BUG: 2.6.22-rc2] SLAB doesn't like usb_get_configuration()
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Greg KH" <greg@kroah.com>
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com,
-       David Chinner <dgc@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Andrea Righi <righiandr@users.sourceforge.net>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Avuton Olrich <avuton@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [2/2] 2.6.22-rc2: known regressions with patches
-References: <464F7400.2070701@googlemail.com>
-In-Reply-To: <464F7400.2070701@googlemail.com>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: 9b84bad32751a42de3aa9e7877f1ca86
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sat, May 19, 2007 21:33, Greg KH wrote:
+> On Sat, May 19, 2007 at 11:20:44AM -0700, Christoph Lameter wrote:
+>> On Sat, 19 May 2007, Indan Zupancic wrote:
+>>
+>> > I had two SLAb related bugs, both with usb_get_configuration()
+>> > near the end of the backtrace. First one was with git between
+>> > rc1 and rc2, but very close to rc2, second one was with rc2,
+>> > both at bootup.
+>>
+>> Well usb_get_configuration seems to do a kmalloc(0) which is a bit
+>> strange and this is why we flagged the allocation in the slab allocators.
+>> Is there some way to avoid allocating an object of zero length?
+>
+> Can you try the patch below and let me know if it fixes the issue for
+> you or not?
+>
+> thanks,
+>
+> greg k-h
+>
+>
+> From: Alan Stern <stern@rowland.harvard.edu>
+> Subject: [PATCH] USB: don't try to kzalloc 0 bytes
+>
+> This patch (as907) prevents us from trying to allocate 0 bytes
+> when an interface has no endpoint descriptors.
+>
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+>
+> --- usb-2.6.orig/drivers/usb/core/config.c
+> +++ usb-2.6/drivers/usb/core/config.c
+> @@ -185,10 +185,12 @@ static int usb_parse_interface(struct de
+>  		num_ep = USB_MAXENDPOINTS;
+>  	}
+>
+> -	len = sizeof(struct usb_host_endpoint) * num_ep;
+> -	alt->endpoint = kzalloc(len, GFP_KERNEL);
+> -	if (!alt->endpoint)
+> -		return -ENOMEM;
+> +	if (num_ep > 0) {	/* Can't allocate 0 bytes */
+> +		len = sizeof(struct usb_host_endpoint) * num_ep;
+> +		alt->endpoint = kzalloc(len, GFP_KERNEL);
+> +		if (!alt->endpoint)
+> +			return -ENOMEM;
+> +	}
+>
+>  	/* Parse all the endpoint descriptors */
+>  	n = 0;
+>
 
-Here is a list of some known regressions in 2.6.22-rc2
-with patches available.
+Thanks, this one seems to fix it, I don't get the BUG anymore.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+Greetings,
 
-
-
-File systems
-
-Subject    : 2.6.21-git10/11: files getting truncated on xfs
-References : http://lkml.org/lkml/2007/5/9/410
-Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-Handled-By : David Chinner <dgc@sgi.com>
-Patch      : http://lkml.org/lkml/2007/5/12/93
-Status     : patch available
+Indan
 
 
-
-Memory management
-
-Subject    : bug in i386 MTRR initialization
-References : http://lkml.org/lkml/2007/5/19/93
-Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
-Status     : patch available
-
-
-
-Suspend
-
-Subject    : resume after suspend-to-disk broken when USB compiled in
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8498
-Submitter  : Avuton Olrich <avuton@gmail.com>
-Patch      : http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-04-usb/usb-make-the-autosuspend-workqueue-thread-freezable.patch
-Status     : patch available
-
-
-
-Regards,
-Michal
-
---
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
