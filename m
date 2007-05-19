@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762755AbXESQUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbXESQ3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762755AbXESQUl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 12:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXESQUd
+	id S1759275AbXESQ3h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 12:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXESQ32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 12:20:33 -0400
-Received: from neon.samage.net ([85.17.153.66]:49508 "EHLO neon.samage.net"
+	Sat, 19 May 2007 12:29:28 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:33084 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754436AbXESQUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 12:20:32 -0400
-X-Greylist: delayed 1573 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 May 2007 12:20:32 EDT
-Message-ID: <1441.81.207.0.53.1179591630.squirrel@secure.samage.net>
-In-Reply-To: <20070519053532.GA32522@havoc.gtf.org>
-References: <20070519053532.GA32522@havoc.gtf.org>
-Date: Sat, 19 May 2007 18:20:30 +0200 (CEST)
-Subject: Re: [PATCH] sata_sil: Greatly improve DMA support
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Jeff Garzik" <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, "LKML" <linux-kernel@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-User-Agent: SquirrelMail/1.4.8
-MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 938925967a2432a0d8c7279c30be63be
+	id S1754297AbXESQ31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 12:29:27 -0400
+Date: Sat, 19 May 2007 20:27:15 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>,
+       John Stoffel <john@stoffel.org>, David Woodhouse <dwmw2@infradead.org>,
+       akpm@osdl.org, Albert Cahalan <acahalan@gmail.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Ingo Oeser <ioe-lkml@rameria.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-mtd@lists.infradead.org, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070519162714.GA7383@2ka.mipt.ru>
+References: <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org> <17995.2550.581854.8393@stoffel.org> <20070516135318.GK5472@lazybastard.org> <20070519144556.GS11766@vasa.acc.umu.se> <20070519161732.GA14324@mail.shareable.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070519161732.GA14324@mail.shareable.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sat, 19 May 2007 20:27:27 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 19, 2007 07:35, Jeff Garzik wrote:
->
-> Since Alan expressed a desire to see Large Block Transfer (LBT) support
-> in pata_sil680, I though I would re-post my patch for adding LBT support
-> to sata_sil.
->
-> Silicon Image's Large Block Transfer (LBT) support is a vendor-specific
-> DMA scatter/gather engine, which enables 64-bit DMA addresses (where
-> supported by platform) and eliminates the annoying 64k DMA boundary
-> found in legacy PCI IDE BMDMA engines.
->
-> This hardware is open hardware.  Docs for both PATA and SATA can be
-> found at http://gkernel.sourceforge.net/specs/sii/
->
-> LBT support works the same way in both pata_sil680 and sata_sil, so
-> maybe a motivated individual could take use this patch as an inspiration
-> for doing the same thing with pata_sil680.
->
-> NOTE:  This patch works for me on x86 and x86-64.  However, other
-> testers reported problems, which is why it is not upstream.
+On Sat, May 19, 2007 at 05:17:32PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
+> > So, log2fs...  Sounds great to me.
+> 
+> Why Log2?  Logarithmic scaling is just logarithmic scaling.  Does the
+> filesystem use 2-ary trees or anything else which gives particular
+> meaning to 2?
 
-This patch seems to work with my SiI 3512, though I don't notice any
-difference, neither a speedup, nor a slowdown. Hdparm gives the same
-speeds (-tT), and cp -a'ing kernel sources is abysmal slow in both cases,
-(need to look into that one) so I didn't really test it that well.
+Sizes used in on-disk format are rounded to the nearest power-of-two.
 
-Greetings,
+> -- Jamie
 
-Indan
-
-
+-- 
+	Evgeniy Polyakov
