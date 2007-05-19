@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbXESGrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbXESGtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759645AbXESGrT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 02:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXESGrL
+	id S1761619AbXESGtS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 02:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbXESGtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 02:47:11 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:54987 "EHLO ishtar.tlinx.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754214AbXESGrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 02:47:11 -0400
-Message-ID: <464E9D69.8030505@tlinx.org>
-Date: Fri, 18 May 2007 23:47:05 -0700
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: building i386 requires s390: "driver/crypto/Kconfig" sourcing
- s390 arch
-References: <464DFF5F.5010905@tlinx.org>	<20070518141735.aae3921a.randy.dunlap@oracle.com>	<464E1E9A.8060605@tlinx.org> <20070518161920.ae0ed062.randy.dunlap@oracle.com>
-In-Reply-To: <20070518161920.ae0ed062.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 19 May 2007 02:49:03 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53369 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754338AbXESGtA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 02:49:00 -0400
+Date: Fri, 18 May 2007 23:44:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 0/6][TAKE4] fallocate system call
+Message-Id: <20070518234444.f53a4230.akpm@linux-foundation.org>
+In-Reply-To: <20070517141115.GA24260@amitarora.in.ibm.com>
+References: <20070321120425.GA27273@amitarora.in.ibm.com>
+	<20070329115126.GB7374@amitarora.in.ibm.com>
+	<20070329101010.7a2b8783.akpm@linux-foundation.org>
+	<20070330071417.GI355@devserv.devel.redhat.com>
+	<20070417125514.GA7574@amitarora.in.ibm.com>
+	<20070418130600.GW5967@schatzie.adilger.int>
+	<20070420135146.GA21352@amitarora.in.ibm.com>
+	<20070420145918.GY355@devserv.devel.redhat.com>
+	<20070424121632.GA10136@amitarora.in.ibm.com>
+	<20070426175056.GA25321@amitarora.in.ibm.com>
+	<20070517141115.GA24260@amitarora.in.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> if S390
-> source "arch/s390/crypto/Kconfig"
-> endif
->   
-Why bother?  Why not just move the contents of s390's crypto "Kconfig"
-in place of the "source" statement.  All the options in s390's Kconfig
-are already conditional depending on S390.
+On Thu, 17 May 2007 19:41:15 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
 
-The contents simply need to be [moved] in[to] the the main crypto
-config file (./drivers/crypto/Kconfig).
+> fallocate() is a new system call being proposed here which will allow
+> applications to preallocate space to any file(s) in a file system.
 
-It "works" fine on i386, don't see why it wouldn't build on any other
-arch.
+I merged the first three patches into -mm, thanks.
 
+All the system call numbers got changed due to recent additions.  They
+may change in the future, too - nothing is stable until the code lands
+in mainline.
 
+I didn't merge any of the ext4 changes as they appear to be in Ted's
+devel tree.  Although I didn't check that they are 100% the same in 
+that tree.
 
+What's the plan to get some ext4 updates into mainline, btw?  Things
+seem to be rather gradual.
