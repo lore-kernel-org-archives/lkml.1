@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763602AbXESPOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763256AbXESPTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763602AbXESPOf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 11:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759220AbXESPO2
+	id S1763256AbXESPTT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 11:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759073AbXESPTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 11:14:28 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:54649 "EHLO pasmtpA.tele.dk"
+	Sat, 19 May 2007 11:19:09 -0400
+Received: from mail.tmr.com ([64.65.253.246]:41684 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759039AbXESPO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 11:14:28 -0400
-Date: Sat, 19 May 2007 17:15:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>
-Subject: RFC: kconfig select warnings bogus?
-Message-ID: <20070519151523.GA26724@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	id S1758909AbXESPTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 11:19:06 -0400
+Message-ID: <464F1539.5050204@tmr.com>
+Date: Sat, 19 May 2007 11:18:17 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Dongjun Shin <djshin90@gmail.com>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+References: <20070515151919.GA32510@lazybastard.org>	 <20070515133759.9ee434a2.akpm@linux-foundation.org>	 <1179317240.2859.222.camel@shinybook.infradead.org>	 <20070516083408.dcd9dd78.akpm@linux-foundation.org>	 <1179330596.2859.248.camel@shinybook.infradead.org>	 <20070516164158.GB8113@lazybastard.org>	 <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com>	 <1179383117.2859.416.camel@shinybook.infradead.org> <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
+In-Reply-To: <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We see a lot of these lately:
-  GEN     /home/bor/build/linux-2.6.22/Makefile
-scripts/kconfig/conf -s arch/i386/Kconfig
-drivers/macintosh/Kconfig:116:warning: 'select' used by config symbol 'PMAC_APM_EMU' refers to undefined symbol 'SYS_SUPPORTS_APM_EMULATION'
-drivers/net/Kconfig:2283:warning: 'select' used by config symbol 'UCC_GETH' refers to undefined symbol 'UCC_FAST'
-drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-drivers/input/mouse/Kconfig:182:warning: 'select' used by config symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+Dongjun Shin wrote:
+
+> There are so many flash-based storage and some disposable storages,
+> as you pointed out, have poor quality. I think it's mainly because these
+> are not designed for good quality, but for lowering the price.
+> 
+The reliability seems to be appropriate to the common use. I'm doubious 
+that computer storage was a big design factor until the last few years. 
+A good argument for buying large sizes, they are more likely to be 
+recent design.
+
+> These kind of devices are not ready for things like power failure because
+> their use case is far from that. For example, removing flash card
+> while taking pictures using digital camera is not a common use case.
+> (there should be a written notice that this kind of action is against
+> the warranty)
+> 
+They do well in such use, if you equate battery death to pulling the 
+card (it may not be). I have tested that feature and not had a failure 
+of any but the last item. Clearly not recommended, but sometimes 
+unplanned needs arise.
 
 
-Do this warning really add any value or should we just ignore them like this?
+> - In contrast to the embedded environment where CPU and flash is directly
+> connected, the I/O path between CPU and flash in PC environment is longer.
+> The latency for SW handshaking between CPU and flash will also be longer,
+> which would make the performance optimization harder.
+> 
+> As I mentioned, some techniques like log-structured filesystem could
+> perform generally better on any kind of flash-based storage with FTL.
+> Although there are many kinds of FTL, it is commonly true that
+> it performs well under workload where sequential write is dominant.
+> 
+> I also expect that FTL for PC environment will have better quality spec
+> than the disposable storage.
 
-	Sam
+The recent technology announcements from Intel are encouraging in that 
+respect.
 
-diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-index f14aeac..c0c84f2 100644
---- a/scripts/kconfig/menu.c
-+++ b/scripts/kconfig/menu.c
-@@ -200,11 +200,6 @@ void sym_check_prop(struct symbol *sym)
- 				prop_warn(prop,
- 				    "config symbol '%s' uses select, but is "
- 				    "not boolean or tristate", sym->name);
--			else if (sym2->type == S_UNKNOWN)
--				prop_warn(prop,
--				    "'select' used by config symbol '%s' "
--				    "refers to undefined symbol '%s'",
--				    sym->name, sym2->name);
- 			else if (sym2->type != S_BOOLEAN && sym2->type != S_TRISTATE)
- 				prop_warn(prop,
- 				    "'%s' has wrong type. 'select' only "
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
