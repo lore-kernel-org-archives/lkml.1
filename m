@@ -1,101 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764779AbXESXgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765161AbXESXh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764779AbXESXgo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 19:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbXESXgh
+	id S1765161AbXESXh1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 19:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbXESXhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 19:36:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:22539 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758011AbXESXgg (ORCPT
+	Sat, 19 May 2007 19:37:14 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42688 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760133AbXESXhM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 19:36:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aHMM0lZMa1BJeNdOzFVHRTR5mqZEZ+fp8+nx/obWsmFGRGspSgtC4pSZSCUUJArIeO1LpDpg8Ex66F3QFYv28Jud8qw91wj7cSoEBB7cPTgYt4fJs5bMOeBqoP8doYuVI96PPNirQiPP/hxN40DuRjBfEZiEnVmAjvLCp8j7sAM=
-Message-ID: <a781481a0705191636i371da96fxc0e9805778afad78@mail.gmail.com>
-Date: Sun, 20 May 2007 05:06:33 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: RFC: kconfig select warnings bogus?
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "Kumar Gala" <galak@kernel.crashing.org>,
-       "Simon Horman" <horms@verge.net.au>
-In-Reply-To: <20070519232542.GL6291@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 19 May 2007 19:37:12 -0400
+Date: Sat, 19 May 2007 16:34:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Sasa Ostrouska" <casaxa@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org, Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: Re: STRANGE ERROR
+Message-Id: <20070519163402.b087b9d7.akpm@linux-foundation.org>
+In-Reply-To: <dcf706c60705191530x5a78f9aewbb520a97ad516f6d@mail.gmail.com>
+References: <dcf706c60705191530x5a78f9aewbb520a97ad516f6d@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070519151523.GA26724@uranus.ravnborg.org>
-	 <20070519110944.2a52061e.akpm@linux-foundation.org>
-	 <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com>
-	 <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>
-	 <20070519230940.GJ6291@stusta.de>
-	 <a781481a0705191617v901ac64nfa7040ff302d2da1@mail.gmail.com>
-	 <20070519232542.GL6291@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> On Sun, May 20, 2007 at 04:47:52AM +0530, Satyam Sharma wrote:
-> > On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> >> On Sun, May 20, 2007 at 04:19:12AM +0530, Satyam Sharma wrote:
-> >> >...
-> >> > A combined patch for all of those on top of 22-rc2 (adding
-> >> Signed-off-by's
-> >> > for original authors too):
-> >> >...
-> >> > --- a/arch/m68k/Kconfig       2007-05-20 04:11:47.000000000 +0530
-> >> > +++ b/arch/m68k/Kconfig       2007-05-20 04:23:57.000000000 +0530
-> >> > @@ -411,6 +411,7 @@ config STRAM_PROC
-> >> >
-> >> > config ATARI_KBD_CORE
-> >> >       bool
-> >> > +     default y if KEYBOARD_ATARI || MOUSE_ATARI
-> >> >...
-> >> > --- a/drivers/input/keyboard/Kconfig  2007-05-20 04:11:55.000000000
-> >> +0530
-> >> > +++ b/drivers/input/keyboard/Kconfig  2007-05-20 04:24:54.000000000
-> >> +0530
-> >> > @@ -167,7 +167,6 @@ config KEYBOARD_AMIGA
-> >> > config KEYBOARD_ATARI
-> >> >       tristate "Atari keyboard"
-> >> >       depends on ATARI
-> >> > -     select ATARI_KBD_CORE
-> >> >       help
-> >> >         Say Y here if you are running Linux on any Atari and have a
-> >> keyboard
-> >> >         attached.
-> >> > diff -ruNp a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
-> >> > --- a/drivers/input/mouse/Kconfig     2007-05-20 04:11:55.000000000
-> >> +0530
-> >> > +++ b/drivers/input/mouse/Kconfig     2007-05-20 04:25:09.000000000
-> >> +0530
-> >> > @@ -179,7 +179,6 @@ config MOUSE_AMIGA
-> >> > config MOUSE_ATARI
-> >> >       tristate "Atari mouse"
-> >> >       depends on ATARI
-> >> > -     select ATARI_KBD_CORE
-> >> >       help
-> >> >         Say Y here if you have an Atari and want its native mouse
-> >> >         supported by the kernel.
-> >> >...
-> >>
-> >> This is a good example how "fixing" the warnings makes things worse...
-> >
-> > How?
->
-> Consider ATARI_KBD_CORE was used by 20 drivers.
->
-> Using select for such not user visible helper variables is a really nice
-> thing, and much more readable (and therefore much less likely to contain
-> bugs) than dependencies with tons of "||"'s.
+On Sun, 20 May 2007 00:30:55 +0200 "Sasa Ostrouska" <casaxa@gmail.com> wrote:
 
-Well, the "default .. if .." kind of idiom is fairly common (I could say
-almost standard), in arch/.../config's. It's been used for some time,
-and for several symbols over there. But you're right that if 20 drivers
-used ATARI_KBD_CORE, we'd get tons of ugly "||"'s there, so
-perhaps we do need some kind of fix for this.
+> Hi everybody,
+> 
+> I tried today to upgrade the kernel to 2.6.21.1 and i got the same
+> error during the boot time.
+> Here is the dmesg of the 2.6.20.2, can somebody tell me what this is ?
+> 
+> ...
+>
+> Marvell 88E1101: Registered new driver
+> Fixed PHY: Registered new driver
+> driver_bound: device fixed@100:1 already bound
+
+I don't know what caused that one.
+
+> Device 'fixed@100:1' does not have a release() function, it is broken
+> and must be fixed.
+> BUG: at drivers/base/core.c:104 device_release()
+> 
+> Call Trace:
+>  [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
+>  [<ffffffff802ec3ab>] kobject_release+0x0/0x9
+>  [<ffffffff802ecf3f>] kref_put+0x74/0x81
+>  [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
+>  [<ffffffff80564d31>] fixed_init+0x1f/0x35
+>  [<ffffffff802071a4>] init+0x147/0x2fb
+>  [<ffffffff80223b6e>] schedule_tail+0x36/0x92
+>  [<ffffffff8020a678>] child_rip+0xa/0x12
+>  [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
+>  [<ffffffff8020705d>] init+0x0/0x2fb
+>  [<ffffffff8020a66e>] child_rip+0x0/0x12
+
+This appears to have happened because fixed_mdio_register_device() (or
+phy_device_create) didn't suitably initialise phy_device.dev.
+
+But I don't immediately see why this doesn't affect all phy drivers. 
+Presumably it's the fixed driver which is at fault.  Jeff, how is this
+supposed to work?
+
+Thanks.
+
