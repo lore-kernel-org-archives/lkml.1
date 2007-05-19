@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764406AbXESVwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762545AbXESWD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764406AbXESVwp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 17:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbXESVwj
+	id S1762545AbXESWD4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 18:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbXESWDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 17:52:39 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:34015 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755556AbXESVwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 17:52:38 -0400
-Subject: Re: [RFC] LZO1X de/compression support
-From: Richard Purdie <richard@openedhand.com>
-To: "Bill Rugolsky Jr." <brugolsky@telemetry-investments.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Nitin Gupta <nitingupta910@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070519185514.GA17869@ti88.telemetry-investments.com>
-References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
-	 <m3646pg7fy.fsf@maximus.localdomain>
-	 <20070519185514.GA17869@ti88.telemetry-investments.com>
-Content-Type: text/plain
-Date: Sat, 19 May 2007 22:52:12 +0100
-Message-Id: <1179611532.5852.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Sat, 19 May 2007 18:03:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58364 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756755AbXESWDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 18:03:47 -0400
+Message-ID: <464F7440.10900@garzik.org>
+Date: Sat, 19 May 2007 18:03:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Indan Zupancic <indan@nul.nu>
+CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] sata_sil: Greatly improve DMA support
+References: <20070519053532.GA32522@havoc.gtf.org> <1441.81.207.0.53.1179591630.squirrel@secure.samage.net>
+In-Reply-To: <1441.81.207.0.53.1179591630.squirrel@secure.samage.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-19 at 14:55 -0400, Bill Rugolsky Jr. wrote:
-> On Fri, May 18, 2007 at 11:14:57PM +0200, Krzysztof Halasa wrote:
-> > I'm certainly missing something but what are the advantages of this
-> > code (over current gzip etc.), and what will be using it?
-> 
-> Richard's patchset added it to the crypto library and wired it into
-> the JFFS2 file system. 
+Indan Zupancic wrote:
+> This patch seems to work with my SiI 3512, though I don't notice any
+> difference, neither a speedup, nor a slowdown. Hdparm gives the same
+> speeds (-tT), and cp -a'ing kernel sources is abysmal slow in both cases,
+> (need to look into that one) so I didn't really test it that well.
 
-Basically, LZO has much faster decompression speeds. For jffs2, there
-was a 40% filesystem read speed improvement with LZO compared to zlib
-and that resulted in a device booting 10% faster. The drawback was a
-slight drop in file compression (say 5% although it varied a lot
-depending on the test data). For lots of uses, that is an acceptable
-compromise.
 
-It appears resier4 is using LZO too.
+It won't result in much of a speedup, except in situations where IOMMU 
+or other situation that causes you to run into the 64k boundary being an 
+issue -- generally only on huge transfers.
 
-> We recently started using LZO in a userland UDP
-> proxy to do stateless per-packet payload compression over a WAN link.
-> With ~1000 octet packets, our particular data stream sees 60% compression
-> with zlib, and 50% compression with (mini-)LZO, but LZO runs at ~5.6x
-> the speed of zlib.  IIRC, that translates into > 700Mbps on the input
-> side on a 2GHZ Opteron, without any further tuning.
+A good measure is to dd(1) to/from the block device, rather than using a 
+filesystem.  As has been shown on LKML, the filesystem can really slow 
+things down in some cases.
 
-Those figures sound comparable with my experiences...
-
-Richard
+	Jeff
 
 
