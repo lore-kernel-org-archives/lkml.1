@@ -1,100 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764914AbXESWzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764667AbXESXAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764914AbXESWzE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 18:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbXESWyz
+	id S1764667AbXESXAl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 19:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761399AbXESXAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 18:54:55 -0400
-Received: from neon.samage.net ([85.17.153.66]:42018 "EHLO neon.samage.net"
+	Sat, 19 May 2007 19:00:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41066 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761575AbXESWyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 18:54:54 -0400
-Message-ID: <2318.81.207.0.53.1179615289.squirrel@secure.samage.net>
-In-Reply-To: <464F409D.9030408@gmail.com>
-References: <20070510072005.GA27316@linux-sh.org>
-    <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com>
-    <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com>
-    <20070511005217.GA23186@li <464B3505.20004@gmail.com>
-    <1800.81.207.0.53.1179590050.squirrel@secure.samage.net>
-    <464F409D.9030408@gmail.com>
-Date: Sun, 20 May 2007 00:54:49 +0200 (CEST)
-Subject: Re: [PATCH] libata: implement ata_wait_after_reset()
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Tejun Heo" <htejun@gmail.com>
-Cc: "Paul Mundt" <lethal@linux-sh.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       garyhade@us.ibm.com
-User-Agent: SquirrelMail/1.4.8
+	id S1760096AbXESXAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 19:00:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.21-mm2: ACPI exception on resume
+Date: Sun, 20 May 2007 01:05:44 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20070519165738.GK11115@waste.org> <200705192024.16812.rjw@sisk.pl> <20070519224028.GO11115@waste.org>
+In-Reply-To: <20070519224028.GO11115@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 3b058867a8808b2a73617ccb478d635a
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705200105.44576.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 19, 2007 20:23, Tejun Heo wrote:
-> Indan Zupancic wrote:
->> Resume takes now ten seconds or more, while it used to take only a few seconds,
->> what changed? A few kernel versions ago (2.6.21-rc or so?) it retried in 5 seconds
->> instead of 10, but even that is too long.
->
-> There are two different things at play here...
->
-> 1. We dropped libata specific suspend/resume implementation in favor of
-> sd driven one.  Unfortunately, the new implementation currently can't do
-> background spinup, so that's probably why you can feel the delay.  We
-> need to figure out how to do background spinup with the new implementation.
+On Sunday, 20 May 2007 00:40, Matt Mackall wrote:
+> On Sat, May 19, 2007 at 08:24:16PM +0200, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > On Saturday, 19 May 2007 18:57, Matt Mackall wrote:
+> > > Starting with 2.6.21-mm2, I'm seeing occassional failures to resume
+> > > from suspend-to-ram on my Thinkpad R51. The screen will flash as it
+> > > usually does, then go black and the machine will become totally
+> > > unresponsive, even to holding down the power button for 30+ seconds.
+> > > But the hard drive light will occassionally flash, so the machine is
+> > > clearly not completely dead at this point.
+> > 
+> > Does the mainline (as of 2.6.22-rc2) do this?
+> 
+> Dunno. I've triggered it twice since -mm2 was released, never before
+> that point. -mm1 was fine.
 
-What are the advantages of that, except slower resume? ;-)
+Can you please test 2.6.22-rc2?
 
-> 2. To make reset finish in defined time, each reset try now has defined
-> deadlines.  I was trying to be conservative so I chose 10sec for the
-> first try.
-
-Right. So to me it seems that failed, because the undefined reset time is just
-replaced with a fixed ad hoc sleep, which is longer than any undefined reset
-mechanism. So where did the advantage go? Better to go back to how it was,
-is my impression. Or make that deadline 10 seconds and after that give up,
-instead of the other way round. Or just move to async reset.
-
->  It's driven by timing table near the top of libata-eh.c, so
-> adjusting the table is easy and maybe we can be a bit more aggressive
-> with the first two tries.  But if we solve #1, this shouldn't matter too
-> much.
-
-#2 seems totally unrelated to #1, as #1 is about spinup, and #2 about reset.
-Only relation is that #2 slows down #1 because #1 needs to wait on #2.
-
-
->> Maybe a silly question, but why do we wait for the harddisk to show up? Maybe that
->> makes a little bit of sense at bootup, but for resume from ram, where nothing is
->> supposed to have changed, it seems a bit strange. Why not wait when something tries
->> to access the harddisk or something?
->
-> I hope it's explained now.
-
-Almost. Explained is why we wait on the disk, but that's only the sd_resume part.
-It's still unclear why resume must wait till the reset is done.
-
-
->> I wonder if sil_pci_device_resume() and sd_resume() know about each other...
->> I'll disable sd_resume() and see how that goes.
->
-> Yeap, that should work.  In most configurations, devices spin up
-> immediately after power is restored.  sd_resume() just waits for the
-> device to be revalidated in such cases.
-
-And it kicks the disk into action. Why? Only thing it does is sending a START_STOP
-command. I assume that causes the disk to spin up. But for e.g. laptopmode I can
-imagine that's quite annoying. I think sd_resume() is totally unnecessary and can
-be removed, because it seems wrong to always force the harddisk to spin up,
-background spin up or not.
-
-Greetings,
-
-Indan
-
-
+Rafael
