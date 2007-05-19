@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762823AbXESPNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763602AbXESPOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762823AbXESPNn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 11:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759039AbXESPNf
+	id S1763602AbXESPOf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 11:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759220AbXESPO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 11:13:35 -0400
-Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:56154 "EHLO
-	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758753AbXESPNe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 11:13:34 -0400
-Date: Sun, 20 May 2007 00:11:10 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
-Subject: 2.6.22-rc1 regression: tifm prevents suspending [was: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after STR]
-Message-ID: <20070519151110.GA3393@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home> <20070518002240.bc08e811.akpm@linux-foundation.org> <20070519064829.GA15518@inferi.kami.home> <20070519000413.75badb6f.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Sat, 19 May 2007 11:14:28 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:54649 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759039AbXESPO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 11:14:28 -0400
+Date: Sat, 19 May 2007 17:15:23 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>
+Subject: RFC: kconfig select warnings bogus?
+Message-ID: <20070519151523.GA26724@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070519000413.75badb6f.akpm@linux-foundation.org>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.21-bisect i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
-> On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> 
-> > On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
-> > > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > > 
-> > > > Hello,
-> > > > 
-> > > > After finally catching fw-{ohci,core} to be problematic during resume,
-> > > > I'm now experiencing an immediate resume after suspending.
-> > > > 
-> > > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
-> > > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
-> > > > 2.6.21-rc6-mm* after the cpuidle fixes).
-> > > > 
-> > > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
-> > > > and a str cycle with PM_DEBUG=y:
-> > > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
-> > ...
-> > > > Any idea where to start from? (bisecting is ok, but it'll take some
-> > > > time...)
-> > > 
-> > > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
-> > 
-> > ok, git-acpi.patch is not the bad boy :)
-> > Anyway what we have is a regression in 2.6.22-rc1 since the laptop can't
-> > suspend (it sits on the "Stopping tasks" console screen) while 2.6.21
-> > can.
-> > I'm now bisecting this, will come to -mm1 later when done with this one.
-> 
-> OK, thanks.
-> 
-> > Who is the regression-guy?
-> 
-> Len, usually ;)    But I think you meant Michal, cc'ed here.
+We see a lot of these lately:
+  GEN     /home/bor/build/linux-2.6.22/Makefile
+scripts/kconfig/conf -s arch/i386/Kconfig
+drivers/macintosh/Kconfig:116:warning: 'select' used by config symbol 'PMAC_APM_EMU' refers to undefined symbol 'SYS_SUPPORTS_APM_EMULATION'
+drivers/net/Kconfig:2283:warning: 'select' used by config symbol 'UCC_GETH' refers to undefined symbol 'UCC_FAST'
+drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+drivers/input/mouse/Kconfig:182:warning: 'select' used by config symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
 
-LOL, not this time. We have the responsible commit for 2.6.22-rc1 (Cc
-added):
 
-3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5 is first bad commit
-commit 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5
-Author: Alex Dubov <oakad@yahoo.com>
-Date:   Thu Apr 12 16:59:15 2007 +1000
+Do this warning really add any value or should we just ignore them like this?
 
-    tifm: replace per-adapter kthread with freezeable workqueue
-    
-    Freezeable workqueue makes sure that adapter work items (device insertions
-    and removals) would be handled after the system is fully resumed. Previously
-    this was achieved by explicit freezing of the kthread.
-    
-    Signed-off-by: Alex Dubov <oakad@yahoo.com>
-    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+	Sam
 
-I'm now seeing if avoiding the tifm stuff in -mm1 fixes the
-immediately-resumes-after-str problem (unfortunately the commint doesn't
-revert cleanly).
--- 
-mattia
-:wq!
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index f14aeac..c0c84f2 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -200,11 +200,6 @@ void sym_check_prop(struct symbol *sym)
+ 				prop_warn(prop,
+ 				    "config symbol '%s' uses select, but is "
+ 				    "not boolean or tristate", sym->name);
+-			else if (sym2->type == S_UNKNOWN)
+-				prop_warn(prop,
+-				    "'select' used by config symbol '%s' "
+-				    "refers to undefined symbol '%s'",
+-				    sym->name, sym2->name);
+ 			else if (sym2->type != S_BOOLEAN && sym2->type != S_TRISTATE)
+ 				prop_warn(prop,
+ 				    "'%s' has wrong type. 'select' only "
