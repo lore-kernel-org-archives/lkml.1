@@ -1,48 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764180AbXESWYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbXESW0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764180AbXESWYP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 18:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757178AbXESWYA
+	id S1764351AbXESW0x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 18:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760152AbXESW0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 18:24:00 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59331 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756529AbXESWYA (ORCPT
+	Sat, 19 May 2007 18:26:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32918
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759928AbXESW0q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 18:24:00 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <464F78CA.3040707@s5r6.in-berlin.de>
-Date: Sun, 20 May 2007 00:23:06 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
-       Marcus Better <marcus@better.se>,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-Subject: Re: [4/5] 2.6.22-rc2: known regressions
-References: <464F6DC9.80805@googlemail.com> <464F74DF.6030003@googlemail.com>
-In-Reply-To: <464F74DF.6030003@googlemail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Sat, 19 May 2007 18:26:46 -0400
+Date: Sat, 19 May 2007 15:26:49 -0700 (PDT)
+Message-Id: <20070519.152649.102577495.davem@davemloft.net>
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+Subject: that page count overflow thing
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Subject    : 2.6.22-rc1 suspend to RAM problem
-> References : http://permalink.gmane.org/gmane.linux.power-management.general/5819
-> Submitter  : Marcus Better <marcus@better.se>
-> Status     : caused by fw-ohci module
 
-akpm forwarded it to linux1394-devel, hence:
+I think we may be able to fix that one without making the
+counter larger, it's silly overhead for such an extreme
+case IMHO.
 
-Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>,
-             Kristian Høgsberg <krh@bitplanet.net>
+Perhaps it might be possible to just make the counter stick at it's
+maximum, and when it's there we have an rbtree of external "large"
+counters, keyed by page struct address.
 
-Alas I am lacking a machine which suspends, but I'm working on it.  If
-all fails, I'm gonna have to pull an old APM laptop out of the rubbish.
--- 
-Stefan Richter
--=====-=-=== -=-= =-=--
-http://arcgraph.de/sr/
+So basically externalize counters that go over the maximally
+representable value.  In this way only the idiotic cases pay
+the price.
