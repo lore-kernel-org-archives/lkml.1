@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762536AbXESNcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbXESNx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762536AbXESNcP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 09:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757483AbXESNcD
+	id S1760191AbXESNx4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 09:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757945AbXESNxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 09:32:03 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:34343 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757646AbXESNcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 09:32:00 -0400
-Date: Sat, 19 May 2007 15:32:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrey Borzenkov <arvidjaar@mail.ru>, Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: fix section mismatch warnings in mtrr
-Message-ID: <20070519133257.GB23370@uranus.ravnborg.org>
-References: <200705191443.27161.arvidjaar@mail.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705191443.27161.arvidjaar@mail.ru>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 19 May 2007 09:53:49 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48990 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757754AbXESNxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 09:53:48 -0400
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, kenchen@google.com
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Sat, 19 May 2007 15:53:46 +0200
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+Message-ID: <20070519135346.289090@gmx.net>
+MIME-Version: 1.0
+Subject: bug in 2.6.22-rc2: loop mount limited to one single iso image
+To: linux-kernel@vger.kernel.org
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1+rxuhA0f+rEvw+juHmLKrZj9nfgOYCNMjg75VgJs
+ UTQLHWzCvGq1JDNQYNesy8ltYrjZA9a3ZyxA== 
+Content-Transfer-Encoding: 8bit
+X-GMX-UID: XjN2fttFYW0tcGD9HmZpu3l8amthc9ug
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following section mismatch warnings were reported by Andrey Borzenkov:
+Hi,
 
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:amd_init_mtrr from .text between 'mtrr_bp_init' (at offset 0x967a) and 'mtrr_attrib_to_str'
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:cyrix_init_mtrr from .text between 'mtrr_bp_init' (at offset 0x967f) and 'mtrr_attrib_to_str'
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text:centaur_init_mtrr from .text between 'mtrr_bp_init' (at offset 0x9684) and 'mtrr_attrib_to_str'
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text: from .text between 'get_mtrr_state' (at offset 0xa735) and 'generic_get_mtrr'
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text: from .text between 'get_mtrr_state' (at offset 0xa749) and 'generic_get_mtrr'
-WARNING: arch/i386/kernel/built-in.o - Section mismatch: reference to .init.text: from .text between 'get_mtrr_state' (at offset 0xa770) and 'generic_get_mtrr'
+I am running Debian Etch 4.0 stable in connection with udev.
 
-It was tracked down to a few functions missing __init tag.
-Compile tested only.
+In kernel 2.6.22-rc2 the number of available loop mounts is reduced from 8 (conventional standard of preceding 2.6 kernels) to 1.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index c4ebb51..5367e32 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -78,7 +78,7 @@ static void __cpuinit print_fixed(unsigned base, unsigned step, const mtrr_type*
- }
- 
- /*  Grab all of the MTRR state for this CPU into *state  */
--void get_mtrr_state(void)
-+void __init get_mtrr_state(void)
- {
- 	unsigned int i;
- 	struct mtrr_var_range *vrs;
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-index 1cf466d..02a2f39 100644
---- a/arch/i386/kernel/cpu/mtrr/main.c
-+++ b/arch/i386/kernel/cpu/mtrr/main.c
-@@ -639,7 +639,7 @@ static struct sysdev_driver mtrr_sysdev_driver = {
-  * initialized (i.e. before smp_init()).
-  * 
-  */
--void mtrr_bp_init(void)
-+void __init mtrr_bp_init(void)
- {
- 	init_ifs();
- 
+Symptom: If you try to mount more than one single iso-image with
+the loop parameter you are receiving the following message during system boot:
+
+"mount: could not find any free loop device"
+
+Kernel 2.6.20.11 does not show that problem.
+
+Question: Can someone reading this confirm and reproduce that problem?
+If yes: Are there any fixes available?
+
+Thanks and Regards
+
+Uwe
+
+-- 
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
