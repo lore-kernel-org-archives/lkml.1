@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764336AbXESSNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764364AbXESSOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764336AbXESSNr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 14:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758678AbXESSNi
+	id S1764364AbXESSOZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 14:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759094AbXESSOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 14:13:38 -0400
-Received: from main.gmane.org ([80.91.229.2]:58075 "EHLO ciao.gmane.org"
+	Sat, 19 May 2007 14:14:12 -0400
+Received: from holomorphy.com ([66.93.40.71]:42908 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758162AbXESSNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 14:13:37 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Philip Pemberton <usenet07@philpem.me.uk>
-Subject: Re: IPv6: 6to4 tunnel randomly cutting out on 2.6.8.1 - any   patches?
-Date: Sat, 19 May 2007 19:12:52 +0100
-Message-ID: <f2nen4$q30$1@sea.gmane.org>
-References: <f2ifnf$ooh$1@sea.gmane.org> <20070517.143409.102123884.davem@davemloft.net> <f2iif3$3u3$1@sea.gmane.org> <Pine.LNX.4.61.0705190950370.9015@yvahk01.tjqt.qr> <20070519164802.GA10510@ee.oulu.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 87-194-114-122.bethere.co.uk
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-In-Reply-To: <20070519164802.GA10510@ee.oulu.fi>
+	id S1757420AbXESSOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 14:14:10 -0400
+Date: Sat, 19 May 2007 11:15:01 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070519181501.GC19966@holomorphy.com>
+References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070519012530.GB15569@wotan.suse.de>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Pietikainen wrote:
-> If you feel like spending lots of time, you could try to shoehorn net/*
-> from the latest rhel4/centos4 kernel (2.6.9-based) into your router, someone
-> might have spent the effort fixing the relevant bugs in that tree (but maybe
-> not, until the 4.5 kernel it used to spew Badness in dst_release at
-> include/net/dst.h:149 every few seconds if your box was on a ipv6 network :D
-> )
+On Fri, May 18, 2007 at 11:14:26AM -0700, Christoph Lameter wrote:
+>> Right. That would simplify the calculations.
 
-I could do that, but shoehorning 2.6.9 code into 2.6.8.1 doesn't sound like 
-much fun, especially transplanting the whole networking stack...
+On Sat, May 19, 2007 at 03:25:30AM +0200, Nick Piggin wrote:
+> It isn't the calculations I'm worried about, although they'll get simpler
+> too. It is the cache cost.
 
-What I have found are all the IPv6-related patches from 2.6.8.1 to 2.6.9 
-(there aren't that many) so I might have a go at patching the kernel with them.
+The cache cost argument is specious. Even misaligned, smaller is
+smaller. The cache footprint reduction is merely amortized,
+probabilistic, etc.
 
-> Personally, I'd get a new router without binary blobs, value of time spent
-> doing the shoehorning > price of new router, I'm sure, but you may value
-> your free time differently :)
 
-I've got five weeks off to do with as I please. I need something to do, 
-otherwise I'm going to go mad :)
+On Fri, May 18, 2007 at 11:14:26AM -0700, Christoph Lameter wrote:
+>> I wonder if there are other uses for the free space?
 
-> I do know sixxs ipv6 tunnels are rock solid with openwrt (2.4-based) ;)
+On Sat, May 19, 2007 at 03:25:30AM +0200, Nick Piggin wrote:
+> Hugh points out that we should make _count and _mapcount atomic_long_t's,
+> which would probably be a better use of the space once your vmemmap goes
+> in.
 
-Hmm, I've got a source pack for a version of the DG834GT firmware that was 
-based on an older kernel (2.4.17) - is IPv6 in 2.4.17 generally considered to 
-be quite stable?
+I'm not so sure about that. I doubt we have issues with that. I say
+if there's to be padding to 64B to use the of the whole additional
+space for additional flag bits. I'm sure fs's could make good use of
+64 spare flag bits, or whatever's left over after the VM has its fill.
+Perhaps so many spare flag bits could be used in lieu of buffer_heads.
 
-If it is, I'll have a go at shoehorning my RC scripts onto the older firmware 
-and maybe try and transplant the ADSL line controller firmware too...
+page->virtual is the same old mistake as it was when it was removed.
+The virtual mem_map code should be used to resolve the computational
+expense. Much the same holds for the atomic_t's; 32 + PAGE_SHIFT is
+44 bits or more, about as much as is possible, and one reference per
+page per page is not even feasible. Full-length atomic_t's are just
+not necessary.
 
-Thanks.
--- 
-Phil.                         |  (\_/)  This is Bunny. Copy and paste Bunny
-usenet07@philpem.me.uk        | (='.'=) into your signature to help him gain
-http://www.philpem.me.uk/     | (")_(") world domination.
-If mail bounces, replace "07" with the last two digits of the current year.
+However, there are numerous optimizations and features made possible
+with flag bits, which might as could be made cheap by padding struct
+page up to the next highest power of 2 bytes with space for flag bits.
 
+
+-- wli
