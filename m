@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbXESAG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbXESAOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbXESAG2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 20:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXESAGU
+	id S1757419AbXESAOV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 20:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbXESAOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 20:06:20 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:13594 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753103AbXESAGT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 20:06:19 -0400
-Message-ID: <464E3FBD.7090704@oracle.com>
-Date: Fri, 18 May 2007 17:07:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linda Walsh <lkml@tlinx.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: building i386 requires s390: "driver/crypto/Kconfig" sourcing
- s390 arch
-References: <464DFF5F.5010905@tlinx.org> <20070518141735.aae3921a.randy.dunlap@oracle.com> <464E1E9A.8060605@tlinx.org> <20070518161920.ae0ed062.randy.dunlap@oracle.com> <Pine.LNX.4.64.0705181931180.7794@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705181931180.7794@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Fri, 18 May 2007 20:14:14 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58237 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754717AbXESAON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 20:14:13 -0400
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Dave Liu <r63238@freescale.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
+       tglx@linutronix.de
+In-Reply-To: <51b3a75638604c9dd7ed60a10f0ed934@kernel.crashing.org>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	 <f9afbdb49bc1f935153305315770bccd@kernel.crashing.org>
+	 <464CB071.5050504@ru.mvista.com>
+	 <9095839480a9686d9c40aa6143edb804@kernel.crashing.org>
+	 <464CB460.40905@ru.mvista.com>
+	 <97d47c2261fe9cd3f1a6c864278a6ab6@kernel.crashing.org>
+	 <1179464690.32247.370.camel@localhost.localdomain>
+	 <1179466769.3658.0.camel@localhost.localdomain>
+	 <1179472096.32247.394.camel@localhost.localdomain>
+	 <464DAD06.2060504@ru.mvista.com>
+	 <1179530872.32247.423.camel@localhost.localdomain>
+	 <51b3a75638604c9dd7ed60a10f0ed934@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 19 May 2007 10:13:16 +1000
+Message-Id: <1179533596.32247.429.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Fri, 18 May 2007, Randy Dunlap wrote:
+On Sat, 2007-05-19 at 01:49 +0200, Segher Boessenkool wrote:
+> > I find it extremely silly to implement it as edge anyway. The EE line 
+> > is
+> > level triggered, and having a mix of edge and level on the same
+> > exception without a clean way to retrigger the DEC one other than
+> > waiting one tick is just causing trouble.
 > 
->> On Fri, 18 May 2007 14:46:02 -0700 Linda Walsh wrote:
-> 
->>> If the standard that other architectures are using is to put their
->>> devices in the crypto directory, then one might expect all crypto
->>> devices to be there.  Why should s390 stick out and put its crypto
->>> device someplace under the s390 tree, forcing parts of the s390
->>> tree to be included when building other architectures?
->> drivers/crypto/ currently contains drivers for x86_32 and s390 (the
->> latter by indirection, which is what is causing you this
->> grief/problem/whatever), but it certainly looks like it could be a
->> home for crypto drivers on any arch.
-> 
-> this all sounds vaguely familiar.  oh, wait ...
-> 
-> http://lkml.org/lkml/2007/3/28/212
+> It isn't edge triggered, it just automatically clears the
+> decrementer exception condition at its source when taken
 
-I just tried several things to "fix" it, but none of them worked.
+Which is exactly the same thing software-wise as edge triggered... 
 
-I wouldn't mind making missing files in *config be non-fatal, i.e.,
-just print a warning message, but I doubt that the maintainer(s)
-would accept that.
+Ben.
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
