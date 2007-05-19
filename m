@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764718AbXESVQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764411AbXESVYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764718AbXESVQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 17:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbXESVQr
+	id S1764411AbXESVYP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 17:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXESVYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 17:16:47 -0400
-Received: from d0618453.dreamhost.com ([208.97.132.83]:50651 "EHLO
-	spaceymail-a4.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755568AbXESVQq (ORCPT
+	Sat, 19 May 2007 17:24:00 -0400
+Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:60468
+	"EHLO spaceymail-a4.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754749AbXESVX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 17:16:46 -0400
+	Sat, 19 May 2007 17:23:59 -0400
 From: Anant Nitya <kernel@prachanda.info>
 Organization: Prachanda Hub
 To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v13
-Date: Sun, 20 May 2007 02:46:19 +0530
+Subject: Re: [BUG] local_softirq_pending storm
+Date: Sun, 20 May 2007 02:53:44 +0530
 User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070517174533.GA538@elte.hu> <200705180317.06014.kernel@prachanda.hub> <20070518102607.GA23151@elte.hu>
-In-Reply-To: <20070518102607.GA23151@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+References: <200705091942.22920.kernel@prachanda.hub> <200705191525.28400.kernel@prachanda.hub> <1179601868.12981.127.camel@chaos>
+In-Reply-To: <1179601868.12981.127.camel@chaos>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705200246.22444.kernel@prachanda.hub>
+Message-Id: <200705200253.44992.kernel@prachanda.hub>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 May 2007 15:56:07 Ingo Molnar wrote:
-> * Anant Nitya <kernel@prachanda.info> wrote:
-> > Hi
+On Sunday 20 May 2007 00:41:08 Thomas Gleixner wrote:
+> On Sat, 2007-05-19 at 15:25 +0530, Anant Nitya wrote:
+> > > No idea. I uploaded a debug patch against 2.6.22-rc1 to
+> > >
+> > > http://www.tglx.de/private/tglx/2.6.22-rc1-hrt-debug.patch
+> > >
+> > > Can you give it a try and report the output ?
 > >
-> > Been testing this version of CFS from last an hour or so and still
-> > facing same lag problems while browsing sites with heavy JS and or
-> > flash usage. Mouse movement is pathetic and audio starts to skip. I
-> > haven't face this behavior with CFS till v11.
+> > Hi
+> > Here it goes
+> > [  159.646196] NOHZ softirq pending 22 on CPU 0
+> > [  159.646207] .... task state: 1 00000000
 >
-> i have just tried 5 different versions of the Flash plugin and i cannot
-> reproduce this (flash games are still smooth and acceptable even with
-> the system significantly overloaded with 5 infite loops or with a kernel
-> build), so it would be nice if you could help me debug this problem.
+> 1 == TASK_INTERRUPTIBLE, so we know that ksoftirqd was not woken up. At
+> least it is not a scheduler problem.
 >
-> The last version that worked for you was v11, correct? The biggest v11
-> -> v12 change was the yield workaround, and while testing your workload
-> i also noticed that all Flash versions except the latest one (9.0 r31)
-> use sys_sched_yield() quite frequently. So it would be nice to know
-> which plugin version you are using (and which Firefox version): you can
-> check that by typing about:plugins into firefox. Furthermore, could you
-> also try the following tune:
->
->    echo 0 > /proc/sys/kernel/sched_yield_bug_workaround
->
-> and this:
->
->    echo 2 > /proc/sys/kernel/sched_yield_bug_workaround
->
-> if none of this changes behavior then please send me the output of the
-> following:
->
->   strace -ttt -TTT -o strace.txt -f -p `pidof firefox-bin`
->   < reproduce the lag in firefox >
->   < Ctrl-C the strace >
->
-> and send me the strace.txt file (off-line, it's going to be large).
-> Thanks,
-Hi Ingo,
-
-Please ignore my last report about lag problem while using CFS-v13, it is 
-working perfectly fine with 2.6.21.1 and the lag I used to see in v12 is not 
-there with v13 anymore. After digging in a bit I found that problem is only 
-occurring in 2.6.22-rc1 and it get fired by network usage while transmitting 
-data upstream. I don't have any evidence that CFS is involved in lag problem 
-since 2.6.22-rc1 with stock scheduler is also having same lag problem and it 
-seems directly proportional with upstream speed while downstream doesn't 
-shows any misbehavior { at lower upstream speed lag is less but with higher 
-upstream speed system starts crawling and system load hitting to 70/75}. Lets 
-see how 2.6.22-rc2 is doing.
+> I work out a more complex debug patch and pester you to test once I'm
+> done.
+No problem :)
 
 Regards
 Ananitya
 
 >
-> 	Ingo
+> 	tglx
 
 
 
