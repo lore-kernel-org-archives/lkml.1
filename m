@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbXESOda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbXESO7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762311AbXESOda (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 10:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbXESOdY
+	id S1761560AbXESO7g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 10:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758709AbXESO72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 10:33:24 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41639 "EHLO gaimboi.tmr.com"
+	Sat, 19 May 2007 10:59:28 -0400
+Received: from mail.tmr.com ([64.65.253.246]:41662 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758572AbXESOdX convert rfc822-to-8bit (ORCPT
+	id S1758668AbXESO71 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 10:33:23 -0400
-Message-ID: <464F09F6.6080000@tmr.com>
-Date: Sat, 19 May 2007 10:30:14 -0400
+	Sat, 19 May 2007 10:59:27 -0400
+Message-ID: <464F111E.8010705@tmr.com>
+Date: Sat, 19 May 2007 11:00:46 -0400
 From: Bill Davidsen <davidsen@tmr.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       dang@gentoo.org, Andi Kleen <ak@suse.de>, stable@kernel.org
-Subject: Re: [Bugme-new] [Bug 8479] New: gettimeofday returning 1000000 in
-   tv_usec on core2duo
-References: <200705150417.l4F4HlvS013354@fire-2.osdl.org>	<20070514220901.90aab9e0.akpm@linux-foundation.org>	<46494DFC.6080104@cosmosbay.com> <20070514232301.69e27bbe.akpm@linux-foundation.org>
-In-Reply-To: <20070514232301.69e27bbe.akpm@linux-foundation.org>
+Newsgroups: gmane.linux.file-systems,gmane.linux.kernel,gmane.linux.drivers.mtd
+To: Kevin Bowling <lkml@kev009.com>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH] LogFS take three
+References: <20070515151919.GA32510@lazybastard.org>	 <17994.1241.436841.681216@stoffel.org>	 <20070515191926.GB1220@lazybastard.org>	 <1179291255.2859.195.camel@shinybook.infradead.org>	 <20070516110933.GA5472@lazybastard.org>	 <20070516113434.GC20482@mail.shareable.org>	 <20070516115003.GD5472@lazybastard.org>	 <17995.2550.581854.8393@stoffel.org>	 <20070516135318.GK5472@lazybastard.org>	 <1179324273.2859.230.camel@shinybook.infradead.org> <11f674920705160717m3376779eqeb79e45ecef233e0@mail.gmail.com>
+In-Reply-To: <11f674920705160717m3376779eqeb79e45ecef233e0@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 15 May 2007 08:06:52 +0200 Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
->> Andrew Morton a écrit :
->>> On Mon, 14 May 2007 21:17:47 -0700 bugme-daemon@bugzilla.kernel.org wrote:
->>>
->>>> http://bugzilla.kernel.org/show_bug.cgi?id=8479
->>>>
->>>>            Summary: gettimeofday returning 1000000 in tv_usec on core2duo
->>>>     Kernel Version: 2.6.21
->>>>             Status: NEW
->>>>           Severity: normal
->>>>              Owner: ak@suse.de
->>>>          Submitter: dang@gentoo.org
->>>>
->>>>
->>>> Most recent kernel where this bug did *NOT* occur: 2.6.20
->>>> Distribution: Gentoo
->>>> Hardware Environment: core2duo T7200 (all reporters had this same CPU)
->>>> Software Environment: Linux 2.6.21, glibc 2.5
->>>> Problem Description:
->>>>
->>>> gettimeofday returns 1 - 1000000 in tv_usec, not 0 - 999999 
->>>> This does not happen on any of my AMD-based 32 or 64 bit boxes, only on my
->>>> core2duo; I have 2 other reports of this problem, all on T7200's
->>>>
->>>> Steps to reproduce:
->>>>
->>>> call gettimeofday a lot.  Eventually, you'll get 1000000 returned in tv_usec. My
->>>> average is ~1 in 1000000 calls.  I've attached my test program, with output from
->>>> various boxes.  One of the other reporters tried the test program too, and got
->>>> similar output.  .config will be attached too.
->>> err, whoops.
->> I remember I already hit this and corrected it
+Kevin Bowling wrote:
+> On 5/16/07, David Woodhouse <dwmw2@infradead.org> wrote:
+>> On Wed, 2007-05-16 at 15:53 +0200, Jörn Engel wrote:
+>> >
+>> > My experience is that no matter which name I pick, people will
+>> > complain
+>> > anyway.  Previous suggestions included:
+>> > jffs3
+>> > jefs
+>> > engelfs
+>> > poofs
+>> > crapfs
+>> > sweetfs
+>> > cutefs
+>> > dynamic journaling fs - djofs
+>> > tfsfkal - the file system formerly known as logfs
 >>
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;f=arch/x86_64/kernel/vsyscall.c;h=dc32cef961950915fbaa185e36ab802d5f7cea3b;hp=ba330f87067996a17495f7d03466d646c718b52c;hb=c8118c6c07f2edfd697aaa0b93e08c3b65a5a675;hpb=272a3713bb9e302e0455c894c41180a482d2c8a3
+>> Can we call it jörnfs? :)
 > 
-> Oh, OK.
-> 
->> Maybe a stable push is necessary ?
-> 
-> yup.  Please always think of -stable when preparing fixes.  I'm sure many
-> useful fixes are slipping past simply because those who _are_ looking out
-> for backportable fixes are missing things.
-> 
-That makes me feel better, I have been occasionally suggesting fixes 
-posted here as candidates for stable, I was afraid I was being a PITA. I 
-forgot about the "stable" address and have been bugging greg, I'll stop 
-that.
+> However if Jörn is accused of murder, it will have little chance of
+> being merged :-).
 
-> Greg, Chris: please consider c8118c6c07f2edfd697aaa0b93e08c3b65a5a675
-> for -stable, if it isn't already there.
+WRT that, seems that Nina had a lover who is a confessed serial killer. 
+I'm surprised the case hasn't been adapter for 'Boston legal' and 'Law 
+and Order' like other high profile crimes.
 
+I see nothing wrong with jörnfs, and there's room for numbers at the end...
 
 -- 
 Bill Davidsen <davidsen@tmr.com>
