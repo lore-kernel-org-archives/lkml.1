@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbXESDuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbXESEK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760012AbXESDuz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 23:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbXESDus
+	id S1759253AbXESEK2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 00:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXESEKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 23:50:48 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53624 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbXESDus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 23:50:48 -0400
-Message-ID: <464E7409.6020505@garzik.org>
-Date: Fri, 18 May 2007 23:50:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 19 May 2007 00:10:19 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:34043 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016AbXESEKS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 00:10:18 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Sat, 19 May 2007 00:09:29 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: why only one use of "create_freezeable_workqueue"?
+Message-ID: <Pine.LNX.4.64.0705190003410.16887@localhost.localdomain>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>, Phillip Susi <psusi@cfl.rr.com>,
-       Alex Volkov <avcp-lkmail@usa.net>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: Re: aio is unlikely
-References: <20070509151831.f5956b66.akpm@linux-foundation.org>	<058f01c7998e$1406e370$650df7cd@MUMBA>	<20070518140624.1a4db517.akpm@linux-foundation.org>	<464E2098.8020900@cfl.rr.com> <20070518151259.319e09da.akpm@linux-foundation.org> <464E2AA6.3080402@garzik.org> <464E7254.60406@yahoo.com.au>
-In-Reply-To: <464E7254.60406@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.42, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	SARE_SUB_OBFU_Q0 0.30, TW_RK 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Aside from using branch constructs or hints that help the predictor
-> guess the right way... I think gcc will move unlikely paths right past
-> the end of the "likely" fastpath, so it can increase code size and be
-> somewhat suboptimal in terms of icache usage.
 
-Thanks for the reminder.  GCC definitely does code movement.
+  hoping to avoid the madness following my earlier, innocuous question
+about the lonely, defconfig'ed module scsi_wait_scan.ko, i'm curious
+about why there is, in the entire tree, just one invocation of
+"create_freezeable_workqueue":
 
-ISTR the code movement might even be "extreme", once the unit-at-a-time 
-support arrived, placing "cold" code at the end of the compiled module.
+$ grep -rw create_freezeable_workqueue *
+drivers/misc/tifm_core.c:       workqueue = create_freezeable_workqueue("tifm");
+include/linux/workqueue.h:#define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
+$
 
-	Jeff
+  not that there's anything wrong with that, but i'm just curious as
+to why there's only one application of that feature in the whole tree.
 
+rday
 
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
