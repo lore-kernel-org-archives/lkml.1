@@ -1,39 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbXESWGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764808AbXESWHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760203AbXESWGy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 18:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764019AbXESWGm
+	id S1764808AbXESWHV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 18:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759446AbXESWGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 18:06:42 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:21902 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757446AbXESWGl (ORCPT
+	Sat, 19 May 2007 18:06:48 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:9019 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764709AbXESWGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 18:06:41 -0400
+	Sat, 19 May 2007 18:06:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=aUuhhpkK92QeoCscKYe1j0LIwGilgjvMYJ7pWmMrNiDR5xtttWNC4+S2tyT4XjIlb9gNiH/YdWHSgfc6aBsBfU2qhMswoxW37Oc0ssb+ulAgF/yxjbxx+/NvHR7WSn0lBOOk3+RiEccsLcBGfR2/BzMRTe3Gxo0pX3a3nLV5H5w=
-Message-ID: <464F74D5.9080204@googlemail.com>
-Date: Sun, 20 May 2007 00:06:13 +0200
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=o1Oj5v7mLzDawf/tIj8/nIA6ttwp8Iepi92KwiwQjx4N66l4qPkwnDcle9po3z4rQ3WWt45BwMJC7nTUHOsvH9/u+efr9L4bpr2hzbV7EgYgOfPMVHMmSrCIaqsw4la+bk8Vo/3aMnqB1zqp805ZsM5vaMMB04d5qcuHyWO8oKE=
+Message-ID: <464F74BB.9070402@googlemail.com>
+Date: Sun, 20 May 2007 00:05:47 +0200
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Francis Russell <francisrussell@btopenworld.com>,
-       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
-       video4linux@list.redhat.com,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>, Robert Fitzsimons <robfitz@273k.net>
-Subject: Re: [3/5] 2.6.22-rc2: known regressions
-References: <464F6DC9.80805@googlemail.com>
-In-Reply-To: <464F6DC9.80805@googlemail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian McMenamin <adrian@newgolddream.dyndns.info>,
+       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Ray Lee <ray-lk@madrabbit.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Ben Collins <bcollins@ubuntu.com>,
+       =?ISO-8859-2?Q?Matthias_Bl=E4sing?= 
+	<matthias.blaesing@rwth-aachen.de>
+Subject: [1/5] 2.6.22-rc2: known regressions
 X-Enigmail-Version: 0.94.1.1
 Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -47,43 +45,35 @@ http://kernelnewbies.org/known_regressions
 
 
 
-SATA/PATA
+Unclassified
 
-Subject    : libata and legacy ide pcmcia failure
-References : http://lkml.org/lkml/2007/5/17/305
-Submitter  : Robert de Rooy <robert.de.rooy@gmail.com>
+Subject    : 2.6.22-rc2 prepatch breaks compile on Dreamcast
+References : http://lkml.org/lkml/2007/5/19/75
+Submitter  : Adrian McMenamin <adrian@newgolddream.dyndns.info>
 Status     : Unknown
 
-Subject    : pata_via appears to incorrectly detects 40-pin cable
-References : http://lkml.org/lkml/2007/5/17/273
-             http://bugzilla.kernel.org/show_bug.cgi?id=8142
-Submitter  : Francis Russell <francisrussell@btopenworld.com>
+
+
+ACPI
+
+Subject    : acpi hangs on boot
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8504
+Submitter  : Matthias Bläsing <matthias.blaesing@rwth-aachen.de>
 Status     : Unknown
 
-Subject    : libata crash on halt
-References : http://marc.info/?l=linux-ide&m=117899827710565&w=2
-Submitter  : Andrew Morton <akpm@linux-foundation.org>
-Caused-By  : Tejun Heo <htejun@gmail.com>
-             commit 920a4b1038e442700a1cfac77ea7e20bd615a2c3
-Status     : problem is being debugged
+Subject    : BAT0 no longer seen, ACPI errors
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8493
+Submitter  : Ben Collins <bcollins@ubuntu.com>
+Status     : Unknown
 
-Subject    : libata reset-seq merge broke sata_sil on sh
-References : http://lkml.org/lkml/2007/5/10/63
-Submitter  : Paul Mundt <lethal@linux-sh.org>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Caused-By  : commit 4750def52cb2c21732dda9aa1d43a07db37b0186
-Status     : problem is being debugged
+Subject    : cannot change thermal trip points
+References : http://lkml.org/lkml/2007/5/17/139
+Submitter  : Maciej Rutecki <maciej.rutecki@gmail.com>
+Status     : Unknown
 
-
-
-V4L
-
-Subject    : V4L ABI breakage
-References : http://lkml.org/lkml/2007/5/14/42
-Submitter  : Robert Fitzsimons <robfitz@273k.net>
-Caused-By  : Hans Verkuil <hverkuil@xs4all.nl>
-             Mauro Carvalho Chehab <mchehab@infradead.org>
-             commit 206ebaf32795cf1582b1e2ff2ec6a560c9e986b8
+Subject    : nx6125 has lost fan control
+References : http://lkml.org/lkml/2007/5/16/249
+Submitter  : Ray Lee <ray-lk@madrabbit.org>
 Status     : Unknown
 
 
