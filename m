@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759693AbXESCH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbXESDMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759693AbXESCH4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 22:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbXESCHu
+	id S1756527AbXESDMe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 23:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbXESDM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 22:07:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60174 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbXESCHt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 22:07:49 -0400
-Subject: Re: [PATCH] ubi: kill homegrown endian macros
-From: David Woodhouse <dwmw2@infradead.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Matthieu CASTET <castet.matthieu@free.fr>,
-       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <6c8c0e6cd0ac95fd1c7d4e822f1e2029@kernel.crashing.org>
-References: <20070517143200.GA30850@lst.de>
-	 <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de>
-	 <1179414590.3642.69.camel@sauron>
-	 <20070517102931.6bbbad1a.akpm@linux-foundation.org>
-	 <pan.2007.05.17.20.30.30@free.fr>
-	 <1179455959.2859.527.camel@shinybook.infradead.org>
-	 <alpine.DEB.0.99.0705172254560.27207@sigma.j-a-k-j.com>
-	 <1179458274.2859.538.camel@shinybook.infradead.org>
-	 <alpine.DEB.0.99.0705180750550.8830@sigma.j-a-k-j.com>
-	 <1179499959.2859.579.camel@shinybook.infradead.org>
-	 <6c8c0e6cd0ac95fd1c7d4e822f1e2029@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sat, 19 May 2007 10:07:42 +0800
-Message-Id: <1179540463.2859.627.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+	Fri, 18 May 2007 23:12:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33739 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754356AbXESDM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 23:12:26 -0400
+Message-ID: <464E6A60.2070204@redhat.com>
+Date: Sat, 19 May 2007 11:09:20 +0800
+From: Eugene Teo <eteo@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: linux-wireless@vger.kernel.org
+CC: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org
+Subject: Re: [2.6 patch] drivers/net/wireless/libertas/fw.c: fix use-before-check
+References: <464DDD29.3000009@redhat.com> <20070518181355.GD3492@tuxdriver.com>
+In-Reply-To: <20070518181355.GD3492@tuxdriver.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-19 at 00:00 +0200, Segher Boessenkool wrote:
-> It's not the compiler who decides -- struct layout is
-> dictated by the ABI you're compiling for.
+Hi John,
 
-This is true in the case of externally-visible stuff. I think the
-compiler is permitted to violate the ABI for purely unit-internal things
-if it makes sense though, isn't it?
+John W. Linville wrote:
+> On Sat, May 19, 2007 at 01:06:49AM +0800, Eugene Teo wrote:
+>> NULL checks should be performed before the dereference.
+>>
+>> Spotted by the Coverity checker.
+>>
+>> Signed-off-by: Eugene Teo <eteo@redhat.com>
+> 
+> This does not apply against 2.6.22-rc1.  Please rediff and repost.
 
-Besides, in the case of the Linux kernel the ABI in question could be
-one of many. It could even be a new one which was added a couple of
-weeks ago, and which I had no _chance_ of considering.
+Ok. Here's a rediff against 2.6.22-rc1. Thanks.
+--
 
-The rule stands -- empirical testing of what the compiler will do isn't
-usually the right answer.
+NULL checks should be performed before the dereference.
 
--- 
-dwmw2
+Spotted by the Coverity checker.
 
+Signed-off-by: Eugene Teo <eteo@redhat.com>
+
+diff -uprN -X 2.6.22-rc1/Documentation/dontdiff
+2.6.22-rc1.orig/drivers/net/wireless/libertas/fw.c 2.6.22-rc1/drivers/net/wireless/libertas/fw.c
+--- 2.6.22-rc1.orig/drivers/net/wireless/libertas/fw.c  2007-05-19 10:48:02.000000000 +0800
++++ 2.6.22-rc1/drivers/net/wireless/libertas/fw.c       2007-05-19 11:01:26.000000000 +0800
+@@ -333,18 +333,22 @@ static void command_timer_fn(unsigned lo
+        unsigned long flags;
+
+        ptempnode = adapter->cur_cmd;
++       if (ptempnode == NULL) {
++               lbs_pr_debug(1, "PTempnode Empty\n");
++               return;
++       }
++
+        cmd = (struct cmd_ds_command *)ptempnode->bufvirtualaddr;
++       if (!cmd) {
++               lbs_pr_debug(1, "cmd is NULL\n");
++               return;
++       }
+
+        lbs_pr_info("command_timer_fn fired (%x)\n", cmd->command);
+
+        if (!adapter->fw_ready)
+                return;
+
+-       if (ptempnode == NULL) {
+-               lbs_pr_debug(1, "PTempnode Empty\n");
+-               return;
+-       }
+-
+        spin_lock_irqsave(&adapter->driver_lock, flags);
+        adapter->cur_cmd = NULL;
+        spin_unlock_irqrestore(&adapter->driver_lock, flags);
