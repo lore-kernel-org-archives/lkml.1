@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763738AbXESMUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbXESMYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763738AbXESMUJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 08:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbXESMT6
+	id S1759337AbXESMYr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 08:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbXESMYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 08:19:58 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34869 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757865AbXESMT5 (ORCPT
+	Sat, 19 May 2007 08:24:41 -0400
+Received: from mail-in-01.arcor-online.net ([151.189.21.41]:44554 "EHLO
+	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754136AbXESMYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 08:19:57 -0400
-Date: Sat, 19 May 2007 14:19:56 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
-       Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH 8/9] readahead: convert ext3/ext4 invocations
-Message-ID: <20070519121956.GD25563@one.firstfloor.org>
-References: <20070516224752.500812933@mail.ustc.edu.cn> <20070516224819.281192313@mail.ustc.edu.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516224819.281192313@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 19 May 2007 08:24:40 -0400
+In-Reply-To: <1179540463.2859.627.camel@shinybook.infradead.org>
+References: <20070517143200.GA30850@lst.de> <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de> <1179414590.3642.69.camel@sauron> <20070517102931.6bbbad1a.akpm@linux-foundation.org> <pan.2007.05.17.20.30.30@free.fr> <1179455959.2859.527.camel@shinybook.infradead.org> <alpine.DEB.0.99.0705172254560.27207@sigma.j-a-k-j.com> <1179458274.2859.538.camel@shinybook.infradead.org> <alpine.DEB.0.99.0705180750550.8830@sigma.j-a-k-j.com> <1179499959.2859.579.camel@shinybook.infradead.org> <6c8c0e6cd0ac95fd1c7d4e822f1e2029@kernel.crashing.org> <1179540463.2859.627.camel@shinybook.infradead.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <315d22bffba5fe251dbe60e4e0d5ced0@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: Matthieu CASTET <castet.matthieu@free.fr>,
+       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       linux-kernel@vger.kernel.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+Date: Sat, 19 May 2007 14:24:36 +0200
+To: David Woodhouse <dwmw2@infradead.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 06:48:00AM +0800, Fengguang Wu wrote:
-> Convert ext3/ext4 dir reads to use on-demand readahead.
-> 
-> Readahead for dirs operates _not_ on file level, but on blockdev level.
-> This makes a difference when the data blocks are not continuous.
-> And the read routine is somehow opaque: there's no handy info about the status
-> of current page. So a simplified call scheme is employed: to call into
-> readahead whenever the current page falls out of readahead windows.
+>> It's not the compiler who decides -- struct layout is
+>> dictated by the ABI you're compiling for.
+>
+> This is true in the case of externally-visible stuff. I think the
+> compiler is permitted to violate the ABI for purely unit-internal 
+> things
+> if it makes sense though, isn't it?
 
-ext2 too would be nice. Also when it goes in it might be worth
-contacting linux-fsdevel with a quick pointer to this so that other
-file systems can possibly benefit too.
--Andi
+Sure.  It isn't "violating the ABI" in that case though,
+to be perfectly clear.
+
+> Besides, in the case of the Linux kernel the ABI in question could be
+> one of many. It could even be a new one which was added a couple of
+> weeks ago, and which I had no _chance_ of considering.
+
+Of course.
+
+> The rule stands -- empirical testing of what the compiler will do isn't
+> usually the right answer.
+
+It is *never* the right answer.  You should always write
+your code so that it will do the right thing no matter
+what the compiler decides to do to it.
+
+
+Segher
 
