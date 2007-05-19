@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761144AbXESHQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbXESHtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761144AbXESHQN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 03:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbXESHP7
+	id S1759254AbXESHtn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 03:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXESHtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 03:15:59 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40345 "EHLO e4.ny.us.ibm.com"
+	Sat, 19 May 2007 03:49:36 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:52096 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754515AbXESHP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 03:15:57 -0400
-From: Darren Hart <dvhltc@us.ibm.com>
-Organization: IBM Linux Technology Center
-To: linux-rt-users@vger.kernel.org
-Subject: maxcpus=1 fails to boot
-Date: Sat, 19 May 2007 00:15:52 -0700
-User-Agent: KMail/1.9.6
-Cc: "lkml, " <linux-kernel@vger.kernel.org>
+	id S1754437AbXESHtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 03:49:36 -0400
+Date: Sat, 19 May 2007 09:46:51 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Andi Kleen <ak@suse.de>
+cc: Rik van Riel <riel@redhat.com>, righiandr@users.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
+In-Reply-To: <200705181347.14256.ak@suse.de>
+Message-ID: <Pine.LNX.4.61.0705190946430.9015@yvahk01.tjqt.qr>
+References: <464C81B5.8070101@users.sourceforge.net> <464C9D82.60105@redhat.com>
+ <Pine.LNX.4.61.0705180825280.3231@yvahk01.tjqt.qr> <200705181347.14256.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705190015.53518.dvhltc@us.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When trying to boot with the maxcpus=1 option, the -rt kernel seems to hang 
-somewhere in acpi_processor_init().
 
-I tested mainline 2.6.21 and it does boot with maxcpus=1.  2.6.20-rt8, 
-2.6.21-rt1, 2, and 4 all hang at:
+On May 18 2007 13:47, Andi Kleen wrote:
+>
+>> I do not see such on i386, so why for x86_64?
+>
+>So that you know that one of your programs crashed. That's a feature.
 
-Calling initcall 0xffffffff817a41df: acpi_processor_init+0x0/0xdf()
+This feature could be handy for i386 too.
 
-when booted with initcall_debug and maxcpus=1.  I traced this only as far as 
-the call to acpi_bus_register_driver.  So this seems to have been introduced 
-by the -rt patch.  I'm not sure if I should try and see when it was 
-introduced (as 2.6.16-rt22 does not fail) or if I should head "down the acpi 
-rabbit hole"...
 
-Thanks,
-
+	Jan
 -- 
-Darren Hart
-IBM Linux Technology Center
-Realtime Linux Team
