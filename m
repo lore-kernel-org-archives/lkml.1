@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764087AbXESSnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764011AbXESSuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764087AbXESSnn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 14:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758137AbXESSnd
+	id S1764011AbXESSuT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 14:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756765AbXESSuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 14:43:33 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:15040 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756395AbXESSnc (ORCPT
+	Sat, 19 May 2007 14:50:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35372 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756395AbXESSuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 14:43:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=kq0/+BLUEEps0jy8VGIO3EHLtnShQmPdjLp+x9NHIQEN0tqYs6TgWRXCiHTGVK+LFG6H5VZ789gD4Q2tUhBZ4iCSeZQCRP2VOwaYHieVgJOqqKZD2YJ5VzgiTh4sqzfGMl+JU0EwqfNs6VCVbMnajLMNRFj+AALPuh7zQ0x5cZ8=
-Message-ID: <464F4548.6020101@gmail.com>
-Date: Sat, 19 May 2007 20:43:20 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Sat, 19 May 2007 14:50:06 -0400
+Date: Sat, 19 May 2007 09:30:53 -0700
+From: Greg KH <greg@kroah.com>
+To: Benjamin LaHaise <bcrl@kvack.org>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
+       Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: sysfs makes scaling suck Re: Asynchronous scsi scanning
+Message-ID: <20070519163052.GA4793@kroah.com>
+References: <1179153096.3703.23.camel@mulgrave.il.steeleye.com> <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk> <20070515172905.GJ10562@parisc-linux.org> <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com> <20070517173238.GA30571@kvack.org> <1179423924.3785.30.camel@mulgrave.il.steeleye.com> <20070517174952.GB30571@kvack.org>
 MIME-Version: 1.0
-To: Indan Zupancic <indan@nul.nu>
-CC: Paul Mundt <lethal@linux-sh.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       garyhade@us.ibm.com
-Subject: Re: [PATCH] libata: implement ata_wait_after_reset()
-References: <20070510072005.GA27316@linux-sh.org>    <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com>    <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com>    <20070511005217.GA23186@li <464B3505.20004@gmail.com> <2229.81.207.0.53.1179592754.squirrel@secure.samage.net>
-In-Reply-To: <2229.81.207.0.53.1179592754.squirrel@secure.samage.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070517174952.GB30571@kvack.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Indan Zupancic wrote:
-> Doesn't the controller generate an interrupt when it detects a harddisk?
-> Is it really needed to do polling?
+On Thu, May 17, 2007 at 01:49:52PM -0400, Benjamin LaHaise wrote:
+> On Thu, May 17, 2007 at 01:45:24PM -0400, James Bottomley wrote:
+> > But also, the sysfs with over 4,000 (and higher) devices was
+> > specifically checked by OSDL (actually as part of the CGL testing) some
+> > of the Manoj changes (for unpinning entries etc) were needed to get it
+> > to function, but as of now, I believe an enterprise scaling test works
+> > reasonably well for it ... there certainly wasn't any evidence of it
+> > dying horribly in the tests.
+> 
+> i386 exhausts lowmem very quickly.  SCSI is in a bit better shape than 
+> network devices as the multiplier is only around 4 compared to 16 for network 
+> devices.
 
-It depends on the controller but the closest thing is usually PHY status
-changed interrupt and PHY readiness doesn't imply device readiness.  On
-some controllers, you can play smart and try to do these things by
-interrupt but polling is much more reliable for this kind of stuff.
+And sysfs pushes nodes out of memory when we start to exhaust memory, so
+there should not be a problem at all.  If there is, please let the sysfs
+developers know about it and we will work to fix this.
 
-> Idea: What about implementing a sata_sil specific .check_status function,
-> instead of using the generic ata_check_status()? That one could check other
-> registers to find out what's really going on in the case ENODEV is returned
-> by ata_check_status(), or something like that.
+thanks,
 
-Yeah, if SCR registers are accessible, 0xff doesn't indicate the device
-isn't there, so the whole skip-0xff logic probably shouldn't apply in
-such cases, but we can also achieve pretty good result by just making
-the first reset tries a bit more aggressive.
-
-The first timeout of 10secs was chosen because most desktop drives take
-somewhere around 7~10 secs to spin up, so retrying before that didn't
-make much sense, but mobile devices usually spin up faster, so it might
-be worth to try one more time inbetween.
-
--- 
-tejun
+greg k-h
