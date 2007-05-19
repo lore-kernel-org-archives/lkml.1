@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbXESDRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbXESDen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758883AbXESDRT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 23:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbXESDRL
+	id S1758277AbXESDen (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 23:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbXESDeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 23:17:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34629 "EHLO mx1.redhat.com"
+	Fri, 18 May 2007 23:34:36 -0400
+Received: from ozlabs.org ([203.10.76.45]:52031 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754653AbXESDRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 23:17:10 -0400
-Message-ID: <464E6B82.40607@redhat.com>
-Date: Sat, 19 May 2007 11:14:10 +0800
-From: Eugene Teo <eteo@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1754561AbXESDeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 23:34:36 -0400
 MIME-Version: 1.0
-To: linux-wireless@vger.kernel.org
-CC: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, Florin Malita <fmalita@gmail.com>
-Subject: Re: [2.6 patch] drivers/net/wireless/libertas/rx.c: fix use-after-free
-References: <464DD957.9040803@redhat.com> <20070518174623.GA3492@tuxdriver.com>
-In-Reply-To: <20070518174623.GA3492@tuxdriver.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
+Date: Sat, 19 May 2007 13:33:07 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
+       tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+In-Reply-To: <1179502773.20519.56.camel@imap.mvista.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	<8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	<464C99FF.8080404@ru.mvista.com>
+	<135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	<1179500217.20519.53.camel@imap.mvista.com>
+	<464DC0DC.7050809@ru.mvista.com>
+	<1179502773.20519.56.camel@imap.mvista.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John W. Linville wrote:
-> First, please send all wireless patches to
-> linux-wireless@vger.kernel.org, and be sure to CC me as well...thanks!
+Daniel Walker writes:
+
+> On Fri, 2007-05-18 at 19:06 +0400, Sergei Shtylyov wrote:
+> >     Well, the decrementer frequency may change, at least in theory (if the bus 
+> > clock changes).
 > 
-> On Sat, May 19, 2007 at 12:50:31AM +0800, Eugene Teo wrote:
->> libertas_upload_rx_packet() calls netif_rx() before returning, and it always return 0.
->> Also within libertas_upload_rx_packet(), it will initialize skb->protocol anyways.
->>
->> Spotted by the Coverity checker.
-> 
-> A nearly identical patch was posted by Florin Malita <fmalita@gmail.com>
-> to netdev (also the wrong list) on Wednesday evening.
+> Does that happen very often?
 
-Nod. I wasn't subscribed to netdev list.
+If it did, gettimeofday would start reporting seriously wrong values,
+since the timebase and the decrementer count at the same rate, and we
+don't have any provision for fixing things up if that rate changed.
+Fortunately there are no powerpc platforms where the rate is
+variable.
 
->>  done:
->>         LEAVE();
->>
->> -       skb->protocol = __constant_htons(0x0019);       /* ETH_P_80211_RAW */
->> -
-> 
-> Except for this part...is this intentional?
-
-skb could have been freed by then. And, in libertas_upload_rx_packet(), skb->protocol
-is initialized by eth_type_trans(skb, priv->wlan_dev.netdev).
-
-Eugene
-
+Paul.
