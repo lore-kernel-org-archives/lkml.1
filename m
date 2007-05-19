@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764414AbXEST3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764273AbXESTcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764414AbXEST3V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 15:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759275AbXEST3M
+	id S1764273AbXESTcA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 15:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbXESTbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 15:29:12 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:55982 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755016AbXEST3K (ORCPT
+	Sat, 19 May 2007 15:31:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50739 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759198AbXESTbx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 15:29:10 -0400
-Message-ID: <464F4FD7.80303@cosmosbay.com>
-Date: Sat, 19 May 2007 21:28:23 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sat, 19 May 2007 15:31:53 -0400
+Date: Sat, 19 May 2007 12:33:07 -0700
+From: Greg KH <greg@kroah.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Indan Zupancic <indan@nul.nu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG: 2.6.22-rc2] SLAB doesn't like usb_get_configuration()
+Message-ID: <20070519193307.GA26156@kroah.com>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org> <3642.81.207.0.53.1179584891.squirrel@secure.samage.net> <Pine.LNX.4.64.0705191119460.17008@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Vasantha Kumar Puttappa <vasanthakumar@iitb.ac.in>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: Packets lost: Softirq
-References: <3388.10.107.26.27.1179320821.squirrel@gpo.iitb.ac.in>    <464B19A9.700@freemail.hu> <2770.10.107.26.27.1179579009.squirrel@gpo.iitb.ac.in>
-In-Reply-To: <2770.10.107.26.27.1179579009.squirrel@gpo.iitb.ac.in>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 19 May 2007 21:28:29 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705191119460.17008@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vasantha Kumar Puttappa a écrit :
-> Hi All,
->  Please somebody guide me here. I desparatley need help regarding this
-> issue. ( plz do "reply to all")
+On Sat, May 19, 2007 at 11:20:44AM -0700, Christoph Lameter wrote:
+> On Sat, 19 May 2007, Indan Zupancic wrote:
 > 
->  I am tracking all udp packets (in particular, SIP based UDP packets)that
-> goes through the iptables using LOG mechanism.
->  I use the following command,
->      iptables -A INPUT -p udp -j LOG --log-level-4.
->      iptables -A FORWARD -p udp -j LOG --log-level-4
+> > I had two SLAb related bugs, both with usb_get_configuration()
+> > near the end of the backtrace. First one was with git between
+> > rc1 and rc2, but very close to rc2, second one was with rc2,
+> > both at bootup.
 > 
->   In addition, i also run 'Ethereal' to make sure that all the packets
-> captured goes through the iptables as well.
-> 
->   Here is the problem,
->     Sometimes, a random number of packets doesnot go through IPtables and
->   they are completely lost. Although, I can see those lost packets in
-> Ethereal. I tried increasing the backlog queue and ip_queue length, but
-> still no use.
-> 
->    I am using Netgear's wireless network card (WG511, made in taiwan).
->    Device driver: Prism54
->    firmware: isl3890
->    Kernel verison-- 2.6.11-6mdk
-> 
->   Let me give you more insight into what I am trying do.
-> 
->  I have a vitrual network interface and 2 physical network interface (one
-> Ethernet based, and other 802.11 based). The virtual network interface
-> dynamically binds to any one of the above physical interfaces for packet
-> transmission. The issue of packet loss occurs **only** during link
-> switching.
-> 
-> I feel that the following issues might be the possible reasons for the
-> packet loss.
-> 
-> 1. Due to missing soft_IRQ interrupt for packets and hence packet loss ( i
-> have no proof to back this)
-> 2. Due to incompatible wireless device driver.
-> 
+> Well usb_get_configuration seems to do a kmalloc(0) which is a bit 
+> strange and this is why we flagged the allocation in the slab allocators. 
+> Is there some way to avoid allocating an object of zero length?
 
-netdev CCed
+Can you try the patch below and let me know if it fixes the issue for
+you or not?
 
-3) packets are going normally through iptables, but the '-j LOG' is flooded 
-and syslog miss some of them.
+thanks,
 
-Just do a : iptables -nvL INPUT
+greg k-h
 
-and check packets counters : they should match ethereal ones :)
 
--j LOG is not designed for logging all packets, just some of them :)
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] USB: don't try to kzalloc 0 bytes
+
+This patch (as907) prevents us from trying to allocate 0 bytes
+when an interface has no endpoint descriptors.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+--- usb-2.6.orig/drivers/usb/core/config.c
++++ usb-2.6/drivers/usb/core/config.c
+@@ -185,10 +185,12 @@ static int usb_parse_interface(struct de
+ 		num_ep = USB_MAXENDPOINTS;
+ 	}
+ 
+-	len = sizeof(struct usb_host_endpoint) * num_ep;
+-	alt->endpoint = kzalloc(len, GFP_KERNEL);
+-	if (!alt->endpoint)
+-		return -ENOMEM;
++	if (num_ep > 0) {	/* Can't allocate 0 bytes */
++		len = sizeof(struct usb_host_endpoint) * num_ep;
++		alt->endpoint = kzalloc(len, GFP_KERNEL);
++		if (!alt->endpoint)
++			return -ENOMEM;
++	}
+ 
+ 	/* Parse all the endpoint descriptors */
+ 	n = 0;
 
