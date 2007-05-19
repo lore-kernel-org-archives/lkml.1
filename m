@@ -1,95 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764606AbXESSXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764656AbXESSYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764606AbXESSXs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 14:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758687AbXESSXk
+	id S1764656AbXESSYU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 14:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763930AbXESSYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 14:23:40 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:1277 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758228AbXESSXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 14:23:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=s1GZNQF6ELKOh4SBkd1BywjLKxaycoxgSk99/dt0Mu8QaThGK8mqqIVdH3APXivP6rtQNfl7tBB+1aUfRXITOIIPwFF0rmpiHl0AAR6aAR+H4u/2C8+uhn7Fggq2QJk4yKuku6b4VJrzoFSLxLxfihIvpeGpTWjt7GcgWYSelkY=
-Message-ID: <464F409D.9030408@gmail.com>
-Date: Sat, 19 May 2007 20:23:25 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Sat, 19 May 2007 14:24:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40213 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764124AbXESSYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 14:24:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: 2.6.22-rc1 regression: tifm prevents suspending [was: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after STR]
+Date: Sat, 19 May 2007 20:29:36 +0200
+User-Agent: KMail/1.9.5
+Cc: "Mattia Dongili" <malattia@linux.it>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Alex Dubov" <oakad@yahoo.com>,
+       "Pierre Ossman" <drzeus@drzeus.cx>
+References: <20070518071523.GA3195@inferi.kami.home> <20070519151110.GA3393@inferi.kami.home> <6bffcb0e0705191017n1d1e6eb7k1370d5ce5cf17fb9@mail.gmail.com>
+In-Reply-To: <6bffcb0e0705191017n1d1e6eb7k1370d5ce5cf17fb9@mail.gmail.com>
 MIME-Version: 1.0
-To: Indan Zupancic <indan@nul.nu>
-CC: Paul Mundt <lethal@linux-sh.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       garyhade@us.ibm.com
-Subject: Re: [PATCH] libata: implement ata_wait_after_reset()
-References: <20070510072005.GA27316@linux-sh.org>    <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com>    <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com>    <20070511005217.GA23186@li <464B3505.20004@gmail.com> <1800.81.207.0.53.1179590050.squirrel@secure.samage.net>
-In-Reply-To: <1800.81.207.0.53.1179590050.squirrel@secure.samage.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705192029.37436.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Indan Zupancic wrote:
-> Using sata_sil (SiI 3512) with a ST3120827AS disk here.
+On Saturday, 19 May 2007 19:17, Michal Piotrowski wrote:
+> Hi,
 > 
-> For me the COMRESET happens after resume (s2ram):
+> On 19/05/07, Mattia Dongili <malattia@linux.it> wrote:
+> > On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
+> > > On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
+> > >
+> > > > On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
+> > > > > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
+> > > > >
+> > > > > > Hello,
+> > > > > >
+> > > > > > After finally catching fw-{ohci,core} to be problematic during resume,
+> > > > > > I'm now experiencing an immediate resume after suspending.
+> > > > > >
+> > > > > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
+> > > > > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
+> > > > > > 2.6.21-rc6-mm* after the cpuidle fixes).
+> > > > > >
+> > > > > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
+> > > > > > and a str cycle with PM_DEBUG=y:
+> > > > > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
+> > > > ...
+> > > > > > Any idea where to start from? (bisecting is ok, but it'll take some
+> > > > > > time...)
+> > > > >
+> > > > > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
+> > > >
+> > > > ok, git-acpi.patch is not the bad boy :)
+> > > > Anyway what we have is a regression in 2.6.22-rc1 since the laptop can't
+> > > > suspend (it sits on the "Stopping tasks" console screen) while 2.6.21
+> > > > can.
+> > > > I'm now bisecting this, will come to -mm1 later when done with this one.
+> > >
+> > > OK, thanks.
+> > >
+> > > > Who is the regression-guy?
+> > >
+> > > Len, usually ;)    But I think you meant Michal, cc'ed here.
+> >
+> > LOL, not this time. We have the responsible commit for 2.6.22-rc1 (Cc
+> > added):
+> >
+> > 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5 is first bad commit
+> > commit 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5
+> > Author: Alex Dubov <oakad@yahoo.com>
+> > Date:   Thu Apr 12 16:59:15 2007 +1000
+> >
 > 
-> [    2.174342] sd 0:0:0:0: [sda] Starting disk
-> [    2.476407] ata1: device not ready (errno=-19), forcing hardreset
-> [    2.476429] ata2: SATA link down (SStatus 0 SControl 310)
-> [    2.931793] ata1: COMRESET failed (errno=-19)
-> [    2.931797] ata1: reset failed (errno=-19), retrying in 10 secs
-> [   12.918421] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-> [   12.921957] ata1.00: ata_hpa_resize 1: sectors = 234441648, hpa_sectors = 234441648
-> [   12.925908] ata1.00: ata_hpa_resize 1: sectors = 234441648, hpa_sectors = 234441648
+> Subject    : Broken suspend on SMP with tifm
+> References : http://lkml.org/lkml/2007/5/13/161
+> Submitter  : Rafael J. Wysocki <rjw@sisk.pl>
+> Status     : patch was suggested
 > 
-> With your patch applied the output is:
+> Actually should be "a few patches was suggested"
 > 
-> [    2.173369] sd 0:0:0:0: [sda] Starting disk
-> [    2.475431] ata1: device not ready (errno=-19), forcing hardreset
-> [    2.475453] ata2: SATA link down (SStatus 0 SControl 310)
-> [    3.592930] ata1: COMRESET failed (errno=-19)
-> [    3.592934] ata1: reset failed (errno=-19), retrying in 9 secs
-> [   12.917446] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-> [   12.920969] ata1.00: ata_hpa_resize 1: sectors = 234441648, hpa_sectors = 234441648
-> [   12.924945] ata1.00: ata_hpa_resize 1: sectors = 234441648, hpa_sectors = 234441648
-> 
-> Resume takes now ten seconds or more, while it used to take only a few seconds,
-> what changed? A few kernel versions ago (2.6.21-rc or so?) it retried in 5 seconds
-> instead of 10, but even that is too long.
+> Rafael, please point me the right patch.
 
-There are two different things at play here...
+Fixed in the mainline, by
 
-1. We dropped libata specific suspend/resume implementation in favor of
-sd driven one.  Unfortunately, the new implementation currently can't do
-background spinup, so that's probably why you can feel the delay.  We
-need to figure out how to do background spinup with the new implementation.
+commit e3dfd2964ea86ae65f511b10d62ea54d46db3708
+make freezeable workqueues singlethread
 
-2. To make reset finish in defined time, each reset try now has defined
-deadlines.  I was trying to be conservative so I chose 10sec for the
-first try.  It's driven by timing table near the top of libata-eh.c, so
-adjusting the table is easy and maybe we can be a bit more aggressive
-with the first two tries.  But if we solve #1, this shouldn't matter too
-much.
-
-So, it's the unfortunate combination of the above two.
-
-> Maybe a silly question, but why do we wait for the harddisk to show up? Maybe that
-> makes a little bit of sense at bootup, but for resume from ram, where nothing is
-> supposed to have changed, it seems a bit strange. Why not wait when something tries
-> to access the harddisk or something?
-
-I hope it's explained now.
-
-> I wonder if sil_pci_device_resume() and sd_resume() know about each other...
-> I'll disable sd_resume() and see how that goes.
-
-Yeap, that should work.  In most configurations, devices spin up
-immediately after power is restored.  sd_resume() just waits for the
-device to be revalidated in such cases.
-
--- 
-tejun
+Greetings,
+Rafael
