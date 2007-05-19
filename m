@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764482AbXESVeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbXESVu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764482AbXESVeP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 17:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXESVeD
+	id S1757178AbXESVu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 17:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbXESVuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 17:34:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43630
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755324AbXESVeC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 17:34:02 -0400
-Date: Sat, 19 May 2007 14:34:05 -0700 (PDT)
-Message-Id: <20070519.143405.11626880.davem@davemloft.net>
-To: tglx@linutronix.de
-Cc: mikulas@artax.karlin.mff.cuni.cz, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NOHZ: local_softirq_pending with tickless plip
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1179399131.3764.50.camel@chaos>
-References: <Pine.LNX.4.64.0705161415350.10041@artax.karlin.mff.cuni.cz>
-	<1179399131.3764.50.camel@chaos>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sat, 19 May 2007 17:50:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54292 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755327AbXESVuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 17:50:15 -0400
+X-Authenticated: #283898
+X-Provags-ID: V01U2FsdGVkX197C1d4uId7a9PeUwy7Llg/A+i6kqcgl0m9zgoN5P
+	NjpKKjE8G5MwGp
+Subject: Re: VFS design question
+From: Tobias Pflug <tobias.pflug@gmx.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <464F3CB2.9060401@zytor.com>
+References: <1179569656.6558.349.camel@toontown>
+	 <464F3CB2.9060401@zytor.com>
+Content-Type: text/plain
+Date: Sat, 19 May 2007 23:51:56 +0200
+Message-Id: <1179611516.6558.357.camel@toontown>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Thu, 17 May 2007 12:52:11 +0200
-
-> On Wed, 2007-05-16 at 15:00 +0200, Mikulas Patocka wrote:
-> > Hi
+On Sat, 2007-05-19 at 11:06 -0700, H. Peter Anvin wrote:
+> Tobias Pflug wrote:
+> > Hi,
 > > 
-> > On one of my machines with tickless kernel and plip I get messages :
-> 
-> I bet this is a machine a P4 with Hyperthreading enabled ?
-> 
-> > NOHZ: local_softirq_pending 08
+> > A note in front: I realize that my question is rather broad and a bit
+> > vague, sorry for that :)
 > > 
-> > always when using plip (on other machine with tickless kernel and plip I 
-> > get no errors). Thebug happens both on 2.6.21 and 2.6.22-rc1
+> > The VFS is a great solution to transparently operate on different file
+> > systems by designating an interface for file systems that separates 
+> > file system specific code from higher levels. 
 > > 
-> > This patch fixes that. Note that plip calls netif_rx neither from hardware 
-> > interrupt nor from ksoftirqd, so there is no one who would wake 
-> > ksoftirqd then. netif_tx calls only 
-> > __raise_softirq_irqoff(NET_RX_SOFTIRQ), which sets softirq bit, but 
-> > doesn't wake ksoftirqd.
+> > Doesn't however this very feature also represent a limiting factor in
+> > some way? Surely you can map pretty much anything to the Common File
+> > System model, but is or has the VFS interface design been limiting
+> > in any way in contemporary file system design ? 
+> > 
 > 
-> Dave, 
+> Why does this sound like "do my homework for me"?
 > 
-> can we please get rid of __raise_softirq_irqoff() at all ? These micro
-> optimizations are causing more trouble than they are worth.
+> 	-hpa
 
-I looked some more and really I think this is a bug in plip,
-netif_rx() should only be invoked from software or hardware
-interrupts.
+I tried to make it clear that I am clearly lacking expertise in this
+topic. I am currently working on a somewhat related topic and was hoping
+to get some reactions that would point me in the right directions as it
+is somewhat hard to judge the VFS design when you do not have prior
+experience in writing a file system on your own. Nowhere did I ask for a
+10 paged review on the matter.
 
-If you look, the function invoking netif_rx() is called plip_bh() and
-indeed I believe with that kind of funtion name it did run from
-software interrupts (of BH's as they used to be called) at one point
-but someone changed it over to execute from a workqueue for some
-reason.
+Enough blablabla
 
-We really shouldn't punish all callers of netif_rx() just because
-one call site doesn't invoke it in the correct context.
+Any input would be welcome. Thanks.
+
+-Tobi
+
