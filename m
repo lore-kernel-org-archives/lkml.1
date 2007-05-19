@@ -1,39 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764473AbXESSTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764312AbXESSUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764473AbXESSTl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 14:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764144AbXESSTd
+	id S1764312AbXESSUw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 14:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758710AbXESSUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 14:19:33 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55791 "EHLO
+	Sat, 19 May 2007 14:20:46 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58621 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758373AbXESSTd (ORCPT
+	with ESMTP id S1758195AbXESSUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 14:19:33 -0400
-Date: Sat, 19 May 2007 11:19:31 -0700 (PDT)
+	Sat, 19 May 2007 14:20:45 -0400
+Date: Sat, 19 May 2007 11:20:44 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, dgc@sgi.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 01/10] SLUB: add support for kmem_cache_ops
-In-Reply-To: <84144f020705190553s598e722fu7279253ee8b516bc@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705191119010.17008@schroedinger.engr.sgi.com>
-References: <20070518181040.465335396@sgi.com>  <20070518181118.828853654@sgi.com>
- <84144f020705190553s598e722fu7279253ee8b516bc@mail.gmail.com>
+To: Indan Zupancic <indan@nul.nu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG: 2.6.22-rc2] SLAB doesn't like usb_get_configuration()
+In-Reply-To: <3642.81.207.0.53.1179584891.squirrel@secure.samage.net>
+Message-ID: <Pine.LNX.4.64.0705191119460.17008@schroedinger.engr.sgi.com>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+ <3642.81.207.0.53.1179584891.squirrel@secure.samage.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 May 2007, Pekka Enberg wrote:
+On Sat, 19 May 2007, Indan Zupancic wrote:
 
-> On 5/18/07, clameter@sgi.com <clameter@sgi.com> wrote:
-> > kmem_cache_ops is created as empty. Later patches populate kmem_cache_ops.
-> 
-> Hmm, would make more sense to me to move "ctor" in kmem_cache_ops in
-> this patch and not make kmem_cache_create() take both as parameters...
+> I had two SLAb related bugs, both with usb_get_configuration()
+> near the end of the backtrace. First one was with git between
+> rc1 and rc2, but very close to rc2, second one was with rc2,
+> both at bootup.
 
-Yeah earlier versions did this but then I have to do a patch that changes 
-all destructors and all kmem_cache_create calls in the kernel.
- 
+Well usb_get_configuration seems to do a kmalloc(0) which is a bit 
+strange and this is why we flagged the allocation in the slab allocators. 
+Is there some way to avoid allocating an object of zero length?
