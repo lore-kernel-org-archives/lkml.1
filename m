@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbXESI5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbXESJER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbXESI5B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 04:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXESI4y
+	id S1758180AbXESJER (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 05:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbXESJEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 04:56:54 -0400
-Received: from www.osadl.org ([213.239.205.134]:58091 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753643AbXESI4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 04:56:53 -0400
-Subject: Re: maxcpus=1 fails to boot
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: linux-rt-users@vger.kernel.org, "lkml," <linux-kernel@vger.kernel.org>
-In-Reply-To: <200705190015.53518.dvhltc@us.ibm.com>
-References: <200705190015.53518.dvhltc@us.ibm.com>
+	Sat, 19 May 2007 05:04:06 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36644 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753643AbXESJEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 05:04:05 -0400
+Subject: Re: [PATCH/WIP] Remove 'irq' argument from all IRQ handlers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <464E9739.40909@garzik.org>
+References: <464E9739.40909@garzik.org>
 Content-Type: text/plain
-Date: Sat, 19 May 2007 11:02:30 +0200
-Message-Id: <1179565350.12981.107.camel@chaos>
+Date: Sat, 19 May 2007 19:03:57 +1000
+Message-Id: <1179565437.32247.477.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-19 at 00:15 -0700, Darren Hart wrote:
-> When trying to boot with the maxcpus=1 option, the -rt kernel seems to hang 
-> somewhere in acpi_processor_init().
+On Sat, 2007-05-19 at 02:20 -0400, Jeff Garzik wrote:
 > 
-> I tested mainline 2.6.21 and it does boot with maxcpus=1.  2.6.20-rt8, 
-> 2.6.21-rt1, 2, and 4 all hang at:
+> Before I will even consider submitting this upstream, this patchset
+> needs
 > 
-> Calling initcall 0xffffffff817a41df: acpi_processor_init+0x0/0xdf()
-> 
-> when booted with initcall_debug and maxcpus=1.  I traced this only as far as 
-> the call to acpi_bus_register_driver.  So this seems to have been introduced 
-> by the -rt patch.  I'm not sure if I should try and see when it was 
-> introduced (as 2.6.16-rt22 does not fail) or if I should head "down the acpi 
-> rabbit hole"...
+> * non-x86[-64] build fixes, and testing
+> * update the Mac drivers
 
-Be careful, when sticking your head into this hole !
+Which ones ? I don't remember doing much of irq either... could be some
+drivers we share with m64k or some historical stuff... should be easy
+enough to fix in any case.
 
-I try to nail it down. 
+Overall, sounds like a good idea to me.
 
-	tglx
-
+Cheers,
+Ben.
 
