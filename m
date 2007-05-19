@@ -1,159 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763430AbXESIeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbXESIke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763430AbXESIeS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 04:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755721AbXESIeK
+	id S1763492AbXESIke (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 04:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbXESIk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 04:34:10 -0400
-Received: from ns.armcci.am ([195.250.88.164]:55284 "EHLO ns.armcci.am"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755487AbXESIeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 04:34:08 -0400
-Date: Sat, 19 May 2007 13:33:56 +0500 (AMST)
-From: eugene@ns.armcci.am
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: ht CPU flag
-In-Reply-To: <464E96A1.60808@zytor.com>
-Message-ID: <Pine.LNX.4.64.0705191328090.31481@ns.armcci.am>
-References: <Pine.LNX.4.64.0705182131030.25685@ns.armcci.am>
- <464DFBE0.5060904@redhat.com> <Pine.LNX.4.64.0705190023420.25685@ns.armcci.am>
- <464E03C5.6040507@redhat.com> <Pine.LNX.4.64.0705190858590.29910@ns.armcci.am>
- <464E96A1.60808@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 19 May 2007 04:40:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51387 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755946AbXESIkZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 04:40:25 -0400
+Date: Sat, 19 May 2007 01:37:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] MM : alloc_large_system_hash() can free some memory for
+ non power-of-two bucketsize
+Message-Id: <20070519013724.3d4b74e0.akpm@linux-foundation.org>
+In-Reply-To: <20070518115454.d3e32f4d.dada1@cosmosbay.com>
+References: <20070518115454.d3e32f4d.dada1@cosmosbay.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 18 May 2007 11:54:54 +0200 Eric Dumazet <dada1@cosmosbay.com> wrote:
 
+> alloc_large_system_hash() is called at boot time to allocate space for several large hash tables.
+> 
+> Lately, TCP hash table was changed and its bucketsize is not a power-of-two anymore.
+> 
+> On most setups, alloc_large_system_hash() allocates one big page (order > 0) with __get_free_pages(GFP_ATOMIC, order). This single high_order page has a power-of-two size, bigger than the needed size.
 
-On Fri, 18 May 2007, H. Peter Anvin wrote:
+Watch the 200-column text, please.
 
-> eugene@ns.armcci.am wrote:
->> As I already told, there is no stepping 4 for Xeons on Intel site! So
->> /proc/cpuinfo, dmidecode, x86info are all wrong.
->> Moreover, x86info is too old and can't work with /sys fs.
->>
->> Also Linux is poor on giving FSB and Memory frequency, which I need to
->> be sure that memory timing is correct (SPD gives slower parameters then
->> are on SDRAM labels :( ).
->
-> Linux doesn't give a hoot.  Setting up the memory is the BIOS' job.
->
-> I'm sure the authors of the tools can use a hand in updating them if
-> they are out of date.
->
-> 	-hpa
->
+> We can free all pages that wont be used by the hash table.
+> 
+> On a 1GB i386 machine, this patch saves 128 KB of LOWMEM memory.
+> 
+> TCP established hash table entries: 32768 (order: 6, 393216 bytes)
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> ---
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index ae96dd8..2e0ba08 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -3350,6 +3350,20 @@ void *__init alloc_large_system_hash(const char *tablename,
+>  			for (order = 0; ((1UL << order) << PAGE_SHIFT) < size; order++)
+>  				;
+>  			table = (void*) __get_free_pages(GFP_ATOMIC, order);
+> +			/*
+> +			 * If bucketsize is not a power-of-two, we may free
+> +			 * some pages at the end of hash table.
+> +			 */
+> +			if (table) {
+> +				unsigned long alloc_end = (unsigned long)table +
+> +						(PAGE_SIZE << order);
+> +				unsigned long used = (unsigned long)table +
+> +						PAGE_ALIGN(size);
+> +				while (used < alloc_end) {
+> +					free_page(used);
+> +					used += PAGE_SIZE;
+> +				}
+> +			}
+>  		}
+>  	} while (!table && size > PAGE_SIZE && --log2qty);
+>  
 
-To authors of /proc/cpuinfo:
+It went BUG.
 
-Plz, fix stepping identification:
+static inline int put_page_testzero(struct page *page)
+{
+	VM_BUG_ON(atomic_read(&page->_count) == 0);
+	return atomic_dec_and_test(&page->_count);
+}
 
-cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) XEON(TM) CPU 2.00GHz
-stepping        : 4
-cpu MHz         : 2000.062
-cache size      : 512 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
-bogomips        : 4006.39
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) XEON(TM) CPU 2.00GHz
-stepping        : 4
-cpu MHz         : 2000.062
-cache size      : 512 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
-bogomips        : 3999.80
-
-processor       : 2
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) XEON(TM) CPU 2.00GHz
-stepping        : 4
-cpu MHz         : 2000.062
-cache size      : 512 KB
-physical id     : 3
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
-bogomips        : 3999.98
-
-processor       : 3
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 2
-model name      : Intel(R) XEON(TM) CPU 2.00GHz
-stepping        : 4
-cpu MHz         : 2000.062
-cache size      : 512 KB
-physical id     : 3
-siblings        : 2
-core id         : 0
-cpu cores       : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm
-bogomips        : 4000.08
-
----------------------------------------------------------------------------
-uname -a
-Linux rau 2.6.15-gentoo-r1 #5 SMP PREEMPT Sat Jan 20 10:13:08 AMT 2007 
-i686 Intel(R) XEON(TM) CPU 2.00GHz GenuineIntel GNU/Linux
-
----------------------------------------------------------------------------
-
-There is NO "stepping 4" for XEON, as Intel site states!
-
-Thank you in advance.
+http://userweb.kernel.org/~akpm/s5000523.jpg
+http://userweb.kernel.org/~akpm/config-vmm.txt
