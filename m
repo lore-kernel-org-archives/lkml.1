@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbXESEaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbXESEug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbXESEaa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 00:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbXESEaX
+	id S1758861AbXESEug (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 00:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbXESEu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 00:30:23 -0400
-Received: from d06184cf.dreamhost.com ([208.97.132.207]:35624 "EHLO
-	spaceymail-a1.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755143AbXESEaW (ORCPT
+	Sat, 19 May 2007 00:50:29 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2298 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755016AbXESEu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 00:30:22 -0400
-From: Anant Nitya <kernel@prachanda.info>
-Organization: Prachanda Hub
-To: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] local_softirq_pending storm
-Date: Sat, 19 May 2007 10:00:00 +0530
-User-Agent: KMail/1.9.6
-Cc: Thomas Gleixner <tglx@linutronix.de>
-References: <200705091942.22920.kernel@prachanda.hub> <200705171211.23350.kernel@prachanda.hub> <1179493277.12981.69.camel@chaos>
-In-Reply-To: <1179493277.12981.69.camel@chaos>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sat, 19 May 2007 00:50:28 -0400
+Date: Sat, 19 May 2007 14:50:21 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot - crypto?
+Message-ID: <20070519045021.GA3649@gondor.apana.org.au>
+References: <d1af83620705100410n482f4f9h428b7cab5501d963@mail.gmail.com> <20070514173823.GA7137@dreamland.darkstar.lan> <20070515014344.GA8850@gondor.apana.org.au> <20070515185212.GA18783@dreamland.darkstar.lan> <20070518031931.GA13048@gondor.apana.org.au> <68676e00705180509s64b737e2k37c5b2e713c96932@mail.gmail.com> <20070518131455.GA20918@gondor.apana.org.au> <20070518191645.GA10815@dreamland.darkstar.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705191000.01208.kernel@prachanda.hub>
+In-Reply-To: <20070518191645.GA10815@dreamland.darkstar.lan>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 May 2007 18:31:17 Thomas Gleixner wrote:
-> On Thu, 2007-05-17 at 12:11 +0530, Anant Nitya wrote:
-> > On Friday 11 May 2007 03:28:46 Thomas Gleixner wrote:
-> > > Ok, that's consistent with earlier reports. The problem surfaces when
-> > > one of the SMT-"cpus" goes idle. The problem goes away when you disable
-> > > hyperthreading.
-> >
-> > Yes with HT disabled in BIOS there is no local_softirq_pending messages.
-> > BTW why does this problem persist only with X ?
->
-> No idea. I uploaded a debug patch against 2.6.22-rc1 to
->
-> http://www.tglx.de/private/tglx/2.6.22-rc1-hrt-debug.patch
->
-> Can you give it a try and report the output ?
+On Fri, May 18, 2007 at 09:16:45PM +0200, Luca Tettamanti wrote:
+> 
+> Output from serial console is enlightening (sort of...):
+> 
+> Loading IPsec SA/SP database from /etc/ipsec-tools.conf: BUG: unable to
+> handle kernel paging request at virtual address 6b6b6ceb printing eip:
+> b0141aef
+> [oops]
 
-I am compiling kernel with above patch applied and will post the results.
+Thanks.  Turns out to be a silly bug :) It's been around for a while
+though.
 
-> > > When you apply the ratelimit patch, does the softlockup problem
-> > > persist ?
-> >
-> > Yes, though softlockup is rare and mostly hit when system is under high
-> > load. Apart of that I am also getting following messages consistently
-> > across multiple boot cycles with NOHZ=y and ratelimit patch applied.
-> >
-> > May 15 11:51:22 rudra kernel: [ 2594.341068] Clocksource tsc unstable
-> > (delta = 28111260302 ns)
-> > May 15 11:51:22 rudra kernel: [ 2594.343194] Time: acpi_pm clocksource
-> > has been installed.
->
-> That's informal. The TSC is detected to be unstable and replaced by the
-> pm timer. Nothing to worry about. It happens with NOHZ=n as well,
-> right ?
-Nope it don't appear with nohz=no till now across so many boot cycles, it 
-always appears with nohz!=no.
+[CRYPTO] api: Read module pointer before freeing algorithm
 
-Regards
-Ananitya
+The function crypto_mod_put first frees the algorithm and then drops
+the reference to its module.  Unfortunately we read the module pointer
+which after freeing the algorithm and that pointer sits inside the
+object that we just freed.
 
+So this patch reads the module pointer out before we free the object.
 
+Thanks to Luca Tettamanti for reporting this.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/crypto/api.c b/crypto/api.c
+index 55af8bb..33734fd 100644
+--- a/crypto/api.c
++++ b/crypto/api.c
+@@ -48,8 +48,10 @@ EXPORT_SYMBOL_GPL(crypto_mod_get);
+ 
+ void crypto_mod_put(struct crypto_alg *alg)
+ {
++	struct module *module = alg->cra_module;
++
+ 	crypto_alg_put(alg);
+-	module_put(alg->cra_module);
++	module_put(module);
+ }
+ EXPORT_SYMBOL_GPL(crypto_mod_put);
+ 
