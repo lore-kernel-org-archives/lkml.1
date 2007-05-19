@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765161AbXESXh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765157AbXESXiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765161AbXESXh1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 19:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbXESXhO
+	id S1765157AbXESXiT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 19:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529AbXESXiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 19:37:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42688 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760133AbXESXhM (ORCPT
+	Sat, 19 May 2007 19:38:13 -0400
+Received: from griffon26.demon.nl ([82.161.57.89]:3397 "EHLO
+	griffon26.kfk4ever.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755610AbXESXiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 19:37:12 -0400
-Date: Sat, 19 May 2007 16:34:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Sasa Ostrouska" <casaxa@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: STRANGE ERROR
-Message-Id: <20070519163402.b087b9d7.akpm@linux-foundation.org>
-In-Reply-To: <dcf706c60705191530x5a78f9aewbb520a97ad516f6d@mail.gmail.com>
-References: <dcf706c60705191530x5a78f9aewbb520a97ad516f6d@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 19 May 2007 19:38:12 -0400
+X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 May 2007 19:38:11 EDT
+Date: Sun, 20 May 2007 01:27:37 +0200
+From: Maurice van der Pot <griffon26@kfk4ever.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
+       Uwe Bugla <uwe.bugla@gmx.de>, xfs-masters@oss.sgi.com,
+       David Chinner <dgc@sgi.com>, "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       Christoph Lameter <clameter@sgi.com>, Indan Zupancic <indan@nul.nu>,
+       Dave Airlie <airlied@linux.ie>
+Subject: Re: [2/5] 2.6.22-rc2: known regressions
+Message-ID: <20070519232736.GD23900@kfk4ever.com>
+References: <464F6DC9.80805@googlemail.com> <464F74C4.5070404@googlemail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="89VDYHnQ8ukgENkm"
+Content-Disposition: inline
+In-Reply-To: <464F74C4.5070404@googlemail.com>
+X-PGP-Key: http://www.kfk4ever.com/~griffon26/pubkey.asc
+X-URL: http://www.kfk4ever.com/
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007 00:30:55 +0200 "Sasa Ostrouska" <casaxa@gmail.com> wrote:
 
-> Hi everybody,
-> 
-> I tried today to upgrade the kernel to 2.6.21.1 and i got the same
-> error during the boot time.
-> Here is the dmesg of the 2.6.20.2, can somebody tell me what this is ?
-> 
-> ...
->
-> Marvell 88E1101: Registered new driver
-> Fixed PHY: Registered new driver
-> driver_bound: device fixed@100:1 already bound
+--89VDYHnQ8ukgENkm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I don't know what caused that one.
+On Sun, May 20, 2007 at 12:05:56AM +0200, Michal Piotrowski wrote:
+> File systems
+>=20
+> Subject    : File on XFS is truncated at reboot with 2.6.22-rc1
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=3D8503
+> Submitter  : Maurice van der Pot <griffon26@kfk4ever.com>
+> Status     : Unknown
 
-> Device 'fixed@100:1' does not have a release() function, it is broken
-> and must be fixed.
-> BUG: at drivers/base/core.c:104 device_release()
-> 
-> Call Trace:
->  [<ffffffff802ec380>] kobject_cleanup+0x53/0x7e
->  [<ffffffff802ec3ab>] kobject_release+0x0/0x9
->  [<ffffffff802ecf3f>] kref_put+0x74/0x81
->  [<ffffffff8035493b>] fixed_mdio_register_device+0x230/0x265
->  [<ffffffff80564d31>] fixed_init+0x1f/0x35
->  [<ffffffff802071a4>] init+0x147/0x2fb
->  [<ffffffff80223b6e>] schedule_tail+0x36/0x92
->  [<ffffffff8020a678>] child_rip+0xa/0x12
->  [<ffffffff80311714>] acpi_ds_init_one_object+0x0/0x83
->  [<ffffffff8020705d>] init+0x0/0x2fb
->  [<ffffffff8020a66e>] child_rip+0x0/0x12
+I just noticed the earlier report of this issue in your list of
+regressions with patches:
 
-This appears to have happened because fixed_mdio_register_device() (or
-phy_device_create) didn't suitably initialise phy_device.dev.
+  File systems
 
-But I don't immediately see why this doesn't affect all phy drivers. 
-Presumably it's the fixed driver which is at fault.  Jeff, how is this
-supposed to work?
+  Subject    : 2.6.21-git10/11: files getting truncated on xfs
+  References : http://lkml.org/lkml/2007/5/9/410
+  Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
+  Handled-By : David Chinner <dgc@sgi.com>
+  Patch      : http://lkml.org/lkml/2007/5/12/93
+  Status     : patch available
 
-Thanks.
+I tried the patch and it solves the problem for me as well.
 
+Regards,
+Maurice.
+
+--=20
+Maurice van der Pot
+
+Gentoo Linux Developer   griffon26@gentoo.org     http://www.gentoo.org
+Creator of BiteMe!       griffon26@kfk4ever.com   http://www.kfk4ever.com
+
+
+--89VDYHnQ8ukgENkm
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQFGT4foMGnpIbeahxwRApCuAJ96I//uRRhIGnwe6L70DbRVERhsdACfRX3X
+R3D2VUz2s+MSjAN4zx4609I=
+=u4xV
+-----END PGP SIGNATURE-----
+
+--89VDYHnQ8ukgENkm--
