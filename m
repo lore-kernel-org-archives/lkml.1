@@ -1,35 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764052AbXESTiC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764173AbXESTnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764052AbXESTiC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 15:38:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757560AbXESThy
+	id S1764173AbXESTnD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 15:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758137AbXESTmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 15:37:54 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:9881 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756513AbXESThx (ORCPT
+	Sat, 19 May 2007 15:42:55 -0400
+Received: from ipx20189.ipxserver.de ([80.190.249.56]:4071 "EHLO
+	ipx20189.ipxserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757560AbXESTmz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 15:37:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G732vabRmwe1z5Uhu0l8wgo5/qWjqiGF+SzjS20Nf4cAXtWuGxhoL77KKO8al8EjtlahmXPBOH2EI/YhduFOKP8WWzvoabvd8AjJ6N81PJZPltT7yIUel/cBG6CsV/0DQy0/k5vnxam2bskMHRl028UCPkbV8TSuFjqtRioJDbA=
-Message-ID: <6101e8c40705191237v46939bf1i7098fc974784de5a@mail.gmail.com>
-Date: Sat, 19 May 2007 21:37:52 +0200
-From: "oliver pinter" <oliver.pntr@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: it seems at XFS bug?!
-Cc: "Bernd Eckenfels" <ecki@lina.inka.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com
-In-Reply-To: <20070519192246.GA11733@1wt.eu>
+	Sat, 19 May 2007 15:42:55 -0400
+Date: Sat, 19 May 2007 21:42:53 +0200
+From: Christian Leber <christian@leber.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [BUG] acpi double resume and fail
+Message-ID: <20070519194253.GA27651@core>
+References: <20070518213701.GA810@core> <20070518154507.30ebfdcb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <6101e8c40705191117h40c8af70sfc9d0617a99a248b@mail.gmail.com>
-	 <E1HpUNW-00020n-00@calista.eckenfels.net>
-	 <20070519192021.GK943@1wt.eu> <20070519192246.GA11733@1wt.eu>
+In-Reply-To: <20070518154507.30ebfdcb.akpm@linux-foundation.org>
+X-Accept-Language: de en
+X-Location: Europe, Germany, Mannheim
+X-Operating-System: Debian GNU/Linux (sid)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-with rm -i $'\xa0' command, have I removed the file
+On Fri, May 18, 2007 at 03:45:07PM -0700, Andrew Morton wrote:
+
+> > I still can suspend, but after the first resume it goes back to sleep
+> > directly again, when resuming again it works.
+> > After the second suspend it won't resume at all.
+
+I should add, that it goes from the suspend state to "on" and back to
+suspend, when i press power again it goes "on", but the screen stays
+black, but network doesn't work and most likely linux isn't running,
+because the laptop sucks max_power. (2.6.20-rc4)
+
+> > The problem is that i can't try out the kernel versions <rc4, because
+> > rc1, rc2 and rc3 doesn't boot at all, so git-bisect also won't help.
+> > 
+> > Has somebody an idea what i could try out?
+> > 
+> > (the distribution is in this case ubuntu feisty)
+ 
+> The fact that bisection broke really does make it hard.  What you would
+> need to do is to find the patch which fixed that doesn't-boot problem, then
+> reapply it each time you perform an iteration.  That's all doable, if you
+> have the time.  Use git-bisect for it.
+
+I'll try, unfortunatelly the problem is that PCI doesn't work with this
+versions.
+
+> Have you tested 2.6.21 and/or 2.6.22-rc1?
+
+I just have tried 2.6.22-rc2 and it's a bit different, I still have to resume
+2 times and X does only work the "first" resume correctly, but it somewhat
+works.
+
+> We had one other report earlier today that 2.6.22-rc1 does an immediate
+> resume after suspend-to-RAM - perhaps that is related.
+
+no
+
+
+Regards
+Christian Leber
+
+-- 
+http://rettetdieti.vde-uni-mannheim.de/
+
