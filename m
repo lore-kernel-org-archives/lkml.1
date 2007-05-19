@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbXESLyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763830AbXESLz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762813AbXESLyn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 07:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757892AbXESLyh
+	id S1763830AbXESLz0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 07:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbXESLzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 07:54:37 -0400
-Received: from mx1.suse.de ([195.135.220.2]:40746 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757846AbXESLyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 07:54:36 -0400
-From: Andi Kleen <ak@suse.de>
-To: Christian Volkmann <haveaniceday@cv-sv.de>
-Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64 II
-Date: Sat, 19 May 2007 13:54:06 +0200
-User-Agent: KMail/1.9.1
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
-References: <464B9D2C.7040704@cv-sv.de> <200705190753.16570.ak@suse.de> <464EE2AA.3030607@cv-sv.de>
-In-Reply-To: <464EE2AA.3030607@cv-sv.de>
+	Sat, 19 May 2007 07:55:15 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:2271 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757846AbXESLzO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 07:55:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=apSBjqR48lzmjDOPWjV+5XMzQl5sKNt6oMq4Qren8X2OiXL1LXP/qHV5YACAr0RX72DA1EnYaEzvKkrnA27AV1Vs8lVnLRHyDioegYZfID1J1vVwS2838PF2BaOW2WJbAD5M+R/D3dDpGk1UZIEEoJoZpIbpN2AUiQdBmvwmy24=
+Message-ID: <f69849430705190455m4d62835fx9aed5a17df69c805@mail.gmail.com>
+Date: Sat, 19 May 2007 04:55:12 -0700
+From: "kernel coder" <lhrkernelcoder@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: system call implementation for x86_64
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705191354.06763.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 19 May 2007 13:42, Christian Volkmann wrote:
-> Andi Kleen wrote:
-> > Can someone please test if this patch works?
-> >
-> > This preserves the 6 <= model  <= 9 logic of the C code; this means
-> > if VIA ever brings out model >= 10 it hopefully sets this bit by default.
-> > Dave, do you have any information to the contrary?
-> >
-> > -Andi
->
-> Hi Andi,
->
-> your patch did not work. See the correction below. The mask should contain
-> 1<<1 instead of 1.
-> Model 10 is now also included.
+hi,
 
-Ok thanks fixed.
+I'm trying to implement a system call for x86_64. Mine processor is
+dual core opetron.There is very little material on web for
+implementing system calls for x86_64 processor for 2.6 series kernel.I
+tried to implement a new system call by observing the existing
+implementation but to no success.Following are files names and changes
+made.
 
-> I add also a patch for setup.S. It does not print the CPUID message in case
-> the CPUID is wrong, cause %ds was not set proper.
+//////////////////////////////////////////////////
+file-> include/asm-x86_64/unistd.h
 
-I have this already as a separate patch with your name.
+#define __NR_newcall        273
+__SYSCALL(__NR_newcall, sys_newcall)
 
--Andi
+#define __NR_syscall_max __NR_newcall
+
+//////////////////////////////////////////////////
+file-> include/linux/syscalls.h
+
+asmlinkage unsigned long sys_newcall(char __user *buf);
+
+/////////////////////////////////////////////
+file--> fs/read_write.c
+
+asmlinkage unsigned long sys_newcall(char __user * buf){
+
+     printk("new system call \n");
+     ret 0;
+}
+
+EXPORT_SYMBOL_GPL(sys_write)
+
+
+Please let me know where i'm doing wrong .Following is program which
+is calling mine system call
+
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/unistd.h>
+#include <sys/syscall.h>
+
+  long int ret;
+   int num = 243;
+  char  buffer=[20];
+
+int main() {
+
+
+  asm ("syscall;"
+       : "=a" (ret)
+       : "0" (num),
+         "D" (buffer),
+      );
+ return ret;
+}
+
+When i call this ,nothing gets printed in file /var/log/messages.Am i
+missing something ?
+
+Actually i wana pass a pointer to kernel from user space.Later on data
+will be copied to that memory location .i am thinking of using
+copy_to_user for copying data.Buffer passed through system call will
+be used by kernel function as circular ring.And portions of this ring
+will get updated frequently even after system call has returned.
+
+Is there any better way to do this?
