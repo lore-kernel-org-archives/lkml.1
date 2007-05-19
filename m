@@ -1,170 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763675AbXESFra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762694AbXESFyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763675AbXESFra (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 01:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbXESFrI
+	id S1762694AbXESFyQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 01:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbXESFyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 01:47:08 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:39407 "EHLO havoc.gtf.org"
+	Sat, 19 May 2007 01:54:04 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51964 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756131AbXESFrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 01:47:06 -0400
-Date: Sat, 19 May 2007 01:47:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ahci: add Marvell support (WIP)
-Message-ID: <20070519054704.GA352@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755345AbXESFyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 01:54:02 -0400
+From: Andi Kleen <ak@suse.de>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64 II
+Date: Sat, 19 May 2007 07:53:16 +0200
+User-Agent: KMail/1.9.1
+Cc: Christian <haveaniceday@cv-sv.de>, linux-kernel@vger.kernel.org
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com>
+In-Reply-To: <20070517004209.GE16810@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Message-Id: <200705190753.16570.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 17 May 2007 02:42, Dave Jones wrote:
+> On Thu, May 17, 2007 at 02:09:16AM +0200, Christian wrote:
+>  > my small VIA C3_2 box does not boot with 2.6.22-rc1.
+>  > It even does not uncompress the kernel.
+>  >
+>  > The configuration as M386 M486 works. But M586 + MVIAC3_2
+>  > does not work.
+>  >
+>  > solution for me, cahnge arch/i386/Kconfig.cpu
+>  >
+>  > --- arch/i386/Kconfig.cpu.before     2007-05-17 01:38:26.000000000 +0200
+>  > +++ arch/i386/Kconfig.cpu       2007-05-17 00:54:52.000000000 +0200
+>  > @@ -299,5 +299,5 @@
+>  >
+>  >  config X86_CMPXCHG64
+>  >         bool
+>  > -       depends on !M386 && !M486
+>  > +       depends on !M386 && !M486 && !MVIAC3_2
+>  >         default y
+>  >
+>  >
+>  > The related #ifdef is in ./include/asm-i386/cmpxchg.h
+>  > May be cmpxchg8b is not supported by VIAC3_2 ?
+>  >
+>  > May be some other non Intel/AMD need to be excluded from X86_CMPXCHG64 ?
+>  > May be the generic option CONFIG_X86_GENERIC need to switch this off
+>  > also ?
+>
+> The C3s all have cx8, but it needs to be enabled in an MSR first.
+> (See arch/i386/kernel/cpu/centaur.c , search for CX8)
+>
+> Did we add code that uses cmpxchg8b before identify_cpu() gets run ?
+> I've not been paying attention to .22rc (busy trying to beat .21 into shape
+> for F7) so I may have missed something obvious. Andi?
 
-This is the work-in-progress for supporting the newer Marvell PATA/SATA
-chips like the 6145.
+Can someone please test if this patch works? 
 
-SATA support works, but PATA support is not implemented at all.
-There is some temporary code that makes sure the PATA port is disabled,
-if enabled.
+This preserves the 6 <= model  <= 9 logic of the C code; this means
+if VIA ever brings out model >= 10 it hopefully sets this bit by default.
+Dave, do you have any information to the contrary?
 
-This can be found in the 'mv-ahci' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+-Andi
 
-    [libata] ahci: Marvell code build fix
-    [libata] AHCI: get Marvell SATA going (PATA portion of chip not supported)
-    
- drivers/ata/ahci.c |   60 +++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 56 insertions(+), 4 deletions(-)
+Index: linux/arch/i386/kernel/verify_cpu.S
+===================================================================
+--- linux.orig/arch/i386/kernel/verify_cpu.S
++++ linux/arch/i386/kernel/verify_cpu.S
+@@ -2,6 +2,7 @@
+    This runs in 16bit mode so that the caller can still use the BIOS
+    to output errors on the screen */
+ #include <asm/cpufeature.h>
++#include <asm/msr.h>
+ 
+ verify_cpu:
+ 	pushfl				# Save caller passed flags
+@@ -45,6 +46,28 @@ verify_cpu:
+ 	cmpl	$0x1,%eax
+ 	jb	bad			# no cpuid 1
+ 
++#if REQUIRED_MASK1 & NEED_CMPXCHG64
++	/* Some VIA C3s need magic MSRs to enable CX64. Do this here */ 
++	cmpl	$0x746e6543,%ebx	# Cent
++	jne	1f
++	cmpl 	$0x48727561,%edx	# aurH
++	jne	1f
++	cmpl	$0x736c7561,%ecx	# auls
++	jne	1f
++	movl	$1,%eax			# check model
++	cpuid	
++	shr	$4,%eax
++	andl	$0xf,%eax		# get model
++	cmpl	$6,%eax
++	jb	1f
++	cmpl	$9,%eax			# newer vias hopefully don't require
++	ja	1f			# this anymore
++	movl	$MSR_VIA_FCR,%ecx
++	rdmsr
++	orl	$(1|(1<<7)),%eax	# enable CMPXCHG64 and PGE
++	wrmsr	
++1:
++#endif
+ 	movl    $0x1,%eax		# Does the cpu have what it takes
+ 	cpuid
+ 
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index e00e1b9..d2d15b2 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -81,6 +81,7 @@ enum {
- 	board_ahci_vt8251	= 2,
- 	board_ahci_ign_iferr	= 3,
- 	board_ahci_sb600	= 4,
-+	board_ahci_mv		= 5,
- 
- 	/* global controller registers */
- 	HOST_CAP		= 0x00, /* host capabilities */
-@@ -170,6 +171,7 @@ enum {
- 	AHCI_FLAG_IGN_IRQ_IF_ERR	= (1 << 25), /* ignore IRQ_IF_ERR */
- 	AHCI_FLAG_HONOR_PI		= (1 << 26), /* honor PORTS_IMPL */
- 	AHCI_FLAG_IGN_SERR_INTERNAL	= (1 << 27), /* ignore SERR_INTERNAL */
-+	AHCI_FLAG_MV_PATA		= (1 << 28), /* PATA port */
- 
- 	AHCI_FLAG_COMMON		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
- 					  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
-@@ -359,6 +361,17 @@ static const struct ata_port_info ahci_port_info[] = {
- 		.udma_mask	= 0x7f, /* udma0-6 ; FIXME */
- 		.port_ops	= &ahci_ops,
- 	},
-+	/* board_ahci_mv */
-+	{
-+		.sht		= &ahci_sht,
-+		.flags		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
-+				  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
-+				  ATA_FLAG_SKIP_D2H_BSY | AHCI_FLAG_HONOR_PI |
-+				  AHCI_FLAG_MV_PATA,
-+		.pio_mask	= 0x1f, /* pio0-4 */
-+		.udma_mask	= 0x7f, /* udma0-6 ; FIXME */
-+		.port_ops	= &ahci_ops,
-+	},
- };
- 
- static const struct pci_device_id ahci_pci_tbl[] = {
-@@ -430,6 +443,9 @@ static const struct pci_device_id ahci_pci_tbl[] = {
- 	{ PCI_VDEVICE(SI, 0x1185), board_ahci }, /* SiS 966 */
- 	{ PCI_VDEVICE(SI, 0x0186), board_ahci }, /* SiS 968 */
- 
-+	/* Marvell */
-+	{ PCI_VDEVICE(MARVELL, 0x6145), board_ahci_mv },	/* 6145 */
-+
- 	/* Generic, PCI class code for AHCI */
- 	{ PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
- 	  PCI_CLASS_STORAGE_SATA_AHCI, 0xffffff, board_ahci },
-@@ -455,11 +471,17 @@ static inline int ahci_nr_ports(u32 cap)
- 	return (cap & 0x1f) + 1;
- }
- 
--static inline void __iomem *ahci_port_base(struct ata_port *ap)
-+static inline void __iomem *__ahci_port_base(struct ata_host *host,
-+					     unsigned int port_no)
- {
--	void __iomem *mmio = ap->host->iomap[AHCI_PCI_BAR];
-+	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
- 
--	return mmio + 0x100 + (ap->port_no * 0x80);
-+	return mmio + 0x100 + (port_no * 0x80);
-+}
-+
-+static inline void __iomem *ahci_port_base(struct ata_port *ap)
-+{
-+	return __ahci_port_base(ap->host, ap->port_no);
- }
- 
- /**
-@@ -502,6 +524,20 @@ static void ahci_save_initial_config(struct pci_dev *pdev,
- 		hpriv->saved_port_map = port_map;
- 	}
- 
-+	/*
-+	 * Temporary Marvell 6145 hack: PATA port presence
-+	 * is asserted through the standard AHCI port
-+	 * presence register, as bit 4 (counting from 0)
-+	 */
-+	if (pi->flags & AHCI_FLAG_MV_PATA) {
-+		dev_printk(KERN_ERR, &pdev->dev,
-+			   "MV_AHCI HACK: port_map %x -> %x\n",
-+			   hpriv->port_map,
-+			   hpriv->port_map & 0xf);
-+
-+		port_map &= 0xf;
-+	}
-+
- 	/* cross check port_map and cap.n_ports */
- 	if (pi->flags & AHCI_FLAG_HONOR_PI) {
- 		u32 tmp_port_map = port_map;
-@@ -785,14 +821,27 @@ static void ahci_init_controller(struct ata_host *host)
- {
- 	struct pci_dev *pdev = to_pci_dev(host->dev);
- 	void __iomem *mmio = host->iomap[AHCI_PCI_BAR];
-+	void __iomem *port_mmio;
- 	int i, rc;
- 	u32 tmp;
- 
-+	if (host->ports[0]->flags & AHCI_FLAG_MV_PATA) {
-+		port_mmio = __ahci_port_base(host, 4);
-+
-+		writel(0, port_mmio + PORT_IRQ_MASK);
-+
-+		/* clear port IRQ */
-+		tmp = readl(port_mmio + PORT_IRQ_STAT);
-+		VPRINTK("PORT_IRQ_STAT 0x%x\n", tmp);
-+		if (tmp)
-+			writel(tmp, port_mmio + PORT_IRQ_STAT);
-+	}
-+
- 	for (i = 0; i < host->n_ports; i++) {
- 		struct ata_port *ap = host->ports[i];
--		void __iomem *port_mmio = ahci_port_base(ap);
- 		const char *emsg = NULL;
- 
-+		port_mmio = ahci_port_base(ap);
- 		if (ata_port_is_dummy(ap))
- 			continue;
- 
-@@ -807,6 +856,9 @@ static void ahci_init_controller(struct ata_host *host)
- 		VPRINTK("PORT_SCR_ERR 0x%x\n", tmp);
- 		writel(tmp, port_mmio + PORT_SCR_ERR);
- 
-+		/* select the IRQ events we're interested in */
-+		writel(DEF_PORT_IRQ, port_mmio + PORT_IRQ_MASK);
-+
- 		/* clear port IRQ */
- 		tmp = readl(port_mmio + PORT_IRQ_STAT);
- 		VPRINTK("PORT_IRQ_STAT 0x%x\n", tmp);
+-Andi
