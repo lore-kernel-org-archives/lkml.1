@@ -1,110 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764537AbXESUiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764167AbXESUpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764537AbXESUiV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 16:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760076AbXESUiO
+	id S1764167AbXESUpX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 16:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbXESUpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 16:38:14 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:34290 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758400AbXESUiN (ORCPT
+	Sat, 19 May 2007 16:45:10 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:46896 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756823AbXESUpI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 16:38:13 -0400
-Message-ID: <464F5FE4.2010607@cosmosbay.com>
-Date: Sat, 19 May 2007 22:36:52 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sat, 19 May 2007 16:45:08 -0400
+X-Sasl-enc: aAhrz/eRB9ule4b81aAJ2JQWGUMqL9HOHP9cz/s5fF/Z 1179607507
+Date: Sat, 19 May 2007 17:45:04 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: 2.6.21-mm2: ACPI exception on resume
+Message-ID: <20070519204504.GA24704@khazad-dum.debian.net>
+References: <20070519165738.GK11115@waste.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>, akpm@linux-foundation.org
-CC: dhowells@redhat.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MM : alloc_large_system_hash() can free some memory for
- non power-of-two bucketsize
-References: <20070518115454.d3e32f4d.dada1@cosmosbay.com>	<20070519013724.3d4b74e0.akpm@linux-foundation.org>	<464F3CCF.2070901@cosmosbay.com> <20070519.115442.30184476.davem@davemloft.net>
-In-Reply-To: <20070519.115442.30184476.davem@davemloft.net>
-Content-Type: multipart/mixed;
- boundary="------------000202020007030807040908"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 19 May 2007 22:36:56 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070519165738.GK11115@waste.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000202020007030807040908
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+On Sat, 19 May 2007, Matt Mackall wrote:
+> usually does, then go black and the machine will become totally
+> unresponsive, even to holding down the power button for 30+ seconds.
 
-David Miller a écrit :
-> From: Eric Dumazet <dada1@cosmosbay.com>
-> Date: Sat, 19 May 2007 20:07:11 +0200
-> 
->> Maybe David has an idea how this can be done properly ?
->>
->> ref : http://marc.info/?l=linux-netdev&m=117706074825048&w=2
-> 
-> You need to use __GFP_COMP or similar to make this splitting+freeing
-> thing work.
-> 
-> Otherwise the individual pages don't have page references, only
-> the head page of the high-order page will.
-> 
+Now, that means either the BIOS or EC have been thrown out of whack,
+otherwise one of the two would have force-powered-off the machine a bit
+after 10s.
 
-Oh thanks David for the hint.
+Are you using the latest BIOS and EC firmware available?
 
-I added a split_page() call and it seems to work now.
+If you are at the latest BIOS and EC releases, does ec_intr=0 fix the issue?
 
+> 08:57:27 [drm] Loading R200 Microcode
+> 08:57:27 ACPI: EC: acpi_ec_wait timeout, status = 10, expect_event = 2
+> 08:57:27 ACPI: EC: input buffer is not empty, aborting transaction
+> 08:57:28 ACPI: EC: acpi_ec_wait timeout, status = 10, expect_event = 2
 
-[PATCH] MM : alloc_large_system_hash() can free some memory for non 
-power-of-two bucketsize
+Yep, EC is confused.  Not Good!
 
-alloc_large_system_hash() is called at boot time to allocate space for several 
-large hash tables.
-
-Lately, TCP hash table was changed and its bucketsize is not a power-of-two 
-anymore.
-
-On most setups, alloc_large_system_hash() allocates one big page (order > 0) 
-with __get_free_pages(GFP_ATOMIC, order). This single high_order page has a 
-power-of-two size, bigger than the needed size.
-
-We can free all pages that wont be used by the hash table.
-
-On a 1GB i386 machine, this patch saves 128 KB of LOWMEM memory.
-
-TCP established hash table entries: 32768 (order: 6, 393216 bytes)
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
---------------000202020007030807040908
-Content-Type: text/plain;
- name="alloc_large.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="alloc_large.patch"
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ae96dd8..7c219eb 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -3350,6 +3350,21 @@ void *__init alloc_large_system_hash(const char *tablename,
- 			for (order = 0; ((1UL << order) << PAGE_SHIFT) < size; order++)
- 				;
- 			table = (void*) __get_free_pages(GFP_ATOMIC, order);
-+			/*
-+			 * If bucketsize is not a power-of-two, we may free
-+			 * some pages at the end of hash table.
-+			 */
-+			if (table) {
-+				unsigned long alloc_end = (unsigned long)table +
-+						(PAGE_SIZE << order);
-+				unsigned long used = (unsigned long)table +
-+						PAGE_ALIGN(size);
-+				split_page(virt_to_page(table), order);
-+				while (used < alloc_end) {
-+					free_page(used);
-+					used += PAGE_SIZE;
-+				}
-+			}
- 		}
- 	} while (!table && size > PAGE_SIZE && --log2qty);
- 
-
---------------000202020007030807040908--
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
