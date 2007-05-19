@@ -1,44 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbXESMwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760471AbXESMxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759162AbXESMwI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 08:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbXESMv5
+	id S1760471AbXESMxS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 08:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbXESMxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 08:51:57 -0400
-Received: from mail-in-04.arcor-online.net ([151.189.21.44]:41995 "EHLO
-	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755967AbXESMv4 (ORCPT
+	Sat, 19 May 2007 08:53:08 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:52451 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754053AbXESMxG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 08:51:56 -0400
-In-Reply-To: <200705190953.l4J9rjO2024613@harpo.it.uu.se>
-References: <200705190953.l4J9rjO2024613@harpo.it.uu.se>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <023132a5c5a4f07ec2d46b0515a55d4b@kernel.crashing.org>
+	Sat, 19 May 2007 08:53:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=RimG8OJxacs7E/d+mvMuTNqDbfq1BandFO/UAqZUWUly8rmWy+FyaDHM7IjLMcJzu3djddKtKGCo3A3xxaL759ob06utu+akMvgHDsKCb3djRxCdjH4IH+xD7pRDv26rtLOV4sX1Iz9TVhx5Mbx3VDogqqoVohcvV55EU9mo0So=
+Message-ID: <84144f020705190553s598e722fu7279253ee8b516bc@mail.gmail.com>
+Date: Sat, 19 May 2007 15:53:04 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "clameter@sgi.com" <clameter@sgi.com>
+Subject: Re: [patch 01/10] SLUB: add support for kmem_cache_ops
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, dgc@sgi.com, "Hugh Dickins" <hugh@veritas.com>
+In-Reply-To: <20070518181118.828853654@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Cc: linux-kernel@vger.kernel.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: gcc-4.2.0 breakage on powerpc?
-Date: Sat, 19 May 2007 14:51:44 +0200
-To: Mikael Pettersson <mikpe@it.uu.se>
-X-Mailer: Apple Mail (2.623)
+Content-Disposition: inline
+References: <20070518181040.465335396@sgi.com>
+	 <20070518181118.828853654@sgi.com>
+X-Google-Sender-Auth: 208e16f59a434944
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> and we'll end up
->>> having major kernel releases which don't build on i386 with major gcc
->>> releases, which isn't altogether desirable.
->>
->> Yeah, like 4.2.0 with powerpc.  Seems like no one tested it :-(
->
-> Details please. What exactly are the gcc-4.2.0 problems on powerpc?
+On 5/18/07, clameter@sgi.com <clameter@sgi.com> wrote:
+> kmem_cache_ops is created as empty. Later patches populate kmem_cache_ops.
 
-http://gcc.gnu.org/PR31490 .  Most stuff using named
-sections won't build; that includes CONFIG_MODULES.
-There is no viable workaround.  The problem is being
-handled.  I'll post a patch for the kernel refusing
-to build with this combination soon.
-
-
-Segher
-
+Hmm, would make more sense to me to move "ctor" in kmem_cache_ops in
+this patch and not make kmem_cache_create() take both as parameters...
