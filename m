@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbXESEK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbXESEaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbXESEK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 00:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXESEKT
+	id S1758905AbXESEaa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 00:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbXESEaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 00:10:19 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:34043 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755016AbXESEKS (ORCPT
+	Sat, 19 May 2007 00:30:23 -0400
+Received: from d06184cf.dreamhost.com ([208.97.132.207]:35624 "EHLO
+	spaceymail-a1.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755143AbXESEaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 00:10:18 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Sat, 19 May 2007 00:09:29 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: why only one use of "create_freezeable_workqueue"?
-Message-ID: <Pine.LNX.4.64.0705190003410.16887@localhost.localdomain>
+	Sat, 19 May 2007 00:30:22 -0400
+From: Anant Nitya <kernel@prachanda.info>
+Organization: Prachanda Hub
+To: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] local_softirq_pending storm
+Date: Sat, 19 May 2007 10:00:00 +0530
+User-Agent: KMail/1.9.6
+Cc: Thomas Gleixner <tglx@linutronix.de>
+References: <200705091942.22920.kernel@prachanda.hub> <200705171211.23350.kernel@prachanda.hub> <1179493277.12981.69.camel@chaos>
+In-Reply-To: <1179493277.12981.69.camel@chaos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.42, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	SARE_SUB_OBFU_Q0 0.30, TW_RK 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705191000.01208.kernel@prachanda.hub>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 18 May 2007 18:31:17 Thomas Gleixner wrote:
+> On Thu, 2007-05-17 at 12:11 +0530, Anant Nitya wrote:
+> > On Friday 11 May 2007 03:28:46 Thomas Gleixner wrote:
+> > > Ok, that's consistent with earlier reports. The problem surfaces when
+> > > one of the SMT-"cpus" goes idle. The problem goes away when you disable
+> > > hyperthreading.
+> >
+> > Yes with HT disabled in BIOS there is no local_softirq_pending messages.
+> > BTW why does this problem persist only with X ?
+>
+> No idea. I uploaded a debug patch against 2.6.22-rc1 to
+>
+> http://www.tglx.de/private/tglx/2.6.22-rc1-hrt-debug.patch
+>
+> Can you give it a try and report the output ?
 
-  hoping to avoid the madness following my earlier, innocuous question
-about the lonely, defconfig'ed module scsi_wait_scan.ko, i'm curious
-about why there is, in the entire tree, just one invocation of
-"create_freezeable_workqueue":
+I am compiling kernel with above patch applied and will post the results.
 
-$ grep -rw create_freezeable_workqueue *
-drivers/misc/tifm_core.c:       workqueue = create_freezeable_workqueue("tifm");
-include/linux/workqueue.h:#define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
-$
+> > > When you apply the ratelimit patch, does the softlockup problem
+> > > persist ?
+> >
+> > Yes, though softlockup is rare and mostly hit when system is under high
+> > load. Apart of that I am also getting following messages consistently
+> > across multiple boot cycles with NOHZ=y and ratelimit patch applied.
+> >
+> > May 15 11:51:22 rudra kernel: [ 2594.341068] Clocksource tsc unstable
+> > (delta = 28111260302 ns)
+> > May 15 11:51:22 rudra kernel: [ 2594.343194] Time: acpi_pm clocksource
+> > has been installed.
+>
+> That's informal. The TSC is detected to be unstable and replaced by the
+> pm timer. Nothing to worry about. It happens with NOHZ=n as well,
+> right ?
+Nope it don't appear with nohz=no till now across so many boot cycles, it 
+always appears with nohz!=no.
 
-  not that there's anything wrong with that, but i'm just curious as
-to why there's only one application of that feature in the whole tree.
+Regards
+Ananitya
 
-rday
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
