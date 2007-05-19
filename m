@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbXESHH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761144AbXESHQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761346AbXESHH2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 03:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXESHHR
+	id S1761144AbXESHQN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 03:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbXESHP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 03:07:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56244 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754214AbXESHHP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 03:07:15 -0400
-Date: Sat, 19 May 2007 00:04:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mattia Dongili <malattia@linux.it>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after
- STR
-Message-Id: <20070519000413.75badb6f.akpm@linux-foundation.org>
-In-Reply-To: <20070519064829.GA15518@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home>
-	<20070518002240.bc08e811.akpm@linux-foundation.org>
-	<20070519064829.GA15518@inferi.kami.home>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 19 May 2007 03:15:59 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40345 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754515AbXESHP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 03:15:57 -0400
+From: Darren Hart <dvhltc@us.ibm.com>
+Organization: IBM Linux Technology Center
+To: linux-rt-users@vger.kernel.org
+Subject: maxcpus=1 fails to boot
+Date: Sat, 19 May 2007 00:15:52 -0700
+User-Agent: KMail/1.9.6
+Cc: "lkml, " <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705190015.53518.dvhltc@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
+When trying to boot with the maxcpus=1 option, the -rt kernel seems to hang 
+somewhere in acpi_processor_init().
 
-> On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
-> > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > 
-> > > Hello,
-> > > 
-> > > After finally catching fw-{ohci,core} to be problematic during resume,
-> > > I'm now experiencing an immediate resume after suspending.
-> > > 
-> > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
-> > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
-> > > 2.6.21-rc6-mm* after the cpuidle fixes).
-> > > 
-> > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
-> > > and a str cycle with PM_DEBUG=y:
-> > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
-> ...
-> > > Any idea where to start from? (bisecting is ok, but it'll take some
-> > > time...)
-> > 
-> > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
-> 
-> ok, git-acpi.patch is not the bad boy :)
-> Anyway what we have is a regression in 2.6.22-rc1 since the laptop can't
-> suspend (it sits on the "Stopping tasks" console screen) while 2.6.21
-> can.
-> I'm now bisecting this, will come to -mm1 later when done with this one.
+I tested mainline 2.6.21 and it does boot with maxcpus=1.  2.6.20-rt8, 
+2.6.21-rt1, 2, and 4 all hang at:
 
-OK, thanks.
+Calling initcall 0xffffffff817a41df: acpi_processor_init+0x0/0xdf()
 
-> Who is the regression-guy?
+when booted with initcall_debug and maxcpus=1.  I traced this only as far as 
+the call to acpi_bus_register_driver.  So this seems to have been introduced 
+by the -rt patch.  I'm not sure if I should try and see when it was 
+introduced (as 2.6.16-rt22 does not fail) or if I should head "down the acpi 
+rabbit hole"...
 
-Len, usually ;)    But I think you meant Michal, cc'ed here.
+Thanks,
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Realtime Linux Team
