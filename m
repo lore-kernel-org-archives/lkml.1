@@ -1,33 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764361AbXESWG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbXESWGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764361AbXESWG3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 18:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbXESWGW
+	id S1760203AbXESWGy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 18:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764019AbXESWGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 18:06:22 -0400
+	Sat, 19 May 2007 18:06:42 -0400
 Received: from mu-out-0910.google.com ([209.85.134.188]:21902 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757178AbXESWGW (ORCPT
+	with ESMTP id S1757446AbXESWGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 18:06:22 -0400
+	Sat, 19 May 2007 18:06:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=VK4Z5wHIazvNYiWkLtnIj+HVZFlKfn5xIyQhoIOtg+N43x9wEDy3xQwAg3yT/kn6V1astxTGQWkGkFVxafPNycGfeL3sDY5gZ6BrRyJeXsBYFHo50Y03AQ1pGYj2Wr7tKVNqkEMrUm0ZU6imCCAFITaih2RwYYUtz+Ojf2iYSqE=
-Message-ID: <464F74C4.5070404@googlemail.com>
-Date: Sun, 20 May 2007 00:05:56 +0200
+        b=aUuhhpkK92QeoCscKYe1j0LIwGilgjvMYJ7pWmMrNiDR5xtttWNC4+S2tyT4XjIlb9gNiH/YdWHSgfc6aBsBfU2qhMswoxW37Oc0ssb+ulAgF/yxjbxx+/NvHR7WSn0lBOOk3+RiEccsLcBGfR2/BzMRTe3Gxo0pX3a3nLV5H5w=
+Message-ID: <464F74D5.9080204@googlemail.com>
+Date: Sun, 20 May 2007 00:06:13 +0200
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Uwe Bugla <uwe.bugla@gmx.de>, xfs-masters@oss.sgi.com,
-       David Chinner <dgc@sgi.com>,
-       Maurice van der Pot <griffon26@kfk4ever.com>,
-       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
-       Christoph Lameter <clameter@sgi.com>, Indan Zupancic <indan@nul.nu>,
-       Dave Airlie <airlied@linux.ie>
-Subject: Re: [2/5] 2.6.22-rc2: known regressions
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Francis Russell <francisrussell@btopenworld.com>,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       video4linux@list.redhat.com,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>, Robert Fitzsimons <robfitz@273k.net>
+Subject: Re: [3/5] 2.6.22-rc2: known regressions
 References: <464F6DC9.80805@googlemail.com>
 In-Reply-To: <464F6DC9.80805@googlemail.com>
 X-Enigmail-Version: 0.94.1.1
@@ -46,39 +47,43 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Block devices
+SATA/PATA
 
-Subject    : loop devices limited to one single device
-References : http://lkml.org/lkml/2007/5/16/229
-Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
+Subject    : libata and legacy ide pcmcia failure
+References : http://lkml.org/lkml/2007/5/17/305
+Submitter  : Robert de Rooy <robert.de.rooy@gmail.com>
 Status     : Unknown
 
-
-
-File systems
-
-Subject    : File on XFS is truncated at reboot with 2.6.22-rc1
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8503
-Submitter  : Maurice van der Pot <griffon26@kfk4ever.com>
+Subject    : pata_via appears to incorrectly detects 40-pin cable
+References : http://lkml.org/lkml/2007/5/17/273
+             http://bugzilla.kernel.org/show_bug.cgi?id=8142
+Submitter  : Francis Russell <francisrussell@btopenworld.com>
 Status     : Unknown
 
+Subject    : libata crash on halt
+References : http://marc.info/?l=linux-ide&m=117899827710565&w=2
+Submitter  : Andrew Morton <akpm@linux-foundation.org>
+Caused-By  : Tejun Heo <htejun@gmail.com>
+             commit 920a4b1038e442700a1cfac77ea7e20bd615a2c3
+Status     : problem is being debugged
+
+Subject    : libata reset-seq merge broke sata_sil on sh
+References : http://lkml.org/lkml/2007/5/10/63
+Submitter  : Paul Mundt <lethal@linux-sh.org>
+Handled-By : Tejun Heo <htejun@gmail.com>
+Caused-By  : commit 4750def52cb2c21732dda9aa1d43a07db37b0186
+Status     : problem is being debugged
 
 
-Memory management
 
-Subject    : SLAB doesn't like usb_get_configuration()
-References : http://lkml.org/lkml/2007/5/19/96
-Submitter  : Indan Zupancic <indan@nul.nu>
-Status     : Unknown
+V4L
 
-Subject    : BUG: at mm/slab.c:777 __find_general_cachep()
-References : http://lkml.org/lkml/2007/5/18/17
-Submitter  : Jeff Garzik <jeff@garzik.org>
-Status     : Unknown
-
-Subject    : kernel BUG at include/linux/slub_def.h:88 kmalloc_index()
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8476
-Submitter  : Cherwin R. Nooitmeer <cherwin@gmail.com>
+Subject    : V4L ABI breakage
+References : http://lkml.org/lkml/2007/5/14/42
+Submitter  : Robert Fitzsimons <robfitz@273k.net>
+Caused-By  : Hans Verkuil <hverkuil@xs4all.nl>
+             Mauro Carvalho Chehab <mchehab@infradead.org>
+             commit 206ebaf32795cf1582b1e2ff2ec6a560c9e986b8
 Status     : Unknown
 
 
