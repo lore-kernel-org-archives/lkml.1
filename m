@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbXESSTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764473AbXESSTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764275AbXESSTS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 14:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbXESSTJ
+	id S1764473AbXESSTl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 14:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764144AbXESSTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 14:19:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40161 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758208AbXESSTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 14:19:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.21-mm2: ACPI exception on resume
-Date: Sat, 19 May 2007 20:24:16 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <20070519165738.GK11115@waste.org>
-In-Reply-To: <20070519165738.GK11115@waste.org>
+	Sat, 19 May 2007 14:19:33 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55791 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758373AbXESSTd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 14:19:33 -0400
+Date: Sat, 19 May 2007 11:19:31 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, dgc@sgi.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch 01/10] SLUB: add support for kmem_cache_ops
+In-Reply-To: <84144f020705190553s598e722fu7279253ee8b516bc@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705191119010.17008@schroedinger.engr.sgi.com>
+References: <20070518181040.465335396@sgi.com>  <20070518181118.828853654@sgi.com>
+ <84144f020705190553s598e722fu7279253ee8b516bc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705192024.16812.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 19 May 2007, Pekka Enberg wrote:
 
-On Saturday, 19 May 2007 18:57, Matt Mackall wrote:
-> Starting with 2.6.21-mm2, I'm seeing occassional failures to resume
-> from suspend-to-ram on my Thinkpad R51. The screen will flash as it
-> usually does, then go black and the machine will become totally
-> unresponsive, even to holding down the power button for 30+ seconds.
-> But the hard drive light will occassionally flash, so the machine is
-> clearly not completely dead at this point.
+> On 5/18/07, clameter@sgi.com <clameter@sgi.com> wrote:
+> > kmem_cache_ops is created as empty. Later patches populate kmem_cache_ops.
+> 
+> Hmm, would make more sense to me to move "ctor" in kmem_cache_ops in
+> this patch and not make kmem_cache_create() take both as parameters...
 
-Does the mainline (as of 2.6.22-rc2) do this?
-
-Rafael
+Yeah earlier versions did this but then I have to do a patch that changes 
+all destructors and all kmem_cache_create calls in the kernel.
+ 
