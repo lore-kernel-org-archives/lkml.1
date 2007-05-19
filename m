@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764129AbXESTFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764305AbXESTFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764129AbXESTFX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 15:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbXESTFN
+	id S1764305AbXESTFh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 15:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764161AbXESTFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 15:05:13 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:62563 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757184AbXESTFL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 15:05:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=gj4Udk6eJIm7rm8LfPzdb8kHG+SugTcd9xL3pe2BnJA7ALntkb7X9PKaLPCGtpFbqL2YrnVa0bJkt6LUHca8hmiRbQkSFCHBMcdi6JBsg2WFwhA5xYRZE1JCweqhKd5pUaNWX5yFnZw/2ETBtMfMRwH0QrWLKlXkJIpLadvVYho=
-Message-ID: <464F4A58.2050607@gmail.com>
-Date: Sat, 19 May 2007 21:04:56 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Indan Zupancic <indan@nul.nu>, Paul Mundt <lethal@linux-sh.org>
-CC: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       garyhade@us.ibm.com
-Subject: Re: [PATCH] libata: implement ata_wait_after_reset()
-References: <20070510072005.GA27316@linux-sh.org>    <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com>    <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com>    <20070511005217.GA23186@li <464B3505.20004@gmail.com> <2229.81.207.0.53.1179592754.squirrel@secure.samage.net> <464F4548.6020101@gmail.com>
-In-Reply-To: <464F4548.6020101@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------030605080502040608030402"
+	Sat, 19 May 2007 15:05:24 -0400
+Received: from www.osadl.org ([213.239.205.134]:33338 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763976AbXESTFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 15:05:22 -0400
+Subject: Re: [BUG] local_softirq_pending storm
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Anant Nitya <kernel@prachanda.info>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200705191525.28400.kernel@prachanda.hub>
+References: <200705091942.22920.kernel@prachanda.hub>
+	 <200705171211.23350.kernel@prachanda.hub> <1179493277.12981.69.camel@chaos>
+	 <200705191525.28400.kernel@prachanda.hub>
+Content-Type: text/plain
+Date: Sat, 19 May 2007 21:11:08 +0200
+Message-Id: <1179601868.12981.127.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030605080502040608030402
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Sat, 2007-05-19 at 15:25 +0530, Anant Nitya wrote:
+> > No idea. I uploaded a debug patch against 2.6.22-rc1 to
+> >
+> > http://www.tglx.de/private/tglx/2.6.22-rc1-hrt-debug.patch
+> >
+> > Can you give it a try and report the output ?
+> Hi
+> Here it goes 
+> [  159.646196] NOHZ softirq pending 22 on CPU 0
+> [  159.646207] .... task state: 1 00000000
 
-Tejun Heo wrote:
-> Yeah, if SCR registers are accessible, 0xff doesn't indicate the device
-> isn't there, so the whole skip-0xff logic probably shouldn't apply in
-> such cases, but we can also achieve pretty good result by just making
-> the first reset tries a bit more aggressive.
+1 == TASK_INTERRUPTIBLE, so we know that ksoftirqd was not woken up. At
+least it is not a scheduler problem.
 
-So, here's the patch.
+I work out a more complex debug patch and pester you to test once I'm
+done.
 
-Paul, can you please test this patch without the previous patch?  Indan,
-this should reduce the resume delay.  Please test.  But you'll still
-feel some added delay compared to 2.6.20 due to the mentioned
-suspend/resume change.
+	tglx
 
-Thanks.
 
--- 
-tejun
 
---------------030605080502040608030402
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="patch"
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvYXRhL2xpYmF0YS1jb3JlLmMgYi9kcml2ZXJzL2F0YS9s
-aWJhdGEtY29yZS5jCmluZGV4IGQ1OTM5ZTYuLjI3ZGRjMzkgMTAwNjQ0Ci0tLSBhL2RyaXZl
-cnMvYXRhL2xpYmF0YS1jb3JlLmMKKysrIGIvZHJpdmVycy9hdGEvbGliYXRhLWNvcmUuYwpA
-QCAtMzAzMSw3ICszMDMxLDcgQEAgaW50IGF0YV93YWl0X3JlYWR5KHN0cnVjdCBhdGFfcG9y
-dCAqYXAsCiAKIAkJaWYgKCEoc3RhdHVzICYgQVRBX0JVU1kpKQogCQkJcmV0dXJuIDA7Ci0J
-CWlmIChzdGF0dXMgPT0gMHhmZikKKwkJaWYgKCFhdGFfcG9ydF9vbmxpbmUoYXApICYmIHN0
-YXR1cyA9PSAweGZmKQogCQkJcmV0dXJuIC1FTk9ERVY7CiAJCWlmICh0aW1lX2FmdGVyKG5v
-dywgZGVhZGxpbmUpKQogCQkJcmV0dXJuIC1FQlVTWTsK
---------------030605080502040608030402--
