@@ -1,80 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764756AbXESWwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764914AbXESWzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764756AbXESWwR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 18:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761265AbXESWwJ
+	id S1764914AbXESWzE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 18:55:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbXESWyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 18:52:09 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:56676 "EHLO proxima.lp0.eu"
+	Sat, 19 May 2007 18:54:55 -0400
+Received: from neon.samage.net ([85.17.153.66]:42018 "EHLO neon.samage.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757733AbXESWwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 18:52:08 -0400
-Message-ID: <464F7F90.2000900@simon.arlott.org.uk>
-Date: Sat, 19 May 2007 23:52:00 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	id S1761575AbXESWyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 18:54:54 -0400
+Message-ID: <2318.81.207.0.53.1179615289.squirrel@secure.samage.net>
+In-Reply-To: <464F409D.9030408@gmail.com>
+References: <20070510072005.GA27316@linux-sh.org>
+    <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com>
+    <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com>
+    <20070511005217.GA23186@li <464B3505.20004@gmail.com>
+    <1800.81.207.0.53.1179590050.squirrel@secure.samage.net>
+    <464F409D.9030408@gmail.com>
+Date: Sun, 20 May 2007 00:54:49 +0200 (CEST)
+Subject: Re: [PATCH] libata: implement ata_wait_after_reset()
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Tejun Heo" <htejun@gmail.com>
+Cc: "Paul Mundt" <lethal@linux-sh.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       garyhade@us.ibm.com
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-To: Christian Volkmann <haveaniceday@cv-sv.de>
-CC: Claas Langbehn <claas@rootdir.de>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: Via C3/C7: other flags possible ?
-References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <200705190753.16570.ak@suse.de> <464EE2AA.3030607@cv-sv.de> <464F332C.8060904@rootdir.de> <464F5C8F.5000304@cv-sv.de> <464F7C09.8060809@cv-sv.de>
-In-Reply-To: <464F7C09.8060809@cv-sv.de>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: 3b058867a8808b2a73617ccb478d635a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19/05/07 23:36, Christian Volkmann wrote:
-> Christian Volkmann wrote:
->> Claas asked for the NX flag for the Via C3 (?) processors
->> in another thread.
+On Sat, May 19, 2007 20:23, Tejun Heo wrote:
+> Indan Zupancic wrote:
+>> Resume takes now ten seconds or more, while it used to take only a few seconds,
+>> what changed? A few kernel versions ago (2.6.21-rc or so?) it retried in 5 seconds
+>> instead of 10, but even that is too long.
+>
+> There are two different things at play here...
+>
+> 1. We dropped libata specific suspend/resume implementation in favor of
+> sd driven one.  Unfortunately, the new implementation currently can't do
+> background spinup, so that's probably why you can feel the delay.  We
+> need to figure out how to do background spinup with the new implementation.
 
-If you read the other thread properly you'd see that the BIOS has 
-an option to enable or disable it... when enabled it shows up.
+What are the advantages of that, except slower resume? ;-)
 
->> I do not know another synonym for this?
->>
->> Claas Langbehn wrote:
->>> Hello Christian,
->>>
->>> do you know if and how it's possible to enable NX_bit too?
-> 
-> C7 Esther:
-> Hmm, I expect the NX-Bit should be detected from linux during the
-> boot. The NX function bit seems to be at the same place where it's
-> located for other CPU.
-> Unfortunately I have no C7 hardware and I am too much a beginner
-> in kernel programming to prepare this "dry".
-> 
-> May be a "senior kernel programmer" can easy check if the C7 runs
-> through the regular NX-function detection?
+> 2. To make reset finish in defined time, each reset try now has defined
+> deadlines.  I was trying to be conservative so I chose 10sec for the
+> first try.
 
-NX is detected ok on the C7:
+Right. So to me it seems that failed, because the undefined reset time is just
+replaced with a fixed ad hoc sleep, which is longer than any undefined reset
+mechanism. So where did the advantage go? Better to go back to how it was,
+is my impression. Or make that deadline 10 seconds and after that give up,
+instead of the other way round. Or just move to async reset.
 
-processor       : 0
-vendor_id       : CentaurHauls
-cpu family      : 6
-model           : 10
-model name      : VIA Esther processor 1500MHz
-stepping        : 9
-cpu MHz         : 800.000
-cache size      : 128 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce apic sep mtrr pge cmov pat clflush acpi mmx fxsr sse sse2 tm nx pni est tm2 rng rng_en ace ace_en ace2 ace2_en phe phe_en pmm pmm_en
-bogomips        : 1601.18
-clflush size    : 64
+>  It's driven by timing table near the top of libata-eh.c, so
+> adjusting the table is easy and maybe we can be a bit more aggressive
+> with the first two tries.  But if we solve #1, this shouldn't matter too
+> much.
 
-I can't reboot that box just to test cx8 detection (which is missing).
+#2 seems totally unrelated to #1, as #1 is about spinup, and #2 about reset.
+Only relation is that #2 slows down #1 because #1 needs to wait on #2.
 
--- 
-Simon Arlott
+
+>> Maybe a silly question, but why do we wait for the harddisk to show up? Maybe that
+>> makes a little bit of sense at bootup, but for resume from ram, where nothing is
+>> supposed to have changed, it seems a bit strange. Why not wait when something tries
+>> to access the harddisk or something?
+>
+> I hope it's explained now.
+
+Almost. Explained is why we wait on the disk, but that's only the sd_resume part.
+It's still unclear why resume must wait till the reset is done.
+
+
+>> I wonder if sil_pci_device_resume() and sd_resume() know about each other...
+>> I'll disable sd_resume() and see how that goes.
+>
+> Yeap, that should work.  In most configurations, devices spin up
+> immediately after power is restored.  sd_resume() just waits for the
+> device to be revalidated in such cases.
+
+And it kicks the disk into action. Why? Only thing it does is sending a START_STOP
+command. I assume that causes the disk to spin up. But for e.g. laptopmode I can
+imagine that's quite annoying. I think sd_resume() is totally unnecessary and can
+be removed, because it seems wrong to always force the harddisk to spin up,
+background spin up or not.
+
+Greetings,
+
+Indan
+
+
