@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbXESIUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763553AbXESIWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbXESIUS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 04:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbXESIUH
+	id S1763553AbXESIWk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 04:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbXESIWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 04:20:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:38046 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbXESIUF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 04:20:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=TJLBhW2QPh+3PiqP4nchtz2Wq1IesIiNx7IsaA6GDfOgMBgxsp56T42snV5FpLJ7fg7N8wkfWd0kFlegg6e7oJIrdX0Wihf8IBuVFMUPW57SA9kiGDVdt+UepmeVXkVChPMwKru4c0wc+WjFXLxKjsSan3L1ReISJm7GbdXl4T0=
-Date: Sat, 19 May 2007 12:18:51 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Richard Henderson <rth@twiddle.net>,
-       linux-kernel-list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ALPHA: MARVEL - check for allocated memory
-Message-ID: <20070519081851.GA8288@cvg>
-References: <20070516181214.GA16348@cvg> <20070516114455.c0ee691e.akpm@linux-foundation.org> <20070517143712.GA8991@cvg> <20070517103113.107f4363.akpm@linux-foundation.org>
+	Sat, 19 May 2007 04:22:34 -0400
+Received: from dedi.luli.de ([88.198.62.74]:53001 "EHLO dedi.luli.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752403AbXESIWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 04:22:33 -0400
+Message-ID: <464EB3C6.5000402@rootdir.de>
+Date: Sat, 19 May 2007 10:22:30 +0200
+From: Claas Langbehn <claas@rootdir.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070517103113.107f4363.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Andi Kleen <ak@suse.de>, hpa@zytor.com
+Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64 II
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <200705190753.16570.ak@suse.de>
+In-Reply-To: <200705190753.16570.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andrew Morton - Thu, May 17, 2007 at 10:31:13AM -0700]
-| On Thu, 17 May 2007 18:37:12 +0400 Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > [Andrew Morton - Wed, May 16, 2007 at 11:44:55AM -0700]
-| > | On Wed, 16 May 2007 22:12:14 +0400
-| > | Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > | 
-| > | > This patch adds checking for allocated memory
-| > | > which is used to hold AGP info. Also some whitespace
-| > | > cleanup.
-| > | 
-| > | The inclusion of all the whitespace fixies makes it rather hard to
-| > | see what the patch actually does.
-| > | 
-| > | I'm not sure that I can be bothered with this, really.  afaict the
-| > | checks you're adding are for boot-time allocations which we tend
-| > | to assume won't fail, and they're kmalloc(small-amount, GFP_KERNEL)
-| > | which is basically infallible, and it only affects, err, alpha.
-| > | 
-| > 
-| > So you think we could leave all as is? I mean sould I just drop the patch?
-| 
-| mutter.  I spose we should fix those sites which can be called at times other than
-| system boot.  Often one can use the lack of __init annotation to work out if a site
-| is being called after boot.
-| 
+Hello Andi!
+> Can someone please test if this patch works? 
+>   
+it applies cleanly to 2.6.22-rc1-mm1
 
-Hi Andrew,
+Could you make it also enable C7 CMPXCHG8 (cx8)?
+This is because I am getting this error (as written in a diffent posting
+on this mailinglist)
+ > This kernel requires the following features not present on the CPU...
+ > 0:8
 
-you know as I see marvel and titan (they are touched by my patches) only uses
-kmalloc at boot time (as you mentoined) and there are no sites with unchecked
-kmalloc calls after booting. So just forget about patches I sent ;)
+Is verify_cpu.S being executed before or after cpucheck.c?
 
-		Cyrill
 
+
+claas
