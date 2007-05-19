@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbXESGdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbXESGrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761134AbXESGdU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 02:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbXESGdO
+	id S1759645AbXESGrT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 02:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXESGrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 02:33:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46370 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755094AbXESGdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 02:33:13 -0400
-Date: Fri, 18 May 2007 23:28:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Pratt <slpratt@austin.ibm.com>, Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH 1/9] readahead: introduce PG_readahead
-Message-Id: <20070518232824.9917d794.akpm@linux-foundation.org>
-In-Reply-To: <379355695.83536@ustc.edu.cn>
-References: <20070516224752.500812933@mail.ustc.edu.cn>
-	<379355695.83536@ustc.edu.cn>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 19 May 2007 02:47:11 -0400
+Received: from ishtar.tlinx.org ([64.81.245.74]:54987 "EHLO ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754214AbXESGrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 02:47:11 -0400
+Message-ID: <464E9D69.8030505@tlinx.org>
+Date: Fri, 18 May 2007 23:47:05 -0700
+From: Linda Walsh <lkml@tlinx.org>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: building i386 requires s390: "driver/crypto/Kconfig" sourcing
+ s390 arch
+References: <464DFF5F.5010905@tlinx.org>	<20070518141735.aae3921a.randy.dunlap@oracle.com>	<464E1E9A.8060605@tlinx.org> <20070518161920.ae0ed062.randy.dunlap@oracle.com>
+In-Reply-To: <20070518161920.ae0ed062.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 May 2007 06:47:53 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+Randy Dunlap wrote:
+> if S390
+> source "arch/s390/crypto/Kconfig"
+> endif
+>   
+Why bother?  Why not just move the contents of s390's crypto "Kconfig"
+in place of the "source" statement.  All the options in s390's Kconfig
+are already conditional depending on S390.
 
-> Introduce a new page flag: PG_readahead.
+The contents simply need to be [moved] in[to] the the main crypto
+config file (./drivers/crypto/Kconfig).
 
-Is there any way in which we can avoid adding a new page flag?
+It "works" fine on i386, don't see why it wouldn't build on any other
+arch.
 
-We have the advantage that if the kernel very occasionally gets the wrong
-result for PageReadahead(page), nothing particularly bad will happen, so we
-can do racy things.
 
->From a quick peek, it appears that PG_readahead is only ever set against
-non-uptodate pages.  If true we could perhaps exploit that: say,
-PageReadahead(page) == PG_referenced && !PG_uptodate?
+
