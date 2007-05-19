@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760463AbXESJ4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbXESKAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760463AbXESJ4R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 05:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbXESJ4I
+	id S1761665AbXESKAg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 06:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbXESKA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 05:56:08 -0400
-Received: from d06184ca.dreamhost.com ([208.97.132.202]:41128 "EHLO
-	spaceymail-a3.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754560AbXESJ4H (ORCPT
+	Sat, 19 May 2007 06:00:29 -0400
+Received: from n8.bullet.re3.yahoo.com ([68.142.237.93]:27065 "HELO
+	n8.bullet.re3.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755548AbXESKA2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 05:56:07 -0400
-From: Anant Nitya <kernel@prachanda.info>
-Organization: Prachanda Hub
-To: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] local_softirq_pending storm
-Date: Sat, 19 May 2007 15:25:27 +0530
-User-Agent: KMail/1.9.6
-Cc: Thomas Gleixner <tglx@linutronix.de>
-References: <200705091942.22920.kernel@prachanda.hub> <200705171211.23350.kernel@prachanda.hub> <1179493277.12981.69.camel@chaos>
-In-Reply-To: <1179493277.12981.69.camel@chaos>
+	Sat, 19 May 2007 06:00:28 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 336194.68247.bm@rrr4.mail.re1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=EkE9kTlQDqaKwzXlYxkVGia6XTnPfL0oUq7ZkYbBK3uBavul3MZa2/ZkFwD0ouufGG6Tgqv/TRl/0kPQrGt6TL5Nx1x+XxZxLuLlSUA8b7b6UVaO8LFbvZIhpCcjyt7rqwHXjh9H23f27n2pdG8ugxFS6hD6QFtEOovkTW+MsLA=;
+X-YMail-OSG: OntcOIwVM1l04RqmDkVB87J3cpPU5x_zpQa_lVeCrrej0atW6AlDf8HSBlOI1zs2siw0r68VGpyOvYgcJk5og8AQT6VKt.B1UE9kM6JHNTD7NBxcpz5xPmtk581MmuM4
+Date: Sat, 19 May 2007 03:00:27 -0700 (PDT)
+From: Tear <tarrqt@yahoo.com>
+Subject: [patch] Dell Optiplex GX240, ACPI and APIC
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+In-Reply-To: <20070512103441.a21194fc.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705191525.28400.kernel@prachanda.hub>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <147799.82847.qm@web63612.mail.re1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 18 May 2007 18:31:17 Thomas Gleixner wrote:
-> On Thu, 2007-05-17 at 12:11 +0530, Anant Nitya wrote:
-> > On Friday 11 May 2007 03:28:46 Thomas Gleixner wrote:
-> > > Ok, that's consistent with earlier reports. The problem surfaces when
-> > > one of the SMT-"cpus" goes idle. The problem goes away when you disable
-> > > hyperthreading.
-> >
-> > Yes with HT disabled in BIOS there is no local_softirq_pending messages.
-> > BTW why does this problem persist only with X ?
->
-> No idea. I uploaded a debug patch against 2.6.22-rc1 to
->
-> http://www.tglx.de/private/tglx/2.6.22-rc1-hrt-debug.patch
->
-> Can you give it a try and report the output ?
-Hi
-Here it goes 
-[  159.646196] NOHZ softirq pending 22 on CPU 0
-[  159.646207] .... task state: 1 00000000
-[  159.646217] .... last caller: __tasklet_schedule
-[  159.646997] NOHZ softirq pending 22 on CPU 0
-[  159.647006] .... task state: 1 00000000
-[  159.647013] .... last caller: __tasklet_schedule
-[  159.647398] NOHZ softirq pending 22 on CPU 0
-[  159.647405] .... task state: 1 00000000
-[  159.647412] .... last caller: __tasklet_schedule
-[  159.647768] NOHZ softirq pending 22 on CPU 0
-[  159.647775] .... task state: 1 00000000
-[  159.647781] .... last caller: __tasklet_schedule
-[  166.285664] NOHZ softirq pending 22 on CPU 0
-[  166.285675] .... task state: 1 00000000
-[  166.285687] .... last caller: raise_softirq
-[  166.286321] NOHZ softirq pending 22 on CPU 0
-[  166.286329] .... task state: 1 00000000
-[  166.286337] .... last caller: raise_softirq
-[  166.286715] NOHZ softirq pending 22 on CPU 0
-[  166.286722] .... task state: 1 00000000
-[  166.286729] .... last caller: raise_softirq
-[  166.287085] NOHZ softirq pending 22 on CPU 0
-[  166.287092] .... task state: 1 00000000
-[  166.287098] .... last caller: raise_softirq
-[  171.512134] NOHZ softirq pending 22 on CPU 0
-[  171.512144] .... task state: 1 00000000
-[  171.512154] .... last caller: __tasklet_schedule
-[  171.512712] NOHZ softirq pending 22 on CPU 0
-[  171.512720] .... task state: 1 00000000
-[  171.512727] .... last caller: __tasklet_schedule
+Hello,
 
-Regards
-Ananitya
+This patch removes Dell Optiplex GX240 from
+the ACPI blacklist.
+
+Please see the following for more information:
+
+http://marc.info/?l=linux-kernel&m=117897875024464&w=2
+
+Regards,
+- Tear
+
+--- linux-2.6.21.1.orig/arch/i386/kernel/acpi/boot.c	2007-05-01 17:10:30.000000000 +0300
++++ linux-2.6.21.1/arch/i386/kernel/acpi/boot.c	2007-05-01 20:31:53.000000000 +0300
+@@ -971,14 +971,6 @@
+ 	 },
+ 	{
+ 	 .callback = force_acpi_ht,
+-	 .ident = "DELL GX240",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "Dell Computer Corporation"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "OptiPlex GX240"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+ 	 .ident = "HP VISUALIZE NT Workstation",
+ 	 .matches = {
+ 		     DMI_MATCH(DMI_BOARD_VENDOR, "Hewlett-Packard"),
+
+
+
+
+
+       
+____________________________________________________________________________________Get the Yahoo! toolbar and be alerted to new email wherever you're surfing.
+http://new.toolbar.yahoo.com/toolbar/features/mail/index.php
 
