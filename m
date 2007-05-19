@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbXESXSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764855AbXESXVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762862AbXESXSB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 19:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758864AbXESXRy
+	id S1764855AbXESXVy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 19:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761042AbXESXVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 19:17:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:6660 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757090AbXESXRx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 19:17:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MbUwKWQ+JruOkPAu0FtuWlU1yY+UA5CMugJzUFAbM6+pVjahYSVHAIvrWj1FkmBmnxkySvF0qe88sBs0jMtI9AMdfEGe8gzOAzdbMMuFOhSr5sAn6Yny0JFm4DYABeS6e/wmpbTH/i0S94tpI5Qfz1H7xrLvQ9xUkW57gLh8piA=
-Message-ID: <a781481a0705191617v901ac64nfa7040ff302d2da1@mail.gmail.com>
-Date: Sun, 20 May 2007 04:47:52 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: RFC: kconfig select warnings bogus?
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "Kumar Gala" <galak@kernel.crashing.org>,
-       "Simon Horman" <horms@verge.net.au>
-In-Reply-To: <20070519230940.GJ6291@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070519151523.GA26724@uranus.ravnborg.org>
-	 <20070519110944.2a52061e.akpm@linux-foundation.org>
-	 <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com>
-	 <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>
-	 <20070519230940.GJ6291@stusta.de>
+	Sat, 19 May 2007 19:21:47 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47677 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1761019AbXESXVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 19:21:47 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/vaAgdvOLv9DDBunyAcGs3fw3a6XKh97ElMzWYV8
+	mKfgYDz1ASVUPC
+Subject: Re: Sched - graphic smoothness under load - cfs-v13 sd-0.48
+From: Mike Galbraith <efault@gmx.de>
+To: Diego Calleja <diegocg@gmail.com>
+Cc: Bill Davidsen <davidsen@tmr.com>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070519223603.8d70cd6e.diegocg@gmail.com>
+References: <464F57DD.2000309@tmr.com>
+	 <20070519223603.8d70cd6e.diegocg@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Sun, 20 May 2007 01:21:36 +0200
+Message-Id: <1179616896.12125.20.camel@RockBox.Denison.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> On Sun, May 20, 2007 at 04:19:12AM +0530, Satyam Sharma wrote:
-> >...
-> > A combined patch for all of those on top of 22-rc2 (adding Signed-off-by's
-> > for original authors too):
-> >...
-> > --- a/arch/m68k/Kconfig       2007-05-20 04:11:47.000000000 +0530
-> > +++ b/arch/m68k/Kconfig       2007-05-20 04:23:57.000000000 +0530
-> > @@ -411,6 +411,7 @@ config STRAM_PROC
-> >
-> > config ATARI_KBD_CORE
-> >       bool
-> > +     default y if KEYBOARD_ATARI || MOUSE_ATARI
-> >...
-> > --- a/drivers/input/keyboard/Kconfig  2007-05-20 04:11:55.000000000 +0530
-> > +++ b/drivers/input/keyboard/Kconfig  2007-05-20 04:24:54.000000000 +0530
-> > @@ -167,7 +167,6 @@ config KEYBOARD_AMIGA
-> > config KEYBOARD_ATARI
-> >       tristate "Atari keyboard"
-> >       depends on ATARI
-> > -     select ATARI_KBD_CORE
-> >       help
-> >         Say Y here if you are running Linux on any Atari and have a keyboard
-> >         attached.
-> > diff -ruNp a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
-> > --- a/drivers/input/mouse/Kconfig     2007-05-20 04:11:55.000000000 +0530
-> > +++ b/drivers/input/mouse/Kconfig     2007-05-20 04:25:09.000000000 +0530
-> > @@ -179,7 +179,6 @@ config MOUSE_AMIGA
-> > config MOUSE_ATARI
-> >       tristate "Atari mouse"
-> >       depends on ATARI
-> > -     select ATARI_KBD_CORE
-> >       help
-> >         Say Y here if you have an Atari and want its native mouse
-> >         supported by the kernel.
-> >...
->
-> This is a good example how "fixing" the warnings makes things worse...
+On Sat, 2007-05-19 at 22:36 +0200, Diego Calleja wrote:
+> El Sat, 19 May 2007 16:02:37 -0400, Bill Davidsen <davidsen@tmr.com> escribió:
+> 
+> > The chart is at http://www.tmr.com/~davidsen/sched_smooth_01.html for 
+> > your viewing pleasure. The only "tuned" result was with sd, since what I 
+> > observed was so bad using the default settings. If any scheduler 
+> > developers would like me to try other tunings or new versions let me know.
+> 
+> How useful is glxgears as benchmark here? The X.org people has been saying
+> for ages that "glxgears is not a benchmark". Some people (at least on ubuntu)
+> even patched it so that if you want to get FPS numbers, you need to pass the
+> "-iacknowledgethatthistoolisnotabenchmark" option. There's a good page
+> explaining why at http://wiki.cchtml.com/index.php/Glxgears_is_not_a_Benchmark
+> 
+> I realize that it may be OK for scheduler testing, but maybe it'd be more
+> interesting to test other kind of 3d benchmark tools.
 
-How?
+The most interesting thing about graphics to me is the effect that
+massive bus blasting could have on time measurement.  Generally, cpu
+schedulers really want to keep track of time,.. but there's no telling
+when some IO controller may blast you right off the bus?
+
+	-Mike
+
