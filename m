@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbXESAq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbXESBWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756363AbXESAq3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 18 May 2007 20:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbXESAqX
+	id S1756756AbXESBWu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 18 May 2007 21:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbXESBWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 18 May 2007 20:46:23 -0400
-Received: from onsight-adsl.demon.co.uk ([80.176.235.14]:37141 "EHLO
-	jonshouse.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752712AbXESAqW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 18 May 2007 20:46:22 -0400
-X-Greylist: delayed 2051 seconds by postgrey-1.27 at vger.kernel.org; Fri, 18 May 2007 20:46:22 EDT
-Subject: REQ: .config variable for screen blanker
-From: Jonathan Andrews <jon@jonshouse.co.uk>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sat, 19 May 2007 01:12:39 +0100
-Message-Id: <1179533559.30563.26.camel@jonspc>
+	Fri, 18 May 2007 21:22:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40635 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754305AbXESBWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 18 May 2007 21:22:42 -0400
+Date: Sat, 19 May 2007 03:22:35 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070519012235.GA15569@wotan.suse.de>
+References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181633240.24071@blonde.wat.veritas.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 (2.6.3-2.fc5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705181633240.24071@blonde.wat.veritas.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few years ago I posted a feature request for a .config variable to
-enable/disable screen blanking in console and frame buffer, I was told
-it wasn't a real problem as userspace code was adequate.
+On Fri, May 18, 2007 at 04:42:10PM +0100, Hugh Dickins wrote:
+> On Fri, 18 May 2007, Nick Piggin wrote:
+> > 
+> > If we add 8 bytes to struct page on 64-bit machines, it becomes 64 bytes,
+> > which is quite a nice number for cache purposes.
+> > 
+> > However we don't have to let those 8 bytes go to waste: we can use them
+> > to store the virtual address of the page, which kind of makes sense for
+> > 64-bit, because they can likely to use complicated memory models.
+> 
+> Sooner rather than later, don't we need those 8 bytes to expand from
+> atomic_t to atomic64_t _count and _mapcount?  Not that we really need
+> all 64 bits of both, but I don't know how to work atomically with less.
 
-Having used linux for a couple of years to build embedded devices im
-having another go :-)   It is a real world problem when devices in field
-are failing, then going black on the display after 15 mins ....
+Yeah, that would be a very good use of it.
 
-At the moment if I build a device with a display on it I need to either
-run userspace code to set the Ioctl and disable the screen blanker or to
-patch the kernel source (as I do currently) 
+ 
+> (Why do I have this sneaking feeling that you're actually wanting
+> to stick something into the lower bits of page->virtual?)
 
-Having worked with other people it seems to me a lot of us are also
-doing this, it would be great if it could be coded into directly into
-the kernel.
-
-My code is not the worlds best and to be most useful it would need to be
-in 2.4 and 2.6 trees so im grovelling to the kernel maintainers :-D
-
-At a push I can produce the patch, but this is more of a policy
-question :-)
-
-Many thanks for considering it.
-
-Cheers,
-Jon
-
-
-
-
+No, I just thought I would get even more flamed if I was just adding
+padding that wasn't even doing _anything_ :) I remembered Ken had a
+benchmark where page_address was slow, and the rest is history...
