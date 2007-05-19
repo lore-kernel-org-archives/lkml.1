@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764411AbXESVYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764632AbXESV1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764411AbXESVYP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 17:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXESVYA
+	id S1764632AbXESV1Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 17:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbXESV1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 17:24:00 -0400
-Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:60468
-	"EHLO spaceymail-a4.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754749AbXESVX7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 17:23:59 -0400
-From: Anant Nitya <kernel@prachanda.info>
-Organization: Prachanda Hub
-To: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] local_softirq_pending storm
-Date: Sun, 20 May 2007 02:53:44 +0530
-User-Agent: KMail/1.9.6
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-References: <200705091942.22920.kernel@prachanda.hub> <200705191525.28400.kernel@prachanda.hub> <1179601868.12981.127.camel@chaos>
-In-Reply-To: <1179601868.12981.127.camel@chaos>
+	Sat, 19 May 2007 17:27:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58223 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754749AbXESV1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 17:27:16 -0400
+Message-ID: <464F6BB1.9050609@garzik.org>
+Date: Sat, 19 May 2007 17:27:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] sata_sil: Greatly improve DMA support
+References: <fa.SqfRJHzGgf3m6sdJPwJTwHDPSuw@ifi.uio.no> <464F2D83.6000506@shaw.ca>
+In-Reply-To: <464F2D83.6000506@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705200253.44992.kernel@prachanda.hub>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 May 2007 00:41:08 Thomas Gleixner wrote:
-> On Sat, 2007-05-19 at 15:25 +0530, Anant Nitya wrote:
-> > > No idea. I uploaded a debug patch against 2.6.22-rc1 to
-> > >
-> > > http://www.tglx.de/private/tglx/2.6.22-rc1-hrt-debug.patch
-> > >
-> > > Can you give it a try and report the output ?
-> >
-> > Hi
-> > Here it goes
-> > [  159.646196] NOHZ softirq pending 22 on CPU 0
-> > [  159.646207] .... task state: 1 00000000
->
-> 1 == TASK_INTERRUPTIBLE, so we know that ksoftirqd was not woken up. At
-> least it is not a scheduler problem.
->
-> I work out a more complex debug patch and pester you to test once I'm
-> done.
-No problem :)
+Robert Hancock wrote:
+> Jeff Garzik wrote:
+>> Since Alan expressed a desire to see Large Block Transfer (LBT) support
+>> in pata_sil680, I though I would re-post my patch for adding LBT support
+>> to sata_sil.
+>>
+>> Silicon Image's Large Block Transfer (LBT) support is a vendor-specific
+>> DMA scatter/gather engine, which enables 64-bit DMA addresses (where
+>> supported by platform) and eliminates the annoying 64k DMA boundary
+>> found in legacy PCI IDE BMDMA engines.
+> 
+> Looks like it doesn't allow 64-bit DMA addresses, it only gets rid of 
+> the 64K boundary limitation.
 
-Regards
-Ananitya
+rotfl.  Boy am I dumb.  I -thought- my patch, written months ago, 
+included that bit.  But obviously it does not.  Let's add that...
 
->
-> 	tglx
+	Jeff
 
 
 
--- 
-Out of many thousands, one may endeavor for perfection, and of
-those who have achieved perfection, hardly one knows Me in truth.
-				-- Gita Sutra Of Mysticism
