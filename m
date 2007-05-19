@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762823AbXESPBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXESPGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762823AbXESPBY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 11:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbXESPBR
+	id S1762011AbXESPGI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 11:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbXESPFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 11:01:17 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4397 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758709AbXESPBR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 11:01:17 -0400
-Date: Sat, 19 May 2007 11:01:14 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-cc: linux-kernel@vger.kernel.org, <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] 2.6.22-rc2: regression: STD fails with
- pci_device_suspend(): usb_hcd_pci_suspend+0x0/0x160 [usbcore]() returns -16
-In-Reply-To: <200705191543.15110.arvidjaar@mail.ru>
-Message-ID: <Pine.LNX.4.44L0.0705191058570.8729-100000@netrider.rowland.org>
+	Sat, 19 May 2007 11:05:55 -0400
+Received: from mail.acc.umu.se ([130.239.18.156]:52656 "EHLO mail.acc.umu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758753AbXESPFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 11:05:54 -0400
+X-Greylist: delayed 1192 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 May 2007 11:05:54 EDT
+Date: Sat, 19 May 2007 16:45:56 +0200
+From: David Weinehall <tao@acc.umu.se>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
+Cc: John Stoffel <john@stoffel.org>, Jamie Lokier <jamie@shareable.org>,
+       David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070519144556.GS11766@vasa.acc.umu.se>
+Mail-Followup-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+	John Stoffel <john@stoffel.org>, Jamie Lokier <jamie@shareable.org>,
+	David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
+	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
+	Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org> <17995.2550.581854.8393@stoffel.org> <20070516135318.GK5472@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070516135318.GK5472@lazybastard.org>
+X-Editor: Vi Improved <http://www.vim.org/>
+X-Accept-Language: Swedish, English
+X-GPG-Fingerprint: 7ACE 0FB0 7A74 F994 9B36  E1D1 D14E 8526 DC47 CA16
+X-GPG-Key: http://www.acc.umu.se/~tao/files/pub_dc47ca16.gpg.asc
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 May 2007, Andrey Borzenkov wrote:
-
-> This works just fine up to and including 2.6.21.
-
-> unfortunatelt dmesg got truncated; if required I can rebuild with larger 
-> buffer; the part around suspend is
+On Wed, May 16, 2007 at 03:53:19PM +0200, J�rn Engel wrote:
+> On Wed, 16 May 2007 09:41:10 -0400, John Stoffel wrote:
+> > Jörn> On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
+> > 
+> > Jörn> How many of you have worked for IBM before?  Vowels are not
+> > evil. ;)
+> > 
+> > Nope, they're not.  I just think that LogFS isn't descriptive enough,
+> > or more accurately, is the *wrong* description of this filesystem.  
 > 
-> swsusp: Marking nosave pages: 000000000009f000 - 0000000000100000
-> swsusp: Basic memory bitmaps created
-> Stopping tasks ... done.
-> Shrinking memory... done (14553 pages freed)
-> Freed 58212 kbytes in 0.30 seconds (194.04 MB/s)
-> Suspending console(s)
-> sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> pnp: Device 00:09 disabled.
-> ACPI: PCI interrupt for device 0000:00:0a.0 disabled
-> Trying to free already-free IRQ 11
-> ACPI: PCI interrupt for device 0000:00:06.0 disabled
-> ACPI: Unable to derive IRQ for device 0000:00:04.0
-> pci_device_suspend(): usb_hcd_pci_suspend+0x0/0x160 [usbcore]() returns -16
-> suspend_device(): pci_device_suspend+0x0/0x70() returns -16
-> Could not suspend device 0000:00:02.0: error -16
+> That was the whole point.  JFFS2, the journaling flash filesystem, is a
+> strictly log-structured filesystem.  LogFS has a journal.
+> 
+> It is also the filesystem that tries to scale logarithmically, as Arnd
+> has noted.  Maybe I should call it Log2 to emphesize this point.  Log1
+> would be horrible scalability.
 
-Please turn on CONFIG_USB_DEBUG and post the resulting dmesg log.
+So, log2fs...  Sounds great to me.
 
-Alan Stern
+[snip]
 
+
+Regards: David
+-- 
+ /) David Weinehall <tao@acc.umu.se> /) Northern lights wander      (\
+//  Maintainer of the v2.0 kernel   //  Dance across the winter sky //
+\)  http://www.acc.umu.se/~tao/    (/   Full colour fire           (/
