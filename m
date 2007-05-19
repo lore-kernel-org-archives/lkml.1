@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765009AbXESWhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765058AbXESWih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765009AbXESWhv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 18:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761725AbXESWho
+	id S1765058AbXESWih (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 18:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762120AbXESWi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 18:37:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:52092 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760203AbXESWhn (ORCPT
+	Sat, 19 May 2007 18:38:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45028
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756099AbXESWi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 18:37:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=H1GJWTJ9qVtKaa/IUcYvDto9/ZemrJ4zu3R8OGzsWbOMwYhXhWwccR8tZKiZXT/8cpCPCMm+xR86OFqpx7052nfo6fsekGrlTZV0lbdf8wNiDsjCBgSfSEZZ7cB4ArvBtorkcvORVajfmKWJ9UDjqCSINgMyjcbPQLBc90dh37c=
-Message-ID: <6bffcb0e0705191537j61f9914y8239625b02589457@mail.gmail.com>
-Date: Sun, 20 May 2007 00:37:42 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: [2/5] 2.6.22-rc2: known regressions
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <464F79DA.7070808@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 19 May 2007 18:38:27 -0400
+Date: Sat, 19 May 2007 15:38:29 -0700 (PDT)
+Message-Id: <20070519.153829.112852602.davem@davemloft.net>
+To: michal.k.k.piotrowski@gmail.com
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       auke-jan.h.kok@intel.com, doug.chapman@hp.com, cramerj@intel.com,
+       john.ronciak@intel.com, jesse.brandeburg@intel.com,
+       jeffrey.t.kirsher@intel.com, e1000-devel@lists.sourceforge.net,
+       bcollins@ubuntu.com, yoshfuji@linux-ipv6.org
+Subject: Re: [5/5] 2.6.22-rc2: known regressions
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <464F74E9.8080102@googlemail.com>
+References: <464F6DC9.80805@googlemail.com>
+	<464F74E9.8080102@googlemail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <464F6DC9.80805@googlemail.com> <464F74C4.5070404@googlemail.com>
-	 <464F79DA.7070808@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stefan,
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Date: Sun, 20 May 2007 00:06:33 +0200
 
-On 20/05/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> Michal Piotrowski wrote:
-> > Memory management
->
-> > Subject    : BUG: at mm/slab.c:777 __find_general_cachep()
-> > References : http://lkml.org/lkml/2007/5/18/17
-> > Submitter  : Jeff Garzik <jeff@garzik.org>
-> > Status     : Unknown
->
-> Patch available and verified: http://lkml.org/lkml/2007/5/18/19
-> "avoid-zero-size-allocation-in-cache_k8_northbridges"
->
-> Category is x86-64, not memory management.
+> Subject    : OOPS triggered by ip(8) deconfiguring a network interface
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=8491
+> Submitter  : Ben Collins <bcollins@ubuntu.com>
+> Status     : Unknown
 
-Informations updated, thanks.
+Might be fixed by:
 
-Regards,
-Michal
+	http://marc.info/?l=linux-netdev&m=117915849224816&w=2
 
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
+I'll merge that patch in and we'll see what happens.
