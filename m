@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763686AbXESPZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbXESPaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763686AbXESPZV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 11:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759073AbXESPZK
+	id S1763444AbXESPaa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 11:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758853AbXESPaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 11:25:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55808 "EHLO
+	Sat, 19 May 2007 11:30:23 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57645 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758825AbXESPZI (ORCPT
+	by vger.kernel.org with ESMTP id S1759275AbXESPaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 11:25:08 -0400
-Date: Sat, 19 May 2007 08:19:44 -0700
+	Sat, 19 May 2007 11:30:22 -0400
+Date: Sat, 19 May 2007 08:25:04 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, linux-kernel@vger.kernel.org,
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
        Jens Axboe <jens.axboe@oracle.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Pratt <slpratt@austin.ibm.com>, Ram Pai <linuxram@us.ibm.com>
+       Steven Pratt <slpratt@austin.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
 Subject: Re: [PATCH 1/9] readahead: introduce PG_readahead
-Message-Id: <20070519081944.3caf4776.akpm@linux-foundation.org>
-In-Reply-To: <20070519113501.GB25563@one.firstfloor.org>
+Message-Id: <20070519082504.8baa8d19.akpm@linux-foundation.org>
+In-Reply-To: <379577826.15160@ustc.edu.cn>
 References: <20070516224752.500812933@mail.ustc.edu.cn>
 	<379355695.83536@ustc.edu.cn>
 	<20070518232824.9917d794.akpm@linux-foundation.org>
-	<20070519113501.GB25563@one.firstfloor.org>
+	<379577826.15160@ustc.edu.cn>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,20 +31,34 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 May 2007 13:35:01 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+On Sat, 19 May 2007 20:30:31 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
 
+> On Fri, May 18, 2007 at 11:28:24PM -0700, Andrew Morton wrote:
+> > On Thu, 17 May 2007 06:47:53 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> > 
+> > > Introduce a new page flag: PG_readahead.
+> > 
+> > Is there any way in which we can avoid adding a new page flag?
+> > 
 > > We have the advantage that if the kernel very occasionally gets the wrong
 > > result for PageReadahead(page), nothing particularly bad will happen, so we
 > > can do racy things.
->  
-> On 64bit there is no particular shortage of page flags.
+> > 
+> > >From a quick peek, it appears that PG_readahead is only ever set against
+> > non-uptodate pages.  If true we could perhaps exploit that: say,
+> > PageReadahead(page) == PG_referenced && !PG_uptodate?
+> 
+> PG_uptodate will flip to 1 before the reader touches the page :(
 
-I think pretty much all of the upper 32 bits got used for ia64 fields,
-but it's never been very clear how many were actually used or needed.
+OK.
 
-> If you ever do racy things please do them 32bit only.
+> However, it may be possible to share the same bit with PG_reclaim or PG_booked.
+> Which one would be preferred?
 
-hrm.  It *really* won't matter if we make one suboptimal readahead decision
-every second day.  And there's value in having the same behaviour on all
-architectures.
+I'd like PG_booked to go away too - I don't think we've put that under the
+microscope yet.  If it remains then its scope will be "defined by the
+filesystem", so readahead shouldn't use it.  PG_reclaim belongs to core VFS
+so that's much better.
 
+Let's not do anything ugly, slow or silly in there, but please do take a
+look, see if there is an opportunity here.
