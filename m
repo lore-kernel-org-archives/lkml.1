@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764211AbXEST2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764414AbXEST3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764211AbXEST2f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 15:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757396AbXEST2a
+	id S1764414AbXEST3V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 15:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759275AbXEST3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 15:28:30 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:51961 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755016AbXEST23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 15:28:29 -0400
-Message-ID: <464F4FD1.5030308@simon.arlott.org.uk>
-Date: Sat, 19 May 2007 20:28:17 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	Sat, 19 May 2007 15:29:12 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:55982 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016AbXEST3K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 15:29:10 -0400
+Message-ID: <464F4FD7.80303@cosmosbay.com>
+Date: Sat, 19 May 2007 21:28:23 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       michal@logix.cz, ioe-lkml@rameria.de
-Subject: Re: [PATCH (v2)] crypto: Remove pointless padlock module
-References: <4633DB56.6070000@simon.arlott.org.uk> <4633FBFF.7050202@oracle.com> <463450C6.5060103@simon.arlott.org.uk> <20070518064500.GA16394@gondor.apana.org.au>
-In-Reply-To: <20070518064500.GA16394@gondor.apana.org.au>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Vasantha Kumar Puttappa <vasanthakumar@iitb.ac.in>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Packets lost: Softirq
+References: <3388.10.107.26.27.1179320821.squirrel@gpo.iitb.ac.in>    <464B19A9.700@freemail.hu> <2770.10.107.26.27.1179579009.squirrel@gpo.iitb.ac.in>
+In-Reply-To: <2770.10.107.26.27.1179579009.squirrel@gpo.iitb.ac.in>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 19 May 2007 21:28:29 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18/05/07 07:45, Herbert Xu wrote:
-> On Sun, Apr 29, 2007 at 09:01:10AM +0100, Simon Arlott wrote:
->> When this is compiled in it is run too early to do anything useful:
->> [    6.052000] padlock: No VIA PadLock drivers have been loaded.
->> [    6.052000] padlock: Using VIA PadLock ACE for AES algorithm.
->> [    6.052000] padlock: Using VIA PadLock ACE for SHA1/SHA256 algorithms.
->>
->> When it's a module it isn't doing anything special, the same functionality 
->> can be provided in userspace by "probeall padlock padlock-aes padlock-sha" 
->> in modules.conf if it is required.
+Vasantha Kumar Puttappa a écrit :
+> Hi All,
+>  Please somebody guide me here. I desparatley need help regarding this
+> issue. ( plz do "reply to all")
 > 
-> BTW, I noticed that this prevented CRYPTO_ALGAPI from being marked as m
-> since it was selected by CRYPTO_DEV_PADLOCK.  So I'm turning it into a
-> tristate again.
+>  I am tracking all udp packets (in particular, SIP based UDP packets)that
+> goes through the iptables using LOG mechanism.
+>  I use the following command,
+>      iptables -A INPUT -p udp -j LOG --log-level-4.
+>      iptables -A FORWARD -p udp -j LOG --log-level-4
+> 
+>   In addition, i also run 'Ethereal' to make sure that all the packets
+> captured goes through the iptables as well.
+> 
+>   Here is the problem,
+>     Sometimes, a random number of packets doesnot go through IPtables and
+>   they are completely lost. Although, I can see those lost packets in
+> Ethereal. I tried increasing the backlog queue and ip_queue length, but
+> still no use.
+> 
+>    I am using Netgear's wireless network card (WG511, made in taiwan).
+>    Device driver: Prism54
+>    firmware: isl3890
+>    Kernel verison-- 2.6.11-6mdk
+> 
+>   Let me give you more insight into what I am trying do.
+> 
+>  I have a vitrual network interface and 2 physical network interface (one
+> Ethernet based, and other 802.11 based). The virtual network interface
+> dynamically binds to any one of the above physical interfaces for packet
+> transmission. The issue of packet loss occurs **only** during link
+> switching.
+> 
+> I feel that the following issues might be the possible reasons for the
+> packet loss.
+> 
+> 1. Due to missing soft_IRQ interrupt for packets and hence packet loss ( i
+> have no proof to back this)
+> 2. Due to incompatible wireless device driver.
+> 
 
-It should be a bool that doesn't select anything, the AES and SHA modules 
-will select CRYPTO_ALGAPI. It could also depend on MVIAC3_2 || MVIA_C7 
-instead of X86_32.
+netdev CCed
 
--- 
-Simon Arlott
+3) packets are going normally through iptables, but the '-j LOG' is flooded 
+and syslog miss some of them.
+
+Just do a : iptables -nvL INPUT
+
+and check packets counters : they should match ethereal ones :)
+
+-j LOG is not designed for logging all packets, just some of them :)
+
