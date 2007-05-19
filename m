@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763256AbXESPTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763327AbXESPXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763256AbXESPTT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 11:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759073AbXESPTJ
+	id S1763327AbXESPXz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 11:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758853AbXESPXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 11:19:09 -0400
-Received: from mail.tmr.com ([64.65.253.246]:41684 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758909AbXESPTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 11:19:06 -0400
-Message-ID: <464F1539.5050204@tmr.com>
-Date: Sat, 19 May 2007 11:18:17 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 19 May 2007 11:23:48 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:49594 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758825AbXESPXs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 11:23:48 -0400
+Message-ID: <464F167A.1090706@anagramm.de>
+Date: Sat, 19 May 2007 17:23:38 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Dongjun Shin <djshin90@gmail.com>
-CC: David Woodhouse <dwmw2@infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-Subject: Re: [PATCH] LogFS take three
-References: <20070515151919.GA32510@lazybastard.org>	 <20070515133759.9ee434a2.akpm@linux-foundation.org>	 <1179317240.2859.222.camel@shinybook.infradead.org>	 <20070516083408.dcd9dd78.akpm@linux-foundation.org>	 <1179330596.2859.248.camel@shinybook.infradead.org>	 <20070516164158.GB8113@lazybastard.org>	 <7fe698080705162312t4e7ed90byd10ef8e664027b17@mail.gmail.com>	 <1179383117.2859.416.camel@shinybook.infradead.org> <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
-In-Reply-To: <7fe698080705170120w18fe5521oa685cf248a45e1c6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: segher@kernel.crashing.org, linux-kernel@vger.kernel.org
+Subject: Re: gcc-4.2.0 breakage on powerpc?
+References: <200705190953.l4J9rjO2024613@harpo.it.uu.se>
+In-Reply-To: <200705190953.l4J9rjO2024613@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+UAlvgKjVAKkiXfkM/GZ6SinfpDQFFVYmobTL
+ VSyB/ClIo4gLaVyvmHZ/FRCQuJOhlZD2qVzwsbp7APqLsVetCn
+ e5vGqi6q08heqrDVMyiFg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dongjun Shin wrote:
-
-> There are so many flash-based storage and some disposable storages,
-> as you pointed out, have poor quality. I think it's mainly because these
-> are not designed for good quality, but for lowering the price.
+Mikael Pettersson schrieb:
+> On Sat, 19 May 2007 01:39:43 +0200, Segher Boessenkool wrote:
+>>> and we'll end up
+>>> having major kernel releases which don't build on i386 with major gcc
+>>> releases, which isn't altogether desirable.
+>> Yeah, like 4.2.0 with powerpc.  Seems like no one tested it :-(
 > 
-The reliability seems to be appropriate to the common use. I'm doubious 
-that computer storage was a big design factor until the last few years. 
-A good argument for buying large sizes, they are more likely to be 
-recent design.
+> Details please. What exactly are the gcc-4.2.0 problems on powerpc?
 
-> These kind of devices are not ready for things like power failure because
-> their use case is far from that. For example, removing flash card
-> while taking pictures using digital camera is not a common use case.
-> (there should be a written notice that this kind of action is against
-> the warranty)
-> 
-They do well in such use, if you equate battery death to pulling the 
-card (it may not be). I have tested that feature and not had a failure 
-of any but the last item. Clearly not recommended, but sometimes 
-unplanned needs arise.
+[embedded platform!]
+Over here, the 2.6.21.1 Kernel _builds_ fine with gcc-4.2.0 on an mpc8540 e500 powerpc
+(mpc8540_ads_defconfig) but it just crashes silently on boot. But that's IMHO a
+DeviceTree/U-Boot issue I haven't solved yet.
 
+$ uname -a
+Linux ecam.anagramm.de 2.6.21-rc5-g9a5ee4cc #4 Mon Apr 2 21:31:53 CEST 2007 ppc e500 GNU/Linux
+ARCH=ppc compiled with GCC-4.1.2 works fine.
 
-> - In contrast to the embedded environment where CPU and flash is directly
-> connected, the I/O path between CPU and flash in PC environment is longer.
-> The latency for SW handshaking between CPU and flash will also be longer,
-> which would make the performance optimization harder.
-> 
-> As I mentioned, some techniques like log-structured filesystem could
-> perform generally better on any kind of flash-based storage with FTL.
-> Although there are many kinds of FTL, it is commonly true that
-> it performs well under workload where sequential write is dominant.
-> 
-> I also expect that FTL for PC environment will have better quality spec
-> than the disposable storage.
+Greets,
 
-The recent technology announcements from Intel are encouraging in that 
-respect.
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+http://www.anagramm-technology.com
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
