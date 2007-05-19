@@ -1,54 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763903AbXESRyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764017AbXESRzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763903AbXESRyR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 13:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbXESRyH
+	id S1764017AbXESRzA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 13:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbXESRyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 13:54:07 -0400
-Received: from sccrmhc15.comcast.net ([63.240.77.85]:62009 "EHLO
-	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755804AbXESRyG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 13:54:06 -0400
-Date: Sat, 19 May 2007 10:48:57 -0700
-From: Deepak Saxena <dsaxena@plexity.net>
-To: sam@ravnborg.org, kai@germaschewski.name
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add ip6_tunnel.h to headers_install
-Message-ID: <20070519174857.GA1199@plexity.net>
-Reply-To: dsaxena@plexity.net
+	Sat, 19 May 2007 13:54:54 -0400
+Received: from dedi.luli.de ([88.198.62.74]:49120 "EHLO dedi.luli.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756092AbXESRyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 13:54:53 -0400
+Message-ID: <464F39EB.9090508@rootdir.de>
+Date: Sat, 19 May 2007 19:54:51 +0200
+From: Claas Langbehn <claas@rootdir.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Plexity Networks
-User-Agent: Mutt/1.5.11
+To: Christian Volkmann <haveaniceday@cv-sv.de>
+CC: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64 II
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <200705190753.16570.ak@suse.de> <464EE2AA.3030607@cv-sv.de>
+In-Reply-To: <464EE2AA.3030607@cv-sv.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-The Mobile IPv6 package (http://www.mobile-ipv6.org/software/) needs
-this header file to build the tunnelctl component. The header
-already looks sanitized so is safe to export.
-
-Signed-off-by: Deepak Saxena <dsaxena@mvista.com>
-
----
-
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index bcd01f2..e101315 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -239,6 +239,7 @@ unifdef-y += ipc.h
- unifdef-y += ipmi.h
- unifdef-y += ipv6.h
- unifdef-y += ipv6_route.h
-+unifdef-y += ip6_tunnel.h
- unifdef-y += isdn.h
- unifdef-y += isdnif.h
- unifdef-y += isdn_divertif.h
-
--- 
-Deepak Saxena - dsaxena@plexity.net - http://www.plexity.net
-
-In the end, they will not say, "those were dark times,"  they will ask
-"why were their poets silent?" - Bertolt Brecht
+Christian Volkmann wrote:
+> your patch did not work. See the correction below. The mask should contain 1<<1
+> instead of 1.
+> Model 10 is now also included.
+>   
+I can confirm that it works now.
