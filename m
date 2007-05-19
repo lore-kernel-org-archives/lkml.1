@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXESPGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762823AbXESPNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762011AbXESPGI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 11:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbXESPFz
+	id S1762823AbXESPNn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 11:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759039AbXESPNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 11:05:55 -0400
-Received: from mail.acc.umu.se ([130.239.18.156]:52656 "EHLO mail.acc.umu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758753AbXESPFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 11:05:54 -0400
-X-Greylist: delayed 1192 seconds by postgrey-1.27 at vger.kernel.org; Sat, 19 May 2007 11:05:54 EDT
-Date: Sat, 19 May 2007 16:45:56 +0200
-From: David Weinehall <tao@acc.umu.se>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: John Stoffel <john@stoffel.org>, Jamie Lokier <jamie@shareable.org>,
-       David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-fsdevel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070519144556.GS11766@vasa.acc.umu.se>
-Mail-Followup-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-	John Stoffel <john@stoffel.org>, Jamie Lokier <jamie@shareable.org>,
-	David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	Albert Cahalan <acahalan@gmail.com>, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@rameria.de>,
-	Pekka Enberg <penberg@cs.helsinki.fi>, linux-mtd@lists.infradead.org,
-	Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	linux-fsdevel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org> <20070515191926.GB1220@lazybastard.org> <1179291255.2859.195.camel@shinybook.infradead.org> <20070516110933.GA5472@lazybastard.org> <20070516113434.GC20482@mail.shareable.org> <20070516115003.GD5472@lazybastard.org> <17995.2550.581854.8393@stoffel.org> <20070516135318.GK5472@lazybastard.org>
+	Sat, 19 May 2007 11:13:35 -0400
+Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:56154 "EHLO
+	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758753AbXESPNe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 11:13:34 -0400
+Date: Sun, 20 May 2007 00:11:10 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
+Subject: 2.6.22-rc1 regression: tifm prevents suspending [was: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after STR]
+Message-ID: <20070519151110.GA3393@inferi.kami.home>
+References: <20070518071523.GA3195@inferi.kami.home> <20070518002240.bc08e811.akpm@linux-foundation.org> <20070519064829.GA15518@inferi.kami.home> <20070519000413.75badb6f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070516135318.GK5472@lazybastard.org>
-X-Editor: Vi Improved <http://www.vim.org/>
-X-Accept-Language: Swedish, English
-X-GPG-Fingerprint: 7ACE 0FB0 7A74 F994 9B36  E1D1 D14E 8526 DC47 CA16
-X-GPG-Key: http://www.acc.umu.se/~tao/files/pub_dc47ca16.gpg.asc
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070519000413.75badb6f.akpm@linux-foundation.org>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.21-bisect i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 03:53:19PM +0200, J�rn Engel wrote:
-> On Wed, 16 May 2007 09:41:10 -0400, John Stoffel wrote:
-> > Jörn> On Wed, 16 May 2007 12:34:34 +0100, Jamie Lokier wrote:
-> > 
-> > Jörn> How many of you have worked for IBM before?  Vowels are not
-> > evil. ;)
-> > 
-> > Nope, they're not.  I just think that LogFS isn't descriptive enough,
-> > or more accurately, is the *wrong* description of this filesystem.  
+On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
+> On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
 > 
-> That was the whole point.  JFFS2, the journaling flash filesystem, is a
-> strictly log-structured filesystem.  LogFS has a journal.
+> > On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
+> > > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
+> > > 
+> > > > Hello,
+> > > > 
+> > > > After finally catching fw-{ohci,core} to be problematic during resume,
+> > > > I'm now experiencing an immediate resume after suspending.
+> > > > 
+> > > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
+> > > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
+> > > > 2.6.21-rc6-mm* after the cpuidle fixes).
+> > > > 
+> > > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
+> > > > and a str cycle with PM_DEBUG=y:
+> > > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
+> > ...
+> > > > Any idea where to start from? (bisecting is ok, but it'll take some
+> > > > time...)
+> > > 
+> > > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
+> > 
+> > ok, git-acpi.patch is not the bad boy :)
+> > Anyway what we have is a regression in 2.6.22-rc1 since the laptop can't
+> > suspend (it sits on the "Stopping tasks" console screen) while 2.6.21
+> > can.
+> > I'm now bisecting this, will come to -mm1 later when done with this one.
 > 
-> It is also the filesystem that tries to scale logarithmically, as Arnd
-> has noted.  Maybe I should call it Log2 to emphesize this point.  Log1
-> would be horrible scalability.
+> OK, thanks.
+> 
+> > Who is the regression-guy?
+> 
+> Len, usually ;)    But I think you meant Michal, cc'ed here.
 
-So, log2fs...  Sounds great to me.
+LOL, not this time. We have the responsible commit for 2.6.22-rc1 (Cc
+added):
 
-[snip]
+3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5 is first bad commit
+commit 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5
+Author: Alex Dubov <oakad@yahoo.com>
+Date:   Thu Apr 12 16:59:15 2007 +1000
 
+    tifm: replace per-adapter kthread with freezeable workqueue
+    
+    Freezeable workqueue makes sure that adapter work items (device insertions
+    and removals) would be handled after the system is fully resumed. Previously
+    this was achieved by explicit freezing of the kthread.
+    
+    Signed-off-by: Alex Dubov <oakad@yahoo.com>
+    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 
-Regards: David
+I'm now seeing if avoiding the tifm stuff in -mm1 fixes the
+immediately-resumes-after-str problem (unfortunately the commint doesn't
+revert cleanly).
 -- 
- /) David Weinehall <tao@acc.umu.se> /) Northern lights wander      (\
-//  Maintainer of the v2.0 kernel   //  Dance across the winter sky //
-\)  http://www.acc.umu.se/~tao/    (/   Full colour fire           (/
+mattia
+:wq!
