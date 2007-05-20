@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757761AbXETOa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbXETOdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757761AbXETOa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 10:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbXETOaU
+	id S1757989AbXETOdL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 10:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXETOc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 10:30:20 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47737 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755475AbXETOaS (ORCPT
+	Sun, 20 May 2007 10:32:58 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:56541 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755969AbXETOc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 10:30:18 -0400
-Date: Sun, 20 May 2007 15:32:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Jeff Garzik <jeff@garzik.org>,
-       Francis Russell <francisrussell@btopenworld.com>,
-       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
-       video4linux@list.redhat.com,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>, Robert Fitzsimons <robfitz@273k.net>
-Subject: Re: [3/5] 2.6.22-rc2: known regressions
-Message-ID: <20070520153254.12758f82@the-village.bc.nu>
-In-Reply-To: <46502847.40204@gmail.com>
-References: <464F6DC9.80805@googlemail.com>
-	<464F74D5.9080204@googlemail.com>
-	<46502847.40204@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Sun, 20 May 2007 10:32:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=t1+lCScRcaXGg95WZKTgPvmFYD8WA5wMC1FrN/p3dcXyun7iplI2QAfBOQcFO7cqKt9BiQVP7y67ifkeH8y1KJp07Cf4a2+6dCg3D3rJ0MaadneMjdWYYP0/vpcn/icXKYqXLn0vwRf3wjxpF+TMi3H7za8AD4haiW/gH+r1m3I=
+Date: Sun, 20 May 2007 23:25:39 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: Markus Lidel <Markus.Lidel@shadowconnect.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] i2o: destroy event queue only when drv->event is set
+Message-ID: <20070520142539.GA4207@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	Markus Lidel <Markus.Lidel@shadowconnect.com>,
+	linux-kernel@vger.kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Subject    : pata_via appears to incorrectly detects 40-pin cable
-> > References : http://lkml.org/lkml/2007/5/17/273
-> >              http://bugzilla.kernel.org/show_bug.cgi?id=8142
-> > Submitter  : Francis Russell <francisrussell@btopenworld.com>
-> > Status     : Unknown
-> 
-> Not really a regression.  Alan seems to have a general fix and I think
-> we can also quirk the specific case.
+i2o_driver_register() initalizes event queue for driver
+only when drv->event is set. So similarly the event queue
+should be destroyed only when drv->event is set in the error path.
+Otherwise destroy_workqueue() will called with NULL.
 
-Fixed in my tree not a regression. I'll try and push some bits monday
-this included.
+Cc: Markus Lidel <Markus.Lidel@shadowconnect.com>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-Alan
+---
+ drivers/message/i2o/driver.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+Index: 2.6-mm/drivers/message/i2o/driver.c
+===================================================================
+--- 2.6-mm.orig/drivers/message/i2o/driver.c
++++ 2.6-mm/drivers/message/i2o/driver.c
+@@ -123,8 +123,12 @@ int i2o_driver_register(struct i2o_drive
+ 	}
+ 
+ 	rc = driver_register(&drv->driver);
+-	if (rc)
+-		destroy_workqueue(drv->event_queue);
++	if (rc) {
++		if (drv->event) {
++			destroy_workqueue(drv->event_queue);
++			drv->event_queue = NULL;
++		}
++	}
+ 
+ 	return rc;
+ };
