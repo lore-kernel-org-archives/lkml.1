@@ -1,160 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbXETH73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbXETIQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760939AbXETH73 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 03:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbXETH7W
+	id S1761357AbXETIQA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 04:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbXETIPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 03:59:22 -0400
-Received: from [216.16.235.2] ([216.16.235.2]:58416 "EHLO rubicon.netdirect.ca"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757170AbXETH7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 03:59:21 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Sun, 20 May 2007 03:57:54 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Extract common MODULE_INFO content into new moduleinfo.h.
-Message-ID: <Pine.LNX.4.64.0705200354380.3319@localhost.localdomain>
+	Sun, 20 May 2007 04:15:47 -0400
+Received: from fed1rmmtao106.cox.net ([68.230.241.40]:50055 "EHLO
+	fed1rmmtao106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757443AbXETIPp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 04:15:45 -0400
+From: Junio C Hamano <junkio@cox.net>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH] Fix duplicated entry in Documentation/HOWTO
+References: <f24d23310705180354l2995a89fhb513fe3e54221784@mail.gmail.com>
+	<20070518131749.GA4833@kroah.com>
+cc: linux-kernel@vger.kernel.org, debian developer <debiandev@gmail.com>
+Date: Sun, 20 May 2007 01:15:43 -0700
+In-Reply-To: <20070518131749.GA4833@kroah.com> (Greg KH's message of "Fri, 18
+	May 2007 06:17:49 -0700")
+Message-ID: <7v1whbsyfk.fsf_-_@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit 3f271008 introduced this section to Linus tree, but a
+later commit 722385f7 accepted almost the identical patch via
+Greg's tree, both from the same author.
 
-Extract the common MODULE_INFO content found in both module.h and
-moduleparam.h into a new header file moduleinfo.h, which at least
-makes it possible for source files to someday stop including the
-content from moduleparam.h when they don't need it.
+This kills the duplicated one.
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-
+Signed-off-by: Junio C Hamano <junkio@cox.net>
 ---
+ Documentation/HOWTO |   20 --------------------
+ 1 files changed, 0 insertions(+), 20 deletions(-)
 
-  compile-tested with "make allmodconfig" on x86.
-
- include/linux/module.h      |   12 +++---------
- include/linux/moduleinfo.h  |   18 ++++++++++++++++++
- include/linux/moduleparam.h |   16 +++++-----------
- 3 files changed, 26 insertions(+), 20 deletions(-)
-
-diff --git a/include/linux/module.h b/include/linux/module.h
-index e6e0f86..d9a9a13 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -15,7 +15,8 @@
- #include <linux/elf.h>
- #include <linux/stringify.h>
- #include <linux/kobject.h>
--#include <linux/moduleparam.h>
-+#include <linux/moduleparam.h>	/* Ideally, this shouldn't be necessary. */
-+#include <linux/moduleinfo.h>
- #include <asm/local.h>
-
- #include <asm/module.h>
-@@ -88,9 +89,6 @@ extern struct module __this_module;
- #define THIS_MODULE ((struct module *)0)
- #endif
-
--/* Generic info of form tag = "info" */
--#define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
+diff --git a/Documentation/HOWTO b/Documentation/HOWTO
+index 48123db..ced9207 100644
+--- a/Documentation/HOWTO
++++ b/Documentation/HOWTO
+@@ -396,26 +396,6 @@ bugme-janitor mailing list (every change in the bugzilla is mailed here)
+ 
+ 
+ 
+-Managing bug reports
+---------------------
 -
- /* For userspace: you can also call me... */
- #define MODULE_ALIAS(_alias) MODULE_INFO(alias, _alias)
-
-@@ -130,11 +128,6 @@ extern struct module __this_module;
- /* What your module does. */
- #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
-
--/* One for each parameter, describing how to use it.  Some files do
--   multiple of these per line, so can't just use MODULE_INFO. */
--#define MODULE_PARM_DESC(_parm, desc) \
--	__MODULE_INFO(parm, _parm, #_parm ":" desc)
+-One of the best ways to put into practice your hacking skills is by fixing
+-bugs reported by other people. Not only you will help to make the kernel
+-more stable, you'll learn to fix real world problems and you will improve
+-your skills, and other developers will be aware of your presence. Fixing
+-bugs is one of the best ways to get merits among other developers, because
+-not many people like wasting time fixing other people's bugs.
 -
- #define MODULE_DEVICE_TABLE(type,name)		\
-   MODULE_GENERIC_TABLE(type##_device,name)
+-To work in the already reported bug reports, go to http://bugzilla.kernel.org.
+-If you want to be advised of the future bug reports, you can subscribe to the
+-bugme-new mailing list (only new bug reports are mailed here) or to the
+-bugme-janitor mailing list (every change in the bugzilla is mailed here)
+-
+-	http://lists.osdl.org/mailman/listinfo/bugme-new
+-	http://lists.osdl.org/mailman/listinfo/bugme-janitors
+-
+-
+-
+ Mailing lists
+ -------------
+ 
 
-@@ -576,6 +569,7 @@ struct device_driver;
- struct module;
-
- extern struct kset module_subsys;
-+struct kernel_param;
-
- int mod_sysfs_init(struct module *mod);
- int mod_sysfs_setup(struct module *mod,
-diff --git a/include/linux/moduleinfo.h b/include/linux/moduleinfo.h
-new file mode 100644
-index 0000000..cee86a9
---- /dev/null
-+++ b/include/linux/moduleinfo.h
-@@ -0,0 +1,18 @@
-+#ifndef _LINUX_MODULEINFO_H
-+#define _LINUX_MODULEINFO_H
-+
-+#ifdef MODULE
-+#include <linux/stringify.h>
-+#define ___module_cat(a,b) __mod_ ## a ## b
-+#define __module_cat(a,b) ___module_cat(a,b)
-+#define __MODULE_INFO(tag, name, info)				\
-+static const char __module_cat(name,__LINE__)[]			\
-+  __attribute_used__						\
-+  __attribute__((section(".modinfo"),unused)) = __stringify(tag) "=" info
-+#else  /* !MODULE */
-+#define __MODULE_INFO(tag, name, info)
-+#endif
-+
-+#define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
-+
-+#endif // _LINUX_MODULEINFO_H
-diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-index c83588c..650328d 100644
---- a/include/linux/moduleparam.h
-+++ b/include/linux/moduleparam.h
-@@ -4,6 +4,7 @@
- #include <linux/init.h>
- #include <linux/stringify.h>
- #include <linux/kernel.h>
-+#include <linux/moduleinfo.h>
-
- /* You can override this manually, but generally this should match the
-    module name. */
-@@ -13,19 +14,12 @@
- #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
- #endif
-
--#ifdef MODULE
--#define ___module_cat(a,b) __mod_ ## a ## b
--#define __module_cat(a,b) ___module_cat(a,b)
--#define __MODULE_INFO(tag, name, info)					  \
--static const char __module_cat(name,__LINE__)[]				  \
--  __attribute_used__							  \
--  __attribute__((section(".modinfo"),unused)) = __stringify(tag) "=" info
--#else  /* !MODULE */
--#define __MODULE_INFO(tag, name, info)
--#endif
--#define __MODULE_PARM_TYPE(name, _type)					  \
-+#define __MODULE_PARM_TYPE(name, _type)					\
-   __MODULE_INFO(parmtype, name##type, #name ":" _type)
-
-+#define MODULE_PARM_DESC(_parm, desc)					\
-+  __MODULE_INFO(parm, _parm, #_parm ":" desc)
-+
- struct kernel_param;
-
- /* Returns 0, or -errno.  arg is in kp->arg. */
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
