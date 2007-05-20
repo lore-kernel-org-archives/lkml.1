@@ -1,108 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbXETUzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758966AbXETVHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbXETUzQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 16:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbXETUzE
+	id S1758966AbXETVHB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 17:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbXETVGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 16:55:04 -0400
-Received: from keetweej.vanheusden.com ([213.84.46.114]:49595 "EHLO
-	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756325AbXETUzB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 16:55:01 -0400
-Date: Sun, 20 May 2007 22:55:00 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <ak@suse.de>,
-       Rik van Riel <riel@redhat.com>, righiandr@users.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-Message-ID: <20070520205500.GJ22452@vanheusden.com>
-References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705180825280.3231@yvahk01.tjqt.qr> <200705181347.14256.ak@suse.de> <Pine.LNX.4.61.0705190946430.9015@yvahk01.tjqt.qr> <20070520001418.GJ14578@vanheusden.com> <464FC6AA.2060805@cosmosbay.com> <20070520112111.GN14578@vanheusden.com> <20070520090809.4f42d71d@freepuppy> <20070520161159.GD22452@vanheusden.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 20 May 2007 17:06:53 -0400
+Received: from mail.screens.ru ([213.234.233.54]:48877 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756570AbXETVGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 17:06:52 -0400
+Date: Mon, 21 May 2007 01:06:42 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>,
+       Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: Freezeable workqueues [Was: 2.6.22-rc1: Broken suspend on SMP with tifm]
+Message-ID: <20070520210642.GA342@tv-sign.ru>
+References: <200705132132.08546.rjw@sisk.pl> <200705152254.34402.rjw@sisk.pl> <20070520195417.GB83@tv-sign.ru> <200705202248.05857.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Mon May 21 15:25:37 CEST 2007
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200705202248.05857.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> >  
-> >> > +	if (unlikely(sig == SIGQUIT || sig == SIGILL  || sig == SIGTRAP ||
-> >> > +	    sig == SIGABRT || sig == SIGBUS  || sig == SIGFPE  ||
-> >> > +	    sig == SIGSEGV || sig == SIGXCPU || sig == SIGXFSZ ||
-> >> > +	    sig == SIGSYS  || sig == SIGSTKFLT))
-> >> > +	{
-> >> > +		printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
-> >> > +			sig, t->pid, t->uid, t->gid, t->comm);
-> >> > +	}
-> >> > +
-> >> >  	/*
-> >> >  	 * fast-pathed signals for kernel-internal things like SIGSTOP
-> >> >  	 * or SIGKILL.
-> >> Would turning that into a switch() generate better code.
-> Yes, this time.
+On 05/20, Rafael J. Wysocki wrote:
+>
+> On Sunday, 20 May 2007 21:54, Oleg Nesterov wrote:
+> > 
+> > I am a bit afraid of too many yes/no options for the freezer, a couple of naive
+> > questions.
+> > 
+> > 1. Can't we make all wqs freezable? I still can't see the reason to have both
+> >    freezable and not freezable wqs.
 > 
-> >Doubt it: in the worst case you still nee to check for each possibility.
-> >Furthermore a.f.a.i.k. with switch you cannot do 'unlinkely()'.
+> The reason might be the same as for having freezable and nonfreezable kernel
+> threads in general.  For example, there are some kernel threads that we need
+> for saving the image and I don't see why there shouldn't be any such
+> workqueues.
+
+OK, I see.
+
+> > 2. Why do we need CPU_TASKS_FROZEN? Can't we change cpu-hotplug to always
+> >    freeze tasks right now, without any additional changes?
 > 
-> With if(), it generates a ton of "CMP, JE" instructions.
-> With switch(), I would assume gcc transforms it into using
-> a jump table (aka "JMP [table+sig]")
-> I tried it: with switch(), gcc transforms this into a
-> bitmap comparison ("MOV eax, 1; SHL eax, sig; TEST eax, 0x830109f8"),
-> which seems even cheaper than a jump table.
+> In principle, we can, but for this purpose we'd have to modify all NOFREEZE
+> tasks.
 
-Ok, here's the new patch against 2.6.21.1:
+Why?
 
-Signed-off by Folkert van Heusden <folkert@vanheusden.com>
+>        That wouldn't fly, I'm afraid.
+> 
+> >    Any subsystem should handle correctly the case when _cpu_down() (say)
+> >    is called with tasks_frozen == 1 anyway. So, why can't we simplify
+> >    things and do
+> > 
+> >    	_cpu_down(int tasks_frozen)
+> > 
+> >  		if (!tasks_frozen)
+> >  			freeze_processes();
+> >  		...
+> > 
+> >   right now?
+> 
+> But we call _cpu_down() after device_suspend(), so many tasks are already
+> frozen at this point.  We'd only need to freeze those that are not frozen and
+> in _cpu_up() we'd have to thaw them.
 
---- kernel/signal.c.org	2007-05-20 22:47:13.000000000 +0200
-+++ kernel/signal.c	2007-05-20 22:54:17.000000000 +0200
-@@ -739,6 +739,25 @@
- 	struct sigqueue * q = NULL;
- 	int ret = 0;
- 
-+	/* emit some logging for nasty signals
-+	 * especially SIGSEGV and friends aught to be looked at when happening
-+	 */
-+	switch(sig) {
-+	case SIGQUIT: 
-+	case SIGILL: 
-+	case SIGTRAP:
-+	case SIGABRT: 
-+	case SIGBUS: 
-+	case SIGFPE:
-+	case SIGSEGV: 
-+	case SIGXCPU: 
-+	case SIGXFSZ:
-+	case SIGSYS: 
-+	case SIGSTKFLT:
-+		printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
-+			sig, t -> pid, t -> uid, t -> gid, t -> comm);
-+	}
-+
- 	/*
- 	 * fast-pathed signals for kernel-internal things like SIGSTOP
- 	 * or SIGKILL.
+Not sure I understand. When we call _cpu_down() after device_suspend(), we
+check tasks_frozen == 1, and do not call freeze_processes(). If the task
+could be frozen, it is already frozen.
 
-Folkert van Heusden
+When _cpu_down() sees tasks_frozen = 0, it does freeze_processes() itself,
+and thaw_tasks() on return.
 
--- 
-MultiTail è uno flexible tool per seguire di logfiles e effettuazione
-di commissioni. Feltrare, provedere da colore, merge, 'diff-view',
-etc. http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+IOW, we never send (say) CPU_DEAD, always CPU_DEAD_FROZEN.
+
+Wouldn't fly?
+
+Oleg.
+
