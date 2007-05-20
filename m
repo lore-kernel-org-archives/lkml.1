@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbXETNRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbXETNSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbXETNRY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 09:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbXETNRR
+	id S1758363AbXETNSu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 09:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbXETNSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 09:17:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:2133 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755649AbXETNRQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 09:17:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Sog/Mn1Fuod8O4B7Akh8l9ZlAq4WhtyJNu2IUORJOsDe36LauCEf/m6rIITpeL5cD5uW/E2Ci+xB2QCImVVR9s2SrrSW0+HxjEl4qT1IoTeAhGvNPoiNC8x67/6xfyGxKhv1PZcOfPuu5FYS7K7ZQQsFbPUCVzEciy97Uz52ssE=
-Date: Sun, 20 May 2007 15:17:25 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Sun, 20 May 2007 09:18:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42788 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755910AbXETNSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 09:18:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: Linux 2.6.22-rc2: make -j makes it unresponsive
+Date: Sun, 20 May 2007 15:23:55 +0200
+User-Agent: KMail/1.9.5
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [1/2] 2.6.22-rc2: known regressions with patches
-Message-ID: <20070520131725.GA5775@dreamland.darkstar.lan>
-References: <464F74F2.8090207@googlemail.com>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org> <200705201457.26716.rjw@sisk.pl> <m3hcq7k5ss.fsf@maximus.localdomain>
+In-Reply-To: <m3hcq7k5ss.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <464F74F2.8090207@googlemail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200705201523.55981.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Sun, May 20, 2007 at 12:06:42AM +0200, Michal Piotrowski ha scritto: 
-> Hi all,
+On Sunday, 20 May 2007 15:01, Krzysztof Halasa wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Here is a list of some known regressions in 2.6.22-rc2
-> with patches available.
+> > Running 'make -j' kernel compilation on my test box (Athlon64 X2, 2 SATA
+> > drives
+> > with 6 software RAID1 ext3 and reiserfs partitions, 2 GB of RAM) makes it
+> > completely unresponsive.  I can't even move the mouse pointer when it's
+> > running, I can't log to the box from the network etc.
 > 
-> Cryptography
-> 
-> Subject    : cryptomgr oops
-> References : http://lkml.org/lkml/2007/5/14/283
-> Submitter  : Luca Tettamanti <kronos.it@gmail.com>
-> Handled-By : Herbert Xu <herbert@gondor.apana.org.au>
-> Patch      : http://lkml.org/lkml/2007/5/19/3
-> Status     : patch available
+> How many processes does it spawn? Try some sane limit.
 
-Hello,
-I confirm that Herbert's patch fixes the OOPS.
+Do you think it works as a fork bomb?  Well, it didn't work like that before,
+AFAIR, but then 2.6.21 also does it with the same settings, so sorry for the
+noise.
 
-
-Luca
--- 
-Mi piace avere amici rispettabili;
-Mi piace essere il peggiore della compagnia.
+Greetings,
+Rafael
