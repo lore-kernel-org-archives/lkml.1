@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762607AbXEWNLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbXEWNTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762607AbXEWNLX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 09:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbXEWNLP
+	id S1758991AbXEWNTz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 09:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbXEWNTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 09:11:15 -0400
-Received: from [216.16.235.2] ([216.16.235.2]:49510 "EHLO rubicon.netdirect.ca"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755237AbXEWNLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 09:11:14 -0400
-X-Originating-Ip: 99.246.112.70
-Date: Wed, 23 May 2007 09:09:10 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Satyam Sharma <satyam.sharma@gmail.com>
-cc: Krzysztof Halasa <khc@pm.waw.pl>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: any value to "NORET_TYPE" macro?
-In-Reply-To: <a781481a0705230137v4c8ba82fx263212a2958b55b9@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705230908180.4309@localhost.localdomain>
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain> 
- <20070522135927.GA2098@stusta.de>  <Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
-  <20070522161951.GC2098@stusta.de> <m3ejl8k6e3.fsf@maximus.localdomain> 
- <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain> 
- <m37ir0iodl.fsf@maximus.localdomain> <a781481a0705230137v4c8ba82fx263212a2958b55b9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 23 May 2007 09:19:47 -0400
+Received: from mabruk.micah.cowan.name ([66.150.225.51]:54286 "EHLO
+	mabruk.micah.cowan.name" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754992AbXEWNTq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 09:19:46 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 09:19:46 EDT
+From: Micah Cowan <micah@cowan.name>
+To: linux-kernel@vger.kernel.org
+Cc: alan@lxorguk.ukuu.org.uk
+Date: Sat, 19 May 2007 17:19:35 -0700
+Subject: [PATCH] Only send SIGXFSZ when exceeding rlimits.
+Message-Id: <20070523131305.37DA53C98102@mabruk.micah.cowan.name>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007, Satyam Sharma wrote:
+Some users have been having problems with utilities like cp or dd
+dumping core when they try to copy a file that's too large for the
+destination filesystem (typically, > 4gb). Apparently, some defunct
+standards required SIGXFSZ to be sent in such circumstances, but SUS
+only requires/allows it for when a written file exceeds the process's
+resource limits. I'd like to limit SIGXFSZs to the bare minimum required
+by SUS.
 
-> On 5/23/07, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> > "Robert P. J. Day" <rpjday@mindspring.com> writes:
-> >
-> > > that may be but, as i suggested earlier, that would get into
-> > > guessing what those developers were thinking, and i just didn't
-> > > want to go there.
-> >
-> > No guessing, I just checked it (though a second check wouldn't do
-> > any harm).
-> >
-> > > the simple version of the patch is now in andrew's tree, and
-> > > i'll worry about the harder stuff next time.
-> >
-> > The "next time" would be much harder as there would be no key for
-> > searching for these functions.
->
-> Krzysztof's absolutely right ... we don't want to lose the
-> NORET_TYPE annotations on all these functions before we switch them
-> to ATTRIB_NORET. And yes, _all_ of these NORET_TYPE's do want to be
-> ATTRIB_NORET (except for those that are double-annotated, for those
-> we can just get rid of the NORET_TYPE macro).
+Patch sent per http://lkml.org/lkml/2007/4/10/302
 
-ok, i'll go back and take another look at this.
+Signed-off-by: Micah Cowan <micahcowan@ubuntu.com>
+---
+ fs/ncpfs/file.c    |    2 --
+ fs/reiserfs/file.c |    1 -
+ mm/filemap.c       |    2 --
+ 3 files changed, 0 insertions(+), 5 deletions(-)
 
-rday
+diff --git a/fs/ncpfs/file.c b/fs/ncpfs/file.c
+index addfd31..65b5802 100644
+--- a/fs/ncpfs/file.c
++++ b/fs/ncpfs/file.c
+@@ -202,7 +202,6 @@ ncp_file_write(struct file *file, const char __user *buf, size_t count, loff_t *
+ 
+ 	if (pos + count > MAX_NON_LFS && !(file->f_flags&O_LARGEFILE)) {
+ 		if (pos >= MAX_NON_LFS) {
+-			send_sig(SIGXFSZ, current, 0);
+ 			return -EFBIG;
+ 		}
+ 		if (count > MAX_NON_LFS - (u32)pos) {
+@@ -211,7 +210,6 @@ ncp_file_write(struct file *file, const char __user *buf, size_t count, loff_t *
+ 	}
+ 	if (pos >= inode->i_sb->s_maxbytes) {
+ 		if (count || pos > inode->i_sb->s_maxbytes) {
+-			send_sig(SIGXFSZ, current, 0);
+ 			return -EFBIG;
+ 		}
+ 	}
+diff --git a/fs/reiserfs/file.c b/fs/reiserfs/file.c
+index 9e451a6..465cde1 100644
+--- a/fs/reiserfs/file.c
++++ b/fs/reiserfs/file.c
+@@ -1305,7 +1305,6 @@ static ssize_t reiserfs_file_write(struct file *file,	/* the file we are going t
+ 	if (get_inode_item_key_version (inode) == KEY_FORMAT_3_5 &&
+ 	    *ppos + count > MAX_NON_LFS) {
+ 		if (*ppos >= MAX_NON_LFS) {
+-			send_sig(SIGXFSZ, current, 0);
+ 			return -EFBIG;
+ 		}
+ 		if (count > MAX_NON_LFS - (unsigned long)*ppos)
+diff --git a/mm/filemap.c b/mm/filemap.c
+index edb1b0b..01b577a 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1985,7 +1985,6 @@ inline int generic_write_checks(struct file *file, loff_t *pos, size_t *count, i
+ 	if (unlikely(*pos + *count > MAX_NON_LFS &&
+ 				!(file->f_flags & O_LARGEFILE))) {
+ 		if (*pos >= MAX_NON_LFS) {
+-			send_sig(SIGXFSZ, current, 0);
+ 			return -EFBIG;
+ 		}
+ 		if (*count > MAX_NON_LFS - (unsigned long)*pos) {
+@@ -2003,7 +2002,6 @@ inline int generic_write_checks(struct file *file, loff_t *pos, size_t *count, i
+ 	if (likely(!isblk)) {
+ 		if (unlikely(*pos >= inode->i_sb->s_maxbytes)) {
+ 			if (*count || *pos > inode->i_sb->s_maxbytes) {
+-				send_sig(SIGXFSZ, current, 0);
+ 				return -EFBIG;
+ 			}
+ 			/* zero-length writes at ->s_maxbytes are OK */
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+1.4.4.2
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
