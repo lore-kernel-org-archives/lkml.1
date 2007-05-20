@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761224AbXETJ0D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbXETJh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761224AbXETJ0D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 05:26:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXETJZy
+	id S1759709AbXETJh1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 05:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXETJhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 05:25:54 -0400
-Received: from ns2.suse.de ([195.135.220.15]:58288 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754483AbXETJZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 05:25:53 -0400
-Date: Sun, 20 May 2007 11:25:52 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070520092552.GA7318@wotan.suse.de>
-References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 20 May 2007 05:37:15 -0400
+Received: from mail23.syd.optusnet.com.au ([211.29.133.164]:35487 "EHLO
+	mail23.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754303AbXETJhO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 05:37:14 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: ck list <ck@vds.kolivas.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] Staircase Deadline v1.00 cpu scheduler
+Date: Sun, 20 May 2007 19:37:08 +1000
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20070520084647.GF19966@holomorphy.com>
-User-Agent: Mutt/1.5.9i
+X-Length: 616
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705201937.09328.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 01:46:47AM -0700, William Lee Irwin III wrote:
-> On Sat, May 19, 2007 at 11:15:01AM -0700, William Lee Irwin III wrote:
-> >> The cache cost argument is specious. Even misaligned, smaller is
-> >> smaller.
-> 
-> On Sun, May 20, 2007 at 07:22:29AM +0200, Nick Piggin wrote:
-> > Of course smaller is smaller ;) Why would that make the cache cost
-> > argument specious?
-> 
-> It's not possible to ignore aggregation. For instance, for a subset
-> of mem_map whose size ignoring alignment would otherwise fit in the
-> cache to completely avoid sharing any cachelines between page
-> structures requires page structures to be separated by at least one
-> mem_map index. This is highly unlikely in uniform distributions.
+The staircase deadline cpu scheduler continues to be the reference with 
+respect to interactive fairness for many workloads especially with 3d gaming. 
+This version is only trivially different from the version included in the -ck 
+patchset which has been very stable. The version number has been incremented 
+to version 1.00 purely to reflect that stability. Those on -ck are already 
+running the equivalent of this version.
 
-But that wasn't my argument. I _know_ there are cases where the smaller
-struct would be better, and I'm sure they would even arise in a running
-kernel.
- 
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/staircase-deadline/2.6.22-rc2/2.6.22-rc2-sd-1.00.patch
 
-> On Sat, May 19, 2007 at 11:15:01AM -0700, William Lee Irwin III wrote:
-> >> The cache footprint reduction is merely amortized,
-> >> probabilistic, etc.
-> 
-> On Sun, May 20, 2007 at 07:22:29AM +0200, Nick Piggin wrote:
-> > I don't really know what you mean by this, or what part of my cache cost
-> > argument you disagree with...
-> > I think it is that you could construct mem_map access patterns, without
-> > specifically looking at alignment, where a 56 byte struct page would suffer
-> > about 75% more cache misses than a 64 byte aligned one (and you could also
-> > get about 12% fewer cache misses with other access patterns).
-> > I also think the kernel's mem_map access patterns would be more on the
-> > random side, so overall would result in significantly fewer cache misses
-> > with 64 byte aligned pages.
-> > Which part do you disagree with?
-> 
-> The lack of consideration of the average case. I'll see what I can smoke
-> out there.
+In comparison with the standalone version 0.48 of sd the changes are as 
+follows:
 
-I _am_ considering the average case, and I consider the aligned structure
-is likely to win on average :) I just don't have numbers for it yet.
+Default rr_interval was increased to 10ms on uniprocessor (it is scaled up on 
+SMP) for throughput reasons. Note that -ck has 6ms and -cks has 10ms as 
+defaults (on UP, double that for 2 cpus). This can be altered (as always) by 
+modifying the value in /proc/sys/kernel/rr_interval.
 
+The PRIO value exported to userspace as seen by 'top', 'ps' etc will now 
+reflect the relative priority of tasks on the expired array by their value 
+being greater than 39.
 
+The interactive tunable patch was rolled into this patch and is enabled by 
+default. Note the effect of this tunable is subtle except on 3d games. This 
+can be altered by modifying /proc/sys/kernel/interactive. A summary of the 
+interactive sysctl from Documentation/sysctl/kernel is:
+
+The staircase-deadline cpu scheduler can be set in either purely
+forward-looking mode for absolutely rigid fairness and cpu distribution
+according to nice level, or it can allow a small per-process history
+to smooth out cpu usage perturbations common in interactive tasks by
+enabling this sysctl. While small fairness issues can arise with this
+enabled, overall fairness is usually still strongly maintained and
+starvation is never possible. Enabling this can significantly smooth
+out 3d graphics and games.
+
+-- 
+-ck
