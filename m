@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbXETMVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbXETMYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757056AbXETMVR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 08:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbXETMVH
+	id S1757497AbXETMYS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 08:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbXETMYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 08:21:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:14578 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752702AbXETMVG (ORCPT
+	Sun, 20 May 2007 08:24:11 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:37388 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755064AbXETMYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 08:21:06 -0400
+	Sun, 20 May 2007 08:24:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=hlhd50vul2BXJfjPx1U6uf6KbOuOnTG0jhvQdKgmiUv+nWjzcc4E+KBmp+hx1c7HGae+VBIxPvtI9Mf8a/RIm3yc6vkzU3Rkvn7TZjcgwFbsgsrAMIbJycMJOgTnX874p92bOvLKciHvpbDox6G2hSrPmGFXPrFVpFPVpvrxN3M=
-Date: Sun, 20 May 2007 16:20:10 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-Subject: Re: [PATCH] UDF: check for allocated memory for inode data
-Message-ID: <20070520122010.GA8334@cvg>
-References: <20070510154640.c0299a52.akpm@linux-foundation.org> <20070511072939.GA25727@infradead.org> <20070511090127.GD9444@cvg> <20070511103956.GA30896@infradead.org> <20070511110920.GA11898@cvg> <20070513210126.GB14030@infradead.org> <20070516143308.GA8327@cvg> <20070516173852.GC29602@atrey.karlin.mff.cuni.cz> <20070516175257.GA14076@cvg> <20070516175600.GA3261@infradead.org>
-MIME-Version: 1.0
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Ugl8sOBIi/hOc2uWTf+4nsVx6i7XSNnNy9zZ8Ryj8JaL+ZXIbIhl+GM6Ll6VJNklzVRAuwFEAZW2NPi/hTnRxMuGZnWe8d2F2H63pnLEjOg10ZM14u3AVoNBbUHDWhhqpp9+cndVLcPamw6wGR5voeeHC5HibSJJFFgp1f9Immw=
+Date: Sun, 20 May 2007 20:23:52 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: aeb@cwi.nl, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: 2.6.22-rc2 built on ppc (3)
+Message-ID: <20070520122351.GC2006@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: aeb@cwi.nl, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Cornelia Huck <cornelia.huck@de.ibm.com>
+References: <20070520111113.GE3253@aragorn.home.lxtec.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070516175600.GA3261@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070520111113.GE3253@aragorn.home.lxtec.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Christoph Hellwig - Wed, May 16, 2007 at 06:56:00PM +0100]
-| On Wed, May 16, 2007 at 09:52:57PM +0400, Cyrill Gorcunov wrote:
-| > I've that documants even printed ;) Actually they are _very-very_ big
-| > indeed. I don't know may be just try to bring this code into Linux
-| > codying style?
-| 
-| That's probably a good step.  And while converting things to a proper
-| style you'll surely find various bugs and thinkgs you could improve.
-| Write them down somewhere and work on fixing them.  And make sure every
-| actualy fix or behaviour change is a single patch separated from the
-| cleanups.
-| 
+On Sun, May 20, 2007 at 01:11:13PM +0200, Elimar Riesebieter wrote:
+>Hi,
+>
+>FYI, building the kernel with
+>gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+>on my powerbook (PPC) gives:
+>
+>...
+>fs/partitions/check.c: In function 'add_partition':
+>fs/partitions/check.c:392: warning: ignoring return value of 'kobject_add', declared with attribute warn_unused_result
+>fs/partitions/check.c:395: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+>fs/partitions/check.c:403: warning: ignoring return value of 'sysfs_create_file', declared with attribute warn_unused_result
+>...
+>
+>If more info is needed, please contact me via PM, as I am not
+>subscribed.
+>
+>Thanks for your patience
+>Elimar
+>
 
-Hi Christoph,
+I don't know why these warnings are still in kernel. We have fixed them yet. Could you please check and try this patch?
 
-I almost have completed UDF style conversation (the only thing to do
-is to check all I've changed). And I've been striked down by the simple
-question: the conversion I've done is over 2.6.22-rc1 but meantime in -mm
-tree two my patches already exist so should I take them into account while
-converting UDF style?
+http://marc.info/?l=linux-mm-commits&m=117624330000536&w=2
 
-		Cyrill
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+Regards!
+
+WANG Cong
 
