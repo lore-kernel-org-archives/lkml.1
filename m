@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764195AbXETKj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764824AbXETKnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764195AbXETKj5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 06:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbXETKju
+	id S1764824AbXETKnB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 06:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbXETKmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 06:39:50 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33353 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756007AbXETKju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 06:39:50 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Willy Tarreau <w@1wt.eu>, oliver pinter <oliver.pntr@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com,
-       Bernd Eckenfels <ecki@lina.inka.de>
-Subject: Re: it seems at XFS bug?!
-References: <6101e8c40705191117h40c8af70sfc9d0617a99a248b@mail.gmail.com>
-	<E1HpUNW-00020n-00@calista.eckenfels.net>
-	<20070519192021.GK943@1wt.eu> <20070519192246.GA11733@1wt.eu>
-	<6101e8c40705191237v46939bf1i7098fc974784de5a@mail.gmail.com>
-	<6101e8c40705191250o447e9c59kba824baae4d99b3f@mail.gmail.com>
-	<20070519202419.GC2521@1wt.eu>
-	<Pine.LNX.4.61.0705201038250.9015@yvahk01.tjqt.qr>
-	<jey7jjx3f5.fsf@sykes.suse.de>
-	<Pine.LNX.4.61.0705201201290.9015@yvahk01.tjqt.qr>
-X-Yow: I want to TAKE IT HOME and DRESS IT UP in HOT PANTS!!
-Date: Sun, 20 May 2007 12:39:48 +0200
-In-Reply-To: <Pine.LNX.4.61.0705201201290.9015@yvahk01.tjqt.qr> (Jan
-	Engelhardt's message of "Sun\, 20 May 2007 12\:03\:13 +0200 \(MEST\)")
-Message-ID: <je3b1r22yz.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.97 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Sun, 20 May 2007 06:42:54 -0400
+Received: from userg501.nifty.com ([202.248.238.81]:57334 "EHLO
+	userg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757093AbXETKmx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 06:42:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
+	b=gLAjjuizF5t5Qqiki68314LyTYfO68jcuw6bBdxK9UHky2ClhDgOXSXxjWOPBDZQb
+	zUmc4ZQSDjitS2zTBEMew==
+Date: Sun, 20 May 2007 19:42:33 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [SMP BUG]  [clockevents: i386 drivers patch]  introduces 
+ irqbalance-does-not-work-properly problem
+Message-Id: <20070520194233.27012723.komurojun-mbn@nifty.com>
+In-Reply-To: <464FBA9C.9090208@garzik.org>
+References: <1178202559.3767.21.camel@localhost.localdomain>
+	<20070504233238.ca55c2d1.komurojun-mbn@nifty.com>
+	<1178463619.3793.14.camel@localhost.localdomain>
+	<1178777214.2951.18.camel@ymzhang>
+	<20070510160615.6aa9cef6.akpm@linux-foundation.org>
+	<20070513200444.9d2db4c3.komurojun-mbn@nifty.com>
+	<20070520111409.1793a2f6.komurojun-mbn@nifty.com>
+	<464FBA9C.9090208@garzik.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@linux01.gwdg.de> writes:
+On Sat, 19 May 2007 23:03:56 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-> On May 20 2007 11:14, Andreas Schwab wrote:
->>Jan Engelhardt <jengelh@linux01.gwdg.de> writes:
->>> On May 19 2007 22:24, Willy Tarreau wrote:
->>>>On Sat, May 19, 2007 at 09:50:43PM +0200, oliver pinter wrote:
->>>>> yeah, but how produziert?
->>>>
->>>>I *think* it is the unbreakable space.
->>>
->>> \xa0 is 160, aka the NBSP. But __only__ in ISO-8859. It is an invalid
->>> UTF-8 sequence (which is why you may not even "see" the nbsp :-)
->>
->>Actually, in a utf-8 environment you see it much better.
->
-> But only if invalid sequences are replaced by a question mark or whatever,
-> which is not the case in xterm.
 
-That depends on your font, I guess.  The font I use has a visible
-replacement character.
+> Do you mean userspace irqbalance daemon?
 
-Andreas.
+Yes. I mean userspace irqbalance daemon.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+Best Regards
+Komuro
+
+> Komuro wrote:
+> > [clockevents: i386 drivers patch] introduces
+> >   irqbalance-does-not-work-properly problem.
+> > 
+> >  
+> > (The irq is not distributed to two Core
+> >   ,most of the irq is distributed to CPU1)
+> >  
+> > 
+> >  Mr. Thomas Gleixner,
+> >  any idea to fix this problem?
+> 
+> Do you mean userspace irqbalance daemon?
+> 
+> It might need to be modified to work properly with a new and unusual 
+> event source.
+> 
+> Also, for some irq events, it may be good to send most interrupts to one 
+> core/CPU.  That enhances caching effects, among other benefits.  Again, 
+> this is highly dependent on the event source, I'm not saying that is the 
+> case here.
+> 
+> Regards,
+> 
+> 	Jeff
+> 
+> 
