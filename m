@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbXETL1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbXETL3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756725AbXETL1i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 07:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbXETL1b
+	id S1756898AbXETL3s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 07:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbXETL3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 07:27:31 -0400
-Received: from smtpout.hostsharing.net ([83.223.95.15]:36260 "EHLO
-	smtpout.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755044AbXETL1a (ORCPT
+	Sun, 20 May 2007 07:29:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34932 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755066AbXETL3l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 07:27:30 -0400
-Date: Sun, 20 May 2007 13:27:25 +0200
-From: Elimar Riesebieter <riesebie@lxtec.de>
-To: bfennema@falcon.csc.calpoly.edu
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.22-rc2 built on ppc
-Message-ID: <20070520112725.GL3253@aragorn.home.lxtec.de>
-Mail-Followup-To: bfennema@falcon.csc.calpoly.edu,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Mit9XoPEfICDqq/V"
-Content-Disposition: inline
-Organization: LXTEC
-X-Editor: VIM - Vi IMproved 7.1 (2007 May 12, compiled May 15 2007 21:24:37)
-User-Agent: Mutt/1.5.15+lxtec (-05-02)
+	Sun, 20 May 2007 07:29:41 -0400
+Subject: Re: [PATCH] ubi: kill homegrown endian macros
+From: David Woodhouse <dwmw2@infradead.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Matthieu CASTET <castet.matthieu@free.fr>,
+       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <315d22bffba5fe251dbe60e4e0d5ced0@kernel.crashing.org>
+References: <20070517143200.GA30850@lst.de>
+	 <1179413443.3642.49.camel@sauron> <20070517145653.GA968@lst.de>
+	 <1179414590.3642.69.camel@sauron>
+	 <20070517102931.6bbbad1a.akpm@linux-foundation.org>
+	 <pan.2007.05.17.20.30.30@free.fr>
+	 <1179455959.2859.527.camel@shinybook.infradead.org>
+	 <alpine.DEB.0.99.0705172254560.27207@sigma.j-a-k-j.com>
+	 <1179458274.2859.538.camel@shinybook.infradead.org>
+	 <alpine.DEB.0.99.0705180750550.8830@sigma.j-a-k-j.com>
+	 <1179499959.2859.579.camel@shinybook.infradead.org>
+	 <6c8c0e6cd0ac95fd1c7d4e822f1e2029@kernel.crashing.org>
+	 <1179540463.2859.627.camel@shinybook.infradead.org>
+	 <315d22bffba5fe251dbe60e4e0d5ced0@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sun, 20 May 2007 12:29:38 +0100
+Message-Id: <1179660579.8438.6.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-05-19 at 14:24 +0200, Segher Boessenkool wrote:
+> >> It's not the compiler who decides -- struct layout is
+> >> dictated by the ABI you're compiling for.
+> >
+> > This is true in the case of externally-visible stuff. I think the
+> > compiler is permitted to violate the ABI for purely unit-internal 
+> > things
+> > if it makes sense though, isn't it?
+> 
+> Sure.  It isn't "violating the ABI" in that case though,
+> to be perfectly clear.
 
---Mit9XoPEfICDqq/V
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Of course. It's not conforming to the ABI because there's no need to.
 
-Hi,
+> > The rule stands -- empirical testing of what the compiler will do isn't
+> > usually the right answer.
+> 
+> It is *never* the right answer.  You should always write
+> your code so that it will do the right thing no matter
+> what the compiler decides to do to it.
 
-FYI, building the kernel modules with
-gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
-on my powerbook (PPC) gives:
+Well, there's sometimes some benefit in _also_ checking that the output
+of the compiler matches your expectations. :)
 
-=2E..
-fs/udf/balloc.c: In function 'udf_table_new_block':
-fs/udf/balloc.c:747: warning: 'goal_eloc.logicalBlockNum' may be used unini=
-tialized in this function
-fs/udf/super.c: In function 'udf_fill_super':
-fs/udf/super.c:1359: warning: 'ino.partitionReferenceNum' may be used unini=
-tialized in this function
-=2E..
+-- 
+dwmw2
 
-If more info is needed, please contact me via PM, as I am not
-subscribed.
-
-Thanks for your patience
-Elimar
-
---=20
-  Never make anything simple and efficient when a way=20
-  can be found to make it complex and wonderful ;-)
-
---Mit9XoPEfICDqq/V
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGUDCd3Ig8bsVPf7ARAsJdAKCdZNwLD2W1HxGYGyOwuTMLWnvbywCeI+/j
-UnWVzsCYWnMGQPmN5XAsxS4=
-=XKh6
------END PGP SIGNATURE-----
-
---Mit9XoPEfICDqq/V--
