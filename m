@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbXETP2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbXETPgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbXETP2p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 11:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbXETP2i
+	id S1758867AbXETPgB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 11:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbXETPfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 11:28:38 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:33264 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756518AbXETP2h (ORCPT
+	Sun, 20 May 2007 11:35:53 -0400
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:12420 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756714AbXETPfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 11:28:37 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46506912.9020904@s5r6.in-berlin.de>
-Date: Sun, 20 May 2007 17:28:18 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: dan@dennedy.org
-CC: Arnd Bergmann <arnd@arndb.de>, Petr Vandrovec <petr@vandrovec.name>,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix/add raw1394 CONFIG_COMPAT code
-References: <20070507021447.GA22197@vana.vc.cvut.cz> <200705200155.26825.arnd@arndb.de> <464F900A.10900@s5r6.in-berlin.de> <200705201703.37561.arnd@arndb.de>
-In-Reply-To: <200705201703.37561.arnd@arndb.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 20 May 2007 11:35:53 -0400
+In-Reply-To: <20070520102132.GB22091@uranus.ravnborg.org>
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705201212.50810.m.kozlowski@tuxland.pl> <20070520102132.GB22091@uranus.ravnborg.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B8F6C900-F982-42E9-94A5-97A00793EFA8@kernel.crashing.org>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: 2.6.22-rc1-mm1
+Date: Sun, 20 May 2007 10:33:58 -0500
+To: Sam Ravnborg <sam@ravnborg.org>
+X-Mailer: Apple Mail (2.752.2)
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Sunday 20 May 2007, Stefan Richter wrote:
->>> Note that this data structure only needs conversion on x86_64 and ia64, but
->>> not on powerpc and other 64 bit architectures that align __u64 also in
->>> 32 bit mode.
->> Is this conversion just unnecessary or actually harmful on ppc64 and others?
-> 
-> With the current patch, the compat_ioctl function does not handle the ppc32
-> version of the structure at all, so it's broken there, it would at least
-> need a 
-> 
-> 	case RAW1394_IOC_GET_CYCLE_TIMER:
-> 		err = raw1394_ioctl(NULL, file, cmd, arg);
-> 		break;
 
-Dan,
+On May 20, 2007, at 5:21 AM, Sam Ravnborg wrote:
 
-maybe we should change
+> On Sun, May 20, 2007 at 12:12:50PM +0200, Mariusz Kozlowski wrote:
+>> Hello,
+>>
+>> 	I tried it on iMac G3. I got a bunch of warnings
+>> and finally it failed to build.
+>>
+>> WARNING: "fee_restarts" [arch/powerpc/kernel/built-in] is COMMON  
+>> symbol
+>> WARNING: "ee_restarts" [arch/powerpc/kernel/built-in] is COMMON  
+>> symbol
+>> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch:  
+>> reference to .init.data:.got2 from dt_string_start (offset 0x8)
+> ....
+>
+> Most - but not all of these warnings should be gone when
+> Linus pulls kbuild-fix.git.
+> When -rc3 is ready can you then please post the result of a build.
+> Then I can take a look at the remaining section mismatch warnings.
 
-/* argument to RAW1394_IOC_GET_CYCLE_TIMER ioctl */
-struct raw1394_cycle_timer {
-	/* contents of Isochronous Cycle Timer register,
-	   as in OHCI 1.1 clause 5.13 (also with non-OHCI hosts) */
-	__u32 cycle_timer;
+Also, I've got fixes for the COMMON symbol warnings.
 
-	/* local time in microseconds since Epoch,
-	   simultaneously read with cycle timer */
-	__u64 local_time;
-};
-
-to
-
-/* argument to RAW1394_IOC_GET_CYCLE_TIMER ioctl */
-struct raw1394_cycle_timer {
-	/*
-	 * least significant 32 bits are contents of Isochronous Cycle
-	 * Timer register, as in OHCI 1.1 clause 5.13 (also with
-	 * non-OHCI hosts)
-	 */
-	__u64 cycle_timer;
-
-	/*
-	 * local time in microseconds since Epoch,
-	 * simultaneously read with cycle timer
-	 */
-	__u64 local_time;
-};
-
-before a libraw1394 with get-cycle-timer support is released.
-Shall I prepare according patches for raw1394 and libraw1394?
--- 
-Stefan Richter
--=====-=-=== -=-= =-=--
-http://arcgraph.de/sr/
+- k
