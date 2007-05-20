@@ -1,82 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761445AbXETAok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbXETAsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761445AbXETAok (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 20:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXETAod
+	id S1762190AbXETAsT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 20:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529AbXETAsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 20:44:33 -0400
-Received: from pool-72-92-171-78.albyny.east.verizon.net ([72.92.171.78]:50421
-	"EHLO posidon.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755763AbXETAod (ORCPT
+	Sat, 19 May 2007 20:48:12 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34531 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756199AbXETAsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 20:44:33 -0400
-Message-ID: <464F99EC.3080006@tmr.com>
-Date: Sat, 19 May 2007 20:44:28 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Sat, 19 May 2007 20:48:11 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <464F9A7B.1030708@s5r6.in-berlin.de>
+Date: Sun, 20 May 2007 02:46:51 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Ray Lee <ray@madrabbit.org>
-CC: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: Sched - graphic smoothness under load - cfs-v13 sd-0.48
-References: <464F57DD.2000309@tmr.com> <2c0942db0705191322p54e05e40p512146f21f68299a@mail.gmail.com>
-In-Reply-To: <2c0942db0705191322p54e05e40p512146f21f68299a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Simon Horman <horms@verge.net.au>, Adrian Bunk <bunk@stusta.de>
+Subject: Re: RFC: kconfig select warnings bogus?
+References: <20070519151523.GA26724@uranus.ravnborg.org>	 <20070519110944.2a52061e.akpm@linux-foundation.org>	 <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com> <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>
+In-Reply-To: <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> On 5/19/07, Bill Davidsen <davidsen@tmr.com> wrote:
->> I generated a table of results from the latest glitch1 script, using an
->> HTML postprocessor I not *quite* ready to foist on the word. In any case
->> it has some numbers for frames per second, fairness of the processor
->> time allocated to the compute bound processes which generate a lot of
->> other screen activity for X, and my subjective comments on how smooth it
->> looked and felt.
->>
->> The chart is at http://www.tmr.com/~davidsen/sched_smooth_01.html for
->> your viewing pleasure.
+Satyam Sharma wrote:
+> A combined patch for all of those on top of 22-rc2 (adding Signed-off-by's
+> for original authors too):
 > 
-> Is the S.D. columns (immediately after the average) standard
-> deviation? If so, you may want to rename those 'stdev', as it's a
-> little confusing to have S.D. stand for that and Staircase Deadline.
-> Further, which standard deviation is it? (The standard deviation of
-> the values (stdev), or the standard deviation of the mean (sdom)?)
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Simon Horman <horms@verge.net.au>
+> Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+
+[...]
+
+> diff -ruNp a/drivers/input/keyboard/Kconfig
+> b/drivers/input/keyboard/Kconfig
+> --- a/drivers/input/keyboard/Kconfig    2007-05-20 04:11:55.000000000 +0530
+> +++ b/drivers/input/keyboard/Kconfig    2007-05-20 04:24:54.000000000 +0530
+> @@ -167,7 +167,6 @@ config KEYBOARD_AMIGA
+> config KEYBOARD_ATARI
+>     tristate "Atari keyboard"
+>     depends on ATARI
+> -    select ATARI_KBD_CORE
+>     help
+>       Say Y here if you are running Linux on any Atari and have a keyboard
+>       attached.
+> diff -ruNp a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
+> --- a/drivers/input/mouse/Kconfig    2007-05-20 04:11:55.000000000 +0530
+> +++ b/drivers/input/mouse/Kconfig    2007-05-20 04:25:09.000000000 +0530
+> @@ -179,7 +179,6 @@ config MOUSE_AMIGA
+> config MOUSE_ATARI
+>     tristate "Atari mouse"
+>     depends on ATARI
+> -    select ATARI_KBD_CORE
+>     help
+>       Say Y here if you have an Atari and want its native mouse
+>       supported by the kernel.
+> diff -ruNp a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+> --- a/drivers/macintosh/Kconfig    2007-05-20 04:11:55.000000000 +0530
+> +++ b/drivers/macintosh/Kconfig    2007-05-20 04:18:57.000000000 +0530
+> @@ -113,7 +113,6 @@ config PMAC_SMU
 > 
-What's intended is the stddev from the average, and perl bit me on that 
-one. If you spell a variable wrong the same way more than once it 
-doesn't flag it as a possible spelling error.
-
-Note on the math, even when coded as intended, the divide of the squares 
-of the errors is by N-1 not N. I found it both ways in online doc, but I 
-learned it decades ago as "N-1" so I used that.
-> Finally, if it is the standard deviation (of either), then I don't
-> really believe those numbers for the glxgears case. The deviation is
-> huge for all but one of those results.
+> config PMAC_APM_EMU
+>     tristate "APM emulation"
+> -    select SYS_SUPPORTS_APM_EMULATION
+>     select APM_EMULATION
+>     depends on ADB_PMU && PM
 > 
-I had the same feeling, but because of the code error above, what failed 
-was zeroing the sum of the errors, so (a) values after the first kept 
-getting larger, and when I debugged it against the calculation by hand, 
-the first one matched so I thought I had it right.
+> diff -ruNp a/drivers/net/Kconfig b/drivers/net/Kconfig
+> --- a/drivers/net/Kconfig    2007-05-20 04:11:56.000000000 +0530
+> +++ b/drivers/net/Kconfig    2007-05-20 04:22:15.000000000 +0530
+> @@ -2280,7 +2280,6 @@ config GFAR_NAPI
+> config UCC_GETH
+>     tristate "Freescale QE Gigabit Ethernet"
+>     depends on QUICC_ENGINE
+> -    select UCC_FAST
+>     help
+>       This driver supports the Gigabit Ethernet mode of the QUICC Engine,
+>       which is available on some Freescale SOCs.
 
-> Regardless, it's good that you're doing measurements, and keep it up :-).
+Adrian already commented on this.  Let me just add that these above
+changes are in so far *totally wrong* as they remove the "depends on
+XYZ" which is implied by "select XYZ".
 
-Okay, here's a bonus, http://www.tmr.com/~davidsen/sched_smooth_02.html 
-not only has the right values, the labels are changed, and I included 
-more data points from the fc6 recent kernel and the 2.6.21.1 kernel with 
-the mainline scheduler.
-
-The nice thing about this test and the IPC test I posted recently is 
-that they are reasonable stable on the same hardware, so even if someone 
-argues about what they show, they show the same thing each time and can 
-therefore be used to compare changes.
-
-As I told a manger at the old Prodigy after coding up some log analysis 
-with pretty graphs, "getting the data was the easy part, the hard part 
-is figuring out what it means." If this data is useful in suggesting 
-changes, then it has value. Otherwise it was a fun way to spend some time.
-
+Remember, "select" is like "depends on", just with the added twist that
+the 'make snafuconfig' scripts are instructed to (a) not hide the
+depending option from the user and (b) try to enable the dependency for
+the user if he tries to enable the depending option.
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Stefan Richter
+-=====-=-=== -=-= =-=--
+http://arcgraph.de/sr/
