@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbXETRcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759129AbXETRdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbXETRcS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 13:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXETRcK
+	id S1759129AbXETRdI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 13:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbXETRcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 13:32:10 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:23072 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755659AbXETRcJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 13:32:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Y7ifN6bV6enMLRbvjWCNAwa3LhOyc/4lGmZU6mzNNhREpi8YAsp8Iv1RjN3IDcsMMn414Q9LBTWLovioFndQWTGnvOIfux73/WMyQAbH0o2U18bpXQroeUWzS54ae6WmJ7v8EFE7eC7NRxCqwnHHPd0xwJwmrkWCTwsvxTX5LTs=
-Message-ID: <4650860A.4000601@gmail.com>
-Date: Sun, 20 May 2007 19:31:54 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: l.genoni@oltrelinux.com
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: something strange in libata-core.c for kernel 2.6.22-rc3
-References: <Pine.LNX.4.64.0704181704270.1663@Phoenix.oltrelinux.com> <20070418162525.423b2e7e@the-village.bc.nu> <Pine.LNX.4.64.0705201434380.30264@Phoenix.oltrelinux.com>
-In-Reply-To: <Pine.LNX.4.64.0705201434380.30264@Phoenix.oltrelinux.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 20 May 2007 13:32:55 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:43405 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756362AbXETRcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 13:32:53 -0400
+Date: Sun, 20 May 2007 21:30:52 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: Review status (Re: [PATCH] LogFS take three)
+Message-ID: <20070520173049.GA20907@2ka.mipt.ru>
+References: <20070515151919.GA32510@lazybastard.org> <20070515152149.GB32059@lazybastard.org> <20070517160308.GA26643@2ka.mipt.ru> <20070517171017.GB15676@lazybastard.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070517171017.GB15676@lazybastard.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Sun, 20 May 2007 21:31:04 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-l.genoni@oltrelinux.com wrote:
+On Thu, May 17, 2007 at 07:10:19PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
+> On Thu, 17 May 2007 20:03:11 +0400, Evgeniy Polyakov wrote:
+> > 
+> > Is logfs 32bit fs or 674bit, since although you use 64bit values for
+> > offsets, area management and strange converstions like described below 
+> > from offset into segment number are performed in 32bit?
+> > Is it enough for SSD for example to be 32bit only? Or if it is 64bit,
+> > could you please explain logic behind area management?
 > 
-> Mybe I am wrong, but if you are detecting 40-wire cable to set them to
-> DMA/33, why the check includes also 80-wire cables configuring them to
-> DMA/33 too?
+> Ignoring bugs and signed return values for error handling, it is either
+> 64bit or 32+32bit.
 > 
-> With this patch my nvidia4 IDE controllers detects correctly and
-> configure correctly DMA/100 for my HD and DMA/33 for my DVD (the first
-> uses a 80-wire cable, the second a 40-wire cable).
-> 
-> Am I wrong somewhere?
+> Inode numbers and file positions are 64bit.  Offsets are 64bit as well.
+> In a couple of places, offsets are also 32+32bit.  Basically the high
+> bits contain the segment number, the lower bits the offset within a
+> segment.
 
-That's the drive side verification of 80c cable check, so if the
-condition triggers we downgrade 80c or unknown to 40c.  Cable detection
-on nvidia PATA is a disaster.  You're supposed to do some ACPI dancing
-and drive side detection is completely bogus.  Eeeek....
+In that case segment size must be more than 32 bits, or below
+transformation will not be correct? segsize is long, but should be u64 I
+think.
 
-Alan, did you have a chance to test the ACPI cable detection?  It just
-didn't work when I tried it.  It always returned 80c on my machine.
+static void fixup_from_wbuf(struct super_block *sb, struct logfs_area
+	*area, void *read, u64 ofs, size_t readlen)
+
+u32 read_start = ofs & (super->s_segsize - 1);
+u32 read_end = read_start + readlen;
+
+And this can overflow, since readlen is size_t.
+It is wbuf fixup, but I saw that somewhere else.
+Although, according to your description, it should be 32bit, sum can be
+more than 32 bit.
+
+> If anyone can find similar bugs, the bounty is a beer or non-alcoholic
+> beverage of choice. :)
+
+Stop kiling your kidneys, your health and promote such antisocial style
+of life, start drinking vodka instead.
+
+> Jörn
 
 -- 
-tejun
+	Evgeniy Polyakov
