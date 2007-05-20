@@ -1,60 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764757AbXETDEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763791AbXETDJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764757AbXETDEb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 23:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759249AbXETDEJ
+	id S1763791AbXETDJT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 23:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759163AbXETDJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 23:04:09 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44355 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755734AbXETDEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 23:04:07 -0400
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <1179628991.20925.2.camel@imap.mvista.com>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	 <464C99FF.8080404@ru.mvista.com>
-	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	 <1179500217.20519.53.camel@imap.mvista.com>
-	 <464DC0DC.7050809@ru.mvista.com>
-	 <1179502773.20519.56.camel@imap.mvista.com>
-	 <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
-	 <1179628991.20925.2.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Sun, 20 May 2007 13:03:10 +1000
-Message-Id: <1179630190.32247.534.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 19 May 2007 23:09:07 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:52429 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1759063AbXETDJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 23:09:06 -0400
+Message-ID: <379630538.31710@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Sun, 20 May 2007 11:09:04 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
+       Ram Pai <linuxram@us.ibm.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 1/9] readahead: introduce PG_readahead
+Message-ID: <20070520030904.GA9176@mail.ustc.edu.cn>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+	Andi Kleen <andi@firstfloor.org>,
+	Jens Axboe <jens.axboe@oracle.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+	Steven Pratt <slpratt@austin.ibm.com>,
+	Ram Pai <linuxram@us.ibm.com>,
+	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+References: <20070516224752.500812933@mail.ustc.edu.cn> <379355695.83536@ustc.edu.cn> <20070518232824.9917d794.akpm@linux-foundation.org> <379577826.15160@ustc.edu.cn> <20070519082504.8baa8d19.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070519082504.8baa8d19.akpm@linux-foundation.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-19 at 19:43 -0700, Daniel Walker wrote:
+On Sat, May 19, 2007 at 08:25:04AM -0700, Andrew Morton wrote:
+> On Sat, 19 May 2007 20:30:31 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> 
+> > On Fri, May 18, 2007 at 11:28:24PM -0700, Andrew Morton wrote:
+> > > On Thu, 17 May 2007 06:47:53 +0800 Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+> > > 
+> > > > Introduce a new page flag: PG_readahead.
+> > > 
+> > > Is there any way in which we can avoid adding a new page flag?
+> > > 
+> > > We have the advantage that if the kernel very occasionally gets the wrong
+> > > result for PageReadahead(page), nothing particularly bad will happen, so we
+> > > can do racy things.
+> > > 
+> > > >From a quick peek, it appears that PG_readahead is only ever set against
+> > > non-uptodate pages.  If true we could perhaps exploit that: say,
+> > > PageReadahead(page) == PG_referenced && !PG_uptodate?
+> > 
+> > PG_uptodate will flip to 1 before the reader touches the page :(
+> 
+> OK.
+> 
+> > However, it may be possible to share the same bit with PG_reclaim or PG_booked.
+> > Which one would be preferred?
+> 
+> I'd like PG_booked to go away too - I don't think we've put that under the
+> microscope yet.  If it remains then its scope will be "defined by the
+> filesystem", so readahead shouldn't use it.  PG_reclaim belongs to core VFS
+> so that's much better.
+> 
+> Let's not do anything ugly, slow or silly in there, but please do take a
+> look, see if there is an opportunity here.
 
-> In terms of clocksources, gettimeofday() would have to switch to another
-> clocksource if the decrementer started to act that way .. That's why it
-> is possible to register more than one clocksource, to allow for the
-> switching. The decrementer frequency doesn't change even with cpufreq? 
+The reuse code would look like the attached one.
+It still needs more testing, and would fail if Christoph reuses
+PG_reclaim in higher order pagecache in the future.
 
-It's more than just gettimeofday. The linux ppc kernel port has strong
-assumptions all over the place that the timbase and decrementer (which
-always tick at the same rate) have a constant frequency. It might be
-possible to "fix" those assumptions but right now, that is the case.
+Fengguang Wu
+---
 
-For example, nowadays, udelay() also uses the timebase. Not only
-gettimeofday() & friends. The scheduler ticking too. The precise process
-accounting as well, etc...
+Subject: mm: share PG_readahead and PG_reclaim
 
-In fact, while it's never worded explicitely in the spec, it's always
-been strongly in the "spirit" of the architecture that the timebase and
-decrementer have a constant frequency. This is why processors like the
-970 allow for an external sourcing for when they are used in setups
-where the various clocks are slewed for power management.
+Share the same page flag bit for PG_readahead and PG_reclaim.
 
-Ben.
+One is used only on file reads, another is only for emergency writes.
+One is used mostly for fresh/young pages, another is for old pages.
 
+Combinations of possible interactions are:
+
+a) clear PG_reclaim => implicit clear of PG_readahead
+	it will delay an asynchronous readahead into a synchronous one
+	it actually does _good_ for readahead:
+		the pages will be reclaimed soon, it's readahead thrashing!
+		in this case, synchronous readahead makes more sense.
+
+b) clear PG_readahead => implicit clear of PG_reclaim
+	one(and only one) page will not be reclaimed in time
+	it can be avoided by checking PageWriteback(page) in readahead first
+
+c) set PG_reclaim => implicit set of PG_readahead
+	will confuse readahead and make it restart the size rampup process
+	it's a trivial problem, and can mostly be avoided by checking
+	PageWriteback(page) first in readahead
+
+d) set PG_readahead => implicit set of PG_reclaim
+	PG_readahead will never be set on already cached pages.
+	PG_reclaim will always be cleared on dirtying a page.
+	so not a problem.
+
+In summary,
+	a)   we get better behavior
+	b,d) possible interactions can be avoided
+	c)   racy condition exists that might affect readahead, but the chance
+	     is _really_ low, and the hurt on readahead is trivial.
+
+Compound pages also use PG_reclaim, but for now they do not interact with
+reclaim/readahead code.
+
+Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+---
+ include/linux/page-flags.h |    4 +++-
+ mm/page-writeback.c        |    1 +
+ mm/readahead.c             |    4 ++++
+ 3 files changed, 8 insertions(+), 1 deletion(-)
+
+--- linux-2.6.22-rc1-mm1.orig/include/linux/page-flags.h
++++ linux-2.6.22-rc1-mm1/include/linux/page-flags.h
+@@ -92,7 +92,9 @@
+ #define PG_lazyfree		20	/* MADV_FREE potential throwaway */
+ 
+ #define PG_booked		21	/* Has blocks reserved on-disk */
+-#define PG_readahead		22	/* Reminder to do async read-ahead */
++
++/* PG_readahead is only used for file reads; PG_reclaim is only for writes */
++#define PG_readahead		PG_reclaim	/* Reminder to do async read-ahead */
+ 
+ /* PG_owner_priv_1 users should have descriptive aliases */
+ #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
+--- linux-2.6.22-rc1-mm1.orig/mm/page-writeback.c
++++ linux-2.6.22-rc1-mm1/mm/page-writeback.c
+@@ -922,6 +922,7 @@ int clear_page_dirty_for_io(struct page 
+ 
+ 	BUG_ON(!PageLocked(page));
+ 
++	ClearPageReclaim(page);
+ 	if (mapping && mapping_cap_account_dirty(mapping)) {
+ 		/*
+ 		 * Yes, Virginia, this is indeed insane.
+--- linux-2.6.22-rc1-mm1.orig/mm/readahead.c
++++ linux-2.6.22-rc1-mm1/mm/readahead.c
+@@ -447,6 +447,10 @@ page_cache_readahead_ondemand(struct add
+ 	if (!ra->ra_pages)
+ 		return 0;
+ 
++	/* It's PG_reclaim! */
++	if (PageWriteback(page))
++		return 0;
++
+ 	if (page) {
+ 		ClearPageReadahead(page);
+ 
 
