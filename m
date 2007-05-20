@@ -1,35 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764720AbXETHMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764339AbXETHTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764720AbXETHMi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 03:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759515AbXETHMc
+	id S1764339AbXETHTL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 03:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbXETHS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 03:12:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54081 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759342AbXETHMc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 03:12:32 -0400
-Date: Sun, 20 May 2007 00:12:31 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
-cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-In-Reply-To: <20070520030934.33447.qmail@web52609.mail.re2.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0705200011200.18989@schroedinger.engr.sgi.com>
-References: <20070520030934.33447.qmail@web52609.mail.re2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 20 May 2007 03:18:58 -0400
+Received: from www.osadl.org ([213.239.205.134]:53509 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759957AbXETHS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 03:18:57 -0400
+Subject: [PATCH] x86-64 highres/dyntick support 2.6.22-rc2-v1
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Content-Type: text/plain
+Date: Sun, 20 May 2007 09:25:02 +0200
+Message-Id: <1179645902.21827.16.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007, Srihari Vijayaraghavan wrote:
+I'm pleased to announce an updated version of the x86_64 highres/dyntick
+support patches against 2.6.22-rc2:
 
-> Code: 0f ob eb fe 48 8b 1b 48 8b 0x 0f 18 08 48 81 fb 60 cb 51 80
-> RIP [...] slab_sysfs_init+0x49/0x98
-> RSP [...]
-> kernel panic - not syncing: Attempted to kill init!
+http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc2-x86_64-highres-v1.patch
 
-sysfs? If you build without CONFIG_SLUB_DEBUG then SLUB will not use 
-sysfs. You can switch that off in the embedded section.
+Broken out version is available here:
+http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc2-x86_64-highres-v1.patches.tar.bz2
+
+Changes since the last version:
+
+- update to -rc2
+- maxcpus=1 boot hang fix
+
+
+Comments, bug reports, patches are welcome as usual
+
+Thanks,
+
+        tglx
+
+
