@@ -1,86 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbXETQK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbXETQKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbXETQK0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 12:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759742AbXETQKJ
+	id S1760394AbXETQKk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 12:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759994AbXETQKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 12:10:09 -0400
-Received: from smtp.osdl.org ([207.189.120.12]:41432 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759594AbXETQKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 12:10:06 -0400
-Date: Sun, 20 May 2007 09:08:09 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
-       Rik van Riel <riel@redhat.com>, righiandr@users.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-Message-ID: <20070520090809.4f42d71d@freepuppy>
-In-Reply-To: <20070520112111.GN14578@vanheusden.com>
-References: <464C81B5.8070101@users.sourceforge.net>
-	<464C9D82.60105@redhat.com>
-	<Pine.LNX.4.61.0705180825280.3231@yvahk01.tjqt.qr>
-	<200705181347.14256.ak@suse.de>
-	<Pine.LNX.4.61.0705190946430.9015@yvahk01.tjqt.qr>
-	<20070520001418.GJ14578@vanheusden.com>
-	<464FC6AA.2060805@cosmosbay.com>
-	<20070520112111.GN14578@vanheusden.com>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 20 May 2007 12:10:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:54684 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758040AbXETQKQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 12:10:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=legh5FFkwx2Ic9ZXe+ikal0Hl9os0+YjLMtBuTIll6BAARgMut+t8etGeMwJ7iBhwtct7ij9XxOXp1rgFK8O7OsfHEOZUZMx/ifxjYKJM08u5HZuR4XFrWOIXf04Wi5bKXe6h9nYwnh7sPO5+RGjnsNxUUix6hKfEFRwP97gq3M=
+Message-ID: <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com>
+Date: Sun, 20 May 2007 09:10:12 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Cc: "Al Viro" <viro@ftp.linux.org.uk>, "Andrey Borzenkov" <arvidjaar@mail.ru>,
+       "Uwe Bugla" <uwe.bugla@gmx.de>, "Ken Chen" <kenchen@google.com>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <464F42F3.1080300@madrabbit.org>
+	 <20070519191751.E51233A23A2@muan.mtu.ru>
+	 <200705200124.13026.uwe.bugla@gmx.de>
+	 <200705200845.43621.arvidjaar@mail.ru>
+	 <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
+	 <20070520062816.GA4095@ftp.linux.org.uk>
+	 <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
+	 <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
+X-Google-Sender-Auth: fa06f4b167e561dd
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007 13:21:11 +0200
-Folkert van Heusden <folkert@vanheusden.com> wrote:
-
-> > >>>>I do not see such on i386, so why for x86_64?
-> > >>>So that you know that one of your programs crashed. That's a feature.
-> > >>This feature could be handy for i386 too.
-> > >Since 2.6.18.2 I use this patch. With 2.6.21.1 it still applies altough
-> > >with a small offsets. Works like a charm.
+On 5/20/07, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On 5/20/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+> > On 5/19/07, Al Viro <viro@ftp.linux.org.uk> wrote:
+> > > On Sat, May 19, 2007 at 11:16:59PM -0700, Ray Lee wrote:
+> > > > Ken? Ball's in your court. As the patch isn't providing a killer
+> > > > feature for 2.6.22, I'd suggest just reverting it for now until the
+> > > > issues are ironed out.
 > > >
-> > >Signed-off by: Folkert van Heusden <folkert@vanheusden.com>
-> > >--- linux-2.6.18.2/kernel/signal.c      2006-11-04 02:33:58.000000000 +0100
-> > >+++ linux-2.6.18.2.new/kernel/signal.c  2006-11-17 15:59:13.000000000 +0100
-> ...
-> > >+                       sig, t -> pid, t -> uid, t -> gid, t -> comm);
-> > 
-> > Please check line 219 of Documentation/CodingStyle, Section 3.1: Spaces
-> > 	and no space around the '.' and "->" structure member operators.
-> 
-> New version without the spaces around '->' and a nice 'unlikely' added. 
-> 
-> Signed-off by: Folkert van Heusden <folkert@vanheusden.com>
-> 
-> --- linux-2.6.18.2/kernel/signal.c	2006-11-04 02:33:58.000000000 +0100
-> +++ linux-2.6.18.2.new/kernel/signal.c	2006-11-17 15:59:13.000000000 +0100
-> @@ -706,6 +706,15 @@
->  	struct sigqueue * q = NULL;
->  	int ret = 0;
->  
-> +	if (unlikely(sig == SIGQUIT || sig == SIGILL  || sig == SIGTRAP ||
-> +	    sig == SIGABRT || sig == SIGBUS  || sig == SIGFPE  ||
-> +	    sig == SIGSEGV || sig == SIGXCPU || sig == SIGXFSZ ||
-> +	    sig == SIGSYS  || sig == SIGSTKFLT))
-> +	{
-> +		printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
-> +			sig, t->pid, t->uid, t->gid, t->comm);
-> +	}
-> +
->  	/*
->  	 * fast-pathed signals for kernel-internal things like SIGSTOP
->  	 * or SIGKILL.
-> 
-> 
-> Folkert van Heusden
-> 
+> > > Hold it.  The real question here is which logics do we want there.
+> > > IOW, and how many device nodes do we want to appear and _when_ do
+> > > we want them to appear?
+> >
+> > The when part is what looks to make it racy. I'm guessing that we're
+> > relying on udev to create those loop nodes. If so, I think any scheme
+> > that creates more on demand would give transient mount errors while
+> > it's waiting on udev to create more nodes.
+> >
+> > Perhaps if we were to start with 8 loop nodes at init (as we have in
+> > 2.6.21), and then always maintain a margin of 8 (or 4, or...) when
+> > they start being used or detached?
+>
+> Until the tools can request dynamic loop device allocation from the
+> kernel before they want to use the device, you can create as many as
+> needed "static" loop* nodes in /lib/udev/devices/, which will be
+> copied to /dev/ early on every bootup.
 
-Would turning that into a switch() generate better code.
+Except that's different than current behavior presented to userspace.
+IOW, we broke userspace for anyone using udev. Which is, y'know, a lot
+of us.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+We're at -rc2 right now. Given that, it looks like we have two
+options. First is to revert all this for now and try again when the
+patch has had more testing and agreement (as this isn't a major
+feature we're talking about here; it's effectively just a cleanup that
+happened to have unfortunate side-effects).
+
+The second option is that we could have the loop device start with 8
+nodes populated, which would match current behavior.
+
+A third option of requiring new userspace for 2.6.22 is a non-starter.
