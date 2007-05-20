@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbXETPvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbXETPym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759002AbXETPvX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 11:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbXETPvP
+	id S1759398AbXETPym (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 11:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbXETPyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 11:51:15 -0400
-Received: from smtpout.hostsharing.net ([83.223.95.15]:58584 "EHLO
-	smtpout.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756770AbXETPvP (ORCPT
+	Sun, 20 May 2007 11:54:35 -0400
+Received: from wx-out-0506.google.com ([66.249.82.227]:12044 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757119AbXETPye (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 11:51:15 -0400
-Date: Sun, 20 May 2007 17:49:06 +0200
-From: Elimar Riesebieter <riesebie@lxtec.de>
-To: aeb@cwi.nl, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: 2.6.22-rc2 built on ppc (3)
-Message-ID: <20070520154906.GA4314@aragorn.home.lxtec.de>
-Mail-Followup-To: aeb@cwi.nl, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Cornelia Huck <cornelia.huck@de.ibm.com>
-References: <20070520111113.GE3253@aragorn.home.lxtec.de> <20070520122351.GC2006@localhost.localdomain>
+	Sun, 20 May 2007 11:54:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=SWK9zW//4XRf5GrxhS1teEyUNZ9qa4+i16GMISkGY3u0wdWDc2Nqj2Xwshq7uh4eLfL/x+nwXgcI+gWfgU+V+RMiplq8qW11iBI0H6cShawc75o++iXGnP/VKUPd+ztjMKM+HQFqHjTC+L/cVt1PstFwUuAx2jBttCNvSdMaFw8=
+Message-ID: <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
+Date: Sun, 20 May 2007 17:54:32 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Cc: "Al Viro" <viro@ftp.linux.org.uk>, "Andrey Borzenkov" <arvidjaar@mail.ru>,
+       "Uwe Bugla" <uwe.bugla@gmx.de>, "Ken Chen" <kenchen@google.com>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070520122351.GC2006@localhost.localdomain>
-Organization: LXTEC
-X-gnupg-key-fingerprint: BE65 85E4 4867 7E9B 1F2A  B2CE DC88 3C6E C54F 7FB0
-X-Editor: VIM - Vi IMproved 7.1 (2007 May 12, compiled May 15 2007 21:03:06)
-User-Agent: Mutt/1.5.15+lxtec (2007-05-02)
+References: <464F42F3.1080300@madrabbit.org>
+	 <20070519191751.E51233A23A2@muan.mtu.ru>
+	 <200705200124.13026.uwe.bugla@gmx.de>
+	 <200705200845.43621.arvidjaar@mail.ru>
+	 <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
+	 <20070520062816.GA4095@ftp.linux.org.uk>
+	 <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
+X-Google-Sender-Auth: e65fecff35dc18b9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007 the mental interface of
-WANG Cong told:
+On 5/20/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+> On 5/19/07, Al Viro <viro@ftp.linux.org.uk> wrote:
+> > On Sat, May 19, 2007 at 11:16:59PM -0700, Ray Lee wrote:
+> > > Ken? Ball's in your court. As the patch isn't providing a killer
+> > > feature for 2.6.22, I'd suggest just reverting it for now until the
+> > > issues are ironed out.
+> >
+> > Hold it.  The real question here is which logics do we want there.
+> > IOW, and how many device nodes do we want to appear and _when_ do
+> > we want them to appear?
+>
+> The when part is what looks to make it racy. I'm guessing that we're
+> relying on udev to create those loop nodes. If so, I think any scheme
+> that creates more on demand would give transient mount errors while
+> it's waiting on udev to create more nodes.
+>
+> Perhaps if we were to start with 8 loop nodes at init (as we have in
+> 2.6.21), and then always maintain a margin of 8 (or 4, or...) when
+> they start being used or detached?
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-> On Sun, May 20, 2007 at 01:11:13PM +0200, Elimar Riesebieter wrote:
-> >Hi,
-> >
-> >FYI, building the kernel with
-> >gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
-> >on my powerbook (PPC) gives:
-> >
-> >...
-> >fs/partitions/check.c: In function 'add_partition':
-> >fs/partitions/check.c:392: warning: ignoring return value of 'kobject_add', declared with attribute warn_unused_result
-> >fs/partitions/check.c:395: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
-> >fs/partitions/check.c:403: warning: ignoring return value of 'sysfs_create_file', declared with attribute warn_unused_result
-> >...
-> >
-> >If more info is needed, please contact me via PM, as I am not
-> >subscribed.
-> >
-> >Thanks for your patience
-> >Elimar
-> >
-> 
-> I don't know why these warnings are still in kernel. We have fixed them yet. Could you please check and try this patch?
-> 
-> http://marc.info/?l=linux-mm-commits&m=117624330000536&w=2
+Until the tools can request dynamic loop device allocation from the
+kernel before they want to use the device, you can create as many as
+needed "static" loop* nodes in /lib/udev/devices/, which will be
+copied to /dev/ early on every bootup.
 
-  CC      fs/partitions/check.o
-fs/partitions/check.c: In function 'add_partition':
-fs/partitions/check.c:398: error: 'struct kset' has no member named 'kset'
-make[2]: *** [fs/partitions/check.o] Error 1
-^make[1]: *** [fs/partitions] Error 2
-
-Elimar
-
--- 
-  Excellent day for drinking heavily. 
-  Spike the office water cooler;-)
+Kay
