@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbXETGEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761105AbXETGMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760481AbXETGEI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 02:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbXETGD5
+	id S1761105AbXETGMj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 02:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758970AbXETGMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 02:03:57 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:34474 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758679AbXETGD4 (ORCPT
+	Sun, 20 May 2007 02:12:31 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:45811 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758679AbXETGMb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 02:03:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
-        b=Z0HfAumRQh/zo/eZfpV4qvulqJ1RXEwpSR4Rs+BcxvW6m+BhKWPyiIPyzaqHJZyHRH0mGUKQUx9WAItmUNMmloaAHlAeEkYdT0bNCPQWm2otBuo+ujtIZI4eP2yjCMjYYfRkXYTxQAIz5/Io9LGKr8t2P2uyYSrCLMxlwHMdkPk=
-Date: Sun, 20 May 2007 14:56:39 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: stable@kernel.org
-Subject: [PATCH] check d_path() error in print-fatal-signals
-Message-ID: <20070520055639.GA4485@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org, stable@kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Sun, 20 May 2007 02:12:31 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Sched - graphic smoothness under load - cfs-v13 sd-0.48
+Date: Sun, 20 May 2007 08:12:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Ray Lee <ray@madrabbit.org>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+References: <464F57DD.2000309@tmr.com> <2c0942db0705191322p54e05e40p512146f21f68299a@mail.gmail.com> <464F99EC.3080006@tmr.com>
+In-Reply-To: <464F99EC.3080006@tmr.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1514572.0Ezs25GRyo";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705200812.26391.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1179641550;c25bf37e;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-d_path() returns -ENAMETOOLONG if buffer length is not enough.
-But there is no error handling for it in print_vma() which calls
-d_path() with not enough buffer (We can easily make segfault program
-which has longer path than 128bytes).
+--nextPart1514572.0Ezs25GRyo
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This patch allocates enough buffer for d_path() dynamically.
-audit_log_d_path() is doing sililar thing. So I just stole from it.
+> Okay, here's a bonus, http://www.tmr.com/~davidsen/sched_smooth_02.html=20
+> not only has the right values, the labels are changed, and I included=20
+> more data points from the fc6 recent kernel and the 2.6.21.1 kernel with=
+=20
+> the mainline scheduler.
+>=20
+> The nice thing about this test and the IPC test I posted recently is=20
+> that they are reasonable stable on the same hardware, so even if someone=
+=20
+> argues about what they show, they show the same thing each time and can=20
+> therefore be used to compare changes.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+I'm not sure I follow you here. The difference between 2.6.21 and 2.6.21.1
+are two simple (as in involving little code) changes to ip4 and ip6 net
+and I'm not even sure that code is used at all in your tests.
+[Read: IMO the 2.6.21 and 2.6.21.1 figures are for identical cases].
 
----
- kernel/signal.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+Assuming the above is correct then IMO the variance between the two
+"dublicated" lines (cfs-v13 and sd048) is such that I would not have
+written "that they are reasonable stable on the same hardware".
 
-Index: 2.6-mm/kernel/signal.c
-===================================================================
---- 2.6-mm.orig/kernel/signal.c
-+++ 2.6-mm/kernel/signal.c
-@@ -740,15 +740,23 @@ static int print_vma(struct vm_area_stru
- 	 * special [heap] marker for the heap:
- 	 */
- 	if (file) {
--#define SIZE 128
--		char tmp[SIZE], *str;
--
--		str = d_path(file->f_dentry, file->f_vfsmnt, tmp, SIZE);
--		while (str[0] && (str[0] == ' '))
--			str++;
-+		char *p, *path;
- 
-+		/* We will allow 11 spaces for ' (deleted)' to be appended */
-+		path = kmalloc(PATH_MAX + 11, GFP_KERNEL);
-+		if (!path)
-+			p = "<no memory>";
-+		else {
-+			p = d_path(file->f_dentry, file->f_vfsmnt, path,
-+				   PATH_MAX + 11);
-+			if (IS_ERR(p))
-+				p = "<too long>";
-+			else
-+				p = strstrip(p);
-+		}
- 		pad_len_spaces(len);
--		printk("%s", str);
-+		printk("%s", p);
-+		kfree(path);
- 	} else {
- 		const char *name = arch_vma_name(vma);
- 		if (!name) {
+I don't want to say the values aren't useful. I simply think there is
+a high noiselevel.
+
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart1514572.0Ezs25GRyo
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGT+bKUYYhyuxDQc4RApc1AKCqq5r4SzhqodDx+qwL1AT4GBeGEwCdG0Me
+VUSrGH5eaYMy+IF0ZS2LtKw=
+=fIPR
+-----END PGP SIGNATURE-----
+
+--nextPart1514572.0Ezs25GRyo--
