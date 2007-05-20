@@ -1,99 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764767AbXETAN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765219AbXETAOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764767AbXETAN4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 20:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXETANt
+	id S1765219AbXETAOd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 20:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbXETAO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 20:13:49 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38970 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752354AbXETANt (ORCPT
+	Sat, 19 May 2007 20:14:26 -0400
+Received: from keetweej.vanheusden.com ([213.84.46.114]:57574 "EHLO
+	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbXETAOZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 20:13:49 -0400
-Date: Sun, 20 May 2007 02:13:35 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Simon Horman <horms@verge.net.au>
-Subject: Re: RFC: kconfig select warnings bogus?
-Message-ID: <20070520001335.GQ6291@stusta.de>
-References: <20070519151523.GA26724@uranus.ravnborg.org> <20070519110944.2a52061e.akpm@linux-foundation.org> <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com> <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com> <20070519230940.GJ6291@stusta.de> <a781481a0705191617v901ac64nfa7040ff302d2da1@mail.gmail.com> <20070519232542.GL6291@stusta.de> <a781481a0705191636i371da96fxc0e9805778afad78@mail.gmail.com> <20070519234844.GN6291@stusta.de> <a781481a0705191655t8e305aage47fb063c55ab86a@mail.gmail.com>
+	Sat, 19 May 2007 20:14:25 -0400
+Date: Sun, 20 May 2007 02:14:23 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Andi Kleen <ak@suse.de>, Rik van Riel <riel@redhat.com>,
+       righiandr@users.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
+Message-ID: <20070520001418.GJ14578@vanheusden.com>
+References: <464C81B5.8070101@users.sourceforge.net> <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705180825280.3231@yvahk01.tjqt.qr> <200705181347.14256.ak@suse.de> <Pine.LNX.4.61.0705190946430.9015@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a781481a0705191655t8e305aage47fb063c55ab86a@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <Pine.LNX.4.61.0705190946430.9015@yvahk01.tjqt.qr>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Reply-By: Thu May 17 15:24:18 CEST 2007
+X-Message-Flag: MultiTail - tail on steroids
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 05:25:24AM +0530, Satyam Sharma wrote:
-> On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
->> On Sun, May 20, 2007 at 05:06:33AM +0530, Satyam Sharma wrote:
->> > On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
->> >>...
->> >> Consider ATARI_KBD_CORE was used by 20 drivers.
->> >>
->> >> Using select for such not user visible helper variables is a really 
->> nice
->> >> thing, and much more readable (and therefore much less likely to 
->> contain
->> >> bugs) than dependencies with tons of "||"'s.
->> >
->> > Well, the "default .. if .." kind of idiom is fairly common (I could say
->> > almost standard), in arch/.../config's. It's been used for some time,
->> > and for several symbols over there. But you're right that if 20 drivers
->> > used ATARI_KBD_CORE, we'd get tons of ugly "||"'s there, so
->> > perhaps we do need some kind of fix for this.
->>
->> And the fix is to use select.
->>
->> Compare the handling of options like IRQ_CPU in arch/mips/Kconfig in
->> current kernels with the handling in kernel 2.6.0 .
->>
->> Or as an exercise, change drivers/net/Kconfig to no longer use
->> "select MII". When you are finished, ensure that you are handling it
->> properly although the option is user visible...
->
-> "config MII" and "select MII" are _not_ equivalent to the case at hand.
-> MII is defined in drivers/net/Kconfig itself so does not print any "symbol
-> unknown kind of warnings" ... so clearly no probs in "select" for it ...
+> >> I do not see such on i386, so why for x86_64?
+> >So that you know that one of your programs crashed. That's a feature.
+> This feature could be handy for i386 too.
 
-Then move the "config MII" to arch/i386/Kconfig and assume all drivers  
-select'ing it would depend on X86_32.
+Since 2.6.18.2 I use this patch. With 2.6.21.1 it still applies altough
+with a small offsets. Works like a charm.
 
-This is not a problem in the kernel sources, it is an example for you to 
-see why select is the correct idiom in such cases.
 
-Please try it if you want to understand the problem you are talking 
-about.
+Signed-off by: Folkert van Heusden <folkert@vanheusden.com>
 
->> There are cases where "default .. if .." is the right idiom, but there
->> are also cases where "select" is the right idiom. And for helper code
->> like ATARI_KBD_CORE, "select" is the right idiom.
->
-> ATARI_KBD_CORE, unlike MII, is defined only by some archs. And the
-> correct (most widely used or standard, in any case) idiom for that is
-> "default .. if ..". Or perhaps you can convert those helper code options in
-> arch/.../config's over to select too, as an exercise? :-)
+--- linux-2.6.18.2/kernel/signal.c      2006-11-04 02:33:58.000000000 +0100
++++ linux-2.6.18.2.new/kernel/signal.c  2006-11-17 15:59:13.000000000 +0100
+@@ -706,6 +706,15 @@
+        struct sigqueue * q = NULL;
+        int ret = 0;
 
-Perhaps not as an exercise, but actually for real.
++       if (sig == SIGQUIT || sig == SIGILL  || sig == SIGTRAP ||
++           sig == SIGABRT || sig == SIGBUS  || sig == SIGFPE  ||
++           sig == SIGSEGV || sig == SIGXCPU || sig == SIGXFSZ ||
++           sig == SIGSYS  || sig == SIGSTKFLT)
++       {
++               printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
++                       sig, t -> pid, t -> uid, t -> gid, t -> comm);
++       }
++
+        /*
+         * fast-pathed signals for kernel-internal things like SIGSTOP
+         * or SIGKILL.
 
-We had "fixed" such warnings in the past similar to your patch, but that 
-was actually a mistake.
 
-And "correct" can easily be the opposite of "most widely used or standard"
-if you discover that you did it wrong in the past.
 
-cu
-Adrian
+Folkert van Heusden
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+www.biglumber.com <- site where one can exchange PGP key signatures 
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
