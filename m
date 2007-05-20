@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765209AbXETKwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764398AbXETLAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765209AbXETKwY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 06:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758358AbXETKwQ
+	id S1764398AbXETLAy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 07:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbXETLAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 06:52:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:8662 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756007AbXETKwN (ORCPT
+	Sun, 20 May 2007 07:00:46 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47540 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758358AbXETLAq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 06:52:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=TQq+OaMxMpfkkXBg7wPrqyKEE261+MKbg5FdKcXiLZAhvdgL56IRGai5QRBomD8Rl2xf7CfiEhlQUUBJYYu4WmSipUAsz23HZhWrxLrdUlueVh3vSxq711EFZru2ZW9vRvapJq6eTkjwUbFFWm27pE4RB3u6NElGRVVVaUD+udo=
-Message-ID: <46502847.40204@gmail.com>
-Date: Sun, 20 May 2007 12:51:51 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Sun, 20 May 2007 07:00:46 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <465029F1.6090301@s5r6.in-berlin.de>
+Date: Sun, 20 May 2007 12:58:57 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
+To: Trent Piepho <xyzzy@speakeasy.org>
+CC: Satyam Sharma <satyam.sharma@gmail.com>, Adrian Bunk <bunk@stusta.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Jeff Garzik <jeff@garzik.org>,
-       Francis Russell <francisrussell@btopenworld.com>,
-       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
-       video4linux@list.redhat.com,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>, Robert Fitzsimons <robfitz@273k.net>
-Subject: Re: [3/5] 2.6.22-rc2: known regressions
-References: <464F6DC9.80805@googlemail.com> <464F74D5.9080204@googlemail.com>
-In-Reply-To: <464F74D5.9080204@googlemail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-2
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Simon Horman <horms@verge.net.au>
+Subject: Re: RFC: kconfig select warnings bogus?
+References: <20070519151523.GA26724@uranus.ravnborg.org>  <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com>  <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>  <20070519230940.GJ6291@stusta.de>  <a781481a0705191617v901ac64nfa7040ff302d2da1@ma <a781481a0705191719u5234b248v8d36af6a368a5119@mail.gmail.com> <Pine.LNX.4.58.0705200228360.1671@shell4.speakeasy.net>
+In-Reply-To: <Pine.LNX.4.58.0705200228360.1671@shell4.speakeasy.net>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Michal Piotrowski wrote:
-> SATA/PATA
+Trent Piepho wrote:
+> config ATARI_KBD_CORE
+> 	bool
+> 	default y if KEYBOARD_ATARI
+> 	default y if MOUSE_ATARI
 > 
-> Subject    : libata and legacy ide pcmcia failure
-> References : http://lkml.org/lkml/2007/5/17/305
-> Submitter  : Robert de Rooy <robert.de.rooy@gmail.com>
-> Status     : Unknown
+> Basically a line "config A \n select B" is transformed into "config B \n
+> default y if A".  It's the same number of lines, they're just in a new place.
 
-Doesn't look like a regression to me.  Doubled timeout looks like a
-problem with timer.  I'll follow up on the original thread.
+Basically you replace
 
-> Subject    : pata_via appears to incorrectly detects 40-pin cable
-> References : http://lkml.org/lkml/2007/5/17/273
->              http://bugzilla.kernel.org/show_bug.cgi?id=8142
-> Submitter  : Francis Russell <francisrussell@btopenworld.com>
-> Status     : Unknown
+	A... depends on B
 
-Not really a regression.  Alan seems to have a general fix and I think
-we can also quirk the specific case.
+by
 
-> Subject    : libata crash on halt
-> References : http://marc.info/?l=linux-ide&m=117899827710565&w=2
-> Submitter  : Andrew Morton <akpm@linux-foundation.org>
-> Caused-By  : Tejun Heo <htejun@gmail.com>
->              commit 920a4b1038e442700a1cfac77ea7e20bd615a2c3
-> Status     : problem is being debugged
+	B... serves A
 
-This was fixed by the following commit.
+The latter variant is a pain to maintain.  Dependencies change over
+time, therefore we should note the dependency always at the dependent
+option, not at the serving option.
 
-commit da071b42f73dabbd0daf7ea4c3ff157d53b00648
-Author: Tejun Heo <htejun@gmail.com>
-Date:   Mon May 14 17:26:18 2007 +0200
+Iterating upwards and downwards the dependency graph is the duty of
+"make snafuconfig", not of the maintainers.
 
-    libata: fix shutdown warning message printing
+Besides, the "serves" form cannot stand in for constructs like
 
-> Subject    : libata reset-seq merge broke sata_sil on sh
-> References : http://lkml.org/lkml/2007/5/10/63
-> Submitter  : Paul Mundt <lethal@linux-sh.org>
-> Handled-By : Tejun Heo <htejun@gmail.com>
-> Caused-By  : commit 4750def52cb2c21732dda9aa1d43a07db37b0186
-> Status     : problem is being debugged
-
-Possible fix proposed.
-
-  http://lkml.org/lkml/2007/5/19/161
-
-I'll push the fix once Paul verifies it.
-
-Thanks.
-
+	A... depends on (B && C) || D
 -- 
-tejun
+Stefan Richter
+-=====-=-=== -=-= =-=--
+http://arcgraph.de/sr/
