@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbXETTV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbXETTYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758634AbXETTV3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 15:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbXETTVV
+	id S1758479AbXETTYe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 15:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbXETTY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 15:21:21 -0400
-Received: from mail.screens.ru ([213.234.233.54]:59342 "EHLO mail.screens.ru"
+	Sun, 20 May 2007 15:24:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44283 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755847AbXETTVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 15:21:21 -0400
-Date: Sun, 20 May 2007 23:21:16 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: zilvinas@wilibox.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel NFS lockd freezes notebook on shutdown (Linux 2.6.22-rc1 + CFS v12)
-Message-ID: <20070520192116.GA83@tv-sign.ru>
-References: <1179338441.4265.13.camel@zv.wilibox.com> <20070516121538.7b108c10.akpm@linux-foundation.org> <20070516225543.GA337@tv-sign.ru> <1179390065.4760.5.camel@zv.wilibox.com> <20070517184556.GA81@tv-sign.ru> <1179485230.3800.20.camel@zv.wilibox.com> <20070518202805.GA298@tv-sign.ru> <Pine.LNX.4.64.0705201326410.8634@barclay.balt.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755859AbXETTY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 15:24:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] i386, x86-64: show that CONFIG_HOTPLUG_CPU is required for suspend on SMP
+Date: Sun, 20 May 2007 21:29:26 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705201326410.8634@barclay.balt.net>
-User-Agent: Mutt/1.5.11
+Message-Id: <200705202129.27170.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/20, zilvinas@wilibox.com wrote:
-> 
-> I've done some more tests and quite frankly I think this is really related 
-> to the dreaded ''fglrx.ko'' module. It seems to me that it is much easier 
-> to reproduce the problem if that damn module is loaded. It does uses 
-> workqueue. Then there is another driver ipw3945 loaded and it is required 
-> to run binary only ''ipw3945d'' daemon just to start using wireless driver 
-> ...
-> 
-> In either way both these kernel modules are workqueue users.
-> 
-> Btw, I had also tested kernel (compiled from the same source) but on 
-> different laptop (EVO N800v), single core, Pentium M 2GHz. Kernel is not 
-> freezing on shutdown, even loop nfs kernel stop/start - does not cause any 
-> kernel panic as on nx9420 (Dual Core) laptop. And that with or without any 
-> patch applied from Oleg. :((
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Great. Even if not a bugfix, this patch is a reasonable cleanup anyway.
+It's not sufficiently documented that CONFIG_HOTPLUG_CPU is required for
+suspend/hibernation on SMP.
 
-Thank you very much for additional testing and report!
+Point out the non-obvious.
 
-Oleg.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/i386/Kconfig   |    2 +-
+ arch/x86_64/Kconfig |    7 +++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
+Index: linux-2.6.22-rc2/arch/i386/Kconfig
+===================================================================
+--- linux-2.6.22-rc2.orig/arch/i386/Kconfig
++++ linux-2.6.22-rc2/arch/i386/Kconfig
+@@ -891,7 +891,7 @@ config PHYSICAL_ALIGN
+ 	  Don't change this unless you know what you are doing.
+ 
+ config HOTPLUG_CPU
+-	bool "Support for hot-pluggable CPUs (EXPERIMENTAL)"
++	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
+ 	depends on SMP && HOTPLUG && EXPERIMENTAL && !X86_VOYAGER
+ 	---help---
+ 	  Say Y here to experiment with turning CPUs off and on, and to
+Index: linux-2.6.22-rc2/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6.22-rc2.orig/arch/x86_64/Kconfig
++++ linux-2.6.22-rc2/arch/x86_64/Kconfig
+@@ -428,12 +428,15 @@ config NR_CPUS
+ 	  memory in the static kernel configuration.
+ 
+ config HOTPLUG_CPU
+-	bool "Support for hot-pluggable CPUs (EXPERIMENTAL)"
++	bool "Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL)"
+ 	depends on SMP && HOTPLUG && EXPERIMENTAL
+ 	help
+ 		Say Y here to experiment with turning CPUs off and on.  CPUs
+ 		can be controlled through /sys/devices/system/cpu/cpu#.
+-		Say N if you want to disable CPU hotplug.
++		This is also required for suspend/hibernation on SMP systems.
++
++		Say N if you want to disable CPU hotplug and don't need to
++		suspend.
+ 
+ config ARCH_ENABLE_MEMORY_HOTPLUG
+ 	def_bool y
