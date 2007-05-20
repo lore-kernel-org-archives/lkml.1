@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbXETOl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbXETO4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbXETOl3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 10:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbXETOlO
+	id S1758124AbXETO4s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 10:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXETO4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 10:41:14 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59716 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756768AbXETOlN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 10:41:13 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46505DBD.5010005@s5r6.in-berlin.de>
-Date: Sun, 20 May 2007 16:39:57 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Sun, 20 May 2007 10:56:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47262 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756541AbXETO4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 10:56:40 -0400
+X-Authenticated: #8359428
+X-Provags-ID: V01U2FsdGVkX1+dd+IlPRqdEzLEt+JGawteE+5O14D0yO7T8Y9Fni
+	q4ZT+pGZTx+Lhs
+From: Uwe Bugla <uwe.bugla@gmx.de>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Date: Sun, 20 May 2007 16:52:00 +0200
+User-Agent: KMail/1.9.5
+References: <464F42F3.1080300@madrabbit.org> <20070520062816.GA4095@ftp.linux.org.uk> <200705201058.38117.arvidjaar@mail.ru>
+In-Reply-To: <200705201058.38117.arvidjaar@mail.ru>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Uwe Bugla <uwe.bugla@gmx.de>,
+       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Simon Horman <horms@verge.net.au>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: RFC: kconfig select warnings bogus?
-References: <20070519151523.GA26724@uranus.ravnborg.org>	 <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>	 <464F9A7B.1030708@s5r6.in-berlin.de>	 <a781481a0705191753r25e0cay82785ed56c04b6eb@mail.gmail.com>	 <a781481a0705191804u7f5a344cr92f2a1981c502bf7@mail.gmail.com>	 <4650074A.6000307@s5r6.in-berlin.de>	 <a781481a0705200438s634712e6v957d7085bca7407@mail.gmail.com>	 <46503542.50300@s5r6.in-berlin.de>	 <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com>	 <46504876.9040802@s5r6.in-berlin.de> <a781481a0705200650v2ef7be85h19f8c8eb026a303b@mail.gmail.com>
-In-Reply-To: <a781481a0705200650v2ef7be85h19f8c8eb026a303b@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705201652.00503.uwe.bugla@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> On 5/20/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> config A
->>         bool-or-tristate "option A"
->>         depends on !PLATFORM_X || HELPER_N_ON_PLATFORM_X
-> 
-> ??? I didn't get this entry,
+Am Sonntag, 20. Mai 2007 08:58 schrieben Sie:
+> On Sunday 20 May 2007, Al Viro wrote:
+> > On Sat, May 19, 2007 at 11:16:59PM -0700, Ray Lee wrote:
+> > > Ken? Ball's in your court. As the patch isn't providing a killer
+> > > feature for 2.6.22, I'd suggest just reverting it for now until the
+> > > issues are ironed out.
+> >
+> > Hold it.  The real question here is which logics do we want there.
+> > IOW, and how many device nodes do we want to appear and _when_ do
+> > we want them to appear?
+>
+> of course we'd like to use exactly as many (or few) nodes as are in use
+> right now and without fixed limit for their number; which implies that
+> nodes should appear and go on as needed basis.
+>
+> But right now there is no kernel mechanism that user level program could
+> use to request allocation of new loop node. I won't discuss whether it is
+> legitimate to mandate new version of util-linux for kernel 2.6.22; but it
+> is obvious that any kernel patch that adds such mechanism goes far beyond
+> simple bug fix and is not acceptable at this stage.
+>
+> So let's revert this change and discuss it for post-2.6.22 timeframe.
 
-"A is available if N is there or if it's a platform other than X."
+Hi,
 
-That would be adequate if N is only present and required on platform X.
+I am of course not a fan of limiting the maximum of available loops to 8.
 
-> can you give a solid example
+My question / proposal for now would be:
 
-Nothing exactly of this sort, but compare for example kernel/power/Kconfig:
+Could anybody of you please be kind enough and write / provide me a counter 
+patch supplying me:
 
-config SOFTWARE_SUSPEND
-	bool "Software Suspend (Hibernation)"
-	depends on PM && SWAP && (((X86 || PPC64_SWSUSP) &&
-		(!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
+a. a compilable 2.6.22-rc2 kernel
+b. a loop device that can mount up to 8 iso-images
 
-Of course this could be written in a clearer fashion, for example as
+I would prefer this thing as outline attachment due to Email client 
+wordwrapping problems.
 
-	depends on PM
-	depends on SWAP
-	depends on (X86 && !SMP) ||
-	           (X86 && SUSPEND_SMP) ||
-	           (PPC64_SWSUSP && !SMP) ||
-	           (PPC64_SWSUSP && SUSPEND_SMP) ||
-	           (FRV   && !SMP) ||
-	           (PPC32 && !SMP)
+Looking happily forward to a functionable counter patch to resolve the current 
+issue as a compromise solution,
 
-(Untested.)  Anyway, the dependencies which we are looking at here
-should not (and partially even cannot) be declared in reverse.
+Best regards and thanks
 
-> (you can consider
-> the case at hand, MOUSE_ATARI and ATARI_KBD_CORE itself). Better
-> still, if you really think that the above is a better way to solve the
-> problem at hand, why don't you submit a patch instead?
-
-Because I am lazy and trust that the platform maintainers know best
-about the dependencies of MOUSE_ATARI.  Could also be related to that I
-as an Amiga owner cannot really relate to Atari. ;-)  Could also have
-something to do with my being busy enough fixing bugs in the drivers I
-am familiar with.  (Granted, I should shut up, ignore how Kconfig is
-more and more turned into a mess, and concentrate on my primary business.)
--- 
-Stefan Richter
--=====-=-=== -=-= =-=--
-http://arcgraph.de/sr/
+Uwe
