@@ -1,108 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbXETSFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbXETSX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbXETSFs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 14:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbXETSFf
+	id S1758752AbXETSX2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 14:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbXETSXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 14:05:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52103 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757168AbXETSFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 14:05:33 -0400
-Date: Sun, 20 May 2007 20:05:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Bill Huey <billh@gnuppy.monkey.org>
-Subject: Re: [PATCH] lockdep: lock contention tracking
-Message-ID: <20070520180522.GA20805@elte.hu>
-References: <1179657026.5915.10.camel@lappy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 20 May 2007 14:23:21 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39963 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757136AbXETSXU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 14:23:20 -0400
+Date: Sun, 20 May 2007 20:23:07 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Simon Horman <horms@verge.net.au>
+Subject: Re: RFC: kconfig select warnings bogus?
+Message-ID: <20070520182306.GR6291@stusta.de>
+References: <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com> <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com> <464F9A7B.1030708@s5r6.in-berlin.de> <a781481a0705191753r25e0cay82785ed56c04b6eb@mail.gmail.com> <a781481a0705191804u7f5a344cr92f2a1981c502bf7@mail.gmail.com> <4650074A.6000307@s5r6.in-berlin.de> <a781481a0705200438s634712e6v957d7085bca7407@mail.gmail.com> <46503542.50300@s5r6.in-berlin.de> <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com> <46504876.9040802@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1179657026.5915.10.camel@lappy>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <46504876.9040802@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> Add lock contention tracking to lockdep
+On Sun, May 20, 2007 at 03:09:10PM +0200, Stefan Richter wrote:
+>...
+> Since you mention "select":  My opinion about the "select" dialect of
+> "depends on" is that the UIs should be improved and "select" should be
+> removed from the Kconfig language.  What do we "select"?  Typically we
+> "select" an option on which /n/ other options depend on but which itself
+> does depend on none or few options higher up.  The UIs could be able to
+> figure this out for themselves, or if necessary by a hint tacked onto
+> library-type options.  That is, instead of
 > 
-> [root@taijtu ~]# cat /proc/lockdep_contentions | sort -rnk 2 | head
-> dcache_lock: 3000 0 [618] [<ffffffff8033badd>] _atomic_dec_and_lock+0x39/0x58 [17] [<ffffffff802d6dce>] sysfs_open_file+0x28/0x25a [160] [<ffffffff802a5b61>] d_instantiate+0x2a/0xad [52] [<ffffffff8029d926>] __link_path_walk+0x270/0xde9
-> &inode->i_mutex: 235 0 [15] [<ffffffff8029b053>] pipe_read+0x74/0x39d [23] [<ffffffff8029a9f8>] pipe_wait+0x86/0x8d [105] [<ffffffff8029bc9a>] do_lookup+0x81/0x1ae [85] [<ffffffff802a0be7>] vfs_readdir+0x5c/0xa9
-> &zone->lru_lock: 141 0 [11] [<ffffffff8027366b>] activate_page+0x37/0xd6 [75] [<ffffffff80273327>] release_pages+0xb2/0x16c [42] [<ffffffff80273443>] __pagevec_lru_add_active+0x62/0xe5 [12] [<ffffffff80273529>] __pagevec_lru_add+0x63/0xe2
+> 	config A
+> 		tristate "driver A"
+> 		select L
+> 
+> 	config B
+> 		tristate "driver B"
+> 		select L
+> 
+> 	config L
+> 		tristate "library L"
+> 
+> write
+> 
+> 	config A
+> 		tristate "driver A"
+> 		depends on L
+> 
+> 	config B
+> 		tristate "driver B"
+> 		depends on L
+> 
+> 	config L
+> 		tristate "library L"
+> 		hint THIS_IS_A_LIBRARY
+> 
+> Now let UIs "make oldconfig", "make menuconfig", "make randconfig" deal
+> with the hint or ignore the hint --- according to the purpose and
+> usability requirements of the respective UI.  The "hint
+> THIS_IS_SOMETHING" isn't even necessary in many cases to detect roles of
+> options, because their position in the dependency graph is already
+> saying something about it.
+>...
 
-looks really nice!
+Example where your proposal wouldn't work well:
 
->  6 files changed, 266 insertions(+), 18 deletions(-)
+config MIPS_ATLAS
+        bool "MIPS Atlas board"
+        select SYS_SUPPORTS_LITTLE_ENDIAN
+        select SYS_SUPPORTS_BIG_ENDIAN
 
-wow, that's really simple!
+config SYS_SUPPORTS_BIG_ENDIAN
+        bool
 
-in general i like this alot because it cleverly reuses all the lock API 
-wrappers and lock tracking infrastructure that lockdep already adds.
+config CPU_BIG_ENDIAN
+        bool "Big endian"
+        depends on SYS_SUPPORTS_BIG_ENDIAN
 
-    Acked-by: Ingo Molnar <mingo@elte.hu>
 
-i'd suggest to add a CONFIG_DEBUG_LOCK_STAT Kconfig method to turn this 
-on without any of the other lock-dependency tracking costs that lockdep 
-has.
+Where's the value of allowing an UI to ignore hints? If an UI would 
+ignore all hints on SYS_SUPPORTS_BIG_ENDIAN you would no longer be able 
+to configure a kernel on this architecture.
 
-here are a few minor nits about the code:
+And there's no way for an UI to figure out the direction of the options - 
+with "select" the only reasonable direction is fixed for all UIs.
 
-> +struct lockdep_contention_point {
-> +	unsigned long ip;
-> +	atomic_t count;
-> +};
+"select" might have room for improvements especially in the area of 
+dependencies of select'ed options, but replacing it with overloading
+"depends on" plus hints wouldn't be a good solution.
 
-i'd say rename this to "lock_contention_point" - this is not really a 
-lockdep thing. Lockdep offers the machinery to track lock usage, but 
-there's no "dependency" portion of this.
+> Stefan Richter
 
-> +	printk("%s/%d is trying to content lock (",
+cu
+Adrian
 
-s/content/contend
+-- 
 
-> +static int lockdep_contentions_show(struct seq_file *m, void *v)
-> +ssize_t lockdep_contentions_write(struct file *file, const char __user *buf,
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-s/lockdep/lock
-
-> +			for (i = 0; i < ARRAY_SIZE(class->contention_point);
-> +					i++)
-> +				class->contention_point[i].ip = 0;
-
-(loop body needs curly braces because the whole construct is 3-line.)
-
-> +	entry = create_proc_entry("lockdep_contentions", S_IRUSR, NULL);
-
-s/lockdep/lock
-
-> @@ -20,7 +20,10 @@ void down_read(struct rw_semaphore *sem)
->  	might_sleep();
->  	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
->  
-> -	__down_read(sem);
-> +	if (!__down_read_trylock(sem)) {
-> +		lock_contended(&sem->dep_map, 1, _RET_IP_);
-> +		__down_read(sem);
-> +	}
-
-heh, clever trick that avoids the touching of dozens of architectures 
-;-) I guess make this dependent on CONFIG_LOCK_STAT though, because gcc 
-cannot optimize this away even if lock_contended() is a NOP.
-
-(same for the other trylock additions in rwsem.c and spinlock.c)
-
-	Ingo
