@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522AbXETSsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbXETSy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756522AbXETSsy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 14:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbXETSsq
+	id S1756846AbXETSy3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 14:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbXETSyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 14:48:46 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:57026 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbXETSso (ORCPT
+	Sun, 20 May 2007 14:54:22 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:55912 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754540AbXETSyV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 14:48:44 -0400
-Date: Sun, 20 May 2007 11:53:53 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Robert Hancock <hancockr@shaw.ca>, ide <linux-ide@vger.kernel.org>
-Cc: Indan Zupancic <indan@nul.nu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: sd_resume redundant?  [was: [PATCH] libata: implement
- ata_wait_after_reset()]
-Message-Id: <20070520115353.4428a735.randy.dunlap@oracle.com>
-In-Reply-To: <4650891F.80301@shaw.ca>
-References: <fa.M0o+I253i7tt/LF97sml0AM+Gec@ifi.uio.no>
-	<fa.j/gDhS9FZwWkX/stLhREkTHNbFs@ifi.uio.no>
-	<fa.EalQUMJMBHX/KTGV2QFQLG6tYus@ifi.uio.no>
-	<fa.Zh3ttZJ9A5tObhEjMLSALUpxCuQ@ifi.uio.no>
-	<fa.tQ9LHpM0TOYAYEug36HHMvEVOO0@ifi.uio.no>
-	<fa.jSmqI/kJPff3zaVtC404yNL5/Qk@ifi.uio.no>
-	<4650891F.80301@shaw.ca>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Sun, 20 May 2007 14:54:21 -0400
+Message-ID: <46509924.8020904@cosmosbay.com>
+Date: Sun, 20 May 2007 20:53:24 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: first little problem with private futexes
+References: <465095E5.4050508@redhat.com>
+In-Reply-To: <465095E5.4050508@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 20 May 2007 20:53:31 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007 11:45:03 -0600 Robert Hancock wrote:
-
-> Indan Zupancic wrote:
-> >>> Everything seems to work fine without sd_resume(), so why is it needed?
-> >> Because not all disks spin up without being told to do so and like it or
-> >> not spinning disks up on resume is the default behavior.  As I wrote in
-> >> the other reply, it would be worthwhile to make it configurable.
-> > 
-> > Not even after they receive a read command? Ugh.
+Ulrich Drepper a écrit :
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> ATA disks are supposed to spin up, yes. SCSI disks require a command to 
-> tell them to spin up if they're in the "stopped" state.
+> Here's a first little issue with private futex I came across.  But a
+> real bug but a hole.
+> 
+> When we use clone() with CLONE_CHILD_CLEARTID possible waiters are woken
+> upon termination of the thread.  This operation uses FUTEX_WAKE so far.
+>  But it in almost all cases local memory and I would even be in favor of
+> setting this into stone.   It wouldn't break anything I know of.
+> 
+> The problem is we cannot just go over to using
+> FUTEX_WAIT|FUTEX_PRIVATE_FLAG since this would break binaries using any
+> glibc out there so far.
+> 
+> There are three ways out of this I can see:
+> 
+> 1.  do nothing, always use the shared futexes.  Not very attractive IMO
 
-Good info, but linux-ide was dropped.  Is that due to lack of
-reply-to-all or is it a newsgroup thing or what?
+Why do you find this non attractive ?
 
+How is it performance critical ?
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+If a program is stupid enough to create/destroy many threads per second, I 
+doubt it relies on a faster thread termination :)
+
+> 
+> 2.  try private futexes first, then shared one.  This is even less
+>     attractive since in the many cases there is no waiter and we cannot
+>     determine whether the private futex notification succeeded and we're
+>     doing the expensive work as well
+> 
+> 3.  tell the kernel whether we want the new or the old notification.
+>     This can be done using a number of ways
+> 
+>     a) using some prctl().  Another unconditional syscall, not nice.
+> 
+>     b) using a new CLONE_* flag.  We have currently 5 bits left and can
+>        recover two more (CLONE_DETACHED, CLONE_STOPPED).  And we can
+>        invent ways to add more bits.
+> 
+> 
+> I'm in favor of 3b but if somebody argues the costs are not justified
+> because the effects of using the shared futex notification isn't high
+> enough I can accept that, too.
+
