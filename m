@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXETHDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763705AbXETHKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964784AbXETHDd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 03:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764682AbXETHDV
+	id S1763705AbXETHKl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 03:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759515AbXETHKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 03:03:21 -0400
-Received: from mtoichi16.ns.itscom.net ([219.110.2.186]:53068 "EHLO
-	mtoichi16.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763896AbXETHDS (ORCPT
+	Sun, 20 May 2007 03:10:34 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54045 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759089AbXETHKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 03:03:18 -0400
-Date: Sun, 20 May 2007 15:59:48 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Zhang Rui <rui.zhang@intel.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Len Brown <lenb@kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after STR
-Message-ID: <20070520065947.GA4880@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home> <20070518002240.bc08e811.akpm@linux-foundation.org> <20070519064829.GA15518@inferi.kami.home> <20070519000413.75badb6f.akpm@linux-foundation.org> <20070520061408.GA3325@inferi.kami.home> <20070519234723.5200a8b4.akpm@linux-foundation.org>
+	Sun, 20 May 2007 03:10:33 -0400
+Date: Sun, 20 May 2007 00:10:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
+       Ram Pai <linuxram@us.ibm.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 1/9] readahead: introduce PG_readahead
+In-Reply-To: <379630538.31710@ustc.edu.cn>
+Message-ID: <Pine.LNX.4.64.0705200009330.18989@schroedinger.engr.sgi.com>
+References: <20070516224752.500812933@mail.ustc.edu.cn> <379355695.83536@ustc.edu.cn>
+ <20070518232824.9917d794.akpm@linux-foundation.org> <379577826.15160@ustc.edu.cn>
+ <20070519082504.8baa8d19.akpm@linux-foundation.org> <379630538.31710@ustc.edu.cn>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070519234723.5200a8b4.akpm@linux-foundation.org>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.22-rc1-mm1-3 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 19, 2007 at 11:47:23PM -0700, Andrew Morton wrote:
-> On Sun, 20 May 2007 15:14:08 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> 
-> > On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
-> > > On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
-...
-> > > > ok, git-acpi.patch is not the bad boy :)
-> > 
-> > but very very close:
-> > acpi-driver-model-flags-and-platform_enable_wake.patch
-> > 
-> 
-> Thanks very much for working that out - it saves lots of people heaps of
-> pain.  I dropped the patch.
+On Sun, 20 May 2007, Fengguang Wu wrote:
 
-oh dear... and now, with the full series applied, I hit the
-immediately-resuspend-after-resume someone already reported...
+> The reuse code would look like the attached one.
+> It still needs more testing, and would fail if Christoph reuses
+> PG_reclaim in higher order pagecache in the future.
 
-aargh
--- 
-mattia
-:wq!
+Do not worry about that. All higher order pagecache patchsets remove that
+sharing because we will then need these pages on the LRU and thus
+PG_reclaim cannot be shared anymore.
