@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbXETLWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbXETLXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbXETLWQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 07:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbXETLWF
+	id S1756634AbXETLXz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 07:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbXETLXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 07:22:05 -0400
-Received: from smtpout.hostsharing.net ([83.223.95.15]:33654 "EHLO
-	smtpout.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754846AbXETLWE (ORCPT
+	Sun, 20 May 2007 07:23:48 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:47198 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbXETLXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 07:22:04 -0400
-Date: Sun, 20 May 2007 13:21:58 +0200
-From: Elimar Riesebieter <riesebie@lxtec.de>
-To: benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.22-rc2 built on ppc (4)
-Message-ID: <20070520112158.GI3253@aragorn.home.lxtec.de>
-Mail-Followup-To: benh@kernel.crashing.org,
-	linux-kernel@vger.kernel.org
+	Sun, 20 May 2007 07:23:47 -0400
+Date: Sun, 20 May 2007 04:23:46 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Satyam Sharma <satyam.sharma@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Simon Horman <horms@verge.net.au>
+Subject: Re: RFC: kconfig select warnings bogus?
+In-Reply-To: <465029F1.6090301@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.58.0705200416370.1671@shell4.speakeasy.net>
+References: <20070519151523.GA26724@uranus.ravnborg.org> 
+ <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com> 
+ <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com> 
+ <20070519230940.GJ6291@stusta.de>  <a781481a0705191617v901ac64nfa7040ff302d2da1@ma
+ <a781481a0705191719u5234b248v8d36af6a368a5119@mail.gmail.com>
+ <Pine.LNX.4.58.0705200228360.1671@shell4.speakeasy.net> <465029F1.6090301@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2xeD/fx0+7k8I/QN"
-Content-Disposition: inline
-Organization: LXTEC
-X-Editor: VIM - Vi IMproved 7.1 (2007 May 12, compiled May 15 2007 21:24:37)
-User-Agent: Mutt/1.5.15+lxtec (2007-05-02)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 20 May 2007, Stefan Richter wrote:
+> Trent Piepho wrote:
+> > config ATARI_KBD_CORE
+> > 	bool
+> > 	default y if KEYBOARD_ATARI
+> > 	default y if MOUSE_ATARI
+> >
+> > Basically a line "config A \n select B" is transformed into "config B \n
+> > default y if A".  It's the same number of lines, they're just in a new place.
+>
+> Basically you replace
+>
+> 	A... depends on B
+>
+> by
+>
+> 	B... serves A
+>
+> The latter variant is a pain to maintain.  Dependencies change over
+> time, therefore we should note the dependency always at the dependent
+> option, not at the serving option.
 
---2xeD/fx0+7k8I/QN
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The problem is that "B" will not exist on some architectures.  If you put the
+dependency with "A", the dependency still exists when "B" is gone.  If the
+dependency is with "B", it nicely goes away when "B" is gone.
 
-Hi,
+> Iterating upwards and downwards the dependency graph is the duty of
+> "make snafuconfig", not of the maintainers.
+>
+> Besides, the "serves" form cannot stand in for constructs like
+>
+> 	A... depends on (B && C) || D
 
-FYI, building the kernel with
-gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
-on my powerbook (PPC) gives:
-
-=2E..
-drivers/video/aty/radeon_base.c: In function 'radeonfb_pci_register':
-drivers/video/aty/radeon_base.c:2326: warning: ignoring return value of 'sy=
-sfs_create_bin_file', declared with attribute warn_unused_result
-drivers/video/aty/radeon_base.c:2328: warning: ignoring return value of 'sy=
-sfs_create_bin_file', declared with attribute warn_unused_result
-=2E..
-
-If more info is needed, please contact me via PM, as I am not
-subscribed.
-
-Thanks for your patience
-Elimar
-
---=20
-  Never make anything simple and efficient when a way=20
-  can be found to make it complex and wonderful ;-)
-
---2xeD/fx0+7k8I/QN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGUC9V3Ig8bsVPf7ARAsdhAJ9nE4lgF01kZiGoL+886PZLWg8MrwCeLmrP
-gLG0GkPARAJI2Its8uJiEjY=
-=vLMm
------END PGP SIGNATURE-----
-
---2xeD/fx0+7k8I/QN--
+This is for replacing "select" lines, which can't look like that.
