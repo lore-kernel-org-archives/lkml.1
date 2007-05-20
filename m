@@ -1,43 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760577AbXETJV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761224AbXETJ0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760577AbXETJV3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 05:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXETJVV
+	id S1761224AbXETJ0D (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 05:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXETJZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 05:21:21 -0400
-Received: from 1wt.eu ([62.212.114.60]:2705 "EHLO 1wt.eu"
+	Sun, 20 May 2007 05:25:54 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58288 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754303AbXETJVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 05:21:20 -0400
-Date: Sun, 20 May 2007 11:21:08 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: oliver pinter <oliver.pntr@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, xfs-masters@oss.sgi.com,
-       Bernd Eckenfels <ecki@lina.inka.de>
-Subject: Re: it seems at XFS bug?!
-Message-ID: <20070520092106.GL943@1wt.eu>
-References: <6101e8c40705191117h40c8af70sfc9d0617a99a248b@mail.gmail.com> <E1HpUNW-00020n-00@calista.eckenfels.net> <20070519192021.GK943@1wt.eu> <20070519192246.GA11733@1wt.eu> <6101e8c40705191237v46939bf1i7098fc974784de5a@mail.gmail.com> <6101e8c40705191250o447e9c59kba824baae4d99b3f@mail.gmail.com> <20070519202419.GC2521@1wt.eu> <Pine.LNX.4.61.0705201038250.9015@yvahk01.tjqt.qr>
+	id S1754483AbXETJZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 05:25:53 -0400
+Date: Sun, 20 May 2007 11:25:52 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070520092552.GA7318@wotan.suse.de>
+References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0705201038250.9015@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070520084647.GF19966@holomorphy.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 10:39:33AM +0200, Jan Engelhardt wrote:
+On Sun, May 20, 2007 at 01:46:47AM -0700, William Lee Irwin III wrote:
+> On Sat, May 19, 2007 at 11:15:01AM -0700, William Lee Irwin III wrote:
+> >> The cache cost argument is specious. Even misaligned, smaller is
+> >> smaller.
 > 
-> On May 19 2007 22:24, Willy Tarreau wrote:
-> >On Sat, May 19, 2007 at 09:50:43PM +0200, oliver pinter wrote:
-> >> yeah, but how produziert?
-> >
-> >I *think* it is the unbreakable space.
+> On Sun, May 20, 2007 at 07:22:29AM +0200, Nick Piggin wrote:
+> > Of course smaller is smaller ;) Why would that make the cache cost
+> > argument specious?
 > 
-> \xa0 is 160, aka the NBSP. But __only__ in ISO-8859. It is an invalid
-> UTF-8 sequence (which is why you may not even "see" the nbsp :-)
+> It's not possible to ignore aggregation. For instance, for a subset
+> of mem_map whose size ignoring alignment would otherwise fit in the
+> cache to completely avoid sharing any cachelines between page
+> structures requires page structures to be separated by at least one
+> mem_map index. This is highly unlikely in uniform distributions.
 
-An even better reason is to be in ISO-8859 :-)
+But that wasn't my argument. I _know_ there are cases where the smaller
+struct would be better, and I'm sure they would even arise in a running
+kernel.
+ 
 
-Willy
+> On Sat, May 19, 2007 at 11:15:01AM -0700, William Lee Irwin III wrote:
+> >> The cache footprint reduction is merely amortized,
+> >> probabilistic, etc.
+> 
+> On Sun, May 20, 2007 at 07:22:29AM +0200, Nick Piggin wrote:
+> > I don't really know what you mean by this, or what part of my cache cost
+> > argument you disagree with...
+> > I think it is that you could construct mem_map access patterns, without
+> > specifically looking at alignment, where a 56 byte struct page would suffer
+> > about 75% more cache misses than a 64 byte aligned one (and you could also
+> > get about 12% fewer cache misses with other access patterns).
+> > I also think the kernel's mem_map access patterns would be more on the
+> > random side, so overall would result in significantly fewer cache misses
+> > with 64 byte aligned pages.
+> > Which part do you disagree with?
+> 
+> The lack of consideration of the average case. I'll see what I can smoke
+> out there.
+
+I _am_ considering the average case, and I consider the aligned structure
+is likely to win on average :) I just don't have numbers for it yet.
+
 
