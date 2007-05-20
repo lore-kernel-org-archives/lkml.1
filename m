@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbXETTSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbXETTV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757907AbXETTSh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 15:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbXETTS1
+	id S1758634AbXETTV3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 15:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbXETTVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 15:18:27 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2455 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755975AbXETTS0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 15:18:26 -0400
-Date: Sun, 20 May 2007 20:18:14 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
-       Andrew Victor <andrew@sanpeople.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Manuel Lauss <mano@roarinelk.homelinux.net>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Pavel Pisa <pisa@cmp.felk.cvut.cz>,
-       Sascha Hauer <s.hauer@pengutronix.de>, Tony Lindgren <tony@atomide.com>,
-       David Brownell <david-b@pacbell.net>,
-       Juha =?iso-8859-1?B?WXJq9mzk?= <juha.yrjola@solidboot.com>,
-       Carlos Aguiar <carlos.aguiar@indt.org.br>,
-       "Briglia >> Anderson F. Briglia" <anderson.briglia@indt.org.br>,
-       Kyungmin Park <kmpark@infradead.org>, "Khasim, Syed" <x0khasim@ti.com>
-Subject: Re: [RFC] Orphaning MMC host drivers
-Message-ID: <20070520191814.GB5376@flint.arm.linux.org.uk>
-Mail-Followup-To: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
-	Andrew Victor <andrew@sanpeople.com>,
-	Ralf Baechle <ralf@linux-mips.org>,
-	Manuel Lauss <mano@roarinelk.homelinux.net>,
-	Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-	Pavel Pisa <pisa@cmp.felk.cvut.cz>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Tony Lindgren <tony@atomide.com>,
-	David Brownell <david-b@pacbell.net>,
-	Juha =?iso-8859-1?B?WXJq9mzk?= <juha.yrjola@solidboot.com>,
-	Carlos Aguiar <carlos.aguiar@indt.org.br>,
-	"Briglia >> Anderson F. Briglia" <anderson.briglia@indt.org.br>,
-	Kyungmin Park <kmpark@infradead.org>,
-	"Khasim, Syed" <x0khasim@ti.com>
-References: <4648BAC9.5020405@drzeus.cx> <20070520191151.GA5376@flint.arm.linux.org.uk> <46509E9C.6010003@drzeus.cx>
+	Sun, 20 May 2007 15:21:21 -0400
+Received: from mail.screens.ru ([213.234.233.54]:59342 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755847AbXETTVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 15:21:21 -0400
+Date: Sun, 20 May 2007 23:21:16 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: zilvinas@wilibox.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel NFS lockd freezes notebook on shutdown (Linux 2.6.22-rc1 + CFS v12)
+Message-ID: <20070520192116.GA83@tv-sign.ru>
+References: <1179338441.4265.13.camel@zv.wilibox.com> <20070516121538.7b108c10.akpm@linux-foundation.org> <20070516225543.GA337@tv-sign.ru> <1179390065.4760.5.camel@zv.wilibox.com> <20070517184556.GA81@tv-sign.ru> <1179485230.3800.20.camel@zv.wilibox.com> <20070518202805.GA298@tv-sign.ru> <Pine.LNX.4.64.0705201326410.8634@barclay.balt.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46509E9C.6010003@drzeus.cx>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0705201326410.8634@barclay.balt.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 09:16:44PM +0200, Pierre Ossman wrote:
-> Russell King wrote:
-> > On Mon, May 14, 2007 at 09:38:49PM +0200, Pierre Ossman wrote:
-> >> I've reached the point where I've grown tired of trying to figure out
-> >> who has hardware for what. I intend to commit the following in a few
-> >> days so if you care about the quality of the drivers it's time to step
-> >> up to the plate.
-> > 
-> > You can add me for mmci.c
-> > 
+On 05/20, zilvinas@wilibox.com wrote:
 > 
-> Great. Do you want the LAKML there aswell?
+> I've done some more tests and quite frankly I think this is really related 
+> to the dreaded ''fglrx.ko'' module. It seems to me that it is much easier 
+> to reproduce the problem if that damn module is loaded. It does uses 
+> workqueue. Then there is another driver ipw3945 loaded and it is required 
+> to run binary only ''ipw3945d'' daemon just to start using wireless driver 
+> ...
+> 
+> In either way both these kernel modules are workqueue users.
+> 
+> Btw, I had also tested kernel (compiled from the same source) but on 
+> different laptop (EVO N800v), single core, Pentium M 2GHz. Kernel is not 
+> freezing on shutdown, even loop nfs kernel stop/start - does not cause any 
+> kernel panic as on nx9420 (Dual Core) laptop. And that with or without any 
+> patch applied from Oleg. :((
 
-Probably be a good idea.
+Great. Even if not a bugfix, this patch is a reasonable cleanup anyway.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Thank you very much for additional testing and report!
+
+Oleg.
+
