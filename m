@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbXETLyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbXETL6O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbXETLyf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 07:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbXETLy1
+	id S1757355AbXETL6O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 07:58:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXETL6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 07:54:27 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:29689 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752702AbXETLy1 (ORCPT
+	Sun, 20 May 2007 07:58:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:56635 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755066AbXETL57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 07:54:27 -0400
+	Sun, 20 May 2007 07:57:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=uuoLNMKs1SMyPToJRunl17+ad9zGMs6YvbJAJh/pDFSXkq0v34IYmHIurnypxlaJ5YVuIN8UWNPM8CbGP4XaeeLxNG3Fw8JG+DKkp7uyGZF2b+4KmDJ6zYGbwVDZGQdkd0n9ZIDlCdoCB2SlbztYdFUxGdVPtMkn1j9+kAIb1a4=
-Message-ID: <465036E0.9050805@gmail.com>
-Date: Sun, 20 May 2007 13:54:08 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=q18SFGLKe5r6o3Dh4RQJHzVLjTTrJt7UOoDCNlILXzcWUwVTe+R53GeNWLhBG0vrMBV7jPS2babcE2PiOOFvLbBfz7n5kXLiMccnAU5LMW3Z2O5iD11I4mCsMd/LPVQyH/Wrvm7qAQsDWeEAOfMn9yo64ex4Zct7UYrasAz8jYE=
+Message-ID: <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com>
+Date: Sun, 20 May 2007 17:27:58 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Subject: Re: RFC: kconfig select warnings bogus?
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Kumar Gala" <galak@kernel.crashing.org>,
+       "Simon Horman" <horms@verge.net.au>, "Adrian Bunk" <bunk@stusta.de>
+In-Reply-To: <46503542.50300@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Tjenarvi Tjenarvi <tjenarvi@yahoo.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jgarzik@pobox.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: no DRQ after issuing MULTWRITE_EXT AND PCI: Bus #0b (-#0e) is
- hidden behind transparent bridge #0a (-#0a) (try 'pci=assign-busses')
-References: <647742.64243.qm@web58814.mail.re1.yahoo.com>
-In-Reply-To: <647742.64243.qm@web58814.mail.re1.yahoo.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070519151523.GA26724@uranus.ravnborg.org>
+	 <20070519110944.2a52061e.akpm@linux-foundation.org>
+	 <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com>
+	 <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>
+	 <464F9A7B.1030708@s5r6.in-berlin.de>
+	 <a781481a0705191753r25e0cay82785ed56c04b6eb@mail.gmail.com>
+	 <a781481a0705191804u7f5a344cr92f2a1981c502bf7@mail.gmail.com>
+	 <4650074A.6000307@s5r6.in-berlin.de>
+	 <a781481a0705200438s634712e6v957d7085bca7407@mail.gmail.com>
+	 <46503542.50300@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tjenarvi Tjenarvi wrote:
-> These dmesg if not as Tejun said, Which he said should only libata
-> drivers used to get more information.  Frankly, I don't know which one I
-> have to take off in kernel configuration to comply this.  I guess the
-> libata is in:
-> 
-> Device Drivers  --->
->  SCSI device support  --->
-> 
-> But,  don't know which one to take off, so that only libata driver
-> compiled. Please tell me.
+On 5/20/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> Satyam Sharma wrote:
+> > On 5/20/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> >> However you fix it --- don't remove "depends on" or "select".  You can
+> >> interchange them, but not remove them, unless there wasn't a dependency
+> >> to begin with.
+> >
+> > They _can_ be removed, with absolutely no build failures at all, because
+> > of the "default y if ..." on the dependency that is defined in some
+> > arch/.../Kconfig.
+>
+> You are right, they can be removed, and the Kconfig files can be turned
+> into an unmaintainable mess.
+>
+>         A requires B
+>
+> Maintainable.
+>
+>         B serves A
+>
+> Logically equivalent, yet unmaintainable.
 
-Please turn off Device Drivers -> ATA/ATAPi/MFM/RLL support.  I'm not
-sure which ide driver is grabbing the first port.  Can you post the
-original .config?
+Well, whether it is readable / maintainable is subjective and hence
+debatable. I was only answering your *completely misplaced and
+incorrect* original comment against the patch where you claimed
+that the patch was "totally wrong" because of the way it removed
+the "select" ... etc ...
 
-> The machine seems nothing wrong whether I used "pci=assign-busses" or
-> not. But, I found another message that I don't understand in the dmesg
-> whether I use "pci=assign-busses" or not, the message still occur, I
-> don't know this is related or not.  The message is "PCI: If a device
-> doesn't work, try "pci=routeirq".  If it helps, post a report".  Should
-> I try this kernel option?
-
-I don't think you need to pay attention to the message.
-
--- 
-tejun
+And remember, like I said already, the whole _idea_ is such arch-
+specific helper code be not mentioned from arch-agnostic Kconfig
+files. You may not like it, but this is the standard / most common way
+such cases are handled for tons of other cases in arch/.... Which
+is why Adrian's way of solving this (shifting all such arch-specific
+helper symbols also to drivers/... and then using depends on select
+on it) is not viable.
