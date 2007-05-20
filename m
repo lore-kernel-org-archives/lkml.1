@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760820AbXETWdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbXETWua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760820AbXETWdQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 18:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757956AbXETWdE
+	id S1759998AbXETWua (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 18:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbXETWuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 18:33:04 -0400
-Received: from ns2.g-housing.de ([81.169.133.75]:39987 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757248AbXETWdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 18:33:03 -0400
-X-Greylist: delayed 1322 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 May 2007 18:33:03 EDT
-Date: Sun, 20 May 2007 23:10:54 +0100 (BST)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: linux-kernel@vger.kernel.org
-cc: linuxppc-dev@ozlabs.org
-Subject: Badness at include/linux/slub_def.h
-Message-ID: <Pine.LNX.4.64.0705202304530.14522@sheep.housecafe.de>
+	Sun, 20 May 2007 18:50:21 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56693 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757438AbXETWuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 18:50:19 -0400
+Date: Sun, 20 May 2007 16:50:17 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070520225017.GC10562@parisc-linux.org>
+References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181633240.24071@blonde.wat.veritas.com> <20070519175320.GB19966@holomorphy.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070519175320.GB19966@holomorphy.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi there,
+On Sat, May 19, 2007 at 10:53:20AM -0700, William Lee Irwin III wrote:
+> On Fri, May 18, 2007 at 04:42:10PM +0100, Hugh Dickins wrote:
+> > Sooner rather than later, don't we need those 8 bytes to expand from
+> > atomic_t to atomic64_t _count and _mapcount?  Not that we really need
+> > all 64 bits of both, but I don't know how to work atomically with less.
+> > (Why do I have this sneaking feeling that you're actually wanting
+> > to stick something into the lower bits of page->virtual?)
+> 
+> I wonder how close we get to overflow on ->_mapcount and ->_count.
+> (untested/uncompiled).
 
-yet another[0] badness, again from this very iBook running vanilla 
-2.6.22-rc1-git8:
-
-[41653.487050] Badness at include/linux/slub_def.h:77
-[41653.487060] Call Trace:
-[41653.487068] [ecafbcb0] [c0008d00] show_stack+0x3c/0x194 (unreliable)
-[41653.487097] [ecafbce0] [c01426d4] report_bug+0x84/0xf4
-[41653.487116] [ecafbcf0] [c0010280] program_check_exception+0xbc/0x530
-[41653.487137] [ecafbd20] [c0011f8c] ret_from_except_full+0x0/0x4c
-[41653.487154] --- Exception: 700 at get_slab+0x248/0x260
-[41653.487168]     LR = __kmalloc+0x1c/0x9c
-[41653.487176] [ecafbde0] [101dfbc8] 0x101dfbc8 (unreliable)
-[41653.487213] [ecafbe10] [c0080398] __kmalloc+0x1c/0x9c
-[41653.487227] [ecafbe30] [c01c2150] drm_rmdraw+0x26c/0x29c
-[41653.487243] [ecafbe80] [c01c2b74] drm_ioctl+0xe0/0x250
-[41653.487257] [ecafbeb0] [c00924a0] do_ioctl+0x9c/0xa8
-[41653.487273] [ecafbed0] [c0092530] vfs_ioctl+0x84/0x490
-[41653.487287] [ecafbf10] [c009297c] sys_ioctl+0x40/0x74
-[41653.487301] [ecafbf40] [c0011930] ret_from_syscall+0x0/0x38
-[41653.487315] --- Exception: c01 at 0xfd132a8
-[41653.487327]     LR = 0xfd13240
-
-
-This happens when I execute glxinfo(1) - but it happens only once. The 
-second time the message is not printed. As with the other reports, the 
-command actually works, DRI is working too and the system remains 
-stable. Please see http://nerdbynature.de/bits/2.6.22-rc1-git8/ for more 
-details.
-
-Thanks,
-Christian.
-
-[0] http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036466.html
-     http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036468.html
--- 
-BOFH excuse #334:
-
-50% of the manual is in .pdf readme files
+I think the problem is that an attacker can deliberately overflow
+->_count, not that it can happen innocuously.  By mmaping, say, the page
+of libc that contains memcpy() several million times, and forking
+enough, can't you make ->_mapcount hit 0?  I'm not a VM guy, I just
+vaguely remember people talking about this before.
