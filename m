@@ -1,192 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764695AbXETAH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763579AbXETALl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764695AbXETAH0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 20:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbXETAHS
+	id S1763579AbXETALl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 20:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbXETALe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 20:07:18 -0400
-Received: from haxent.com ([65.99.219.155]:4276 "EHLO haxent.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755610AbXETAHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 20:07:17 -0400
-Message-ID: <464F912F.3040205@haxent.com.br>
-Date: Sat, 19 May 2007 21:07:11 -0300
-From: Davi Arnaut <davi@haxent.com.br>
+	Sat, 19 May 2007 20:11:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:52007 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755763AbXETALd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 20:11:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VOifsiWMpgD4kt5dxPOEiRBvipgZJS+h0bd1wQWKqRbzAWXv/pyVQntmP/e08WWMlEq70QZLrVmvEB4abcgKuZE+KYQ6AwWDs4P6drbOwy8PofOB/Ioh6RZiqnv2XjFQrkiQEbDh++ze8nc74qcvKa3+jncdYGz1EM9HDictv0Q=
+Message-ID: <a781481a0705191711v7f4f93e4r9dfd7e5cbc0ddef4@mail.gmail.com>
+Date: Sun, 20 May 2007 05:41:30 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: RFC: kconfig select warnings bogus?
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>
+In-Reply-To: <20070520000235.GP6291@stusta.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] signalfd: retrieve multiple signals with one read() call
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070519151523.GA26724@uranus.ravnborg.org>
+	 <20070519110944.2a52061e.akpm@linux-foundation.org>
+	 <20070519230537.GI6291@stusta.de>
+	 <20070519162239.1bcb03d6.akpm@linux-foundation.org>
+	 <20070520000235.GP6291@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Sat, May 19, 2007 at 04:22:39PM -0700, Andrew Morton wrote:
+> > On Sun, 20 May 2007 01:05:37 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+> >
+> > > Look for example at the last one in drivers/input/mouse/Kconfig:
+> > >
+> > > config MOUSE_ATARI
+> > >         tristate "Atari mouse"
+> > >         depends on ATARI
+> > >         select ATARI_KBD_CORE
+> > >
+> > > This is perfectly correct (the select'ed symbol is only unavailable when
+> > > the dependency can't be fulfilled), and all things to "fix" the warning
+> > > will make it worse.
+> >
+> > If ATARI is unset then we shouldn't be generating the "'select' used by
+> > config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'"
+> > warnings, should we?
+>
+> Exactly.
 
-Gathering signals in bulk enables server applications to drain a signal
-queue (almost full of realtime signals) more efficiently by reducing the
-syscall and file look-up overhead.
-
-Very similar to the sigtimedwait4() call described by Niels Provos,
-Chuck Lever, and Stephen Tweedie in a paper entitled "Analyzing the
-Overload Behavior of a Simple Web Server". The paper lists more details
-and advantages.
-
-Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
-
-diff --git a/fs/signalfd.c b/fs/signalfd.c
-index 7cfeab4..f6303c5 100644
---- a/fs/signalfd.c
-+++ b/fs/signalfd.c
-@@ -11,6 +11,8 @@
-  *      Now using anonymous inode source.
-  *      Thanks to Oleg Nesterov for useful code review and suggestions.
-  *      More comments and suggestions from Arnd Bergmann.
-+ * Sat May 19, 2007: Davi E. M. Arnaut <davi@haxent.com.br>
-+ *      Retrieve multiple signals with one read() call
-  */
- 
- #include <linux/file.h>
-@@ -206,6 +208,64 @@ static int signalfd_copyinfo(struct signalfd_siginfo __user *uinfo,
- 	return err ? -EFAULT: sizeof(*uinfo);
- }
- 
-+static ssize_t signalfd_dequeue(struct signalfd_ctx *ctx, siginfo_t *info,
-+				int nonblock)
-+{
-+	int locked;
-+	ssize_t ret;
-+	struct signalfd_lockctx lk;
-+	DECLARE_WAITQUEUE(wait, current);
-+
-+	locked = signalfd_lock(ctx, &lk);
-+	if (!locked)
-+		return 0;
-+
-+	ret = dequeue_signal(lk.tsk, &ctx->sigmask, info);
-+	switch (ret) {
-+	case 0:
-+		if (!nonblock)
-+			break;
-+		ret = -EAGAIN;
-+	default:
-+		signalfd_unlock(&lk);
-+		return ret;
-+	}
-+
-+	add_wait_queue(&ctx->wqh, &wait);
-+	for (;;) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		ret = dequeue_signal(lk.tsk, &ctx->sigmask, info);
-+		if (ret != 0)
-+			break;
-+		if (signal_pending(current)) {
-+			ret = -ERESTARTSYS;
-+			break;
-+		}
-+		signalfd_unlock(&lk);
-+		schedule();
-+		locked = signalfd_lock(ctx, &lk);
-+		if (unlikely(!locked)) {
-+			/*
-+			 * Let the caller read zero byte, ala socket
-+			 * recv() when the peer disconnect. This test
-+			 * must be done before doing a dequeue_signal(),
-+			 * because if the sighand has been orphaned,
-+			 * the dequeue_signal() call is going to crash.
-+			 */
-+			 ret = 0;
-+			 break;
-+		}
-+	}
-+
-+	remove_wait_queue(&ctx->wqh, &wait);
-+	__set_current_state(TASK_RUNNING);
-+
-+	if (likely(locked))
-+		signalfd_unlock(&lk);
-+
-+	return ret;
-+}
-+
- /*
-  * Returns either the size of a "struct signalfd_siginfo", or zero if the
-  * sighand we are attached to, has been orphaned. The "count" parameter
-@@ -215,55 +275,30 @@ static ssize_t signalfd_read(struct file *file, char __user *buf, size_t count,
- 			     loff_t *ppos)
- {
- 	struct signalfd_ctx *ctx = file->private_data;
--	ssize_t res = 0;
--	int locked, signo;
-+	struct signalfd_siginfo __user *siginfo;
-+	int nonblock = file->f_flags & O_NONBLOCK;
-+	ssize_t ret, total = 0;
- 	siginfo_t info;
--	struct signalfd_lockctx lk;
--	DECLARE_WAITQUEUE(wait, current);
- 
--	if (count < sizeof(struct signalfd_siginfo))
-+	count /= sizeof(struct signalfd_siginfo);
-+	if (!count)
- 		return -EINVAL;
--	locked = signalfd_lock(ctx, &lk);
--	if (!locked)
--		return 0;
--	res = -EAGAIN;
--	signo = dequeue_signal(lk.tsk, &ctx->sigmask, &info);
--	if (signo == 0 && !(file->f_flags & O_NONBLOCK)) {
--		add_wait_queue(&ctx->wqh, &wait);
--		for (;;) {
--			set_current_state(TASK_INTERRUPTIBLE);
--			signo = dequeue_signal(lk.tsk, &ctx->sigmask, &info);
--			if (signo != 0)
--				break;
--			if (signal_pending(current)) {
--				res = -ERESTARTSYS;
--				break;
--			}
--			signalfd_unlock(&lk);
--			schedule();
--			locked = signalfd_lock(ctx, &lk);
--			if (unlikely(!locked)) {
--				/*
--				 * Let the caller read zero byte, ala socket
--				 * recv() when the peer disconnect. This test
--				 * must be done before doing a dequeue_signal(),
--				 * because if the sighand has been orphaned,
--				 * the dequeue_signal() call is going to crash.
--				 */
--				res = 0;
--				break;
--			}
--		}
--		remove_wait_queue(&ctx->wqh, &wait);
--		__set_current_state(TASK_RUNNING);
--	}
--	if (likely(locked))
--		signalfd_unlock(&lk);
--	if (likely(signo))
--		res = signalfd_copyinfo((struct signalfd_siginfo __user *) buf,
--					&info);
- 
--	return res;
-+	siginfo = (struct signalfd_siginfo __user *) buf;
-+
-+	do {
-+		ret = signalfd_dequeue(ctx, &info, nonblock);
-+		if (unlikely(ret <= 0))
-+			break;
-+		ret = signalfd_copyinfo(siginfo, &info);
-+		if (ret < 0)
-+			break;
-+		siginfo++;
-+		total += ret;
-+		nonblock = 1;
-+	} while (--count);
-+
-+	return total ? total : ret;
- }
- 
- static const struct file_operations signalfd_fops = {
+But I suspect we do wish to get rid of the bogus warnings? (similar to
+other places in arch/.../Kconfig's where such cases are handled) ...
+_that_ (suppressing these four bogus warnings) was the purpose of that
+patch in the first place .....
