@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762465AbXETGyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764244AbXETGyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762465AbXETGyS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 02:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759474AbXETGyG
+	id S1764244AbXETGyg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 02:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763858AbXETGy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 02:54:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38757 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759243AbXETGyE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 02:54:04 -0400
-Date: Sat, 19 May 2007 23:47:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mattia Dongili <malattia@linux.it>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Zhang Rui <rui.zhang@intel.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Len Brown <lenb@kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after
- STR
-Message-Id: <20070519234723.5200a8b4.akpm@linux-foundation.org>
-In-Reply-To: <20070520061408.GA3325@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home>
-	<20070518002240.bc08e811.akpm@linux-foundation.org>
-	<20070519064829.GA15518@inferi.kami.home>
-	<20070519000413.75badb6f.akpm@linux-foundation.org>
-	<20070520061408.GA3325@inferi.kami.home>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 20 May 2007 02:54:27 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:37333 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759474AbXETGy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 02:54:26 -0400
+Message-ID: <464FF099.1000107@simon.arlott.org.uk>
+Date: Sun, 20 May 2007 07:54:17 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       michal@logix.cz, ioe-lkml@rameria.de
+Subject: Re: [PATCH (v2)] crypto: Remove pointless padlock module
+References: <4633DB56.6070000@simon.arlott.org.uk> <4633FBFF.7050202@oracle.com> <463450C6.5060103@simon.arlott.org.uk> <20070518064500.GA16394@gondor.apana.org.au> <464F4FD1.5030308@simon.arlott.org.uk> <20070520031550.GA22903@gondor.apana.org.au>
+In-Reply-To: <20070520031550.GA22903@gondor.apana.org.au>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007 15:14:08 +0900 Mattia Dongili <malattia@linux.it> wrote:
-
-> On Sat, May 19, 2007 at 12:04:13AM -0700, Andrew Morton wrote:
-> > On Sat, 19 May 2007 15:48:29 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > 
-> > > On Fri, May 18, 2007 at 12:22:40AM -0700, Andrew Morton wrote:
-> > > > On Fri, 18 May 2007 16:15:24 +0900 Mattia Dongili <malattia@linux.it> wrote:
-> > > > 
-> > > > > Hello,
-> > > > > 
-> > > > > After finally catching fw-{ohci,core} to be problematic during resume,
-> > > > > I'm now experiencing an immediate resume after suspending.
-> > > > > 
-> > > > > 2.6.21-rc7-mm* didn't even suspend, my last known suspend-and-resuming
-> > > > > kernel was 2.6.21-rc5-mm3 (I know one other vaio SZ user could STR with
-> > > > > 2.6.21-rc6-mm* after the cpuidle fixes).
-> > > > > 
-> > > > > my .config is: http://oioio.altervista.org/linux/config-2.6.22-rc1-mm1-1
-> > > > > and a str cycle with PM_DEBUG=y:
-> > > > > http://oioio.altervista.org/linux/dmesg-SRT-immediately-resumes.txt
-> > > ...
-> > > > > Any idea where to start from? (bisecting is ok, but it'll take some
-> > > > > time...)
-> > > > 
-> > > > Bisecting isn't that bad ;) I'd pick git-acpi.patch as the starting point.
-> > > 
-> > > ok, git-acpi.patch is not the bad boy :)
+On 20/05/07 04:15, Herbert Xu wrote:
+> On Sat, May 19, 2007 at 08:28:17PM +0100, Simon Arlott wrote:
+>> It should be a bool that doesn't select anything, the AES and SHA modules 
+>> will select CRYPTO_ALGAPI. It could also depend on MVIAC3_2 || MVIA_C7 
+>> instead of X86_32.
 > 
-> but very very close:
-> acpi-driver-model-flags-and-platform_enable_wake.patch
-> 
+> Having it as a tristate means that we don't have to duplicate the
+> dependencies and selects that each padlock algorithm would otherwise
+> do.  So is there actually a problem with it being a tristate?
 
-Thanks very much for working that out - it saves lots of people heaps of
-pain.  I dropped the patch.
+It has nothing to compile as a module, so M makes no sense. Each algorithm 
+already selects CRYPTO_ALGAPI indirectly.
+
+-- 
+Simon Arlott
