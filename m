@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764195AbXETJwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764507AbXETJyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764195AbXETJwX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 05:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXETJwQ
+	id S1764507AbXETJyt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 05:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXETJyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 05:52:16 -0400
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:41379 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755805AbXETJwP (ORCPT
+	Sun, 20 May 2007 05:54:38 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:2803 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755650AbXETJyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 05:52:15 -0400
-Date: Sun, 20 May 2007 02:52:14 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Satyam Sharma <satyam.sharma@gmail.com>
-cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Simon Horman <horms@verge.net.au>
-Subject: Re: RFC: kconfig select warnings bogus?
-In-Reply-To: <a781481a0705191719u5234b248v8d36af6a368a5119@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0705200228360.1671@shell4.speakeasy.net>
-References: <20070519151523.GA26724@uranus.ravnborg.org> 
- <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com> 
- <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com> 
- <20070519230940.GJ6291@stusta.de>  <a781481a0705191617v901ac64nfa7040ff302d2da1@ma
- <a781481a0705191719u5234b248v8d36af6a368a5119@mail.gmail.com>
+	Sun, 20 May 2007 05:54:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=i3TrmB5nGhXulUDBZ9e7pDOAt8jX1BAivFrxzHPlkwcoZTRren6nWiQQRykrZmz3zCVvHArmWPi376EE8hzh+9oPfr60VBfNx5TFygxf5y6E6UPBuPzJDxeK6Zw0xkdwzZ7fsvkQI+D8fb0jy7/1Gwt0tRfPh3pdnyg5FrQsjMg=
+Message-ID: <46501ACF.6020702@gmail.com>
+Date: Sun, 20 May 2007 11:54:23 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Indan Zupancic <indan@nul.nu>
+CC: Paul Mundt <lethal@linux-sh.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       garyhade@us.ibm.com
+Subject: Re: sd_resume redundant?  [was: [PATCH] libata: implement      ata_wait_after_reset()]
+References: <20070510072005.GA27316@linux-sh.org>    <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com>    <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com>    <20070511005217.GA23186@li <464B3505.20004@gmail.com>    <2229.81.207.0.53.1179592754.squirrel@secure.samage.net>    <464F4548.6020101@gmail.com> <464F4A58.2050607@gmail.com> <4764.81.207.0.53.1179613997.squirrel@secure.samage.net>
+In-Reply-To: <4764.81.207.0.53.1179613997.squirrel@secure.samage.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007, Satyam Sharma wrote:
-> On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > On Sun, May 20, 2007 at 05:25:24AM +0530, Satyam Sharma wrote:
-> > > On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > >> On Sun, May 20, 2007 at 05:06:33AM +0530, Satyam Sharma wrote:
-> > >> > On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > >> There are cases where "default .. if .." is the right idiom, but there
-> > >> are also cases where "select" is the right idiom. And for helper code
-> > >> like ATARI_KBD_CORE, "select" is the right idiom.
-> > >
-> > > ATARI_KBD_CORE, unlike MII, is defined only by some archs. And the
-> > > correct (most widely used or standard, in any case) idiom for that is
-> > > "default .. if ..". Or perhaps you can convert those helper code options in
-> > > arch/.../config's over to select too, as an exercise? :-)
-> >
-> > Perhaps not as an exercise, but actually for real.
-> >
-> > We had "fixed" such warnings in the past similar to your patch, but that
-> > was actually a mistake.
-> >
-> > And "correct" can easily be the opposite of "most widely used or standard"
-> > if you discover that you did it wrong in the past.
->
-> In that case the correct approach here too would be to _shift_
-> ATARI_KBD_CORE from arch/m68k/Kconfig to drivers/input/Kconfig
-> and *then* use "select" from the config options that require it in
-> drivers/input/keyboard/Kconfig and drivers/input/mouse/Kconfig
->
-> (and repeat for other such cases in arch/...)
+Indan Zupancic wrote:
+> On Sat, May 19, 2007 21:04, Tejun Heo wrote:
+>> Tejun Heo wrote:
+>>> Yeah, if SCR registers are accessible, 0xff doesn't indicate the device
+>>> isn't there, so the whole skip-0xff logic probably shouldn't apply in
+>>> such cases, but we can also achieve pretty good result by just making
+>>> the first reset tries a bit more aggressive.
+>> So, here's the patch.
+>>
+>> Paul, can you please test this patch without the previous patch?  Indan,
+>> this should reduce the resume delay.  Please test.  But you'll still
+>> feel some added delay compared to 2.6.20 due to the mentioned
+>> suspend/resume change.
+> 
+> This removed the COMRESET errors indeed, and with sd_resume()
+> disabled everything is speedy again (2s or so. Still a desktop pc).
+> I didn't try with sd_resume enabled.
 
-You don't need a huge '||' chain, you can always have more than one default
-line:
+Can you try to measure with sd_resume in place?
 
-config ATARI_KBD_CORE
-	bool
-	default y if KEYBOARD_ATARI
-	default y if MOUSE_ATARI
+> Everything seems to work fine without sd_resume(), so why is it needed?
 
-Basically a line "config A \n select B" is transformed into "config B \n
-default y if A".  It's the same number of lines, they're just in a new place.
+Because not all disks spin up without being told to do so and like it or
+not spinning disks up on resume is the default behavior.  As I wrote in
+the other reply, it would be worthwhile to make it configurable.
 
-Another alternative would be to shift the arch specific drivers to a file
-that's arch specific.  e.g. move MOUSE_ATARI from drivers/input/mouse/Kconfig
-to arch/m68k/Kconfig.
+-- 
+tejun
