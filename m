@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760501AbXETW2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760498AbXETWcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760501AbXETW2A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 18:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757537AbXETW1x
+	id S1760498AbXETWcY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 18:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbXETWcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 18:27:53 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:63437 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757112AbXETW1x (ORCPT
+	Sun, 20 May 2007 18:32:17 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:52476 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757784AbXETWcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 18:27:53 -0400
-Date: Sun, 20 May 2007 16:27:42 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: something strange in libata-core.c for kernel 2.6.22-rc3
-In-reply-to: <fa.Ldjy2OubeKomZD0OV2gRm/wpUFo@ifi.uio.no>
-To: Tejun Heo <htejun@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
-Cc: l.genoni@oltrelinux.com
-Message-id: <4650CB5E.3010603@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.MCe9nCgx+WnsHp+weZyM9LiDF0s@ifi.uio.no>
- <fa.rv8/6n3uBnAIoUHHNUW3eR7cJd8@ifi.uio.no>
- <fa.LXy58QwLlPXDhsfVUU9kEfA3QbI@ifi.uio.no>
- <fa.Ldjy2OubeKomZD0OV2gRm/wpUFo@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sun, 20 May 2007 18:32:16 -0400
+Date: Sun, 20 May 2007 18:22:47 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Folkert van Heusden <folkert@vanheusden.com>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
+       righiandr@users.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
+Message-ID: <20070520222247.GA25276@c2.user-mode-linux.org>
+References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr> <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de> <20070520212036.GL22452@vanheusden.com> <20070520222422.GT2012@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070520222422.GT2012@bingen.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> l.genoni@oltrelinux.com wrote:
->> Mybe I am wrong, but if you are detecting 40-wire cable to set them to
->> DMA/33, why the check includes also 80-wire cables configuring them to
->> DMA/33 too?
->>
->> With this patch my nvidia4 IDE controllers detects correctly and
->> configure correctly DMA/100 for my HD and DMA/33 for my DVD (the first
->> uses a 80-wire cable, the second a 40-wire cable).
->>
->> Am I wrong somewhere?
+On Mon, May 21, 2007 at 12:24:22AM +0200, Andi Kleen wrote:
+> > > But I think your list is far too long anyways.
+> > 
+> > So, which ones would you like to have removed then?
 > 
-> That's the drive side verification of 80c cable check, so if the
-> condition triggers we downgrade 80c or unknown to 40c.  Cable detection
-> on nvidia PATA is a disaster.  You're supposed to do some ACPI dancing
-> and drive side detection is completely bogus.  Eeeek....
-> 
-> Alan, did you have a chance to test the ACPI cable detection?  It just
-> didn't work when I tried it.  It always returned 80c on my machine.
+> SIGFPE at least and the accounting signals are dubious too. SIGQUIT can
+> be also relatively common.
 
-Hopefully when we get that support in and working it will solve a lot of 
-these issues (and others, like the laptops that have a short 40-wire 
-cable that is good for high UDMA speeds which we presently have to 
-hard-code detection for specific models).
+And SIGSEGV and SIGBUS - UML catches these internally and handles them.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+				Jeff
