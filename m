@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbXETT6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbXETUIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbXETT6O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 15:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbXETT6A
+	id S1757769AbXETUIR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 16:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbXETUIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 15:58:00 -0400
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:46926 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755552AbXETT57 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 15:57:59 -0400
-Date: Sun, 20 May 2007 12:57:58 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Satyam Sharma <satyam.sharma@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Simon Horman <horms@verge.net.au>
-Subject: Re: RFC: kconfig select warnings bogus?
-In-Reply-To: <465034AA.6030904@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.58.0705201243500.1671@shell4.speakeasy.net>
-References: <20070519151523.GA26724@uranus.ravnborg.org> 
- <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com> 
- <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com> 
- <20070519230940.GJ6291@stusta.de>  <a781481a0705191617v901ac64nfa7040ff302d2da1@ma
- <a781481a0705191719u5234b248v8d36af6a368a5119@mail.gmail.com>
- <Pine.LNX.4.58.0705200228360.1671@shell4.speakeasy.net> <465029F1.6090301@s5r6.in-berlin.de>
- <Pine.LNX.4.58.0705200416370.1671@shell4.speakeasy.net> <465034AA.6030904@s5r6.in-berlin.de>
+	Sun, 20 May 2007 16:08:07 -0400
+Received: from [216.16.235.2] ([216.16.235.2]:53630 "EHLO rubicon.netdirect.ca"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755898AbXETUIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 16:08:06 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Sun, 20 May 2007 16:06:40 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Factor out common MODULE_INFO content from module*.h
+ files.
+In-Reply-To: <20070520191552.GA25200@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0705201555470.18338@localhost.localdomain>
+References: <Pine.LNX.4.64.0705201502160.17519@localhost.localdomain>
+ <20070520191552.GA25200@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	TW_VN 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007, Stefan Richter wrote:
+On Sun, 20 May 2007, Sam Ravnborg wrote:
+
+> On Sun, May 20, 2007 at 03:06:15PM -0400, Robert P. J. Day wrote:
+> >
+> > In order to eventually break the interdependency between the module.h
+> > and moduleparam.h header files, factor out the common MODULE_INFO
+> > content into a new header file.
 >
-> >> Iterating upwards and downwards the dependency graph is the duty of
-> >> "make snafuconfig", not of the maintainers.
+> The moduleinfo.h file looks redundant at first look. Why not push
+> relevant parts from moduleparam.h (the MODULE_INFO bits) to module.h
+> and let go of the include of moduleparam.h in module.h (when you
+> have fixed the users)?
 >
-> ...multi-level dependencies are no problem for it.
->
-> There is nothing wrong with
->
-> 	A... depends on B
->
-> 	B... depends on C
->
-> 	# CONFIG_C is not set
->
-> -> A is unavailable.
+> In this way we do not add an extra .h file. And files that needs
+> moduleparam.h will anyway always need module.h. But not the other
+> way around.
 
-select doesn't appear to work quite like this.  For example:
+crap, now i remember why i did it the way i did it.
 
-config A
-	bool "A"
+yes, the way you describe it is a simpler solution, but it would break
+all of the files in the tree that use module parameters and have
+included *only* module.h, and have been getting away with it all this
+time only because module.h currently includes moduleparam.h.
 
-config B
-	bool "B"
-	depends on A
+based on a simple script i have, there are currently 583 files under
+the drivers/ directory *alone* that are like that.  that is, 583 files
+that would need to include moduleparam.h instead of module.h simply to
+continue to compile if the obvious header file fix were made.
 
-config C
-	bool "C"
-	select B
+in that situation, the proper (initial) patch would be one that
 
-In this case, it's possible to turn C on and A off.  B will be on, even
-though it depends on A and A is off.
+1) didn't break what was already there, and
+2) allowed people to start cleaning up their files little by little
 
-The kconfig docs say that "B..  depends on A" sets the maximum value of B
-to be that of A.  Since A=0, the max value of B is 0.
+and when all of the cleanup was allegedly complete, the header files
+could be adjusted to their final form.
 
-The kconfig docs also say that "C..  select B" sets the minimum value of B
-to be that of C.  Since C=2, the minimum value of B is 2.
+is any of this making sense?  yes, sam's suggestion is clearly the
+simpler one, but it can't be applied without cleaning everything up
+*first*.  and without it, people can't start cleaning up code on their
+own.
 
-So we have B>=2 and B<=0, which is obviously impossible.  Yet *config has
-no problem with this, and will set B=2 even the 'depends' means B must be
-0.  It seems like "select" will override any other dependencies.
+this *has* to be a two-step process.  you may not like the
+moduleinfo.h file but think of it as a bridge to get to the final
+result, when it can finally be thrown away.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
