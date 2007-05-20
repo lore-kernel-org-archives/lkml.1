@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXETGjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbXETGp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761972AbXETGjM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 02:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759377AbXETGi7
+	id S1761381AbXETGp0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 02:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759377AbXETGpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 02:38:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55066 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759342AbXETGi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 02:38:58 -0400
-Date: Sun, 20 May 2007 08:38:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anant Nitya <kernel@prachanda.info>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] CFS scheduler, -v13
-Message-ID: <20070520063804.GA25058@elte.hu>
-References: <20070517174533.GA538@elte.hu> <200705180317.06014.kernel@prachanda.hub> <20070518102607.GA23151@elte.hu> <200705200246.22444.kernel@prachanda.hub>
+	Sun, 20 May 2007 02:45:16 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55486 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759243AbXETGpP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 02:45:15 -0400
+Date: Sat, 19 May 2007 23:41:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] check d_path() error in print-fatal-signals
+Message-Id: <20070519234138.a800e0fb.akpm@linux-foundation.org>
+In-Reply-To: <20070520055639.GA4485@APFDCB5C>
+References: <20070520055639.GA4485@APFDCB5C>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705200246.22444.kernel@prachanda.hub>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.7
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.7 required=5.9 tests=BAYES_00,INFO_TLD autolearn=no SpamAssassin version=3.1.7
-	1.3 INFO_TLD               URI: Contains an URL in the INFO top-level domain
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 20 May 2007 14:56:39 +0900 Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-* Anant Nitya <kernel@prachanda.info> wrote:
-
-> Hi Ingo,
+> d_path() returns -ENAMETOOLONG if buffer length is not enough.
+> But there is no error handling for it in print_vma() which calls
+> d_path() with not enough buffer (We can easily make segfault program
+> which has longer path than 128bytes).
 > 
-> Please ignore my last report about lag problem while using CFS-v13, it 
-> is working perfectly fine with 2.6.21.1 and the lag I used to see in 
-> v12 is not there with v13 anymore. [...]
+> This patch allocates enough buffer for d_path() dynamically.
+> audit_log_d_path() is doing sililar thing. So I just stole from it.
+> 
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> 
+> ---
+>  kernel/signal.c |   10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
+> 
+> Index: 2.6-mm/kernel/signal.c
+> ===================================================================
+> --- 2.6-mm.orig/kernel/signal.c
+> +++ 2.6-mm/kernel/signal.c
+> @@ -740,15 +740,23 @@ static int print_vma(struct vm_area_stru
+>  	 * special [heap] marker for the heap:
+>  	 */
+>  	if (file) {
+> -#define SIZE 128
+> -		char tmp[SIZE], *str;
+> -
+> -		str = d_path(file->f_dentry, file->f_vfsmnt, tmp, SIZE);
+> -		while (str[0] && (str[0] == ' '))
+> -			str++;
+> +		char *p, *path;
+>  
+> +		/* We will allow 11 spaces for ' (deleted)' to be appended */
+> +		path = kmalloc(PATH_MAX + 11, GFP_KERNEL);
+> +		if (!path)
+> +			p = "<no memory>";
+> +		else {
+> +			p = d_path(file->f_dentry, file->f_vfsmnt, path,
+> +				   PATH_MAX + 11);
+> +			if (IS_ERR(p))
+> +				p = "<too long>";
+> +			else
+> +				p = strstrip(p);
+> +		}
+>  		pad_len_spaces(len);
+> -		printk("%s", str);
+> +		printk("%s", p);
+> +		kfree(path);
+>  	} else {
+>  		const char *name = arch_vma_name(vma);
+>  		if (!name) {
 
-ah, great - i was looking over your debug data and couldnt find the 
-problem! This moves CFS into the "no open regressions" state again ;-)
+Thanks.
 
-> [...] After digging in a bit I found that problem is only occurring in 
-> 2.6.22-rc1 and it get fired by network usage while transmitting data 
-> upstream. I don't have any evidence that CFS is involved in lag 
-> problem since 2.6.22-rc1 with stock scheduler is also having same lag 
-> problem and it seems directly proportional with upstream speed while 
-> downstream doesn't shows any misbehavior { at lower upstream speed lag 
-> is less but with higher upstream speed system starts crawling and 
-> system load hitting to 70/75}. Lets see how 2.6.22-rc2 is doing.
+This bug exists only in -mm kernels, and is introduced by the -mm-only
+debugging patch
+vdso-improve-print_fatal_signals-support-by-adding-memory-maps.patch.
 
-if that lag still occurs with rc2 then please repeat the following 
-debugging steps under CFS [which has more instrumentation than the stock 
-scheduler]:
+I think I'll just drop that patch - I don't think it is proving useful to
+anyone.
 
-  cat /proc/`pidof firefox-bin`/sched > sched1.txt
-  echo 0 > /proc/`pidof firefox-bin`/sched
-
-  < reproduce the lag in firefox >
-
-  cat /proc/`pidof firefox-bin`/sched > sched2.txt
-
-this way we'll be able to tell what nature this delay has. Also, could 
-you send me your kernel's .config (off-list)?
-
-	Ingo
