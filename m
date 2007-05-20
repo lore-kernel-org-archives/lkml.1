@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763538AbXETBKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbXETBVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763538AbXETBKH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 21:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbXETBJz
+	id S1763003AbXETBVV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 21:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbXETBVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 21:09:55 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46749 "EHLO pasmtpB.tele.dk"
+	Sat, 19 May 2007 21:21:14 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41984 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755763AbXETBJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 21:09:54 -0400
-Date: Sun, 20 May 2007 03:10:50 +0200
+	id S1756099AbXETBVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 21:21:14 -0400
+Date: Sun, 20 May 2007 03:22:11 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Bob Tracy <rct@gherkin.frus.com>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Christian Volkmann <haveaniceday@cv-sv.de>,
-       linux-crypto@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
-       Luca Tettamanti <kronos.it@gmail.com>
-Subject: Re: [1/2] 2.6.22-rc2: known regressions with patches
-Message-ID: <20070520011050.GA31667@uranus.ravnborg.org>
-References: <464F74F2.8090207@googlemail.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [i386/x86-64] Fix section mismatch
+Message-ID: <20070520012211.GB31667@uranus.ravnborg.org>
+References: <20070511153248.GA22577@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <464F74F2.8090207@googlemail.com>
+In-Reply-To: <20070511153248.GA22577@suse.de>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 12:06:42AM +0200, Michal Piotrowski wrote:
-> Hi all,
+On Fri, May 11, 2007 at 05:32:48PM +0200, Bernhard Walle wrote:
+> This patch fixes following compile warning:
 > 
-> Here is a list of some known regressions in 2.6.22-rc2
-> with patches available.
+> --------- >8 --------
+> WARNING: arch/x86_64/kernel/built-in.o - Section mismatch: reference to
+> .init.text:mtrr_bp_init from .text between 'id entify_cpu' (at offset 0x6571)
+> and 'IRQ0x20_interrupt'
+> --------- 8< --------
 > 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
+> It's because identify_cpu() which is __cpuinit calls mtrr_bp_init() which is
+> __init(). __cpuinit() expands to nothing if CONFIG_HOTPLUG_CPU=y and so the
+> call is illegal.
 > 
 > 
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
 > 
-> Unclassified
-> 
-> Subject    : 2.6.22-rc2: section mismatch
-> References : http://lkml.org/lkml/2007/5/19/59
-> Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
-> Handled-By : Sam Ravnborg <sam@ravnborg.org>
-> Status     : fixed in kbuild-git.git
-2 warnings are fixed in kbuild.git
-The rest are fixed by http://lkml.org/lkml/2007/5/19/89 which I assume Andi Keen
-take care of.
+I cannot see what goes wrong here and how your patch fixes this.
+Can you please send me a copy of your .config.
+
+[I have submitted a patch to add both __init tags today and
+ needs to find out if that one is bogus].
 
 	Sam
+
+
+> ---
+>  arch/i386/kernel/cpu/mtrr/generic.c |    2 +-
+>  arch/i386/kernel/cpu/mtrr/main.c    |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- a/arch/i386/kernel/cpu/mtrr/generic.c
+> +++ b/arch/i386/kernel/cpu/mtrr/generic.c
+> @@ -78,7 +78,7 @@ static void __cpuinit print_fixed(unsign
+>  }
+>  
+>  /*  Grab all of the MTRR state for this CPU into *state  */
+> -void __init get_mtrr_state(void)
+> +void get_mtrr_state(void)
+>  {
+>  	unsigned int i;
+>  	struct mtrr_var_range *vrs;
+> --- a/arch/i386/kernel/cpu/mtrr/main.c
+> +++ b/arch/i386/kernel/cpu/mtrr/main.c
+> @@ -639,7 +639,7 @@ static struct sysdev_driver mtrr_sysdev_
+>   * initialized (i.e. before smp_init()).
+>   * 
+>   */
+> -void __init mtrr_bp_init(void)
+> +void mtrr_bp_init(void)
+>  {
+>  	init_ifs();
+>  
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
