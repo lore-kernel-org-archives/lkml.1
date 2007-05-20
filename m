@@ -1,92 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbXETLHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbXETLL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933040AbXETLHc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 07:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757037AbXETLHZ
+	id S1755693AbXETLL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 07:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbXETLLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 07:07:25 -0400
-Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73]:38038 "EHLO
-	hoboe2bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756007AbXETLHY (ORCPT
+	Sun, 20 May 2007 07:11:19 -0400
+Received: from smtpout.hostsharing.net ([83.223.95.15]:46492 "EHLO
+	smtpout.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbXETLLS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 07:07:24 -0400
-Date: Sun, 20 May 2007 13:07:20 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: RFC: kconfig select warnings bogus?
-In-Reply-To: <20070520094033.GA9645@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0705201305580.20754@anakin>
-References: <20070519151523.GA26724@uranus.ravnborg.org>
- <20070519110944.2a52061e.akpm@linux-foundation.org> <20070519230537.GI6291@stusta.de>
- <20070519162239.1bcb03d6.akpm@linux-foundation.org>
- <20070520094033.GA9645@flint.arm.linux.org.uk>
+	Sun, 20 May 2007 07:11:18 -0400
+X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 May 2007 07:11:17 EDT
+Date: Sun, 20 May 2007 13:11:13 +0200
+From: Elimar Riesebieter <riesebie@lxtec.de>
+To: aeb@cwi.nl
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.22-rc2 built on ppc (3)
+Message-ID: <20070520111113.GE3253@aragorn.home.lxtec.de>
+Mail-Followup-To: aeb@cwi.nl, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="G6nVm6DDWH/FONJq"
+Content-Disposition: inline
+Organization: LXTEC
+X-Editor: VIM - Vi IMproved 7.1 (2007 May 12, compiled May 15 2007 21:24:37)
+User-Agent: Mutt/1.5.15+lxtec (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007, Russell King wrote:
-> On Sat, May 19, 2007 at 04:22:39PM -0700, Andrew Morton wrote:
-> > On Sun, 20 May 2007 01:05:37 +0200 Adrian Bunk <bunk@stusta.de> wrote:
-> > > Look for example at the last one in drivers/input/mouse/Kconfig:
-> > > 
-> > > config MOUSE_ATARI
-> > >         tristate "Atari mouse"
-> > >         depends on ATARI
-> > >         select ATARI_KBD_CORE
-> > > 
-> > > This is perfectly correct (the select'ed symbol is only unavailable when 
-> > > the dependency can't be fulfilled), and all things to "fix" the warning 
-> > > will make it worse.
-> > 
-> > If ATARI is unset then we shouldn't be generating the "'select' used by
-> > config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'"
-> > warnings, should we?
-> 
-> Playing devils advocate here.  What if "ATARI_KBD_CORE" never exists?
-> Let's say you run 'make kconfig' and you select the ATARI option.  When
-> does the lack of ATARI_KBD_CORE get noticed and what is the expected
-> result?
-> 
-> Let's put it another way.  Given the complexities of the configuration
-> system as it is today, if we do not generate a warning at parse time,
-> how do we find things like:
-> 
-> config SHARPSL_PM
->         bool
->         select APM_EMULATION
-> 
-> config PXA_SHARP_C7xx
->         bool
->         select PXA_SSP
->         select SHARPSL_PM
-> 
-> config MACH_CORGI
->         bool "Enable Sharp SL-C700 (Corgi) Support"
->         depends on PXA_SHARPSL_25x
->         select PXA_SHARP_C7xx
-> 
-> and (lets say for the sake of argument) APM_EMULATION were to go away.
 
-It will probably fail to build :-)
+--G6nVm6DDWH/FONJq
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Do we really need an exhaustive set of configuration combinations to
-> run through Kconfig to find possible missing symbols?  Or do we need a
-> Kconfig lint to find them?
+Hi,
 
-Now let's say PXA_SHARPSL_25x goes away (or someone made a typo
-in her `depends on')...
+FYI, building the kernel with
+gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+on my powerbook (PPC) gives:
 
-Gr{oetje,eeting}s,
+=2E..
+fs/partitions/check.c: In function 'add_partition':
+fs/partitions/check.c:392: warning: ignoring return value of 'kobject_add',=
+ declared with attribute warn_unused_result
+fs/partitions/check.c:395: warning: ignoring return value of 'sysfs_create_=
+link', declared with attribute warn_unused_result
+fs/partitions/check.c:403: warning: ignoring return value of 'sysfs_create_=
+file', declared with attribute warn_unused_result
+=2E..
 
-						Geert
+If more info is needed, please contact me via PM, as I am not
+subscribed.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Thanks for your patience
+Elimar
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--=20
+  Never make anything simple and efficient when a way=20
+  can be found to make it complex and wonderful ;-)
+
+--G6nVm6DDWH/FONJq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGUCzR3Ig8bsVPf7ARAn3jAJ4sABgRjxSSHYqiqG5umxWKZSCw3wCeObJx
+rxQqHMWU0TVgSK8QHIl5pqY=
+=fyra
+-----END PGP SIGNATURE-----
+
+--G6nVm6DDWH/FONJq--
