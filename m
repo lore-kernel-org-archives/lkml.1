@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763970AbXETHAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764543AbXETHDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763970AbXETHAS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 03:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759515AbXETHAH
+	id S1764543AbXETHDT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 03:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759472AbXETHDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 03:00:07 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:44701 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758787AbXETHAF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 03:00:05 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: Sched - graphic smoothness under load - cfs-v13 sd-0.48
-Date: Sun, 20 May 2007 08:59:25 +0200
-User-Agent: KMail/1.9.5
-Cc: "Bill Davidsen" <davidsen@tmr.com>,
-       "Linux Kernel M/L" <linux-kernel@vger.kernel.org>
-References: <464F57DD.2000309@tmr.com> <200705200812.26391.mgd@technosis.de> <2c0942db0705192330r4004d7bem3556c939c1581553@mail.gmail.com>
-In-Reply-To: <2c0942db0705192330r4004d7bem3556c939c1581553@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3301024.7WiUtTQ9nt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Sun, 20 May 2007 03:03:12 -0400
+Received: from www.osadl.org ([213.239.205.134]:42012 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758787AbXETHDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 03:03:12 -0400
+Subject: Re: [SMP BUG]  [clockevents: i386 drivers patch]  introduces 
+	irqbalance-does-not-work-properly problem
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Komuro <komurojun-mbn@nifty.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <20070520111409.1793a2f6.komurojun-mbn@nifty.com>
+References: <1178202559.3767.21.camel@localhost.localdomain>
+	 <20070504233238.ca55c2d1.komurojun-mbn@nifty.com>
+	 <1178463619.3793.14.camel@localhost.localdomain>
+	 <1178777214.2951.18.camel@ymzhang>
+	 <20070510160615.6aa9cef6.akpm@linux-foundation.org>
+	 <20070513200444.9d2db4c3.komurojun-mbn@nifty.com>
+	 <20070520111409.1793a2f6.komurojun-mbn@nifty.com>
+Content-Type: text/plain
+Date: Sun, 20 May 2007 09:09:16 +0200
+Message-Id: <1179644956.21827.5.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705200859.56327.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1179644405;1d0d98c0;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3301024.7WiUtTQ9nt
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sun, 2007-05-20 at 11:14 +0900, Komuro wrote:
+> Hi,
+> 
+> 
+> [clockevents: i386 drivers patch] introduces
+>   irqbalance-does-not-work-properly problem.
 
-> > I don't want to say the values aren't useful. I simply think there is
-> > a high noiselevel.
->=20
-> The noise is reflected in the standard deviation he has on those rows.
-> The average +- stdev  of one overlaps the average +- stdev of the
-> other,
+it disables irq balancing for IRQ0, but this does not affect any other
+interrupts. It is almost irrelevant as the PIT/HPET timer interrupt
+(irq0) is disabled anyway and the local apic timer is used.
 
-=46or the fairness test on cfs13 this simply is wrong. And for the
-test to be stable would require that avg of one is within avg+-stddev
-of the other (simple overlap does not suffice).
+> >            CPU0       CPU1       
+> >   0:         85          0   IO-APIC-edge      timer
 
-Best,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
+There is no interrupt happening after bootup, so balancing is not a
+problem here.
 
---nextPart3301024.7WiUtTQ9nt
-Content-Type: application/pgp-signature
+> Mr. Thomas Gleixner,
+>  any idea to fix this problem?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Which problem ?
 
-iD8DBQBGT/HsUYYhyuxDQc4RAvDgAJkBjGKmRDIytJjz6AqvyJMV9J+I7wCeMsvY
-CBlVG9F74uJ2+8AIG3vxDN0=
-=6/kY
------END PGP SIGNATURE-----
+	tglx
 
---nextPart3301024.7WiUtTQ9nt--
+
