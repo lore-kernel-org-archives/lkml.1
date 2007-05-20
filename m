@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbXETTrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbXETTw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757168AbXETTrt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 15:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755613AbXETTrj
+	id S1757537AbXETTw5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 15:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbXETTwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 15:47:39 -0400
-Received: from neon.samage.net ([85.17.153.66]:56943 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755451AbXETTrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 15:47:37 -0400
-Message-ID: <3378.81.207.0.53.1179690453.squirrel@secure.samage.net>
-In-Reply-To: <465082BF.2070306@gmail.com>
-References: <20070510072005.GA27316@linux-sh.org>
-    <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com>
-    <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com>
-    <20070511005217.GA23186@li <464B3505.20004@gmail.com>
-    <2229.81.207.0.53.1179592754.squirrel@secure.samage.net>
-    <464F4548.6020101@gmail.com> <464F4A58.2050607@gmail.com>
-    <4764.81.207.0.53.1179613997.squirrel@secure.samage.net>
-    <46501ACF.6020702@gmail.com>
-    <1345.81.207.0.53.1179671262.squirrel@secure.samage.net>
-    <465082BF.2070306@gmail.com>
-Date: Sun, 20 May 2007 21:47:33 +0200 (CEST)
-Subject: Re: sd_resume redundant?  [was: [PATCH] libata: implement          
-      ata_wait_after_reset()]
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Tejun Heo" <htejun@gmail.com>
-Cc: "Paul Mundt" <lethal@linux-sh.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       garyhade@us.ibm.com
-User-Agent: SquirrelMail/1.4.8
+	Sun, 20 May 2007 15:52:50 -0400
+Received: from [216.16.235.2] ([216.16.235.2]:53176 "EHLO rubicon.netdirect.ca"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755773AbXETTwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 15:52:49 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Sun, 20 May 2007 15:51:18 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Factor out common MODULE_INFO content from module*.h
+ files.
+In-Reply-To: <20070520191552.GA25200@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0705201538250.18011@localhost.localdomain>
+References: <Pine.LNX.4.64.0705201502160.17519@localhost.localdomain>
+ <20070520191552.GA25200@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -0.7
-X-Scan-Signature: 729ef2e9e2cd27dd49f9ca04774c95e6
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	TW_VN 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 19:17, Tejun Heo wrote:
-> Indan Zupancic wrote:
->> So over all it takes half a second longer to detect the disk, but
->> because everything waits on it, it takes more than three seconds
->> longer to resume.
+On Sun, 20 May 2007, Sam Ravnborg wrote:
+
+> On Sun, May 20, 2007 at 03:06:15PM -0400, Robert P. J. Day wrote:
+> >
+> > In order to eventually break the interdependency between the module.h
+> > and moduleparam.h header files, factor out the common MODULE_INFO
+> > content into a new header file.
 >
-> Eeeek.  Extra three secs doesn't sound too hot.  :-(
-
-Hey, without your reset fix it was 11 seconds slower. ;-)
-
-Well, it used to be around 1.7 seconds to resume, and now (after the fixes)
-it's 2.8 (according to the dmesg timestamps). But the first timestamp printed
-was 0.7, and now it's 2.1, so I don't know if it's a real slowdown or that the timer
-is set correctly earlier. That was with 2.19 btw, I don't know what happened in
-the meantime. I suspect the timer changes. To know for sure I'd need to boot
-an older kernel and measure resume time with a stopwatch.
-
-
->> Setting manage_start_stop to 0 fixes it and is good enough for me, I
->> didn't notice anything bad yet because of the unmanaged
->> stop. Implementing background spin up will fix it too.
+> The moduleinfo.h file looks redundant at first look.
+> Why not push relevant parts from moduleparam.h (the
+> MODULE_INFO bits) to module.h and let go of
+> the include of moduleparam.h in module.h (when you
+> have fixed the users)?
 >
-> Just commenting out sd_resume() would be a better solution for your
-> case tho.
+> In this way we do not add an extra .h file.
+> And files that needs moduleparam.h will anyway always need module.h.
+> But not the other way around.
 
-I like your idea below more. ;-)
+no problem, i can go that way, too, but there's just one (admittedly
+picky) issue associated with that.
 
+based on the above, we would have:
 
->>>> Everything seems to work fine without sd_resume(), so why is it needed?
->>> Because not all disks spin up without being told to do so and like it or
->>> not spinning disks up on resume is the default behavior.  As I wrote in
->>> the other reply, it would be worthwhile to make it configurable.
->>
->> Not even after they receive a read command? Ugh.
->
-> After receiving a command which requires media access, they do.  What
-> I was saying is that the current default behavior is to spin up all
-> devices on resume and part of that is achieved by sd_resume().
->
-> Hmmm... skipping START_STOP during sd_resume() actually is a pretty
-> good solution for ATA devices.  I'll think about it.
+1) module.h handling all generic module content, and
+2) moduleparam.h would "#include" module.h and add the parameter
+stuff.
 
-I can't speak for others, but for me this would fix all regressions and even
-disk spin up seems half a second faster without the START_STOP.
-It would also solve the laptopmode thing, not unnecessarily spinning up
-disks that don't need to be (if the hardware doesn't do it).
+fair enough, but note that, with that, if you wanted parameter
+support, you would need to include *only* "moduleparam.h".  are you
+good with that?  (as i said, it's picky, but you'd probably still have
+a lot of people who, through force of habit, would still #include both
+just because they think it's necessary.  wouldn't hurt, of course,
+since module.h would be protected against multiple inclusion.)
 
-Greetings,
+so if you're good with all of the above, i can do that.
 
-Indan
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
