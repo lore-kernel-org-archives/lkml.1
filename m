@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbXETJh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762411AbXETJky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759709AbXETJh1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 05:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXETJhP
+	id S1762411AbXETJky (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 05:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbXETJkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 05:37:15 -0400
-Received: from mail23.syd.optusnet.com.au ([211.29.133.164]:35487 "EHLO
-	mail23.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754303AbXETJhO (ORCPT
+	Sun, 20 May 2007 05:40:47 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2103 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754488AbXETJkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 05:37:14 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: ck list <ck@vds.kolivas.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: [ANNOUNCE] Staircase Deadline v1.00 cpu scheduler
-Date: Sun, 20 May 2007 19:37:08 +1000
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
+	Sun, 20 May 2007 05:40:46 -0400
+Date: Sun, 20 May 2007 10:40:33 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: RFC: kconfig select warnings bogus?
+Message-ID: <20070520094033.GA9645@flint.arm.linux.org.uk>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Adrian Bunk <bunk@stusta.de>, Sam Ravnborg <sam@ravnborg.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Roman Zippel <zippel@linux-m68k.org>
+References: <20070519151523.GA26724@uranus.ravnborg.org> <20070519110944.2a52061e.akpm@linux-foundation.org> <20070519230537.GI6291@stusta.de> <20070519162239.1bcb03d6.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 616
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705201937.09328.kernel@kolivas.org>
+In-Reply-To: <20070519162239.1bcb03d6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The staircase deadline cpu scheduler continues to be the reference with 
-respect to interactive fairness for many workloads especially with 3d gaming. 
-This version is only trivially different from the version included in the -ck 
-patchset which has been very stable. The version number has been incremented 
-to version 1.00 purely to reflect that stability. Those on -ck are already 
-running the equivalent of this version.
+On Sat, May 19, 2007 at 04:22:39PM -0700, Andrew Morton wrote:
+> On Sun, 20 May 2007 01:05:37 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+> 
+> > Look for example at the last one in drivers/input/mouse/Kconfig:
+> > 
+> > config MOUSE_ATARI
+> >         tristate "Atari mouse"
+> >         depends on ATARI
+> >         select ATARI_KBD_CORE
+> > 
+> > This is perfectly correct (the select'ed symbol is only unavailable when 
+> > the dependency can't be fulfilled), and all things to "fix" the warning 
+> > will make it worse.
+> 
+> If ATARI is unset then we shouldn't be generating the "'select' used by
+> config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'"
+> warnings, should we?
 
-http://www.kernel.org/pub/linux/kernel/people/ck/patches/staircase-deadline/2.6.22-rc2/2.6.22-rc2-sd-1.00.patch
+Playing devils advocate here.  What if "ATARI_KBD_CORE" never exists?
+Let's say you run 'make kconfig' and you select the ATARI option.  When
+does the lack of ATARI_KBD_CORE get noticed and what is the expected
+result?
 
-In comparison with the standalone version 0.48 of sd the changes are as 
-follows:
+Let's put it another way.  Given the complexities of the configuration
+system as it is today, if we do not generate a warning at parse time,
+how do we find things like:
 
-Default rr_interval was increased to 10ms on uniprocessor (it is scaled up on 
-SMP) for throughput reasons. Note that -ck has 6ms and -cks has 10ms as 
-defaults (on UP, double that for 2 cpus). This can be altered (as always) by 
-modifying the value in /proc/sys/kernel/rr_interval.
+config SHARPSL_PM
+        bool
+        select APM_EMULATION
 
-The PRIO value exported to userspace as seen by 'top', 'ps' etc will now 
-reflect the relative priority of tasks on the expired array by their value 
-being greater than 39.
+config PXA_SHARP_C7xx
+        bool
+        select PXA_SSP
+        select SHARPSL_PM
 
-The interactive tunable patch was rolled into this patch and is enabled by 
-default. Note the effect of this tunable is subtle except on 3d games. This 
-can be altered by modifying /proc/sys/kernel/interactive. A summary of the 
-interactive sysctl from Documentation/sysctl/kernel is:
+config MACH_CORGI
+        bool "Enable Sharp SL-C700 (Corgi) Support"
+        depends on PXA_SHARPSL_25x
+        select PXA_SHARP_C7xx
 
-The staircase-deadline cpu scheduler can be set in either purely
-forward-looking mode for absolutely rigid fairness and cpu distribution
-according to nice level, or it can allow a small per-process history
-to smooth out cpu usage perturbations common in interactive tasks by
-enabling this sysctl. While small fairness issues can arise with this
-enabled, overall fairness is usually still strongly maintained and
-starvation is never possible. Enabling this can significantly smooth
-out 3d graphics and games.
+and (lets say for the sake of argument) APM_EMULATION were to go away.
+
+Do we really need an exhaustive set of configuration combinations to
+run through Kconfig to find possible missing symbols?  Or do we need a
+Kconfig lint to find them?
+
+If we're going to make Kconfig warn on missing symbols only when they're
+attempted to be selected, you'll have to choose one of those two options.
+Choosing none is not an option.
 
 -- 
--ck
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
