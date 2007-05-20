@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbXETDxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbXETD6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759700AbXETDxT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 23:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXETDxI
+	id S1760114AbXETD6T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 23:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbXETD6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 23:53:08 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:44875 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755641AbXETDxG (ORCPT
+	Sat, 19 May 2007 23:58:11 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:38473 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756256AbXETD6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 23:53:06 -0400
-X-Sasl-enc: 0PA3VCYQzXW/dV+EkLl0bF0uHSgTPCjxxdVq0se+wN7o 1179633184
-Date: Sun, 20 May 2007 00:52:59 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: 2.6.21-mm2: ACPI exception on resume
-Message-ID: <20070520035259.GA13224@khazad-dum.debian.net>
-References: <20070519165738.GK11115@waste.org> <20070519204504.GA24704@khazad-dum.debian.net> <20070519223843.GN11115@waste.org>
+	Sat, 19 May 2007 23:58:10 -0400
+Message-ID: <464FC6AA.2060805@cosmosbay.com>
+Date: Sun, 20 May 2007 05:55:22 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070519223843.GN11115@waste.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Folkert van Heusden <folkert@vanheusden.com>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
+       Rik van Riel <riel@redhat.com>, righiandr@users.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
+References: <464C81B5.8070101@users.sourceforge.net> <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705180825280.3231@yvahk01.tjqt.qr> <200705181347.14256.ak@suse.de> <Pine.LNX.4.61.0705190946430.9015@yvahk01.tjqt.qr> <20070520001418.GJ14578@vanheusden.com>
+In-Reply-To: <20070520001418.GJ14578@vanheusden.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 20 May 2007 05:55:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 May 2007, Matt Mackall wrote:
-> On Sat, May 19, 2007 at 05:45:04PM -0300, Henrique de Moraes Holschuh wrote:
-> > On Sat, 19 May 2007, Matt Mackall wrote:
-> > > usually does, then go black and the machine will become totally
-> > > unresponsive, even to holding down the power button for 30+ seconds.
-> > 
-> > Now, that means either the BIOS or EC have been thrown out of whack,
-> > otherwise one of the two would have force-powered-off the machine a bit
-> > after 10s.
-> > 
-> > Are you using the latest BIOS and EC firmware available?
+Folkert van Heusden a écrit :
+>>>> I do not see such on i386, so why for x86_64?
+>>> So that you know that one of your programs crashed. That's a feature.
+>> This feature could be handy for i386 too.
 > 
-> No, I've been running the same BIOS without issue for two years.
+> Since 2.6.18.2 I use this patch. With 2.6.21.1 it still applies altough
+> with a small offsets. Works like a charm.
+> 
+> 
+> Signed-off by: Folkert van Heusden <folkert@vanheusden.com>
+> 
+> --- linux-2.6.18.2/kernel/signal.c      2006-11-04 02:33:58.000000000 +0100
+> +++ linux-2.6.18.2.new/kernel/signal.c  2006-11-17 15:59:13.000000000 +0100
+> @@ -706,6 +706,15 @@
+>         struct sigqueue * q = NULL;
+>         int ret = 0;
+> 
+> +       if (sig == SIGQUIT || sig == SIGILL  || sig == SIGTRAP ||
+> +           sig == SIGABRT || sig == SIGBUS  || sig == SIGFPE  ||
+> +           sig == SIGSEGV || sig == SIGXCPU || sig == SIGXFSZ ||
+> +           sig == SIGSYS  || sig == SIGSTKFLT)
+> +       {
+> +               printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
+> +                       sig, t -> pid, t -> uid, t -> gid, t -> comm);
+> +       }
+> +
 
-Version of BIOS and EC firmware, please?  It is in the dmidecode output.
+Please check line 219 of Documentation/CodingStyle, Section 3.1: Spaces
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+	and no space around the '.' and "->" structure member operators.
+
+Thank you
+
