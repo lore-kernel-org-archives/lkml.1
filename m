@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbXETNk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbXETNqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758854AbXETNk7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 09:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbXETNkw
+	id S1758482AbXETNqS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 09:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbXETNqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 09:40:52 -0400
-Received: from www.osadl.org ([213.239.205.134]:42523 "EHLO mail.tglx.de"
+	Sun, 20 May 2007 09:46:09 -0400
+Received: from www.osadl.org ([213.239.205.134]:57592 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755994AbXETNkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 09:40:52 -0400
-Subject: Re: [SMP BUG]  [clockevents: i386 drivers patch]  introduces 
-	irqbalance-does-not-work-properly problem
+	id S1755619AbXETNqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 09:46:08 -0400
+Subject: Re: [BUG] local_softirq_pending storm
 From: Thomas Gleixner <tglx@linutronix.de>
-To: Komuro <komurojun-mbn@nifty.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <20070520194801.6436597c.komurojun-mbn@nifty.com>
-References: <1178202559.3767.21.camel@localhost.localdomain>
-	 <20070504233238.ca55c2d1.komurojun-mbn@nifty.com>
-	 <1178463619.3793.14.camel@localhost.localdomain>
-	 <1178777214.2951.18.camel@ymzhang>
-	 <20070510160615.6aa9cef6.akpm@linux-foundation.org>
-	 <20070513200444.9d2db4c3.komurojun-mbn@nifty.com>
-	 <20070520111409.1793a2f6.komurojun-mbn@nifty.com>
-	 <1179644956.21827.5.camel@chaos>
-	 <20070520194801.6436597c.komurojun-mbn@nifty.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070520101800.GC9892@osiris.ibm.com>
+References: <200705091942.22920.kernel@prachanda.hub>
+	 <200705171211.23350.kernel@prachanda.hub> <1179493277.12981.69.camel@chaos>
+	 <200705191525.28400.kernel@prachanda.hub>
+	 <1179601868.12981.127.camel@chaos>  <20070520101800.GC9892@osiris.ibm.com>
 Content-Type: text/plain
-Date: Sun, 20 May 2007 15:47:04 +0200
-Message-Id: <1179668825.21827.18.camel@chaos>
+Date: Sun, 20 May 2007 15:52:21 +0200
+Message-Id: <1179669141.21827.22.camel@chaos>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-05-20 at 19:48 +0900, Komuro wrote:
-> The problem is CPU1 receives 38239 interrupt-16
-> but CPU0 receives only 15 interrupt-16
-> CPU0 should receive more interrupts.
+On Sun, 2007-05-20 at 12:18 +0200, Heiko Carstens wrote:
+> > I work out a more complex debug patch and pester you to test once I'm
+> > done.
 > 
->            CPU0       CPU1       
->   0:         85          0   IO-APIC-edge      timer
->   1:          0        698   IO-APIC-edge      i8042
->   6:          0          5   IO-APIC-edge      floppy
->   8:          0          1   IO-APIC-edge      rtc
->   9:          0          0   IO-APIC-fasteoi   acpi
->  12:          0        114   IO-APIC-edge      i8042
->  14:        369       2281   IO-APIC-edge      ide0
->  15:          0         24   IO-APIC-edge      ide1
->  16:         15      38239   IO-APIC-fasteoi   yenta, pcnet_cs   <<< problem
->  17:          0          0   IO-APIC-fasteoi   yenta
-> NMI:          0          0 
-> LOC:      50548      50547 
-> ERR:          0
-> MIS:      15503
+> I've also tons of 'NOHZ: local_softirq_pending 08' that disappear with
+> nohz=off. But I'm still running 2.6.21. Are there any patches that should
+> fix this?
+> Machine is a Lenovo T60p:
+> 
+> i686 Intel(R) Core(TM)2 CPU T7600  @ 2.33GHz GenuineIntel GNU/Linux
 
-And how exactly is this related to clock events ?
+Hmm, that's a different problem than the 0x22 which shows up on
+hyperthreading enabled P4 systems. Are you using plip ?
+
+> Besides that I get a lot of clock skews on 'make headers_check', but
+> these are unrelated to nohz:
+> 
+>   CHECK   include/asm/dasd.h
+> make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+> make[2]: Warning: File `/dev/null' has modification time 5.1e+03 s in the future
+
+Strange.
 
 	tglx
 
