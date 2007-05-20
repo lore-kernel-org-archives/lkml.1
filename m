@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbXETRN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbXETRRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbXETRN7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 13:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbXETRNw
+	id S1757998AbXETRRo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 13:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbXETRRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 13:13:52 -0400
-Received: from ns.suse.de ([195.135.220.2]:34599 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756091AbXETRNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 13:13:51 -0400
-Date: Sun, 20 May 2007 19:13:48 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070520171348.GC7653@v2.random>
-References: <20070518040854.GA15654@wotan.suse.de>
+	Sun, 20 May 2007 13:17:37 -0400
+Received: from [216.16.235.2] ([216.16.235.2]:48057 "EHLO rubicon.netdirect.ca"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751789AbXETRRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 13:17:36 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Sun, 20 May 2007 13:15:54 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: David Rientjes <rientjes@google.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Extract common MODULE_INFO content into new moduleinfo.h.
+In-Reply-To: <alpine.DEB.0.99.0705200934580.30819@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0705201314590.22771@localhost.localdomain>
+References: <Pine.LNX.4.64.0705200354380.3319@localhost.localdomain>
+ <alpine.DEB.0.99.0705200142080.25601@chino.kir.corp.google.com>
+ <Pine.LNX.4.64.0705200627220.6765@localhost.localdomain>
+ <alpine.DEB.0.99.0705200934580.30819@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070518040854.GA15654@wotan.suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 06:08:54AM +0200, Nick Piggin wrote:
-> If we add 8 bytes to struct page on 64-bit machines, it becomes 64 bytes,
-> which is quite a nice number for cache purposes.
+On Sun, 20 May 2007, David Rientjes wrote:
 
-We had those hardware alignment for many data structures where they
-were only wasting memory (i.e. vmas).
+> On Sun, 20 May 2007, Robert P. J. Day wrote:
+>
+> > i can do that as long as there's no way that those changes can
+> > (even theoretically) make a difference in the build.  in order to
+> > make sure this patch didn't break anything, i went with a straight
+> > cut-and-paste of the content to go into the new moduleinfo.h.
+>
+> __attribute_used__ is pointless outside of function definitions so
+> the way it is currently written is incorrect.
+>
+> > so while i agree that those changes shouldn't hurt, personally,
+> > i'd prefer to just put this patch through as is and come back
+> > later to do any tidying related to attribute rewording.
+>
+> __attribute_used__ is deprecated so it would be helpful to change it
+> now instead of requiring a second patch.  It's better if new patches
+> no longer use a deprecated attribute.
 
-There are few places where the hardware alignment matters, page struct
-isn't going to be one of them. But feel free to measure yourself.
+fair enough.  i'll submit a revised patch shortly.
 
-> I'd say all up this is going to decrease overall cache footprint in 
-> fastpaths, both by reducing text and data footprint of page_address and
-> related operations, and by reducing cacheline footprint of most batched
-> operations on struct pages.
+rday
 
-IIRC the math is faster for any x86. Overall I doubt the change is
-measurable.
+p.s.  um ... just off-hand, i'm hoping that people understand the
+rationale behind this patch.
 
-Even if this would be a microoptimization barely measurable in some
-microbenchmark, I don't think this one is worth doing. mem_map is such
-a bloat that it really has to be as small as it can unless we can
-improve performance _significantly_ by enlarging it.
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-> Interestingly, the irony of 32-bit architectures setting WANT_PAGE_VIRTUAL
-> because they have slow multiplications is that without WANT_PAGE_VIRTUAL, the
-> struct is 32-bytes and so page_address can usually be calculated with a shift.
-> So WANT_PAGE_VIRTUAL just bloats up the size of struct page for those guys!
-
-If you want to drop it you can, there's nothing fundamental that
-prevents you to drop the 'virtual' completely from page struct, by
-just making the vaddr per-process and storing it on the stack like
-with the atomic kmaps, but passing it up the stack may require heavy
-changes to various apis, which is why we've taken the few-changes lazy
-way back then. If it wasn't worth back then, I doubt it worth now for
-just pae36.
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
