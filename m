@@ -1,60 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbXETHlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbXETH73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759829AbXETHlP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 03:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760232AbXETHlB
+	id S1760939AbXETH73 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 03:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbXETH7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 03:41:01 -0400
-Received: from web52604.mail.re2.yahoo.com ([206.190.48.207]:31066 "HELO
-	web52604.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760094AbXETHlA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 03:41:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=IWX1UEeQD2VG8pevO5AoDZjNnf0zZ0B8/diSkBmpql06ocdZNxDwJ3srP1Xo8d/z2A8YlBA5VuwcAd73ZhINW7NlDMBV1Adi18J+1lMvWf5FQafETTOjwb+Ct1sNPFUwP0bhAstHjwUPVQdPFt4/E9EkeyL7YyCRXoN36qeb2UY=;
-X-YMail-OSG: iOmLLGQVM1mZm4z3yslgp2fM9qyuiee2pWPw_gVp_9p0.aibzlo0GOKjv.2c8jjFUw--
-Date: Sun, 20 May 2007 17:40:56 +1000 (EST)
-From: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-To: Christoph Lameter <clameter@sgi.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0705200011200.18989@schroedinger.engr.sgi.com>
+	Sun, 20 May 2007 03:59:22 -0400
+Received: from [216.16.235.2] ([216.16.235.2]:58416 "EHLO rubicon.netdirect.ca"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757170AbXETH7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 03:59:21 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Sun, 20 May 2007 03:57:54 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Extract common MODULE_INFO content into new moduleinfo.h.
+Message-ID: <Pine.LNX.4.64.0705200354380.3319@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <380486.61048.qm@web52604.mail.re2.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Christoph Lameter <clameter@sgi.com> wrote:
-> On Sun, 20 May 2007, Srihari Vijayaraghavan wrote:
-> 
-> > Code: 0f ob eb fe 48 8b 1b 48 8b 0x 0f 18 08 48 81 fb 60 cb 51 80
-> > RIP [...] slab_sysfs_init+0x49/0x98
-> > RSP [...]
-> > kernel panic - not syncing: Attempted to kill init!
-> 
-> sysfs? If you build without CONFIG_SLUB_DEBUG then SLUB will not use 
-> sysfs. You can switch that off in the embedded section.
 
-Fair enough. Would you the section name it appears in 'menuconfig'?
+Extract the common MODULE_INFO content found in both module.h and
+moduleparam.h into a new header file moduleinfo.h, which at least
+makes it possible for source files to someday stop including the
+content from moduleparam.h when they don't need it.
 
-I looked under 'Kernel hacking' section (where the slab debugging appears if
-slab is turned on as 'Debug slab memory allocation') & in the 'General setup'
-section also. I unable to figure out how to disable slub debugging :-(.
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Pls give me a pointer to it.
+---
 
-Thanks
+  compile-tested with "make allmodconfig" on x86.
 
-(Won't it be right to disable it by default when a user selects slub such that
-a user needs to manually turn on the slub debugging in menuconfig?)
+ include/linux/module.h      |   12 +++---------
+ include/linux/moduleinfo.h  |   18 ++++++++++++++++++
+ include/linux/moduleparam.h |   16 +++++-----------
+ 3 files changed, 26 insertions(+), 20 deletions(-)
 
+diff --git a/include/linux/module.h b/include/linux/module.h
+index e6e0f86..d9a9a13 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -15,7 +15,8 @@
+ #include <linux/elf.h>
+ #include <linux/stringify.h>
+ #include <linux/kobject.h>
+-#include <linux/moduleparam.h>
++#include <linux/moduleparam.h>	/* Ideally, this shouldn't be necessary. */
++#include <linux/moduleinfo.h>
+ #include <asm/local.h>
 
+ #include <asm/module.h>
+@@ -88,9 +89,6 @@ extern struct module __this_module;
+ #define THIS_MODULE ((struct module *)0)
+ #endif
 
-      ___________________________________________________________________________________
-How would you spend $50,000 to create a more sustainable environment in Australia?  Go to Yahoo!7 Answers and share your idea.
-http://advision.webevents.yahoo.com/aunz/lifestyle/answers/y7ans-babp_reg.html
+-/* Generic info of form tag = "info" */
+-#define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
+-
+ /* For userspace: you can also call me... */
+ #define MODULE_ALIAS(_alias) MODULE_INFO(alias, _alias)
 
+@@ -130,11 +128,6 @@ extern struct module __this_module;
+ /* What your module does. */
+ #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
+
+-/* One for each parameter, describing how to use it.  Some files do
+-   multiple of these per line, so can't just use MODULE_INFO. */
+-#define MODULE_PARM_DESC(_parm, desc) \
+-	__MODULE_INFO(parm, _parm, #_parm ":" desc)
+-
+ #define MODULE_DEVICE_TABLE(type,name)		\
+   MODULE_GENERIC_TABLE(type##_device,name)
+
+@@ -576,6 +569,7 @@ struct device_driver;
+ struct module;
+
+ extern struct kset module_subsys;
++struct kernel_param;
+
+ int mod_sysfs_init(struct module *mod);
+ int mod_sysfs_setup(struct module *mod,
+diff --git a/include/linux/moduleinfo.h b/include/linux/moduleinfo.h
+new file mode 100644
+index 0000000..cee86a9
+--- /dev/null
++++ b/include/linux/moduleinfo.h
+@@ -0,0 +1,18 @@
++#ifndef _LINUX_MODULEINFO_H
++#define _LINUX_MODULEINFO_H
++
++#ifdef MODULE
++#include <linux/stringify.h>
++#define ___module_cat(a,b) __mod_ ## a ## b
++#define __module_cat(a,b) ___module_cat(a,b)
++#define __MODULE_INFO(tag, name, info)				\
++static const char __module_cat(name,__LINE__)[]			\
++  __attribute_used__						\
++  __attribute__((section(".modinfo"),unused)) = __stringify(tag) "=" info
++#else  /* !MODULE */
++#define __MODULE_INFO(tag, name, info)
++#endif
++
++#define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
++
++#endif // _LINUX_MODULEINFO_H
+diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
+index c83588c..650328d 100644
+--- a/include/linux/moduleparam.h
++++ b/include/linux/moduleparam.h
+@@ -4,6 +4,7 @@
+ #include <linux/init.h>
+ #include <linux/stringify.h>
+ #include <linux/kernel.h>
++#include <linux/moduleinfo.h>
+
+ /* You can override this manually, but generally this should match the
+    module name. */
+@@ -13,19 +14,12 @@
+ #define MODULE_PARAM_PREFIX KBUILD_MODNAME "."
+ #endif
+
+-#ifdef MODULE
+-#define ___module_cat(a,b) __mod_ ## a ## b
+-#define __module_cat(a,b) ___module_cat(a,b)
+-#define __MODULE_INFO(tag, name, info)					  \
+-static const char __module_cat(name,__LINE__)[]				  \
+-  __attribute_used__							  \
+-  __attribute__((section(".modinfo"),unused)) = __stringify(tag) "=" info
+-#else  /* !MODULE */
+-#define __MODULE_INFO(tag, name, info)
+-#endif
+-#define __MODULE_PARM_TYPE(name, _type)					  \
++#define __MODULE_PARM_TYPE(name, _type)					\
+   __MODULE_INFO(parmtype, name##type, #name ":" _type)
+
++#define MODULE_PARM_DESC(_parm, desc)					\
++  __MODULE_INFO(parm, _parm, #_parm ":" desc)
++
+ struct kernel_param;
+
+ /* Returns 0, or -errno.  arg is in kp->arg. */
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
