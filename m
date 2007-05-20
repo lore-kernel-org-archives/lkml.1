@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764966AbXETKYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763633AbXETKak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764966AbXETKYV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 06:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757562AbXETKYP
+	id S1763633AbXETKak (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 06:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759249AbXETKac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 06:24:15 -0400
-Received: from asia.telenet-ops.be ([195.130.137.74]:60649 "EHLO
-	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757095AbXETKYO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 06:24:14 -0400
-Date: Sun, 20 May 2007 12:24:08 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/block/z2ram: Remove TRUE/FALSE defines
-In-Reply-To: <20070519234338.27317.98027.sendpatchset@thinktank.campus.ltu.se>
-Message-ID: <Pine.LNX.4.64.0705201223490.20754@anakin>
-References: <20070519234338.27317.98027.sendpatchset@thinktank.campus.ltu.se>
+	Sun, 20 May 2007 06:30:32 -0400
+Received: from [216.16.235.2] ([216.16.235.2]:34778 "EHLO rubicon.netdirect.ca"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755865AbXETKab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 06:30:31 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Sun, 20 May 2007 06:28:17 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: David Rientjes <rientjes@google.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Extract common MODULE_INFO content into new moduleinfo.h.
+In-Reply-To: <alpine.DEB.0.99.0705200142080.25601@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0705200627220.6765@localhost.localdomain>
+References: <Pine.LNX.4.64.0705200354380.3319@localhost.localdomain>
+ <alpine.DEB.0.99.0705200142080.25601@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007, Richard Knutsson wrote:
-> Remove defines of TRUE and FALSE
->   * not used in the file
->   * the file is not included somewhere else
-> 
-> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+On Sun, 20 May 2007, David Rientjes wrote:
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> On Sun, 20 May 2007, Robert P. J. Day wrote:
+>
+> > diff --git a/include/linux/moduleinfo.h b/include/linux/moduleinfo.h
+> > new file mode 100644
+> > index 0000000..cee86a9
+> > --- /dev/null
+> > +++ b/include/linux/moduleinfo.h
+> > @@ -0,0 +1,18 @@
+> > +#ifndef _LINUX_MODULEINFO_H
+> > +#define _LINUX_MODULEINFO_H
+> > +
+> > +#ifdef MODULE
+> > +#include <linux/stringify.h>
+> > +#define ___module_cat(a,b) __mod_ ## a ## b
+> > +#define __module_cat(a,b) ___module_cat(a,b)
+> > +#define __MODULE_INFO(tag, name, info)				\
+> > +static const char __module_cat(name,__LINE__)[]			\
+> > +  __attribute_used__						\
+> > +  __attribute__((section(".modinfo"),unused)) = __stringify(tag) "=" info
+>
+> This isn't a function definition so __attribute_used__ (which is
+> deprecated anyway) doesn't mean anything.  Please simply use
+> __maybe_unused and remove "unused" from the second attribute.
 
-> ---
-> Not compile-tested (don't have an Amiga-crosscompiler), but it is trivial.
-> Diffed against Linus' git-tree.
-> 
-> 
-> diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
-> index 7cc2685..2abf94c 100644
-> --- a/drivers/block/z2ram.c
-> +++ b/drivers/block/z2ram.c
-> @@ -44,9 +44,6 @@
->  extern int m68k_realnum_memory;
->  extern struct mem_info m68k_memory[NUM_MEMINFO];
->  
-> -#define TRUE                  (1)
-> -#define FALSE                 (0)
-> -
->  #define Z2MINOR_COMBINED      (0)
->  #define Z2MINOR_Z2ONLY        (1)
->  #define Z2MINOR_CHIPONLY      (2)
+i can do that as long as there's no way that those changes can (even
+theoretically) make a difference in the build.  in order to make sure
+this patch didn't break anything, i went with a straight cut-and-paste
+of the content to go into the new moduleinfo.h.
 
-Gr{oetje,eeting}s,
+so while i agree that those changes shouldn't hurt, personally, i'd
+prefer to just put this patch through as is and come back later to do
+any tidying related to attribute rewording.
 
-						Geert
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
