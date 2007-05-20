@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbXETNBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbXETNJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbXETNBc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 09:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746AbXETNBZ
+	id S1757967AbXETNJb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 09:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbXETNJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 09:01:25 -0400
-Received: from khc.piap.pl ([195.187.100.11]:48399 "EHLO khc.piap.pl"
+	Sun, 20 May 2007 09:09:25 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38614 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755649AbXETNBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 09:01:25 -0400
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Linux 2.6.22-rc2: make -j makes it unresponsive
-References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
-	<200705201457.26716.rjw@sisk.pl>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 20 May 2007 15:01:23 +0200
-In-Reply-To: <200705201457.26716.rjw@sisk.pl> (Rafael J. Wysocki's message of "Sun, 20 May 2007 14:57:26 +0200")
-Message-ID: <m3hcq7k5ss.fsf@maximus.localdomain>
+	id S1755066AbXETNJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 09:09:24 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christian Volkmann <haveaniceday@cv-sv.de>
+Subject: Re: Via C3: other flags possible ?
+Date: Sun, 20 May 2007 14:59:46 +0200
+User-Agent: KMail/1.9.6
+Cc: Claas Langbehn <claas@rootdir.de>, linux-kernel@vger.kernel.org
+References: <464B9D2C.7040704@cv-sv.de> <464F5C8F.5000304@cv-sv.de> <464F7C09.8060809@cv-sv.de>
+In-Reply-To: <464F7C09.8060809@cv-sv.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705201459.46357.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Running 'make -j' kernel compilation on my test box (Athlon64 X2, 2 SATA
-> drives
-> with 6 software RAID1 ext3 and reiserfs partitions, 2 GB of RAM) makes it
-> completely unresponsive.  I can't even move the mouse pointer when it's
-> running, I can't log to the box from the network etc.
+> C7 Esther:
+> Hmm, I expect the NX-Bit should be detected from linux during the
+> boot. The NX function bit seems to be at the same place where it's
+> located for other CPU.
 
-How many processes does it spawn? Try some sane limit.
--- 
-Krzysztof Halasa
+> Unfortunately I have no C7 hardware and I am too much a beginner
+> in kernel programming to prepare this "dry".
+> 
+> May be a "senior kernel programmer" can easy check if the C7 runs
+> through the regular NX-function detection?
+
+If it's in CPUID (nx in /proc/cpuinfo flags) it should just work.
+
+NX also doesn't need to be handled in the early CPUID bits detection 
+because the kernel can handle it not being there fine. Only bits
+who when missing cause the kernel to panic early or crash need to
+be tested there.
+
+-Andi
+
