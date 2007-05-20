@@ -1,41 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763705AbXETHKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764720AbXETHMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763705AbXETHKl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 03:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759515AbXETHKe
+	id S1764720AbXETHMi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 03:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759515AbXETHMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 03:10:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54045 "EHLO
+	Sun, 20 May 2007 03:12:32 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54081 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759089AbXETHKd (ORCPT
+	with ESMTP id S1759342AbXETHMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 03:10:33 -0400
-Date: Sun, 20 May 2007 00:10:27 -0700 (PDT)
+	Sun, 20 May 2007 03:12:32 -0400
+Date: Sun, 20 May 2007 00:12:31 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Steven Pratt <slpratt@austin.ibm.com>,
-       Ram Pai <linuxram@us.ibm.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH 1/9] readahead: introduce PG_readahead
-In-Reply-To: <379630538.31710@ustc.edu.cn>
-Message-ID: <Pine.LNX.4.64.0705200009330.18989@schroedinger.engr.sgi.com>
-References: <20070516224752.500812933@mail.ustc.edu.cn> <379355695.83536@ustc.edu.cn>
- <20070518232824.9917d794.akpm@linux-foundation.org> <379577826.15160@ustc.edu.cn>
- <20070519082504.8baa8d19.akpm@linux-foundation.org> <379630538.31710@ustc.edu.cn>
+To: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
+cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+In-Reply-To: <20070520030934.33447.qmail@web52609.mail.re2.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0705200011200.18989@schroedinger.engr.sgi.com>
+References: <20070520030934.33447.qmail@web52609.mail.re2.yahoo.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007, Fengguang Wu wrote:
+On Sun, 20 May 2007, Srihari Vijayaraghavan wrote:
 
-> The reuse code would look like the attached one.
-> It still needs more testing, and would fail if Christoph reuses
-> PG_reclaim in higher order pagecache in the future.
+> Code: 0f ob eb fe 48 8b 1b 48 8b 0x 0f 18 08 48 81 fb 60 cb 51 80
+> RIP [...] slab_sysfs_init+0x49/0x98
+> RSP [...]
+> kernel panic - not syncing: Attempted to kill init!
 
-Do not worry about that. All higher order pagecache patchsets remove that
-sharing because we will then need these pages on the LRU and thus
-PG_reclaim cannot be shared anymore.
+sysfs? If you build without CONFIG_SLUB_DEBUG then SLUB will not use 
+sysfs. You can switch that off in the embedded section.
