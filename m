@@ -1,102 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761095AbXETFWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbXETGEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761095AbXETFWs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 01:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758601AbXETFWk
+	id S1760481AbXETGEI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 02:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbXETGD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 01:22:40 -0400
-Received: from ns.suse.de ([195.135.220.2]:60187 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758214AbXETFWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 01:22:39 -0400
-Date: Sun, 20 May 2007 07:22:29 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070520052229.GA9372@wotan.suse.de>
-References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com>
+	Sun, 20 May 2007 02:03:57 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:34474 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758679AbXETGD4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 02:03:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=Z0HfAumRQh/zo/eZfpV4qvulqJ1RXEwpSR4Rs+BcxvW6m+BhKWPyiIPyzaqHJZyHRH0mGUKQUx9WAItmUNMmloaAHlAeEkYdT0bNCPQWm2otBuo+ujtIZI4eP2yjCMjYYfRkXYTxQAIz5/Io9LGKr8t2P2uyYSrCLMxlwHMdkPk=
+Date: Sun, 20 May 2007 14:56:39 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: stable@kernel.org
+Subject: [PATCH] check d_path() error in print-fatal-signals
+Message-ID: <20070520055639.GA4485@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	linux-kernel@vger.kernel.org, stable@kernel.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070519181501.GC19966@holomorphy.com>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 19, 2007 at 11:15:01AM -0700, William Lee Irwin III wrote:
-> On Fri, May 18, 2007 at 11:14:26AM -0700, Christoph Lameter wrote:
-> >> Right. That would simplify the calculations.
-> 
-> On Sat, May 19, 2007 at 03:25:30AM +0200, Nick Piggin wrote:
-> > It isn't the calculations I'm worried about, although they'll get simpler
-> > too. It is the cache cost.
-> 
-> The cache cost argument is specious. Even misaligned, smaller is
-> smaller.
+d_path() returns -ENAMETOOLONG if buffer length is not enough.
+But there is no error handling for it in print_vma() which calls
+d_path() with not enough buffer (We can easily make segfault program
+which has longer path than 128bytes).
 
-Of course smaller is smaller ;) Why would that make the cache cost
-argument specious?
+This patch allocates enough buffer for d_path() dynamically.
+audit_log_d_path() is doing sililar thing. So I just stole from it.
 
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-> The cache footprint reduction is merely amortized,
-> probabilistic, etc.
+---
+ kernel/signal.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-I don't really know what you mean by this, or what part of my cache cost
-argument you disagree with...
-
-I think it is that you could construct mem_map access patterns, without
-specifically looking at alignment, where a 56 byte struct page would suffer
-about 75% more cache misses than a 64 byte aligned one (and you could also
-get about 12% fewer cache misses with other access patterns).
-
-I also think the kernel's mem_map access patterns would be more on the
-random side, so overall would result in significantly fewer cache misses
-with 64 byte aligned pages.
-
-Which part do you disagree with?
-
-
-> On Fri, May 18, 2007 at 11:14:26AM -0700, Christoph Lameter wrote:
-> >> I wonder if there are other uses for the free space?
-> 
-> On Sat, May 19, 2007 at 03:25:30AM +0200, Nick Piggin wrote:
-> > Hugh points out that we should make _count and _mapcount atomic_long_t's,
-> > which would probably be a better use of the space once your vmemmap goes
-> > in.
-> 
-> I'm not so sure about that. I doubt we have issues with that. I say
-
-The issue is that userspace can DOS or crash the kernel by deliberately
-overflowing count or mapcount.
-
-
-> if there's to be padding to 64B to use the of the whole additional
-> space for additional flag bits. I'm sure fs's could make good use of
-> 64 spare flag bits, or whatever's left over after the VM has its fill.
-> Perhaps so many spare flag bits could be used in lieu of buffer_heads.
-
-Really? 64-bit architectures can already use about maybe 16 or 32 more
-page flag bits than 32-bit architectures, and I definitely do not want
-to increase the size of 32-bit struct page, so I think this wouldn't
-work.
-
-
-> page->virtual is the same old mistake as it was when it was removed.
-> The virtual mem_map code should be used to resolve the computational
-
-Don't get too hung up on the page->virtual thing. I'll send another
-patch with atomic_t/atomic_long_t conversion.
-
-
-> expense. Much the same holds for the atomic_t's; 32 + PAGE_SHIFT is
-> 44 bits or more, about as much as is possible, and one reference per
-> page per page is not even feasible. Full-length atomic_t's are just
-> not necessary.
-
-I don't know what your 32 + PAGE_SHIFT calculation is for, but yes you
-can wrap these counters from userspace on 64-bit architectures.
-
+Index: 2.6-mm/kernel/signal.c
+===================================================================
+--- 2.6-mm.orig/kernel/signal.c
++++ 2.6-mm/kernel/signal.c
+@@ -740,15 +740,23 @@ static int print_vma(struct vm_area_stru
+ 	 * special [heap] marker for the heap:
+ 	 */
+ 	if (file) {
+-#define SIZE 128
+-		char tmp[SIZE], *str;
+-
+-		str = d_path(file->f_dentry, file->f_vfsmnt, tmp, SIZE);
+-		while (str[0] && (str[0] == ' '))
+-			str++;
++		char *p, *path;
+ 
++		/* We will allow 11 spaces for ' (deleted)' to be appended */
++		path = kmalloc(PATH_MAX + 11, GFP_KERNEL);
++		if (!path)
++			p = "<no memory>";
++		else {
++			p = d_path(file->f_dentry, file->f_vfsmnt, path,
++				   PATH_MAX + 11);
++			if (IS_ERR(p))
++				p = "<too long>";
++			else
++				p = strstrip(p);
++		}
+ 		pad_len_spaces(len);
+-		printk("%s", str);
++		printk("%s", p);
++		kfree(path);
+ 	} else {
+ 		const char *name = arch_vma_name(vma);
+ 		if (!name) {
