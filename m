@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbXETV1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761183AbXETV15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760954AbXETV1i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 17:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXETV1a
+	id S1761183AbXETV15 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 17:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757688AbXETV1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 17:27:30 -0400
-Received: from mx2.suse.de ([195.135.220.15]:57950 "EHLO mx2.suse.de"
+	Sun, 20 May 2007 17:27:48 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36064 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756917AbXETV13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 17:27:29 -0400
-Date: Mon, 21 May 2007 00:24:22 +0200
-From: Andi Kleen <ak@suse.de>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: Andi Kleen <ak@suse.de>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
-       righiandr@users.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-Message-ID: <20070520222422.GT2012@bingen.suse.de>
-References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr> <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de> <20070520212036.GL22452@vanheusden.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070520212036.GL22452@vanheusden.com>
+	id S1757024AbXETV1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 17:27:47 -0400
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
+       linuxppc-dev@ozlabs.org, tglx@linutronix.de
+In-Reply-To: <995a4a7a4cada5604be7b30dcce8eb81@kernel.crashing.org>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	 <464C99FF.8080404@ru.mvista.com>
+	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	 <1179500217.20519.53.camel@imap.mvista.com>
+	 <464DC0DC.7050809@ru.mvista.com>
+	 <1179502773.20519.56.camel@imap.mvista.com>
+	 <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
+	 <1179628991.20925.2.camel@imap.mvista.com>
+	 <1179630190.32247.534.camel@localhost.localdomain>
+	 <995a4a7a4cada5604be7b30dcce8eb81@kernel.crashing.org>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 07:26:54 +1000
+Message-Id: <1179696414.32247.570.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 11:20:36PM +0200, Folkert van Heusden wrote:
-> > > +	switch(sig) {
-> > > +	case SIGQUIT: 
-> > > +	case SIGILL: 
-> > > +	case SIGTRAP:
-> > > +	case SIGABRT: 
-> > > +	case SIGBUS: 
-> > > +	case SIGFPE:
-> > > +	case SIGSEGV: 
-> > > +	case SIGXCPU: 
-> > > +	case SIGXFSZ:
-> > > +	case SIGSYS: 
-> > > +	case SIGSTKFLT:
-> > 
-> > Unconditional? That's definitely a very bad idea. If anything only unhandled
-> > signals should be printed this way because some programs use them internally. 
+On Sun, 2007-05-20 at 18:02 +0200, Segher Boessenkool wrote:
+> > In fact, while it's never worded explicitely in the spec, it's always
+> > been strongly in the "spirit" of the architecture that the timebase and
+> > decrementer have a constant frequency.
 > 
-> Use these signals internally? Afaik these are fatal, stopping the
-> process. So using them internally would be a little tricky.
+> The architecture mentions varying time base frequencies,
+> and how to deal with this, actually.  It makes no
+> recommendations one way or the other.
 
-All of them are catchable.
+I might be mixing up with PAPR... anyway, it's very stupid to vary it
+imho. And as I just said, I have about 0 plan to imlement support for
+such a contraption.
 
+> Fixed frequencies are easier for almost everything of
+> course :-)
+
+Yup.
+
+> > This is why processors like the
+> > 970 allow for an external sourcing for when they are used in setups
+> > where the various clocks are slewed for power management.
 > 
-> > But I think your list is far too long anyways.
-> 
-> So, which ones would you like to have removed then?
+> Clock spreading on the core clock is the bigger problem,
+> lack of accuracy on the order of 1% is unacceptable for
+> certain applications.
 
-SIGFPE at least and the accounting signals are dubious too. SIGQUIT can
-be also relatively common.
+That too.
 
--Andi
+Ben.
+
+
