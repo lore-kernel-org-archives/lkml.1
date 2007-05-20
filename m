@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbXETGa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbXETGjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762223AbXETGa1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 02:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759119AbXETGaU
+	id S1761972AbXETGjM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 02:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759377AbXETGi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 02:30:20 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:30686 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758679AbXETGaT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 02:30:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=UXT3BO37oTVknsIh+13+QqpCHmFj/xFu9RestglV1MMQi7nfPnFKFMj7Jp2Xny0AhiX40BNG4QbyVc/s3wX9eNQO0N50fAkp6PHzUDuZ8x5BLIM1f7/iX3THRF7HGdU0vLmQw/HmjA43MUTVg1vWXOAeJzx0RcegqkZ3pGraP98=
-Message-ID: <2c0942db0705192330r4004d7bem3556c939c1581553@mail.gmail.com>
-Date: Sat, 19 May 2007 23:30:17 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Michael Gerdau" <mgd@technosis.de>
-Subject: Re: Sched - graphic smoothness under load - cfs-v13 sd-0.48
-Cc: "Bill Davidsen" <davidsen@tmr.com>,
-       "Linux Kernel M/L" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200705200812.26391.mgd@technosis.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 20 May 2007 02:38:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55066 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759342AbXETGi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 02:38:58 -0400
+Date: Sun, 20 May 2007 08:38:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Anant Nitya <kernel@prachanda.info>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] CFS scheduler, -v13
+Message-ID: <20070520063804.GA25058@elte.hu>
+References: <20070517174533.GA538@elte.hu> <200705180317.06014.kernel@prachanda.hub> <20070518102607.GA23151@elte.hu> <200705200246.22444.kernel@prachanda.hub>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <464F57DD.2000309@tmr.com>
-	 <2c0942db0705191322p54e05e40p512146f21f68299a@mail.gmail.com>
-	 <464F99EC.3080006@tmr.com> <200705200812.26391.mgd@technosis.de>
-X-Google-Sender-Auth: 0e80847f57af4530
+In-Reply-To: <200705200246.22444.kernel@prachanda.hub>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.7
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.7 required=5.9 tests=BAYES_00,INFO_TLD autolearn=no SpamAssassin version=3.1.7
+	1.3 INFO_TLD               URI: Contains an URL in the INFO top-level domain
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/19/07, Michael Gerdau <mgd@technosis.de> wrote:
-> > Okay, here's a bonus, http://www.tmr.com/~davidsen/sched_smooth_02.html
-> > not only has the right values, the labels are changed, and I included
-> > more data points from the fc6 recent kernel and the 2.6.21.1 kernel with
-> > the mainline scheduler.
-> >
-> > The nice thing about this test and the IPC test I posted recently is
-> > that they are reasonable stable on the same hardware, so even if someone
-> > argues about what they show, they show the same thing each time and can
-> > therefore be used to compare changes.
->
-> I'm not sure I follow you here. The difference between 2.6.21 and 2.6.21.1
-> are two simple (as in involving little code) changes to ip4 and ip6 net
-> and I'm not even sure that code is used at all in your tests.
-> [Read: IMO the 2.6.21 and 2.6.21.1 figures are for identical cases].
->
-> Assuming the above is correct then IMO the variance between the two
-> "dublicated" lines (cfs-v13 and sd048) is such that I would not have
-> written "that they are reasonable stable on the same hardware".
->
-> I don't want to say the values aren't useful. I simply think there is
-> a high noiselevel.
 
-The noise is reflected in the standard deviation he has on those rows.
-The average +- stdev  of one overlaps the average +- stdev of the
-other, which shows that the test *is* stable, where stable (as always)
-is defined to some accuracy.
+* Anant Nitya <kernel@prachanda.info> wrote:
+
+> Hi Ingo,
+> 
+> Please ignore my last report about lag problem while using CFS-v13, it 
+> is working perfectly fine with 2.6.21.1 and the lag I used to see in 
+> v12 is not there with v13 anymore. [...]
+
+ah, great - i was looking over your debug data and couldnt find the 
+problem! This moves CFS into the "no open regressions" state again ;-)
+
+> [...] After digging in a bit I found that problem is only occurring in 
+> 2.6.22-rc1 and it get fired by network usage while transmitting data 
+> upstream. I don't have any evidence that CFS is involved in lag 
+> problem since 2.6.22-rc1 with stock scheduler is also having same lag 
+> problem and it seems directly proportional with upstream speed while 
+> downstream doesn't shows any misbehavior { at lower upstream speed lag 
+> is less but with higher upstream speed system starts crawling and 
+> system load hitting to 70/75}. Lets see how 2.6.22-rc2 is doing.
+
+if that lag still occurs with rc2 then please repeat the following 
+debugging steps under CFS [which has more instrumentation than the stock 
+scheduler]:
+
+  cat /proc/`pidof firefox-bin`/sched > sched1.txt
+  echo 0 > /proc/`pidof firefox-bin`/sched
+
+  < reproduce the lag in firefox >
+
+  cat /proc/`pidof firefox-bin`/sched > sched2.txt
+
+this way we'll be able to tell what nature this delay has. Also, could 
+you send me your kernel's .config (off-list)?
+
+	Ingo
