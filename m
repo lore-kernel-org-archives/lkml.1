@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbXETSy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbXETTB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbXETSy3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 14:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbXETSyW
+	id S1757168AbXETTB4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 15:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbXETTBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 14:54:22 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:55912 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754540AbXETSyV (ORCPT
+	Sun, 20 May 2007 15:01:49 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:56120 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754540AbXETTBs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 14:54:21 -0400
-Message-ID: <46509924.8020904@cosmosbay.com>
-Date: Sun, 20 May 2007 20:53:24 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	Sun, 20 May 2007 15:01:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bJFjblScLabT7wCrF/W0cp9k68ux+U1x9FtWnwAGTEQFDkKYHIT7+QdWaQildS0bcdKKWbPP8hF3oYxtkSelMAYXEtqoUJdbRhKcy1wjU2ST+kWHFRuLP9LNymL+brhq1gHu7CWK4ziftgNXC5Zn2PJ8/kazQdiCkAXYGYSiod8=
+Message-ID: <a36005b50705201201y724ac400u5581df86c62d9de2@mail.gmail.com>
+Date: Sun, 20 May 2007 12:01:47 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
 Subject: Re: first little problem with private futexes
-References: <465095E5.4050508@redhat.com>
-In-Reply-To: <465095E5.4050508@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 20 May 2007 20:53:31 +0200 (CEST)
+Cc: "Ulrich Drepper" <drepper@redhat.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <46509924.8020904@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <465095E5.4050508@redhat.com> <46509924.8020904@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper a écrit :
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Here's a first little issue with private futex I came across.  But a
-> real bug but a hole.
-> 
-> When we use clone() with CLONE_CHILD_CLEARTID possible waiters are woken
-> upon termination of the thread.  This operation uses FUTEX_WAKE so far.
->  But it in almost all cases local memory and I would even be in favor of
-> setting this into stone.   It wouldn't break anything I know of.
-> 
-> The problem is we cannot just go over to using
-> FUTEX_WAIT|FUTEX_PRIVATE_FLAG since this would break binaries using any
-> glibc out there so far.
-> 
-> There are three ways out of this I can see:
-> 
-> 1.  do nothing, always use the shared futexes.  Not very attractive IMO
+On 5/20/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> > 1.  do nothing, always use the shared futexes.  Not very attractive IMO
+>
+> Why do you find this non attractive ?
+>
+> How is it performance critical ?
 
-Why do you find this non attractive ?
-
-How is it performance critical ?
-
-If a program is stupid enough to create/destroy many threads per second, I 
-doubt it relies on a faster thread termination :)
-
-> 
-> 2.  try private futexes first, then shared one.  This is even less
->     attractive since in the many cases there is no waiter and we cannot
->     determine whether the private futex notification succeeded and we're
->     doing the expensive work as well
-> 
-> 3.  tell the kernel whether we want the new or the old notification.
->     This can be done using a number of ways
-> 
->     a) using some prctl().  Another unconditional syscall, not nice.
-> 
->     b) using a new CLONE_* flag.  We have currently 5 bits left and can
->        recover two more (CLONE_DETACHED, CLONE_STOPPED).  And we can
->        invent ways to add more bits.
-> 
-> 
-> I'm in favor of 3b but if somebody argues the costs are not justified
-> because the effects of using the shared futex notification isn't high
-> enough I can accept that, too.
-
+You should know better than any other that the problem is not that the
+problem itself is the only one affected.  If threads terminate all
+other programs and threads are affected since the global locks for the
+shared futexes are needed.  That's the case I'm concerned about.  It's
+not really about a single app creating many many threads over and over
+again.  It's about many apps which do use threads (and that number
+will have to rise) starts and stop threads at a reasonable rate.  It's
+just one more unnecessary point of contact between concurrently
+running apps.
