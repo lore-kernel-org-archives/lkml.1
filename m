@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbXETSX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759070AbXETSbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758752AbXETSX2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 14:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbXETSXV
+	id S1759070AbXETSbR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 14:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbXETSbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 14:23:21 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:39963 "EHLO
+	Sun, 20 May 2007 14:31:04 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:39973 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757136AbXETSXU (ORCPT
+	with ESMTP id S1757159AbXETSbC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 14:23:20 -0400
-Date: Sun, 20 May 2007 20:23:07 +0200
+	Sun, 20 May 2007 14:31:02 -0400
+Date: Sun, 20 May 2007 20:30:49 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+To: Trent Piepho <xyzzy@speakeasy.org>
 Cc: Satyam Sharma <satyam.sharma@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
@@ -20,86 +20,77 @@ Cc: Satyam Sharma <satyam.sharma@gmail.com>,
        Kumar Gala <galak@kernel.crashing.org>,
        Simon Horman <horms@verge.net.au>
 Subject: Re: RFC: kconfig select warnings bogus?
-Message-ID: <20070520182306.GR6291@stusta.de>
-References: <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com> <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com> <464F9A7B.1030708@s5r6.in-berlin.de> <a781481a0705191753r25e0cay82785ed56c04b6eb@mail.gmail.com> <a781481a0705191804u7f5a344cr92f2a1981c502bf7@mail.gmail.com> <4650074A.6000307@s5r6.in-berlin.de> <a781481a0705200438s634712e6v957d7085bca7407@mail.gmail.com> <46503542.50300@s5r6.in-berlin.de> <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com> <46504876.9040802@s5r6.in-berlin.de>
+Message-ID: <20070520183049.GS6291@stusta.de>
+References: <20070519151523.GA26724@uranus.ravnborg.org> <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com> <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com> <20070519230940.GJ6291@stusta.de> <a781481a0705191719u5234b248v8d36af6a368a5119@mail.gmail.com> <Pine.LNX.4.58.0705200228360.1671@shell4.speakeasy.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <46504876.9040802@s5r6.in-berlin.de>
+In-Reply-To: <Pine.LNX.4.58.0705200228360.1671@shell4.speakeasy.net>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 03:09:10PM +0200, Stefan Richter wrote:
->...
-> Since you mention "select":  My opinion about the "select" dialect of
-> "depends on" is that the UIs should be improved and "select" should be
-> removed from the Kconfig language.  What do we "select"?  Typically we
-> "select" an option on which /n/ other options depend on but which itself
-> does depend on none or few options higher up.  The UIs could be able to
-> figure this out for themselves, or if necessary by a hint tacked onto
-> library-type options.  That is, instead of
+On Sun, May 20, 2007 at 02:52:14AM -0700, Trent Piepho wrote:
+> On Sun, 20 May 2007, Satyam Sharma wrote:
+> > On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > > On Sun, May 20, 2007 at 05:25:24AM +0530, Satyam Sharma wrote:
+> > > > On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > > >> On Sun, May 20, 2007 at 05:06:33AM +0530, Satyam Sharma wrote:
+> > > >> > On 5/20/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > > >> There are cases where "default .. if .." is the right idiom, but there
+> > > >> are also cases where "select" is the right idiom. And for helper code
+> > > >> like ATARI_KBD_CORE, "select" is the right idiom.
+> > > >
+> > > > ATARI_KBD_CORE, unlike MII, is defined only by some archs. And the
+> > > > correct (most widely used or standard, in any case) idiom for that is
+> > > > "default .. if ..". Or perhaps you can convert those helper code options in
+> > > > arch/.../config's over to select too, as an exercise? :-)
+> > >
+> > > Perhaps not as an exercise, but actually for real.
+> > >
+> > > We had "fixed" such warnings in the past similar to your patch, but that
+> > > was actually a mistake.
+> > >
+> > > And "correct" can easily be the opposite of "most widely used or standard"
+> > > if you discover that you did it wrong in the past.
+> >
+> > In that case the correct approach here too would be to _shift_
+> > ATARI_KBD_CORE from arch/m68k/Kconfig to drivers/input/Kconfig
+> > and *then* use "select" from the config options that require it in
+> > drivers/input/keyboard/Kconfig and drivers/input/mouse/Kconfig
+> >
+> > (and repeat for other such cases in arch/...)
 > 
-> 	config A
-> 		tristate "driver A"
-> 		select L
+> You don't need a huge '||' chain, you can always have more than one default
+> line:
 > 
-> 	config B
-> 		tristate "driver B"
-> 		select L
+> config ATARI_KBD_CORE
+> 	bool
+> 	default y if KEYBOARD_ATARI
+> 	default y if MOUSE_ATARI
 > 
-> 	config L
-> 		tristate "library L"
-> 
-> write
-> 
-> 	config A
-> 		tristate "driver A"
-> 		depends on L
-> 
-> 	config B
-> 		tristate "driver B"
-> 		depends on L
-> 
-> 	config L
-> 		tristate "library L"
-> 		hint THIS_IS_A_LIBRARY
-> 
-> Now let UIs "make oldconfig", "make menuconfig", "make randconfig" deal
-> with the hint or ignore the hint --- according to the purpose and
-> usability requirements of the respective UI.  The "hint
-> THIS_IS_SOMETHING" isn't even necessary in many cases to detect roles of
-> options, because their position in the dependency graph is already
-> saying something about it.
->...
+> Basically a line "config A \n select B" is transformed into "config B \n
+> default y if A".  It's the same number of lines, they're just in a new place.
 
-Example where your proposal wouldn't work well:
+Only if the select'ed option is a bool.
+With tristates they are doubled.
 
-config MIPS_ATLAS
-        bool "MIPS Atlas board"
-        select SYS_SUPPORTS_LITTLE_ENDIAN
-        select SYS_SUPPORTS_BIG_ENDIAN
+And for user visible options like MII you need an additional helper 
+option.
 
-config SYS_SUPPORTS_BIG_ENDIAN
-        bool
+And the "just in a new place" makes a big difference in readability.
+Compare the version of arch/mips/Kconfig in kernel 2.6.0 with the 
+version in current kernels.
+E.g. tell me whether there's any system that doesn't select any 
+SYS_SUPPORTS_*_ENDIAN. There are possible errors that can be spotted 
+much easier when using "select" at the right places.
 
-config CPU_BIG_ENDIAN
-        bool "Big endian"
-        depends on SYS_SUPPORTS_BIG_ENDIAN
+> Another alternative would be to shift the arch specific drivers to a file
+> that's arch specific.  e.g. move MOUSE_ATARI from drivers/input/mouse/Kconfig
+> to arch/m68k/Kconfig.
 
-
-Where's the value of allowing an UI to ignore hints? If an UI would 
-ignore all hints on SYS_SUPPORTS_BIG_ENDIAN you would no longer be able 
-to configure a kernel on this architecture.
-
-And there's no way for an UI to figure out the direction of the options - 
-with "select" the only reasonable direction is fixed for all UIs.
-
-"select" might have room for improvements especially in the area of 
-dependencies of select'ed options, but replacing it with overloading
-"depends on" plus hints wouldn't be a good solution.
-
-> Stefan Richter
+Where is for a Kconfig user (person compiling her own kernel) the 
+logical place to search for the Atari mouse driver option?
 
 cu
 Adrian
