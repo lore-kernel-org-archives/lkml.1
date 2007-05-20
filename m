@@ -1,98 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765013AbXETKv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765209AbXETKwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765013AbXETKv1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 06:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbXETKvR
+	id S1765209AbXETKwY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 06:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758358AbXETKwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 06:51:17 -0400
-Received: from barclay.balt.net ([195.14.162.78]:21503 "EHLO barclay.balt.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757093AbXETKvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 06:51:16 -0400
-Date: Sun, 20 May 2007 13:37:13 +0300 (EEST)
-From: zilvinas@wilibox.com
-X-X-Sender: zilvinas@barclay.balt.net
-Reply-To: zilvinas@wilibox.com
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Zilvinas Valinskas <zilvinas@wilibox.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel NFS lockd freezes notebook on shutdown (Linux 2.6.22-rc1
- + CFS v12)
-In-Reply-To: <20070518202805.GA298@tv-sign.ru>
-Message-ID: <Pine.LNX.4.64.0705201326410.8634@barclay.balt.net>
-References: <1179338441.4265.13.camel@zv.wilibox.com>
- <20070516121538.7b108c10.akpm@linux-foundation.org> <20070516225543.GA337@tv-sign.ru>
- <1179390065.4760.5.camel@zv.wilibox.com> <20070517184556.GA81@tv-sign.ru>
- <1179485230.3800.20.camel@zv.wilibox.com> <20070518202805.GA298@tv-sign.ru>
+	Sun, 20 May 2007 06:52:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:8662 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756007AbXETKwN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 06:52:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=TQq+OaMxMpfkkXBg7wPrqyKEE261+MKbg5FdKcXiLZAhvdgL56IRGai5QRBomD8Rl2xf7CfiEhlQUUBJYYu4WmSipUAsz23HZhWrxLrdUlueVh3vSxq711EFZru2ZW9vRvapJq6eTkjwUbFFWm27pE4RB3u6NElGRVVVaUD+udo=
+Message-ID: <46502847.40204@gmail.com>
+Date: Sun, 20 May 2007 12:51:51 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>, Jeff Garzik <jeff@garzik.org>,
+       Francis Russell <francisrussell@btopenworld.com>,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       video4linux@list.redhat.com,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>, Robert Fitzsimons <robfitz@273k.net>
+Subject: Re: [3/5] 2.6.22-rc2: known regressions
+References: <464F6DC9.80805@googlemail.com> <464F74D5.9080204@googlemail.com>
+In-Reply-To: <464F74D5.9080204@googlemail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Oleg,
+Hello,
 
-I've done some more tests and quite frankly I think this is really related 
-to the dreaded ''fglrx.ko'' module. It seems to me that it is much easier 
-to reproduce the problem if that damn module is loaded. It does uses 
-workqueue. Then there is another driver ipw3945 loaded and it is required 
-to run binary only ''ipw3945d'' daemon just to start using wireless driver 
-...
+Michal Piotrowski wrote:
+> SATA/PATA
+> 
+> Subject    : libata and legacy ide pcmcia failure
+> References : http://lkml.org/lkml/2007/5/17/305
+> Submitter  : Robert de Rooy <robert.de.rooy@gmail.com>
+> Status     : Unknown
 
-In either way both these kernel modules are workqueue users.
+Doesn't look like a regression to me.  Doubled timeout looks like a
+problem with timer.  I'll follow up on the original thread.
 
-Btw, I had also tested kernel (compiled from the same source) but on 
-different laptop (EVO N800v), single core, Pentium M 2GHz. Kernel is not 
-freezing on shutdown, even loop nfs kernel stop/start - does not cause any 
-kernel panic as on nx9420 (Dual Core) laptop. And that with or without any 
-patch applied from Oleg. :((
+> Subject    : pata_via appears to incorrectly detects 40-pin cable
+> References : http://lkml.org/lkml/2007/5/17/273
+>              http://bugzilla.kernel.org/show_bug.cgi?id=8142
+> Submitter  : Francis Russell <francisrussell@btopenworld.com>
+> Status     : Unknown
 
-I think this time it is really needed to stop here, kernel was tainted for 
-a reason. :(((
+Not really a regression.  Alan seems to have a general fix and I think
+we can also quirk the specific case.
 
-Thank you both, Oleg and Andrew.
+> Subject    : libata crash on halt
+> References : http://marc.info/?l=linux-ide&m=117899827710565&w=2
+> Submitter  : Andrew Morton <akpm@linux-foundation.org>
+> Caused-By  : Tejun Heo <htejun@gmail.com>
+>              commit 920a4b1038e442700a1cfac77ea7e20bd615a2c3
+> Status     : problem is being debugged
 
-Zilvinas "Lucky ATI fglrx owner" Valinskas
+This was fixed by the following commit.
 
-On Sat, 19 May 2007, Oleg Nesterov wrote:
+commit da071b42f73dabbd0daf7ea4c3ff157d53b00648
+Author: Tejun Heo <htejun@gmail.com>
+Date:   Mon May 14 17:26:18 2007 +0200
 
-> On 05/18, Zilvinas Valinskas wrote:
->>
->> On Thu, 2007-05-17 at 22:45 +0400, Oleg Nesterov wrote:
->>>
->>> However, I can't understand why cleanup_workqueue_thread() hangs anyway.
->>> It shouldn't. Looks like rpciod/1 was preempted, and can't get CPU. According
->>> to kernel-nfs-freeze.log it is TASK_RUNNING. Strange.
->>>
->>> It is very sad, because this code was supposed to be cleanuped anyway,
->>> but if it is really buggy, it would be great to know why.
->>
->> Can this be related to :
->>
->> CONFIG_PREEMPT=y
->
-> Yes, but this preemption should be very unlikely, but it happens every time
-> for you, strange. lockd in turn spins with preemption enabled, but somehow
-> rpciod/1 can't make progress. system_state == SYSTEM_HALT, but this shouldn't
-> affect preempt_schedule_irq(). So I think there is something else.
->
->> workqueue.objdump - without any patch.
->
-> So it hangs waiting for cwq->thread == NULL, as expected.
->
-> OK. I still can't see how this code could be wrong, but it is bad anyway and
-> should be changed. The 2nd patch was done more than a month ago, but was
-> delayed for some stupid reasons. I'll send it today.
->
-> Still, it is not clear to me what happens, and you have other crashes with
-> nfs stop/start
->
-> 	http://marc.info/?l=linux-kernel&m=117939027602591
-> 	http://marc.info/?l=linux-kernel&m=117939257630947
->
-> which probaly need some attention.
->
-> Thanks!
->
-> Oleg.
->
->
+    libata: fix shutdown warning message printing
+
+> Subject    : libata reset-seq merge broke sata_sil on sh
+> References : http://lkml.org/lkml/2007/5/10/63
+> Submitter  : Paul Mundt <lethal@linux-sh.org>
+> Handled-By : Tejun Heo <htejun@gmail.com>
+> Caused-By  : commit 4750def52cb2c21732dda9aa1d43a07db37b0186
+> Status     : problem is being debugged
+
+Possible fix proposed.
+
+  http://lkml.org/lkml/2007/5/19/161
+
+I'll push the fix once Paul verifies it.
+
+Thanks.
+
+-- 
+tejun
