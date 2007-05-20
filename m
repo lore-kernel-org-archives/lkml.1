@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbXETQC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXETQDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759328AbXETQC6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 12:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXETQCu
+	id S1759935AbXETQDT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 12:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759573AbXETQDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 12:02:50 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:52798 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756518AbXETQCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 12:02:49 -0400
-In-Reply-To: <1179630190.32247.534.camel@localhost.localdomain>
-References: <200705172142.26739.sshtylyov@ru.mvista.com> <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org> <464C99FF.8080404@ru.mvista.com> <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org> <1179500217.20519.53.camel@imap.mvista.com> <464DC0DC.7050809@ru.mvista.com> <1179502773.20519.56.camel@imap.mvista.com> <17998.28659.702653.237011@cargo.ozlabs.ibm.com> <1179628991.20925.2.camel@imap.mvista.com> <1179630190.32247.534.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <995a4a7a4cada5604be7b30dcce8eb81@kernel.crashing.org>
+	Sun, 20 May 2007 12:03:06 -0400
+Received: from mx1-2.mail.ru ([194.67.23.121]:24208 "EHLO mx1.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757355AbXETQDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 12:03:04 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Date: Sun, 20 May 2007 20:02:52 +0400
+User-Agent: KMail/1.9.6
+Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Al Viro" <viro@ftp.linux.org.uk>,
+       "Uwe Bugla" <uwe.bugla@gmx.de>, "Ken Chen" <kenchen@google.com>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+References: <464F42F3.1080300@madrabbit.org> <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com> <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
+In-Reply-To: <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2397148.kc1Yrhy21G";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
-       linuxppc-dev@ozlabs.org, tglx@linutronix.de
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-Date: Sun, 20 May 2007 18:02:46 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-X-Mailer: Apple Mail (2.623)
+Message-Id: <200705202002.53991.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In fact, while it's never worded explicitely in the spec, it's always
-> been strongly in the "spirit" of the architecture that the timebase and
-> decrementer have a constant frequency.
+--nextPart2397148.kc1Yrhy21G
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-The architecture mentions varying time base frequencies,
-and how to deal with this, actually.  It makes no
-recommendations one way or the other.
+On Sunday 20 May 2007, Kay Sievers wrote:
+> On 5/20/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+> > On 5/19/07, Al Viro <viro@ftp.linux.org.uk> wrote:
+> > > On Sat, May 19, 2007 at 11:16:59PM -0700, Ray Lee wrote:
+> > > > Ken? Ball's in your court. As the patch isn't providing a killer
+> > > > feature for 2.6.22, I'd suggest just reverting it for now until the
+> > > > issues are ironed out.
+> > >
+> > > Hold it.  The real question here is which logics do we want there.
+> > > IOW, and how many device nodes do we want to appear and _when_ do
+> > > we want them to appear?
+> >
+> > The when part is what looks to make it racy. I'm guessing that we're
+> > relying on udev to create those loop nodes. If so, I think any scheme
+> > that creates more on demand would give transient mount errors while
+> > it's waiting on udev to create more nodes.
+> >
+> > Perhaps if we were to start with 8 loop nodes at init (as we have in
+> > 2.6.21), and then always maintain a margin of 8 (or 4, or...) when
+> > they start being used or detached?
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> > in the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+>
+> Until the tools can request dynamic loop device allocation from the
+> kernel before they want to use the device, you can create as many as
+> needed "static" loop* nodes in /lib/udev/devices/, which will be
+> copied to /dev/ early on every bootup.
+>
 
-Fixed frequencies are easier for almost everything of
-course :-)
+Won't these be removed after "losetup -d"?
 
-> This is why processors like the
-> 970 allow for an external sourcing for when they are used in setups
-> where the various clocks are slewed for power management.
+--nextPart2397148.kc1Yrhy21G
+Content-Type: application/pgp-signature
 
-Clock spreading on the core clock is the bigger problem,
-lack of accuracy on the order of 1% is unacceptable for
-certain applications.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
+iD8DBQBGUHEtR6LMutpd94wRAjWrAKC0d4f/4NwmYLtuGVF3tx0TymZhLACdFUGB
+0iS7CfGURFTBIH3WYJ6QNdM=
+=C+GY
+-----END PGP SIGNATURE-----
 
-Segher
-
+--nextPart2397148.kc1Yrhy21G--
