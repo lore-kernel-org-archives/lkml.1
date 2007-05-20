@@ -1,115 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXETNKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbXETNPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbXETNKf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 09:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbXETNK2
+	id S1758076AbXETNPR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 09:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbXETNPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 09:10:28 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:54008 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755571AbXETNK1 (ORCPT
+	Sun, 20 May 2007 09:15:07 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:52204 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755359AbXETNPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 09:10:27 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46504876.9040802@s5r6.in-berlin.de>
-Date: Sun, 20 May 2007 15:09:10 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Sun, 20 May 2007 09:15:05 -0400
+Message-ID: <465049BE.5000000@cv-sv.de>
+Date: Sun, 20 May 2007 15:14:38 +0200
+From: Christian Volkmann <haveaniceday@cv-sv.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.2) Gecko/20070218 SUSE/1.1.1-5.1 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Simon Horman <horms@verge.net.au>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: RFC: kconfig select warnings bogus?
-References: <20070519151523.GA26724@uranus.ravnborg.org>	 <20070519110944.2a52061e.akpm@linux-foundation.org>	 <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com>	 <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>	 <464F9A7B.1030708@s5r6.in-berlin.de>	 <a781481a0705191753r25e0cay82785ed56c04b6eb@mail.gmail.com>	 <a781481a0705191804u7f5a344cr92f2a1981c502bf7@mail.gmail.com>	 <4650074A.6000307@s5r6.in-berlin.de>	 <a781481a0705200438s634712e6v957d7085bca7407@mail.gmail.com>	 <46503542.50300@s5r6.in-berlin.de> <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com>
-In-Reply-To: <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Claas Langbehn <claas@rootdir.de>
+CC: Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: Via C3/C7: other flags possible ?
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <200705190753.16570.ak@suse.de> <464EE2AA.3030607@cv-sv.de> <464F332C.8060904@rootdir.de> <464F5C8F.5000304@cv-sv.de> <464F7C09.8060809@cv-sv.de> <464F7F90.2000900@simon.arlott.org.uk> <4650047F.4000804@rootdir.de>
+In-Reply-To: <4650047F.4000804@rootdir.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19bF6s3yWsBcUSz92AFqIDs/eJ0WYAWVai56nZ
+ wR3dBjeXUU5P+YEJ78Xg+h8wPAKzU1+szLKUm+qwYWFTlLBRGA
+ 61DevLLcICxbD73/Ofl+w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> I was only answering your *completely misplaced and
-> incorrect* original comment against the patch where you claimed
-> that the patch was "totally wrong" because of the way it removed
-> the "select" ... etc ...
+Bit 20 in edx is set if NX is available for C7:
 
-I believe I have explained why I labeled it as totally wrong.
+eax in: 0x80000001, eax = 00000000 ebx = 00000000 ecx = 00000000 edx = 00100000
+( from your posting "This kernel requires the following..." )
 
-> And remember, like I said already, the whole _idea_ is such arch-
-> specific helper code be not mentioned from arch-agnostic Kconfig
-> files. You may not like it, but this is the standard / most common way
-> such cases are handled for tons of other cases in arch/...
+The official VIA Eden  datasheet seems to be NDA. I have not found any
+official download link on the pages:
+http://www.via.com.tw/en/products/processors/c7/
+The /c3/ pages contain the documentation  for the C3 family.
 
-The standard and maintainable way (for drivers at least) is
+I do not think the NX feature can be switched on/off by regular registers.
 
-config A
-	bool-or-tristate "option A"
-	depends on !PLATFORM_X || HELPER_N_ON_PLATFORM_X
+May be it helps to play around with the bios ?
+Load "default settings" => see how the NX flag acts.
+Load "optimized settings" => see how the NX flags acts.
 
-It is not a matter of me disliking something.  It's a matter of that we
-can easily determine what A needs, but have a hard time to determine and
-maintain the dependencies in the reverse way.
+I suppose the bios developer had used one setting to test and
+work with the NX flag regular.
 
-BTW, if A needs platform-specific helper N, then A is not
-platform-agnostic.  If A is desired to be platform-agnostic, then either
-A has to be implemented independently of N or N has to be made available
-on all platforms.
+Christian
 
-> Which is why Adrian's way of solving this (shifting all such
-> arch-specific helper symbols also to drivers/... and then using depends
-> on select on it) is not viable.
 
-I'm not advocating any specific fixes or pseudo-fixes.  I'm advocating
-the notation of dependencies in the direction "A requires B".
+> If you read the other thread properly you'd see that the BIOS has an option to enable or disable it... when enabled it shows up.
+PS: @Simon, sorry that I missed the other thread. Too much traffic
+and not enough time for me to read all. I suppose that's a fulltime job ;-)
 
-Since you mention "select":  My opinion about the "select" dialect of
-"depends on" is that the UIs should be improved and "select" should be
-removed from the Kconfig language.  What do we "select"?  Typically we
-"select" an option on which /n/ other options depend on but which itself
-does depend on none or few options higher up.  The UIs could be able to
-figure this out for themselves, or if necessary by a hint tacked onto
-library-type options.  That is, instead of
+Claas Langbehn wrote:
+> Simon Arlott schrieb:
+>> On 19/05/07 23:36, Christian Volkmann wrote:
+>>> Christian Volkmann wrote:
+>>>> Claas asked for the NX flag for the Via C3 (?) processors
+>>>> in another thread.
+>>
+>> If you read the other thread properly you'd see that the BIOS has an
+>> option to enable or disable it... when enabled it shows up.
+> 
+> Right, but my bios disables this after each boot-time :(
+> Therefore it would be great if the kernel would not care
+> about the BIOS and enable it anyway.
+> 
+> This seems to be a severe bug in the BIOS, but VIA does not
+> deliver a new BIOS since months. :(
+> 
+>>
+>> I can't reboot that box just to test cx8 detection (which is missing).
+>>
+> It works here.
+> 
+> 
+> 
+> claas
+> 
 
-	config A
-		tristate "driver A"
-		select L
-
-	config B
-		tristate "driver B"
-		select L
-
-	config L
-		tristate "library L"
-
-write
-
-	config A
-		tristate "driver A"
-		depends on L
-
-	config B
-		tristate "driver B"
-		depends on L
-
-	config L
-		tristate "library L"
-		hint THIS_IS_A_LIBRARY
-
-Now let UIs "make oldconfig", "make menuconfig", "make randconfig" deal
-with the hint or ignore the hint --- according to the purpose and
-usability requirements of the respective UI.  The "hint
-THIS_IS_SOMETHING" isn't even necessary in many cases to detect roles of
-options, because their position in the dependency graph is already
-saying something about it.
-
-These things really should be shifted into the UIs as much as possible,
-because we can have a number of special-purpose UIs but we want
-all-purpose Kconfig files.
--- 
-Stefan Richter
--=====-=-=== -=-= =-=--
-http://arcgraph.de/sr/
