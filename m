@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761665AbXETCpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbXETDET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761665AbXETCpo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 22:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758410AbXETCph
+	id S1761320AbXETDET (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 19 May 2007 23:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759043AbXETDEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 22:45:37 -0400
-Received: from homer.mvista.com ([63.81.120.158]:40256 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757225AbXETCpg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 22:45:36 -0400
-Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
-From: Daniel Walker <dwalker@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
-	 <464C99FF.8080404@ru.mvista.com>
-	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
-	 <1179500217.20519.53.camel@imap.mvista.com>
-	 <464DC0DC.7050809@ru.mvista.com>
-	 <1179502773.20519.56.camel@imap.mvista.com>
-	 <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Sat, 19 May 2007 19:43:11 -0700
-Message-Id: <1179628991.20925.2.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Sat, 19 May 2007 23:04:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59420 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755675AbXETDEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 19 May 2007 23:04:07 -0400
+Message-ID: <464FBA9C.9090208@garzik.org>
+Date: Sat, 19 May 2007 23:03:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Komuro <komurojun-mbn@nifty.com>
+CC: tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [SMP BUG]  [clockevents: i386 drivers patch]  introduces  irqbalance-does-not-work-properly
+ problem
+References: <1178202559.3767.21.camel@localhost.localdomain>	<20070504233238.ca55c2d1.komurojun-mbn@nifty.com>	<1178463619.3793.14.camel@localhost.localdomain>	<1178777214.2951.18.camel@ymzhang>	<20070510160615.6aa9cef6.akpm@linux-foundation.org>	<20070513200444.9d2db4c3.komurojun-mbn@nifty.com> <20070520111409.1793a2f6.komurojun-mbn@nifty.com>
+In-Reply-To: <20070520111409.1793a2f6.komurojun-mbn@nifty.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-19 at 13:33 +1000, Paul Mackerras wrote: 
-> Daniel Walker writes:
+Komuro wrote:
+> [clockevents: i386 drivers patch] introduces
+>   irqbalance-does-not-work-properly problem.
 > 
-> > On Fri, 2007-05-18 at 19:06 +0400, Sergei Shtylyov wrote:
-> > >     Well, the decrementer frequency may change, at least in theory (if the bus 
-> > > clock changes).
-> > 
-> > Does that happen very often?
+>  
+> (The irq is not distributed to two Core
+>   ,most of the irq is distributed to CPU1)
+>  
 > 
-> If it did, gettimeofday would start reporting seriously wrong values,
-> since the timebase and the decrementer count at the same rate, and we
-> don't have any provision for fixing things up if that rate changed.
-> Fortunately there are no powerpc platforms where the rate is
-> variable.
+>  Mr. Thomas Gleixner,
+>  any idea to fix this problem?
 
-In terms of clocksources, gettimeofday() would have to switch to another
-clocksource if the decrementer started to act that way .. That's why it
-is possible to register more than one clocksource, to allow for the
-switching. The decrementer frequency doesn't change even with cpufreq?
+Do you mean userspace irqbalance daemon?
 
-Daniel
+It might need to be modified to work properly with a new and unusual 
+event source.
+
+Also, for some irq events, it may be good to send most interrupts to one 
+core/CPU.  That enhances caching effects, among other benefits.  Again, 
+this is highly dependent on the event source, I'm not saying that is the 
+case here.
+
+Regards,
+
+	Jeff
+
 
