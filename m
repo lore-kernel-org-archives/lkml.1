@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762093AbXETE66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760715AbXETFMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762093AbXETE66 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 00:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760132AbXETE6n
+	id S1760715AbXETFMT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 01:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbXETFML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 00:58:43 -0400
-Received: from dsl-66-59-230-166.static.linkline.com ([66.59.230.166]:38246
-	"EHLO merry.kedzierski.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759616AbXETE6m (ORCPT
+	Sun, 20 May 2007 01:12:11 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4016 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758050AbXETFMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 00:58:42 -0400
-X-Greylist: delayed 2667 seconds by postgrey-1.27 at vger.kernel.org; Sun, 20 May 2007 00:58:42 EDT
-Date: Sat, 19 May 2007 18:30:04 -0700 (PDT)
-From: Artur Kedzierski <artur@kedzierski.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: This kernel requires the following features not present on the
- CPU... (on a VIA C7 CPU)
-Message-ID: <Pine.LNX.4.64.0705191820100.11197@merry.kedzierski.org>
-X-GPG-PUBLIC_KEY: http://www.kedzierski.org/artur-pubkey.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sun, 20 May 2007 01:12:10 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: davem@davemloft.net (David Miller)
+Subject: Re: [PATCH] improved locking performance in rt_run_flush()
+Cc: djohnson+linux-kernel@sw.starentnetworks.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Organization: Core
+In-Reply-To: <20070514.030412.104035740.davem@davemloft.net>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1Hpdhs-00069a-00@gondolin.me.apana.org.au>
+Date: Sun, 20 May 2007 15:11:48 +1000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+David Miller <davem@davemloft.net> wrote:
+> From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+>> 
+>> The below patch changes rt_run_flush() to only take each spinlock
+>> protecting the rt_hash_table once instead of taking a spinlock for
+>> every hash table bucket (and ending up taking the same small set 
+>> of locks over and over).
 
+...
 
- 	I purchased C7 VIA Esther and I experience similar problem with
-random crashes. There is also a thread on Via Arena about "J7F4K - Hard 
-Lockups" where people describe the same issue:
-http://forums.viaarena.com/messageview.aspx?catid=28&threadid=77032
- 	I've tried the following kernels:
-2.6.21.1 - crashes pretty quick
-2.6.21.1 with disabled CPU scaling - better mileage but still crashes
-2.6.22-rc1 - hangs on boot
-2.6.22-rc1-mm1 - doesn't compile
-2.6.22-rc2 - hangs on boot
- 	I've ran memtest86 and no memory problems were found.
- 	Any ideas or suggestions?
- 	Thank You.
+> I'm not ignoring it I'm just trying to brainstorm whether there
+> is a better way to resolve this inefficiency. :-)
 
-=================================================================
-Artur Kedzierski                    || Artur@Kedzierski.org
+The main problem I see with this is having to walk and free each
+chain with the lock held.  We could avoid this if we had a pointer
+in struct rtable to chain them up for freeing later.
 
+I just checked and struct rtable is 236 bytes long on 32-bit but
+the slab cache pads it to 256 bytes so we've got some free space.
+I suspect 64-bit should be similar.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGT6SdJzjfxpUNGawRAqPzAJ921Rk67oA+H28hilXkqqUTIcF60QCghI69
-LLLVhIpwQjN5nTsriGfC2M0=
-=rG40
------END PGP SIGNATURE-----
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
