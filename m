@@ -1,101 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760739AbXETV0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbXETV0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760739AbXETV0m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 17:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757190AbXETV0e
+	id S1760902AbXETV0z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 17:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757941AbXETV0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 17:26:34 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:43457 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757054AbXETV0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 17:26:34 -0400
-Message-id: <212051818303603216@wsc.cz>
-In-reply-to: <20461285551864014911@wsc.cz>
-Subject: [PATCH 3/3] Char: isicom, proper variables types
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 20 May 2007 23:26:32 +0200 (CEST)
+	Sun, 20 May 2007 17:26:37 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36039 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757537AbXETV0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 17:26:36 -0400
+Subject: Re: [PATCH 2.6.21-rt2] PowerPC: decrementer clockevent driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: Daniel Walker <dwalker@mvista.com>, linuxppc-dev@ozlabs.org,
+       tglx@linutronix.de, Paul Mackerras <paulus@samba.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4650632B.1010702@genesi-usa.com>
+References: <200705172142.26739.sshtylyov@ru.mvista.com>
+	 <8E44DB06-767D-4864-8D2C-6132E4D4370B@kernel.crashing.org>
+	 <464C99FF.8080404@ru.mvista.com>
+	 <135307ED-7125-4859-8594-4B5B900D92D6@kernel.crashing.org>
+	 <1179500217.20519.53.camel@imap.mvista.com>
+	 <464DC0DC.7050809@ru.mvista.com>
+	 <1179502773.20519.56.camel@imap.mvista.com>
+	 <17998.28659.702653.237011@cargo.ozlabs.ibm.com>
+	 <1179628991.20925.2.camel@imap.mvista.com>
+	 <1179630190.32247.534.camel@localhost.localdomain>
+	 <4650632B.1010702@genesi-usa.com>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 07:25:38 +1000
+Message-Id: <1179696339.32247.568.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-isicom, proper variables types
+> So.. if we get enough clocksources into the tree, can any of those
+> parts of the code be reworked to use clocksources/clockevents and
+> hrtimers quickly and easily? I noticed the patch just posted does
+> some of it.. but not as much as Ben just mentioned.
 
-irq is int, base is unsigned long
+Well, some of these are expected to be small & fast and work in all sort
+of crazy circumstances, like udelay etc... I'd rather keep that on top
+of the TB. Do we have actual examples where the TB freq is changing ?
+Beside, on powerpc, we don't have another clock source that is as fast
+to access and we have userland using the TB for gettimeofday via the
+vdso, so I'd say bad idea ... Just keep the damn thing fixed frequency.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Or is it a development nightmare?
+> 
+> I'm fairly sure on a PPC970 box even though the decrementer is
+> monotonic and never changes frequency, one day it just might, and
+> it would be better to anticipate this (and allow people to
+> distribute their timing requirements across an entire system
+> and not just the CPU core anyway, which I think is probably a
+> good thing from a system integration and possibly the point of
+> view of redundancy..)
 
----
-commit 2c1fb6b2f7c17ab752e56220a0b7e84fbe6d3448
-tree 1b4ceff6aacaae2ad1548c2efa202d7d0c3d92ba
-parent 017f1314b3de8cf20bfff7df0d3d55e6498de104
-author Jiri Slaby <jirislaby@gmail.com> Sun, 20 May 2007 23:20:41 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sun, 20 May 2007 23:20:41 +0200
+On a -sane- 970 box (which seems to be the case of all of them that
+matter so far), the TB is sourced externally specifically for that
+reason : to avoid it changing, The DEC is always derived the TB, so it's
+not changing.
 
- drivers/char/isicom.c |   18 +++++++-----------
- 1 files changed, 7 insertions(+), 11 deletions(-)
+I don't have any plan to support somebody coming up with a HW design
+broken enough to have a variable TB/DEC speed. If they do it, they
+support it and they come up with patches that are acceptable (hint: that
+will be hard !). Beside, it means the vDSO will not be useable for
+gettimeofday on such a platform, which means it will have to fallback to
+the syscall which is much slower.
 
-diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
-index 2f8aaf8..77a7a4a 100644
---- a/drivers/char/isicom.c
-+++ b/drivers/char/isicom.c
-@@ -184,7 +184,7 @@ static signed char linuxb_to_isib[] = {
- 
- struct	isi_board {
- 	unsigned long		base;
--	unsigned char		irq;
-+	int			irq;
- 	unsigned char		port_count;
- 	unsigned short		status;
- 	unsigned short		port_status; /* each bit for each port */
-@@ -224,7 +224,7 @@ static struct isi_port  isi_ports[PORT_COUNT];
-  *	it wants to talk.
-  */
- 
--static inline int WaitTillCardIsFree(u16 base)
-+static inline int WaitTillCardIsFree(unsigned long base)
- {
- 	unsigned int count = 0;
- 	unsigned int a = in_atomic(); /* do we run under spinlock? */
-@@ -396,9 +396,9 @@ static inline int __isicom_paranoia_check(struct isi_port const *port,
- 
- static void isicom_tx(unsigned long _data)
- {
--	unsigned long flags;
-+	unsigned long flags, base;
- 	unsigned int retries;
--	short count = (BOARD_COUNT-1), card, base;
-+	short count = (BOARD_COUNT-1), card;
- 	short txcount, wrd, residue, word_count, cnt;
- 	struct isi_port *port;
- 	struct tty_struct *tty;
-@@ -1730,17 +1730,13 @@ static unsigned int card_count;
- static int __devinit isicom_probe(struct pci_dev *pdev,
- 	const struct pci_device_id *ent)
- {
--	unsigned int ioaddr, signature, index;
-+	unsigned int signature, index;
- 	int retval = -EPERM;
--	u8 pciirq;
- 	struct isi_board *board = NULL;
- 
- 	if (card_count >= BOARD_COUNT)
- 		goto err;
- 
--	ioaddr = pci_resource_start(pdev, 3);
--	/* i.e at offset 0x1c in the PCI configuration register space. */
--	pciirq = pdev->irq;
- 	dev_info(&pdev->dev, "ISI PCI Card(Device ID 0x%x)\n", ent->device);
- 
- 	/* allot the first empty slot in the array */
-@@ -1751,8 +1747,8 @@ static int __devinit isicom_probe(struct pci_dev *pdev,
- 		}
- 
- 	board->index = index;
--	board->base = ioaddr;
--	board->irq = pciirq;
-+	board->base = pci_resource_start(pdev, 3);
-+	board->irq = pdev->irq;
- 	card_count++;
- 
- 	pci_set_drvdata(pdev, board);
+Ben.
+
+
