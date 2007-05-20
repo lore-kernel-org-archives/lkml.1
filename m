@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbXETLnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbXETLqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbXETLnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 07:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbXETLnN
+	id S1757405AbXETLqS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 07:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbXETLqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 07:43:13 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:49318 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755179AbXETLnM (ORCPT
+	Sun, 20 May 2007 07:46:09 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48525 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755444AbXETLqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 07:43:12 -0400
-Message-ID: <46503441.9050409@wpkg.org>
-Date: Sun, 20 May 2007 13:42:57 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Sun, 20 May 2007 07:46:08 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <465034AA.6030904@s5r6.in-berlin.de>
+Date: Sun, 20 May 2007 13:44:42 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] LZO1X de/compression support
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: Trent Piepho <xyzzy@speakeasy.org>
+CC: Satyam Sharma <satyam.sharma@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Simon Horman <horms@verge.net.au>
+Subject: Re: RFC: kconfig select warnings bogus?
+References: <20070519151523.GA26724@uranus.ravnborg.org>  <a781481a0705191517n15eefe04i5458900c6ffe782d@mail.gmail.com>  <a781481a0705191549h602d331flf93c9d6c0261458f@mail.gmail.com>  <20070519230940.GJ6291@stusta.de>  <a781481a0705191617v901ac64nfa7040ff302d2da1@ma <a781481a0705191719u5234b248v8d36af6a368a5119@mail.gmail.com> <Pine.LNX.4.58.0705200228360.1671@shell4.speakeasy.net> <465029F1.6090301@s5r6.in-berlin.de> <Pine.LNX.4.58.0705200416370.1671@shell4.speakeasy.net>
+In-Reply-To: <Pine.LNX.4.58.0705200416370.1671@shell4.speakeasy.net>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Rugolsky Jr. wrote:
-
->> I'm certainly missing something but what are the advantages of this
->> code (over current gzip etc.), and what will be using it?
+Trent Piepho wrote:
+> On Sun, 20 May 2007, Stefan Richter wrote:
+>> Basically you replace
+>>
+>> 	A... depends on B
+>>
+>> by
+>>
+>> 	B... serves A
+>>
+>> The latter variant is a pain to maintain.  Dependencies change over
+>> time, therefore we should note the dependency always at the dependent
+>> option, not at the serving option.
 > 
-> Richard's patchset added it to the crypto library and wired it into
-> the JFFS2 file system.  We recently started using LZO in a userland UDP
-> proxy to do stateless per-packet payload compression over a WAN link.
-> With ~1000 octet packets, our particular data stream sees 60% compression
-> with zlib, and 50% compression with (mini-)LZO, but LZO runs at ~5.6x
-> the speed of zlib.  IIRC, that translates into > 700Mbps on the input
-> side on a 2GHZ Opteron, without any further tuning.
-> 
-> Once LZO is in the kernel, I'd like to see it wired into IPComp.
-> Unfortunately, last I checked only the "deflate" algorithm had an
-> assigned compression parameter index (CPI), so one will have to use a
-> private index until an official one is assigned.
+> The problem is that "B" will not exist on some architectures.  If you put the
+> dependency with "A", the dependency still exists when "B" is gone.  If the
+> dependency is with "B", it nicely goes away when "B" is gone.
 
-I also though of using LZO compression for some of the diskless nodes
-which use iSCSI over 100 Mbit or slower.
+If "make whateverconfig" works correctly,...
 
+>> Iterating upwards and downwards the dependency graph is the duty of
+>> "make snafuconfig", not of the maintainers.
 
-Certainly, a fast de/compression algorithm in the kernel could bring
-some new, innovative uses:
+...multi-level dependencies are no problem for it.
 
-- there are talks about compressed filesystems (jffs2, reiser4, LogFS) -
-why no one thought about a compressed tmpfs (should be way easier than a
-compressed on-disk filesystem, as we don't have to care about data
-recovery in event of a failure)?
+There is nothing wrong with
 
-- using compression for networking (like Bill mentioned)
+	A... depends on B
 
-- compressed caching
+	B... depends on C
 
-- compressed suspend-to-disk images (should suspend/restore faster this way)
+	# CONFIG_C is not set
 
-
+-> A is unavailable.
 -- 
-Tomasz Chmielewski
-http://wpkg.org
-
-
-
-
-
+Stefan Richter
+-=====-=-=== -=-= =-=--
+http://arcgraph.de/sr/
