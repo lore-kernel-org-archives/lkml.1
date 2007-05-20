@@ -1,147 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbXETVN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbXETVOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759573AbXETVN2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 17:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbXETVNW
+	id S1759850AbXETVOj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 17:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbXETVOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 17:13:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:52561 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756548AbXETVNV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 17:13:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=o7J98sy6TZQZZDDDRJ37thkFsljDuNygUnqEQNAXLov1TsO7+CQFHIMCI1osGMa5BwuzQwptEv7/RK6oFFnP1YeeM0qT8BVqgv5SfM7MT7+vinpyFw28YLfR/28OA8RGF5RpaBVH8Z3Vdc0yGZsG+JVWcIIQwS1VGPBH7qe8h5o=
-Message-ID: <4650B9E3.7070409@gmail.com>
-Date: Sun, 20 May 2007 23:13:07 +0200
-From: Robert de Rooy <robert.de.rooy@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sun, 20 May 2007 17:14:32 -0400
+Received: from [216.16.235.2] ([216.16.235.2]:55619 "EHLO rubicon.netdirect.ca"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756648AbXETVOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 17:14:31 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Sun, 20 May 2007 17:12:36 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Factor out common MODULE_INFO content from module*.h
+ files.
+In-Reply-To: <20070520205116.GB25339@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0705201651570.19270@localhost.localdomain>
+References: <Pine.LNX.4.64.0705201502160.17519@localhost.localdomain>
+ <20070520191552.GA25200@uranus.ravnborg.org> <Pine.LNX.4.64.0705201555470.18338@localhost.localdomain>
+ <20070520205116.GB25339@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: linux-kernel@vger.kernel.org, alan@redhat.com, bzolnier@gmail.com,
-       jgarzik@pobox.com
-Subject: Re: libata and legacy ide pcmcia failure
-References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com> <464CB7C9.2080807@gmail.com> <46503192.1040300@gmail.com>
-In-Reply-To: <46503192.1040300@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	TW_VN 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for looking into this!
+On Sun, 20 May 2007, Sam Ravnborg wrote:
 
-I tried the patches on 2.6.22rc1-git5. The second patch unfortunately 
-did not resolve the issue, although it seems to get a bit further. Here 
-are the logs.
+> On Sun, May 20, 2007 at 04:06:40PM -0400, Robert P. J. Day wrote:
+> > On Sun, 20 May 2007, Sam Ravnborg wrote:
+> >
+> > > On Sun, May 20, 2007 at 03:06:15PM -0400, Robert P. J. Day wrote:
+> > > >
+> > > > In order to eventually break the interdependency between the module.h
+> > > > and moduleparam.h header files, factor out the common MODULE_INFO
+> > > > content into a new header file.
+> > >
+> > > The moduleinfo.h file looks redundant at first look. Why not push
+> > > relevant parts from moduleparam.h (the MODULE_INFO bits) to module.h
+> > > and let go of the include of moduleparam.h in module.h (when you
+> > > have fixed the users)?
+> > >
+> > > In this way we do not add an extra .h file. And files that needs
+> > > moduleparam.h will anyway always need module.h. But not the other
+> > > way around.
+> >
+> > crap, now i remember why i did it the way i did it.
+> >
+> > yes, the way you describe it is a simpler solution, but it would break
+> > all of the files in the tree that use module parameters and have
+> > included *only* module.h, and have been getting away with it all this
+> > time only because module.h currently includes moduleparam.h.
+> >
+> > based on a simple script i have, there are currently 583 files under
+> > the drivers/ directory *alone* that are like that.  that is, 583 files
+> > that would need to include moduleparam.h instead of module.h simply to
+> > continue to compile if the obvious header file fix were made.
 
-** 2.6.22rc1-git5 + timing-debug.patch
-May 20 22:40:49 localhost kernel: pccard: PCMCIA card inserted into slot 0
-May 20 22:40:49 localhost kernel: cs: memory probe 
-0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
-May 20 22:40:49 localhost kernel: cs: memory probe 
-0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
-0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
-0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
-0xcfa00000-0xd01fffff
-May 20 22:40:49 localhost kernel: pcmcia: registering new device pcmcia0.0
-May 20 22:40:49 localhost kernel: scsi3 : pata_pcmcia
-May 20 22:40:49 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 ctl 
-0x0001410e bmdma 0x00000000 irq 0
-May 20 22:40:49 localhost kernel: ata3: soft resetting port
-May 20 22:40:49 localhost kernel: ata3: reset complete
-May 20 22:40:49 localhost kernel: ata3.00: issuing IDENTIFY
-May 20 22:40:49 localhost kernel: ata3.00: IDENTIFY complete
-May 20 22:40:49 localhost kernel: ata3.00: issuing DEV_INIT_PARAMS
-May 20 22:41:19 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 20 22:41:19 localhost kernel: ata3.00: DEV_INIT_PARAMS complete
-May 20 22:41:19 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-May 20 22:41:20 localhost kernel: ata3: soft resetting port
-May 20 22:41:30 localhost kernel: ata3: SRST failed (errno=-16)
-May 20 22:41:30 localhost kernel: ata3: soft resetting port
-May 20 22:41:30 localhost kernel: ata3: reset complete
-May 20 22:41:30 localhost kernel: ATA: abnormal status 0xB5 on port 
-0x00014107
-May 20 22:41:30 localhost kernel: ATA: abnormal status 0xB5 on port 
-0x00014107
-May 20 22:41:30 localhost kernel: ata3.00: issuing IDENTIFY
-May 20 22:41:30 localhost kernel: ata3.00: IDENTIFY complete
-May 20 22:41:30 localhost kernel: ata3.00: issuing DEV_INIT_PARAMS
-May 20 22:42:00 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 20 22:42:00 localhost kernel: ata3.00: DEV_INIT_PARAMS complete
-May 20 22:42:00 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-May 20 22:42:00 localhost kernel: ata3.00: limiting speed to UDMA7:PIO5
-May 20 22:42:01 localhost kernel: ata3: soft resetting port
-May 20 22:42:01 localhost kernel: ata3: reset complete
-May 20 22:42:01 localhost kernel: ata3.00: issuing IDENTIFY
-May 20 22:42:01 localhost kernel: ata3.00: IDENTIFY complete
-May 20 22:42:01 localhost kernel: ata3.00: issuing DEV_INIT_PARAMS
-May 20 22:42:31 localhost kernel: ata3.00: qc timeout (cmd 0x91)
-May 20 22:42:31 localhost kernel: ata3.00: DEV_INIT_PARAMS complete
-May 20 22:42:31 localhost kernel: ata3.00: failed to IDENTIFY 
-(INIT_DEV_PARAMS failed, err_mask=0x4)
-May 20 22:42:31 localhost kernel: ata3: soft resetting port
-May 20 22:42:31 localhost kernel: ata3: reset complete
-May 20 22:42:31 localhost kernel: ata3: EH complete
-May 20 22:42:32 localhost udevd-event[2541]: udev_rules_apply_format: 
-unknown format variable '$modalias'
+> The pain is too high for this. Is seems worthwhile to make the
+> change to module.h but adding an additional include to > 500 drivers
+> is not worth it.
 
-** 2.6.22rc1-git5 + timing-debug.patch + disable-dev_init_params.patch
-May 20 23:02:25 localhost kernel: pccard: PCMCIA card inserted into slot 0
-May 20 23:02:25 localhost kernel: cs: memory probe 
-0xe8000000-0xefffffff: excluding 0xe8000000-0xefffffff
-May 20 23:02:25 localhost kernel: cs: memory probe 
-0xc0200000-0xcfffffff: excluding 0xc0200000-0xc11fffff 
-0xc1a00000-0xc21fffff 0xc2a00000-0xc31fffff 0xc3a00000-0xcc1fffff 
-0xcca00000-0xcd1fffff 0xcda00000-0xce1fffff 0xcea00000-0xcf1fffff 
-0xcfa00000-0xd01fffff
-May 20 23:02:25 localhost kernel: pcmcia: registering new device pcmcia0.0
-May 20 23:02:25 localhost kernel: scsi3 : pata_pcmcia
-May 20 23:02:25 localhost kernel: ata3: PATA max PIO0 cmd 0x00014100 ctl 
-0x0001410e bmdma 0x00000000 irq 0
-May 20 23:02:25 localhost kernel: ata3: soft resetting port
-May 20 23:02:25 localhost kernel: ata3: reset complete
-May 20 23:02:25 localhost kernel: ata3.00: issuing IDENTIFY
-May 20 23:02:26 localhost kernel: ata3.00: IDENTIFY complete
-May 20 23:02:26 localhost kernel: ata3.00: CFA: Memory Card Adapter, 
-20011212, max PIO1
-May 20 23:02:26 localhost kernel: ata3.00: 253696 sectors, multi 0: LBA
-May 20 23:02:56 localhost kernel: ata3.00: qc timeout (cmd 0xef)
-May 20 23:02:56 localhost kernel: ata3.00: failed to set xfermode 
-(err_mask=0x4)
-May 20 23:02:56 localhost kernel: ata3: failed to recover some devices, 
-retrying in 5 secs
-May 20 23:03:01 localhost kernel: ata3: soft resetting port
-May 20 23:03:11 localhost kernel: ata3: SRST failed (errno=-16)
-May 20 23:03:11 localhost kernel: ata3: soft resetting port
-May 20 23:03:11 localhost kernel: ata3: reset complete
-May 20 23:03:11 localhost kernel: ata3.00: issuing IDENTIFY
-May 20 23:03:11 localhost kernel: ata3.00: IDENTIFY complete
-May 20 23:03:41 localhost kernel: ata3.00: qc timeout (cmd 0xef)
-May 20 23:03:41 localhost kernel: ata3.00: failed to set xfermode 
-(err_mask=0x4)
-May 20 23:03:41 localhost kernel: ata3: failed to recover some devices, 
-retrying in 5 secs
-May 20 23:03:46 localhost kernel: ata3: soft resetting port
-May 20 23:03:46 localhost kernel: ata3: reset complete
-May 20 23:03:46 localhost kernel: ata3.00: issuing IDENTIFY
-May 20 23:03:46 localhost kernel: ata3.00: IDENTIFY complete
-May 20 23:04:16 localhost kernel: ata3.00: qc timeout (cmd 0xef)
-May 20 23:04:16 localhost kernel: ata3.00: failed to set xfermode 
-(err_mask=0x4)
-May 20 23:04:16 localhost kernel: ata3.00: disabled
-May 20 23:04:17 localhost kernel: ata3: EH complete
-May 20 23:04:17 localhost udevd-event[2524]: udev_rules_apply_format: 
-unknown format variable '$modalias'
+under the circumstances, is there *any* cleanup worth doing WRT to
+this issue?  because of the fact that module.h currently includes
+moduleparam.h, developers have been able to get away with being
+incredibly sloppy in their includes.
 
-Tejun Heo wrote:
-> 1. Please apply timing-debug.patch on 2.6.22rc1-git5 or later and report
-> the log with timestamp as before.  Let's see why the timeout has doubled.
->
-> 2. Does the attached disable-dev_init_params.patch fix your problem?
->
->   
+based on a short script i wrote, here are some stats for the drivers/
+directory:
 
+$ . ../moduleparam.sh drivers
+Number of source files found: 5042
+Number of files that include module.h: 3788
+Number of files that include moduleparam.h: 358
+Number of files that include both: 347
+Number of files that include ONLY module.h: 3440
+Number of files that include ONLY moduleparam.h: 10
+Number of files needing moduleparam.h: 583
+Number of files with unnecessary moduleparam.h: 45
+
+interpreting the above:
+
+* there are 347 files that include both module.h and moduleparam.h
+when (at the moment) they need to include only the former,
+
+* there are 10 files that include *only* moduleparam.h (which does not
+include module.h, so how the heck *those* still build is a mystery),
+
+* there are 583 files that use module parameters in some way that
+don't include moduleparam.h, and
+
+* conversely, there are 45 source files that unnecessarily include
+moduleparam.h when they don't use module parameters at all.
+
+  at this point, you may be right.  trying to fix this may be more
+grief than it's worth.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
