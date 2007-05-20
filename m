@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbXETD6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbXETEKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760114AbXETD6T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 19 May 2007 23:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbXETD6L
+	id S1760098AbXETEKj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 00:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467AbXETEKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 19 May 2007 23:58:11 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:38473 "EHLO
+	Sun, 20 May 2007 00:10:30 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:38038 "EHLO
 	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756256AbXETD6K (ORCPT
+	with ESMTP id S1756256AbXETEKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 19 May 2007 23:58:10 -0400
-Message-ID: <464FC6AA.2060805@cosmosbay.com>
-Date: Sun, 20 May 2007 05:55:22 +0200
+	Sun, 20 May 2007 00:10:30 -0400
+Message-ID: <464FCA28.9040009@cosmosbay.com>
+Date: Sun, 20 May 2007 06:10:16 +0200
 From: Eric Dumazet <dada1@cosmosbay.com>
 User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Folkert van Heusden <folkert@vanheusden.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
-       Rik van Riel <riel@redhat.com>, righiandr@users.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-References: <464C81B5.8070101@users.sourceforge.net> <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705180825280.3231@yvahk01.tjqt.qr> <200705181347.14256.ak@suse.de> <Pine.LNX.4.61.0705190946430.9015@yvahk01.tjqt.qr> <20070520001418.GJ14578@vanheusden.com>
-In-Reply-To: <20070520001418.GJ14578@vanheusden.com>
+To: Christoph Lameter <clameter@sgi.com>
+CC: William Lee Irwin III <wli@holomorphy.com>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org, Andi Kleen <ak@suse.de>
+Subject: Re: [rfc] increase struct page size?!
+References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <Pine.LNX.4.64.0705191121480.17008@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0705191121480.17008@schroedinger.engr.sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 20 May 2007 05:55:28 +0200 (CEST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sun, 20 May 2007 06:10:22 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folkert van Heusden a écrit :
->>>> I do not see such on i386, so why for x86_64?
->>> So that you know that one of your programs crashed. That's a feature.
->> This feature could be handy for i386 too.
+Christoph Lameter a écrit :
+> On Sat, 19 May 2007, William Lee Irwin III wrote:
 > 
-> Since 2.6.18.2 I use this patch. With 2.6.21.1 it still applies altough
-> with a small offsets. Works like a charm.
+>> However, there are numerous optimizations and features made possible
+>> with flag bits, which might as could be made cheap by padding struct
+>> page up to the next highest power of 2 bytes with space for flag bits.
 > 
-> 
-> Signed-off by: Folkert van Heusden <folkert@vanheusden.com>
-> 
-> --- linux-2.6.18.2/kernel/signal.c      2006-11-04 02:33:58.000000000 +0100
-> +++ linux-2.6.18.2.new/kernel/signal.c  2006-11-17 15:59:13.000000000 +0100
-> @@ -706,6 +706,15 @@
->         struct sigqueue * q = NULL;
->         int ret = 0;
-> 
-> +       if (sig == SIGQUIT || sig == SIGILL  || sig == SIGTRAP ||
-> +           sig == SIGABRT || sig == SIGBUS  || sig == SIGFPE  ||
-> +           sig == SIGSEGV || sig == SIGXCPU || sig == SIGXFSZ ||
-> +           sig == SIGSYS  || sig == SIGSTKFLT)
-> +       {
-> +               printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
-> +                       sig, t -> pid, t -> uid, t -> gid, t -> comm);
-> +       }
-> +
+> Well the last time I tried to get this by Andi we became a bit concerned 
+> when we realized that the memory map would grow by 14% in size. Given 
+> that 4k page size challenged platforms have a huge amount of page structs 
+> that growth is significant. I think it would be fine to do it for IA64 
+> with 16k page size but not for x86_64.
 
-Please check line 219 of Documentation/CodingStyle, Section 3.1: Spaces
+This reminds me Andi attempted in the past to convert 'flags' to a 32 bits field :
 
-	and no space around the '.' and "->" structure member operators.
+http://marc.info/?l=linux-kernel&m=107903527523739&w=2
 
-Thank you
+I wonder why this idea was not taken, saving 2MB per GB of memory is nice :)
 
