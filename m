@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbXETIQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbXETITW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761357AbXETIQA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 04:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbXETIPr
+	id S1762721AbXETITW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 04:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757800AbXETITO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 04:15:47 -0400
-Received: from fed1rmmtao106.cox.net ([68.230.241.40]:50055 "EHLO
-	fed1rmmtao106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757443AbXETIPp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 04:15:45 -0400
-From: Junio C Hamano <junkio@cox.net>
-To: Greg KH <greg@kroah.com>
-Subject: [PATCH] Fix duplicated entry in Documentation/HOWTO
-References: <f24d23310705180354l2995a89fhb513fe3e54221784@mail.gmail.com>
-	<20070518131749.GA4833@kroah.com>
-cc: linux-kernel@vger.kernel.org, debian developer <debiandev@gmail.com>
-Date: Sun, 20 May 2007 01:15:43 -0700
-In-Reply-To: <20070518131749.GA4833@kroah.com> (Greg KH's message of "Fri, 18
-	May 2007 06:17:49 -0700")
-Message-ID: <7v1whbsyfk.fsf_-_@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 20 May 2007 04:19:14 -0400
+Received: from dedi.luli.de ([88.198.62.74]:35378 "EHLO dedi.luli.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757170AbXETITN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 04:19:13 -0400
+Message-ID: <4650047F.4000804@rootdir.de>
+Date: Sun, 20 May 2007 10:19:11 +0200
+From: Claas Langbehn <claas@rootdir.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Simon Arlott <simon@fire.lp0.eu>
+CC: Christian Volkmann <haveaniceday@cv-sv.de>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: Via C3/C7: other flags possible ?
+References: <464B9D2C.7040704@cv-sv.de> <20070517004209.GE16810@redhat.com> <200705190753.16570.ak@suse.de> <464EE2AA.3030607@cv-sv.de> <464F332C.8060904@rootdir.de> <464F5C8F.5000304@cv-sv.de> <464F7C09.8060809@cv-sv.de> <464F7F90.2000900@simon.arlott.org.uk>
+In-Reply-To: <464F7F90.2000900@simon.arlott.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 3f271008 introduced this section to Linus tree, but a
-later commit 722385f7 accepted almost the identical patch via
-Greg's tree, both from the same author.
+Simon Arlott schrieb:
+> On 19/05/07 23:36, Christian Volkmann wrote:
+>> Christian Volkmann wrote:
+>>> Claas asked for the NX flag for the Via C3 (?) processors
+>>> in another thread.
+>
+> If you read the other thread properly you'd see that the BIOS has an 
+> option to enable or disable it... when enabled it shows up.
 
-This kills the duplicated one.
+Right, but my bios disables this after each boot-time :(
+Therefore it would be great if the kernel would not care
+about the BIOS and enable it anyway.
 
-Signed-off-by: Junio C Hamano <junkio@cox.net>
----
- Documentation/HOWTO |   20 --------------------
- 1 files changed, 0 insertions(+), 20 deletions(-)
+This seems to be a severe bug in the BIOS, but VIA does not
+deliver a new BIOS since months. :(
 
-diff --git a/Documentation/HOWTO b/Documentation/HOWTO
-index 48123db..ced9207 100644
---- a/Documentation/HOWTO
-+++ b/Documentation/HOWTO
-@@ -396,26 +396,6 @@ bugme-janitor mailing list (every change in the bugzilla is mailed here)
- 
- 
- 
--Managing bug reports
----------------------
--
--One of the best ways to put into practice your hacking skills is by fixing
--bugs reported by other people. Not only you will help to make the kernel
--more stable, you'll learn to fix real world problems and you will improve
--your skills, and other developers will be aware of your presence. Fixing
--bugs is one of the best ways to get merits among other developers, because
--not many people like wasting time fixing other people's bugs.
--
--To work in the already reported bug reports, go to http://bugzilla.kernel.org.
--If you want to be advised of the future bug reports, you can subscribe to the
--bugme-new mailing list (only new bug reports are mailed here) or to the
--bugme-janitor mailing list (every change in the bugzilla is mailed here)
--
--	http://lists.osdl.org/mailman/listinfo/bugme-new
--	http://lists.osdl.org/mailman/listinfo/bugme-janitors
--
--
--
- Mailing lists
- -------------
- 
+>
+> I can't reboot that box just to test cx8 detection (which is missing).
+>
+It works here.
 
+
+
+claas
