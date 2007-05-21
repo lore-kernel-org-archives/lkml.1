@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbXEUJWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbXEUJW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759966AbXEUJWj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 05:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXEUJWc
+	id S1761338AbXEUJW4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 05:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760665AbXEUJWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 05:22:32 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:37661 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754921AbXEUJWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 05:22:32 -0400
-Message-ID: <465165B8.8010504@openvz.org>
-Date: Mon, 21 May 2007 13:26:16 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Mon, 21 May 2007 05:22:47 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:51736 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755727AbXEUJWr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 05:22:47 -0400
+Message-ID: <4651629B.2050505@aitel.hist.no>
+Date: Mon, 21 May 2007 11:12:59 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix x86_64 boot/memory.c compilation (a misprint)
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: William Lee Irwin III <wli@holomorphy.com>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+References: <20070518040854.GA15654@wotan.suse.de>	<Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com>	<20070519012530.GB15569@wotan.suse.de>	<20070519181501.GC19966@holomorphy.com> <20070519150934.bdabc9b5.akpm@linux-foundation.org>
+In-Reply-To: <20070519150934.bdabc9b5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a misprint in arch/i386/boot/memory.c file that leads
-to error in x86_64 compilation:
+Andrew Morton wrote:
+> On Sat, 19 May 2007 11:15:01 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
+>
+>   
+>> Much the same holds for the atomic_t's; 32 + PAGE_SHIFT is
+>> 44 bits or more, about as much as is possible, and one reference per
+>> page per page is not even feasible. Full-length atomic_t's are just
+>> not necessary.
+>>     
+>
+> You can overflow a page's refcount by mapping it 4G times.  That requires
+> 32GB of pagetable memory.  It's quite feasible with remap_file_pages().
+>   
+But do anybody ever need to do that?
+Such an attack is easily thwarted by refusing to map it more
+than, say 3G times? 
 
-...
-  CC      arch/x86_64/boot/memory.o
-arch/i386/boot/memory.c: In function `detect_memory':
-arch/i386/boot/memory.c:32: error: can't find a register in class `DREG' while reloading `asm'
-
-The err variable is specified in asm output list like "=dm", not "=m".
-
-This is for 2.6.22-rc1-mm1 tree. Maybe this exists in i386 as well 
-and the patch is sent, but...
-
-Signed-off-by: Pavel Emelianov <xemul@openvz.org>
-
----
-
-diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
-index 8a82aa9..7ae2d23 100644
---- a/arch/i386/boot/memory.c
-+++ b/arch/i386/boot/memory.c
-@@ -30,7 +30,7 @@ static int detect_memory_e820(void)
- 		size = sizeof(struct e820entry);
- 		id = SMAP;
- 		asm("int $0x15; setc %0"
--		    : "=dm" (err), "+b" (next), "+d" (id), "+c" (size),
-+		    : "=m" (err), "+b" (next), "+d" (id), "+c" (size),
- 		      "=m" (*desc)
- 		    : "D" (desc), "a" (0xe820));
- 
+Helge Hafting
