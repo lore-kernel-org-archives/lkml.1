@@ -1,124 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbXEURBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758694AbXEURFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbXEURBh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 13:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbXEURBb
+	id S1758694AbXEURFb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 13:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbXEURFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 13:01:31 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36259 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756365AbXEURBa (ORCPT
+	Mon, 21 May 2007 13:05:24 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:42095 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756442AbXEURFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 13:01:30 -0400
-Date: Mon, 21 May 2007 10:01:29 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, dgc@sgi.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch 02/10] SLUB: slab defragmentation and kmem_cache_vacate
-In-Reply-To: <20070521141039.GA18474@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0705210953440.25871@schroedinger.engr.sgi.com>
-References: <20070518181040.465335396@sgi.com> <20070518181119.062736299@sgi.com>
- <20070521141039.GA18474@skynet.ie>
+	Mon, 21 May 2007 13:05:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=r6PochKqmv36F5PsPVKOyL3mYYY5ZPzGLpvGO10jSgMo3uw4Y2PlcOcC3QuCeh9l2ev3LQxilGJBPkPsmMz3INP+sjpsJpuJq8mEH7szmG2JInWIIVz3n3/DAsRnc8sx5wcVrWqyARWy+yD5Fjd/uJhlh22FR4aFYRua2+8KeaY=
+Message-ID: <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
+Date: Mon, 21 May 2007 13:05:22 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+Cc: "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+In-Reply-To: <200705210934.58559.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705171423.46748.jesse.barnes@intel.com>
+	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>
+	 <200705210914.22663.jbarnes@virtuousgeek.org>
+	 <200705210934.58559.jbarnes@virtuousgeek.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Mel Gorman wrote:
+On 5/21/07, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Monday, May 21, 2007, Jesse Barnes wrote:
+> > > There is more to fbdev than mode setting. It is also how non-x86
+> > > platforms achieve their boot display. How will boot display be handled
+> > > with the your design? What about console display on non-x86 platforms?
+> > > Loading both fbdev and the new code puts us right back into the
+> > > multiple driver fight we have today.
+> >
+> > Maybe you should take a look at the patches. :)  The code I posted
+> > actually creates an fb device as a slave of the DRM device, and uses
+> > that for the boot console.  Once you've booted, you can use the new
+> > interfaces to do whatever you want with the graphics device... though it
+> > doesn't create /dev/fb* devices per-CRTC like you seem to want, it's
+> > really easy to do the equivalent with a small userspace program (though
+> > I haven't actually tested sharing of buffer objects, it should work).
+>
+> Actually, scratch that last bit.  I forgot about a recent change alanh
+> committed that did just that:  per-CRTC FB devices.  So please take a
+> close look (modesetting-101 of mesa/drm git at freedesktop.org) and let me
+> know if you see any gaping holes.
 
-> I know I brought up this "less than a quarter" thing before and I
-> haven't thought of a better alternative. However, it occurs to be that
-> shrink_slab() is called when there is awareness of a reclaim priority.
-> It may be worth passing that down so that the fraction of candidates
-> pages is calculated based on priority.
+Here are some of the goals that I believe a rewrite of the graphics
+system should address:
 
-Hmmmm.. Yes I am thinking about that one too. Right now I have a system
-that triggers reclaim every 10 seconds or after more than 100 objects have 
-been reclaimed.
- 
-> That said..... where is kmem_cache_shrink() ever called? The freeing of
-> slab pages seems to be indirect these days. Way back,
-> kmem_cache_shrink() used to be called directly but I'm not sure where it
-> happens now.
+1) Be upwards compatible with the existing fbdev drivers. This lets us
+avoid rewriting the 90 existing drivers. New drivers shouldn't break
+any old apps.
 
-Well, this one only allows manual triggering. To my embarasasment I found 
-that the kmem_cache_shrink calls for icache and dentries are only in 2.4. 
-They have been removed in 2.6.X. I need to add them back to 2.6.
+2) Address the long outstanding issue of multi-seat at the console
+level. My solution to this is the one device per CRTC model.
 
-> >  /*
-> > + * Order the freelist so that addresses increase as object are allocated.
-> > + * This is useful to trigger the cpu cacheline prefetching logic.
-> > + */
-> 
-> makes sense. However, it occurs to me that maybe this should be a
-> separate patch so it can be measured to be sure. It makes sense though.
+3) Eliminate the need for a root priv controlling process. Get rid of
+the potential for a security hole.
 
-Ok.
+4) OOPS should always display even if in a graphics mode
 
-> > +/*
-> > + * Vacate all objects in the given slab.
-> > + *
-> > + * Slab must be locked and frozen. Interrupts are disabled (flags must
-> > + * be passed).
-> > + *
-> 
-> It may not hurt to have a VM_BUG_ON() if interrupts are still enabled when
-> this is called
+5) Support Secure Attention Key (SAK).
 
-Well flags need to be passed and those flags are obtained via disabling 
-interrupts.
+6) Eliminate the existing VT swap driver free for all. I would compile
+out the VT layer and replace it with a compatible API that enforces
+some sanity.
 
+7) Support Unicode on the console
 
-> > +	/*
-> > +	 * Got references. Now we can drop the slab lock. The slab
-> > +	 * is frozen so it cannot vanish from under us nor will
-> > +	 * allocations be performed on the slab. However, unlocking the
-> > +	 * slab will allow concurrent slab_frees to proceed.
-> > +	 */
-> > +	slab_unlock(page);
-> > +	local_irq_restore(flags);
-> 
-> I recognise that you want to restore interrupts as early as possible but
-> it should be noted somewhere that kmem_cache_vacate() disables
-> interrupts and __kmem_cache_vacate() enabled them again. I had to go
-> searching to see where interrupts are enabled again.
-> 
-> Maybe even a slab_lock_irq() and slab_unlock_irq() would clarify things
-> a little.
+8) Allow multiple user space graphics systems to run. These user space
+systems should not touch the hardware, instead they ask the kernel
+driver to manipulate the hardware on their behalf. Of course the
+kernel driver is only the minimum code needed to arbitrate control of
+the resources - it doesn't do things like implement drawing
+algorithms.
 
-Hmmmm... Okay but this is a rare situation in SLUB. Regular slab 
-operations always run with interrupts disabled.
+9) Booting on non-VGA hardware still needs to work.
 
-> > +
-> > +	vector = kmalloc(s->objects * sizeof(void *), GFP_KERNEL);
-> > +	if (!vector)
-> > +		return 0;
-> 
-> Is it worth logging this event, returning -ENOMEM or something so that
-> callers are aware of why kmem_cache_vacate() failed in this instance?
-> 
-> Also.. we have called get_page_unless_zero() but if we are out of memory
-> here, where have we called put_page()? Maybe we should be "goto out"
-> here with a
+10) Support things like cloning and output device selection.
 
-Ahh. Thanks. Will fix that.
+Of course a driver doesn't need to support all of this in its first
+release. What's important is that the new architecture support all of
+these features so that we don't end up rearchitecting it yet again.
 
-> > +	 * We are holding a lock on a slab page and all operations on the
-> > +	 * slab are blocking.
-> > +	 */
-> > +	if (!s->ops->get || !s->ops->kick)
-> > +		goto out_locked;
-> > +	freeze_from_list(s, page);
-> > +	vacated = __kmem_cache_vacate(s, page, flags, vector) == 0;
-> 
-> That is a little funky looking. This may be nicer;
-> 
-> vacated = __kmem_cache_vacate(s, page, flags, vector);
-> out:
-> ...
-> return vacated == 0;
-> 
+Other people may add more things to this list. Let's get the design
+right this time around and address all of the known problems.
 
-Right. Done.
+-- 
+Jon Smirl
+jonsmirl@gmail.com
