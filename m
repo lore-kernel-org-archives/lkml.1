@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbXEUUnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbXEUUou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759254AbXEUUnl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXEUUne
+	id S1760230AbXEUUou (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbXEUUom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:43:34 -0400
-Received: from h155.mvista.com ([63.81.120.158]:5061 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755038AbXEUUnd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:43:33 -0400
-Subject: Re: v2.6.21-rt3
-From: Daniel Walker <dwalker@mvista.com>
+	Mon, 21 May 2007 16:44:42 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:51862 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755470AbXEUUol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 16:44:41 -0400
+Date: Mon, 21 May 2007 13:33:59 -0700
+From: Chris Wright <chrisw@sous-sol.org>
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <1179779765.12708.50.camel@chaos>
-References: <20070517194143.GA25394@elte.hu>
-	 <1179778266.15427.38.camel@imap.mvista.com>
-	 <1179779053.12708.45.camel@chaos>
-	 <1179779142.15427.44.camel@imap.mvista.com>
-	 <1179779765.12708.50.camel@chaos>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 13:41:12 -0700
-Message-Id: <1179780072.15427.51.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Andi Kleen <ak@suse.de>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, guilherme@centralinf.com.br,
+       johnstul@us.ibm.com
+Subject: Re: [patch 43/69] i386: HPET, check if the counter works
+Message-ID: <20070521203359.GK3429@sequoia.sous-sol.org>
+References: <20070521191612.800400000@sous-sol.org> <20070521191740.534306000@sous-sol.org> <1179777535.12708.37.camel@chaos> <1179779147.12708.47.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179779147.12708.47.camel@chaos>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-21 at 22:36 +0200, Thomas Gleixner wrote:
-> On Mon, 2007-05-21 at 13:25 -0700, Daniel Walker wrote:
-> > On Mon, 2007-05-21 at 22:24 +0200, Thomas Gleixner wrote:
-> > > On Mon, 2007-05-21 at 13:11 -0700, Daniel Walker wrote:
-> > > > Where did the arm ep93xx changes come from? 
-> > > 
-> > > Grown out of my nose probably.
-> > > 
-> > > > It looks like patch below
-> > > > came in with them in 2.6.21-rt6 ..
-> > > 
-> > > So what ?
-> > 
-> > It's silencing a WARN_ON() with no real reason why it's happening, or
-> > why/if it's safe to silence it .. Why is that there?
-> 
-> Care to look at the code ? 
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> What happened to the maxcpus=1 hard lock prevention patch ?
 
-I copied the patch into the first email, I did look at it which is why
-you got an email. Your introducing the patch , it's for you to explain
-why it needs to be there.. considering that the comment says "hack" in
-it, I have to wonder what the non-hack version is ..
-
-Daniel
-
+i placed it in the queue for .3.  (primarily due to timing and since it
+hadn't hit upstream yet).
