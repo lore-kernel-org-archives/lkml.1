@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762354AbXEUKLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762571AbXEUKLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762354AbXEUKLS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 06:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761046AbXEUKJR
+	id S1762571AbXEUKLa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 06:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761445AbXEUKJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 06:09:17 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:5145 "EHLO
+	Mon, 21 May 2007 06:09:19 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:1813 "EHLO
 	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756904AbXEUKJL (ORCPT
+	with ESMTP id S1757108AbXEUKJM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 06:09:11 -0400
+	Mon, 21 May 2007 06:09:12 -0400
 X-IronPort-AV: i="4.14,560,1170651600"; 
-   d="scan'208"; a="30505442:sNHT23617384"
+   d="scan'208"; a="30505443:sNHT25751047"
 From: Bryan Wu <bryan.wu@analog.com>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
 Cc: Mike Frysinger <michael.frysinger@analog.com>,
        Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 17/32] Blackfin arch: move board specific setup out of common init code and into the board specific init code
-Date: Mon, 21 May 2007 18:09:25 +0800
-Message-Id: <11797421851258-git-send-email-bryan.wu@analog.com>
+Subject: [PATCH 18/32] Blackfin arch: issue reset via SWRST so we dont clobber the watchdog state
+Date: Mon, 21 May 2007 18:09:26 +0800
+Message-Id: <11797421862498-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.1.2
 In-Reply-To: <1179742180228-git-send-email-bryan.wu@analog.com>
 References: <1179742180228-git-send-email-bryan.wu@analog.com>
@@ -31,113 +31,275 @@ From: Mike Frysinger <michael.frysinger@analog.com>
 Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- arch/blackfin/kernel/setup.c            |   20 ++------------------
- arch/blackfin/mach-bf533/boards/stamp.c |   19 ++++++++++++++++---
- arch/blackfin/mach-bf561/boards/ezkit.c |   15 ++++++++++-----
- 3 files changed, 28 insertions(+), 26 deletions(-)
+ arch/blackfin/mach-bf533/head.S |   68 +++++++++-----------------------------
+ arch/blackfin/mach-bf537/head.S |   70 +++++++++------------------------------
+ arch/blackfin/mach-bf561/head.S |   70 +++++++++------------------------------
+ 3 files changed, 48 insertions(+), 160 deletions(-)
 
-diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
-index c456ee5..b6ac6f8 100644
---- a/arch/blackfin/kernel/setup.c
-+++ b/arch/blackfin/kernel/setup.c
-@@ -383,35 +383,19 @@ void __init setup_arch(char **cmdline_p)
+diff --git a/arch/blackfin/mach-bf533/head.S b/arch/blackfin/mach-bf533/head.S
+index 7cb8258..1a54ff5 100644
+--- a/arch/blackfin/mach-bf533/head.S
++++ b/arch/blackfin/mach-bf533/head.S
+@@ -481,66 +481,30 @@ ENTRY(_bfin_reset)
+ 	[p0] = r0;
+ 	SSYNC;
  
- 	bf53x_cache_init();
- 
--#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
--# if defined(CONFIG_BFIN_SHARED_FLASH_ENET) && defined(CONFIG_BFIN533_STAMP)
--	/* setup BF533_STAMP CPLD to route AMS3 to Ethernet MAC */
--	bfin_write_FIO_DIR(bfin_read_FIO_DIR() | (1 << CONFIG_ENET_FLASH_PIN));
--	bfin_write_FIO_FLAG_S(1 << CONFIG_ENET_FLASH_PIN);
--	SSYNC();
--# endif
--# if defined (CONFIG_BFIN561_EZKIT)
--	bfin_write_FIO0_DIR(bfin_read_FIO0_DIR() | (1 << 12));
--	SSYNC();
--# endif /* defined (CONFIG_BFIN561_EZKIT) */
--#endif
+-	/* Disable the WDOG TIMER */
+-	p0.h = hi(WDOG_CTL);
+-	p0.l = lo(WDOG_CTL);
+-	r0.l = 0xAD6;
+-	w[p0] = r0.l;
+-	SSYNC;
 -
- 	printk(KERN_INFO "Hardware Trace Enabled\n");
- 	bfin_write_TBUFCTL(0x03);
- }
+-	/* Clear the sticky bit incase it is already set */
+-	p0.h = hi(WDOG_CTL);
+-	p0.l = lo(WDOG_CTL);
+-	r0.l = 0x8AD6;
+-	w[p0] = r0.l;
++	/* make sure SYSCR is set to use BMODE */
++	P0.h = hi(SYSCR);
++	P0.l = lo(SYSCR);
++	R0.l = 0x0;
++	W[P0] = R0.l;
+ 	SSYNC;
  
--#if defined(CONFIG_BF561)
--static struct cpu cpu[2];
--#else
--static struct cpu cpu[1];
--#endif
- static int __init topology_init(void)
- {
- #if defined (CONFIG_BF561)
-+	static struct cpu cpu[2];
- 	register_cpu(&cpu[0], 0);
- 	register_cpu(&cpu[1], 1);
- 	return 0;
- #else
-+	static struct cpu cpu[1];
- 	return register_cpu(cpu, 0);
- #endif
- }
-diff --git a/arch/blackfin/mach-bf533/boards/stamp.c b/arch/blackfin/mach-bf533/boards/stamp.c
-index 7d3dfcb..9a472fe 100644
---- a/arch/blackfin/mach-bf533/boards/stamp.c
-+++ b/arch/blackfin/mach-bf533/boards/stamp.c
-@@ -338,12 +338,25 @@ static struct platform_device *stamp_devices[] __initdata = {
+-	/* Program the count value */
+-	R0.l = 0x100;
+-	R0.h = 0x0;
+-	P0.h = hi(WDOG_CNT);
+-	P0.l = lo(WDOG_CNT);
+-	[P0] = R0;
++	/* issue a system soft reset */
++	P1.h = hi(SWRST);
++	P1.l = lo(SWRST);
++	R1.l = 0x0007;
++	W[P1] = R1;
+ 	SSYNC;
  
- static int __init stamp_init(void)
- {
-+	int ret;
-+
- 	printk(KERN_INFO "%s(): registering device resources\n", __FUNCTION__);
--	platform_add_devices(stamp_devices, ARRAY_SIZE(stamp_devices));
-+	ret = platform_add_devices(stamp_devices, ARRAY_SIZE(stamp_devices));
-+	if (ret < 0)
-+		return ret;
-+
-+#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
-+# if defined(CONFIG_BFIN_SHARED_FLASH_ENET)
-+	/* setup BF533_STAMP CPLD to route AMS3 to Ethernet MAC */
-+	bfin_write_FIO_DIR(bfin_read_FIO_DIR() | (1 << CONFIG_ENET_FLASH_PIN));
-+	bfin_write_FIO_FLAG_S(1 << CONFIG_ENET_FLASH_PIN);
-+	SSYNC();
-+# endif
-+#endif
-+
- #if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
--	spi_register_board_info(bfin_spi_board_info, ARRAY_SIZE(bfin_spi_board_info));
-+	return spi_register_board_info(bfin_spi_board_info, ARRAY_SIZE(bfin_spi_board_info));
- #endif
--	return 0;
- }
+-	/* Program WDOG_STAT if necessary */
+-	P0.h = hi(WDOG_CTL);
+-	P0.l = lo(WDOG_CTL);
+-	R0 = W[P0](Z);
+-	CC = BITTST(R0,1);
+-	if !CC JUMP .LWRITESTAT;
+-	CC = BITTST(R0,2);
+-	if !CC JUMP .LWRITESTAT;
+-	JUMP .LSKIP_WRITE;
+-
+-.LWRITESTAT:
+-	/* When watch dog timer is enabled, a write to STAT will load the contents of CNT to STAT */
+-	R0 = 0x0000(z);
+-	P0.h = hi(WDOG_STAT);
+-	P0.l = lo(WDOG_STAT)
+-	[P0] = R0;
+-	SSYNC;
+-
+-.LSKIP_WRITE:
+-	/* Enable the reset event */
+-	P0.h = hi(WDOG_CTL);
+-	P0.l = lo(WDOG_CTL);
+-	R0 = W[P0](Z);
+-	BITCLR(R0,1);
+-	BITCLR(R0,2);
+-	W[P0] = R0.L;
+-	SSYNC;
+-	NOP;
+-
+-	/* Enable the wdog counter */
+-	R0 = W[P0](Z);
+-	BITCLR(R0,4);
+-	W[P0] = R0.L;
++	/* clear system soft reset */
++	R0.l = 0x0000;
++	W[P0] = R0;
+ 	SSYNC;
  
- arch_initcall(stamp_init);
-diff --git a/arch/blackfin/mach-bf561/boards/ezkit.c b/arch/blackfin/mach-bf561/boards/ezkit.c
-index e8d4058..9720b5c 100644
---- a/arch/blackfin/mach-bf561/boards/ezkit.c
-+++ b/arch/blackfin/mach-bf561/boards/ezkit.c
-@@ -184,13 +184,18 @@ static int __init ezkit_init(void)
- {
- 	int ret;
+-	IDLE;
++	/* issue core reset */
++	raise 1;
  
--	printk(KERN_INFO "%s(): registering device resources\n", __FUNCTION__);
--	ret = platform_add_devices(ezkit_devices,
--		 ARRAY_SIZE(ezkit_devices));
-+	printk(KERN_INFO "%s(): registering device resources\n", __func__);
-+
-+	ret = platform_add_devices(ezkit_devices, ARRAY_SIZE(ezkit_devices));
- 	if (ret < 0)
- 		return ret;
--	return spi_register_board_info(bfin_spi_board_info,
--				ARRAY_SIZE(bfin_spi_board_info));
-+
-+#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
-+	bfin_write_FIO0_DIR(bfin_read_FIO0_DIR() | (1 << 12));
-+	SSYNC();
-+#endif
-+
-+	return spi_register_board_info(bfin_spi_board_info, ARRAY_SIZE(bfin_spi_board_info));
- }
+ 	RTS;
++ENDPROC(_bfin_reset)
  
- arch_initcall(ezkit_init);
+ #if CONFIG_DEBUG_KERNEL_START
+ debug_kernel_start_trap:
+diff --git a/arch/blackfin/mach-bf537/head.S b/arch/blackfin/mach-bf537/head.S
+index de78e42..aafc686 100644
+--- a/arch/blackfin/mach-bf537/head.S
++++ b/arch/blackfin/mach-bf537/head.S
+@@ -517,68 +517,30 @@ _delay_lab1_end:
+ 	[p0] = r0;
+ 	SSYNC;
+ 
+-	/* Disable the WDOG TIMER */
+-	p0.h = hi(WDOG_CTL);
+-	p0.l = lo(WDOG_CTL);
+-	r0.l = 0xAD6;
+-	w[p0] = r0.l;
++	/* make sure SYSCR is set to use BMODE */
++	P0.h = hi(SYSCR);
++	P0.l = lo(SYSCR);
++	R0.l = 0x0;
++	W[P0] = R0.l;
+ 	SSYNC;
+ 
+-	/* Clear the sticky bit incase it is already set */
+-	p0.h = hi(WDOG_CTL);
+-	p0.l = lo(WDOG_CTL);
+-	r0.l = 0x8AD6;
+-	w[p0] = r0.l;
++	/* issue a system soft reset */
++	P1.h = hi(SWRST);
++	P1.l = lo(SWRST);
++	R1.l = 0x0007;
++	W[P1] = R1;
+ 	SSYNC;
+ 
+-	/* Program the count value */
+-	R0.l = 0x100;
+-	R0.h = 0x0;
+-	P0.h = hi(WDOG_CNT);
+-	P0.l = lo(WDOG_CNT);
+-	[P0] = R0;
+-	SSYNC;
+-
+-	/* Program WDOG_STAT if necessary */
+-	P0.h = hi(WDOG_CTL);
+-	P0.l = lo(WDOG_CTL);
+-	R0 = W[P0](Z);
+-	CC = BITTST(R0,1);
+-	if !CC JUMP .LWRITESTAT;
+-	CC = BITTST(R0,2);
+-	if !CC JUMP .LWRITESTAT;
+-	JUMP .LSKIP_WRITE;
+-
+-.LWRITESTAT:
+-	/* When watch dog timer is enabled,
+-	 * a write to STAT will load the contents of CNT to STAT
+-	 */
+-	R0 = 0x0000(z);
+-	P0.h = hi(WDOG_STAT);
+-	P0.l = lo(WDOG_STAT)
+-	[P0] = R0;
+-	SSYNC;
+-
+-.LSKIP_WRITE:
+-	/* Enable the reset event */
+-	P0.h = hi(WDOG_CTL);
+-	P0.l = lo(WDOG_CTL);
+-	R0 = W[P0](Z);
+-	BITCLR(R0,1);
+-	BITCLR(R0,2);
+-	W[P0] = R0.L;
+-	SSYNC;
+-	NOP;
+-
+-	/* Enable the wdog counter */
+-	R0 = W[P0](Z);
+-	BITCLR(R0,4);
+-	W[P0] = R0.L;
++	/* clear system soft reset */
++	R0.l = 0x0000;
++	W[P0] = R0;
+ 	SSYNC;
+ 
+-	IDLE;
++	/* issue core reset */
++	raise 1;
+ 
+ 	RTS;
++ENDPROC(_bfin_reset)
+ 
+ .data
+ 
+diff --git a/arch/blackfin/mach-bf561/head.S b/arch/blackfin/mach-bf561/head.S
+index 462c39e..04f3ac3 100644
+--- a/arch/blackfin/mach-bf561/head.S
++++ b/arch/blackfin/mach-bf561/head.S
+@@ -427,68 +427,30 @@ ENTRY(_bfin_reset)
+ 	[p0] = r0;
+ 	SSYNC;
+ 
+-	/* Disable the WDOG TIMER */
+-	p0.h = hi(WDOGA_CTL);
+-	p0.l = lo(WDOGA_CTL);
+-	r0.l = 0xAD6;
+-	w[p0] = r0.l;
++	/* make sure SYSCR is set to use BMODE */
++	P0.h = hi(SICA_SYSCR);
++	P0.l = lo(SICA_SYSCR);
++	R0.l = 0x0;
++	W[P0] = R0.l;
+ 	SSYNC;
+ 
+-	/* Clear the sticky bit incase it is already set */
+-	p0.h = hi(WDOGA_CTL);
+-	p0.l = lo(WDOGA_CTL);
+-	r0.l = 0x8AD6;
+-	w[p0] = r0.l;
+-	SSYNC;
+-
+-	/* Program the count value */
+-	R0.l = 0x100;
+-	R0.h = 0x0;
+-	P0.h = hi(WDOGA_CNT);
+-	P0.l = lo(WDOGA_CNT);
+-	[P0] = R0;
++	/* issue a system soft reset */
++	P1.h = hi(SICA_SWRST);
++	P1.l = lo(SICA_SWRST);
++	R1.l = 0x0007;
++	W[P1] = R1;
+ 	SSYNC;
+ 
+-	/* Program WDOG_STAT if necessary */
+-	P0.h = hi(WDOGA_CTL);
+-	P0.l = lo(WDOGA_CTL);
+-	R0 = W[P0](Z);
+-	CC = BITTST(R0,1);
+-	if !CC JUMP .LWRITESTAT;
+-	CC = BITTST(R0,2);
+-	if !CC JUMP .LWRITESTAT;
+-	JUMP .LSKIP_WRITE;
+-
+-.LWRITESTAT:
+-	/* When watch dog timer is enabled,
+-	 * a write to STAT will load the contents of CNT to STAT
+-	 */
+-	R0 = 0x0000(z);
+-	P0.h = hi(WDOGA_STAT);
+-	P0.l = lo(WDOGA_STAT)
+-	[P0] = R0;
+-	SSYNC;
+-
+-.LSKIP_WRITE:
+-	/* Enable the reset event */
+-	P0.h = hi(WDOGA_CTL);
+-	P0.l = lo(WDOGA_CTL);
+-	R0 = W[P0](Z);
+-	BITCLR(R0,1);
+-	BITCLR(R0,2);
+-	W[P0] = R0.L;
+-	SSYNC;
+-	NOP;
+-
+-	/* Enable the wdog counter */
+-	R0 = W[P0](Z);
+-	BITCLR(R0,4);
+-	W[P0] = R0.L;
++	/* clear system soft reset */
++	R0.l = 0x0000;
++	W[P0] = R0;
+ 	SSYNC;
+ 
+-	IDLE;
++	/* issue core reset */
++	raise 1;
+ 
+ 	RTS;
++ENDPROC(_bfin_reset)
+ 
+ .data
+ 
 -- 
 1.5.1.2
