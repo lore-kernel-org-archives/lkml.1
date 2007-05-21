@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbXEUJ4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbXEUJ5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761437AbXEUJ4V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 05:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXEUJzz
+	id S1761481AbXEUJ5P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 05:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbXEUJ5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 05:55:55 -0400
-Received: from nn7.de ([85.214.94.156]:41988 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754970AbXEUJzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 05:55:54 -0400
-Subject: Re: Can't s2ram 22-rc2 [Was: 2.6.22-rc2 BUG: at slub_def.h:77]
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J\. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-In-Reply-To: <46515A7D.20003@gmail.com>
-References: <1179728579.11803.1.camel@localhost>
-	 <465153AF.5030008@gmail.com> <1179736498.4980.1.camel@localhost>
-	 <46515A7D.20003@gmail.com>
+	Mon, 21 May 2007 05:57:00 -0400
+Received: from www.osadl.org ([213.239.205.134]:54153 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754545AbXEUJ47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 05:56:59 -0400
+Subject: Re: 2.6.22-rc2 built on ppc (2)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Elimar Riesebieter <riesebie@lxtec.de>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <20070520143752.2f6be87a.akpm@linux-foundation.org>
+References: <20070520110815.GD3253@aragorn.home.lxtec.de>
+	 <20070520143752.2f6be87a.akpm@linux-foundation.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 21 May 2007 11:55:52 +0200
-Message-Id: <1179741352.4980.11.camel@localhost>
+Date: Mon, 21 May 2007 12:03:37 +0200
+Message-Id: <1179741817.6570.44.camel@chaos>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-21 at 10:38 +0200, Jiri Slaby wrote:
-> Played with Cc list.
+On Sun, 2007-05-20 at 14:37 -0700, Andrew Morton wrote:
+> On Sun, 20 May 2007 13:08:15 +0200 Elimar Riesebieter <riesebie@lxtec.de> wrote:
 > 
-> Soeren Sonnenburg napsal(a):
-> > On Mon, 2007-05-21 at 10:09 +0200, Jiri Slaby wrote:
-> >> Soeren Sonnenburg napsal(a):
-> >>> a regression (well I switched to slub) happens on boot...
+> > FYI, building 2.6.22-rc2 with
+> > gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+> > on my powerbook (PPC) gives:
 > > 
-> >>> BUG: at include/linux/slub_def.h:77 kmalloc_index()
-> >>>  [<c0176448>] get_slab+0x1c8/0x250
-> > [...]
-> >> Could you try this patch:
-> >> http://lkml.org/lkml/2007/5/19/171
-> > 
-> > yes, that does fix the issue (at least I don't see the BUG: anymore on
-> > boot). however I can no longer s2ram on 22rc2. 
+> > ...
+> > kernel/time/ntp.c: In function 'do_adjtimex':
+> > kernel/time/ntp.c:307: warning: comparison of distinct pointer types lacks a cast
+> > kernel/time/ntp.c:310: warning: comparison of distinct pointer types lacks a cast
 > 
-> Whit what kind of error or what happens?
+> hm, do_div() is defined as operating on a u64, but ntp is passing it an s64
+> and the asm-generic implementation of do_div() is warning about that.
+> 
+> Fixing that would be simple but a bit ugly.
 
-pci_device_suspend(): usb_hcd_pci_suspend+0x0/0x170() returns -16
-suspend_device(): pci_device_suspend+0x0/0x60() returns -16
-Could not suspend device 0000:00:1d.0: error -16
+We have the signed do_div() work around and it is used in the ntp code 5
+lines further down already.
 
-00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 02)
+	tglx
 
-lspci/dmesg are in this mail:
-http://marc.info/?l=linux-kernel&m=117973679209855&w=2
+--------------------------------->
+Subject: NTP: use the signed divide function instead of do_div()
 
-Soeren
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+> > kernel/time/ntp.c:307: warning: comparison of distinct pointer types lacks a cast
+> > kernel/time/ntp.c:310: warning: comparison of distinct pointer types lacks a cast
+> 
+> hm, do_div() is defined as operating on a u64, but ntp is passing it an s64
+> and the asm-generic implementation of do_div() is warning about that.
+
+Replace do_div() by div_long_long_rem_signed()
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
+index cb25649..bb1bf86 100644
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -304,10 +304,12 @@ int do_adjtimex(struct timex *txc)
+ 			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
+ 			if (time_offset < 0) {
+ 			    temp64 = -temp64;
+-			    do_div(temp64, mtemp);
++			    temp64 = div_long_long_rem_signed(temp64, mtemp,
++							      &rem);
+ 			    freq_adj -= temp64;
+ 			} else {
+-			    do_div(temp64, mtemp);
++			    temp64 = div_long_long_rem_signed(temp64, mtemp,
++							      &rem);
+ 			    freq_adj += temp64;
+ 			}
+ 		    }
+
+
+
+
