@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764150AbXEUWRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762345AbXEUWU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764150AbXEUWRU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 18:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758574AbXEUWRJ
+	id S1762345AbXEUWU0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 18:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbXEUWUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 18:17:09 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33150 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758561AbXEUWRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 18:17:08 -0400
-Date: Mon, 21 May 2007 15:13:07 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+	Mon, 21 May 2007 18:20:19 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:41219 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756673AbXEUWUR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 18:20:17 -0400
+Date: Tue, 22 May 2007 00:20:04 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       stable@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/69] -stable review
-Message-ID: <20070521221307.GP3429@sequoia.sous-sol.org>
-References: <20070521191612.800400000@sous-sol.org> <20070521123148.a3dad5f2.akpm@linux-foundation.org> <20070521203111.GJ3429@sequoia.sous-sol.org> <46521165.5030207@cosmosbay.com>
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [patch 00/69] -stable review
+Message-ID: <20070521222004.GT6291@stusta.de>
+References: <20070521191612.800400000@sous-sol.org> <20070521123148.a3dad5f2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46521165.5030207@cosmosbay.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070521123148.a3dad5f2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric Dumazet (dada1@cosmosbay.com) wrote:
-> Chris Wright a écrit :
-> >* Andrew Morton (akpm@linux-foundation.org) wrote:
-> >>On Mon, 21 May 2007 12:16:12 -0700
-> >>Chris Wright <chrisw@sous-sol.org> wrote:
-> >>
-> >>>This is the start of the stable review cycle for the 2.6.21.2 release.
-> >>Gee a lot of these are fixing recently-added regressions :(
-> >>
-> >>Did we fix oprofile on x86_64 yet?  If not, I'd suggest we should
-> >>hold off 2.6.21.2 until we have done so.
-> >
-> >No, we've seen 2 versions of the patch, no word from Andi, and nothing
-> >upstream that I saw.  Andi?
+On Mon, May 21, 2007 at 12:31:48PM -0700, Andrew Morton wrote:
+> On Mon, 21 May 2007 12:16:12 -0700
+> Chris Wright <chrisw@sous-sol.org> wrote:
 > 
-> Seems Linus tree includes a fix from Andi, check commit 
-> 6c977aad03a18019015035958c65b6729cd0574c
+> > This is the start of the stable review cycle for the 2.6.21.2 release.
+> 
+> Gee a lot of these are fixing recently-added regressions :(
+>...
 
-Indeed, it's there now.
+If only it would fix all of them...
 
-thanks,
--chris
+Michal's list [1] currently contains 51 different regressions in
+2.6.21 compared to 2.6.20 (12 of them were already reported before
+2.6.21 was released).
+
+cu
+Adrian
+
+[1] http://kernelnewbies.org/known_regressions [2]
+[2] the 2.6.21 regressions are listed after the 28 known 2.6.22-rc 
+    regressions
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
