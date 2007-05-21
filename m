@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935339AbXEUTry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935387AbXEUTs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935339AbXEUTry (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933890AbXEUT2Y
+	id S935387AbXEUTs2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765648AbXEUT2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:28:24 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52608 "EHLO
+	Mon, 21 May 2007 15:28:32 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52612 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933883AbXEUT2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:28:23 -0400
-Message-Id: <20070521191751.108664000@sous-sol.org>
+	id S1765868AbXEUT2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:28:30 -0400
+Message-Id: <20070521191730.708428000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:07 -0700
+Date: Mon, 21 May 2007 12:16:48 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,66 +23,51 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
-       bunk@stusta.de
-Subject: [patch 55/69] SPARC64: Fix recursion in PROM tree building.
-Content-Disposition: inline; filename=sparc64-fix-recursion-in-prom-tree-building.patch
+       bunk@stusta.de, Srinivas Aji <Aji_Srinivas@emc.com>
+Subject: [patch 36/69] TCP: zero out rx_opt in tcp_disconnect()
+Content-Disposition: inline; filename=tcp-zero-out-rx_opt-in-tcp_disconnect.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: David Miller <davem@davemloft.net>
+From: Srinivas Aji <Aji_Srinivas@emc.com>
 
-Use iteration for scanning of PROM node siblings.
+When the server drops its connection, NFS client reconnects using the
+same socket after disconnecting. If the new connection's SYN,ACK
+doesn't contain the TCP timestamp option and the old connection's did,
+tp->tcp_header_len is recomputed assuming no timestamp header but
+tp->rx_opt.tstamp_ok remains set. Then tcp_build_and_update_options()
+adds in a timestamp option past the end of the allocated TCP header,
+overwriting TCP data, or when the data is in skb_shinfo(skb)->frags[],
+overwriting skb_shinfo(skb) causing a crash soon after. (The issue was
+debugged from such a crash.)
 
-Based upon a patch by Greg Onufer, who found this bug.
+Similarly, wscale_ok and sack_ok also get set based on the SYN,ACK
+packet but not reset on disconnect, since they are zeroed out at
+initialization. The patch zeroes out the entire tp->rx_opt struct in
+tcp_disconnect() to avoid this sort of problem.
 
+Signed-off-by: Srinivas Aji <Aji_Srinivas@emc.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- arch/sparc64/kernel/prom.c |   19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ net/ipv4/tcp.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- linux-2.6.21.1.orig/arch/sparc64/kernel/prom.c
-+++ linux-2.6.21.1/arch/sparc64/kernel/prom.c
-@@ -1555,10 +1555,21 @@ static struct device_node * __init creat
+--- linux-2.6.21.1.orig/net/ipv4/tcp.c
++++ linux-2.6.21.1/net/ipv4/tcp.c
+@@ -1759,8 +1759,7 @@ int tcp_disconnect(struct sock *sk, int 
+ 	tcp_clear_retrans(tp);
+ 	inet_csk_delack_init(sk);
+ 	sk->sk_send_head = NULL;
+-	tp->rx_opt.saw_tstamp = 0;
+-	tcp_sack_reset(&tp->rx_opt);
++	memset(&tp->rx_opt, 0, sizeof(tp->rx_opt));
+ 	__sk_dst_reset(sk);
  
- static struct device_node * __init build_tree(struct device_node *parent, phandle node, struct device_node ***nextp)
- {
-+	struct device_node *ret = NULL, *prev_sibling = NULL;
- 	struct device_node *dp;
- 
--	dp = create_node(node, parent);
--	if (dp) {
-+	while (1) {
-+		dp = create_node(node, parent);
-+		if (!dp)
-+			break;
-+
-+		if (prev_sibling)
-+			prev_sibling->sibling = dp;
-+
-+		if (!ret)
-+			ret = dp;
-+		prev_sibling = dp;
-+
- 		*(*nextp) = dp;
- 		*nextp = &dp->allnext;
- 
-@@ -1567,10 +1578,10 @@ static struct device_node * __init build
- 
- 		dp->child = build_tree(dp, prom_getchild(node), nextp);
- 
--		dp->sibling = build_tree(parent, prom_getsibling(node), nextp);
-+		node = prom_getsibling(node);
- 	}
- 
--	return dp;
-+	return ret;
- }
- 
- void __init prom_build_devicetree(void)
+ 	BUG_TRAP(!inet->num || icsk->icsk_bind_hash);
 
 -- 
