@@ -1,86 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbXEUJ5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbXEUKCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761481AbXEUJ5P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 05:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbXEUJ5A
+	id S1757999AbXEUKCu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 06:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbXEUKCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 05:57:00 -0400
-Received: from www.osadl.org ([213.239.205.134]:54153 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754545AbXEUJ47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 05:56:59 -0400
-Subject: Re: 2.6.22-rc2 built on ppc (2)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Elimar Riesebieter <riesebie@lxtec.de>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>
-In-Reply-To: <20070520143752.2f6be87a.akpm@linux-foundation.org>
-References: <20070520110815.GD3253@aragorn.home.lxtec.de>
-	 <20070520143752.2f6be87a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 12:03:37 +0200
-Message-Id: <1179741817.6570.44.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Mon, 21 May 2007 06:02:43 -0400
+Received: from d0618491.dreamhost.com ([208.97.132.145]:48932 "EHLO
+	spaceymail-a1.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755716AbXEUKCm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 06:02:42 -0400
+From: Anant Nitya <kernel@prachanda.info>
+Organization: Prachanda Hub
+To: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] local_softirq_pending storm
+Date: Mon, 21 May 2007 15:32:13 +0530
+User-Agent: KMail/1.9.6
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+References: <200705091942.22920.kernel@prachanda.hub> <200705211152.08518.kernel@prachanda.hub> <1179738117.6570.37.camel@chaos>
+In-Reply-To: <1179738117.6570.37.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705211532.15562.kernel@prachanda.hub>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-05-20 at 14:37 -0700, Andrew Morton wrote:
-> On Sun, 20 May 2007 13:08:15 +0200 Elimar Riesebieter <riesebie@lxtec.de> wrote:
-> 
-> > FYI, building 2.6.22-rc2 with
-> > gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
-> > on my powerbook (PPC) gives:
-> > 
-> > ...
-> > kernel/time/ntp.c: In function 'do_adjtimex':
-> > kernel/time/ntp.c:307: warning: comparison of distinct pointer types lacks a cast
-> > kernel/time/ntp.c:310: warning: comparison of distinct pointer types lacks a cast
-> 
-> hm, do_div() is defined as operating on a u64, but ntp is passing it an s64
-> and the asm-generic implementation of do_div() is warning about that.
-> 
-> Fixing that would be simple but a bit ugly.
+On Monday 21 May 2007 14:31:57 Thomas Gleixner wrote:
+> On Mon, 2007-05-21 at 11:52 +0530, Anant Nitya wrote:
+> > > You should find something like:
+> > >
+> > > (         swapper-0    |#0): new 67173 us user-latency.
+> > >
+> > > along with the familiar "NOHZ ......" message in your log file.
+> > >
+> > > Once that happened please do:
+> > >
+> > > $ cat /proc/latency_trace >trace.txt
+> > >
+> > > compress it and send it to me along with the full dmesg output or put
+> > > both up to some place, where I can download it.
+> >
+> > Hi Thomas
+> >
+> > Here are the links...
+> > http://cybertek.info/taitai/dmesg-2.6.22.rc2.hrt2-1.SMP.DN.LINUX.txt
+> > http://cybertek.info/taitai/trace.txt.bz2
+>
+> Thanks. Sorry, I need more info. I uploaded a new tracer.diff to
+>
+> http://www.tglx.de/private/tglx/ht-debug/tracer.diff
+>
+> Can you please revert the first one and retest with the new one ?
 
-We have the signed do_div() work around and it is used in the ntp code 5
-lines further down already.
+Okay sure, compiling now.
 
-	tglx
+Regards
+Ananitya
 
---------------------------------->
-Subject: NTP: use the signed divide function instead of do_div()
-
-> > kernel/time/ntp.c:307: warning: comparison of distinct pointer types lacks a cast
-> > kernel/time/ntp.c:310: warning: comparison of distinct pointer types lacks a cast
-> 
-> hm, do_div() is defined as operating on a u64, but ntp is passing it an s64
-> and the asm-generic implementation of do_div() is warning about that.
-
-Replace do_div() by div_long_long_rem_signed()
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-index cb25649..bb1bf86 100644
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -304,10 +304,12 @@ int do_adjtimex(struct timex *txc)
- 			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
- 			if (time_offset < 0) {
- 			    temp64 = -temp64;
--			    do_div(temp64, mtemp);
-+			    temp64 = div_long_long_rem_signed(temp64, mtemp,
-+							      &rem);
- 			    freq_adj -= temp64;
- 			} else {
--			    do_div(temp64, mtemp);
-+			    temp64 = div_long_long_rem_signed(temp64, mtemp,
-+							      &rem);
- 			    freq_adj += temp64;
- 			}
- 		    }
+>
+> Thanks,
+>
+> 	tglx
 
 
 
-
+-- 
+Out of many thousands, one may endeavor for perfection, and of
+those who have achieved perfection, hardly one knows Me in truth.
+				-- Gita Sutra Of Mysticism
