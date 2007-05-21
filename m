@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765213AbXEUTNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760661AbXEUTSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765213AbXEUTNS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbXEUTNJ
+	id S1760661AbXEUTSD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757133AbXEUTRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:13:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46260 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756759AbXEUTNI (ORCPT
+	Mon, 21 May 2007 15:17:54 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:35663
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757037AbXEUTRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:13:08 -0400
-Date: Mon, 21 May 2007 12:13:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Hugh Dickins <hugh@veritas.com>,
-       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
-       Oliver Xymoron <oxymoron@waste.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-In-Reply-To: <20070521190043.GA4705@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com>
-References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
- <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705211147100.26970@schroedinger.engr.sgi.com>
- <20070521190043.GA4705@kernel.dk>
+	Mon, 21 May 2007 15:17:53 -0400
+Date: Mon, 21 May 2007 12:17:21 -0700
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [PATCH] lockdep: lock contention tracking
+Message-ID: <20070521191721.GD4442@gnuppy.monkey.org>
+References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org> <20070521060828.GB20277@elte.hu> <20070521064150.GC4442@gnuppy.monkey.org> <20070521075013.GA9419@elte.hu> <20070521091848.GB4593@gnuppy.monkey.org> <20070521093639.GA29025@elte.hu> <20070521095547.GA10697@infradead.org> <20070521105803.GA17096@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521105803.GA17096@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Jens Axboe wrote:
+On Mon, May 21, 2007 at 12:58:03PM +0200, Ingo Molnar wrote:
+> and nobody pushed strong enough to get it included. But ... Peter's 
+> patch could perhaps be extended to cover similar stats as lockmeter, 
+> ontop of the existing lockdep instrumentation. Peter, can you see any 
+> particular roadblocks with that?
 
-> I can test whatever you want tomorrow morning, it was 100% repeatable
-> here. So which one, your patch or Hughs?
+Definitely. Lockmeter isn't terribly Linux-ish from my examination of
+that patch a while back. Doing it against lockdep is definitely the
+right thing to do in that it unifies lock handling through initializer
+keys that lockmeter doesn't, from my memory.
 
-This was an effect of me suggesting to switch off CONFIG_SLUB_DEBUG. If 
-you did not run without CONFIG_SLUB_DEBUG then you were not affected by 
-the problem. And the earlier case that you reported was a version of SLUB 
-that did not have the capability to switch off SLUB_DEBUG.
+The spin time tracking can be put into the slow path of the spin, like
+what peter has now, so that it has minimal impact against the uncontended
+case. Updating the times would then be a trivial pointer dereference
+plus add and hopefully won't have instrumentation side effects against
+the rest of the locking behavior in the system.
 
-Is there any way we can boot with "slub_debug" on the kernel command line 
-and get early printk output? Looks like an early failure that may have to 
-do with other kernel debug options being on (lockdep or so?)
+bill
 
