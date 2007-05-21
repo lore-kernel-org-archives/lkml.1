@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbXEUJ4C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbXEUJ4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760039AbXEUJ4C (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 05:56:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbXEUJzy
+	id S1761437AbXEUJ4V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 05:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXEUJzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 21 May 2007 05:55:55 -0400
+Received: from nn7.de ([85.214.94.156]:41988 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754970AbXEUJzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 05:55:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35954 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754545AbXEUJzy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 05:55:54 -0400
-Date: Mon, 21 May 2007 10:55:47 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Bill Huey <billh@gnuppy.monkey.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] lockdep: lock contention tracking
-Message-ID: <20070521095547.GA10697@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>
-References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org> <20070521060828.GB20277@elte.hu> <20070521064150.GC4442@gnuppy.monkey.org> <20070521075013.GA9419@elte.hu> <20070521091848.GB4593@gnuppy.monkey.org> <20070521093639.GA29025@elte.hu>
+Subject: Re: Can't s2ram 22-rc2 [Was: 2.6.22-rc2 BUG: at slub_def.h:77]
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J\. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+In-Reply-To: <46515A7D.20003@gmail.com>
+References: <1179728579.11803.1.camel@localhost>
+	 <465153AF.5030008@gmail.com> <1179736498.4980.1.camel@localhost>
+	 <46515A7D.20003@gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 21 May 2007 11:55:52 +0200
+Message-Id: <1179741352.4980.11.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521093639.GA29025@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 11:36:39AM +0200, Ingo Molnar wrote:
-> you got the history wrong i think: the first version of lockdep was 
-> released to lkml a year ago (May 2006), while the first time you 
-> mentioned your lock contention patch was November 2006 and you released 
-> it to lkml in December 2006 - so it was _you_ who was "replicating the 
-> same work", not lockdep :-) And this was pointed out to you very early 
-> on, many months ago.
+On Mon, 2007-05-21 at 10:38 +0200, Jiri Slaby wrote:
+> Played with Cc list.
+> 
+> Soeren Sonnenburg napsal(a):
+> > On Mon, 2007-05-21 at 10:09 +0200, Jiri Slaby wrote:
+> >> Soeren Sonnenburg napsal(a):
+> >>> a regression (well I switched to slub) happens on boot...
+> > 
+> >>> BUG: at include/linux/slub_def.h:77 kmalloc_index()
+> >>>  [<c0176448>] get_slab+0x1c8/0x250
+> > [...]
+> >> Could you try this patch:
+> >> http://lkml.org/lkml/2007/5/19/171
+> > 
+> > yes, that does fix the issue (at least I don't see the BUG: anymore on
+> > boot). however I can no longer s2ram on 22rc2. 
+> 
+> Whit what kind of error or what happens?
 
-And lockmeter, the very first patch of this sort is from the 90s, but
-got mostly ignored here on lkml, of course :)
+pci_device_suspend(): usb_hcd_pci_suspend+0x0/0x170() returns -16
+suspend_device(): pci_device_suspend+0x0/0x60() returns -16
+Could not suspend device 0000:00:1d.0: error -16
 
+00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 02)
+
+lspci/dmesg are in this mail:
+http://marc.info/?l=linux-kernel&m=117973679209855&w=2
+
+Soeren
+-- 
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
