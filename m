@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbXEUI2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760595AbXEUI3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760045AbXEUI2y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXEUI2r
+	id S1760595AbXEUI3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXEUI3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:28:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40441 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755251AbXEUI2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:28:47 -0400
-Date: Mon, 21 May 2007 10:28:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
+	Mon, 21 May 2007 04:29:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41229
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755963AbXEUI3C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:29:02 -0400
+Date: Mon, 21 May 2007 01:29:03 -0700 (PDT)
+Message-Id: <20070521.012903.18300561.davem@davemloft.net>
+To: mingo@elte.hu
 Cc: kernel@prachanda.info, linux-kernel@vger.kernel.org,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        tglx@linutronix.de
 Subject: Re: bad networking related lag in v2.6.22-rc2
-Message-ID: <20070521082805.GA17740@elte.hu>
-References: <20070518102607.GA23151@elte.hu> <200705200246.22444.kernel@prachanda.hub> <20070521075824.GA11198@elte.hu> <20070521.012541.112621369.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070521081201.GB13858@elte.hu>
+References: <20070521075824.GA11198@elte.hu>
+	<20070521080351.GA13375@elte.hu>
+	<20070521081201.GB13858@elte.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521.012541.112621369.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 21 May 2007 10:12:01 +0200
 
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon, 21 May 2007 09:58:24 +0200
+> and ... you already did a trace for Thomas, for the softirq problem:
 > 
-> > what does 'top' show during an upload? Is any system related task
-> > out of whack? Could you try to get a readprofile or an oprofile
-> > output from the kernel, so that we can see what is slowing it down
-> > so much? It could be something networking related in v2.6.22-rc2.
+>    http://cybertek.info/taitai/trace.txt.bz2
 > 
-> There is a driver specific problem that's been around for a while, but 
-> it only effects 3c59x chips, is that what you have?
+> this trace shows really bad networking related kernel activities!
+> 
+> gkrellm-5977 does this at timestamp 0:
+> 
+>  gkrellm-5977  0..s.    0us : cond_resched_softirq (established_get_next)
 
-the problem first showed up in v2.6.22-rc1 and he didnt have it in 
-v2.6.21 - does that still qualify his box for the 3c59x problem?
+So it's not the 3c59x bug :-)
 
-	Ingo
+If you have a lot of sockets, there is not way to make
+the performance of dumping /proc/net/tcp not suck, use
+the netlink socket dumping which is:
+
+1) more efficient even for full dumps
+2) allows filtering for the best possible performance
