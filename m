@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934660AbXEUTnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934356AbXEUTo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934660AbXEUTnx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbXEUT1u
+	id S934356AbXEUTo3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933576AbXEUT1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:27:50 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52540 "EHLO
+	Mon, 21 May 2007 15:27:54 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52558 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933646AbXEUT1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:27:48 -0400
-Message-Id: <20070521191729.517094000@sous-sol.org>
+	id S933741AbXEUT1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:27:53 -0400
+Message-Id: <20070521191745.964321000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:46 -0700
+Date: Mon, 21 May 2007 12:17:00 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,249 +23,75 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
-       bunk@stusta.de, Vlad Yasevich <vladislav.yasevich@hp.com>
-Subject: [patch 34/69] SCTP: Fix sctp_getsockopt_local_addrs_old() to use local storage.
-Content-Disposition: inline; filename=sctp-fix-sctp_getsockopt_local_addrs_old-to-use-local-storage.patch
+       bunk@stusta.de, YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+Subject: [patch 48/69] IPV6: Do no rely on skb->dst before it is assigned.
+Content-Disposition: inline; filename=ipv6-do-no-rely-on-skb-dst-before-it-is-assigned.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
+From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 
-sctp_getsockopt_local_addrs_old() in net/sctp/socket.c calls
-copy_to_user() while the spinlock addr_lock is held. this should not
-be done as copy_to_user() might sleep. the call to
-sctp_copy_laddrs_to_user() while holding the lock is also problematic
-as it calls copy_to_user()
+Because skb->dst is assigned in ip6_route_input(), it is really
+bad to use it in hop-by-hop option handler(s).
 
-Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Closes: Bug #8450 (Eric Sesterhenn <snakebyte@gmx.de>)
+Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- net/sctp/socket.c |   96 +++++++++++++++++++++++++++++++++---------------------
- 1 file changed, 60 insertions(+), 36 deletions(-)
+ net/ipv6/exthdrs.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
---- linux-2.6.21.1.orig/net/sctp/socket.c
-+++ linux-2.6.21.1/net/sctp/socket.c
-@@ -3847,7 +3847,7 @@ static int sctp_getsockopt_peer_addrs(st
- 		memcpy(&temp, &from->ipaddr, sizeof(temp));
- 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sp, &temp);
- 		addrlen = sctp_get_af_specific(sk->sk_family)->sockaddr_len;
--		if(space_left < addrlen)
-+		if (space_left < addrlen)
- 			return -ENOMEM;
- 		if (copy_to_user(to, &temp, addrlen))
- 			return -EFAULT;
-@@ -3936,8 +3936,9 @@ done:
- /* Helper function that copies local addresses to user and returns the number
-  * of addresses copied.
-  */
--static int sctp_copy_laddrs_to_user_old(struct sock *sk, __u16 port, int max_addrs,
--					void __user *to)
-+static int sctp_copy_laddrs_old(struct sock *sk, __u16 port,
-+					int max_addrs, void *to,
-+					int *bytes_copied)
- {
- 	struct list_head *pos, *next;
- 	struct sctp_sockaddr_entry *addr;
-@@ -3954,10 +3955,10 @@ static int sctp_copy_laddrs_to_user_old(
- 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sctp_sk(sk),
- 								&temp);
- 		addrlen = sctp_get_af_specific(temp.sa.sa_family)->sockaddr_len;
--		if (copy_to_user(to, &temp, addrlen))
--			return -EFAULT;
-+		memcpy(to, &temp, addrlen);
+--- linux-2.6.21.1.orig/net/ipv6/exthdrs.c
++++ linux-2.6.21.1/net/ipv6/exthdrs.c
+@@ -652,6 +652,14 @@ EXPORT_SYMBOL_GPL(ipv6_invert_rthdr);
+   Hop-by-hop options.
+  **********************************/
  
- 		to += addrlen;
-+		*bytes_copied += addrlen;
- 		cnt ++;
- 		if (cnt >= max_addrs) break;
- 	}
-@@ -3965,8 +3966,8 @@ static int sctp_copy_laddrs_to_user_old(
- 	return cnt;
- }
- 
--static int sctp_copy_laddrs_to_user(struct sock *sk, __u16 port,
--				    void __user **to, size_t space_left)
-+static int sctp_copy_laddrs(struct sock *sk, __u16 port, void *to,
-+			    size_t space_left, int *bytes_copied)
- {
- 	struct list_head *pos, *next;
- 	struct sctp_sockaddr_entry *addr;
-@@ -3983,14 +3984,14 @@ static int sctp_copy_laddrs_to_user(stru
- 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sctp_sk(sk),
- 								&temp);
- 		addrlen = sctp_get_af_specific(temp.sa.sa_family)->sockaddr_len;
--		if(space_left<addrlen)
-+		if (space_left < addrlen)
- 			return -ENOMEM;
--		if (copy_to_user(*to, &temp, addrlen))
--			return -EFAULT;
-+		memcpy(to, &temp, addrlen);
- 
--		*to += addrlen;
-+		to += addrlen;
- 		cnt ++;
- 		space_left -= addrlen;
-+		bytes_copied += addrlen;
- 	}
- 
- 	return cnt;
-@@ -4014,6 +4015,8 @@ static int sctp_getsockopt_local_addrs_o
- 	int addrlen;
- 	rwlock_t *addr_lock;
- 	int err = 0;
-+	void *addrs;
-+	int bytes_copied = 0;
- 
- 	if (len != sizeof(struct sctp_getaddrs_old))
- 		return -EINVAL;
-@@ -4041,6 +4044,15 @@ static int sctp_getsockopt_local_addrs_o
- 
- 	to = getaddrs.addrs;
- 
-+	/* Allocate space for a local instance of packed array to hold all
-+	 * the data.  We store addresses here first and then put write them
-+	 * to the user in one shot.
-+	 */
-+	addrs = kmalloc(sizeof(union sctp_addr) * getaddrs.addr_num,
-+			GFP_KERNEL);
-+	if (!addrs)
-+		return -ENOMEM;
++/*
++ * Note: we cannot rely on skb->dst before we assign it in ip6_route_input().
++ */
++static inline struct inet6_dev *ipv6_skb_idev(struct sk_buff *skb)
++{
++	return skb->dst ? ip6_dst_idev(skb->dst) : __in6_dev_get(skb->dev);
++}
 +
- 	sctp_read_lock(addr_lock);
+ /* Router Alert as of RFC 2711 */
  
- 	/* If the endpoint is bound to 0.0.0.0 or ::0, get the valid
-@@ -4050,13 +4062,9 @@ static int sctp_getsockopt_local_addrs_o
- 		addr = list_entry(bp->address_list.next,
- 				  struct sctp_sockaddr_entry, list);
- 		if (sctp_is_any(&addr->a)) {
--			cnt = sctp_copy_laddrs_to_user_old(sk, bp->port,
--							   getaddrs.addr_num,
--							   to);
--			if (cnt < 0) {
--				err = cnt;
--				goto unlock;
--			}
-+			cnt = sctp_copy_laddrs_old(sk, bp->port,
-+						   getaddrs.addr_num,
-+						   addrs, &bytes_copied);
- 			goto copy_getaddrs;
- 		}
- 	}
-@@ -4066,22 +4074,29 @@ static int sctp_getsockopt_local_addrs_o
- 		memcpy(&temp, &addr->a, sizeof(temp));
- 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sp, &temp);
- 		addrlen = sctp_get_af_specific(temp.sa.sa_family)->sockaddr_len;
--		if (copy_to_user(to, &temp, addrlen)) {
--			err = -EFAULT;
--			goto unlock;
--		}
-+		memcpy(addrs, &temp, addrlen);
- 		to += addrlen;
-+		bytes_copied += addrlen;
- 		cnt ++;
- 		if (cnt >= getaddrs.addr_num) break;
+ static int ipv6_hop_ra(struct sk_buff **skbp, int optoff)
+@@ -678,25 +686,25 @@ static int ipv6_hop_jumbo(struct sk_buff
+ 	if (skb->nh.raw[optoff+1] != 4 || (optoff&3) != 2) {
+ 		LIMIT_NETDEBUG(KERN_DEBUG "ipv6_hop_jumbo: wrong jumbo opt length/alignment %d\n",
+ 			       skb->nh.raw[optoff+1]);
+-		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
++		IP6_INC_STATS_BH(ipv6_skb_idev(skb),
+ 				 IPSTATS_MIB_INHDRERRORS);
+ 		goto drop;
  	}
  
- copy_getaddrs:
-+	sctp_read_unlock(addr_lock);
-+
-+	/* copy the entire address list into the user provided space */
-+	if (copy_to_user(to, addrs, bytes_copied)) {
-+		err = -EFAULT;
-+		goto error;
-+	}
-+
-+	/* copy the leading structure back to user */
- 	getaddrs.addr_num = cnt;
- 	if (copy_to_user(optval, &getaddrs, sizeof(struct sctp_getaddrs_old)))
- 		err = -EFAULT;
- 
--unlock:
--	sctp_read_unlock(addr_lock);
-+error:
-+	kfree(addrs);
- 	return err;
- }
- 
-@@ -4101,7 +4116,8 @@ static int sctp_getsockopt_local_addrs(s
- 	rwlock_t *addr_lock;
- 	int err = 0;
- 	size_t space_left;
--	int bytes_copied;
-+	int bytes_copied = 0;
-+	void *addrs;
- 
- 	if (len <= sizeof(struct sctp_getaddrs))
- 		return -EINVAL;
-@@ -4129,6 +4145,9 @@ static int sctp_getsockopt_local_addrs(s
- 	to = optval + offsetof(struct sctp_getaddrs,addrs);
- 	space_left = len - sizeof(struct sctp_getaddrs) -
- 			 offsetof(struct sctp_getaddrs,addrs);
-+	addrs = kmalloc(space_left, GFP_KERNEL);
-+	if (!addrs)
-+		return -ENOMEM;
- 
- 	sctp_read_lock(addr_lock);
- 
-@@ -4139,11 +4158,11 @@ static int sctp_getsockopt_local_addrs(s
- 		addr = list_entry(bp->address_list.next,
- 				  struct sctp_sockaddr_entry, list);
- 		if (sctp_is_any(&addr->a)) {
--			cnt = sctp_copy_laddrs_to_user(sk, bp->port,
--						       &to, space_left);
-+			cnt = sctp_copy_laddrs(sk, bp->port, addrs,
-+						space_left, &bytes_copied);
- 			if (cnt < 0) {
- 				err = cnt;
--				goto unlock;
-+				goto error;
- 			}
- 			goto copy_getaddrs;
- 		}
-@@ -4154,26 +4173,31 @@ static int sctp_getsockopt_local_addrs(s
- 		memcpy(&temp, &addr->a, sizeof(temp));
- 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sp, &temp);
- 		addrlen = sctp_get_af_specific(temp.sa.sa_family)->sockaddr_len;
--		if(space_left < addrlen)
--			return -ENOMEM; /*fixme: right error?*/
--		if (copy_to_user(to, &temp, addrlen)) {
--			err = -EFAULT;
--			goto unlock;
-+		if (space_left < addrlen) {
-+			err =  -ENOMEM; /*fixme: right error?*/
-+			goto error;
- 		}
-+		memcpy(addrs, &temp, addrlen);
- 		to += addrlen;
-+		bytes_copied += addrlen;
- 		cnt ++;
- 		space_left -= addrlen;
+ 	pkt_len = ntohl(*(__be32*)(skb->nh.raw+optoff+2));
+ 	if (pkt_len <= IPV6_MAXPLEN) {
+-		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst), IPSTATS_MIB_INHDRERRORS);
++		IP6_INC_STATS_BH(ipv6_skb_idev(skb), IPSTATS_MIB_INHDRERRORS);
+ 		icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, optoff+2);
+ 		return 0;
+ 	}
+ 	if (skb->nh.ipv6h->payload_len) {
+-		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst), IPSTATS_MIB_INHDRERRORS);
++		IP6_INC_STATS_BH(ipv6_skb_idev(skb), IPSTATS_MIB_INHDRERRORS);
+ 		icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, optoff);
+ 		return 0;
  	}
  
- copy_getaddrs:
-+	sctp_read_unlock(addr_lock);
-+
-+	if (copy_to_user(to, addrs, bytes_copied)) {
-+		err = -EFAULT;
-+		goto error;
-+	}
- 	if (put_user(cnt, &((struct sctp_getaddrs __user *)optval)->addr_num))
- 		return -EFAULT;
--	bytes_copied = ((char __user *)to) - optval;
- 	if (put_user(bytes_copied, optlen))
- 		return -EFAULT;
- 
--unlock:
--	sctp_read_unlock(addr_lock);
-+error:
-+	kfree(addrs);
- 	return err;
- }
+ 	if (pkt_len > skb->len - sizeof(struct ipv6hdr)) {
+-		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst), IPSTATS_MIB_INTRUNCATEDPKTS);
++		IP6_INC_STATS_BH(ipv6_skb_idev(skb), IPSTATS_MIB_INTRUNCATEDPKTS);
+ 		goto drop;
+ 	}
  
 
 -- 
