@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbXEUG2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXEUGc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756875AbXEUG2h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 02:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbXEUG2a
+	id S1755894AbXEUGc4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 02:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbXEUGct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 02:28:30 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50336 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754082AbXEUG23 (ORCPT
+	Mon, 21 May 2007 02:32:49 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:53543 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754303AbXEUGcs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 02:28:29 -0400
-Date: Mon, 21 May 2007 15:28:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: clameter@sgi.com, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-Id: <20070521152830.a844d7ef.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A017BCA67@scsmsx411.amr.corp.intel.com>
-References: <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com>
-	<617E1C2C70743745A92448908E030B2A017BCA67@scsmsx411.amr.corp.intel.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 May 2007 02:32:48 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200705210632.l4L6Wkt0004225@turbo.physics.adelaide.edu.au>
+Subject: Re: 2.6.21.1 on Fedora Core 6 breaks LVM/vgscan
+To: linux-kernel@vger.kernel.org
+Date: Mon, 21 May 2007 16:02:46 +0930 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe)
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 May 2007 13:37:09 -0700
-"Luck, Tony" <tony.luck@intel.com> wrote:
+On 21 May 2007 I wrote:
 
-> > I wonder if there are other uses for the free space?
-> 
-> 	unsigned long moreflags;
-> 
-> Nick and Hugh were just sparring over adding a couple (or perhaps 8)
-> flag bits.  This would supply 64 new bits ... maybe that would keep
-> them happy for a few more years.
-> 
-- page->zone 
-  free some flags bits and makes page_zone() simple.
-  and software (fake) zone for memory control can be added ?
-or 
+> Attempting to compile a 2.6.21.1 kernel for use on a Fedora Core 6 box
+> results in a panic at boot because the root filesystem can't be found.
 
--page->some_memory_controler ?
-(I don't know whether resource controller people want this or not.)
+I have just compiled 2.6.22-rc2 with the configuration file given in my
+previous post and the resulting kernel successfully boots on the machine
+concerned.  Whatever broke LVM for this machine in between 2.6.18 and
+2.6.21.1 has now been fixed.
 
--Kame
+There is still a problem with the CDROM but I will follow up in another
+thread about that.
 
+Regards
+  jonathan
+--
+"Time is an illusion; lunchtime doubly so"
