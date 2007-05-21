@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765841AbXEUTqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935323AbXEUTra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765841AbXEUTqz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933856AbXEUT2O
+	id S935323AbXEUTra (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765916AbXEUT2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:28:14 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52595 "EHLO
+	Mon, 21 May 2007 15:28:20 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52601 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933847AbXEUT2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:28:13 -0400
-Message-Id: <20070521191745.506371000@sous-sol.org>
+	id S932840AbXEUT2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:28:18 -0400
+Message-Id: <20070521191748.976528000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:59 -0700
+Date: Mon, 21 May 2007 12:17:05 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,51 +23,50 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
-       bunk@stusta.de, David L Stevens <dlstevens@us.ibm.com>
-Subject: [patch 47/69] IPV6: Send ICMPv6 error on scope violations.
-Content-Disposition: inline; filename=ipv6-send-icmpv6-error-on-scope-violations.patch
+       bunk@stusta.de, Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [patch 53/69] IPSEC: Check validity of direction in xfrm_policy_byid
+Content-Disposition: inline; filename=ipsec-check-validity-of-direction-in-xfrm_policy_byid.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: David L Stevens <dlstevens@us.ibm.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-When an IPv6 router is forwarding a packet with a link-local scope source
-address off-link, RFC 4007 requires it to send an ICMPv6 destination
-unreachable with code 2 ("not neighbor"), but Linux doesn't. Fix below.
+The function xfrm_policy_byid takes a dir argument but finds the policy
+using the index instead.  We only use the dir argument to update the
+policy count for that direction.  Since the user can supply any value
+for dir, this can corrupt our policy count.
 
-Signed-off-by: David L Stevens <dlstevens@us.ibm.com>
+I know this is the problem because a few days ago I was deleting
+policies by hand using indicies and accidentally typed in the wrong
+direction.  It still deleted the policy and at the time I thought
+that was cool.  In retrospect it isn't such a good idea :)
+
+I decided against letting it delete the policy anyway just in case
+we ever remove the connection between indicies and direction.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- net/ipv6/ip6_output.c |   13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ net/xfrm/xfrm_policy.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- linux-2.6.21.1.orig/net/ipv6/ip6_output.c
-+++ linux-2.6.21.1/net/ipv6/ip6_output.c
-@@ -449,10 +449,17 @@ int ip6_forward(struct sk_buff *skb)
- 		 */
- 		if (xrlim_allow(dst, 1*HZ))
- 			ndisc_send_redirect(skb, n, target);
--	} else if (ipv6_addr_type(&hdr->saddr)&(IPV6_ADDR_MULTICAST|IPV6_ADDR_LOOPBACK
--						|IPV6_ADDR_LINKLOCAL)) {
-+	} else {
-+		int addrtype = ipv6_addr_type(&hdr->saddr);
-+
- 		/* This check is security critical. */
--		goto error;
-+		if (addrtype & (IPV6_ADDR_MULTICAST|IPV6_ADDR_LOOPBACK))
-+			goto error;
-+		if (addrtype & IPV6_ADDR_LINKLOCAL) {
-+			icmpv6_send(skb, ICMPV6_DEST_UNREACH,
-+				ICMPV6_NOT_NEIGHBOUR, 0, skb->dev);
-+			goto error;
-+		}
- 	}
+--- linux-2.6.21.1.orig/net/xfrm/xfrm_policy.c
++++ linux-2.6.21.1/net/xfrm/xfrm_policy.c
+@@ -782,6 +782,10 @@ struct xfrm_policy *xfrm_policy_byid(u8 
+ 	struct hlist_head *chain;
+ 	struct hlist_node *entry;
  
- 	if (skb->len > dst_mtu(dst)) {
++	*err = -ENOENT;
++	if (xfrm_policy_id2dir(id) != dir)
++		return NULL;
++
+ 	*err = 0;
+ 	write_lock_bh(&xfrm_policy_lock);
+ 	chain = xfrm_policy_byidx + idx_hash(id);
 
 -- 
