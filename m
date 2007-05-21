@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbXEUQwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbXEUQxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758130AbXEUQwr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbXEUQwl
+	id S1760743AbXEUQxg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbXEUQx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:52:41 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38718 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755571AbXEUQwk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:52:40 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 21 May 2007 18:52:06 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] ieee1394: raw1394: Add ioctl() for 32bit userland on 64bit
- kernel, amendment
-To: linux1394-devel@lists.sourceforge.net
-cc: Dan Dennedy <dan@dennedy.org>, Arnd Bergmann <arnd@arndb.de>,
-       Petr Vandrovec <petr@vandrovec.name>, linux-kernel@vger.kernel.org
-In-Reply-To: <46514A01.5090803@s5r6.in-berlin.de>
-Message-ID: <tkrat.e7d6bff54a497889@s5r6.in-berlin.de>
-References: <20070507021447.GA22197@vana.vc.cvut.cz>
- <200705200155.26825.arnd@arndb.de> <464F900A.10900@s5r6.in-berlin.de>
- <200705201703.37561.arnd@arndb.de> <46506912.9020904@s5r6.in-berlin.de>
- <46514A01.5090803@s5r6.in-berlin.de>
+	Mon, 21 May 2007 12:53:28 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:36779 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755722AbXEUQx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 12:53:27 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH]serial: make early_uart to use early_prarm instead of console_initcall
+Date: Mon, 21 May 2007 10:53:33 -0600
+User-Agent: KMail/1.9.6
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Gerd Hoffmann" <kraxel@redhat.com>, "Andi Kleen" <ak@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
+References: <200705181900.17101.yinghai.lu@sun.com> <20070520214657.fcf5e9ce.akpm@linux-foundation.org> <86802c440705202356n3311b70bg92e1b9c500fc386f@mail.gmail.com>
+In-Reply-To: <86802c440705202356n3311b70bg92e1b9c500fc386f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705211053.34131.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pointed out by Arnd Bergmann:  PPC32 aligns this at 64bit, IA32 packs
-it.  A kernel-wide available __compat_u64 which is 4-byte aligned on
-AMD64 and IA64 would be nicer though.
+On Monday 21 May 2007 12:56:37 am Yinghai Lu wrote:
+> Bjorn,
+> I can not find fixmap.h for ia64.....hope you can use ioremap instead,
+> then we can create one dummy fixmap.h in include/asm-ia64
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/raw1394.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ia64 ioremap should work early enough, so it doesn't have fixmap.
+Seems like in this case, maybe bt_ioremap() would be more
+appropriate than fixmap, since there's no requirement that
+virtual address be known at compile-time.
 
-Index: linux/drivers/ieee1394/raw1394.c
-===================================================================
---- linux.orig/drivers/ieee1394/raw1394.c
-+++ linux/drivers/ieee1394/raw1394.c
-@@ -2814,7 +2814,11 @@ struct raw1394_iso_packets32 {
- struct raw1394_cycle_timer32 {
-         __u32 cycle_timer;
-         __u64 local_time;
--} __attribute__((packed));
-+}
-+#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
-+__attribute__((packed))
-+#endif
-+;
- 
- #define RAW1394_IOC_ISO_RECV_PACKETS32          \
-         _IOW ('#', 0x25, struct raw1394_iso_packets32)
+> [PATCH]serial: make early_uart to use early_prarm instead of console_initcall
 
--- 
-Stefan Richter
--=====-=-=== -=-= =-=-=
-http://arcgraph.de/sr/
+s/prarm/param/
 
+> new command line will be
+> 
+> earlycon=uart,io,0x3f8,9600n8
+> earlycon=uart,io,0x3f8,9600n8 console=tty0
+> earlycon=uart,mmio,0xff5e0000,115200n8
+
+Why do we have to have a new "earlycon" argument?  Why can't we just
+parse "console=uart" early?
+
+BTW, if you want to convert it from "console=uart" to "console=8250",
+as part of this cleanup, I think that would be OK.  Just make it a
+separate patch and don't forget to change drivers/firmware/pcdp.c and
+Documentation/kernel-parameters.txt at the same time.
+
+Bjorn
