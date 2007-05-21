@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763271AbXEUQ20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762664AbXEUQ3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763271AbXEUQ20 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbXEUQ2K
+	id S1762664AbXEUQ3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756049AbXEUQ3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:28:10 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:30067 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756432AbXEUQ2I (ORCPT
+	Mon, 21 May 2007 12:29:05 -0400
+Received: from nwk-ea-fw-1.sun.com ([192.18.42.249]:62195 "EHLO
+	nwk-ea-fw-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755003AbXEUQ3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:28:08 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=YU6PwcY+85tJaAaCbBHocg462w9o50civI6Jg6Mzxl87Ym8WEz+CTW/1bl3fe1F7o
-	JWcJqBQmQASEv362BXGuA==
-Message-ID: <b040c32a0705210927q24e2cd8fm9f4616941fccfdea@mail.gmail.com>
-Date: Mon, 21 May 2007 09:27:44 -0700
-From: "Ken Chen" <kenchen@google.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
-Cc: "Kay Sievers" <kay.sievers@vrfy.org>, "Ray Lee" <ray-lk@madrabbit.org>,
-       "Al Viro" <viro@ftp.linux.org.uk>,
-       "Andrey Borzenkov" <arvidjaar@mail.ru>, "Uwe Bugla" <uwe.bugla@gmx.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <464F42F3.1080300@madrabbit.org>
-	 <200705200124.13026.uwe.bugla@gmx.de>
-	 <200705200845.43621.arvidjaar@mail.ru>
-	 <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
-	 <20070520062816.GA4095@ftp.linux.org.uk>
-	 <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
-	 <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
-	 <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com>
-	 <1179677799.3311.5.camel@lov.localdomain>
-	 <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
+	Mon, 21 May 2007 12:29:04 -0400
+Date: Mon, 21 May 2007 09:27:26 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH]serial: make early_uart to use early_prarm instead of
+ console_initcall
+In-reply-to: <20070521104221.GU2012@bingen.suse.de>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Gerd Hoffmann <kraxel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <4651C86E.2040901@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+References: <200705181900.17101.yinghai.lu@sun.com>
+ <20070520202332.145d93a6.akpm@linux-foundation.org>
+ <20070521104221.GU2012@bingen.suse.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> Yes. Can somebody who actually _uses_ loop send a tested patch, please?
->
-> We're not going to break existing user space over something idiotic like
-> this. Not acceptable.
->
-> The alternative is to just revert all the loop.c patches. Which I'll do
-> unless somebody sends me a tested fix - because as a non-loop user myself,
-> I don't have much choice. I assume it is
->
->    commit 73285082 "remove artificial software max_loop limit"
->
-> that introduced the new behaviour. Ken?
+Andi Kleen wrote:
+> It is someone's reimplemention of earlyprintk= for another architecture
+> that happens to mostly work on x86 too because the code is not ifdeffed. 
+> I don't think it makes much sense on x86 though because earlyprintk exists.
 
-yes and no. in that commit, I automatically create n+1 device when
-loop device n is created, allergically was tested to be fine with
-casual usage of "losetup" and "mount -o loop".  However, there is a
-bug in that commit when loop.c was compiled as a module.  And when Al
-fixed it, he also removed that magic "n+1" trick.
+Andi,
 
-Nevertheless, yes, I'm guilty of introducing the new behavior.
+Bjorn refer to your early_printk to implement early_uart for ia64 platform. code is almost identical, but it could take
+mmio,0xfe00000,9600n8 etc. or say mmio type serial card.
+
+YH
