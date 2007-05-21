@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759887AbXEUIHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759049AbXEUIJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759887AbXEUIHj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXEUIH0
+	id S1759049AbXEUIJb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbXEUIJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:07:26 -0400
-Received: from holomorphy.com ([66.93.40.71]:58713 "EHLO holomorphy.com"
+	Mon, 21 May 2007 04:09:18 -0400
+Received: from nn7.de ([85.214.94.156]:41289 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754375AbXEUIHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:07:24 -0400
-Date: Mon, 21 May 2007 01:08:13 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070521080813.GQ31925@holomorphy.com>
-References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com> <20070520092552.GA7318@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070520092552.GA7318@wotan.suse.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1754545AbXEUIJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:09:16 -0400
+Subject: applesmc - sensors patch missing from 2.6.22-rc2
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Nicolas Boichat <nicolas@boichat.ch>
+Content-Type: multipart/mixed; boundary="=-suVYLAbaNooOeTALddLE"
+Date: Mon, 21 May 2007 10:09:13 +0200
+Message-Id: <1179734953.4487.20.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 01:46:47AM -0700, William Lee Irwin III wrote:
->> The lack of consideration of the average case. I'll see what I can smoke
->> out there.
 
-On Sun, May 20, 2007 at 11:25:52AM +0200, Nick Piggin wrote:
-> I _am_ considering the average case, and I consider the aligned structure
-> is likely to win on average :) I just don't have numbers for it yet.
+--=-suVYLAbaNooOeTALddLE
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-Choosing k distinct integers (mem_map array indices) from the interval
-[0,n-1] results in k(n-k+1)/n non-adjacent intervals of contiguous
-array indices on average. The average interval length is
-(n+1)/(n-k+1) - 1/C(n,k). Alignment considerations make going much
-further somewhat hairy, but it should be clear that contiguity arising
-from random choice is non-negligible.
+I wonder why the attached patch is missing from applesmc (written by
+nicolas boichat) without which sensors simply won't work ...
 
-In any event, I don't have all that much of an objection to what's
-actually proposed, just this particular cache footprint argument.
-One can motivate increases in sizeof(struct page), but not this way.
-
-Now that I've been informed of the ->_count and ->_mapcount issues,
-I'd say that they're grave and should be corrected even at the cost
-of sizeof(struct page).
+( but these ones has been applied and are rather useless without the
+attached one
+http://www.mail-archive.com/git-commits-head@vger.kernel.org/msg12374.html
+http://www.mail-archive.com/git-commits-head@vger.kernel.org/msg12371.html =
+)
 
 
--- wli
+I am using this for some weeks on 2.6.21 now without problems
 
-Many thanks to int-e on EfNet #math for help with the calculations
-(perhaps better described as doing them outright).
-Heavily-edited IRC log (using Knuth's conventions for M, N, and k as
-	the number of runs):
+$ sensors
+applesmc-isa-0300
+Adapter: ISA adapter
+temp1:       +28=B0C
+temp2:       +40=B0C
+temp3:       +66=B0C
+temp4:       +58=B0C
+temp5:       +65=B0C
+temp6:       +62=B0C
+temp7:       +69=B0C
+temp8:       +49=B0C
+temp9:       +45=B0C
+temp10:      +58=B0C
+temp11:      +40=B0C
+temp12:      +39=B0C
+fan1:     1060 RPM (safe =3D 1200 RPM, min =3D 1000 RPM, max =3D 6000 RPM)
+fan2:     1060 RPM (safe =3D 1200 RPM, min =3D 1000 RPM, max =3D 6000 RPM)
 
-<int-e:#math> wli: oh maybe this can be solved exactly after all. The number
-+of configurations of N numbers out of M with exactly k runs is C(N-1, k-1) *
-+C(M-N+1, k). When there are k runs, the average run length is N/k, obviously.
-<int-e:#math> wli: assume there are k runs. add an empty dummy element at the
-+end and at the front - then you have (k+1) empty runs between the k runs.
-+Every run has positive length. the empty runs correspond to a partition of
-+M-N+2 into k+1 positive numbers, and the occupied runs correspond to one of N
-+into k positive numbers, which gives that formula.
-<int-e:#math> wli: So the average is 1/C(M,N) * sum[k=1 to N] N/k C(N-1,k-1)
-+C(M-N+1,k) = 1/C(M,N) * sum[k=1 to N] C(N,k) C(M-N+1,k) = 1/C(M,N) * (C(M+1,
-+N) - 1) = (M+1)/(M-N+1) - 1/C(M,N).
+Soeren
+--=20
+Sometimes, there's a moment as you're waking, when you become aware of
+the real world around you, but you're still dreaming.
+
+--=-suVYLAbaNooOeTALddLE
+Content-Description: 
+Content-Disposition: attachment; filename=applesmc.patch
+Content-Type: text/x-patch; charset=ISO-8859-15
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvaHdtb24vYXBwbGVzbWMuYyBiL2RyaXZlcnMvaHdtb24vYXBw
+bGVzbWMuYw0KaW5kZXggMGMxNjA2Ny4uMzY2ZjRhMSAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvaHdt
+b24vYXBwbGVzbWMuYw0KKysrIGIvZHJpdmVycy9od21vbi9hcHBsZXNtYy5jDQpAQCAtNDkxLDYg
+KzQ5MSwxMiBAQCBvdXQ6DQogDQogLyogU3lzZnMgRmlsZXMgKi8NCiANCitzdGF0aWMgc3NpemVf
+dCBhcHBsZXNtY19uYW1lX3Nob3coc3RydWN0IGRldmljZSAqZGV2LA0KKwkJCQkgICBzdHJ1Y3Qg
+ZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVmKQ0KK3sNCisJcmV0dXJuIHNucHJpbnRm
+KGJ1ZiwgUEFHRV9TSVpFLCAiYXBwbGVzbWNcbiIpOw0KK30NCisNCiBzdGF0aWMgc3NpemVfdCBh
+cHBsZXNtY19wb3NpdGlvbl9zaG93KHN0cnVjdCBkZXZpY2UgKmRldiwNCiAJCQkJICAgc3RydWN0
+IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1ZikNCiB7DQpAQCAtOTEzLDYgKzkxOSw4
+IEBAIHN0YXRpYyBzdHJ1Y3QgbGVkX2NsYXNzZGV2IGFwcGxlc21jX2JhY2tsaWdodCA9IHsNCiAJ
+LmJyaWdodG5lc3Nfc2V0CQk9IGFwcGxlc21jX2JyaWdodG5lc3Nfc2V0LA0KIH07DQogDQorc3Rh
+dGljIERFVklDRV9BVFRSKG5hbWUsIDA0NDQsIGFwcGxlc21jX25hbWVfc2hvdywgTlVMTCk7DQor
+DQogc3RhdGljIERFVklDRV9BVFRSKHBvc2l0aW9uLCAwNDQ0LCBhcHBsZXNtY19wb3NpdGlvbl9z
+aG93LCBOVUxMKTsNCiBzdGF0aWMgREVWSUNFX0FUVFIoY2FsaWJyYXRlLCAwNjQ0LA0KIAkJCWFw
+cGxlc21jX2NhbGlicmF0ZV9zaG93LCBhcHBsZXNtY19jYWxpYnJhdGVfc3RvcmUpOw0KQEAgLTEx
+OTcsNiArMTIwNSw4IEBAIHN0YXRpYyBpbnQgX19pbml0IGFwcGxlc21jX2luaXQodm9pZCkNCiAJ
+CWdvdG8gb3V0X2RyaXZlcjsNCiAJfQ0KIA0KKwlyZXQgPSBzeXNmc19jcmVhdGVfZmlsZSgmcGRl
+di0+ZGV2LmtvYmosICZkZXZfYXR0cl9uYW1lLmF0dHIpOw0KKw0KIAkvKiBDcmVhdGUga2V5IGVu
+dW1lcmF0aW9uIHN5c2ZzIGZpbGVzICovDQogCXJldCA9IHN5c2ZzX2NyZWF0ZV9ncm91cCgmcGRl
+di0+ZGV2LmtvYmosICZrZXlfZW51bWVyYXRpb25fZ3JvdXApOw0KIAlpZiAocmV0KQ0K
+
+
+--=-suVYLAbaNooOeTALddLE--
