@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbXEUNre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbXEUNrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761408AbXEUNre (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 09:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXEUNr0
+	id S1762185AbXEUNrq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 09:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760901AbXEUNrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 09:47:26 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:44133 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755323AbXEUNrY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 09:47:24 -0400
-Date: Mon, 21 May 2007 14:45:53 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <lenb@kernel.org>, trenn@suse.de,
-       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
-Message-ID: <20070521134553.GA7911@srcf.ucam.org>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171517.14087.lenb@kernel.org> <1179604609.16465.83.camel@sublime.suse.de> <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz>
-MIME-Version: 1.0
+	Mon, 21 May 2007 09:47:33 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:49581 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760815AbXEUNrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 09:47:31 -0400
+Date: Mon, 21 May 2007 15:48:28 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix section mismatch warnings in mtrr
+Message-ID: <20070521134828.GA1394@uranus.ravnborg.org>
+References: <200705191443.27161.arvidjaar@mail.ru> <20070519133257.GB23370@uranus.ravnborg.org> <200705191555.49376.ak@suse.de> <4651A113.9020300@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070521134046.GE8332@elf.ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <4651A113.9020300@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 03:40:46PM +0200, Pavel Machek wrote:
-> On Mon 2007-05-21 14:36:08, Matthew Garrett wrote:
-> > On Mon, May 21, 2007 at 03:29:48PM +0200, Pavel Machek wrote:
-> > > Significantly more correct? It forces you to do all the thermal
-> > > management in userspace!
-> > 
-> > Why's that a problem? 
+On Mon, May 21, 2007 at 02:39:31PM +0100, Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> > On Saturday 19 May 2007 15:32, Sam Ravnborg wrote:
+> >   
+> >> Following section mismatch warnings were reported by Andrey Borzenkov:
+> >>     
+> >
+> > In what configuration? I don't see this.
 > 
-> Duplicating all the kernel logic in userspace, badly?
+> I'm pretty sure I made those functions __init when I cleaned up that
+> code.  Did those pieces of the patch get mislayed?  I thought it made it
+> into upstream.
 
-So don't do it badly. The advantage of doing so is that you can make it 
-work properly, which you can't by putting it in the kernel.
+There was another patch that removed the __init marker to _fix_ section mismatch errors.
+I have lost the actual mail but I asked the submitter to send me a copy of
+the configuration so I could take a closer look.
+Obviously it was the wrong fix to remove the _init marker.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	Sam
