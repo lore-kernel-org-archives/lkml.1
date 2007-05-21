@@ -1,159 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbXEUFZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbXEUFjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758620AbXEUFZD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 01:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbXEUFYw
+	id S1756243AbXEUFjr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 01:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXEUFjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 01:24:52 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43439 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754338AbXEUFYu (ORCPT
+	Mon, 21 May 2007 01:39:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:33048 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbXEUFjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 01:24:50 -0400
-Subject: Re: [PATCH 0/6][TAKE4] fallocate system call
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
-In-Reply-To: <20070518234444.f53a4230.akpm@linux-foundation.org>
-References: <20070321120425.GA27273@amitarora.in.ibm.com>
-	 <20070329115126.GB7374@amitarora.in.ibm.com>
-	 <20070329101010.7a2b8783.akpm@linux-foundation.org>
-	 <20070330071417.GI355@devserv.devel.redhat.com>
-	 <20070417125514.GA7574@amitarora.in.ibm.com>
-	 <20070418130600.GW5967@schatzie.adilger.int>
-	 <20070420135146.GA21352@amitarora.in.ibm.com>
-	 <20070420145918.GY355@devserv.devel.redhat.com>
-	 <20070424121632.GA10136@amitarora.in.ibm.com>
-	 <20070426175056.GA25321@amitarora.in.ibm.com>
-	 <20070517141115.GA24260@amitarora.in.ibm.com>
-	 <20070518234444.f53a4230.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM LTC
-Date: Sun, 20 May 2007 22:24:42 -0700
-Message-Id: <1179725082.3936.40.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-7) 
+	Mon, 21 May 2007 01:39:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sB1Zl9IJINXXzLBifkMZcuVuea7z0ZSGNWERmi/+4ZD2R/xach2XoxKEDMtB93BcMypSG9nxHJhbQEa1u/27SEJ3AWCge4iFIOnQ3sNW0lR0A97YU3G58FKyqiKaMJj27VwsMJjT+1P5eApgApsMXwPJRe0j5JihyVbuJ+tgj04=
+Message-ID: <a8e1da0705202239r31d03a5dyc2f0ce6a795e0124@mail.gmail.com>
+Date: Mon, 21 May 2007 05:39:38 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: 2.6.22-rc1-mm1
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <46512821.9010905@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
+	 <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com>
+	 <a8e1da0705180154v37e8ec5fs2cc4de9417cd44d2@mail.gmail.com>
+	 <a8e1da0705180307m60a91996r91c8bfcd1c863a94@mail.gmail.com>
+	 <464DDA40.6010101@zytor.com>
+	 <a8e1da0705201753i1527138ape2163817c6c0d3b5@mail.gmail.com>
+	 <465124EA.1020801@zytor.com>
+	 <a8e1da0705202200u5976d14do7ec1469941bb2967@mail.gmail.com>
+	 <46512821.9010905@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-18 at 23:44 -0700, Andrew Morton wrote:
-> On Thu, 17 May 2007 19:41:15 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> 
-> > fallocate() is a new system call being proposed here which will allow
-> > applications to preallocate space to any file(s) in a file system.
-> 
-> I merged the first three patches into -mm, thanks.
-> 
-> All the system call numbers got changed due to recent additions.  They
-> may change in the future, too - nothing is stable until the code lands
-> in mainline.
-> 
-In case you haven't realize it, the ia64 fallocate() patch comes with
-Amit's takes 4 fallocate patch series (3/6) missing one line change,
-thus fail to compile on ia64.
+Hi,
+> Could you put printf's in the setup code (especially
+> arch/i386/boot/main.c) to see how far it runs before it dies?
+>
+>         -hpa
 
-Here is the updated one. Patch tested on ia64. (compile and fsx)
+I add some debug info to main.c, the result is that the kernel stopped
+in query_edd();
 
-fallocate() on ia64
+Then I use kernel argument edd=off, the kernel booted happilly.
 
-ia64 fallocate syscall support.
-
-Signed-Off-By: Dave Chinner <dgc@sgi.com>
-
----
- arch/ia64/kernel/entry.S  |    1 +
- include/asm-ia64/unistd.h |    3 ++-
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.22-rc1/arch/ia64/kernel/entry.S
-===================================================================
---- linux-2.6.22-rc1.orig/arch/ia64/kernel/entry.S	2007-05-18 16:30:16.000000000 -0700
-+++ linux-2.6.22-rc1/arch/ia64/kernel/entry.S	2007-05-18 16:32:45.000000000 -0700
-@@ -1585,5 +1585,6 @@
- 	data8 sys_getcpu
- 	data8 sys_epoll_pwait			// 1305
- 	data8 sys_utimensat
-+	data8 sys_fallocate
- 
- 	.org sys_call_table + 8*NR_syscalls	// guard against failures to increase NR_syscalls
-Index: linux-2.6.22-rc1/include/asm-ia64/unistd.h
-===================================================================
---- linux-2.6.22-rc1.orig/include/asm-ia64/unistd.h	2007-05-18 16:30:16.000000000 -0700
-+++ linux-2.6.22-rc1/include/asm-ia64/unistd.h	2007-05-18 17:34:58.000000000 -0700
-@@ -296,11 +296,12 @@
- #define __NR_getcpu			1304
- #define __NR_epoll_pwait		1305
- #define __NR_utimensat			1306
-+#define __NR_fallocate			1307
- 
- #ifdef __KERNEL__
- 
- 
--#define NR_syscalls			283 /* length of syscall table */
-+#define NR_syscalls			285 /* length of syscall table */
- 
- #define __ARCH_WANT_SYS_RT_SIGACTION
- #define __ARCH_WANT_SYS_RT_SIGSUSPEND
-
-
-> I didn't merge any of the ext4 changes as they appear to be in Ted's
-> devel tree.  Although I didn't check that they are 100% the same in 
-> that tree.
-> 
-Since both Amit and Ted are traveling, I will jump in...
-
-Most likely it's not the same one. What in Ted's devel tree is "takes 2"
-patches.
-
-I have incorporated takes 4 patches in the backing ext4 patch git tree
-here:
-http://repo.or.cz/w/ext4-patch-queue.git
-
-I have tested these patch series on ia64,ppc64,x86 and x86_64. I am not
-sure if Ted got a chance to update his ext4 git tree from this patch
-queue git tree yet. 
-
-> What's the plan to get some ext4 updates into mainline, btw?  Things
-> seem to be rather gradual.
-
-
-Last time Ted and I discussed we all agree fallocate patches should go
-into mainline. Actually most patches marked before the "unstable
-patches" can get into mainline, especially the following patches
-(contains a few bug fixes patches)
-
-# New patch to fix whitespace before applying new patches
-whitespace.patch
- 
-#New patch to remove unnecessary exported symbols
-ext4_remove_exported_symbles.patch
- 
-# New patch to add mount option to turn off extents
-ext4_noextent_mount_opt.patch
-# Now Turn on extents feature by default
-ext4_extents_on_by_default.patch
- 
-#New patch to propagate inode flags
-ext4-propagate_flags.patch
- 
-#New patch to add extent sanity checks
-ext4-extent-sanity-checks.patch
- 
-#New patch to free blocks when failed to insert an extent
-ext4-free-blocks-on-insert-extent-failure.patch
-
-We already missed rc-1 window, but if possible, I would like to see ext4
-fallocate patches and above patches in mainline 2.6.22. The nanosecond
-timestamp patch is probably good to go also.
-
-Regards,
-Mingming
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+I will read the edd.c to see what happened. do you have some suggestion?
