@@ -1,71 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765547AbXEUUHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933971AbXEUUJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765547AbXEUUHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759115AbXEUUH1
+	id S933971AbXEUUJP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761254AbXEUUI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:07:27 -0400
-Received: from outbound-mail-70.bluehost.com ([69.89.21.30]:51190 "HELO
-	outbound-mail-70.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758815AbXEUUH0 (ORCPT
+	Mon, 21 May 2007 16:08:57 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:47877 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754953AbXEUUI4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:07:26 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
-Date: Mon, 21 May 2007 13:07:14 -0700
-User-Agent: KMail/1.9.6
-Cc: Olivier Galibert <galibert@pobox.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-References: <4635510D.4060103@shaw.ca> <200705211210.44616.jbarnes@virtuousgeek.org> <4651F26C.7010405@shaw.ca>
-In-Reply-To: <4651F26C.7010405@shaw.ca>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2253
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 21 May 2007 16:08:56 -0400
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Jackson <pj@sgi.com>,
+       npiggin@suse.de
+In-Reply-To: <Pine.LNX.4.64.0705211239300.27622@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl>
+	 <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
+	 <1179385718.27354.17.camel@twins>
+	 <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+	 <20070517175327.GX11115@waste.org>
+	 <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
+	 <1179429499.2925.26.camel@lappy>
+	 <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
+	 <1179437209.2925.29.camel@lappy>
+	 <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
+	 <1179482054.2925.52.camel@lappy>
+	 <Pine.LNX.4.64.0705181002400.9372@schroedinger.engr.sgi.com>
+	 <1179650384.7019.33.camel@twins>
+	 <Pine.LNX.4.64.0705210932500.25871@schroedinger.engr.sgi.com>
+	 <1179776038.5735.39.camel@lappy>
+	 <Pine.LNX.4.64.0705211239300.27622@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 22:08:47 +0200
+Message-Id: <1179778127.7019.48.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705211307.14868.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, May 21, 2007, Robert Hancock wrote:
-> > If I leave it enabled, several config cycles work fine, but the box
-> > eventually hangs after probing 24 devices or so.  I don't see anything
-> > else mapped into this space, and the MTRRs seem ok, so either there's
-> > something hidden in this memory range or there's another chipset
-> > register that needs poking to fully enable this space properly.
-> >
-> > Sysrq doesn't seem to work, and I don't see any events in my machine
-> > log, so figuring out exactly why it's hanging is a bit difficult.
-> >
-> > Any ideas on what to try next?  I'll see if I can get some more
-> > details from our BIOS folks and do yet another pass over the
-> > documentation to see if there's something I'm missing.
->
-> Can you find out which config access (bus, device, function, address) is
-> the one that hangs the box? I assume that either the corresponding
-> address in the MCFG table is problematic (i.e. has something else mapped
-> over it), or maybe that device just doesn't like being probed with MCFG
-> somehow.
+On Mon, 2007-05-21 at 12:43 -0700, Christoph Lameter wrote:
+> On Mon, 21 May 2007, Peter Zijlstra wrote:
+> 
+> > > So the original issue is still not fixed. A slab alloc may succeed without
+> > > watermarks if that particular allocation is restricted to a different set 
+> > > of nodes. Then the reserve slab is dropped despite the memory scarcity on
+> > > another set of nodes?
+> > 
+> > I can't see how. This extra ALLOC_MIN|ALLOC_HIGH|ALLOC_HARDER alloc will
+> > first deplete all other zones. Once that starts failing no node should
+> > still have pages accessible by any allocation context other than
+> > PF_MEMALLOC.
+> 
+> This means we will disobey cpuset and memory policy constraints?
 
-Yeah, I've got that data... just a sec while I make sure it's 
-reproducable...
+>From what I can make of it, yes. Although I'm a bit hazy on the
+mempolicy code.
 
-Aha, I hadn't decoded the devfn before, looks like it's dying on an access 
-to the graphics device (bus 0, slot 2, device 0):
+Note that disobeying these constraints is not new behaviour. PF_MEMALLOC
+needs a page, and will get a page, no matter what the cost.
 
-...
-pci_mmcfg_read: 0, 0, 0x10, 0x18, 4 = 0xc000000c
-pci_mmcfg_read: 0, 0, 0x10, 0x18, 4 = <hang>
-...
+> > > No the gfp zone flags are not uniform and placement of page allocator 
+> > > allocs through SLUB do not always have the same allocation constraints.
+> > 
+> > It has to; since it can serve the allocation from a pre-existing slab
+> > allocation. Hence any page allocation must be valid for all other users.
+> 
+> Why does it have to? This is not true.
 
-Offset 0x18 into the graphics config space should be the graphics memory 
-range address, and 0xc000000c is the correct value.  But for some reason 
-it hangs on the second access.
+Say the slab gets allocated by an allocation from interrupt context; no
+cpuset, no policy. This same slab must be valid for whatever allocation
+comes next, right? Regardless of whatever policy or GFP_ flags are in
+effect for that allocation.
 
-It hangs here everytime.
+> > > SLUB will check the node of the page that was allocated when the page 
+> > > allocator returns and put the page into that nodes slab list. This varies
+> > > depending on the allocation context.
+> > 
+> > Yes, it keeps slabs on per node lists. I'm just not seeing how this puts
+> > hard constraints on the allocations.
+> 
+> The constraints come from the context of memory policies and cpusets. See
+> get_any_partial().
 
-Jesse
+but get_partial() will only be called if the cpu_slab is full, up until
+that point you have to do with whatever is there.
+
+> > As far as I can see there cannot be a hard constraint here, because
+> > allocations form interrupt context are at best node local. And node
+> > affine zone lists still have all zones, just ordered on locality.
+> 
+> Interrupt context is something different. If we do not have a process 
+> context then no cpuset and memory policy constraints can apply since we
+> have no way of determining that. If you restrict your use of the reserve 
+> cpuset to only interrupt allocs then we may indeed be fine.
+
+No, what I'm saying is that if the slab gets refilled from interrupt
+context the next process context alloc will have to work with whatever
+the interrupt left behind. Hence there is no hard constraint.
+
+> > > Allocations can be particular to uses of a slab in particular situations. 
+> > > A kmalloc cache can be used to allocate from various sets of nodes in 
+> > > different circumstances. kmalloc will allow serving a limited number of 
+> > > objects from the wrong nodes for performance reasons but the next 
+> > > allocation from the page allocator (or from the partial lists) will occur 
+> > > using the current set of allowed nodes in order to ensure a rough 
+> > > obedience to the memory policies and cpusets. kmalloc_node behaves 
+> > > differently and will enforce using memory from a particular node.
+> > 
+> > >From what I can see, it takes pretty much any page it can get once you
+> > hit it with PF_MEMALLOC. If the page allocation doesn't use ALLOC_CPUSET
+> > the page can come from pretty much anywhere.
+> 
+> No it cannot. One the current cpuslab is exhaused (which can be anytime) 
+> it will enforce the contextual allocation constraints. See 
+> get_any_partial() in slub.c.
+
+If it finds no partial slabs it goes back to the page allocator; and
+when you allocate a page under PF_MEMALLOC and the normal allocations
+are exhausted it takes a page from pretty much anywhere.
+
+
