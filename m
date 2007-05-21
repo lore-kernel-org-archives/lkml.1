@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbXEUQLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbXEUQLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760815AbXEUQLf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbXEUQLS
+	id S1755773AbXEUQLt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759464AbXEUQL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:11:18 -0400
-Received: from relay00.pair.com ([209.68.5.9]:1947 "HELO relay00.pair.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755918AbXEUQLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:11:15 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 May 2007 12:11:14 EDT
-X-pair-Authenticated: 24.241.238.207
-Message-ID: <4651C310.1090008@cybsft.com>
-Date: Mon, 21 May 2007 11:04:32 -0500
-From: "K.R. Foley" <kr@cybsft.com>
-Organization: Cybersoft Solutions, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 21 May 2007 12:11:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:21207 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756419AbXEUQL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 12:11:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=qGdDIGe6Dyb+9MjY0i+rMcfBJBDZAZUnxUWkXmG2jR1yNxGH0ScNvRRdn6QpuZLR518FkkDCjd9ZjdrGILnQz2JKZ37p6StsKPUrVbIPr0A51FavHe9xoOCPTHU1pIKCkVuF1ES6Z6J2kmL4H7u65A9Kj9wdpZJbR1sYYDXeblE=
+Message-ID: <4651C4A1.6000101@gmail.com>
+Date: Mon, 21 May 2007 18:11:13 +0200
+From: Robert de Rooy <robert.de.rooy@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: v2.6.21-rt3
-References: <20070517194143.GA25394@elte.hu>
-In-Reply-To: <20070517194143.GA25394@elte.hu>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------020805030708060904050208"
+To: Tejun Heo <htejun@gmail.com>
+CC: linux-kernel@vger.kernel.org, alan@redhat.com, bzolnier@gmail.com,
+       jgarzik@pobox.com
+Subject: Re: libata and legacy ide pcmcia failure
+References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com> <464CB7C9.2080807@gmail.com> <46503192.1040300@gmail.com> <4650B9E3.7070409@gmail.com> <46518798.2020808@gmail.com> <4651B66E.6030505@gmail.com> <4651B834.3060702@gmail.com>
+In-Reply-To: <4651B834.3060702@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020805030708060904050208
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hmm, good question. I do not have any other PCMCIA device to test.
+The only other device I have is a Cardbus Wi-Fi adapter without Linux 
+support (Marvell). If I insert that adapter lspci seems to list it 
+properly, but without resorting to ndiswrapper I have no way of testing 
+it. In any case, seeing how Cardbus is PCI based this is probably 
+pointless to resolving this issue.
 
-Ingo Molnar wrote:
-> i'm pleased to announce the v2.6.21-rt3 kernel, which can be downloaded 
-> from the usual place:
-> 
+Would any other log data from the controller initialization or lspci help?
 
-This is actually regarding v2.6.21-rt5 but I don't remember seeing an
-announcement for that one. The attached patch is necessary if you happen
-to have RTC_HISTOGRAM enabled, which I'm guessing most folks don't.
+Tejun Heo wrote:
+> Robert de Rooy wrote:
+>   
+>> This gets a little bit further again, but now I get lots of new errors....
+>>     
+>
+> Alright, this doesn't seem to be the CF reader's problem anymore.  It
+> seems the PCMCIA controller isn't passing interrupts properly.  Does any
+> other device work in the slot?
+>
+>   
 
-BTW, what was the consensus on pagefault_enable and pagefault_disable?
-
--- 
-   kr
-
---------------020805030708060904050208
-Content-Type: text/x-patch;
- name="fixrtc.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fixrtc.patch"
-
---- linux-2.6.21/drivers/char/rtc.c.orig	2007-05-21 08:32:42.000000000 -0500
-+++ linux-2.6.21/drivers/char/rtc.c	2007-05-21 08:33:49.000000000 -0500
-@@ -93,6 +93,10 @@
- #include <asm/isa.h>
- #endif
- 
-+static unsigned long rtc_port;
-+static int rtc_irq = PCI_IRQ_NONE;
-+#endif
-+
- #ifdef CONFIG_MIPS
- # include <asm/time.h>
- #endif
-@@ -119,10 +123,6 @@ enum rtc_states {
- 
- #endif
- 
--static unsigned long rtc_port;
--static int rtc_irq = PCI_IRQ_NONE;
--#endif
--
- #ifdef	CONFIG_HPET_RTC_IRQ
- #undef	RTC_IRQ
- #endif
-
---------------020805030708060904050208--
