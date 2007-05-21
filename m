@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763616AbXEUWYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764313AbXEUW1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763616AbXEUWYr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 18:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbXEUWYj
+	id S1764313AbXEUW1W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 18:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbXEUW1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 18:24:39 -0400
-Received: from waste.org ([66.93.16.53]:57721 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755970AbXEUWYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 18:24:38 -0400
-Date: Mon, 21 May 2007 17:23:39 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: 2.6.21-mm2: ACPI exception on resume
-Message-ID: <20070521222339.GF11115@waste.org>
-References: <20070519165738.GK11115@waste.org> <20070519204504.GA24704@khazad-dum.debian.net> <20070519223843.GN11115@waste.org> <20070520035259.GA13224@khazad-dum.debian.net>
+	Mon, 21 May 2007 18:27:14 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55380 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758574AbXEUW1O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 18:27:14 -0400
+Date: Mon, 21 May 2007 15:27:12 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jens Axboe <jens.axboe@oracle.com>, Hugh Dickins <hugh@veritas.com>,
+       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+In-Reply-To: <Pine.LNX.4.64.0705212026080.5442@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0705211524060.29480@schroedinger.engr.sgi.com>
+References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
+ <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705211147100.26970@schroedinger.engr.sgi.com>
+ <20070521190043.GA4705@kernel.dk> <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705212026080.5442@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070520035259.GA13224@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 12:52:59AM -0300, Henrique de Moraes Holschuh wrote:
-> > > On Sat, 19 May 2007, Matt Mackall wrote:
-> > > > usually does, then go black and the machine will become totally
-> > > > unresponsive, even to holding down the power button for 30+ seconds.
-> > > 
-> > > Now, that means either the BIOS or EC have been thrown out of whack,
-> > > otherwise one of the two would have force-powered-off the machine a bit
-> > > after 10s.
-> > > 
-> > > Are you using the latest BIOS and EC firmware available?
-> > 
-> > No, I've been running the same BIOS without issue for two years.
-> 
-> Version of BIOS and EC firmware, please?  It is in the dmidecode output.
+Ok booting SLUB without "slub_debug" and having
 
-BIOS Information
-        Vendor: IBM
-        Version: 1RETDHWW (3.13 )
-        Release Date: 10/29/2004
+CONFIG_DEBUG_LOCK_ALLOC
+CONFIG_LOCKDEP
 
-No sign of any EC version in the output.
+will trigger the problem.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+So I guess the issue is that lockdep does a slab alloc while we get the 
+slab lock during slab alloc?
+
