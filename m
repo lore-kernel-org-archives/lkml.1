@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934510AbXEUUNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765311AbXEUUOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934510AbXEUUNk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764197AbXEUUN3
+	id S1765311AbXEUUOH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934706AbXEUUNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:13:29 -0400
-Received: from h155.mvista.com ([63.81.120.158]:55324 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1764175AbXEUUN2 (ORCPT
+	Mon, 21 May 2007 16:13:45 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:33973 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934619AbXEUUNn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:13:28 -0400
-Subject: Re: v2.6.21-rt3
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070517194143.GA25394@elte.hu>
-References: <20070517194143.GA25394@elte.hu>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 13:11:06 -0700
-Message-Id: <1179778266.15427.38.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 May 2007 16:13:43 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Date: Mon, 21 May 2007 21:13:37 +0100 (BST)
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Teachworth <cteachworth@gmail.com>,
+       Richard Russon <ldm@flatcap.org>, linux-kernel@vger.kernel.org,
+       linux-ntfs-dev@lists.sourceforge.net
+Subject: Fix to the fix! - Re: [2.6 PATCH] LDM: Fix for Windows Vista dynamic
+ disks
+In-Reply-To: <Pine.LNX.4.64.0705210931310.20659@hermes-1.csi.cam.ac.uk>
+Message-ID: <Pine.LNX.4.64.0705212104210.3796@hermes-1.csi.cam.ac.uk>
+References: <Pine.LNX.4.64.0705210931310.20659@hermes-1.csi.cam.ac.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-Where did the arm ep93xx changes come from? It looks like patch below
-came in with them in 2.6.21-rt6 ..
+I am a muppet it would seem.  The patch on disk and the one in the email I 
+sent have a one line difference which breaks compilation as I just found 
+out when I pulled your tree and git showed up the mismatch...  I can only 
+assume that that was caused by finger trouble when I inserted the patch 
+into the email with pine and then scanned through it quickly paging up and 
+down in pine to make sure it was the right patch.  )-:  Alternatively pine 
+has started inserting random changes to my emails...  That's rather 
+unlikely I know/hope!
 
---- linux.orig/include/asm-arm/system.h
-+++ linux/include/asm-arm/system.h
-@@ -235,8 +235,9 @@ static inline void set_copro_access(unsi
-  * so enable interrupts over the context switch to avoid high
-  * latency.
-  */
-+#if 0 // preempt_rt hack, because warn_on in shedule.c triggers
- #define __ARCH_WANT_INTERRUPTS_ON_CTXSW
--
-+#endif
- /*
-  * switch_to(prev, next) should switch from task `prev' to `next'
-  * `prev' will never be the same as `next'.  schedule() itself
+Anyway below is the correction to the broken one line...
 
+Hopefully I will manage to send it without breaking it, too!  /-;
 
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
+
+---
+Fix the finger trouble that caused the previous LDM patch to break 
+compilation...
+
+CC: Richard Russon <ldm@flatcap.org>
+Signed-off-by: Anton Altaparmakov <aia21@cantab.net>
+---
+
+diff --git a/fs/partitions/ldm.c b/fs/partitions/ldm.c
+index c387812..99873a2 100644
+--- a/fs/partitions/ldm.c
++++ b/fs/partitions/ldm.c
+@@ -158,7 +158,7 @@ static bool ldm_parse_privhead(const u8 *data, struct privhead *ph)
+ 		/* Warn the user and continue, carefully. */
+ 		ldm_info("Database is normally %u bytes, it claims to "
+ 			"be %llu bytes.", LDM_DB_SIZE,
+-			udunsigned long long)ph->config_size);
++			(unsigned long long)ph->config_size);
+ 	}
+ 	if ((ph->logical_disk_size == 0) || (ph->logical_disk_start +
+ 			ph->logical_disk_size > ph->config_start)) {
