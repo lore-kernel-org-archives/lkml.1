@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936112AbXEUT5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934812AbXEUT57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936112AbXEUT5i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934381AbXEUTeG
+	id S934812AbXEUT57 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765299AbXEUTkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:34:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45949 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933805AbXEUTeE (ORCPT
+	Mon, 21 May 2007 15:40:35 -0400
+Received: from d0618453.dreamhost.com ([208.97.132.83]:34538 "EHLO
+	spaceymail-a4.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934482AbXEUTkd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:34:04 -0400
-Date: Mon, 21 May 2007 12:34:01 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Jens Axboe <jens.axboe@oracle.com>,
-       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
-       Oliver Xymoron <oxymoron@waste.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-In-Reply-To: <Pine.LNX.4.64.0705212026080.5442@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0705211231250.27209@schroedinger.engr.sgi.com>
-References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
- <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705211147100.26970@schroedinger.engr.sgi.com>
- <20070521190043.GA4705@kernel.dk> <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705212026080.5442@blonde.wat.veritas.com>
+	Mon, 21 May 2007 15:40:33 -0400
+From: Anant Nitya <kernel@prachanda.info>
+Organization: Prachanda Hub
+To: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] local_softirq_pending storm
+Date: Tue, 22 May 2007 00:15:43 +0530
+User-Agent: KMail/1.9.6
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+References: <200705091942.22920.kernel@prachanda.hub> <200705211152.08518.kernel@prachanda.hub> <1179738117.6570.37.camel@chaos>
+In-Reply-To: <1179738117.6570.37.camel@chaos>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705220015.44891.kernel@prachanda.hub>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Hugh Dickins wrote:
+On Monday 21 May 2007 14:31:57 Thomas Gleixner wrote:
+> On Mon, 2007-05-21 at 11:52 +0530, Anant Nitya wrote:
+> > > You should find something like:
+> > >
+> > > (         swapper-0    |#0): new 67173 us user-latency.
+> > >
+> > > along with the familiar "NOHZ ......" message in your log file.
+> > >
+> > > Once that happened please do:
+> > >
+> > > $ cat /proc/latency_trace >trace.txt
+> > >
+> > > compress it and send it to me along with the full dmesg output or put
+> > > both up to some place, where I can download it.
+> >
+> > Hi Thomas
+> >
+> > Here are the links...
+> > http://cybertek.info/taitai/dmesg-2.6.22.rc2.hrt2-1.SMP.DN.LINUX.txt
+> > http://cybertek.info/taitai/trace.txt.bz2
+>
+> Thanks. Sorry, I need more info. I uploaded a new tracer.diff to
+>
+> http://www.tglx.de/private/tglx/ht-debug/tracer.diff
+>
+> Can you please revert the first one and retest with the new one ?
+>
+> Thanks,
+Sorry for delay, here is link for output from new tacer.
+http://cybertek.info/taitai/trace-new.txt.bz2
 
-> > the problem. And the earlier case that you reported was a version of SLUB 
-> > that did not have the capability to switch off SLUB_DEBUG.
-> 
-> Are you sure?  If CONFIG_EMBEDDED=y then -rc1 and -rc2 give you the
-> choice to turn it off.
+Regards
+Ananitya
 
-Right. That went in indeed shortly before the rc1 release.
+>
+> 	tglx
 
-So if both had disabled SLUB_DEBUG then this could be the reason for the 
-failure. However, CONFIG_SLUB_DEBUG was set in the .config that was 
-included when this bug was reported. So I think we still have not found 
-the real problem yet.
 
+
+-- 
+Out of many thousands, one may endeavor for perfection, and of
+those who have achieved perfection, hardly one knows Me in truth.
+				-- Gita Sutra Of Mysticism
