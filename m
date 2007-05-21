@@ -1,107 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbXEUNpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbXEUNre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761596AbXEUNpn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 09:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756073AbXEUNpf
+	id S1761408AbXEUNre (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 09:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXEUNr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 09:45:35 -0400
-Received: from mail11.syd.optusnet.com.au ([211.29.132.192]:48915 "EHLO
-	mail11.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755985AbXEUNpe (ORCPT
+	Mon, 21 May 2007 09:47:26 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:44133 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323AbXEUNrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 09:45:34 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] mm: swap prefetch improvements
-Date: Mon, 21 May 2007 23:44:26 +1000
-User-Agent: KMail/1.9.5
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705121446.04191.kernel@kolivas.org> <20070521100320.GA1801@elte.hu>
-In-Reply-To: <20070521100320.GA1801@elte.hu>
+	Mon, 21 May 2007 09:47:24 -0400
+Date: Mon, 21 May 2007 14:45:53 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>, trenn@suse.de,
+       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
+Message-ID: <20070521134553.GA7911@srcf.ucam.org>
+References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171517.14087.lenb@kernel.org> <1179604609.16465.83.camel@sublime.suse.de> <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705212344.27511.kernel@kolivas.org>
+In-Reply-To: <20070521134046.GE8332@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 May 2007 20:03, Ingo Molnar wrote:
-> * Con Kolivas <kernel@kolivas.org> wrote:
-> > It turns out that fixing swap prefetch was not that hard to fix and
-> > improve upon, and since Andrew hasn't dropped swap prefetch, instead
-> > here are a swag of fixes and improvements, [...]
->
-> it's a reliable win on my testbox too:
->
->  # echo 1 > /proc/sys/vm/swap_prefetch
+On Mon, May 21, 2007 at 03:40:46PM +0200, Pavel Machek wrote:
+> On Mon 2007-05-21 14:36:08, Matthew Garrett wrote:
+> > On Mon, May 21, 2007 at 03:29:48PM +0200, Pavel Machek wrote:
+> > > Significantly more correct? It forces you to do all the thermal
+> > > management in userspace!
+> > 
+> > Why's that a problem? 
+> 
+> Duplicating all the kernel logic in userspace, badly?
 
->  Timed portion 30279 milliseconds
->
-> versus:
->
->  # echo 0 > /proc/sys/vm/swap_prefetch
->  # ./sp_tester
->  [...]
->
->  Timed portion 36605 milliseconds
->
-> i've repeated these tests to make sure it's a stable win and indeed it
-> is:
->
->    # swap-prefetch-on:
->
->    Timed portion 29704 milliseconds
->
->    # swap-prefetch-off:
->
->    Timed portion 34863 milliseconds
->
-> Nice work Con!
-
-Thanks!
-
->
-> A suggestion for improvement: right now swap-prefetch does a small bit
-> of swapin every 5 seconds and stays idle inbetween. Could this perhaps
-> be made more agressive (optionally perhaps), if the system is not
-> swapping otherwise? If block-IO level instrumentation is needed to
-> determine idleness of block IO then that is justified too i think.
-
-Hmm.. The timer waits 5 seconds before trying to prefetch, but then only stops 
-if it detects any activity elsewhere. It doesn't actually try to go idle in 
-between but it doesn't take much activity to put it back to sleep, hence 
-detecting yet another "not quite idle" period and then it goes to sleep 
-again. I guess the sleep interval can actually be changed as another tunable 
-from 5 seconds to whatever the user wanted.
-
-> Another suggestion: swap-prefetch seems to be doing all the right
-> decisions in the sp_test.c case - so would it be possible to add
-> statistics so that it could be verified how much of the swapped-in pages
-> were indeed a 'hit' - and how many were recycled without them being
-> reused? That could give a reliable, objective metric about how efficient
-> swap-prefetch is in any workload.
-
-Well the advantage is twofold potentially; 1. the pages that have been 
-prefecthed and become minor faults when they would have been major faults, 
-and 2. those that become minor faults (via 1) and then become major faults 
-again (since a copy is kept on backing store with swap prefetch). The 
-sp_tester only tests for 1, although it would be easy enough to simply do 
-another big malloc at the end and see how fast it swapped out again as a 
-marker of 2. As for an in-kernel option, it could get kind of expensive 
-tracking pages that have done one or both of these. I'll think about an 
-affordable way to do this, perhaps it could be just done as a 
-debugging/testing patch, but if would be nice to make it cheap enough to have 
-there permanently as well. The pages end up in swap cache (in the reverse 
-direction pages normally get to swap cache) so the accounting could be done 
-somewhere around there.
-
-> 	Ingo
-
-Thanks for comments!
+So don't do it badly. The advantage of doing so is that you can make it 
+work properly, which you can't by putting it in the kernel.
 
 -- 
--ck
+Matthew Garrett | mjg59@srcf.ucam.org
