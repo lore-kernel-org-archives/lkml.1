@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765392AbXEUWoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbXEUWzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765392AbXEUWoY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 18:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXEUWoJ
+	id S1759508AbXEUWzR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 18:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbXEUWzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 18:44:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51310 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756774AbXEUWoG (ORCPT
+	Mon, 21 May 2007 18:55:04 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:55068 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755947AbXEUWzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 18:44:06 -0400
-Date: Mon, 21 May 2007 15:39:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>, Maneesh Soni <maneesh@in.ibm.com>,
-       stable@kernel.org
-Subject: Re: [stable] [PATCH] - fix oops in sysfs_readdir
-Message-Id: <20070521153935.b549db8f.akpm@linux-foundation.org>
-In-Reply-To: <4651E0C9.3080609@redhat.com>
-References: <4651E0C9.3080609@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 21 May 2007 18:55:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=byMgPZgpan1Dixgov4j/X8Vw5Rn/uNjlGs5FYSFlIzarnHS7HkhW7QGUq7OuRa2Vzh+fi1jegGoU8M3uPfV5mxuivMUPQs+qgpgA+CR28gn5w79gXpi3yV1Jjo4qpLMGtbbPJYRyFtMFEdDFZYkPG1frkLPkOhb+t/ucljKSzKU=
+Message-ID: <2c0942db0705211555w70d6bdd0wdf458a3bf13b306d@mail.gmail.com>
+Date: Mon, 21 May 2007 15:55:01 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Uwe Bugla" <uwe.bugla@gmx.de>
+Subject: Re: Kernel Oops with 2.6.21.1 on an AMD K7 machine
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20070521222857.87180@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070521222857.87180@gmx.net>
+X-Google-Sender-Auth: 0698ef89c27bf7ba
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007 13:11:21 -0500
-Eric Sandeen <sandeen@redhat.com> wrote:
+On 5/21/07, Uwe Bugla <uwe.bugla@gmx.de> wrote:
+> kernel 2.6.21.1 makes my machine Oops about 20 seconds after KDE 3,5 is brought up showing its graphical login (kdm):
 
-> This is a non-ida backport of Tejun's patch in -mm at:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/broken-out/gregkh-driver-sysfs-allocate-inode-number-using-ida.patch
-> for the 2.6.16 -stable tree - it follows the same scheme of using s_ino to safely
-> store & retrieve the inode number of sysfs entries for use in sysfs_readdir,
-> but uses a brain-dead-simple inode nr allocator rather than ida, which would
-> bring along a lot of newer, more complex code.
-> 
-> No, this doesn't guarantee uniqueness of sysfs inode numbers, but then
-> the code in -stable today doesn't either - and with this change, at least
-> it shouldn't oops.
+Please include the output out of the actual oops message. It has all
+sorts of information that will help track this down.
 
-So I'm sitting here whether to commend this patch to google kernel maintainers
-for 2.6.18 backport, but I realise I don't know what it does.  And I don't know
-if it fixes the reclaim-time oopses they were intermittently seeing, or if it
-fixes something else and if so what that is.
+The "REPORTING-BUGS" file in the root of the kernel source directory
+has an example format that covers the sorts of stuff that they want to
+see.
 
-Sigh.  Better changelogs, please.
+Thanks,
 
+Ray
