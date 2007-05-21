@@ -1,67 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764921AbXEUTkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934937AbXEUTk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764921AbXEUTkk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbXEUT0w
+	id S934937AbXEUTk5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933537AbXEUT07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:26:52 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:35764 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933404AbXEUT0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:26:50 -0400
-Message-Id: <20070521191755.153293000@sous-sol.org>
-References: <20070521191612.800400000@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:16 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: [patch 64/69] JFS: Fix race waking up jfsIO kernel thread
-Content-Disposition: inline; filename=jfs-fix-race-waking-up-jfsio-kernel-thread.patch
+	Mon, 21 May 2007 15:26:59 -0400
+Received: from mail.screens.ru ([213.234.233.54]:50212 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933536AbXEUT05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:26:57 -0400
+Date: Mon, 21 May 2007 23:25:51 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Davi E. M. Arnaut" <davi@haxent.com.br>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: + signalfd-retrieve-multiple-signals-with-one-read-call.patch added to -mm tree
+Message-ID: <20070521192551.GA153@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+A couple of very minor nits,
 
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> +static ssize_t signalfd_dequeue(struct signalfd_ctx *ctx, siginfo_t *info,
+> +				int nonblock)
+> +{
+> +	int locked;
+> +	ssize_t ret;
+> +	struct signalfd_lockctx lk;
+> +	DECLARE_WAITQUEUE(wait, current);
+> +
+> +	locked = signalfd_lock(ctx, &lk);
+> +	if (!locked)
+> +		return 0;
+> +
+> +	ret = dequeue_signal(lk.tsk, &ctx->sigmask, info);
+> +	switch (ret) {
+> +	case 0:
+> +		if (!nonblock)
+> +			break;
+> +		ret = -EAGAIN;
+> +	default:
+> +		signalfd_unlock(&lk);
+> +		return ret;
+> +	}
+> +
+> +	add_wait_queue(&ctx->wqh, &wait);
+> +	for (;;) {
+> +		set_current_state(TASK_INTERRUPTIBLE);
+> +		ret = dequeue_signal(lk.tsk, &ctx->sigmask, info);
+> +		if (ret != 0)
+> +			break;
+> +		if (signal_pending(current)) {
+> +			ret = -ERESTARTSYS;
+> +			break;
+> +		}
+> +		signalfd_unlock(&lk);
 
-It's possible for a journal I/O request to be added to the log_redrive
-queue and the jfsIO thread to be awakened after the thread releases
-log_redrive_lock but before it sets its state to TASK_INTERRUPTIBLE.
+The locking looks a bit overcomplicated. We don't need signalfd_lock() to
+check ret != 0 or signal_pending(), we can drop it earlier. This way we
+always leave the loop in "unlocked" state.
 
-The jfsIO thread should set the state before giving up the spinlock, so
-the waking thread will really wake it.
+> +		schedule();
+> +		locked = signalfd_lock(ctx, &lk);
+> +		if (unlikely(!locked)) {
+> +			/*
+> +			 * Let the caller read zero byte, ala socket
+> +			 * recv() when the peer disconnect. This test
+> +			 * must be done before doing a dequeue_signal(),
+> +			 * because if the sighand has been orphaned,
+> +			 * the dequeue_signal() call is going to crash.
+> +			 */
 
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- fs/jfs/jfs_logmgr.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Imho, the comment is a bit confusing. dequeue_signal() needs ->siglock
+even if signalfd_ctx is not orphaned.
 
---- linux-2.6.21.1.orig/fs/jfs/jfs_logmgr.c
-+++ linux-2.6.21.1/fs/jfs/jfs_logmgr.c
-@@ -2354,12 +2354,13 @@ int jfsIOWait(void *arg)
- 			lbmStartIO(bp);
- 			spin_lock_irq(&log_redrive_lock);
- 		}
--		spin_unlock_irq(&log_redrive_lock);
- 
- 		if (freezing(current)) {
-+			spin_unlock_irq(&log_redrive_lock);
- 			refrigerator();
- 		} else {
- 			set_current_state(TASK_INTERRUPTIBLE);
-+			spin_unlock_irq(&log_redrive_lock);
- 			schedule();
- 			current->state = TASK_RUNNING;
- 		}
+> +			 ret = 0;
+> +			 break;
+> +		}
+> +	}
+> +
+> +	remove_wait_queue(&ctx->wqh, &wait);
+> +	__set_current_state(TASK_RUNNING);
+> +
+> +	if (likely(locked))
+> +		signalfd_unlock(&lk);
+> +
+> +	return ret;
+> +}
 
--- 
+IOW, how about this?
+
+	static ssize_t signalfd_dequeue(struct signalfd_ctx *ctx, siginfo_t *info,
+					int nonblock)
+	{
+		ssize_t ret;
+		struct signalfd_lockctx lk;
+		DECLARE_WAITQUEUE(wait, current);
+
+		if (!signalfd_lock(ctx, &lk))
+			return 0;
+
+		ret = dequeue_signal(lk.tsk, &ctx->sigmask, info);
+		switch (ret) {
+		case 0:
+			if (!nonblock)
+				break;
+			ret = -EAGAIN;
+		default:
+			signalfd_unlock(&lk);
+			return ret;
+		}
+
+		add_wait_queue(&ctx->wqh, &wait);
+		for (;;) {
+			set_current_state(TASK_INTERRUPTIBLE);
+			ret = dequeue_signal(lk.tsk, &ctx->sigmask, info);
+			signalfd_unlock(&lk);
+
+			if (ret != 0)
+				break;
+
+			ret = -ERESTARTSYS;
+			if (signal_pending(current))
+				break;
+
+			schedule();
+
+			ret = 0;
+			if (!signalfd_lock(ctx, &lk))
+				break;
+		}
+
+		remove_wait_queue(&ctx->wqh, &wait);
+		__set_current_state(TASK_RUNNING);
+
+		return ret;
+	}
+
+Oleg.
+
