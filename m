@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbXEUODM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbXEUOH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758783AbXEUODM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 10:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbXEUOC6
+	id S1759469AbXEUOH6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 10:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbXEUOHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 10:02:58 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:3907 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755459AbXEUOC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 10:02:57 -0400
-Date: Mon, 21 May 2007 09:31:24 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Eugene Teo <eteo@redhat.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, Florin Malita <fmalita@gmail.com>
-Subject: Re: [2.6 patch] drivers/net/wireless/libertas/rx.c: fix use-after-free
-Message-ID: <20070521133124.GB9621@tuxdriver.com>
-References: <464DD957.9040803@redhat.com> <20070518174623.GA3492@tuxdriver.com> <464E6B82.40607@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464E6B82.40607@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 21 May 2007 10:07:51 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:2183 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755902AbXEUOHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 10:07:50 -0400
+Date: Mon, 21 May 2007 15:07:46 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.21: nfs_readpages: Add missing braces
+In-Reply-To: <1179753845.6535.9.camel@heimdal.trondhjem.org>
+Message-ID: <Pine.LNX.4.64N.0705211501530.8263@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0705211402170.8263@blysk.ds.pg.gda.pl>
+ <1179753845.6535.9.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 19, 2007 at 11:14:10AM +0800, Eugene Teo wrote:
-> John W. Linville wrote:
+On Mon, 21 May 2007, Trond Myklebust wrote:
 
-> >>  done:
-> >>         LEAVE();
-> >>
-> >> -       skb->protocol = __constant_htons(0x0019);       /* ETH_P_80211_RAW */
-> >> -
-> > 
-> > Except for this part...is this intentional?
+> > A change a while ago added a call to gather statistics to a conditional 
+> > statement, but braces were missed on that occasion resulting in a change 
+> > of semanticts.  This a change to rectify.
 > 
-> skb could have been freed by then. And, in libertas_upload_rx_packet(), skb->protocol
-> is initialized by eth_type_trans(skb, priv->wlan_dev.netdev).
+> So you are proposing this as a stable update? It won't apply on
+> 2.6.22-rc2.
 
-OK, I see that.  Looks like Florin has reposted his patch, still
-without this hunk.  Would you like to submit a patch for this hunk?
+ I have tried the patch on 2.6.21 and have missed the function in question 
+has been since updated.  Sorry about that.  If you think the change is 
+important-enough to be applied on a stable branch, the please go ahead, 
+otherwise feel free to discard it.
 
-Thanks,
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+  Maciej
