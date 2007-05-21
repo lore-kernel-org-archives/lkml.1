@@ -1,96 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934138AbXEUTae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934289AbXEUTbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934138AbXEUTae (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764703AbXEUTVq
+	id S934289AbXEUTbF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765442AbXEUTVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:21:46 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46400 "EHLO
+	Mon, 21 May 2007 15:21:50 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46412 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765429AbXEUTVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:21:45 -0400
-Message-Id: <20070521191710.026899000@sous-sol.org>
+	id S1765440AbXEUTVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:21:48 -0400
+Message-Id: <20070521191734.512551000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:27 -0700
+Date: Mon, 21 May 2007 12:16:51 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+       Andrew Morton <akpm@linux-foundation.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       akinobu.mita@gmail.com, mpm@selenic.com
-Subject: [patch 15/69] slob: fix page order calculation on not 4KB page
-Content-Disposition: inline; filename=slob-fix-page-order-calculation-on-not-4kb-page.patch
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       NeilBrown <neilb@suse.de>, linux-raid@vger.kernel.org
+Subject: [patch 39/69] md: Avoid a possibility that a read error can wrongly propagate through md/raid1 to a filesystem.
+Content-Disposition: inline; filename=md-avoid-a-possibility-that-a-read-error-can-wrongly-propagate-through-md-raid1-to-a-filesystem.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Akinobu Mita <akinobu.mita@gmail.com>
+From: NeilBrown <neilb@suse.de>
 
-SLOB doesn't calculate correct page order when page size is not 4KB.  This
-patch fixes it with using get_order() instead of find_order() which is SLOB
-version of get_order().
+When a raid1 has only one working drive, we want read error to
+propagate up to the filesystem as there is no point failing the last
+drive in an array.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Acked-by: Matt Mackall <mpm@selenic.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Currently the code perform this check is racy.  If a write and a read
+a both submitted to a device on a 2-drive raid1, and the write fails
+followed by the read failing, the read will see that there is only one
+working drive and will pass the failure up, even though the one
+working drive is actually the *other* one.
+
+So, tighten up the locking.
+
+Signed-off-by: Neil Brown <neilb@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
 
- mm/slob.c |   15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
+ drivers/md/raid1.c |   33 +++++++++++++++++++--------------
+ 1 file changed, 19 insertions(+), 14 deletions(-)
 
---- linux-2.6.21.1.orig/mm/slob.c
-+++ linux-2.6.21.1/mm/slob.c
-@@ -150,15 +150,6 @@ static void slob_free(void *block, int s
- 	spin_unlock_irqrestore(&slob_lock, flags);
- }
+diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
+--- linux-2.6.21.1.orig/drivers/md/raid1.c
++++ linux-2.6.21.1/drivers/md/raid1.c
+@@ -271,21 +271,25 @@ static int raid1_end_read_request(struct
+ 	 */
+ 	update_head_pos(mirror, r1_bio);
  
--static int FASTCALL(find_order(int size));
--static int fastcall find_order(int size)
--{
--	int order = 0;
--	for ( ; size > 4096 ; size >>=1)
--		order++;
--	return order;
--}
--
- void *__kmalloc(size_t size, gfp_t gfp)
- {
- 	slob_t *m;
-@@ -174,7 +165,7 @@ void *__kmalloc(size_t size, gfp_t gfp)
- 	if (!bb)
- 		return 0;
+-	if (uptodate || (conf->raid_disks - conf->mddev->degraded) <= 1) {
+-		/*
+-		 * Set R1BIO_Uptodate in our master bio, so that
+-		 * we will return a good error code for to the higher
+-		 * levels even if IO on some other mirrored buffer fails.
+-		 *
+-		 * The 'master' represents the composite IO operation to
+-		 * user-side. So if something waits for IO, then it will
+-		 * wait for the 'master' bio.
++	if (uptodate)
++		set_bit(R1BIO_Uptodate, &r1_bio->state);
++	else {
++		/* If all other devices have failed, we want to return
++		 * the error upwards rather than fail the last device.
++		 * Here we redefine "uptodate" to mean "Don't want to retry"
+ 		 */
+-		if (uptodate)
+-			set_bit(R1BIO_Uptodate, &r1_bio->state);
++		unsigned long flags;
++		spin_lock_irqsave(&conf->device_lock, flags);
++		if (r1_bio->mddev->degraded == conf->raid_disks ||
++		    (r1_bio->mddev->degraded == conf->raid_disks-1 &&
++		     !test_bit(Faulty, &conf->mirrors[mirror].rdev->flags)))
++			uptodate = 1;
++		spin_unlock_irqrestore(&conf->device_lock, flags);
++	}
  
--	bb->order = find_order(size);
-+	bb->order = get_order(size);
- 	bb->pages = (void *)__get_free_pages(gfp, bb->order);
- 
- 	if (bb->pages) {
-@@ -284,7 +275,7 @@ void *kmem_cache_alloc(struct kmem_cache
- 	if (c->size < PAGE_SIZE)
- 		b = slob_alloc(c->size, flags, c->align);
- 	else
--		b = (void *)__get_free_pages(flags, find_order(c->size));
-+		b = (void *)__get_free_pages(flags, get_order(c->size));
- 
- 	if (c->ctor)
- 		c->ctor(b, c, SLAB_CTOR_CONSTRUCTOR);
-@@ -311,7 +302,7 @@ void kmem_cache_free(struct kmem_cache *
- 	if (c->size < PAGE_SIZE)
- 		slob_free(b, c->size);
- 	else
--		free_pages((unsigned long)b, find_order(c->size));
-+		free_pages((unsigned long)b, get_order(c->size));
- }
- EXPORT_SYMBOL(kmem_cache_free);
- 
++	if (uptodate)
+ 		raid_end_bio_io(r1_bio);
+-	} else {
++	else {
+ 		/*
+ 		 * oops, read error:
+ 		 */
+@@ -992,13 +996,14 @@ static void error(mddev_t *mddev, mdk_rd
+ 		unsigned long flags;
+ 		spin_lock_irqsave(&conf->device_lock, flags);
+ 		mddev->degraded++;
++		set_bit(Faulty, &rdev->flags);
+ 		spin_unlock_irqrestore(&conf->device_lock, flags);
+ 		/*
+ 		 * if recovery is running, make sure it aborts.
+ 		 */
+ 		set_bit(MD_RECOVERY_ERR, &mddev->recovery);
+-	}
+-	set_bit(Faulty, &rdev->flags);
++	} else
++		set_bit(Faulty, &rdev->flags);
+ 	set_bit(MD_CHANGE_DEVS, &mddev->flags);
+ 	printk(KERN_ALERT "raid1: Disk failure on %s, disabling device. \n"
+ 		"	Operation continuing on %d devices\n",
 
 -- 
