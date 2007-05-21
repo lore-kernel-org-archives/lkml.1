@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934665AbXEUTga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765666AbXEUTgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934665AbXEUTga (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765533AbXEUTW1
+	id S1765666AbXEUTgx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765541AbXEUTW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:22:27 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46513 "EHLO
+	Mon, 21 May 2007 15:22:28 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46496 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765024AbXEUTWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:22:22 -0400
-Message-Id: <20070521191641.705484000@sous-sol.org>
+	id S1765507AbXEUTWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:22:13 -0400
+Message-Id: <20070521191714.531390000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:14 -0700
+Date: Mon, 21 May 2007 12:16:30 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Neil Horman <nhorman@tuxdriver.com>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: [patch 02/69] sis900: Allocate rx replacement buffer before rx operation
-Content-Disposition: inline; filename=sis900-allocate-rx-replacement-buffer-before-rx-operation.patch
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       NeilBrown <neilb@suse.de>, "J. Bruce Fields" <bfields@citi.umich.edu>,
+       nfs@lists.sourceforge.net
+Subject: [patch 18/69] knfsd: rpc: fix server-side wrapping of krb5i replies
+Content-Disposition: inline; filename=knfsd-rpc-fix-server-side-wrapping-of-krb5i-replies.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Neil Horman <nhorman@tuxdriver.com>
+From: NeilBrown <neilb@suse.de>
 
-Just found a hole in my last patch.  It was reported to me that shortly after we
-integrated this patch.  The report was of an oops that took place inside of
-netif_rx when using the sis900 driver.  Looking at my origional patch I noted
-that there was a spot between the new skb_alloc and the refill_rx_ring label
-where skb got reassigned to the pointer currently held in the rx_ring for the
-purposes of receiveing the frame.  The result of this is however that the buffer
-that gets passed to netif_rx (if it is called), then gets placed right back into
-the rx_ring.  So if you receive frames fast enough the skb being processed by
-the network stack can get corrupted.  The reporter is testing out the fix I've
-written for this below (I'm not near my hardware at the moment to test myself),
-but I wanted to post it for review ASAP.  I'll post test results when I hear
-them, but I think this is a pretty straightforward fix.  It just uses a separate
-pointer to do the rx operation, so that we don't improperly reassign the pointer
-that we use to refill the rx ring.
+It's not necessarily correct to assume that the xdr_buf used to hold the
+server's reply must have page data whenever it has tail data.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+And there's no need for us to deal with that case separately anyway.
+
+Acked-by: "J. Bruce Fields" <bfields@citi.umich.edu>
+Signed-off-by: Neil Brown <neilb@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/net/sis900.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
 
---- linux-2.6.21.1.orig/drivers/net/sis900.c
-+++ linux-2.6.21.1/drivers/net/sis900.c
-@@ -1754,6 +1754,7 @@ static int sis900_rx(struct net_device *
- 			sis_priv->rx_ring[entry].cmdsts = RX_BUF_SIZE;
- 		} else {
- 			struct sk_buff * skb;
-+			struct sk_buff * rx_skb;
- 
- 			pci_unmap_single(sis_priv->pci_dev,
- 				sis_priv->rx_ring[entry].bufptr, RX_BUF_SIZE,
-@@ -1787,10 +1788,10 @@ static int sis900_rx(struct net_device *
- 			}
- 
- 			/* give the socket buffer to upper layers */
--			skb = sis_priv->rx_skbuff[entry];
--			skb_put(skb, rx_size);
--			skb->protocol = eth_type_trans(skb, net_dev);
--			netif_rx(skb);
-+			rx_skb = sis_priv->rx_skbuff[entry];
-+			skb_put(rx_skb, rx_size);
-+			rx_skb->protocol = eth_type_trans(rx_skb, net_dev);
-+			netif_rx(rx_skb);
- 
- 			/* some network statistics */
- 			if ((rx_status & BCAST) == MCAST)
+ net/sunrpc/auth_gss/svcauth_gss.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff .prev/net/sunrpc/auth_gss/svcauth_gss.c ./net/sunrpc/auth_gss/svcauth_gss.c
+--- linux-2.6.21.1.orig/net/sunrpc/auth_gss/svcauth_gss.c
++++ linux-2.6.21.1/net/sunrpc/auth_gss/svcauth_gss.c
+@@ -1196,13 +1196,7 @@ svcauth_gss_wrap_resp_integ(struct svc_r
+ 	if (xdr_buf_subsegment(resbuf, &integ_buf, integ_offset,
+ 				integ_len))
+ 		BUG();
+-	if (resbuf->page_len == 0
+-			&& resbuf->head[0].iov_len + RPC_MAX_AUTH_SIZE
+-			< PAGE_SIZE) {
+-		BUG_ON(resbuf->tail[0].iov_len);
+-		/* Use head for everything */
+-		resv = &resbuf->head[0];
+-	} else if (resbuf->tail[0].iov_base == NULL) {
++	if (resbuf->tail[0].iov_base == NULL) {
+ 		if (resbuf->head[0].iov_len + RPC_MAX_AUTH_SIZE > PAGE_SIZE)
+ 			goto out_err;
+ 		resbuf->tail[0].iov_base = resbuf->head[0].iov_base
 
 -- 
