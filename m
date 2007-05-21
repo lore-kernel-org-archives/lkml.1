@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765801AbXEUTZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933187AbXEUTZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765801AbXEUTZZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765340AbXEUTV1
+	id S933187AbXEUTZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765343AbXEUTV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:21:27 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46325 "EHLO
+	Mon, 21 May 2007 15:21:28 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46335 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765301AbXEUTVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:21:19 -0400
-Message-Id: <20070521191715.934272000@sous-sol.org>
+	id S1757749AbXEUTVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:21:22 -0400
+Message-Id: <20070521191703.569013000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:31 -0700
+Date: Mon, 21 May 2007 12:16:21 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Jeff Garzik <jeff@garzik.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,41 +22,124 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [patch 19/69] skge: default WOL should be magic only (rev2)
-Content-Disposition: inline; filename=skge-default-wol-should-be-magic-only.patch
+       alan@lxorguk.ukuu.org.uk, Dan Williams <dan.j.williams@intel.com>,
+       rmk@arm.linux.org.uk, Martin Michlmayr <tbm@cyrius.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [patch 09/69] iop13xx: fix i/o address translation
+Content-Disposition: inline; filename=iop13xx-fix-i-o-address-translation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: Dan Williams <dan.j.williams@intel.com>
 
-By default, the skge driver now enables wake on magic and wake on PHY.
-This is a bad default (bug), wake on PHY means machine will never shutdown 
-if connected to a switch.
+PCI devices were being programmed with an incorrect base address value.
+This patch moves I/O space into a 16-bit addressable region and corrects
+the i/o offset.
 
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Much thanks to Martin Michlmayr for tracking this issue and testing
+debug patches.
+
+Cc: Martin Michlmayr <tbm@cyrius.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
 ---
- drivers/net/skge.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- linux-2.6.21.1.orig/drivers/net/skge.c
-+++ linux-2.6.21.1/drivers/net/skge.c
-@@ -3583,7 +3583,9 @@ static struct net_device *skge_devinit(s
- 	skge->duplex = -1;
- 	skge->speed = -1;
- 	skge->advertising = skge_supported_modes(hw);
--	skge->wol = pci_wake_enabled(hw->pdev) ? wol_supported(hw) : 0;
-+
-+	if (pci_wake_enabled(hw->pdev))
-+		skge->wol = wol_supported(hw) & WAKE_MAGIC;
+ arch/arm/mach-iop13xx/pci.c            |    8 ++++----
+ include/asm-arm/arch-iop13xx/iop13xx.h |   22 +++++++++++++---------
+ 2 files changed, 17 insertions(+), 13 deletions(-)
+
+--- linux-2.6.21.1.orig/arch/arm/mach-iop13xx/pci.c
++++ linux-2.6.21.1/arch/arm/mach-iop13xx/pci.c
+@@ -1023,7 +1023,7 @@ int iop13xx_pci_setup(int nr, struct pci
+ 				  << IOP13XX_ATUX_PCIXSR_FUNC_NUM;
+ 		__raw_writel(pcixsr, IOP13XX_ATUX_PCIXSR);
  
- 	hw->dev[port] = dev;
+-		res[0].start = IOP13XX_PCIX_LOWER_IO_PA;
++		res[0].start = IOP13XX_PCIX_LOWER_IO_PA + IOP13XX_PCIX_IO_BUS_OFFSET;
+ 		res[0].end   = IOP13XX_PCIX_UPPER_IO_PA;
+ 		res[0].name  = "IQ81340 ATUX PCI I/O Space";
+ 		res[0].flags = IORESOURCE_IO;
+@@ -1033,7 +1033,7 @@ int iop13xx_pci_setup(int nr, struct pci
+ 		res[1].name  = "IQ81340 ATUX PCI Memory Space";
+ 		res[1].flags = IORESOURCE_MEM;
+ 		sys->mem_offset = IOP13XX_PCIX_MEM_OFFSET;
+-		sys->io_offset = IOP13XX_PCIX_IO_OFFSET;
++		sys->io_offset = IOP13XX_PCIX_LOWER_IO_PA;
+ 		break;
+ 	case IOP13XX_INIT_ATU_ATUE:
+ 		/* Note: the function number field in the PCSR is ro */
+@@ -1044,7 +1044,7 @@ int iop13xx_pci_setup(int nr, struct pci
  
+ 		__raw_writel(pcsr, IOP13XX_ATUE_PCSR);
+ 
+-		res[0].start = IOP13XX_PCIE_LOWER_IO_PA;
++		res[0].start = IOP13XX_PCIE_LOWER_IO_PA + IOP13XX_PCIE_IO_BUS_OFFSET;
+ 		res[0].end   = IOP13XX_PCIE_UPPER_IO_PA;
+ 		res[0].name  = "IQ81340 ATUE PCI I/O Space";
+ 		res[0].flags = IORESOURCE_IO;
+@@ -1054,7 +1054,7 @@ int iop13xx_pci_setup(int nr, struct pci
+ 		res[1].name  = "IQ81340 ATUE PCI Memory Space";
+ 		res[1].flags = IORESOURCE_MEM;
+ 		sys->mem_offset = IOP13XX_PCIE_MEM_OFFSET;
+-		sys->io_offset = IOP13XX_PCIE_IO_OFFSET;
++		sys->io_offset = IOP13XX_PCIE_LOWER_IO_PA;
+ 		sys->map_irq = iop13xx_pcie_map_irq;
+ 		break;
+ 	default:
+--- linux-2.6.21.1.orig/include/asm-arm/arch-iop13xx/iop13xx.h
++++ linux-2.6.21.1/include/asm-arm/arch-iop13xx/iop13xx.h
+@@ -27,19 +27,24 @@ static inline int iop13xx_cpu_id(void)
+ #define IOP13XX_PCI_OFFSET	 IOP13XX_MAX_RAM_SIZE
+ 
+ /* PCI MAP
+- * 0x0000.0000 - 0x8000.0000           1:1 mapping with Physical RAM
+- * 0x8000.0000 - 0x8800.0000           PCIX/PCIE memory window (128MB)
+-*/
++ * bus range		cpu phys	cpu virt	note
++ * 0x0000.0000 + 2GB	(n/a)		(n/a)		inbound, 1:1 mapping with Physical RAM
++ * 0x8000.0000 + 928M	0x1.8000.0000   (ioremap)	PCIX outbound memory window
++ * 0x8000.0000 + 928M	0x2.8000.0000   (ioremap)	PCIE outbound memory window
++ * 
++ * IO MAP
++ * 0x1000 + 64K	0x0.fffb.1000	0xfec6.1000	PCIX outbound i/o window
++ * 0x1000 + 64K	0x0.fffd.1000	0xfed7.1000	PCIE outbound i/o window
++ */
+ #define IOP13XX_PCIX_IO_WINDOW_SIZE   0x10000UL
+ #define IOP13XX_PCIX_LOWER_IO_PA      0xfffb0000UL
+ #define IOP13XX_PCIX_LOWER_IO_VA      0xfec60000UL
+-#define IOP13XX_PCIX_LOWER_IO_BA      0x0fff0000UL
++#define IOP13XX_PCIX_LOWER_IO_BA      0x0UL /* OIOTVR */
++#define IOP13XX_PCIX_IO_BUS_OFFSET    0x1000UL
+ #define IOP13XX_PCIX_UPPER_IO_PA      (IOP13XX_PCIX_LOWER_IO_PA +\
+ 				       IOP13XX_PCIX_IO_WINDOW_SIZE - 1)
+ #define IOP13XX_PCIX_UPPER_IO_VA      (IOP13XX_PCIX_LOWER_IO_VA +\
+ 				       IOP13XX_PCIX_IO_WINDOW_SIZE - 1)
+-#define IOP13XX_PCIX_IO_OFFSET        (IOP13XX_PCIX_LOWER_IO_VA -\
+-				       IOP13XX_PCIX_LOWER_IO_BA)
+ #define IOP13XX_PCIX_IO_PHYS_TO_VIRT(addr) (u32) ((u32) addr -\
+ 					   (IOP13XX_PCIX_LOWER_IO_PA\
+ 					   - IOP13XX_PCIX_LOWER_IO_VA))
+@@ -65,15 +70,14 @@ static inline int iop13xx_cpu_id(void)
+ #define IOP13XX_PCIE_IO_WINDOW_SIZE   	 0x10000UL
+ #define IOP13XX_PCIE_LOWER_IO_PA      	 0xfffd0000UL
+ #define IOP13XX_PCIE_LOWER_IO_VA      	 0xfed70000UL
+-#define IOP13XX_PCIE_LOWER_IO_BA      	 0x0fff0000UL
++#define IOP13XX_PCIE_LOWER_IO_BA      	 0x0UL  /* OIOTVR */
++#define IOP13XX_PCIE_IO_BUS_OFFSET	 0x1000UL
+ #define IOP13XX_PCIE_UPPER_IO_PA      	 (IOP13XX_PCIE_LOWER_IO_PA +\
+ 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
+ #define IOP13XX_PCIE_UPPER_IO_VA      	 (IOP13XX_PCIE_LOWER_IO_VA +\
+ 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
+ #define IOP13XX_PCIE_UPPER_IO_BA      	 (IOP13XX_PCIE_LOWER_IO_BA +\
+ 					 IOP13XX_PCIE_IO_WINDOW_SIZE - 1)
+-#define IOP13XX_PCIE_IO_OFFSET        	 (IOP13XX_PCIE_LOWER_IO_VA -\
+-					 IOP13XX_PCIE_LOWER_IO_BA)
+ #define IOP13XX_PCIE_IO_PHYS_TO_VIRT(addr) (u32) ((u32) addr -\
+ 					   (IOP13XX_PCIE_LOWER_IO_PA\
+ 					   - IOP13XX_PCIE_LOWER_IO_VA))
 
 -- 
