@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXEUDM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbXEUDSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbXEUDM3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 23:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbXEUDMV
+	id S1756037AbXEUDSR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 23:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXEUDSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 23:12:21 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:39646 "EHLO
-	asav13.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754338AbXEUDMU (ORCPT
+	Sun, 20 May 2007 23:18:08 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:46904 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbXEUDSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 23:12:20 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoXABirUEZKhRO4W2dsb2JhbACBXIVniEUdDQURAQ
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: Race free attributes in sysfs
-Date: Sun, 20 May 2007 23:12:18 -0400
-User-Agent: KMail/1.9.3
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>
-References: <46502A8B.70803@drzeus.cx>
-In-Reply-To: <46502A8B.70803@drzeus.cx>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 20 May 2007 23:18:06 -0400
+Date: Sun, 20 May 2007 20:22:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kconfig - scan all Kconfig files
+Message-Id: <20070520202247.762e398c.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0705210235030.1817@scrub.home>
+References: <20070520175203.GA24511@uranus.ravnborg.org>
+	<Pine.LNX.4.64.0705210235030.1817@scrub.home>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705202312.19191.dtor@insightbb.com>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 20 May 2007 07:01, Pierre Ossman wrote:
-> Hi Greg,
-> 
-> I'm reworking the sysfs stuff in the MMC layer to be a bit more flexible, but
-> there is one thing that has me baffled; how do you add attributes to an object
-> in a race free manner when you have a dynamic set of attributes.
-> 
-> I've looked at other parts of the kernel and they all use:
-> 
-> 1. Add object.
-> 2. Add attributes.
-> 
-> To me, it seems like there's a window between 1 and 2 where the object is in
-> /sys but doesn't have the proper attributes. Life for user space gets very
-> annoying if it has to add artificial delays to avoid this window.
-> 
-> So how do I do this properly? Something like this would, from my point of view,
-> be the sane method:
-> 
-> 1. Add hidden object.
-> 2. Add attributes.
-> 3. Show object.
-> 
+On Mon, 21 May 2007 03:43:45 +0200 (CEST) Roman Zippel wrote:
 
-1. dev->uevent_suppress = 1;
-2. device_register(dev);
-3. device_create_file(dev, ...);
-4. dev->uevent_suppress = 0;
-5. kobject_uevent(&dev->kobj, KOBJ_ADD);
+> Hi,
+> 
+> On Sun, 20 May 2007, Sam Ravnborg wrote:
+> 
+> > I did a quick hack so kconfig could scan all Kconfig files
+> > in the kernel tree.
+> > By scanning all Kconfig files we gain the following:
+> > 
+> > -> kconfig can report when a depends on refer to an undefined symbol
+> > -> kconfig can report when a select refer to an undefined symbol
+> > 
+> > Later we can push a lot of common stuff to the top-level Kconfig file.
+> > And that may in the end result in a better structure overall for
+> > Kconfig files.
+> 
+> Well, some of that stuff should already happen earlier (and included from 
+> the arch Kconfig files), but that doesn't work for everything.
+> I don't think that simply allowing to parse a file multiple times is the 
+> right answer, as it duplicates a lot of data. A simple example would be 
+> help texts, right now they are per symbol, but they should really be per 
+> menu, so archs can provide different help texts for something.
+> "source" should become a bit more intelligent and parse a file only once 
+> and link the data into the menu structure.
+> 
+> > All the "choice values currently only support a single prompt" are caused
+> > by using the same config symbol in a choice list for several architectures.
+> > That will be the biggest challenge to fix before we can introduce this patch.
+> > Maybe we can extend kconfig to accept it???
+> 
+> Define "accept".
+> The basic rule for choice values must not be violated - none of them may 
+> depend on another value in the same group. The dependency tree allows for 
+> no loops, these choice groups allow for the only exception, but it has to 
+> stay within that group.
+> One option I'm thinking about is to extend that group by naming the choice 
+> option, so kconfig knows they are related. This won't work for everything, 
+> so quite some renaming may be needed.
 
--- 
-Dmitry
+how about something that I mentioned a few days ago (in another
+mail thread):
+
+Make this work:  (-ENOPATCH)
+
+if S390
+include "some s390-specific Kconfig file"
+endif
+
+and if ARCH!=S390, don't read that file.
+
+Actually it should be any kconfig-language statements inside
+the if-block /methinks.
+
+
+I understand that *conf treats all kconfig symbols as variable,
+but ARCH=blah isn't really variable after it has been set.
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
