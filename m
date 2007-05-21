@@ -1,42 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXEUGc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbXEUGdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbXEUGc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 02:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbXEUGct
+	id S1758248AbXEUGdj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 02:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbXEUGdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 02:32:49 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:53543 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754303AbXEUGcs (ORCPT
+	Mon, 21 May 2007 02:33:32 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:51431 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754303AbXEUGdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 02:32:48 -0400
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200705210632.l4L6Wkt0004225@turbo.physics.adelaide.edu.au>
-Subject: Re: 2.6.21.1 on Fedora Core 6 breaks LVM/vgscan
-To: linux-kernel@vger.kernel.org
-Date: Mon, 21 May 2007 16:02:46 +0930 (CST)
-Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe)
-X-Mailer: ELM [version 2.5 PL6]
+	Mon, 21 May 2007 02:33:32 -0400
+Date: Mon, 21 May 2007 08:32:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/12] x86-64: update iommu/dma mapping functions to sg  helpers
+Message-ID: <20070521063249.GE14746@kernel.dk>
+References: <11787972373654-git-send-email-jens.axboe@oracle.com> <11787972373765-git-send-email-jens.axboe@oracle.com> <464322BC.50101@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <464322BC.50101@panasas.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21 May 2007 I wrote:
+On Thu, May 10 2007, Benny Halevy wrote:
+> @@ -411,12 +406,13 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+>  			   boundary and the new one doesn't have an offset. */
+>  			if (!iommu_merge || !nextneed || !need || s->offset ||
+>  			    (ps->offset + ps->length) % PAGE_SIZE) { 
+> -				if (dma_map_cont(sg, start, i, sg+out, pages,
+> -						 need) < 0)
+> +				if (dma_map_cont(start_sg, i - start, sg+out,
+> +						  pages, need) < 0)
+>  					goto error;
+>  				out++;
+>  				pages = 0;
+> -				start = i;	
+> +				start = i;
+> +				start_sg = s;
+>  			}
+>  		}
+>  
+> @@ -424,7 +420,7 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+>  		pages += to_pages(s->offset, s->length);
+>  		ps = s;
+>  	}
+> -	if (dma_map_cont(sg, start, i, sg+out, pages, need) < 0)
+> +	if (dma_map_cont(start_sg, i - start, sg+out, pages, need) < 0)
+>  		goto error;
+>  	out++;
+>  	flush_gart();
 
-> Attempting to compile a 2.6.21.1 kernel for use on a Fedora Core 6 box
-> results in a panic at boot because the root filesystem can't be found.
+Your patch is (very) buggy, the whole premise of doing chained sg
+entries makes sg + int illegal!
 
-I have just compiled 2.6.22-rc2 with the configuration file given in my
-previous post and the resulting kernel successfully boots on the machine
-concerned.  Whatever broke LVM for this machine in between 2.6.18 and
-2.6.21.1 has now been fixed.
+-- 
+Jens Axboe
 
-There is still a problem with the CDROM but I will follow up in another
-thread about that.
-
-Regards
-  jonathan
---
-"Time is an illusion; lunchtime doubly so"
