@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762957AbXEUWQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764150AbXEUWRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762957AbXEUWQP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 18:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbXEUWP7
+	id S1764150AbXEUWRU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 18:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758574AbXEUWRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 18:15:59 -0400
-Received: from as1.cineca.com ([130.186.84.251]:55524 "EHLO as1.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757441AbXEUWP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 18:15:58 -0400
-Message-ID: <465219FA.7080305@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070326 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+	Mon, 21 May 2007 18:17:09 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:33150 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758561AbXEUWRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 18:17:08 -0400
+Date: Mon, 21 May 2007 15:13:07 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       stable@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/69] -stable review
+Message-ID: <20070521221307.GP3429@sequoia.sous-sol.org>
+References: <20070521191612.800400000@sous-sol.org> <20070521123148.a3dad5f2.akpm@linux-foundation.org> <20070521203111.GJ3429@sequoia.sous-sol.org> <46521165.5030207@cosmosbay.com>
 MIME-Version: 1.0
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr> <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de> <46517817.1080208@users.sourceforge.net> <20070521110406.GA14802@vanheusden.com> <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr> <20070521124734.GB14802@vanheusden.com> <4651A564.9090509@users.sourceforge.net> <20070521185947.GF14802@vanheusden.com>
-In-Reply-To: <20070521185947.GF14802@vanheusden.com>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
 Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Date: Tue, 22 May 2007 00:15:55 +0200 (MEST)
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46521165.5030207@cosmosbay.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folkert van Heusden wrote:
->>>>> What about the following enhancement: I check with sig_fatal if it would
->>>>> kill the process and only then emit a message. So when an application
->>>>> takes care itself of handling it nothing is printed.
->>>>> +	/* emit some logging for unhandled signals
->>>>> +	 */
->>>>> +	if (sig_fatal(t, sig))
->>>> Not unhandled_signal()?
->>> Can we already use that one in send_signal? As the signal needs to be
->>> send first I think before we know if it was handled or not? sig_fatal
->>> checks if the handler is set to default - which is it is not taken care
->>> of.
->> What about ptrace()'d processes? I don't think we should log signals for them...
+* Eric Dumazet (dada1@cosmosbay.com) wrote:
+> Chris Wright a écrit :
+> >* Andrew Morton (akpm@linux-foundation.org) wrote:
+> >>On Mon, 21 May 2007 12:16:12 -0700
+> >>Chris Wright <chrisw@sous-sol.org> wrote:
+> >>
+> >>>This is the start of the stable review cycle for the 2.6.21.2 release.
+> >>Gee a lot of these are fixing recently-added regressions :(
+> >>
+> >>Did we fix oprofile on x86_64 yet?  If not, I'd suggest we should
+> >>hold off 2.6.21.2 until we have done so.
+> >
+> >No, we've seen 2 versions of the patch, no word from Andi, and nothing
+> >upstream that I saw.  Andi?
 > 
-> Why not?
+> Seems Linus tree includes a fix from Andi, check commit 
+> 6c977aad03a18019015035958c65b6729cd0574c
 
-Maybe sometimes it's useful, maybe not, but I suppose that usually only the
-controlling process should care about the critical signals received by the
-controlled process. I simply don't think it should be a system issue. For
-example I wouldn't like to have a lot of messages in the kernel logs just
-because I'm debugging some segfaulting programs with gdb.
+Indeed, it's there now.
 
--Andrea
+thanks,
+-chris
