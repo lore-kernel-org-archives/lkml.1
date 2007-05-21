@@ -1,94 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761994AbXEUMrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbXEUMun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761994AbXEUMrq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 08:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbXEUMrg
+	id S1759413AbXEUMun (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 08:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280AbXEUMug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 08:47:36 -0400
-Received: from keetweej.vanheusden.com ([213.84.46.114]:35938 "EHLO
-	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755740AbXEUMrf (ORCPT
+	Mon, 21 May 2007 08:50:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:54979 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755097AbXEUMuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 08:47:35 -0400
-Date: Mon, 21 May 2007 14:47:34 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Andrea Righi <righiandr@users.sourceforge.net>, Andi Kleen <ak@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-Message-ID: <20070521124734.GB14802@vanheusden.com>
-References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr> <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de> <46517817.1080208@users.sourceforge.net> <20070521110406.GA14802@vanheusden.com> <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr>
+	Mon, 21 May 2007 08:50:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XwF/pym/8wqSaXtnIYRJdJUiD8Cny+pHmKdDDHFQqMwR+fLCPCGjHbwRvlXzpOnL3/5z1uu0Un3R6w2qN6P2rOSeP7krw2zkJFWbtOEjhfS0BflcZ0MnsApLeIsRj9InKUpu3BAZAASKoOPvC4SpN84z/bPHugl+PyayWYA9gGA=
+Message-ID: <84144f020705210550v1694fe74md8e19958bf2cf891@mail.gmail.com>
+Date: Mon, 21 May 2007 15:50:32 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Subject: Re: [PATCH 12/32] Blackfin arch: Fix bug using usb keyboard crashes kernel
+Cc: "Bryan Wu" <bryan.wu@analog.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <84144f020705210514y396f6e67r57b86362a10f44f1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Tue May 22 12:32:47 CEST 2007
-X-Message-Flag: www.unixexpert.nl
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <600D5CB4DFD93545BF61FF01473D11AC0B174C8F@limkexm2.ad.analog.com>
+	 <84144f020705210514y396f6e67r57b86362a10f44f1@mail.gmail.com>
+X-Google-Sender-Auth: ab40b62a1fae901c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >What about the following enhancement: I check with sig_fatal if it would
-> >kill the process and only then emit a message. So when an application
-> >takes care itself of handling it nothing is printed.
-> >+	/* emit some logging for unhandled signals
-> >+	 */
-> >+	if (sig_fatal(t, sig))
-> Not unhandled_signal()?
+On 5/21/07, Hennerich, Michael <Michael.Hennerich@analog.com> wrote:
+> With CONFIG_VT (drivers/char/vt.c) enabled and a USB HID keyboard connected,
+> we were seeing bad pointer dereferences in drivers/char/keyboard.c
+>
+> In function kbd_keycode vc_cons[fg_console].d was un-initialized.
 
-Can we already use that one in send_signal? As the signal needs to be
-send first I think before we know if it was handled or not? sig_fatal
-checks if the handler is set to default - which is it is not taken care
-of.
+On 5/21/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Makes sense. Please consider adding this to the changelog. Thanks.
 
-> >+	{
-> if (sig_fatal(t, sig)) {
-> >+		printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
-> s/send/sent/;
-> >+		sig, t -> pid, t -> uid, t -> gid, t -> comm);
-> t->pid, t->uid, t->gid, t->comm);
+I am not an expert on this, but I don't see how vc_cons[fg_console].d
+would be uninitialized. It is always set in
+drivers/char/vt.c:con_init() and drivers/char/vt.c:vc_allocate(). The
+conswitchp change affects vc->vc_sw but I don't see that being used in
+drivers/char/keyboard.c:kbd_keycode() except indirectly via
+set_console et al.
 
-
-Description:
-This patch adds code to the signal-sender making it log a message when
-an unhandled fatal signal will be delivered.
-
-Signed-off by: Folkert van Heusden <folkert@vanheusden.com>
-
---- kernel/signal.c.org	2007-05-20 22:47:13.000000000 +0200
-+++ kernel/signal.c	2007-05-21 14:46:05.000000000 +0200
-@@ -739,6 +739,12 @@
- 	struct sigqueue * q = NULL;
- 	int ret = 0;
- 
-+	/* unhandled fatal signals are logged */
-+	if (sig_fatal(t, sig)) {
-+		printk(KERN_WARNING "Sig %d sent to %d owned by %d.%d (%s)\n",
-+		sig, t->pid, t->uid, t->gid, t->comm);
-+	}
-+
- 	/*
- 	 * fast-pathed signals for kernel-internal things like SIGSTOP
- 	 * or SIGKILL.
-
-
-Folkert van Heusden
-
--- 
-MultiTail è uno flexible tool per seguire di logfiles e effettuazione
-di commissioni. Feltrare, provedere da colore, merge, 'diff-view',
-etc. http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+Perhaps I am missing something here?
