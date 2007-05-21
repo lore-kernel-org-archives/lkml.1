@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbXEUOH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbXEUOJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759469AbXEUOH6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 10:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbXEUOHv
+	id S1761347AbXEUOJA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 10:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbXEUOIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 10:07:51 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:2183 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755902AbXEUOHu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 10:07:50 -0400
-Date: Mon, 21 May 2007 15:07:46 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 2.6.21: nfs_readpages: Add missing braces
-In-Reply-To: <1179753845.6535.9.camel@heimdal.trondhjem.org>
-Message-ID: <Pine.LNX.4.64N.0705211501530.8263@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0705211402170.8263@blysk.ds.pg.gda.pl>
- <1179753845.6535.9.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 21 May 2007 10:08:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47180 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755902AbXEUOIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 10:08:51 -0400
+Date: Mon, 21 May 2007 10:08:47 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@redhat.com,
+       randy.dunlap@oracle.com
+Cc: Prarit Bhargava <prarit@redhat.com>
+Message-Id: <20070521140847.11958.47504.sendpatchset@prarit.boston.redhat.com>
+Subject: [PATCH]: Fix overloaded use of apic= on bootline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Trond Myklebust wrote:
+Andrew, I've submitted this a couple of times and it's had a review by Randy.
+Any chance we can get this in?
 
-> > A change a while ago added a call to gather statistics to a conditional 
-> > statement, but braces were missed on that occasion resulting in a change 
-> > of semanticts.  This a change to rectify.
-> 
-> So you are proposing this as a stable update? It won't apply on
-> 2.6.22-rc2.
+Thanks,
 
- I have tried the patch on 2.6.21 and have missed the function in question 
-has been since updated.  Sorry about that.  If you think the change is 
-important-enough to be applied on a stable branch, the please go ahead, 
-otherwise feel free to discard it.
+P.
 
-  Maciej
+The use of "apic=" on the boot line is overloaded.  It is used once to
+override the type of genapic, and then later on it is used to determine a debug
+level.  Because of this a bogus error message is sent to the console when using
+the debug option:
+
+	Unknown genapic `apic=debug' specified.
+
+	This patch changes the genapic situation to use "genapic=".
+
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 09220a1..f156b59 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -636,6 +636,9 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	gamma=		[HW,DRM]
+ 
++	genapic=	[APIC,i386] Select a specific genapic type to be used.
++			Format: <name>
++
+ 	gdth=		[HW,SCSI]
+ 			See header of drivers/scsi/gdth.c.
+ 
+diff --git a/arch/i386/mach-generic/probe.c b/arch/i386/mach-generic/probe.c
+index 74f3da6..ce78b15 100644
+--- a/arch/i386/mach-generic/probe.c
++++ b/arch/i386/mach-generic/probe.c
+@@ -49,7 +49,7 @@ static int __init parse_apic(char *arg)
+ 	/* Parsed again by __setup for debug/verbose */
+ 	return 0;
+ }
+-early_param("apic", parse_apic);
++early_param("genapic", parse_apic);
+ 
+ void __init generic_bigsmp_probe(void)
+ {
