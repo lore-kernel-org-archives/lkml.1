@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbXEUXSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765466AbXEUXTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762952AbXEUXSN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 19:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbXEUXSA
+	id S1765466AbXEUXTS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 19:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbXEUXTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 19:18:00 -0400
-Received: from mga03.intel.com ([143.182.124.21]:64306 "EHLO mga03.intel.com"
+	Mon, 21 May 2007 19:19:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46258 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757998AbXEUXR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 19:17:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,563,1170662400"; 
-   d="scan'208";a="230566428"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
-Date: Mon, 21 May 2007 16:17:50 -0700
-User-Agent: KMail/1.9.6
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-References: <200705212305.l4LN5irk008924@turbo.physics.adelaide.edu.au>
-In-Reply-To: <200705212305.l4LN5irk008924@turbo.physics.adelaide.edu.au>
+	id S1758178AbXEUXTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 19:19:05 -0400
+Message-ID: <465228E2.1030405@garzik.org>
+Date: Mon, 21 May 2007 19:18:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+References: <200705171423.46748.jesse.barnes@intel.com>	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>	 <200705210914.22663.jbarnes@virtuousgeek.org>	 <200705210934.58559.jbarnes@virtuousgeek.org> <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
+In-Reply-To: <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705211617.50642.jesse.barnes@intel.com>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, May 21, 2007 4:05 pm Jonathan Woithe wrote:
-> 02:00.0 IDE interface: Marvell Technology Group Ltd. Unknown device
-> 6101 (rev b1) (prog-if 8f [Master SecP SecO PriP PriO]) Subsystem:
-> Marvell Technology Group Ltd. Unknown device 6101 Flags: bus master,
-> fast devsel, latency 0, IRQ 10
-> 	I/O ports at 1018 [size=8]
-> 	I/O ports at 1024 [size=4]
-> 	I/O ports at 1010 [size=8]
-> 	I/O ports at 1020 [size=4]
-> 	I/O ports at 1000 [size=16]
-> 	Memory at 90100000 (32-bit, non-prefetchable) [size=512]
-> 	Capabilities: [48] Power Management version 2
-> 	Capabilities: [50] Message Signalled Interrupts: 64bit- Queue=0/0
-> Enable- Capabilities: [e0] Express Legacy Endpoint IRQ 0
+Jon Smirl wrote:
+> 2) Address the long outstanding issue of multi-seat at the console
+> level. My solution to this is the one device per CRTC model.
 
-Looks like you've got Marvell IDE for your PATA stuff (my board is the 
-same).  Try the latest Marvell driver, it seems to drive my machine ok.  
-For older kernels, I think you can pass 'all-generic-ide' on the boot 
-line to get the old IDE layer to drive the device.
+This is very very low priority.  Pretty much nobody besides you is 
+clamoring for it.
 
-Jesse
+
+> 3) Eliminate the need for a root priv controlling process. Get rid of
+> the potential for a security hole.
+
+Agreed.
+
+
+> 4) OOPS should always display even if in a graphics mode
+
+Agreed, and this was in the list that Jesse(?) posted.
+
+
+> 8) Allow multiple user space graphics systems to run. These user space
+
+Another very very low priority item.
+
+There are a lot more important things to work on.  Linux is about what 
+people need -right now-, not what you think Linux might need in the 
+future; not what you think might be nice to have.
+
+	Jeff
+
+
