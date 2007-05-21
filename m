@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761268AbXEUIiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbXEUIlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761268AbXEUIiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760474AbXEUIiZ
+	id S1760882AbXEUIlw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756073AbXEUIlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:38:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:24003 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759790AbXEUIiY (ORCPT
+	Mon, 21 May 2007 04:41:45 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:1297 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755955AbXEUIlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:38:24 -0400
+	Mon, 21 May 2007 04:41:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ArHN5zp/HE7AdzjEBCikP+x8EtdeSoRTkfjXg+AgVWwII1U7qZPgsrcHNE17UxOUv6EzIPDlmSf1IViEVGm3AB7i0dKh9bNFjPa49hZ4kOcSubF285CuPQscROrEDzfvLpf+cYBEU770SlRDho6SYHO3MCgNnU18KtGVAXaDYiw=
-Message-ID: <46515A7D.20003@gmail.com>
-Date: Mon, 21 May 2007 10:38:21 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lp3b2vwaQc4Xu9CfAhRtjgUUp7hCgngjs3KLOvVNQOyolgNgMj49WCE25SblvEFcOmtmy4ld6psI+prSOFQhHGOKsv3TzllM5xFRU4pHd2/un8q8kEAEoovn3AdgTyQr847+MWCulDss0egr7QZpa7G8CTj6cd45MhCuUrg/WzE=
+Message-ID: <a8e1da0705210141m4d9f0ccevde3060fefcc55537@mail.gmail.com>
+Date: Mon, 21 May 2007 08:41:43 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: 2.6.22-rc1-mm1
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <465138CC.3060605@zytor.com>
 MIME-Version: 1.0
-To: Soeren Sonnenburg <kernel@nn7.de>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Can't s2ram 22-rc2 [Was: 2.6.22-rc2 BUG: at slub_def.h:77]
-References: <1179728579.11803.1.camel@localhost>	 <465153AF.5030008@gmail.com> <1179736498.4980.1.camel@localhost>
-In-Reply-To: <1179736498.4980.1.camel@localhost>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
+	 <a8e1da0705180154v37e8ec5fs2cc4de9417cd44d2@mail.gmail.com>
+	 <a8e1da0705180307m60a91996r91c8bfcd1c863a94@mail.gmail.com>
+	 <464DDA40.6010101@zytor.com>
+	 <a8e1da0705201753i1527138ape2163817c6c0d3b5@mail.gmail.com>
+	 <465124EA.1020801@zytor.com>
+	 <a8e1da0705202200u5976d14do7ec1469941bb2967@mail.gmail.com>
+	 <46512821.9010905@zytor.com>
+	 <a8e1da0705202239r31d03a5dyc2f0ce6a795e0124@mail.gmail.com>
+	 <465138CC.3060605@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Played with Cc list.
+Hi,
 
-Soeren Sonnenburg napsal(a):
-> On Mon, 2007-05-21 at 10:09 +0200, Jiri Slaby wrote:
->> Soeren Sonnenburg napsal(a):
->>> a regression (well I switched to slub) happens on boot...
-> 
->>> BUG: at include/linux/slub_def.h:77 kmalloc_index()
->>>  [<c0176448>] get_slab+0x1c8/0x250
-> [...]
->> Could you try this patch:
->> http://lkml.org/lkml/2007/5/19/171
-> 
-> yes, that does fix the issue (at least I don't see the BUG: anymore on
-> boot). however I can no longer s2ram on 22rc2. 
+kernel booting and stopped in edd.c:read_sector.
 
-Whit what kind of error or what happens?
+I add debug messages around the two inline assemblly sentence, recompile kernel,
+now strange thing happend, the kernel booting directly, but the printf
+messages can't be seen because it's too rapid.
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+can we use printk in boot code?
+
+the change of edd.c:
+--- edd.c.bak   2007-05-21 14:38:34.000000000 +0000
++++ edd.c       2007-05-21 15:58:02.000000000 +0000
+@@ -47,9 +47,11 @@ static int read_sector(u8 devno, u64 lba
+        ax = 0x4200;            /* Extended Read */
+        si = (size_t)&dapa;
+        dx = devno;
++       printf("before first inline\n");
+        asm("pushfl; stc; int $0x13; setc %%al; popfl"
+            : "+a" (ax), "+S" (si), "+d" (devno)
+            : : "ebx", "ecx", "edi");
++       printf("after first inline\n");
+
+        if (!(u8)ax)
+                return 0;       /* OK */
+@@ -58,9 +60,11 @@ static int read_sector(u8 devno, u64 lba
+        cx = 0x0001;            /* Sector 0-0-1 */
+        dx = devno;
+        bx = (size_t)buf;
++       printf("before second inline\n");
+        asm("pushfl; stc; int $0x13; setc %%al; popfl"
+            : "+a" (ax), "+c" (cx), "+d" (dx), "+b" (bx)
+            : : "esi", "edi");
++       printf("after second inline\n");
+
+        return -(u8)ax;         /* 0 or -1 */
+ }
+
+
+
+Regards
+dave
