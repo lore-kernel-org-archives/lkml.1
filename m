@@ -1,58 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbXEUMmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbXEUMqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbXEUMmn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 08:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbXEUMmg
+	id S1758079AbXEUMqk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 08:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755695AbXEUMqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 08:42:36 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:38871 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755093AbXEUMmg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 08:42:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=EMudtPxym7i88OIa1ku11+wLwZZnznewknbVbpgfJUDyg22tXPUEgE+scGoSGHp7cIU6satJnAmcvTqw+A3mrhSyqg2PNDYW8+e+GTMqhQhpkasW7bwmUzAZLNQmwhCkQbIiYpbKzFqmDWokep9MbUKhFHRYuSFXHvwyWTwcQYQ=
-Message-ID: <465193A5.4080103@gmail.com>
-Date: Mon, 21 May 2007 14:42:13 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 21 May 2007 08:46:33 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41082 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755641AbXEUMqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 08:46:32 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX1/qJL8mPSnq3HRFHYM0HbasLXQ8MiYspXMztAFqKw
+	GK9A9O/k2h2BLw
+Message-ID: <4651894A.1090004@gmx.net>
+Date: Mon, 21 May 2007 13:58:02 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-To: Alan Cox <alan@redhat.com>
-CC: Robert de Rooy <robert.de.rooy@gmail.com>, linux-kernel@vger.kernel.org,
-       bzolnier@gmail.com, jgarzik@pobox.com
-Subject: Re: libata and legacy ide pcmcia failure
-References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com> <464CB7C9.2080807@gmail.com> <46503192.1040300@gmail.com> <4650B9E3.7070409@gmail.com> <46518798.2020808@gmail.com> <20070521123738.GA30639@devserv.devel.redhat.com>
-In-Reply-To: <20070521123738.GA30639@devserv.devel.redhat.com>
-X-Enigmail-Version: 0.95.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.49 and man-pages-2.50 are released
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Mon, May 21, 2007 at 01:50:48PM +0200, Tejun Heo wrote:
->>> May 20 23:02:56 localhost kernel: ata3.00: qc timeout (cmd 0xef)
->>> May 20 23:02:56 localhost kernel: ata3.00: failed to set xfermode
->>> (err_mask=0x4)
->> Hmmm... It doesn't like SETXFERMASK either.  Please try the attached patch.
-> 
-> The CF 1.1 command list is pretty short. Unfortunately the patch you've
-> given below won't itself cure the problem as some of the newer CF cards do
-> need SETXFERMASK issuing to do higher PIO modes.
+Gidday,
 
-Yeap, it's a debug patch.  What I was thinking was adding a HORKAGE for
-the device - e.g. ATA_HORKAGE_NO_SETXFERMODE, but product ID "Memory
-Card Adapter" doesn't seem too specific.
+I just released man-pages-2.49 and man-pages-2.50.
 
-> The CFA people also didn't put the CFA version in the ident data. What might
-> work sanely would be
-> 
-> 	if (supports_pio == only_pio0 && cfa)
+These releases are now available for download at:
 
-OIC.  I don't really know much about these CFA thingies.  If the above
-should work for most devices, no objection from me.
+    http://www.kernel.org/pub/linux/docs/manpages
+    or ftp://ftp.kernel.org/pub/linux/docs/manpages
+    or mirrors: ftp://ftp.XX.kernel.org/pub/linux/docs/manpages
+
+and soon at:
+
+    ftp://ftp.win.tue.nl/pub/linux-local/manpages
+
+Changes in 2.49 that may be of interest to readers of this list are listed
+below (see the "changes" file for a complete list of changes).  The notable
+change in 2.50 is the dropping of a number of man1 pages, as explained in
+the "Changes" file:
+
+        Once upon time Andries added a number of Section 1 manual pages
+        to man-pages.  However, since that time, those pages have not
+        seen much maintenance, and are not in fact distributed in most
+        distributions.  Instead most distributions supply the
+        coreutils versions of these pages, which are currently
+        maintained.  In addition, man-pages provides the 1p pages,
+        which document the portable subset of functionality of these
+        commands.  Since the man1 pages are mostly unneeded, and
+        out of date, I'm removing them.
+
+(Exceptions are intro.1, ldd.1, and time.1, which will be retained.)
+
+Cheers,
+
+Michael
+
+==================== Changes in man-pages-2.49 ====================
+
+New pages
+---------
+
+euidaccess.3
+    mtk
+        Manual page for euidaccess() and eaccess().
+
+getsubopt.3
+    mtk / Justin Pryzby
+         Documentation of getsubopt().
+
+Changes to individual pages
+---------------------------
+
+epoll_pwait.2
+    mtk
+        Added description of epoll_pwait(), new in kernel 2.6.19.
+
+execve.2
+    mtk
+        Add text noting that Linux allows 'argv' and 'envp' to be
+        NULL, but warning that this is non-standard and non-portable,
+        and should be avoided in portable programs.
+        Bug filed (http://bugzilla.kernel.org/show_bug.cgi?id=8408)
+        to get this changed, but maybe that won't be done because it
+        is an ABI change.
+    mtk
+        Added an example program.
+    mtk
+        Expanded the discussion of interpreter scripts and the
+        'optional-arg' argument of an interpreter script.
+        For further info, see
+        http://homepages.cwi.nl/~aeb/std/hashexclam-1.html
+        http://www.in-ulm.de/~mascheck/various/shebang/
+    mtk
+        Added text noting that FD_CLOEXEC causes record locks to be
+        released.
+    mtk
+        Mention effect of MS_NOSUID mount(2) flag for set-user-ID
+        programs.
+    mtk
+        Expanded description of handling of file descriptors during
+        execve(), adding text to note that descriptors 0, 1, and 2
+        may be treated specially.
+
+readv.2
+    mtk
+        A fairly substantial rewrite, which among other things
+        fixes the problem reported by Kyle Sluder in
+        http://bugzilla.kernel.org/show_bug.cgi?id=8399
+        And added some example code.
+
+sigaction.2
+    mtk
+        Added text referring to the discussion of async-signal-safe
+        functions in signal(7).
+        A few other minor formatting and wording changes.
+
+signal.2
+    mtk
+        Moved the discussion of async-signal-safe functions to signal(7).
+        Added text referring to the discussion of async-signal-safe
+        functions in signal(7).
+        Added SEE ALSO entries referring to new bsd_signal.3 and
+        sysv_signal.3 pages.
+
+signal.7
+    mtk
+        Incorporated (and slightly modified) the text on
+        async-signal-safe functions that was formerly in signal(2).
+        Added SEE ALSO entries referring to new bsd_signal.3 and
+        sysv_signal.3 pages.
+
 
 -- 
-tejun
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
+
