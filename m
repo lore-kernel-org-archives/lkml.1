@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbXEUTe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934586AbXEUTew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761595AbXEUTe2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765520AbXEUTWO
+	id S934586AbXEUTew (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765022AbXEUTWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:22:14 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46483 "EHLO
+	Mon, 21 May 2007 15:22:16 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46481 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758511AbXEUTWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765475AbXEUTWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 15:22:07 -0400
-Message-Id: <20070521191753.357017000@sous-sol.org>
+Message-Id: <20070521191753.807353000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:12 -0700
+Date: Mon, 21 May 2007 12:17:13 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,8 +25,8 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk,
        Stephen Hemminger <shemminger@linux-foundation.org>,
        netdev@vger.kernel.org
-Subject: [patch 60/69] sky2: 88e8071 support not ready
-Content-Disposition: inline; filename=sky2-88e8071-support-not-ready.patch
+Subject: [patch 61/69] skge: crash on shutdown/suspend
+Content-Disposition: inline; filename=skge-shutdown.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -35,25 +35,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-The driver is not ready to support 88e8071 chip, it requires several
-more changes (not done yet). If this chip is present, system will hang on boot.
+If device fails during module startup for some reason (like unsupported chip
+version) then driver would crash dereferencing a null pointer, on shutdown
+or suspend/resume.
 
 Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- drivers/net/sky2.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/skge.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- linux-2.6.21.1.orig/drivers/net/sky2.c
-+++ linux-2.6.21.1/drivers/net/sky2.c
-@@ -129,7 +129,7 @@ static const struct pci_device_id sky2_i
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4368) }, /* 88EC034 */
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4369) }, /* 88EC042 */
- 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x436A) }, /* 88E8058 */
--	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x436B) }, /* 88E8071 */
-+//	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x436B) }, /* 88E8071 */
- 	{ 0 }
- };
+--- linux-2.6.21.1.orig/drivers/net/skge.c
++++ linux-2.6.21.1/drivers/net/skge.c
+@@ -3794,6 +3794,9 @@ static int skge_suspend(struct pci_dev *
+ 	struct skge_hw *hw  = pci_get_drvdata(pdev);
+ 	int i, err, wol = 0;
  
++	if (!hw)
++		return 0;
++
+ 	err = pci_save_state(pdev);
+ 	if (err)
+ 		return err;
+@@ -3822,6 +3825,9 @@ static int skge_resume(struct pci_dev *p
+ 	struct skge_hw *hw  = pci_get_drvdata(pdev);
+ 	int i, err;
+ 
++	if (!hw)
++		return 0;
++
+ 	err = pci_set_power_state(pdev, PCI_D0);
+ 	if (err)
+ 		goto out;
+@@ -3860,6 +3866,9 @@ static void skge_shutdown(struct pci_dev
+ 	struct skge_hw *hw  = pci_get_drvdata(pdev);
+ 	int i, wol = 0;
+ 
++	if (!hw)
++		return;
++
+ 	for (i = 0; i < hw->ports; i++) {
+ 		struct net_device *dev = hw->dev[i];
+ 		struct skge_port *skge = netdev_priv(dev);
 
 -- 
