@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbXEUI2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbXEUI2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759217AbXEUI2P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbXEUI2B
+	id S1760045AbXEUI2y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXEUI2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:28:01 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:8689 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755214AbXEUI2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:28:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=T0j2SHAgUdC3iqM7ZzpuQGhvtGTYT6BhmqKtzlzBFLAAd5a/mIwaiMUMJ0F0TXA0zP5X1t6xEt5pTQYnDRlO5AwGYfFSW0GGS1WhX+S/yOYzchOEX9OnEoHeCWmSq4bm2mr4oy/kDPbdKtlCywPcENuW2yBKV5Yb1q9+TpZkzog=
-Message-ID: <21d7e9970705210127o2360cd63mb8a41fdab9f211f9@mail.gmail.com>
-Date: Mon, 21 May 2007 18:27:54 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jon Smirl" <jonsmirl@verizon.net>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Cc: "Jesse Barnes" <jesse.barnes@intel.com>, jonsmirl@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <pan.2007.05.20.17.41.22@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 21 May 2007 04:28:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40441 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755251AbXEUI2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:28:47 -0400
+Date: Mon, 21 May 2007 10:28:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: kernel@prachanda.info, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       tglx@linutronix.de
+Subject: Re: bad networking related lag in v2.6.22-rc2
+Message-ID: <20070521082805.GA17740@elte.hu>
+References: <20070518102607.GA23151@elte.hu> <200705200246.22444.kernel@prachanda.hub> <20070521075824.GA11198@elte.hu> <20070521.012541.112621369.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <pan.2007.05.20.17.41.22@gmail.com>
+In-Reply-To: <20070521.012541.112621369.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/07, Jon Smirl <jonsmirl@verizon.net> wrote:
-> On Thu, 17 May 2007 14:23:45 -0700, Jesse Barnes wrote:
->
-> > In collaboration with the FB guys, we've been working on enhancing the
-> > kernel's graphics subsystem in an attempt to bring some sanity to the
-> > Linux graphics world and avoid the situation we have now where several
-> > kernel and userspace drivers compete for control of graphics devices.
->
-> How is supporting different users logged into each head going to work?
-> The original model for this was to give each head its own fbdev device.
-> It is important that each user be able to set their own mode without being
-> root.
 
-TThe problem with that is the concept of heads is flawed... there is
-in reality no such
-thing, you have crtcs and outputs, no heads. So any attempt to enforce
-the head concept involves putting policy into the kernel, as if I have
-3 outputs but 2 crtcs how do I decide the mappings without the admin
-telling the kernel,
+* David Miller <davem@davemloft.net> wrote:
 
-As for moving other card drivers they will move as people see fit to
-move them there probably isn't much gain in moving single crtc/output
-cards..
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Mon, 21 May 2007 09:58:24 +0200
+> 
+> > what does 'top' show during an upload? Is any system related task
+> > out of whack? Could you try to get a readprofile or an oprofile
+> > output from the kernel, so that we can see what is slowing it down
+> > so much? It could be something networking related in v2.6.22-rc2.
+> 
+> There is a driver specific problem that's been around for a while, but 
+> it only effects 3c59x chips, is that what you have?
 
-Dave.
+the problem first showed up in v2.6.22-rc1 and he didnt have it in 
+v2.6.21 - does that still qualify his box for the 3c59x problem?
 
->
-> Jon Smirl
-> jonsmirl@gmail.com
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-x.org/lkml/
->
-x.org/lkml/
->
+	Ingo
