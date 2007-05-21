@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934048AbXEUTdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934173AbXEUTdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934048AbXEUTdc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763263AbXEUTWI
+	id S934173AbXEUTdx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765341AbXEUTWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:22:08 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46477 "EHLO
+	Mon, 21 May 2007 15:22:11 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46478 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765495AbXEUTWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765507AbXEUTWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 15:22:06 -0400
-Message-Id: <20070521191754.252731000@sous-sol.org>
+Message-Id: <20070521191752.897413000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:14 -0700
+Date: Mon, 21 May 2007 12:17:11 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,8 +25,8 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk,
        Stephen Hemminger <shemminger@linux-foundation.org>,
        netdev@vger.kernel.org
-Subject: [patch 62/69] sky2: fix oops on shutdown
-Content-Disposition: inline; filename=sky2-fix-oops-on-shutdown.patch
+Subject: [patch 59/69] sky2: allow 88E8056
+Content-Disposition: inline; filename=sky2-88e8056-allow.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -35,56 +35,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-If the device fails during module startup for some reason like unsupported chip
-version then the driver would crash dereferencing a null pointer, on shutdown
-or suspend/resume.
+It looks like the problems of Gigabyte 88E8056 are unique to that chip
+motherboard and maybe fixable by EEPROM update.
 
 Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- drivers/net/sky2.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/net/sky2.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
 --- linux-2.6.21.1.orig/drivers/net/sky2.c
 +++ linux-2.6.21.1/drivers/net/sky2.c
-@@ -3719,6 +3719,7 @@ err_out_free_regions:
- 	pci_release_regions(pdev);
- 	pci_disable_device(pdev);
- err_out:
-+	pci_set_drvdata(pdev, NULL);
- 	return err;
- }
- 
-@@ -3771,6 +3772,9 @@ static int sky2_suspend(struct pci_dev *
- 	struct sky2_hw *hw = pci_get_drvdata(pdev);
- 	int i, wol = 0;
- 
-+	if (!hw)
-+		return 0;
-+
- 	del_timer_sync(&hw->idle_timer);
- 	netif_poll_disable(hw->dev[0]);
- 
-@@ -3802,6 +3806,9 @@ static int sky2_resume(struct pci_dev *p
- 	struct sky2_hw *hw = pci_get_drvdata(pdev);
- 	int i, err;
- 
-+	if (!hw)
-+		return 0;
-+
- 	err = pci_set_power_state(pdev, PCI_D0);
- 	if (err)
- 		goto out;
-@@ -3848,6 +3855,9 @@ static void sky2_shutdown(struct pci_dev
- 	struct sky2_hw *hw = pci_get_drvdata(pdev);
- 	int i, wol = 0;
- 
-+	if (!hw)
-+		return;
-+
- 	del_timer_sync(&hw->idle_timer);
- 	netif_poll_disable(hw->dev[0]);
- 
+@@ -123,10 +123,7 @@ static const struct pci_device_id sky2_i
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4361) }, /* 88E8050 */
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4362) }, /* 88E8053 */
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4363) }, /* 88E8055 */
+-#ifdef broken
+-	/* This device causes data corruption problems that are not resolved */
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4364) }, /* 88E8056 */
+-#endif
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4366) }, /* 88EC036 */
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4367) }, /* 88EC032 */
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_MARVELL, 0x4368) }, /* 88EC034 */
 
 -- 
