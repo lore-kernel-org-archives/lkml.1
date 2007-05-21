@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbXEUQf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbXEUQfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758759AbXEUQf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbXEUQfR
+	id S1761193AbXEUQfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbXEUQfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:35:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:62728 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755369AbXEUQfP (ORCPT
+	Mon, 21 May 2007 12:35:18 -0400
+Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:35229 "HELO
+	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755627AbXEUQfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:35:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=hYd5jMZcIeOdASEjdjWSRYmJS/dozwBJvC+PUHGKA+TeTQ+4nhJWz6RwKnaw0GPoB1pSOsBq4EFWEFL9I+zj5g7MgsPpRSTr2NdzfFQFK2KEpH8kPUrbR8pHf6iQ7geHCSnlsIuvbw2buMKxmW0lKKL0zDljdXxwmBuMsTVZoRA=
-Message-ID: <2c0942db0705210935r72cf076ap946c4f215a61ee5f@mail.gmail.com>
-Date: Mon, 21 May 2007 09:35:12 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Ken Chen" <kenchen@google.com>
-Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Kay Sievers" <kay.sievers@vrfy.org>, "Al Viro" <viro@ftp.linux.org.uk>,
-       "Andrey Borzenkov" <arvidjaar@mail.ru>, "Uwe Bugla" <uwe.bugla@gmx.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <b040c32a0705210927q24e2cd8fm9f4616941fccfdea@mail.gmail.com>
+	Mon, 21 May 2007 12:35:16 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+Date: Mon, 21 May 2007 09:34:58 -0700
+User-Agent: KMail/1.9.6
+Cc: "Jon Smirl" <jonsmirl@gmail.net>, "Jesse Barnes" <jesse.barnes@intel.com>,
+       linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@gmail.com>
+References: <200705171423.46748.jesse.barnes@intel.com> <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com> <200705210914.22663.jbarnes@virtuousgeek.org>
+In-Reply-To: <200705210914.22663.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <464F42F3.1080300@madrabbit.org>
-	 <200705200845.43621.arvidjaar@mail.ru>
-	 <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
-	 <20070520062816.GA4095@ftp.linux.org.uk>
-	 <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
-	 <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
-	 <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com>
-	 <1179677799.3311.5.camel@lov.localdomain>
-	 <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
-	 <b040c32a0705210927q24e2cd8fm9f4616941fccfdea@mail.gmail.com>
-X-Google-Sender-Auth: 6ea74278089be224
+Message-Id: <200705210934.58559.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/07, Ken Chen <kenchen@google.com> wrote:
-> On 5/21/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > I don't have much choice. I assume it is
-> >
-> >    commit 73285082 "remove artificial software max_loop limit"
-> >
-> > that introduced the new behaviour. Ken?
+On Monday, May 21, 2007, Jesse Barnes wrote:
+> > There is more to fbdev than mode setting. It is also how non-x86
+> > platforms achieve their boot display. How will boot display be handled
+> > with the your design? What about console display on non-x86 platforms?
+> > Loading both fbdev and the new code puts us right back into the
+> > multiple driver fight we have today.
 >
-> yes and no. in that commit, I automatically create n+1 device when
-> loop device n is created, allergically was tested to be fine with
-> casual usage of "losetup" and "mount -o loop".  However, there is a
-> bug in that commit when loop.c was compiled as a module.  And when Al
-> fixed it, he also removed that magic "n+1" trick.
+> Maybe you should take a look at the patches. :)  The code I posted
+> actually creates an fb device as a slave of the DRM device, and uses
+> that for the boot console.  Once you've booted, you can use the new
+> interfaces to do whatever you want with the graphics device... though it
+> doesn't create /dev/fb* devices per-CRTC like you seem to want, it's
+> really easy to do the equivalent with a small userspace program (though
+> I haven't actually tested sharing of buffer objects, it should work).
 
-As I said before, the reporter *tested* with Al's two patches
-reverted, AND IT STILL FAILED. Your commit had to be reverted as well
-to fix the problem.
+Actually, scratch that last bit.  I forgot about a recent change alanh 
+committed that did just that:  per-CRTC FB devices.  So please take a 
+close look (modesetting-101 of mesa/drm git at freedesktop.org) and let me 
+know if you see any gaping holes.
 
-> Nevertheless, yes, I'm guilty of introducing the new behavior.
-
-It's not a behavior, it's a bug. Whether you reintroduce the n+1
-inductive trick is immaterial to the problem at hand. loop.c needs to
-populate 8 or max_loop devices upon init to maintain current behavior.
+Thanks,
+Jesse
