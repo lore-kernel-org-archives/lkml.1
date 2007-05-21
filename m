@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbXEUIMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbXEUINH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760254AbXEUIMv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXEUIMo
+	id S1760613AbXEUINH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:13:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXEUIMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:12:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49243 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754512AbXEUIMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:12:43 -0400
-Date: Mon, 21 May 2007 10:12:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anant Nitya <kernel@prachanda.info>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 21 May 2007 04:12:46 -0400
+Received: from styx.suse.cz ([82.119.242.94]:51746 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756618AbXEUIMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:12:45 -0400
+Date: Mon, 21 May 2007 10:23:49 +0200
+From: Jan Kara <jack@suse.cz>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: bad networking related lag in v2.6.22-rc2
-Message-ID: <20070521081201.GB13858@elte.hu>
-References: <20070517174533.GA538@elte.hu> <200705180317.06014.kernel@prachanda.hub> <20070518102607.GA23151@elte.hu> <200705200246.22444.kernel@prachanda.hub> <20070521075824.GA11198@elte.hu> <20070521080351.GA13375@elte.hu>
-Mime-Version: 1.0
+       LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
+Subject: Re: [PATCH] UDF: check for allocated memory for inode data
+Message-ID: <20070521082349.GB30684@duck.suse.cz>
+References: <20070511072939.GA25727@infradead.org> <20070511090127.GD9444@cvg> <20070511103956.GA30896@infradead.org> <20070511110920.GA11898@cvg> <20070513210126.GB14030@infradead.org> <20070516143308.GA8327@cvg> <20070516173852.GC29602@atrey.karlin.mff.cuni.cz> <20070516175257.GA14076@cvg> <20070516175600.GA3261@infradead.org> <20070520122010.GA8334@cvg>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070521080351.GA13375@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.7
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.7 required=5.9 tests=BAYES_00,INFO_TLD autolearn=no SpamAssassin version=3.1.7
-	1.3 INFO_TLD               URI: Contains an URL in the INFO top-level domain
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070520122010.GA8334@cvg>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun 20-05-07 16:20:10, Cyrill Gorcunov wrote:
+> [Christoph Hellwig - Wed, May 16, 2007 at 06:56:00PM +0100]
+> | On Wed, May 16, 2007 at 09:52:57PM +0400, Cyrill Gorcunov wrote:
+> | > I've that documants even printed ;) Actually they are _very-very_ big
+> | > indeed. I don't know may be just try to bring this code into Linux
+> | > codying style?
+> | 
+> | That's probably a good step.  And while converting things to a proper
+> | style you'll surely find various bugs and thinkgs you could improve.
+> | Write them down somewhere and work on fixing them.  And make sure every
+> | actualy fix or behaviour change is a single patch separated from the
+> | cleanups.
+> | 
+> 
+> Hi Christoph,
+> 
+> I almost have completed UDF style conversation (the only thing to do
+> is to check all I've changed). And I've been striked down by the simple
+> question: the conversion I've done is over 2.6.22-rc1 but meantime in -mm
+> tree two my patches already exist so should I take them into account while
+> converting UDF style?
+  I guess Andrew would be most grateful if you counted with these two
+patches...
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > ouch! a nearly 1 second delay got observed by the scheduler - something 
-> > is really killing your system!
->
-> ah, you got the latency tracer from Thomas, as part of the -hrt patchset 
-> - that makes it quite a bit easier to debug. [...]
-
-and ... you already did a trace for Thomas, for the softirq problem:
-
-   http://cybertek.info/taitai/trace.txt.bz2
-
-this trace shows really bad networking related kernel activities!
-
-gkrellm-5977 does this at timestamp 0:
-
- gkrellm-5977  0..s.    0us : cond_resched_softirq (established_get_next)
-
-2 milliseconds later it's still in established_get_next() (!):
-
- gkrellm-5977  0..s. 2001us : cond_resched_softirq (established_get_next)
-
-and the whole thing takes ... 455 msecs:
-
- gkrellm-5977  0..s. 455443us+: cond_resched_softirq (established_get_next)
-
-i think this suggests that you have tons of open sockets. What does 
-"netstat -ts" say on your box?
-
-	Ingo
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
