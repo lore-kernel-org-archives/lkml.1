@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761033AbXEUJTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbXEUJWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761033AbXEUJTX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 05:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbXEUJTO
+	id S1759966AbXEUJWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 05:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXEUJWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 05:19:14 -0400
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:43494
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754540AbXEUJTN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 05:19:13 -0400
-Date: Mon, 21 May 2007 02:18:48 -0700
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: [PATCH] lockdep: lock contention tracking
-Message-ID: <20070521091848.GB4593@gnuppy.monkey.org>
-References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org> <20070521060828.GB20277@elte.hu> <20070521064150.GC4442@gnuppy.monkey.org> <20070521075013.GA9419@elte.hu>
+	Mon, 21 May 2007 05:22:32 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:37661 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754921AbXEUJWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 05:22:32 -0400
+Message-ID: <465165B8.8010504@openvz.org>
+Date: Mon, 21 May 2007 13:26:16 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521075013.GA9419@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+To: Andrew Morton <akpm@osdl.org>
+CC: Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Fix x86_64 boot/memory.c compilation (a misprint)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 09:50:13AM +0200, Ingo Molnar wrote:
-> Have you looked at the output Peter's patch produces? It prints out 
-> precise symbols:
-> 
->  dcache_lock: 3000 0 [618] [<ffffffff8033badd>] _atomic_dec_and_lock+0x39/0x58
-> 
-> which can easily be turned into line numbers using debuginfo packages or 
-> using gdb. (But normally one only needs the symbol name, and we 
-> certainly do not want to burden the kernel source with tracking 
-> __FILE__/__LINE__ metadata, if the same is already available via 
-> CONFIG_DEBUG_INFO.)
-> 
-> anything else?
+There is a misprint in arch/i386/boot/memory.c file that leads
+to error in x86_64 compilation:
 
-If his hashing scheme can produce precise locations of where locks are
-initialized both by a initializer function or a statically allocated
-object then my code is baroque and you should use Peter's code.
+...
+  CC      arch/x86_64/boot/memory.o
+arch/i386/boot/memory.c: In function `detect_memory':
+arch/i386/boot/memory.c:32: error: can't find a register in class `DREG' while reloading `asm'
 
-I write lockstat without the knowledge that lockdep was replicating the
-same work and I audited 1600 something lock points in the kernel to
-convert the usage of C99 style initializers to something more regular.
+The err variable is specified in asm output list like "=dm", not "=m".
 
-I also did this without consideration of things like debuginfo since
-I don't use those things.
+This is for 2.6.22-rc1-mm1 tree. Maybe this exists in i386 as well 
+and the patch is sent, but...
 
-> > [...] My stuff is potentially more extensible since I have other ideas 
-> > for it that really are outside of the lockdep logic currently. [...]
-> 
-> what do you mean, specifically?
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
-Better if I show you the patches in the future instead of saying now.
+---
 
-> i really need specifics. Currently i have the choice between your stuff:
-> 
->    17 files changed, 1425 insertions(+), 80 deletions(-)
-> 
-> and Peter's patch:
-> 
->     6 files changed,  266 insertions(+), 18 deletions(-)
-> 
-> and Peter's patch (if it works out fine in testing - and it seemed fine 
-> so far on my testbox), is smaller, more maintainable, better integrated 
-> and thus the clear candidate for merging into -rt and merging upstream 
-> as well. It's far cleaner than i hoped this whole lock-stats thing could 
-> be done based on lockdep, so i'm pretty happy with Peter's current patch 
-> already.
-
-If it meets your criteria and what you mentioned about is completely
-accurate, then use it instead of mine. I'll just finish up what I have
-done with reader tracking in my lockstat and migrate my -rt specific
-goodies to his infrastructure.
-
-bill
-
+diff --git a/arch/i386/boot/memory.c b/arch/i386/boot/memory.c
+index 8a82aa9..7ae2d23 100644
+--- a/arch/i386/boot/memory.c
++++ b/arch/i386/boot/memory.c
+@@ -30,7 +30,7 @@ static int detect_memory_e820(void)
+ 		size = sizeof(struct e820entry);
+ 		id = SMAP;
+ 		asm("int $0x15; setc %0"
+-		    : "=dm" (err), "+b" (next), "+d" (id), "+c" (size),
++		    : "=m" (err), "+b" (next), "+d" (id), "+c" (size),
+ 		      "=m" (*desc)
+ 		    : "D" (desc), "a" (0xe820));
+ 
