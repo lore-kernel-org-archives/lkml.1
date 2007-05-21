@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbXEUINH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbXEUIZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760613AbXEUINH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:13:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbXEUIMq
+	id S1758179AbXEUIZr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbXEUIZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:12:46 -0400
-Received: from styx.suse.cz ([82.119.242.94]:51746 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756618AbXEUIMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:12:45 -0400
-Date: Mon, 21 May 2007 10:23:49 +0200
-From: Jan Kara <jack@suse.cz>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
-Subject: Re: [PATCH] UDF: check for allocated memory for inode data
-Message-ID: <20070521082349.GB30684@duck.suse.cz>
-References: <20070511072939.GA25727@infradead.org> <20070511090127.GD9444@cvg> <20070511103956.GA30896@infradead.org> <20070511110920.GA11898@cvg> <20070513210126.GB14030@infradead.org> <20070516143308.GA8327@cvg> <20070516173852.GC29602@atrey.karlin.mff.cuni.cz> <20070516175257.GA14076@cvg> <20070516175600.GA3261@infradead.org> <20070520122010.GA8334@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070520122010.GA8334@cvg>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 21 May 2007 04:25:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39029
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753689AbXEUIZk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:25:40 -0400
+Date: Mon, 21 May 2007 01:25:41 -0700 (PDT)
+Message-Id: <20070521.012541.112621369.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: kernel@prachanda.info, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       tglx@linutronix.de
+Subject: Re: bad networking related lag in v2.6.22-rc2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070521075824.GA11198@elte.hu>
+References: <20070518102607.GA23151@elte.hu>
+	<200705200246.22444.kernel@prachanda.hub>
+	<20070521075824.GA11198@elte.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 20-05-07 16:20:10, Cyrill Gorcunov wrote:
-> [Christoph Hellwig - Wed, May 16, 2007 at 06:56:00PM +0100]
-> | On Wed, May 16, 2007 at 09:52:57PM +0400, Cyrill Gorcunov wrote:
-> | > I've that documants even printed ;) Actually they are _very-very_ big
-> | > indeed. I don't know may be just try to bring this code into Linux
-> | > codying style?
-> | 
-> | That's probably a good step.  And while converting things to a proper
-> | style you'll surely find various bugs and thinkgs you could improve.
-> | Write them down somewhere and work on fixing them.  And make sure every
-> | actualy fix or behaviour change is a single patch separated from the
-> | cleanups.
-> | 
-> 
-> Hi Christoph,
-> 
-> I almost have completed UDF style conversation (the only thing to do
-> is to check all I've changed). And I've been striked down by the simple
-> question: the conversion I've done is over 2.6.22-rc1 but meantime in -mm
-> tree two my patches already exist so should I take them into account while
-> converting UDF style?
-  I guess Andrew would be most grateful if you counted with these two
-patches...
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 21 May 2007 09:58:24 +0200
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+> what does 'top' show during an upload? Is any system related task
+> out of whack? Could you try to get a readprofile or an oprofile
+> output from the kernel, so that we can see what is slowing it down
+> so much? It could be something networking related in v2.6.22-rc2.
+
+There is a driver specific problem that's been around for a while,
+but it only effects 3c59x chips, is that what you have?
