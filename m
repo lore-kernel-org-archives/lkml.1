@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbXEUSjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759657AbXEUSoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762263AbXEUSjW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 14:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbXEUSjP
+	id S1759657AbXEUSoN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 14:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbXEUSn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 14:39:15 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:39907 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754957AbXEUSjO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 14:39:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Mcn05/y+THGbuuc7FS6WD16/pT+qGrQUeWQNN4BrctWGraJHgpBRrChDg+TmKH4XvQL+6JUrE8fmyziEDfNXW+mVWCzZLPJDQBn8DLYmCsq/ls37KnijbDuyzeBFxr8hAe/YML0eqaPj+MNtNoiB85n3Yzr0oTCirmVMiVOeJcU=
-Message-ID: <86802c440705211139ofb757fdn9bd012b3e62fca08@mail.gmail.com>
-Date: Mon, 21 May 2007 11:39:13 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH]serial: make early_uart to use early_prarm instead of console_initcall
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Gerd Hoffmann" <kraxel@redhat.com>, "Andi Kleen" <ak@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200705211202.59817.bjorn.helgaas@hp.com>
+	Mon, 21 May 2007 14:43:59 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:53560 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754957AbXEUSn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 14:43:59 -0400
+Message-ID: <4651E866.5010304@drzeus.cx>
+Date: Mon, 21 May 2007 20:43:50 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Race free attributes in sysfs
+References: <46502A8B.70803@drzeus.cx> <3ae72650705211050p6b6cefbdya70dd4e0a27e2d1b@mail.gmail.com>
+In-Reply-To: <3ae72650705211050p6b6cefbdya70dd4e0a27e2d1b@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705181900.17101.yinghai.lu@sun.com>
-	 <200705211053.34131.bjorn.helgaas@hp.com>
-	 <86802c440705211036r19be100pa2d2ed13780f6316@mail.gmail.com>
-	 <200705211202.59817.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
->   early_param("console", setup_early_console);
+Kay Sievers wrote:
 >
-> and have setup_early_console() ignore everything except "uart"?
+> Do you have a fixed set of attribute names, where you just want to
+> create a subset from that matches the individual device, or do you
+> need some sort of free naming for the attributes?
+>
 
-console= is used
-__setup("console=", console_setup);
-early_param doesn't have chance to see it.
+Currently, the names are fixed (and I don't see any pressing need for
+having dynamic names). I do want to have the ability to add attributes
+in different parts of the code though since it allows me to group the
+sysfs stuff closer to the function it accesses.
 
-YH
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
