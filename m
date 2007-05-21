@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764319AbXEUTHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbXEUTJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764319AbXEUTHD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXEUTGy
+	id S1761595AbXEUTJy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbXEUTJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:06:54 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:40462 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756759AbXEUTGx (ORCPT
+	Mon, 21 May 2007 15:09:47 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:40859
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755925AbXEUTJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:06:53 -0400
-Date: Mon, 21 May 2007 20:06:19 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Christoph Lameter <clameter@sgi.com>,
-       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
-       Oliver Xymoron <oxymoron@waste.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-In-Reply-To: <20070521190043.GA4705@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0705212005110.2550@blonde.wat.veritas.com>
-References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
- <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705211147100.26970@schroedinger.engr.sgi.com>
- <20070521190043.GA4705@kernel.dk>
+	Mon, 21 May 2007 15:09:46 -0400
+Date: Mon, 21 May 2007 12:09:17 -0700
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [PATCH] lockdep: lock contention tracking
+Message-ID: <20070521190917.GB20136@gnuppy.monkey.org>
+References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org> <20070521060828.GB20277@elte.hu> <20070521064150.GC4442@gnuppy.monkey.org> <20070521075013.GA9419@elte.hu> <20070521091848.GB4593@gnuppy.monkey.org> <20070521093639.GA29025@elte.hu> <20070521101946.GC4593@gnuppy.monkey.org> <20070521124655.GA411@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AHNyaWhhcml2aWpheWFyYWdoYXZhbkB5YWhvby5jb20uYXUAb3h5bW9yb25Ad2FzdGUub3JnAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAY2xhbWV0ZXJAc2dpLmNvbQBqZW5zLmF4Ym9lQG9yYWNsZS5jb20AYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwA=
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521124655.GA411@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Jens Axboe wrote:
-> 
-> I can test whatever you want tomorrow morning, it was 100% repeatable
-> here. So which one, your patch or Hughs?
+On Mon, May 21, 2007 at 02:46:55PM +0200, Ingo Molnar wrote:
+> which combines into this statement of yours: "I audited 1600 something 
+> lock points in the kernel to convert the usage of C99 style initializers 
+> something more regular, only to find out that there wasn't much left to 
+> convert over?", correct? Which begs the question: why did you mention 
+> this then at all? I usually reply to points made by others in the 
+> assumption that there's some meaning behind them ;-)
 
-Great, thanks: Christoph's please - I'm sure he'll agree!
+It was about how much time I wasted replicating work that I didn't know
+about. Some folks have different communication styles and it isn't ment
+to be anything further than that.
 
-Hugh
+Me and Peter are talking about possibly merging parts of each other's
+patch. I've been working on splitting up the reader/writer paths so that
+each type of contention is logged as well for tracking reader contentions
+against that existing rwsem problem and the like, but my stuff doesn't
+boot yet (working part time drags things). I/We'll keep you updated.
+
+bill
+
