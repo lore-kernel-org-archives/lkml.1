@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763654AbXEUSo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762320AbXEUSp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763654AbXEUSo1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 14:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760346AbXEUSoO
+	id S1762320AbXEUSp2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 14:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbXEUSpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 14:44:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:14598 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758216AbXEUSoM (ORCPT
+	Mon, 21 May 2007 14:45:15 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34478 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756738AbXEUSpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 14:44:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=F26SCmLNaHEbcrx81PtKX/kFfDJaOGGP9ri7qC36LY7GYKs/DtdvYORY1KH/JWo+Ro7MtvIT5oLJoXn1RCFwBvNrcCxzEXWhu5k+nM7Q/xdTt0+uDyFDw7XRB3xQc8JGntV+nm/OE5hfHMQNIWNY+q7mNOCBGjLu9og/a5lzESE=
-Message-ID: <21d7e9970705211144j219fa8f5n3e5ceab90f7d3f0b@mail.gmail.com>
-Date: Mon, 21 May 2007 19:44:10 +0100
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-In-Reply-To: <9e4733910705211104u143e7abercccc4f351441343e@mail.gmail.com>
+	Mon, 21 May 2007 14:45:14 -0400
+Date: Mon, 21 May 2007 19:44:50 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Oliver Xymoron <oxymoron@waste.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+In-Reply-To: <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com>
+References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
+ <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>
-	 <200705210914.22663.jbarnes@virtuousgeek.org>
-	 <200705210934.58559.jbarnes@virtuousgeek.org>
-	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
-	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>
-	 <9e4733910705211042o8926e4cy2225c2dbcbf3ff2@mail.gmail.com>
-	 <21d7e9970705211047n2328f970ref96ea85856f3ba8@mail.gmail.com>
-	 <9e4733910705211104u143e7abercccc4f351441343e@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AHNyaWhhcml2aWpheWFyYWdoYXZhbkB5YWhvby5jb20uYXUAb3h5bW9yb25Ad2FzdGUub3JnAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAY2xhbWV0ZXJAc2dpLmNvbQBqZW5zLmF4Ym9lQG9yYWNsZS5jb20AYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> You are describing a transition plan without knowing what the final
-> design is going to look like. We really need to hash out the final
-> design so that the right path is taken to get there.
->
-> For example I didn't have per CRTC device nodes or user space consoles
-> in my original design, but after talking to some of the people that
-> really wanted the multi-seat feature it led me down the user space
-> console path and to the per CRTC device node solution. I also got beat
-> up at OLS by people wanting full Unicode support on the console.
->
+On Mon, 21 May 2007, Christoph Lameter wrote:
+> On Mon, 21 May 2007, Hugh Dickins wrote:
+> 
+> > Yes, sounded the same to me too: I couldn't reproduce it or see anything
+> > wrong in the code back then.  But Srihari's info about CONFIG_DEBUG_SLUB
+> > off has helped a lot: I was then able to reproduce it on my x86_64, and
+> > after a lot of staring at the code, the problem became obvious...
+> 
+> Right. The #ifdef CONFIG_SLUB_DEBUG is at the wrong location. The best fix
+> is to moving the #ifdef otherwise the size is still wrong for the 
+> ctor case.
 
-No we are defining steps towards improving the drivers on Linux, the
-first step is the requirement to fix suspend/resume, and allow
-modesetting on multiple crtc/output combinations, the other goals are
-not directly within the scope of this work, you can take steps to do
-get where we want, but we don't need to move all drivers at once to
-get there... we also can't just merge something like that to the
-kernel...
+? My patch did handle the ctor case.
 
-Your old ideas were mostly limited by the fact that you didn't get the
-crtc/output distinction and persisted with the idea of heads which put
-policy in the kernel, this was a major failing you never discovered,
-and I didn't probably look enough at the time, since then Keith
-Packard has done a lot of work on randr 1.2 to show the path to what
-we actually wanted.
+> 
+> SLUB Debug: Fix object size calculation
+> 
+> The object size calculation is wrong if !CONFIG_SLUB_DEBUG because
+> the #ifdef CONFIG_SLUB_DEBUG is now switching off the size adjustments
+> for DESTROY_BY_RCU and ctor.
+> 
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Dave.
+Yes, I think that should do it too.  The reason behind my repeating
+the block was to handle the case where SLAB_POISON is passed to
+kmem_cache_create, but CONFIG_SLUB_DEBUG is off.  But apparently
+that case would hit the BUG_ON(flags & ~CREATE_MASK), therefore
+your patch is simpler and better.  Quite a maze.
+
+Hugh
+
+> 
+> ---
+>  mm/slub.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: slub/mm/slub.c
+> ===================================================================
+> --- slub.orig/mm/slub.c	2007-05-21 11:21:36.000000000 -0700
+> +++ slub/mm/slub.c	2007-05-21 11:21:49.000000000 -0700
+> @@ -1943,7 +1943,6 @@ static int calculate_sizes(struct kmem_c
+>  	 */
+>  	s->inuse = size;
+>  
+> -#ifdef CONFIG_SLUB_DEBUG
+>  	if (((flags & (SLAB_DESTROY_BY_RCU | SLAB_POISON)) ||
+>  		s->ctor)) {
+>  		/*
+> @@ -1958,6 +1957,7 @@ static int calculate_sizes(struct kmem_c
+>  		size += sizeof(void *);
+>  	}
+>  
+> +#ifdef CONFIG_SLUB_DEBUG
+>  	if (flags & SLAB_STORE_USER)
+>  		/*
+>  		 * Need to store information about allocs and frees after
