@@ -1,74 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbXEUIEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbXEUIFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbXEUIEr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbXEUIEe
+	id S1755412AbXEUIFJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbXEUIEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:04:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48504 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753012AbXEUIEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:04:33 -0400
-Date: Mon, 21 May 2007 10:03:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anant Nitya <kernel@prachanda.info>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: bad networking related lag in v2.6.22-rc2
-Message-ID: <20070521080351.GA13375@elte.hu>
-References: <20070517174533.GA538@elte.hu> <200705180317.06014.kernel@prachanda.hub> <20070518102607.GA23151@elte.hu> <200705200246.22444.kernel@prachanda.hub> <20070521075824.GA11198@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 21 May 2007 04:04:39 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59020 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755323AbXEUIEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:04:37 -0400
+X-Authenticated: #8359428
+X-Provags-ID: V01U2FsdGVkX1/upLcHzn3u6Gpn/3bO7zdumKse3qHfrce6IP0wo8
+	yeapWe7WizioHw
+From: Uwe Bugla <uwe.bugla@gmx.de>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Date: Mon, 21 May 2007 09:59:49 +0200
+User-Agent: KMail/1.9.5
+References: <464F42F3.1080300@madrabbit.org> <b040c32a0705202308h7fda56c1r85bac3ce4c172488@mail.gmail.com> <2c0942db0705202340j4dade008v321d605585231d6@mail.gmail.com>
+In-Reply-To: <2c0942db0705202340j4dade008v321d605585231d6@mail.gmail.com>
+Cc: "Ken Chen" <kenchen@google.com>, "Andrey Borzenkov" <arvidjaar@mail.ru>,
+       "Uwe Bugla" <uwe.bugla@gmx.de>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070521075824.GA11198@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200705210959.49571.uwe.bugla@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Montag, 21. Mai 2007 08:40 schrieben Sie:
+> On 5/20/07, Ken Chen <kenchen@google.com> wrote:
+> > On 5/19/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+> > > Yeah, that's the only one left. I was hoping it wasn't that one, as it
+> > > claimed to have been tested extensively. Guess it wasn't tested with
+> > > udev.
+> > >
+> > > Ken? Ball's in your court. As the patch isn't providing a killer
+> > > feature for 2.6.22, I'd suggest just reverting it for now until the
+> > > issues are ironed out.
+> >
+> > The real solution is to have the user space tool to create these
+> > device nodes in advance.
+>
+> Maybe. But requiring people upgrade their userspace tools or setup for
+> 2.6.22 isn't a reasonable solution.
+>
+> > The original loop patch was coded such that when we open a loop device
+> > N, the immediate adjacent device "N + 1" is created.  This will keep
+> > "mount -o loop" happy because it typically does a linear scan to find
+> > a free device.  This might be somewhat hackary, but certainly will be
+> > backward compatible before user space solution is deployed.
+>
+> Except userspace is currently expecting 8 loop nodes upon bootup.
+> Creating n+1 when n is opened is good, but racy if userspace tries to
+> mount serveral loop devices in parallel.
+>
+> If the loop device instantiates 8 (or max_loop) upon init, then we're
+> compatible with how things are being done in 2.6.21 and earlier.
+>
+> > However, the code was removed by Al in this commit:
+> >
+> > commit 07002e995638b83a6987180f43722a0eb39d4932
+> > Author: Al Viro <viro@zeniv.linux.org.uk>
+> > Date:   Sat May 12 16:23:15 2007 -0400
+> >
+> >   fix the dynamic allocation and probe in loop.c
+>
+> No, backing that code out wasn't good enough -- the reporter tested
+> reverting both of Al's patches out and was still getting errors on
+> boot. It took reverting your original one out as well to make it work.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Yes. I reverted three in fact. Please see my latest entry in this thread to 
+read what I did to make this work for now.
 
-> ok, i got your -rc2 debug numbers (off-list), and it doesnt look pretty:
-> 
-> before-lag:
-> 
->  sleep_max                :           259502076
->  block_max                :            27690921
->  wait_max                 :            16381558
-> 
-> after-lag:
-> 
->  sleep_max                :           584186160
->  block_max                :           261780071
->  wait_max                 :           881255577
-> 
-> ouch! a nearly 1 second delay got observed by the scheduler - something 
-> is really killing your system!
-> 
-> what does 'top' show during an upload? Is any system related task out 
-> of whack? Could you try to get a readprofile or an oprofile output 
-> from the kernel, so that we can see what is slowing it down so much? 
-> It could be something networking related in v2.6.22-rc2.
+>
+> So, a compromise? Let's start with 8 (or max_loop) populated, and then
+> we can move forward separately with teaching userspace new loop
+> tricks.
 
-ah, you got the latency tracer from Thomas, as part of the -hrt patchset 
-- that makes it quite a bit easier to debug. Could you run the attached 
-trace-it-10sec utility:
+Yes. Good idea!
 
-	trace-it-10sec > trace-to-ingo.txt
+The reason why I need 2.6.22-rc2 and why I cannot work with 2.6.21.1 is that I 
+get a kernel oops (hangup) with 2.6.21.1 about 20 seconds after login.
+The machine is an AMD K7 with but SiS chipsets / controllers onboard.
+Responsible for that kernel oops with 2.6.21.1 is supposedly the whole ide 
+layer plus sis5513.c.
+In so far, pulling all ide layer changes plus the sis5513.c patch from 
+2.6.22-rc2 into mainline of 2.6.21 would definitely be a very good idea.
 
-and send me the (compressed) trace output (off-list, or post an URL to 
-the trace)? Try to reproduce the 'lag' event in the 10 seconds while the 
-tracer is running.
+Thanks for the quick help, especially to Ray.
 
-	Ingo
+Best Regards
+
+Uwe
