@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759961AbXEUIL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbXEUIMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759961AbXEUIL7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXEUILw
+	id S1760254AbXEUIMv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXEUIMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:11:52 -0400
-Received: from holomorphy.com ([66.93.40.71]:58738 "EHLO holomorphy.com"
+	Mon, 21 May 2007 04:12:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49243 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755214AbXEUILv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:11:51 -0400
-Date: Mon, 21 May 2007 01:11:39 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] MM : alloc_large_system_hash() can free some memory for non power-of-two bucketsize
-Message-ID: <20070521081139.GG19966@holomorphy.com>
-References: <20070518115454.d3e32f4d.dada1@cosmosbay.com> <20070519182123.GD19966@holomorphy.com> <464F44BD.3040209@cosmosbay.com>
-MIME-Version: 1.0
+	id S1754512AbXEUIMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:12:43 -0400
+Date: Mon, 21 May 2007 10:12:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Anant Nitya <kernel@prachanda.info>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: bad networking related lag in v2.6.22-rc2
+Message-ID: <20070521081201.GB13858@elte.hu>
+References: <20070517174533.GA538@elte.hu> <200705180317.06014.kernel@prachanda.hub> <20070518102607.GA23151@elte.hu> <200705200246.22444.kernel@prachanda.hub> <20070521075824.GA11198@elte.hu> <20070521080351.GA13375@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <464F44BD.3040209@cosmosbay.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070521080351.GA13375@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.7
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.7 required=5.9 tests=BAYES_00,INFO_TLD autolearn=no SpamAssassin version=3.1.7
+	1.3 INFO_TLD               URI: Contains an URL in the INFO top-level domain
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III a ?crit :
->> The proper way to do this is to convert the large system hashtable
->> users to use some data structure / algorithm  other than hashing by
->> separate chaining.
 
-On Sat, May 19, 2007 at 08:41:01PM +0200, Eric Dumazet wrote:
-> No thanks. This was already discussed to death on netdev. To date, hash 
-> tables are a good compromise.
-> I dont mind losing part of memory, I prefer to keep good performance when 
-> handling 1.000.000 or more tcp sessions.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-The data structures perform well enough, but I suppose it's not worth
-pushing the issue this way.
+> > ouch! a nearly 1 second delay got observed by the scheduler - something 
+> > is really killing your system!
+>
+> ah, you got the latency tracer from Thomas, as part of the -hrt patchset 
+> - that makes it quite a bit easier to debug. [...]
 
+and ... you already did a trace for Thomas, for the softirq problem:
 
--- wli
+   http://cybertek.info/taitai/trace.txt.bz2
+
+this trace shows really bad networking related kernel activities!
+
+gkrellm-5977 does this at timestamp 0:
+
+ gkrellm-5977  0..s.    0us : cond_resched_softirq (established_get_next)
+
+2 milliseconds later it's still in established_get_next() (!):
+
+ gkrellm-5977  0..s. 2001us : cond_resched_softirq (established_get_next)
+
+and the whole thing takes ... 455 msecs:
+
+ gkrellm-5977  0..s. 455443us+: cond_resched_softirq (established_get_next)
+
+i think this suggests that you have tons of open sockets. What does 
+"netstat -ts" say on your box?
+
+	Ingo
