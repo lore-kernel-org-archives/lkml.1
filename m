@@ -1,85 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbXEUHiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbXEUHl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758288AbXEUHiT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 03:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbXEUHiJ
+	id S1758427AbXEUHl0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 03:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbXEUHlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 03:38:09 -0400
-Received: from pils.linux-kernel.at ([213.129.242.82]:45458 "EHLO
-	mail.linux-kernel.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754955AbXEUHiH (ORCPT
+	Mon, 21 May 2007 03:41:19 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:33221 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754375AbXEUHlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 03:38:07 -0400
-Message-ID: <46514C59.4020207@linux-kernel.at>
-Date: Mon, 21 May 2007 09:38:01 +0200
-From: Oliver Falk <oliver@linux-kernel.at>
-Organization: Linux kernel Austria
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070419 Fedora/2.0.0.0-1.fc7 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+	Mon, 21 May 2007 03:41:19 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200705210741.l4L7fDJi006732@turbo.physics.adelaide.edu.au>
+Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
+To: hancockr@shaw.ca (Robert Hancock)
+Date: Mon, 21 May 2007 17:11:13 +0930 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4651464B.4080903@shaw.ca> from "Robert Hancock" at May 21, 2007 01:12:11 AM
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch] Missing defines in asm-alpha/unistd.h!?
-References: <464AC75D.1090701@linux-kernel.at> <464AD1DB.3050609@linux-kernel.at> <464AE8D1.5000500@linux-kernel.at> <464B02BC.1040101@linux-kernel.at> <464B1275.6020007@linux-kernel.at> <20070516193852.GA10227@osiris.ibm.com>
-In-Reply-To: <20070516193852.GA10227@osiris.ibm.com>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-lkernAT-MailScanner-Information: Please contact the ISP for more information
-X-lkernAT-MailScanner: Found to be clean
-X-lkernAT-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-3.009, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
-	PLING_QUERY 1.39)
-X-MailScanner-From: oliver@linux-kernel.at
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-On 05/16/2007 09:38 PM, Heiko Carstens wrote:
->>>> arch/alpha/kernel/built-in.o:(.data+0x2d60): undefined reference to
->>>> `sys_pselect6'
->>>> arch/alpha/kernel/built-in.o:(.data+0x2d68): undefined reference to
->>>> `sys_ppoll'
->>>> I don't understand this... Any clue(s)?
->>> Needed to replace sys_pselect6 and sys_ppoll with alpha_ni_syscall... If
->>> this is very correct way to fix it!? :-/
->>>
->>> Can someone please have a look and correct me!?
->> Sergey just told me, that this is wrong. Patch is fine, but we need
->> another. Please apply as well.
->>
->> --- linux-2.6.21.alpha/include/asm-alpha/thread_info.h.alpha_thread	2007-05-16 16:08:18.000000000 +0200
->> +++ linux-2.6.21.alpha/include/asm-alpha/thread_info.h	2007-05-16 16:08:07.000000000 +0200
->> @@ -76,12 +76,14 @@
->>  #define TIF_UAC_NOFIX		7
->>  #define TIF_UAC_SIGBUS		8
->>  #define TIF_MEMDIE		9
->> +#define TIF_RESTORE_SIGMASK	11
->>
->>  #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
->>  #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
->>  #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
->>  #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
->>  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
->> +#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+> Jonathan Woithe wrote:
+> > A collegue of mine has an Intel mainboard with the i865 chipset onboard
+> > (DQ965).  All kernels up to and including 2.6.22-rc2 do not detect the IDE
+> > CDROM/DVDROM when booting.  The SATA hard drive is found without any
+> > problems.
+> > 
+> > Relevant parts from lspci:
+> > 
+> >   00:1f.2 0101: 8086:2820 (rev 02)
+> >   00:1f.2 IDE interface: Intel Corporation 82801H (ICH8 Family) 4 port SATA
+> >   IDE Controller (rev 02) (prog-if 8f [Master SecP SecO PriP PriO])
+> >         Subsystem: Intel Corporation Unknown device 514d
+> >         Flags: bus master, 66MHz, medium devsel, latency 0, IRQ 19
+> > 
+> >   00:1f.5 0101: 8086:2825 (rev 02)
+> >   00:1f.5 IDE interface: Intel Corporation 82801H (ICH8 Family) 2 port SATA
+> >   IDE Controller (rev 02) (prog-if 85 [Master SecO PriO])
+> >         Subsystem: Intel Corporation Unknown device 514d
+> >         Flags: bus master, 66MHz, medium devsel, latency 0, IRQ 19
+> > 
+> > What's interesting here is that 00:1f.2 and 00:1f.5 are both identified as
+> > "n port SATA" controllers even though one of them (I suspect 00:1f.5) is a
+> > PATA controller.  This may just be a typo in lspci's database though.
+> > 
+> > Boot messages:
+> > 
+> >   ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+> >   Probing IDE interface ide0...
+> >   Probing IDE interface ide1...
+> >   :
+> >   ata_piix 0000:00:1f.2: version 2.11
+> >   ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
+> >   ACPI: PCI Interrupt 0000:00:1f.2[A] -> GSI 19 (level, low) -> IRQ 19
+> >   PCI: Setting latency timer of device 0000:00:1f.2 to 64
+> >   scsi0 : ata_piix
+> >   scsi1 : ata_piix
+> >   ata1: SATA max UDMA/133 cmd 0x00012138 ctl 0x00012156 bmdma 0x00012110 irq 0
+> >   ata2: SATA max UDMA/133 cmd 0x00012130 ctl 0x00012152 bmdma 0x00012118 irq 0
+> >   ata1.00: ata_hpa_resize 1: sectors = 488397168, hpa_sectors = 488397168
+> >   ata1.00: ATA-7: WDC WD2500AAJS-00RYA0, 12.01B01, max UDMA/133
+> >   ata1.00: 488397168 sectors, multi 16: LBA48 NCQ (depth 0/32)
+> >   ata1.00: ata_hpa_resize 1: sectors = 488397168, hpa_sectors = 488397168
+> >   ata1.00: configured for UDMA/133
+> >   ATA: abnormal status 0x7F on port 0x00012137
+> >   scsi 0:0:0:0: Direct-Access     ATA      WDC WD2500AAJS-0 12.0 PQ: 0 ANSI: 5
+> >   sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
+> >   sd 0:0:0:0: [sda] Write Protect is off
+> >   sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> >   sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> >   sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
+> >   sd 0:0:0:0: [sda] Write Protect is off
+> >   sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> >   sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> >   sda: sda1 sda2
+> >   sd 0:0:0:0: [sda] Attached SCSI disk
+> >   ata_piix 0000:00:1f.5: MAP [ P0 P2 P1 P3 ]
+> > 
+> > Here the HDD is clearly detected while the CDROM/DVDROM (attached to ide0)
+> > isn't.
+> > 
+> > libata is compiled into the kernel as is the non-libata PATA driver.
+> > In the libata configuration, only SATA_AHCI, ATA_PIIX and ATA_GENERIC are
+> > defined.  For the non-libata side of things most options are selected
+> > including BLK_DEV_IDE, BLK_DEV_IDECD, IDE_GENERIC, BLK_DEV_IDEPCI, 
+> > BLK_DEV_GENERIC, BLK_DEV_IDEDMA_PCI and BLK_DEV_PIIX.
+> > 
+> > Does anyone have any ideas as to why there is a problem detecting the PATA
+> > (IDE) CDROM/DVDROM in this machine?  Further information/testing can be
+> > provided if requested.
 > 
-> If you want to wire up pselect6 and ppoll you need to add full
-> TIF_RESTORE_SIGMASK support. With your patches it compiles but is broken.
-> Search the git commits for "TIF_RESTORE_MASK" and see how this was
-> implemented on other architectures.
-> Also you should put the alpha maintainers on cc when sending such patches.
+> A lot of newer Intel boards have the IDE interface provided by an 
+> external JMicron, etc. chip so you may need to enable that driver for 
+> things to work.
 
-Thx Heiko. Yes. I already saw that problem. I will add a new patch... I
-was out of country the last days - I wanted to do it last week, but ...
-LONG story... :-/
+I've just tried a quick test after enabling most of the PATA drivers under
+the libata section including the Jmicron driver (basically everything except
+those labelled "highly experimental").  As far as I can tell the
+CDROM/DVDROM is still not detected even with all these built into the
+kernel.  Maybe I do need one of those "highly experimental" drivers.
 
-- -of
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+> Also, it's unrelated to this problem, but you should check the BIOS 
+> settings for the SATA controller - you really want to get the controller 
+> into AHCI mode for best performance.
 
-iD8DBQFGUUxZxWN5Ge8lKUMRAoXmAJ94Wj6N0Ti6Owdg7LLgUdqDpJPonQCeP1iM
-8MaYwjwuytEsjPyiU5/emF8=
-=lrSg
------END PGP SIGNATURE-----
+I've often wondered how the BIOS descriptions correlate with the modes the
+controller ends up in.  I've always gone for things like "enhanced" or
+"SATA" or "native" (the exact string of course being dependent on the BIOS
+writer's mood on the day).  This seems to work out OK in practice.  How
+can you tell from the Linux boot messages that the controller is in AHCI
+mode - is it as simple as looking for AHCI driver messages?  In this case
+the 
+
+  scsi0 : ata_piix
+  scsi1 : ata_piix
+
+indicate that things are suboptimal I assume.
+
+Regards
+  jonathan
+-- 
+"Time is an illusion; lunchtime doubly so"
