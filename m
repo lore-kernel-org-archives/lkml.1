@@ -1,46 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbXEUU2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbXEUUc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933099AbXEUU2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759974AbXEUU2G
+	id S1756232AbXEUUc7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXEUUcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:28:06 -0400
-Received: from h155.mvista.com ([63.81.120.158]:61188 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757101AbXEUU2D (ORCPT
+	Mon, 21 May 2007 16:32:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51935 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752100AbXEUUcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:28:03 -0400
-Subject: Re: v2.6.21-rt3
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <1179779053.12708.45.camel@chaos>
-References: <20070517194143.GA25394@elte.hu>
-	 <1179778266.15427.38.camel@imap.mvista.com>
-	 <1179779053.12708.45.camel@chaos>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 13:25:42 -0700
-Message-Id: <1179779142.15427.44.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 21 May 2007 16:32:50 -0400
+Date: Mon, 21 May 2007 13:32:47 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Jackson <pj@sgi.com>,
+       npiggin@suse.de
+Subject: Re: [PATCH 0/5] make slab gfp fair
+In-Reply-To: <1179778127.7019.48.camel@twins>
+Message-ID: <Pine.LNX.4.64.0705211326290.28504@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl> 
+ <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com> 
+ <1179385718.27354.17.camel@twins>  <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+  <20070517175327.GX11115@waste.org>  <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
+  <1179429499.2925.26.camel@lappy>  <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
+  <1179437209.2925.29.camel@lappy>  <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
+  <1179482054.2925.52.camel@lappy>  <Pine.LNX.4.64.0705181002400.9372@schroedinger.engr.sgi.com>
+  <1179650384.7019.33.camel@twins>  <Pine.LNX.4.64.0705210932500.25871@schroedinger.engr.sgi.com>
+  <1179776038.5735.39.camel@lappy>  <Pine.LNX.4.64.0705211239300.27622@schroedinger.engr.sgi.com>
+ <1179778127.7019.48.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-21 at 22:24 +0200, Thomas Gleixner wrote:
-> On Mon, 2007-05-21 at 13:11 -0700, Daniel Walker wrote:
-> > Where did the arm ep93xx changes come from? 
-> 
-> Grown out of my nose probably.
-> 
-> > It looks like patch below
-> > came in with them in 2.6.21-rt6 ..
-> 
-> So what ?
+On Mon, 21 May 2007, Peter Zijlstra wrote:
 
-It's silencing a WARN_ON() with no real reason why it's happening, or
-why/if it's safe to silence it .. Why is that there?
+> > This means we will disobey cpuset and memory policy constraints?
+> 
+> >From what I can make of it, yes. Although I'm a bit hazy on the
+> mempolicy code.
 
-Daniel
+In an interrupt context we do not have a process context. But there is
+no exemption from memory policy constraints.
 
+> > > > No the gfp zone flags are not uniform and placement of page allocator 
+> > > > allocs through SLUB do not always have the same allocation constraints.
+> > > 
+> > > It has to; since it can serve the allocation from a pre-existing slab
+> > > allocation. Hence any page allocation must be valid for all other users.
+> > 
+> > Why does it have to? This is not true.
+> 
+> Say the slab gets allocated by an allocation from interrupt context; no
+> cpuset, no policy. This same slab must be valid for whatever allocation
+> comes next, right? Regardless of whatever policy or GFP_ flags are in
+> effect for that allocation.
+
+Yes sure if we do not have a context then no restrictions originating 
+there can be enforced. So you want to restrict the logic now to
+interrupt allocs? I.e. GFP_ATOMIC?
+
+> > The constraints come from the context of memory policies and cpusets. See
+> > get_any_partial().
+> 
+> but get_partial() will only be called if the cpu_slab is full, up until
+> that point you have to do with whatever is there.
+
+Correct. That is an optimization but it may be called anytime from the 
+perspective of an execution thread and that may cause problems with your 
+approach.
+
+> > > As far as I can see there cannot be a hard constraint here, because
+> > > allocations form interrupt context are at best node local. And node
+> > > affine zone lists still have all zones, just ordered on locality.
+> > 
+> > Interrupt context is something different. If we do not have a process 
+> > context then no cpuset and memory policy constraints can apply since we
+> > have no way of determining that. If you restrict your use of the reserve 
+> > cpuset to only interrupt allocs then we may indeed be fine.
+> 
+> No, what I'm saying is that if the slab gets refilled from interrupt
+> context the next process context alloc will have to work with whatever
+> the interrupt left behind. Hence there is no hard constraint.
+
+It will work with whatever was left behind in the case of SLUB and a 
+kmalloc alloc (optimization there). It wont if its SLAB (which is 
+stricter) or a kmalloc_node alloc. A kmalloc_node alloc will remove the 
+current cpuslab if its not on the right now.
+
+
+> > > >From what I can see, it takes pretty much any page it can get once you
+> > > hit it with PF_MEMALLOC. If the page allocation doesn't use ALLOC_CPUSET
+> > > the page can come from pretty much anywhere.
+> > 
+> > No it cannot. One the current cpuslab is exhaused (which can be anytime) 
+> > it will enforce the contextual allocation constraints. See 
+> > get_any_partial() in slub.c.
+> 
+> If it finds no partial slabs it goes back to the page allocator; and
+> when you allocate a page under PF_MEMALLOC and the normal allocations
+> are exhausted it takes a page from pretty much anywhere.
+
+If it finds no partial slab then it will go to the page allocator which 
+will allocate given the current contextual alloc constraints. In the case 
+of a memory policy we may have limited the allocations to a single node 
+where there is no escape (the zonelist does *not* contain zones of other 
+nodes). The only chance to bypass this is by only dealing with allocations 
+during interrupt that have no allocation context.
