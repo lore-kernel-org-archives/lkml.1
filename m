@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934889AbXEUUJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935471AbXEUUJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934889AbXEUUJe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbXEUUI7
+	id S935471AbXEUUJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762320AbXEUUJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:08:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50573 "EHLO
+	Mon, 21 May 2007 16:09:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50574 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761217AbXEUUI5 (ORCPT
+	with ESMTP id S1761384AbXEUUI6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:08:57 -0400
+	Mon, 21 May 2007 16:08:58 -0400
 Date: Mon, 21 May 2007 15:08:56 -0500
 To: linux-kernel@vger.kernel.org
-Subject: hotplug cpu: PATCHes for 3 issues
-Message-ID: <4651FC58.mailxOW91VRGMT@eag09.americas.sgi.com>
+Subject: [PATCH 1/1] hotplug cpu: cpusets/sched_domain reconciliation
+Message-ID: <4651FC58.mailxOWG11ONX3@eag09.americas.sgi.com>
 User-Agent: nail 11.4 8/29/04
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,32 +24,219 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-In the 2.6.21 kernel there are still 3 hotplug issues that are cpuset-
-related, and that I find to still be problems.   And for which I offer
-patches.
+This patch reconciles cpusets and sched_domains that get out of sync
+due to hotplug disabling and re-enabling of cpu's.
 
-These have been submitted before, and subsequently cleaned up per
-comments received.  I'm resubmitting all 3 for consideration and further
-comment.
+Here is an example of how the problem can occur:
 
-1)  [PATCH 1/1] hotplug cpu: cpusets/sched_domain reconciliation
-2)  [PATCH 1/1] hotplug cpu: move tasks in empty cpusets to parent
-3)  [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+   system of cpu's 0-31
+   create cpuset /x  16-31
+   create cpuset /x/y  16-23
+   all cpu_exclusive
 
-1) Reconciles cpusets and sched_domains that get out of sync
-   due to hotplug disabling and re-enabling of cpu's.
-   Tasks can get into infinite hangs without this fix.
-     kernel/cpuset.c
-     kernel/sched.c 
+   disable cpu 17
+     x is now    16,18-31
+     x/y is now 16,18-23
+   enable cpu 17
+     x and x/y are unchanged
 
-2) When a cpuset is emptied by disabling its cpus, move tasks to 
-   a parent cpuset.
-   This is a correction of the current procedure, which moves such
-   tasks to the wrong cpuset.
-     kernel/cpuset.c
+   to restore the cpusets:
+     echo 16-31 > /dev/cpuset/x
+     echo 16-23 > /dev/cpuset/x/y
 
-3) Causes a task running on a disabled cpu to migrate to a cpu within
-   its cpuset.
-   This behavior is particularly important for a NUMA system on which
-   tasks have been explicitly placed.
-     kernel/sched.c
+   At the first echo, update_cpu_domains() is called for cpuset x/.
+
+   The system is partitioned between:
+	its parent, the root cpuset of 0-31, minus its
+				    children (x/ is 16-31): 0-15
+        and x/ (16-31), minus its children (x/y/ 16,18-23): 17,24-31
+
+   The sched_domain's for parent 0-15 are updated.
+   The sched_domain's for current 17,24-31 are updated.
+
+   But 16 has been untouched.
+   As a result, 17's SD points to sched_group_phys[17] which is the only
+   sched_group_phys on 17's list.  It points to itself.
+   But 16's SD points to sched_group_phys[16], which still points to
+   sched_group_phys[17].
+   When cpu 16 executes find_busiest_group() it will hang on the non-
+   circular sched_group list.
+           
+This solution is to update the sched_domain's for the cpuset
+whose cpu's were changed and, in addition, all its children.
+Instead of calling update_cpu_domains(), call update_cpu_domains_tree(),
+which calls update_cpu_domains() for every node from the one specified
+down to all its children.
+
+The extra sched_domain reconstruction is overhead, but only at the
+frequency of administrative change to the cpuset.
+
+There seems to be no administrative procedural work-around.  In the
+example above one could not reverse the two echo's and set x/y before
+x/.  It is not logical, so not allowed (Permission denied).
+
+Thus the patch to cpuset.c makes the sched_domain's correct.
+
+This patch also includes checks in find_busiest_group() and
+find_idlest_group() that break from their loops on a sched_group that
+points to itself.  This is needed because cpu's are going through
+load balancing before all sched_domains have been reconstructed (see
+the example above).
+
+Thus the patch to sched.c prevents the hangs that would otherwise occur
+until the sched_domain's are made correct.
+
+Diffed against 2.6.21
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+
+---
+ kernel/cpuset.c |   43 +++++++++++++++++++++++++++++++++++++++----
+ kernel/sched.c  |   18 ++++++++++++++----
+ 2 files changed, 53 insertions(+), 8 deletions(-)
+
+Index: linus.070504/kernel/sched.c
+===================================================================
+--- linus.070504.orig/kernel/sched.c
++++ linus.070504/kernel/sched.c
+@@ -1211,11 +1211,14 @@ static inline unsigned long cpu_avg_load
+ static struct sched_group *
+ find_idlest_group(struct sched_domain *sd, struct task_struct *p, int this_cpu)
+ {
+-	struct sched_group *idlest = NULL, *this = NULL, *group = sd->groups;
++	struct sched_group *idlest = NULL, *this = sd->groups, *group = sd->groups;
++	struct sched_group *self, *prev;
+ 	unsigned long min_load = ULONG_MAX, this_load = 0;
+ 	int load_idx = sd->forkexec_idx;
+ 	int imbalance = 100 + (sd->imbalance_pct-100)/2;
+ 
++	prev = group;
++	self = group;
+ 	do {
+ 		unsigned long load, avg_load;
+ 		int local_group;
+@@ -1251,8 +1254,10 @@ find_idlest_group(struct sched_domain *s
+ 			idlest = group;
+ 		}
+ nextgroup:
++		prev = self;
++		self = group;
+ 		group = group->next;
+-	} while (group != sd->groups);
++	} while (group != sd->groups && group != self && group != prev);
+ 
+ 	if (!idlest || 100*this_load < imbalance*min_load)
+ 		return NULL;
+@@ -2276,7 +2281,8 @@ find_busiest_group(struct sched_domain *
+ 		   unsigned long *imbalance, enum idle_type idle, int *sd_idle,
+ 		   cpumask_t *cpus, int *balance)
+ {
+-	struct sched_group *busiest = NULL, *this = NULL, *group = sd->groups;
++	struct sched_group *busiest = NULL, *this = sd->groups, *group = sd->groups;
++	struct sched_group *self, *prev;
+ 	unsigned long max_load, avg_load, total_load, this_load, total_pwr;
+ 	unsigned long max_pull;
+ 	unsigned long busiest_load_per_task, busiest_nr_running;
+@@ -2299,6 +2305,8 @@ find_busiest_group(struct sched_domain *
+ 	else
+ 		load_idx = sd->idle_idx;
+ 
++	prev = group;
++	self = group;
+ 	do {
+ 		unsigned long load, group_capacity;
+ 		int local_group;
+@@ -2427,8 +2435,10 @@ find_busiest_group(struct sched_domain *
+ 		}
+ group_next:
+ #endif
++		prev = self;
++		self = group;
+ 		group = group->next;
+-	} while (group != sd->groups);
++	} while (group != sd->groups && group != self && group != prev);
+ 
+ 	if (!busiest || this_load >= max_load || busiest_nr_running == 0)
+ 		goto out_balanced;
+Index: linus.070504/kernel/cpuset.c
+===================================================================
+--- linus.070504.orig/kernel/cpuset.c
++++ linus.070504/kernel/cpuset.c
+@@ -53,6 +53,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/atomic.h>
+ #include <linux/mutex.h>
++#include <linux/kfifo.h>
+ 
+ #define CPUSET_SUPER_MAGIC		0x27e0eb
+ 
+@@ -790,8 +791,8 @@ static void update_cpu_domains(struct cp
+ 			return;
+ 		cspan = CPU_MASK_NONE;
+ 	} else {
+-		if (cpus_empty(pspan))
+-			return;
++		/* parent may be empty, but update anyway */
++
+ 		cspan = cur->cpus_allowed;
+ 		/*
+ 		 * Get all cpus from current cpuset's cpus_allowed not part
+@@ -809,6 +810,40 @@ static void update_cpu_domains(struct cp
+ }
+ 
+ /*
++ * Call update_cpu_domains for cpuset "cur", and for all of its children.
++ *
++ * This walk processes the tree from top to bottom, completing one layer
++ * before dropping down to the next.  It always processes a node before
++ * any of its children.
++ *
++ * Call with manage_mutex held.
++ * Must not be called holding callback_mutex, because we must
++ * not call lock_cpu_hotplug() while holding callback_mutex.
++ */
++static void
++update_cpu_domains_tree(struct cpuset *root)
++{
++	struct cpuset *cp;	/* scans cpusets being updated */
++	struct cpuset *child;	/* scans child cpusets of cp */
++	struct kfifo *queue;	/* fifo queue of cpusets to be updated */
++
++	queue = kfifo_alloc(number_of_cpusets * sizeof(cp), GFP_KERNEL, NULL);
++	if (queue == ERR_PTR(-ENOMEM))
++		return;
++
++	__kfifo_put(queue, (unsigned char *)&root, sizeof(root));
++
++	while (__kfifo_get(queue, (unsigned char *)&cp, sizeof(cp))) {
++		list_for_each_entry(child, &cp->children, sibling)
++		    __kfifo_put(queue,(unsigned char *)&child,sizeof(child));
++		update_cpu_domains(cp);
++	}
++
++	kfifo_free(queue);
++	return;
++}
++
++/*
+  * Call with manage_mutex held.  May take callback_mutex during call.
+  */
+ 
+@@ -836,7 +871,7 @@ static int update_cpumask(struct cpuset 
+ 	cs->cpus_allowed = trialcs.cpus_allowed;
+ 	mutex_unlock(&callback_mutex);
+ 	if (is_cpu_exclusive(cs) && !cpus_unchanged)
+-		update_cpu_domains(cs);
++		update_cpu_domains_tree(cs);
+ 	return 0;
+ }
+ 
+@@ -1066,7 +1101,7 @@ static int update_flag(cpuset_flagbits_t
+ 	mutex_unlock(&callback_mutex);
+ 
+ 	if (cpu_exclusive_changed)
+-                update_cpu_domains(cs);
++                update_cpu_domains_tree(cs);
+ 	return 0;
+ }
+ 
