@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbXEUVpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762385AbXEUVtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761974AbXEUVpk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 17:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbXEUVpd
+	id S1762385AbXEUVtp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 17:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbXEUVth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 17:45:33 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:41602 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754992AbXEUVpc (ORCPT
+	Mon, 21 May 2007 17:49:37 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:16396 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755015AbXEUVth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 17:45:32 -0400
-Message-ID: <46521165.5030207@cosmosbay.com>
-Date: Mon, 21 May 2007 23:38:45 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Mon, 21 May 2007 17:49:37 -0400
+X-IronPort-AV: i="4.14,562,1170651600"; 
+   d="scan'208"; a="39601106:sNHT23668883"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: [PATCH 00/32] Blackfin update for 2.6.22-rc2
+Date: Mon, 21 May 2007 17:52:06 -0400
+User-Agent: KMail/1.9.5
+Cc: "Bryan Wu" <bryan.wu@analog.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1179742180228-git-send-email-bryan.wu@analog.com> <200705211035.08380.rgetz@blackfin.uclinux.org> <8bd0f97a0705211036q1162e9edvd73af8d6c536e565@mail.gmail.com>
+In-Reply-To: <8bd0f97a0705211036q1162e9edvd73af8d6c536e565@mail.gmail.com>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>, Chuck@hera.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       stable@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/69] -stable review
-References: <20070521191612.800400000@sous-sol.org> <20070521123148.a3dad5f2.akpm@linux-foundation.org> <20070521203111.GJ3429@sequoia.sous-sol.org>
-In-Reply-To: <20070521203111.GJ3429@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Mon, 21 May 2007 23:38:53 +0200 (CEST)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705211752.06709.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 21 May 2007 21:49:35.0724 (UTC) FILETIME=[EC4CFAC0:01C79BF1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright a écrit :
-> * Andrew Morton (akpm@linux-foundation.org) wrote:
->> On Mon, 21 May 2007 12:16:12 -0700
->> Chris Wright <chrisw@sous-sol.org> wrote:
->>
->>> This is the start of the stable review cycle for the 2.6.21.2 release.
->> Gee a lot of these are fixing recently-added regressions :(
->>
->> Did we fix oprofile on x86_64 yet?  If not, I'd suggest we should
->> hold off 2.6.21.2 until we have done so.
-> 
-> No, we've seen 2 versions of the patch, no word from Andi, and nothing
-> upstream that I saw.  Andi?
-> 
+On Mon 21 May 2007 13:36, Mike Frysinger pondered:
+> On 5/21/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> > since there is noMMU, are we better:
+> >  - putting stubs (return ENOSYS - give runtime errors), or
+> >  - just ignore the errors - and give compile errors? (Is there any way to
+> > put something into the syscall table, as not to get the warnings?)
+>
+> there are no compile errors ... having a stub that returns -ENOSYS is
+> the same thing as not having a stub as the fallback code when given an
+> unknown syscall # will return -ENOSYS ...
 
-Seems Linus tree includes a fix from Andi, check commit 
-6c977aad03a18019015035958c65b6729cd0574c
+So, is there a way to tell ./scripts/checksyscalls.sh that here is a list of 
+syscalls that we can't do/have chosen not to implement - so we can live with 
+the common fallback code, and not get the warnings?
 
-Probably good enough for 2.6.21.2 ?
-
-
+-Robin
