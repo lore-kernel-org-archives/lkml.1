@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbXEUOam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760805AbXEUOcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759803AbXEUOam (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 10:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbXEUOaf
+	id S1760805AbXEUOcR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 10:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbXEUOcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 10:30:35 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:27730 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756561AbXEUOae (ORCPT
+	Mon, 21 May 2007 10:32:08 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44038 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755548AbXEUOcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 10:30:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from:sender;
-        b=OVcBLR7BVN9BfmvA4AZtKO/WXcQjHlP83KJie9fJk3TxSQb1C0rCUQxx7BPJ6BWX8uYf3z3iH2enC3BtjnEvCSNfH7vc9Ibw/5rVngzsjYszVNN4Uc9nNJIGPIBCijjJOqkvVYM95Onm+mMrC8WurlKojWn79jOjHvX+D0TtZ50=
-Date: Mon, 21 May 2007 22:30:22 +0800
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, Florin Malita <fmalita@gmail.com>
-Subject: Re: [2.6 patch] drivers/net/wireless/libertas/rx.c: fix
-	use-after-free
-Message-ID: <20070521143022.GA26452@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
-References: <464DD957.9040803@redhat.com> <20070518174623.GA3492@tuxdriver.com> <464E6B82.40607@redhat.com> <20070521133124.GB9621@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521133124.GB9621@tuxdriver.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-From: Eugene Teo <eugeneteo@kernel.sg>
+	Mon, 21 May 2007 10:32:06 -0400
+Date: Mon, 21 May 2007 15:36:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org, matt.domsch@dell.com
+Subject: [PATCH] edd: Switch to pci_get based API
+Message-ID: <20070521153605.4211b9e2@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<quote sender="John W. Linville">
-> On Sat, May 19, 2007 at 11:14:10AM +0800, Eugene Teo wrote:
-> > John W. Linville wrote:
-> 
-> > >>  done:
-> > >>         LEAVE();
-> > >>
-> > >> -       skb->protocol = __constant_htons(0x0019);       /* ETH_P_80211_RAW */
-> > >> -
-> > > 
-> > > Except for this part...is this intentional?
-> > 
-> > skb could have been freed by then. And, in libertas_upload_rx_packet(), skb->protocol
-> > is initialized by eth_type_trans(skb, priv->wlan_dev.netdev).
-> 
-> OK, I see that.  Looks like Florin has reposted his patch, still
-> without this hunk.  Would you like to submit a patch for this hunk?
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-skb could have been freed by then. Also, in libertas_upload_rx_packet(),
-skb->protocol is initialized by eth_type_trans().
-
-Cc: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
-
-diff -uprN -X 2.6.22-rc2/Documentation/dontdiff 2.6.22-rc2.default/drivers/net/wireless/libertas/rx.c 2.6.22-rc2/drivers/net/wireless/libertas/rx.c
---- 2.6.22-rc2.default/drivers/net/wireless/libertas/rx.c	2007-05-21 22:07:50.000000000 +0800
-+++ 2.6.22-rc2/drivers/net/wireless/libertas/rx.c	2007-05-21 22:08:44.000000000 +0800
-@@ -453,7 +453,5 @@ static int process_rxed_802_11_packet(wl
- done:
- 	LEAVE();
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/drivers/firmware/edd.c linux-2.6.22-rc1-mm1/drivers/firmware/edd.c
+--- linux.vanilla-2.6.22-rc1-mm1/drivers/firmware/edd.c	2007-05-18 16:22:53.000000000 +0100
++++ linux-2.6.22-rc1-mm1/drivers/firmware/edd.c	2007-05-18 16:35:08.000000000 +0100
+@@ -669,7 +669,7 @@
+ 	struct edd_info *info = edd_dev_get_info(edev);
  
--	skb->protocol = __constant_htons(0x0019);	/* ETH_P_80211_RAW */
--
- 	return (ret);
+ 	if (edd_dev_is_type(edev, "PCI")) {
+-		return pci_find_slot(info->params.interface_path.pci.bus,
++		return pci_get_bus_and_slot(info->params.interface_path.pci.bus,
+ 				     PCI_DEVFN(info->params.interface_path.pci.slot,
+ 					       info->params.interface_path.pci.
+ 					       function));
+@@ -682,9 +682,12 @@
+ {
+ 
+ 	struct pci_dev *pci_dev = edd_get_pci_dev(edev);
++	int ret;
+ 	if (!pci_dev)
+ 		return 1;
+-	return sysfs_create_link(&edev->kobj,&pci_dev->dev.kobj,"pci_dev");
++	ret = sysfs_create_link(&edev->kobj,&pci_dev->dev.kobj,"pci_dev");
++	pci_dev_put(pci_dev);
++	return ret;
  }
+ 
+ static inline void
 
--- 
-1024D/58DF8823 print 47B9 90F6 AE4A 9C51 37E0  D6E1 EA84 C6A2 58DF 8823
-main(i) { putchar(182623909 >> (i-1) * 5&31|!!(i<7)<<6) && main(++i); }
