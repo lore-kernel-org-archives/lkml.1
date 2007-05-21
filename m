@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765303AbXEUTVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765537AbXEUTW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765303AbXEUTVU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764213AbXEUTVB
+	id S1765537AbXEUTW3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765010AbXEUTVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:21:01 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46191 "EHLO
+	Mon, 21 May 2007 15:21:10 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46217 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754953AbXEUTVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:21:00 -0400
-Message-Id: <20070521191736.494772000@sous-sol.org>
+	id S1764496AbXEUTVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:21:04 -0400
+Message-Id: <20070521191743.327100000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:53 -0700
+Date: Mon, 21 May 2007 12:16:57 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, htejun@gmail.com, jeff@garzik.org,
-       torresmat@gmail.com
-Subject: [patch 41/69] pci-quirks: disable MSI on RS400-200 and RS480
-Content-Disposition: inline; filename=pci-quirks-disable-msi-on-rs400-200-and-rs480.patch
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Patrick.Schoeller@hp.com, minyard@acm.org
+Subject: [patch 45/69] IPMI: fix SI address space settings
+Content-Disposition: inline; filename=ipmi-fix-si-address-space-settings.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Tejun Heo <htejun@gmail.com>
+From: Corey Minyard <minyard@acm.org>
 
-MSI doesn't work on RS400-200 and RS480 requiring pci=nomsi kernel boot
-parameter for ahci to work.  This patch renames quirk_svw_msi() to
-quirk_disable_all_msi() and use it to disable MSI on those chips.
+Fix a rather obvious error that Patrick found in the setup routines.  Need to
+set the proper address space in the ACPI case.
 
-  http://thread.gmane.org/gmane.linux.ide/17820
-  http://thread.gmane.org/gmane.linux.ide/17516
-  https://bugzilla.novell.com/show_bug.cgi?id=263893
-
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Matí-as Alejandro Torres <torresmat@gmail.com>
-Cc: Greg K-H <greg@kroah.com>
-Cc: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Corey Minyard <minyard@acm.org>
+Cc: Patrick Schoeller <Patrick.Schoeller@hp.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
 
- drivers/pci/quirks.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/char/ipmi/ipmi_si_intf.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linux-2.6.21.1.orig/drivers/pci/quirks.c
-+++ linux-2.6.21.1/drivers/pci/quirks.c
-@@ -1737,18 +1737,20 @@ DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_N
- 			quirk_nvidia_ck804_pcie_aer_ext_cap);
+--- linux-2.6.21.1.orig/drivers/char/ipmi/ipmi_si_intf.c
++++ linux-2.6.21.1/drivers/char/ipmi/ipmi_si_intf.c
+@@ -1859,10 +1859,10 @@ static __devinit int try_init_acpi(struc
  
- #ifdef CONFIG_PCI_MSI
--/* The Serverworks PCI-X chipset does not support MSI. We cannot easily rely
-- * on setting PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
-- * some other busses controlled by the chipset even if Linux is not aware of it.
-- * Instead of setting the flag on all busses in the machine, simply disable MSI
-- * globally.
-+/* Some chipsets do not support MSI. We cannot easily rely on setting
-+ * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
-+ * some other busses controlled by the chipset even if Linux is not
-+ * aware of it.  Instead of setting the flag on all busses in the
-+ * machine, simply disable MSI globally.
-  */
--static void __init quirk_svw_msi(struct pci_dev *dev)
-+static void __init quirk_disable_all_msi(struct pci_dev *dev)
- {
- 	pci_no_msi();
- 	printk(KERN_WARNING "PCI: MSI quirk detected. MSI deactivated.\n");
- }
--DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_svw_msi);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_disable_all_msi);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS400_200, quirk_disable_all_msi);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, quirk_disable_all_msi);
- 
- /* Disable MSI on chipsets that are known to not support it */
- static void __devinit quirk_disable_msi(struct pci_dev *dev)
+ 	if (spmi->addr.space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY) {
+ 		info->io_setup = mem_setup;
+-		info->io.addr_type = IPMI_IO_ADDR_SPACE;
++		info->io.addr_type = IPMI_MEM_ADDR_SPACE;
+ 	} else if (spmi->addr.space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
+ 		info->io_setup = port_setup;
+-		info->io.addr_type = IPMI_MEM_ADDR_SPACE;
++		info->io.addr_type = IPMI_IO_ADDR_SPACE;
+ 	} else {
+ 		kfree(info);
+ 		printk("ipmi_si: Unknown ACPI I/O Address type\n");
 
 -- 
