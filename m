@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbXEUSiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbXEUSjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759395AbXEUSiN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 14:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbXEUSh7
+	id S1762263AbXEUSjW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 14:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbXEUSjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 14:37:59 -0400
-Received: from lilly.ping.de ([83.97.42.2]:4743 "HELO lilly.ping.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754957AbXEUSh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 14:37:59 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 May 2007 14:37:58 EDT
-Date: Mon, 21 May 2007 20:20:05 +0200
-From: Patrick Mau <mau@oscar.ping.de>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21.1 on Fedora Core 6 breaks LVM/vgscan
-Message-ID: <20070521182005.GA14390@oscar.prima.de>
-References: <200705210632.l4L6Wkt0004225@turbo.physics.adelaide.edu.au>
+	Mon, 21 May 2007 14:39:15 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:39907 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754957AbXEUSjO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 14:39:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Mcn05/y+THGbuuc7FS6WD16/pT+qGrQUeWQNN4BrctWGraJHgpBRrChDg+TmKH4XvQL+6JUrE8fmyziEDfNXW+mVWCzZLPJDQBn8DLYmCsq/ls37KnijbDuyzeBFxr8hAe/YML0eqaPj+MNtNoiB85n3Yzr0oTCirmVMiVOeJcU=
+Message-ID: <86802c440705211139ofb757fdn9bd012b3e62fca08@mail.gmail.com>
+Date: Mon, 21 May 2007 11:39:13 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH]serial: make early_uart to use early_prarm instead of console_initcall
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Gerd Hoffmann" <kraxel@redhat.com>, "Andi Kleen" <ak@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200705211202.59817.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200705210632.l4L6Wkt0004225@turbo.physics.adelaide.edu.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <200705181900.17101.yinghai.lu@sun.com>
+	 <200705211053.34131.bjorn.helgaas@hp.com>
+	 <86802c440705211036r19be100pa2d2ed13780f6316@mail.gmail.com>
+	 <200705211202.59817.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 04:02:46PM +0930, Jonathan Woithe wrote:
-> On 21 May 2007 I wrote:
-> 
-> > Attempting to compile a 2.6.21.1 kernel for use on a Fedora Core 6 box
-> > results in a panic at boot because the root filesystem can't be found.
-> 
-> I have just compiled 2.6.22-rc2 with the configuration file given in my
-> previous post and the resulting kernel successfully boots on the machine
-> concerned.  Whatever broke LVM for this machine in between 2.6.18 and
-> 2.6.21.1 has now been fixed.
+On 5/21/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+>   early_param("console", setup_early_console);
+>
+> and have setup_early_console() ignore everything except "uart"?
 
-I recall that the device major number was moved to another place (253 ?)
-Since this change caused many complaints, it was removed later on ...
+console= is used
+__setup("console=", console_setup);
+early_param doesn't have chance to see it.
 
-> There is still a problem with the CDROM but I will follow up in another
-> thread about that.
-
-Did you mention ata_piix ?
-
-With a recent git kernel, which I forgot, I was unable to read or eject
-DVD's. (Un-encrypted, BTW).
-
-Current git tree works fine again ...
-
-Patrick
-
+YH
