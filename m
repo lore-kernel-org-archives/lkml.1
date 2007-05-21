@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbXEUJpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbXEUJpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758532AbXEUJpV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 05:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbXEUJpK
+	id S1761488AbXEUJpg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 05:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760777AbXEUJpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 05:45:10 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60409 "EHLO mx2.suse.de"
+	Mon, 21 May 2007 05:45:23 -0400
+Received: from ns1.suse.de ([195.135.220.2]:54402 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754934AbXEUJpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 05:45:08 -0400
-Date: Mon, 21 May 2007 11:45:07 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070521094507.GB19642@wotan.suse.de>
-References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <20070519150934.bdabc9b5.akpm@linux-foundation.org> <4651629B.2050505@aitel.hist.no>
-Mime-Version: 1.0
+	id S1759716AbXEUJpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 05:45:22 -0400
+Date: Mon, 21 May 2007 12:42:21 +0200
+From: Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Gerd Hoffmann <kraxel@redhat.com>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]serial: make early_uart to use early_prarm instead of console_initcall
+Message-ID: <20070521104221.GU2012@bingen.suse.de>
+References: <200705181900.17101.yinghai.lu@sun.com> <20070520202332.145d93a6.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4651629B.2050505@aitel.hist.no>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070520202332.145d93a6.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 11:12:59AM +0200, Helge Hafting wrote:
-> Andrew Morton wrote:
-> >On Sat, 19 May 2007 11:15:01 -0700 William Lee Irwin III 
-> ><wli@holomorphy.com> wrote:
-> >
-> >  
-> >>Much the same holds for the atomic_t's; 32 + PAGE_SHIFT is
-> >>44 bits or more, about as much as is possible, and one reference per
-> >>page per page is not even feasible. Full-length atomic_t's are just
-> >>not necessary.
-> >>    
-> >
-> >You can overflow a page's refcount by mapping it 4G times.  That requires
-> >32GB of pagetable memory.  It's quite feasible with remap_file_pages().
-> >  
-> But do anybody ever need to do that?
-> Such an attack is easily thwarted by refusing to map it more
-> than, say 3G times? 
+On Sun, May 20, 2007 at 08:23:32PM -0700, Andrew Morton wrote:
+> On Fri, 18 May 2007 19:00:16 -0700 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> 
+> > [PATCH]serial: make early_uart to use early_prarm instead of console_initcall
+> > 
+> > Make early_uart to use early_param, so uart console can be used earlier.
+> > Make it to be bootconsole with CON_BOOT flag, so can use console handover
+> > feature. and it will switch to corresponding normal serial console automatically.
+> > new command line will be
+> > 
+> > earlycon=uart,io,0x3f8,9600n8
+> > earlycon=uart,io,0x3f8,9600n8 console=tty0
+> > 
+> > it will print in very early stage
+> > Early serial console at I/O port 0x3f8 (options '9600n8')
+> > later for console it will print
+> > console handover: boot [uart0] -> real [ttyS0]
+> 
+> I'll queue this up for some testing, but I'd be a bit reluctant to send it
+> into Linus due to my poor understanding of what it actually does.  What
+> _is_ an early console, and how does it differ from a non-early one?
 
-That still allows you to DoS the page.
+It is someone's reimplemention of earlyprintk= for another architecture
+that happens to mostly work on x86 too because the code is not ifdeffed. 
+I don't think it makes much sense on x86 though because earlyprintk exists.
+
+-Andi
 
