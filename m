@@ -1,41 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbXEUFDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758332AbXEUFFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757474AbXEUFDn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 01:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXEUFDg
+	id S1758332AbXEUFFl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 01:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXEUFFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 01:03:36 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:56423 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbXEUFDf (ORCPT
+	Mon, 21 May 2007 01:05:35 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4339 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754338AbXEUFFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 01:03:35 -0400
-Message-ID: <46512821.9010905@zytor.com>
-Date: Sun, 20 May 2007 22:03:29 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 21 May 2007 01:05:34 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 20 May 2007 22:05:00 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Davi Arnaut <davi@haxent.com.br>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] signalfd: retrieve multiple signals with one read() call
+In-Reply-To: <20070520212627.398ffd23.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705202146560.22011@alien.or.mcafeemobile.com>
+References: <464F912F.3040205@haxent.com.br> <20070520210210.9a895eec.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705202112230.22011@alien.or.mcafeemobile.com>
+ <20070520212627.398ffd23.akpm@linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: young dave <hidave.darkstar@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc1-mm1
-References: <20070515201914.16944e04.akpm@linux-foundation.org>	 <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com>	 <a8e1da0705180154v37e8ec5fs2cc4de9417cd44d2@mail.gmail.com>	 <a8e1da0705180307m60a91996r91c8bfcd1c863a94@mail.gmail.com>	 <464DDA40.6010101@zytor.com>	 <a8e1da0705201753i1527138ape2163817c6c0d3b5@mail.gmail.com>	 <465124EA.1020801@zytor.com> <a8e1da0705202200u5976d14do7ec1469941bb2967@mail.gmail.com>
-In-Reply-To: <a8e1da0705202200u5976d14do7ec1469941bb2967@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-young dave wrote:
-> Hi,
+On Sun, 20 May 2007, Andrew Morton wrote:
+
+> > I think it fits the rule "buffer must be big enough for at least one sigingo".
+> > We use the special return 0; as indicator that the process we were 
+> > monitoring signals, detached the sighand.
+> > 
 > 
-> I tried the vga option , and the selection menu appeared, then I
-> select 0(80x25) and nothing happened.
-> 
+> hm.  Kernel violates proper read() semantics in many places.  Looks like we
+> just did it again.
 
-OK.
+I think we can have the check that "if size == 0 return 0". The above 
+cited return-0-on-detch would still apply for enough sized buffers. So:
 
-Could you put printf's in the setup code (especially
-arch/i386/boot/main.c) to see how far it runs before it dies?
+1) size == 0, return 0 (POSIX wants this)
 
-	-hpa
+2) size < sizeof(signalfd_siginfo), return EINVAL
+
+3) size >= sizeof(signalfd_siginfo) && DETACH, return 0
+
+The signalfd falls into what POSIX defined as "special file", and can 
+return a lower-than-size result.
+
+
+> Unless we just remove the __clear_user() altogether.  Who said that "Unused
+> memebers should be zero"?
+
+Because it is a typically used value for still-unused/reserved members? 
+Better than random values I think ;)
+Members validity is driven by si_code & SI_MASK anyway.
+
+
+- Davide
+
+
