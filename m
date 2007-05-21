@@ -1,66 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758694AbXEUFB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbXEUFDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758694AbXEUFB2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 01:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXEUFBT
+	id S1757474AbXEUFDn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 01:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXEUFDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 01:01:19 -0400
-Received: from tuxrocks.com ([63.99.9.217]:39739 "EHLO tuxrocks.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754649AbXEUFBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 01:01:19 -0400
-Message-ID: <46512778.2050205@tuxrocks.com>
-Date: Mon, 21 May 2007 00:00:40 -0500
-From: Frank Sorenson <frank@tuxrocks.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 21 May 2007 01:03:36 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:56423 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751789AbXEUFDf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 01:03:35 -0400
+Message-ID: <46512821.9010905@zytor.com>
+Date: Sun, 20 May 2007 22:03:29 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Maarten Maathuis <madman2003@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [realtime kernel 2.6.21-rt2 and up] Extremely slow bootup for
- x86_64
-References: <6d4bc9fc0705200525m1b72aaaevf8a1d090038bb7dc@mail.gmail.com> <1179669982.21827.25.camel@chaos>
-In-Reply-To: <1179669982.21827.25.camel@chaos>
-X-Enigmail-Version: 0.94.3.0
+To: young dave <hidave.darkstar@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc1-mm1
+References: <20070515201914.16944e04.akpm@linux-foundation.org>	 <464ADA5D.8050405@shadowen.org> <464B2048.7040103@zytor.com>	 <a8e1da0705180154v37e8ec5fs2cc4de9417cd44d2@mail.gmail.com>	 <a8e1da0705180307m60a91996r91c8bfcd1c863a94@mail.gmail.com>	 <464DDA40.6010101@zytor.com>	 <a8e1da0705201753i1527138ape2163817c6c0d3b5@mail.gmail.com>	 <465124EA.1020801@zytor.com> <a8e1da0705202200u5976d14do7ec1469941bb2967@mail.gmail.com>
+In-Reply-To: <a8e1da0705202200u5976d14do7ec1469941bb2967@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Thomas Gleixner wrote:
-> On Sun, 2007-05-20 at 14:25 +0200, Maarten Maathuis wrote:
->> When i try to boot a kernel higher than 2.6.21-rt1, it boots very
->> slowly. It takes minutes to even detect two cdrom players. I noticed
->> in the changelog:
->>
->> - x86/64 high-res timers and dynticks update (Thomas Gleixner)
->>
->> I included the .config from 2.6.21-rt1, which i ran make oldconfig on.
->>
->> I cannot provide any other information, since i estimate it will take
->> ages to bootup.
+young dave wrote:
+> Hi,
 > 
-> Does the same problem show up with
+> I tried the vga option , and the selection menu appeared, then I
+> select 0(80x25) and nothing happened.
 > 
-> http://tglx.de/projects/hrtimers/2.6.22-rc2/linux-2.6.22-rc2-x86_64-highres-v1.patch
-> 
-> 	tglx
 
-I see the slow bootup as well, even with 2.6.22-rc2-hrt1.  It takes at
-least 5 times as long to boot, for X to start, to login, etc.
+OK.
 
-Frank
-- --
-Frank Sorenson - KD7TZK
-Linux Systems Engineer, DSS Engineering, UBS AG
-frank@tuxrocks.com
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+Could you put printf's in the setup code (especially
+arch/i386/boot/main.c) to see how far it runs before it dies?
 
-iD8DBQFGUSd4aI0dwg4A47wRAog8AJ9QkOlDEweqxeLxC3Bx7C5TQbMbjACfeM6k
-pDJzhXJYwoH39CzIYy3eAnw=
-=qNW6
------END PGP SIGNATURE-----
+	-hpa
