@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbXEUGIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbXEUGIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbXEUGIm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 02:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbXEUGIf
+	id S1757792AbXEUGIz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 02:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756490AbXEUGIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 02:08:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35779 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082AbXEUGIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 02:08:35 -0400
-Date: Mon, 21 May 2007 08:08:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bill Huey <billh@gnuppy.monkey.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] lockdep: lock contention tracking
-Message-ID: <20070521060828.GB20277@elte.hu>
-References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 21 May 2007 02:08:46 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:57672 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756240AbXEUGIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 02:08:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ZR5em//4dQDUNatpYVJwPnniD+pWnbdcFWiPNECWujRzdjoe42Shzs/arhWYEbsFi
+	35G+x8cYVvwHeK56oYjmA==
+Message-ID: <b040c32a0705202308h7fda56c1r85bac3ce4c172488@mail.gmail.com>
+Date: Sun, 20 May 2007 23:08:35 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Cc: "Andrey Borzenkov" <arvidjaar@mail.ru>, "Uwe Bugla" <uwe.bugla@gmx.de>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070521060446.GA4593@gnuppy.monkey.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <464F42F3.1080300@madrabbit.org>
+	 <20070519191751.E51233A23A2@muan.mtu.ru>
+	 <200705200124.13026.uwe.bugla@gmx.de>
+	 <200705200845.43621.arvidjaar@mail.ru>
+	 <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 5/19/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+> Yeah, that's the only one left. I was hoping it wasn't that one, as it
+> claimed to have been tested extensively. Guess it wasn't tested with
+> udev.
+>
+> Ken? Ball's in your court. As the patch isn't providing a killer
+> feature for 2.6.22, I'd suggest just reverting it for now until the
+> issues are ironed out.
 
-* Bill Huey <billh@gnuppy.monkey.org> wrote:
+The real solution is to have the user space tool to create these
+device nodes in advance.
 
-> On Sun, May 20, 2007 at 12:30:26PM +0200, Peter Zijlstra wrote:
-> > The 4 points are the first 4 unique callsites that cause lock contention
-> > for the specified lock class.
-> > 
-> > writing a 0 to /proc/lockdep_contentions clears the stats
-> 
-> We should talk about unifying it with my lockstat work for -rt so that 
-> we have a comprehensive solution for the "world". But you know that 
-> already :)
+The original loop patch was coded such that when we open a loop device
+N, the immediate adjacent device "N + 1" is created.  This will keep
+"mount -o loop" happy because it typically does a linear scan to find
+a free device.  This might be somewhat hackary, but certainly will be
+backward compatible before user space solution is deployed.
 
-To me it appears Peter's stuff is already a pretty complete solution on 
-its own, and it's a whole lot simpler (and less duplicative) than your 
-lockstat patch. Could you list the specific items/features that you 
-think Peter's stuff doesnt have?
+However, the code was removed by Al in this commit:
 
-	Ingo
+commit 07002e995638b83a6987180f43722a0eb39d4932
+Author: Al Viro <viro@zeniv.linux.org.uk>
+Date:   Sat May 12 16:23:15 2007 -0400
+
+    fix the dynamic allocation and probe in loop.c
+
+    Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+    Acked-by: Ken Chen <kenchen@google.com>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
