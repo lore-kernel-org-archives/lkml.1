@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbXEURYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbXEURZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758283AbXEURYj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 13:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbXEURYc
+	id S1757803AbXEURZa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 13:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbXEURZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 13:24:32 -0400
-Received: from mga03.intel.com ([143.182.124.21]:53370 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755872AbXEURYc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 13:24:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,562,1170662400"; 
-   d="scan'208";a="230437854"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Increased ipw2200 power usage with dynticks
-Date: Mon, 21 May 2007 10:24:15 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F5EA4D36@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <20070521074938.GA15678@atjola.homenet>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Increased ipw2200 power usage with dynticks
-Thread-Index: AcebfJjPk2BrcNMXSWOoE8jMCPxcdAAT9wjQ
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: =?iso-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       "Andi Kleen" <andi@firstfloor.org>, "Brown, Len" <len.brown@intel.com>
-Cc: <tglx@linutronix.de>, <mingo@elte.hu>, "Zhu, Yi" <yi.zhu@intel.com>,
-       <linux-kernel@vger.kernel.org>, <arjan@infradead.org>, <trenn@suse.de>
-X-OriginalArrivalTime: 21 May 2007 17:24:16.0484 (UTC) FILETIME=[DBB1BA40:01C79BCC]
+	Mon, 21 May 2007 13:25:23 -0400
+Received: from www.osadl.org ([213.239.205.134]:34579 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755902AbXEURZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 13:25:22 -0400
+Subject: Re: [stable] [PATCH] Ignore bogus ACPI info for offline CPUs
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Darren Hart <dvhltc@us.ibm.com>, Andrew Morton <akpm@osdl.org>,
+       Stable Team <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+In-Reply-To: <20070521170815.GE3429@sequoia.sous-sol.org>
+References: <1179584570.12981.123.camel@chaos>
+	 <200705210947.35350.dvhltc@us.ibm.com>
+	 <20070521170815.GE3429@sequoia.sous-sol.org>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 19:32:08 +0200
+Message-Id: <1179768728.12708.31.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Mon, 2007-05-21 at 10:08 -0700, Chris Wright wrote:
+> * Darren Hart (dvhltc@us.ibm.com) wrote:
+> > On Saturday 19 May 2007 07:22:50 Thomas Gleixner wrote:
+> > > Booting a SMP kernel with maxcpus=1 on a SMP system leads to a hard
+> > > hang, because ACPI ignores the maxcpus setting and sends timer broadcast
+> > > info for the offline CPUs. This results in a stuck for ever call to
+> > > smp_call_function_single() on an offline CPU.
+> > >
+> > > Ignore the bogus information and print a kernel error to remind ACPI
+> > > folks to fix it.
+> > >
+> > > Affects 2.6.21 / 2.6.22-rc
+> > >
+> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > 
+> > When I first booted with this patch I received the following in a loop:
+> > 
+> > irq 9: nobody cared (try booting with the "irqpoll" option)
+> 
+> What happens when booting w/out this patch?  Don't want to add known
+> regression to -stable.
 
->-----Original Message-----
->From: Björn Steinbrink [mailto:B.Steinbrink@gmx.de] 
->Sent: Monday, May 21, 2007 12:50 AM
->To: Andi Kleen
->Cc: tglx@linutronix.de; mingo@elte.hu; Zhu, Yi; 
->linux-kernel@vger.kernel.org; arjan@infradead.org; Pallipadi, 
->Venkatesh; trenn@suse.de
->Subject: Re: Increased ipw2200 power usage with dynticks
->
->On 2007.05.20 20:55:35 +0200, Andi Kleen wrote:
->> Björn Steinbrink <B.Steinbrink@gmx.de> writes:
->> > 
->> > Ok, it seems that ipw2200 is just a trigger for the 
->problem here. AFAICT
->> > the cause of the worse C state usage is that after ipw2200 
->has woken the
->> > cpu, acpi_processor_idle() chooses C2 (due to dma? bm? I have no
->> > idea...) as the prefered sleep state. Now without NO_HZ or 
->when I hold
->> > down a key, there are interrupts that wake up the CPU and when
->> > acpi_processor_idle() is called again the promotion to 
->C3/C4 happens.
->> > But with NO_HZ, there are no such interrupts, most wakeups 
->are caused by
->> > ipw2200 and so the processor doesn't go any deeper than C2 
->most of the
->> > time and thus wastes lots of power.
->> 
->> The cpuidle governour code Venki is working on is supposed 
->to address this.
->> There have been also earlier prototype patches by Adam Belay and
->> Thomas Renninger.
->
->Venki (at least I think it was him) also told me about cpuidle and the
->menu governor on #powertop. Unfortunately, cpuidle seems to be 
->gone from
->acpi-test (or I'm simply still too stupid for git/gitweb). I manually
->added the cpuidle and menu governor patches on top of my 
->2.6.22-rc1-hrt8
->kernel, but that broke C-state duration accounting.
->
->On the bright side of things is power usage though, which is down to an
->incredible 13.9W in idle+ipw2200 :)
->
+See commit log:
 
-Nice to hear that cpuidle-menu governor gets 13.9W :-).
-Powertop will need some changes to go with cpuidle, but that should be simple.
+Booting a SMP kernel with maxcpus=1 on a SMP system leads to a hard
+hang, because ACPI ignores the maxcpus setting and sends timer broadcast
+info for the offline CPUs. This results in a stuck for ever call to
+smp_call_function_single() on an offline CPU.
 
-We need some more testing for cpuidle before it gets into git.
-Len: Looks like cpuidle got dropped out of mm again. Can you merge it back it please.
+The irq 9 issue is a separate problem and only surfaces on some boxen,
+but it's not related to this patch. It's related to maxcpus=1 as well.
 
-Thanks,
-Venki
+	tglx
+
+
