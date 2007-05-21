@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934604AbXEUT7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936226AbXEUT74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934604AbXEUT7a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933921AbXEUToG
+	id S936226AbXEUT74 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934957AbXEUToe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:44:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57228 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935082AbXEUToE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:44:04 -0400
-Date: Mon, 21 May 2007 12:31:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/69] -stable review
-Message-Id: <20070521123148.a3dad5f2.akpm@linux-foundation.org>
-In-Reply-To: <20070521191612.800400000@sous-sol.org>
-References: <20070521191612.800400000@sous-sol.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 May 2007 15:44:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45463 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934838AbXEUToc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:44:32 -0400
+Message-ID: <4651F653.9060802@redhat.com>
+Date: Mon, 21 May 2007 12:43:15 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: second, bigger problem with private futexes
+References: <4651D628.1070206@redhat.com> <4651E1D4.6010705@cosmosbay.com> <4651E44A.9070301@redhat.com> <4651E992.9080205@cosmosbay.com> <4651F261.2040903@cosmosbay.com>
+In-Reply-To: <4651F261.2040903@cosmosbay.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007 12:16:12 -0700
-Chris Wright <chrisw@sous-sol.org> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> This is the start of the stable review cycle for the 2.6.21.2 release.
+Eric Dumazet wrote:
+> 3) if condvar is PRIVATE and mutex is SHARED, a FUTEX_WAKE_PRIVATE
+> should be done. (and loose the REQUEUE optim)
+> Yes we could add a special futex primitive for this special case. But I
+> cannot see how a program could use such a construct.
 
-Gee a lot of these are fixing recently-added regressions :(
+Very easily: mutexes are often created independently from the condvars
+and they are used for many things.  Maybe a program is even creating all
+mutexes as shared to be ready for all situations.  Normally doing this
+is no big problem, the performance penalties are minimal.
 
-Did we fix oprofile on x86_64 yet?  If not, I'd suggest we should
-hold off 2.6.21.2 until we have done so.
 
-I assume ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/oprofile-allocation
-is what we want.
+> 4) if condvar is SHARED and mutex is private, we have a *problem*,
+> because the process doing the broadcast() can be in another mm. So a
+> requeue is not possible at all.
+
+It is if we can specify the owner of the mutex.  I.e., the PID.
+
+But yes, this case is extremely ugly.
+
+
+The problem is that all these cases worked nice so far.  They all had
+the same good performance.  Now we are severely penalizing code which
+mismatches condvar and mutex shared attributes.  There is a good reason
+why we introduced FUTEX_CMP_REQUEUE, the benefits in certain programs is
+huge.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGUfZT2ijCOnn/RHQRAkT0AJ4pgX7RtdUf8uwyP9v7o+nkv/9uMACfbx6+
+kBaJLSSvDBjN09KMgmLKnSI=
+=4XMz
+-----END PGP SIGNATURE-----
