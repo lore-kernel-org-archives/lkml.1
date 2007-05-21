@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbXEUPPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763687AbXEUPSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763981AbXEUPPq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 11:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbXEUPPi
+	id S1763687AbXEUPSl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 11:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758913AbXEUPSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 11:15:38 -0400
-Received: from ns2.suse.de ([195.135.220.15]:54063 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757232AbXEUPPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 11:15:37 -0400
-Date: Mon, 21 May 2007 17:15:26 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: linux-scsi@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: [PATCH] [scsi] Remove __GFP_DMA
-Message-ID: <20070521151525.GA581@suse.de>
-Mail-Followup-To: linux-scsi@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	James Bottomley <James.Bottomley@SteelEye.com>
+	Mon, 21 May 2007 11:18:33 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:53073 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757969AbXEUPSc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 11:18:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=OYQ3tMCfesVPtvQyzpWxy3S676ccChneLAciKuuYFeo8dCKqgSfWYUyK0PdjORZy0p2GEe5ZP0tVYouCtFswlYd/goApvq7oB5RB0lUYCB5mVZBnu3HGlkzH9RyARmkzPVTzGgt3WmYLzdHgl/oPWD3yfTE8h6xI5+u1ZbNAuIs=
+Message-ID: <4651B834.3060702@gmail.com>
+Date: Mon, 21 May 2007 17:18:12 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Robert de Rooy <robert.de.rooy@gmail.com>
+CC: linux-kernel@vger.kernel.org, alan@redhat.com, bzolnier@gmail.com,
+       jgarzik@pobox.com
+Subject: Re: libata and legacy ide pcmcia failure
+References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com> <464CB7C9.2080807@gmail.com> <46503192.1040300@gmail.com> <4650B9E3.7070409@gmail.com> <46518798.2020808@gmail.com> <4651B66E.6030505@gmail.com>
+In-Reply-To: <4651B66E.6030505@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] [scsi] Remove __GFP_DMA
+Robert de Rooy wrote:
+> This gets a little bit further again, but now I get lots of new errors....
 
-After 821de3a27bf33f11ec878562577c586cd5f83c64, it's not necessary to alloate a
-DMA buffer any more in sd.c.
+Alright, this doesn't seem to be the CF reader's problem anymore.  It
+seems the PCMCIA controller isn't passing interrupts properly.  Does any
+other device work in the slot?
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- drivers/scsi/sd.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1515,7 +1515,7 @@ static int sd_revalidate_disk(struct gen
- 	if (!scsi_device_online(sdp))
- 		goto out;
- 
--	buffer = kmalloc(SD_BUF_SIZE, GFP_KERNEL | __GFP_DMA);
-+	buffer = kmalloc(SD_BUF_SIZE, GFP_KERNEL);
- 	if (!buffer) {
- 		sd_printk(KERN_WARNING, sdkp, "sd_revalidate_disk: Memory "
- 			  "allocation failure.\n");
+-- 
+tejun
