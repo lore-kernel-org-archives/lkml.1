@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764892AbXEUXOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbXEUXSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764892AbXEUXOR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 19:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757690AbXEUXOF
+	id S1762952AbXEUXSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 19:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758049AbXEUXSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 19:14:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59027 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756587AbXEUXOE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 19:14:04 -0400
-Date: Tue, 22 May 2007 00:18:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Mon, 21 May 2007 19:18:00 -0400
+Received: from mga03.intel.com ([143.182.124.21]:64306 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757998AbXEUXR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 19:17:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,563,1170662400"; 
+   d="scan'208";a="230566428"
+From: Jesse Barnes <jesse.barnes@intel.com>
 To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: hancockr@shaw.ca (Robert Hancock),
-       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       linux-kernel@vger.kernel.org
 Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
-Message-ID: <20070522001837.5104bfe1@the-village.bc.nu>
+Date: Mon, 21 May 2007 16:17:50 -0700
+User-Agent: KMail/1.9.6
+Cc: Robert Hancock <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
+References: <200705212305.l4LN5irk008924@turbo.physics.adelaide.edu.au>
 In-Reply-To: <200705212305.l4LN5irk008924@turbo.physics.adelaide.edu.au>
-References: <465150C2.4080006@shaw.ca>
-	<200705212305.l4LN5irk008924@turbo.physics.adelaide.edu.au>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705211617.50642.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This would be your PATA port - pata_marvell.
+On Monday, May 21, 2007 4:05 pm Jonathan Woithe wrote:
+> 02:00.0 IDE interface: Marvell Technology Group Ltd. Unknown device
+> 6101 (rev b1) (prog-if 8f [Master SecP SecO PriP PriO]) Subsystem:
+> Marvell Technology Group Ltd. Unknown device 6101 Flags: bus master,
+> fast devsel, latency 0, IRQ 10
+> 	I/O ports at 1018 [size=8]
+> 	I/O ports at 1024 [size=4]
+> 	I/O ports at 1010 [size=8]
+> 	I/O ports at 1020 [size=4]
+> 	I/O ports at 1000 [size=16]
+> 	Memory at 90100000 (32-bit, non-prefetchable) [size=512]
+> 	Capabilities: [48] Power Management version 2
+> 	Capabilities: [50] Message Signalled Interrupts: 64bit- Queue=0/0
+> Enable- Capabilities: [e0] Express Legacy Endpoint IRQ 0
 
-> 02:00.0 IDE interface: Marvell Technology Group Ltd. Unknown device 6101 (rev b1) (prog-if 8f [Master SecP SecO PriP PriO])
-> 	Subsystem: Marvell Technology Group Ltd. Unknown device 6101
+Looks like you've got Marvell IDE for your PATA stuff (my board is the 
+same).  Try the latest Marvell driver, it seems to drive my machine ok.  
+For older kernels, I think you can pass 'all-generic-ide' on the boot 
+line to get the old IDE layer to drive the device.
 
-> Does this apply to *all* SATA controllers or just these ICHx ones from
-> Intel?  In other words, should all optimally configured SATA controllers
-> be in AHCI mode?
-
-If they have an AHCI mode then currently yes. AHCI is a well designed
-interface with nice functionality. None of the devices which support
-multiple modes of operation have any custom mode that is nicer .. so far
-anyway.
-
-Alan
+Jesse
