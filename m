@@ -1,78 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbXEUCIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbXEUCIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756131AbXEUCIR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 22:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbXEUCIA
+	id S1757239AbXEUCIb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 22:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbXEUCIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 22:08:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:21622 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965AbXEUCH7 (ORCPT
+	Sun, 20 May 2007 22:08:05 -0400
+Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:60035 "EHLO
+	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754657AbXEUCID (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 22:07:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=EFDd8AYXDONKJOyhp01ekGQMbOES/QQfrX40QzxEzncuqiqdsCwOlloKeIq5JAupxfTBa2wAGg4M+76Os1DL73EIdzeDgOgrqLJgZLqWrClwlqsFmTL0DC5eqC9X/SCm/8qqAD6W/UBJbNZ2atgmXitjwAxqyEKR00nlkQoe1K4=
-Subject: [RFC] linux-2.6.22-rc2. SLUB report[kzalloc(0)]
-From: Dan Kruchinin <dubalom@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-usb-devel@lists.sourceforge.net
-Content-Type: text/plain
-Date: Mon, 21 May 2007 06:05:02 +0400
-Message-Id: <1179713102.4969.14.camel@midgard>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 20 May 2007 22:08:03 -0400
+Date: Mon, 21 May 2007 11:05:09 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <lenb@kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after STR
+Message-ID: <20070521020508.GA3484@inferi.kami.home>
+References: <20070518071523.GA3195@inferi.kami.home> <200705201138.05146.david-b@pacbell.net> <20070521004119.GA3103@inferi.kami.home> <200705201822.24138.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705201822.24138.david-b@pacbell.net>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.22-rc1-mm1-3 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Sun, May 20, 2007 at 06:22:23PM -0700, David Brownell wrote:
+> On Sunday 20 May 2007, Mattia Dongili wrote:
+> > 
+> > $ cat /proc/acpi/wakeup
+> > Device	S-state	  Status   Sysfs node
+> > PWRB	  S4	*enabled   
+> > S1F0	  S4	 disabled  
+> > S1F1	  S4	 disabled  
+> > S1F2	  S4	 disabled  
+> > S1F3	  S4	 disabled  
+> > S1F4	  S4	 disabled  
+> > S1F5	  S4	 disabled  
+> > S1F6	  S4	 disabled  
+> > S1F7	  S4	 disabled  
+> > TLAN	  S3	 disabled  pci:0000:07:00.0
+> > DLAN	  S3	 disabled  
+> > S6F0	  S4	 disabled  
+> > S6F1	  S4	 disabled  
+> > S6F2	  S4	 disabled  
+> > S6F3	  S4	 disabled  
+> > S6F4	  S4	 disabled  
+> > S6F5	  S4	 disabled  
+> > S6F6	  S4	 disabled  
+> > S6F7	  S4	 disabled  
+> > USB1	  S3	 disabled  pci:0000:00:1d.0
+> > USB2	  S3	 disabled  pci:0000:00:1d.1
+> > USB3	  S3	 disabled  pci:0000:00:1d.2
+> > USB4	  S3	 disabled  pci:0000:00:1d.3
+> > USB7	  S3	 disabled  pci:0000:00:1d.7
+> > SLT0	  S4	 disabled  
+> > LANC	  S3	 disabled  
+> > EC0	  S5	 disabled  
+> 
+> That's strangely busy ... what ARE all those devices?  :)
 
-There is a BUG message from SLUB during boot process:
---
-May 21 05:39:10 midgard kernel: [   31.177484] BUG: at
-include/linux/slub_def.h:77 kmalloc_index()
-May 21 05:39:10 midgard kernel: [   31.178355]  [<c01062ca>]
-show_trace_log_lvl+0x1a/0x30
-May 21 05:39:10 midgard kernel: [   31.179263]  [<c0106e72>] show_trace
-+0x12/0x20
-May 21 05:39:10 midgard kernel: [   31.180177]  [<c0106ee6>] dump_stack
-+0x16/0x20
-May 21 05:39:10 midgard kernel: [   31.181094]  [<c018440d>] get_slab
-+0x1cd/0x260
-May 21 05:39:10 midgard kernel: [   31.182024]  [<c0185809>]
-__kmalloc_track_caller+0x19/0xa0
-May 21 05:39:10 midgard kernel: [   31.183019]  [<c0170059>] __kzalloc
-+0x19/0x50
-May 21 05:39:10 midgard kernel: [   31.184012]  [<df05586e>]
-usb_get_configuration+0x9de/0x11c0 [usbcore]
-May 21 05:39:10 midgard kernel: [   31.185115]  [<df04cd07>]
-usb_new_device+0x17/0x190 [usbcore]
-May 21 05:39:10 midgard kernel: [   31.186181]  [<df04e68a>] hub_thread
-+0x79a/0xfd0 [usbcore]
-May 21 05:39:10 midgard kernel: [   31.187185]  [<c013b8e2>] kthread
-+0x42/0x70
-May 21 05:39:10 midgard kernel: [   31.188190]  [<c0105ea7>]
-kernel_thread_helper+0x7/0x10
---
+the S[16]F* are tons of acpi devices... don't know what they are, they
+are attached to the PCI-E port
+00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 02)
+00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 02)
+00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 (rev 02)
+00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 4 (rev 02)
+if you're interested the DSDT is here:
+http://www.linux.it/~malattia/sony-laptop/DSDT.sz72b.type3.dsl
 
-kzalloc(0, GFP_KERNEL) occurs in drivers/usb/core/config.c in 
-usb_get_configuration function. I already wrote about this slub bug
-report and offered a
-patch(http://www.uwsg.iu.edu/hypermail/linux/kernel/0705.1/0154.html). I
-don't know, may be it is not major thing, if it is, just ignore it. I
-just think, that 
---
-	length = ncfg * sizeof(struct usb_host_config);
-	dev->config = kzalloc(length, GFP_KERNEL);
---
-isn't clear, because ncfg - in my case - is 0 and I suppose, that size
-of the leastest slab cache can become(in future) smaller than
-sizeof(struct usb_host_config).
+> But only the PCI ones -- or certain devices connected to USB
+> root hubs -- could be affected by that patch.
+> 
+> So another experiment you could do, if you want faster info
+> than "git bisect" can provide, is building drivers for those
+> PCI devices as modules (ehci-hcd, uhci-hcd, sky2) and then
+> finding which one causes the trouble by removing them before
+> STR.
 
-Thanks for attention.
+it's ehci-hcd! and apart from the fact that removing it causes a BUG in
+cpufreq no the system stays correctly asleep when suspended.
 
+...
+> > > My suspicion, based on the dmesg and seeing what drivers actually
+> > > try to enable wakeup, would be the 'sky2' driver.  The other two
+> > 
+> > FWIW the sky2 is never functional upon resume, I need to ifdown, rmmod,
+> > modprobe and ifup again to get some networking...
+> 
+> Try "rmmod sky2" *before* suspend, to see if that matters.
+> 
+> Also "rmmod uhci-hcd", which will keep USB from doing anything
+> with that biometric thingie.
+> 
+> I suspect one or the other of those will be the issue.
+
+very close :)
 -- 
-Dan Kruchinin <dubalom@gmail.com>
-
+mattia
+:wq!
