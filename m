@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935082AbXEUTow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765212AbXEUTpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935082AbXEUTow (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933775AbXEUT15
+	id S1765212AbXEUTpe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765505AbXEUT2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:27:57 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52563 "EHLO
+	Mon, 21 May 2007 15:28:06 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52576 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933766AbXEUT1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:27:55 -0400
-Message-Id: <20070521191751.994432000@sous-sol.org>
+	id S1765741AbXEUT2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:28:04 -0400
+Message-Id: <20070521191746.464211000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:09 -0700
+Date: Mon, 21 May 2007 12:17:01 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,37 +23,40 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
-       bunk@stusta.de
-Subject: [patch 57/69] SPARC64: Bump PROMINTR_MAX to 32.
-Content-Disposition: inline; filename=sparc64-bump-promintr_max-to-32.patch
+       bunk@stusta.de, YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+Subject: [patch 49/69] IPV6 ROUTE: Assign rt6i_idev for ip6_{prohibit,blk_hole}_entry.
+Content-Disposition: inline; filename=ipv6-route-assign-rt6i_idev-for-ip6_-prohibit-blk_hole-_entry.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: David Miller <davem@davemloft.net>
+From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 
-Some devices have more than 15 which was the previous
-setting.
+I think this is less critical, but is also suitable for -stable
+release.
 
+Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- include/asm-sparc64/openprom.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/ipv6/addrconf.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- linux-2.6.21.1.orig/include/asm-sparc64/openprom.h
-+++ linux-2.6.21.1/include/asm-sparc64/openprom.h
-@@ -177,7 +177,7 @@ struct linux_nodeops {
- /* More fun PROM structures for device probing. */
- #define PROMREG_MAX     24
- #define PROMVADDR_MAX   16
--#define PROMINTR_MAX    15
-+#define PROMINTR_MAX    32
+--- linux-2.6.21.1.orig/net/ipv6/addrconf.c
++++ linux-2.6.21.1/net/ipv6/addrconf.c
+@@ -4062,6 +4062,10 @@ int __init addrconf_init(void)
+ 		return err;
  
- struct linux_prom_registers {
- 	unsigned which_io;	/* hi part of physical address			*/
+ 	ip6_null_entry.rt6i_idev = in6_dev_get(&loopback_dev);
++#ifdef CONFIG_IPV6_MULTIPLE_TABLES
++	ip6_prohibit_entry.rt6i_idev = in6_dev_get(&loopback_dev);
++	ip6_blk_hole_entry.rt6i_idev = in6_dev_get(&loopback_dev);
++#endif
+ 
+ 	register_netdevice_notifier(&ipv6_dev_notf);
+ 
 
 -- 
