@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763427AbXEUWMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762957AbXEUWQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763427AbXEUWMo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 18:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbXEUWMh
+	id S1762957AbXEUWQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 18:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbXEUWP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 18:12:37 -0400
-Received: from www.osadl.org ([213.239.205.134]:47688 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758058AbXEUWMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 18:12:36 -0400
-Subject: Re: [patch 43/69] i386: HPET, check if the counter works
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Andi Kleen <ak@suse.de>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       guilherme@centralinf.com.br, johnstul@us.ibm.com
-In-Reply-To: <20070521145719.739bb8eb.akpm@linux-foundation.org>
-References: <20070521191612.800400000@sous-sol.org>
-	 <20070521191740.534306000@sous-sol.org> <1179777535.12708.37.camel@chaos>
-	 <20070521145719.739bb8eb.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 22 May 2007 00:12:32 +0200
-Message-Id: <1179785552.12708.79.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Mon, 21 May 2007 18:15:59 -0400
+Received: from as1.cineca.com ([130.186.84.251]:55524 "EHLO as1.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757441AbXEUWP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 18:15:58 -0400
+Message-ID: <465219FA.7080305@users.sourceforge.net>
+From: Andrea Righi <righiandr@users.sourceforge.net>
+Reply-To: righiandr@users.sourceforge.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070326 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Folkert van Heusden <folkert@vanheusden.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
+References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr> <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de> <46517817.1080208@users.sourceforge.net> <20070521110406.GA14802@vanheusden.com> <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr> <20070521124734.GB14802@vanheusden.com> <4651A564.9090509@users.sourceforge.net> <20070521185947.GF14802@vanheusden.com>
+In-Reply-To: <20070521185947.GF14802@vanheusden.com>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=77CEF397;
+	url=keyserver.veridis.com
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+Date: Tue, 22 May 2007 00:15:55 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-21 at 14:57 -0700, Andrew Morton wrote:
-> On Mon, 21 May 2007 21:58:55 +0200
-> Thomas Gleixner <tglx@linutronix.de> wrote:
+Folkert van Heusden wrote:
+>>>>> What about the following enhancement: I check with sig_fatal if it would
+>>>>> kill the process and only then emit a message. So when an application
+>>>>> takes care itself of handling it nothing is printed.
+>>>>> +	/* emit some logging for unhandled signals
+>>>>> +	 */
+>>>>> +	if (sig_fatal(t, sig))
+>>>> Not unhandled_signal()?
+>>> Can we already use that one in send_signal? As the signal needs to be
+>>> send first I think before we know if it was handled or not? sig_fatal
+>>> checks if the handler is set to default - which is it is not taken care
+>>> of.
+>> What about ptrace()'d processes? I don't think we should log signals for them...
 > 
-> > The warning in the NOHZ code, which triggers when a CPU goes idle with
-> > softirqs pending can fill up the logs quite quickly. Rate limit the
-> > output until we found the root cause of that problem.
-> > 
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > 
-> > Index: linux-2.6.21/kernel/time/tick-sched.c
-> > ===================================================================
-> > --- linux-2.6.21.orig/kernel/time/tick-sched.c
-> > +++ linux-2.6.21/kernel/time/tick-sched.c
-> > @@ -167,9 +167,15 @@ void tick_nohz_stop_sched_tick(void)
-> >  		goto end;
-> >  
-> >  	cpu = smp_processor_id();
-> > -	if (unlikely(local_softirq_pending()))
-> > -		printk(KERN_ERR "NOHZ: local_softirq_pending %02x\n",
-> > -		       local_softirq_pending());
-> > +	if (unlikely(local_softirq_pending())) {
-> > +		static int ratelimit;
-> > +
-> > +		if (ratelimit < 10) {
-> > +			printk(KERN_ERR "NOHZ: local_softirq_pending %02x\n",
-> > +			       local_softirq_pending());
-> > +			ratelimit++;
-> > +		}
-> > +	}
-> 
-> that's not a "rate" limit.  I resist the temptation to rename it to "limit"
-> to keep mainline and -stable in sync, and coz it's temporary (we hope).
+> Why not?
 
-Point taken.
+Maybe sometimes it's useful, maybe not, but I suppose that usually only the
+controlling process should care about the critical signals received by the
+controlled process. I simply don't think it should be a system issue. For
+example I wouldn't like to have a lot of messages in the kernel logs just
+because I'm debugging some segfaulting programs with gdb.
 
-	tglx
-
-
+-Andrea
