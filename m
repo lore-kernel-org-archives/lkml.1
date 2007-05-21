@@ -1,480 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759445AbXEUBfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbXEUBnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759445AbXEUBfz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 21:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbXEUBdx
+	id S1756022AbXEUBnl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 21:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbXEUBnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 21:33:53 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38401 "EHLO mx2.suse.de"
+	Sun, 20 May 2007 21:43:33 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4281 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754645AbXEUBdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 21:33:51 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 21 May 2007 11:33:38 +1000
-Message-Id: <1070521013338.6816@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Neil Brown <neilb@suse.de>
-Subject: [PATCH 007 of 7] md: Change bitmap_unplug and others to void functions.
-References: <20070521111837.20906.patches@notabene>
+	id S1754235AbXEUBnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 21:43:32 -0400
+Date: Mon, 21 May 2007 03:43:45 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kconfig - scan all Kconfig files
+In-Reply-To: <20070520175203.GA24511@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0705210235030.1817@scrub.home>
+References: <20070520175203.GA24511@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-bitmap_unplug only ever returns 0, so it may as well be void.
-Two callers try to print a message if it returns non-zero, but
-that message is already printed by bitmap_file_kick.
+On Sun, 20 May 2007, Sam Ravnborg wrote:
 
-write_page returns an error which is not consistently checked.  It
-always causes BITMAP_WRITE_ERROR to be set on an error, and that can
-more conveniently be checked.
-When the return of write_page is checked, an error causes bitmap_file_kick 
-to be called - so move that call into write_page - and protect against
-recursive calls into bitmap_file_kick.
+> I did a quick hack so kconfig could scan all Kconfig files
+> in the kernel tree.
+> By scanning all Kconfig files we gain the following:
+> 
+> -> kconfig can report when a depends on refer to an undefined symbol
+> -> kconfig can report when a select refer to an undefined symbol
+> 
+> Later we can push a lot of common stuff to the top-level Kconfig file.
+> And that may in the end result in a better structure overall for
+> Kconfig files.
 
-bitmap_update_sb returns an error that is never checked.
+Well, some of that stuff should already happen earlier (and included from 
+the arch Kconfig files), but that doesn't work for everything.
+I don't think that simply allowing to parse a file multiple times is the 
+right answer, as it duplicates a lot of data. A simple example would be 
+help texts, right now they are per symbol, but they should really be per 
+menu, so archs can provide different help texts for something.
+"source" should become a bit more intelligent and parse a file only once 
+and link the data into the menu structure.
 
-So make these 'void' and be consistent about checking the bit.
+> All the "choice values currently only support a single prompt" are caused
+> by using the same config symbol in a choice list for several architectures.
+> That will be the biggest challenge to fix before we can introduce this patch.
+> Maybe we can extend kconfig to accept it???
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+Define "accept".
+The basic rule for choice values must not be violated - none of them may 
+depend on another value in the same group. The dependency tree allows for 
+no loops, these choice groups allow for the only exception, but it has to 
+stay within that group.
+One option I'm thinking about is to extend that group by naming the choice 
+option, so kconfig knows they are related. This won't work for everything, 
+so quite some renaming may be needed.
 
-### Diffstat output
- ./drivers/md/bitmap.c         |  144 +++++++++++++++++++++---------------------
- ./drivers/md/md.c             |    3 
- ./drivers/md/raid1.c          |    3 
- ./drivers/md/raid10.c         |    3 
- ./include/linux/raid/bitmap.h |    6 -
- 5 files changed, 80 insertions(+), 79 deletions(-)
-
-diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
---- .prev/drivers/md/bitmap.c	2007-05-21 11:18:22.000000000 +1000
-+++ ./drivers/md/bitmap.c	2007-05-21 11:18:23.000000000 +1000
-@@ -305,10 +305,11 @@ static int write_sb_page(struct bitmap *
- 	return 0;
- }
- 
-+static void bitmap_file_kick(struct bitmap *bitmap);
- /*
-  * write out a page to a file
-  */
--static int write_page(struct bitmap *bitmap, struct page *page, int wait)
-+static void write_page(struct bitmap *bitmap, struct page *page, int wait)
- {
- 	struct buffer_head *bh;
- 
-@@ -316,27 +317,26 @@ static int write_page(struct bitmap *bit
- 		switch (write_sb_page(bitmap, page, wait)) {
- 		case -EINVAL:
- 			bitmap->flags |= BITMAP_WRITE_ERROR;
--			return -EIO;
- 		}
--		return 0;
--	}
-+	} else {
- 
--	bh = page_buffers(page);
-+		bh = page_buffers(page);
- 
--	while (bh && bh->b_blocknr) {
--		atomic_inc(&bitmap->pending_writes);
--		set_buffer_locked(bh);
--		set_buffer_mapped(bh);
--		submit_bh(WRITE, bh);
--		bh = bh->b_this_page;
--	}
-+		while (bh && bh->b_blocknr) {
-+			atomic_inc(&bitmap->pending_writes);
-+			set_buffer_locked(bh);
-+			set_buffer_mapped(bh);
-+			submit_bh(WRITE, bh);
-+			bh = bh->b_this_page;
-+		}
- 
--	if (wait) {
--		wait_event(bitmap->write_wait,
--			   atomic_read(&bitmap->pending_writes)==0);
--		return (bitmap->flags & BITMAP_WRITE_ERROR) ? -EIO : 0;
-+		if (wait) {
-+			wait_event(bitmap->write_wait,
-+				   atomic_read(&bitmap->pending_writes)==0);
-+		}
- 	}
--	return 0;
-+	if (bitmap->flags & BITMAP_WRITE_ERROR)
-+		bitmap_file_kick(bitmap);
- }
- 
- static void end_bitmap_write(struct buffer_head *bh, int uptodate)
-@@ -456,17 +456,17 @@ out:
-  */
- 
- /* update the event counter and sync the superblock to disk */
--int bitmap_update_sb(struct bitmap *bitmap)
-+void bitmap_update_sb(struct bitmap *bitmap)
- {
- 	bitmap_super_t *sb;
- 	unsigned long flags;
- 
- 	if (!bitmap || !bitmap->mddev) /* no bitmap for this array */
--		return 0;
-+		return;
- 	spin_lock_irqsave(&bitmap->lock, flags);
- 	if (!bitmap->sb_page) { /* no superblock */
- 		spin_unlock_irqrestore(&bitmap->lock, flags);
--		return 0;
-+		return;
- 	}
- 	spin_unlock_irqrestore(&bitmap->lock, flags);
- 	sb = (bitmap_super_t *)kmap_atomic(bitmap->sb_page, KM_USER0);
-@@ -474,7 +474,7 @@ int bitmap_update_sb(struct bitmap *bitm
- 	if (!bitmap->mddev->degraded)
- 		sb->events_cleared = cpu_to_le64(bitmap->mddev->events);
- 	kunmap_atomic(sb, KM_USER0);
--	return write_page(bitmap, bitmap->sb_page, 1);
-+	write_page(bitmap, bitmap->sb_page, 1);
- }
- 
- /* print out the bitmap file superblock */
-@@ -603,20 +603,22 @@ enum bitmap_mask_op {
- 	MASK_UNSET
- };
- 
--/* record the state of the bitmap in the superblock */
--static void bitmap_mask_state(struct bitmap *bitmap, enum bitmap_state bits,
--				enum bitmap_mask_op op)
-+/* record the state of the bitmap in the superblock.  Return the old value */
-+static int bitmap_mask_state(struct bitmap *bitmap, enum bitmap_state bits,
-+			     enum bitmap_mask_op op)
- {
- 	bitmap_super_t *sb;
- 	unsigned long flags;
-+	int old;
- 
- 	spin_lock_irqsave(&bitmap->lock, flags);
- 	if (!bitmap->sb_page) { /* can't set the state */
- 		spin_unlock_irqrestore(&bitmap->lock, flags);
--		return;
-+		return 0;
- 	}
- 	spin_unlock_irqrestore(&bitmap->lock, flags);
- 	sb = (bitmap_super_t *)kmap_atomic(bitmap->sb_page, KM_USER0);
-+	old = le32_to_cpu(sb->state) & bits;
- 	switch (op) {
- 		case MASK_SET: sb->state |= cpu_to_le32(bits);
- 				break;
-@@ -625,6 +627,7 @@ static void bitmap_mask_state(struct bit
- 		default: BUG();
- 	}
- 	kunmap_atomic(sb, KM_USER0);
-+	return old;
- }
- 
- /*
-@@ -718,18 +721,23 @@ static void bitmap_file_kick(struct bitm
- {
- 	char *path, *ptr = NULL;
- 
--	bitmap_mask_state(bitmap, BITMAP_STALE, MASK_SET);
--	bitmap_update_sb(bitmap);
--
--	if (bitmap->file) {
--		path = kmalloc(PAGE_SIZE, GFP_KERNEL);
--		if (path)
--			ptr = file_path(bitmap->file, path, PAGE_SIZE);
--
--		printk(KERN_ALERT "%s: kicking failed bitmap file %s from array!\n",
--		       bmname(bitmap), ptr ? ptr : "");
-+	if (bitmap_mask_state(bitmap, BITMAP_STALE, MASK_SET) == 0) {
-+		bitmap_update_sb(bitmap);
- 
--		kfree(path);
-+		if (bitmap->file) {
-+			path = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+			if (path)
-+				ptr = file_path(bitmap->file, path, PAGE_SIZE);
-+
-+			printk(KERN_ALERT
-+			      "%s: kicking failed bitmap file %s from array!\n",
-+			      bmname(bitmap), ptr ? ptr : "");
-+
-+			kfree(path);
-+		} else
-+			printk(KERN_ALERT
-+			       "%s: disabling internal bitmap due to errors\n",
-+			       bmname(bitmap));
- 	}
- 
- 	bitmap_file_put(bitmap);
-@@ -800,16 +808,15 @@ static void bitmap_file_set_bit(struct b
- /* this gets called when the md device is ready to unplug its underlying
-  * (slave) device queues -- before we let any writes go down, we need to
-  * sync the dirty pages of the bitmap file to disk */
--int bitmap_unplug(struct bitmap *bitmap)
-+void bitmap_unplug(struct bitmap *bitmap)
- {
- 	unsigned long i, flags;
- 	int dirty, need_write;
- 	struct page *page;
- 	int wait = 0;
--	int err;
- 
- 	if (!bitmap)
--		return 0;
-+		return;
- 
- 	/* look at each page to see if there are any set bits that need to be
- 	 * flushed out to disk */
-@@ -817,7 +824,7 @@ int bitmap_unplug(struct bitmap *bitmap)
- 		spin_lock_irqsave(&bitmap->lock, flags);
- 		if (!bitmap->filemap) {
- 			spin_unlock_irqrestore(&bitmap->lock, flags);
--			return 0;
-+			return;
- 		}
- 		page = bitmap->filemap[i];
- 		dirty = test_page_attr(bitmap, page, BITMAP_PAGE_DIRTY);
-@@ -829,7 +836,7 @@ int bitmap_unplug(struct bitmap *bitmap)
- 		spin_unlock_irqrestore(&bitmap->lock, flags);
- 
- 		if (dirty | need_write)
--			err = write_page(bitmap, page, 0);
-+			write_page(bitmap, page, 0);
- 	}
- 	if (wait) { /* if any writes were performed, we need to wait on them */
- 		if (bitmap->file)
-@@ -840,7 +847,6 @@ int bitmap_unplug(struct bitmap *bitmap)
- 	}
- 	if (bitmap->flags & BITMAP_WRITE_ERROR)
- 		bitmap_file_kick(bitmap);
--	return 0;
- }
- 
- static void bitmap_set_memory_bits(struct bitmap *bitmap, sector_t offset, int needed);
-@@ -889,21 +895,21 @@ static int bitmap_init_from_disk(struct 
- 			bmname(bitmap),
- 			(unsigned long) i_size_read(file->f_mapping->host),
- 			bytes + sizeof(bitmap_super_t));
--		goto out;
-+		goto err;
- 	}
- 
- 	ret = -ENOMEM;
- 
- 	bitmap->filemap = kmalloc(sizeof(struct page *) * num_pages, GFP_KERNEL);
- 	if (!bitmap->filemap)
--		goto out;
-+		goto err;
- 
- 	/* We need 4 bits per page, rounded up to a multiple of sizeof(unsigned long) */
- 	bitmap->filemap_attr = kzalloc(
- 		roundup( DIV_ROUND_UP(num_pages*4, 8), sizeof(unsigned long)),
- 		GFP_KERNEL);
- 	if (!bitmap->filemap_attr)
--		goto out;
-+		goto err;
- 
- 	oldindex = ~0L;
- 
-@@ -936,7 +942,7 @@ static int bitmap_init_from_disk(struct 
- 			}
- 			if (IS_ERR(page)) { /* read error */
- 				ret = PTR_ERR(page);
--				goto out;
-+				goto err;
- 			}
- 
- 			oldindex = index;
-@@ -951,11 +957,13 @@ static int bitmap_init_from_disk(struct 
- 				memset(paddr + offset, 0xff,
- 				       PAGE_SIZE - offset);
- 				kunmap_atomic(paddr, KM_USER0);
--				ret = write_page(bitmap, page, 1);
--				if (ret) {
-+				write_page(bitmap, page, 1);
-+
-+				ret = -EIO;
-+				if (bitmap->flags & BITMAP_WRITE_ERROR) {
- 					/* release, page not in filemap yet */
- 					put_page(page);
--					goto out;
-+					goto err;
- 				}
- 			}
- 
-@@ -987,11 +995,15 @@ static int bitmap_init_from_disk(struct 
- 		md_wakeup_thread(bitmap->mddev->thread);
- 	}
- 
--out:
- 	printk(KERN_INFO "%s: bitmap initialized from disk: "
--		"read %lu/%lu pages, set %lu bits, status: %d\n",
--		bmname(bitmap), bitmap->file_pages, num_pages, bit_cnt, ret);
-+		"read %lu/%lu pages, set %lu bits\n",
-+		bmname(bitmap), bitmap->file_pages, num_pages, bit_cnt);
-+
-+	return 0;
- 
-+ err:
-+	printk(KERN_INFO "%s: bitmap initialisation failed: %d\n",
-+	       bmname(bitmap), ret);
- 	return ret;
- }
- 
-@@ -1028,19 +1040,18 @@ static bitmap_counter_t *bitmap_get_coun
-  *			out to disk
-  */
- 
--int bitmap_daemon_work(struct bitmap *bitmap)
-+void bitmap_daemon_work(struct bitmap *bitmap)
- {
- 	unsigned long j;
- 	unsigned long flags;
- 	struct page *page = NULL, *lastpage = NULL;
--	int err = 0;
- 	int blocks;
- 	void *paddr;
- 
- 	if (bitmap == NULL)
--		return 0;
-+		return;
- 	if (time_before(jiffies, bitmap->daemon_lastrun + bitmap->daemon_sleep*HZ))
--		return 0;
-+		return;
- 	bitmap->daemon_lastrun = jiffies;
- 
- 	for (j = 0; j < bitmap->chunks; j++) {
-@@ -1063,14 +1074,8 @@ int bitmap_daemon_work(struct bitmap *bi
- 					clear_page_attr(bitmap, page, BITMAP_PAGE_NEEDWRITE);
- 
- 				spin_unlock_irqrestore(&bitmap->lock, flags);
--				if (need_write) {
--					switch (write_page(bitmap, page, 0)) {
--					case 0:
--						break;
--					default:
--						bitmap_file_kick(bitmap);
--					}
--				}
-+				if (need_write)
-+					write_page(bitmap, page, 0);
- 				continue;
- 			}
- 
-@@ -1079,13 +1084,11 @@ int bitmap_daemon_work(struct bitmap *bi
- 				if (test_page_attr(bitmap, lastpage, BITMAP_PAGE_NEEDWRITE)) {
- 					clear_page_attr(bitmap, lastpage, BITMAP_PAGE_NEEDWRITE);
- 					spin_unlock_irqrestore(&bitmap->lock, flags);
--					err = write_page(bitmap, lastpage, 0);
-+					write_page(bitmap, lastpage, 0);
- 				} else {
- 					set_page_attr(bitmap, lastpage, BITMAP_PAGE_NEEDWRITE);
- 					spin_unlock_irqrestore(&bitmap->lock, flags);
- 				}
--				if (err)
--					bitmap_file_kick(bitmap);
- 			} else
- 				spin_unlock_irqrestore(&bitmap->lock, flags);
- 			lastpage = page;
-@@ -1128,14 +1131,13 @@ int bitmap_daemon_work(struct bitmap *bi
- 		if (test_page_attr(bitmap, lastpage, BITMAP_PAGE_NEEDWRITE)) {
- 			clear_page_attr(bitmap, lastpage, BITMAP_PAGE_NEEDWRITE);
- 			spin_unlock_irqrestore(&bitmap->lock, flags);
--			err = write_page(bitmap, lastpage, 0);
-+			write_page(bitmap, lastpage, 0);
- 		} else {
- 			set_page_attr(bitmap, lastpage, BITMAP_PAGE_NEEDWRITE);
- 			spin_unlock_irqrestore(&bitmap->lock, flags);
- 		}
- 	}
- 
--	return err;
- }
- 
- static bitmap_counter_t *bitmap_get_counter(struct bitmap *bitmap,
-@@ -1548,7 +1550,9 @@ int bitmap_create(mddev_t *mddev)
- 
- 	mddev->thread->timeout = bitmap->daemon_sleep * HZ;
- 
--	return bitmap_update_sb(bitmap);
-+	bitmap_update_sb(bitmap);
-+
-+	return (bitmap->flags & BITMAP_WRITE_ERROR) ? -EIO : 0;
- 
-  error:
- 	bitmap_free(bitmap);
-
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2007-05-21 11:18:22.000000000 +1000
-+++ ./drivers/md/md.c	2007-05-21 11:18:23.000000000 +1000
-@@ -1640,7 +1640,6 @@ static void sync_sbs(mddev_t * mddev, in
- 
- static void md_update_sb(mddev_t * mddev, int force_change)
- {
--	int err;
- 	struct list_head *tmp;
- 	mdk_rdev_t *rdev;
- 	int sync_req;
-@@ -1727,7 +1726,7 @@ repeat:
- 		"md: updating %s RAID superblock on device (in sync %d)\n",
- 		mdname(mddev),mddev->in_sync);
- 
--	err = bitmap_update_sb(mddev->bitmap);
-+	bitmap_update_sb(mddev->bitmap);
- 	ITERATE_RDEV(mddev,rdev,tmp) {
- 		char b[BDEVNAME_SIZE];
- 		dprintk(KERN_INFO "md: ");
-
-diff .prev/drivers/md/raid10.c ./drivers/md/raid10.c
---- .prev/drivers/md/raid10.c	2007-05-21 11:17:57.000000000 +1000
-+++ ./drivers/md/raid10.c	2007-05-21 11:18:23.000000000 +1000
-@@ -1510,8 +1510,7 @@ static void raid10d(mddev_t *mddev)
- 			blk_remove_plug(mddev->queue);
- 			spin_unlock_irqrestore(&conf->device_lock, flags);
- 			/* flush any pending bitmap writes to disk before proceeding w/ I/O */
--			if (bitmap_unplug(mddev->bitmap) != 0)
--				printk("%s: bitmap file write failed!\n", mdname(mddev));
-+			bitmap_unplug(mddev->bitmap);
- 
- 			while (bio) { /* submit pending writes */
- 				struct bio *next = bio->bi_next;
-
-diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
---- .prev/drivers/md/raid1.c	2007-05-21 11:17:57.000000000 +1000
-+++ ./drivers/md/raid1.c	2007-05-21 11:18:23.000000000 +1000
-@@ -1519,8 +1519,7 @@ static void raid1d(mddev_t *mddev)
- 			blk_remove_plug(mddev->queue);
- 			spin_unlock_irqrestore(&conf->device_lock, flags);
- 			/* flush any pending bitmap writes to disk before proceeding w/ I/O */
--			if (bitmap_unplug(mddev->bitmap) != 0)
--				printk("%s: bitmap file write failed!\n", mdname(mddev));
-+			bitmap_unplug(mddev->bitmap);
- 
- 			while (bio) { /* submit pending writes */
- 				struct bio *next = bio->bi_next;
-
-diff .prev/include/linux/raid/bitmap.h ./include/linux/raid/bitmap.h
---- .prev/include/linux/raid/bitmap.h	2007-05-21 11:17:57.000000000 +1000
-+++ ./include/linux/raid/bitmap.h	2007-05-21 11:18:23.000000000 +1000
-@@ -262,7 +262,7 @@ int  bitmap_active(struct bitmap *bitmap
- 
- char *file_path(struct file *file, char *buf, int count);
- void bitmap_print_sb(struct bitmap *bitmap);
--int bitmap_update_sb(struct bitmap *bitmap);
-+void bitmap_update_sb(struct bitmap *bitmap);
- 
- int  bitmap_setallbits(struct bitmap *bitmap);
- void bitmap_write_all(struct bitmap *bitmap);
-@@ -278,8 +278,8 @@ int bitmap_start_sync(struct bitmap *bit
- void bitmap_end_sync(struct bitmap *bitmap, sector_t offset, int *blocks, int aborted);
- void bitmap_close_sync(struct bitmap *bitmap);
- 
--int bitmap_unplug(struct bitmap *bitmap);
--int bitmap_daemon_work(struct bitmap *bitmap);
-+void bitmap_unplug(struct bitmap *bitmap);
-+void bitmap_daemon_work(struct bitmap *bitmap);
- #endif
- 
- #endif
+bye, Roman
