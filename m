@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935323AbXEUTra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935339AbXEUTry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935323AbXEUTra (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765916AbXEUT2U
+	id S935339AbXEUTry (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933890AbXEUT2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:28:20 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52601 "EHLO
+	Mon, 21 May 2007 15:28:24 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52608 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932840AbXEUT2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:28:18 -0400
-Message-Id: <20070521191748.976528000@sous-sol.org>
+	id S933883AbXEUT2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:28:23 -0400
+Message-Id: <20070521191751.108664000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:05 -0700
+Date: Mon, 21 May 2007 12:17:07 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,50 +23,66 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
-       bunk@stusta.de, Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 53/69] IPSEC: Check validity of direction in xfrm_policy_byid
-Content-Disposition: inline; filename=ipsec-check-validity-of-direction-in-xfrm_policy_byid.patch
+       bunk@stusta.de
+Subject: [patch 55/69] SPARC64: Fix recursion in PROM tree building.
+Content-Disposition: inline; filename=sparc64-fix-recursion-in-prom-tree-building.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: David Miller <davem@davemloft.net>
 
-The function xfrm_policy_byid takes a dir argument but finds the policy
-using the index instead.  We only use the dir argument to update the
-policy count for that direction.  Since the user can supply any value
-for dir, this can corrupt our policy count.
+Use iteration for scanning of PROM node siblings.
 
-I know this is the problem because a few days ago I was deleting
-policies by hand using indicies and accidentally typed in the wrong
-direction.  It still deleted the policy and at the time I thought
-that was cool.  In retrospect it isn't such a good idea :)
+Based upon a patch by Greg Onufer, who found this bug.
 
-I decided against letting it delete the policy anyway just in case
-we ever remove the connection between indicies and direction.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- net/xfrm/xfrm_policy.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/sparc64/kernel/prom.c |   19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
---- linux-2.6.21.1.orig/net/xfrm/xfrm_policy.c
-+++ linux-2.6.21.1/net/xfrm/xfrm_policy.c
-@@ -782,6 +782,10 @@ struct xfrm_policy *xfrm_policy_byid(u8 
- 	struct hlist_head *chain;
- 	struct hlist_node *entry;
+--- linux-2.6.21.1.orig/arch/sparc64/kernel/prom.c
++++ linux-2.6.21.1/arch/sparc64/kernel/prom.c
+@@ -1555,10 +1555,21 @@ static struct device_node * __init creat
  
-+	*err = -ENOENT;
-+	if (xfrm_policy_id2dir(id) != dir)
-+		return NULL;
+ static struct device_node * __init build_tree(struct device_node *parent, phandle node, struct device_node ***nextp)
+ {
++	struct device_node *ret = NULL, *prev_sibling = NULL;
+ 	struct device_node *dp;
+ 
+-	dp = create_node(node, parent);
+-	if (dp) {
++	while (1) {
++		dp = create_node(node, parent);
++		if (!dp)
++			break;
 +
- 	*err = 0;
- 	write_lock_bh(&xfrm_policy_lock);
- 	chain = xfrm_policy_byidx + idx_hash(id);
++		if (prev_sibling)
++			prev_sibling->sibling = dp;
++
++		if (!ret)
++			ret = dp;
++		prev_sibling = dp;
++
+ 		*(*nextp) = dp;
+ 		*nextp = &dp->allnext;
+ 
+@@ -1567,10 +1578,10 @@ static struct device_node * __init build
+ 
+ 		dp->child = build_tree(dp, prom_getchild(node), nextp);
+ 
+-		dp->sibling = build_tree(parent, prom_getsibling(node), nextp);
++		node = prom_getsibling(node);
+ 	}
+ 
+-	return dp;
++	return ret;
+ }
+ 
+ void __init prom_build_devicetree(void)
 
 -- 
