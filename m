@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760957AbXEUMrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761994AbXEUMrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760957AbXEUMrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 08:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbXEUMrJ
+	id S1761994AbXEUMrq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 08:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbXEUMrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 08:47:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53501 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755879AbXEUMrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 08:47:07 -0400
-Date: Mon, 21 May 2007 14:46:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bill Huey <billh@gnuppy.monkey.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] lockdep: lock contention tracking
-Message-ID: <20070521124655.GA411@elte.hu>
-References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org> <20070521060828.GB20277@elte.hu> <20070521064150.GC4442@gnuppy.monkey.org> <20070521075013.GA9419@elte.hu> <20070521091848.GB4593@gnuppy.monkey.org> <20070521093639.GA29025@elte.hu> <20070521101946.GC4593@gnuppy.monkey.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 21 May 2007 08:47:36 -0400
+Received: from keetweej.vanheusden.com ([213.84.46.114]:35938 "EHLO
+	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755740AbXEUMrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 08:47:35 -0400
+Date: Mon, 21 May 2007 14:47:34 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Andrea Righi <righiandr@users.sourceforge.net>, Andi Kleen <ak@suse.de>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
+Message-ID: <20070521124734.GB14802@vanheusden.com>
+References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr> <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de> <46517817.1080208@users.sourceforge.net> <20070521110406.GA14802@vanheusden.com> <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070521101946.GC4593@gnuppy.monkey.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Tue May 22 12:32:47 CEST 2007
+X-Message-Flag: www.unixexpert.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> >What about the following enhancement: I check with sig_fatal if it would
+> >kill the process and only then emit a message. So when an application
+> >takes care itself of handling it nothing is printed.
+> >+	/* emit some logging for unhandled signals
+> >+	 */
+> >+	if (sig_fatal(t, sig))
+> Not unhandled_signal()?
 
-* Bill Huey <billh@gnuppy.monkey.org> wrote:
+Can we already use that one in send_signal? As the signal needs to be
+send first I think before we know if it was handled or not? sig_fatal
+checks if the handler is set to default - which is it is not taken care
+of.
 
-> > and regarding C99 style lock initializers: the -rt project has been 
-> > removing a whole heap of them in the past 2.5 years, since Oct 2004 
-> > or so, and regularly cleansed the upstream kernel for old-style 
-> > initializers ever since then - so i'm not sure what you are 
-> > referring to.
-> 
-> Don't worry about it. I did the same work only to realize that there 
-> wasn't much left to convert over.
+> >+	{
+> if (sig_fatal(t, sig)) {
+> >+		printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
+> s/send/sent/;
+> >+		sig, t -> pid, t -> uid, t -> gid, t -> comm);
+> t->pid, t->uid, t->gid, t->comm);
 
-i dont worry about it the least, i only replied to this sentence of 
-yours:
 
-> > > I write lockstat without the knowledge that lockdep was 
-> > > replicating the same work and I audited 1600 something lock points 
-> > > in the kernel to convert the usage of C99 style initializers to 
-> > > something more regular.
+Description:
+This patch adds code to the signal-sender making it log a message when
+an unhandled fatal signal will be delivered.
 
-which combines into this statement of yours: "I audited 1600 something 
-lock points in the kernel to convert the usage of C99 style initializers 
-something more regular, only to find out that there wasn't much left to 
-convert over?", correct? Which begs the question: why did you mention 
-this then at all? I usually reply to points made by others in the 
-assumption that there's some meaning behind them ;-)
+Signed-off by: Folkert van Heusden <folkert@vanheusden.com>
 
-	Ingo
+--- kernel/signal.c.org	2007-05-20 22:47:13.000000000 +0200
++++ kernel/signal.c	2007-05-21 14:46:05.000000000 +0200
+@@ -739,6 +739,12 @@
+ 	struct sigqueue * q = NULL;
+ 	int ret = 0;
+ 
++	/* unhandled fatal signals are logged */
++	if (sig_fatal(t, sig)) {
++		printk(KERN_WARNING "Sig %d sent to %d owned by %d.%d (%s)\n",
++		sig, t->pid, t->uid, t->gid, t->comm);
++	}
++
+ 	/*
+ 	 * fast-pathed signals for kernel-internal things like SIGSTOP
+ 	 * or SIGKILL.
+
+
+Folkert van Heusden
+
+-- 
+MultiTail è uno flexible tool per seguire di logfiles e effettuazione
+di commissioni. Feltrare, provedere da colore, merge, 'diff-view',
+etc. http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
