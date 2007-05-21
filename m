@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758990AbXEUQTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbXEUQXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758990AbXEUQTB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbXEUQSy
+	id S1756654AbXEUQXO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbXEUQW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:18:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49359 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754183AbXEUQSx (ORCPT
+	Mon, 21 May 2007 12:22:57 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:21511 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755248AbXEUQW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:18:53 -0400
-Date: Mon, 21 May 2007 09:11:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Ray Lee <ray-lk@madrabbit.org>, Al Viro <viro@ftp.linux.org.uk>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, Uwe Bugla <uwe.bugla@gmx.de>,
-       Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
-In-Reply-To: <1179677799.3311.5.camel@lov.localdomain>
-Message-ID: <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
-References: <464F42F3.1080300@madrabbit.org>  <20070519191751.E51233A23A2@muan.mtu.ru>
-  <200705200124.13026.uwe.bugla@gmx.de>  <200705200845.43621.arvidjaar@mail.ru>
-  <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com> 
- <20070520062816.GA4095@ftp.linux.org.uk>  <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
-  <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com> 
- <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com>
- <1179677799.3311.5.camel@lov.localdomain>
+	Mon, 21 May 2007 12:22:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JXDkphe2TajlYOz4o8Y/7dpc2JqiSAvJqDWHrtTl/Y1MHJ83QtNINlt8p8wR0rIyLJHs7WoBY7OHSuky/pI+d/Ebasee0dQPpMrAchB2uKdgLv9Poe3pronm5vVMuc6k5pNs2Z5plZyax7XM6xSMG/TsKN9xc5atu9QH13sLshU=
+Message-ID: <4651C74B.7020108@gmail.com>
+Date: Mon, 21 May 2007 18:22:35 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Robert de Rooy <robert.de.rooy@gmail.com>
+CC: linux-kernel@vger.kernel.org, alan@redhat.com, bzolnier@gmail.com,
+       jgarzik@pobox.com, linux-pcmcia@lists.infradead.org
+Subject: Re: libata and legacy ide pcmcia failure
+References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com> <464CB7C9.2080807@gmail.com> <46503192.1040300@gmail.com> <4650B9E3.7070409@gmail.com> <46518798.2020808@gmail.com> <4651B66E.6030505@gmail.com> <4651B834.3060702@gmail.com> <4651C4A1.6000101@gmail.com>
+In-Reply-To: <4651C4A1.6000101@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 20 May 2007, Kay Sievers wrote:
+Robert de Rooy wrote:
+> Hmm, good question. I do not have any other PCMCIA device to test.
+> The only other device I have is a Cardbus Wi-Fi adapter without Linux
+> support (Marvell). If I insert that adapter lspci seems to list it
+> properly, but without resorting to ndiswrapper I have no way of testing
+> it. In any case, seeing how Cardbus is PCI based this is probably
+> pointless to resolving this issue.
 > 
-> Right, providing "preallocated" devices, 8 or the number given in
-> max_loop, sounds like the best option until the tools can handle that.
+> Would any other log data from the controller initialization or lspci help?
 
-Yes. Can somebody who actually _uses_ loop send a tested patch, please?
+Hmmm... I don't really know much about PCMCIA.  cc'ing linux-pcmcia.
 
-We're not going to break existing user space over something idiotic like 
-this. Not acceptable. 
+The original thread can be read from the following URL.
 
-The alternative is to just revert all the loop.c patches. Which I'll do 
-unless somebody sends me a tested fix - because as a non-loop user myself, 
-I don't have much choice. I assume it is 
+  http://thread.gmane.org/gmane.linux.kernel/530099
 
-   commit 73285082 "remove artificial software max_loop limit"
+It seems we're losing interrupts from the CFA device.  Any ideas?
 
-that introduced the new behaviour. Ken?
+Thanks.
 
-		Linus
+-- 
+tejun
