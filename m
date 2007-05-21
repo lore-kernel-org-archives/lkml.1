@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765138AbXEUTYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765750AbXEUTYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765138AbXEUTYV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758474AbXEUTVX
+	id S1765750AbXEUTYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765325AbXEUTVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:21:23 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46321 "EHLO
+	Mon, 21 May 2007 15:21:25 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46322 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765294AbXEUTVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765298AbXEUTVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 15:21:19 -0400
-Message-Id: <20070521191700.064658000@sous-sol.org>
+Message-Id: <20070521191757.576951000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:17 -0700
+Date: Mon, 21 May 2007 12:17:20 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,128 +22,124 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Simon Arlott <simon@fire.lp0.eu>
-Subject: [patch 05/69] cxacru: Fix infinite loop when trying to cancel polling task
-Content-Disposition: inline; filename=cxacru-fix-infinite-loop-when-trying-to-cancel-polling-task.patch
+       alan@lxorguk.ukuu.org.uk, Daniel Drake <dsd@gentoo.org>
+Subject: [patch 68/69] CPUFREQ: powernow-k7: fix MHz rounding issue with perflib
+Content-Disposition: inline; filename=cpufreq-powernow-k7-fix-mhz-rounding-issue-with-perflib.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Simon Arlott <simon@fire.lp0.eu>
+From: Daniel Drake <dsd@gentoo.org>
 
-As part of the device initialisation cxacru_atm_start starts 
-a rearming status polling task, which is cancelled in 
-cxacru_unbind. Failure to ever start the task means an 
-infinite loop occurs trying to cancel it.
+When the PST tables are broken, powernow-k7 uses ACPI's processor_perflib to
+deduce the available frequency multipliers from the _PSS tables.
 
-Possible reasons for not starting the polling task:
-* Firmware files missing
-* Device initialisation fails
-* User unplugs device or unloads module
+Upon frequency change, processor_perflib performs some verification on the
+frequency (checks that it's within allowable bounds).
 
-Effect:
-* Infinite loop in khubd trying to add/remove the device (or rmmod if timed right)
+powernow-k7 deals with absolute frequencies in KHz, whereas perflib only
+deals with MHz values. When performing the above verification, perflib
+multiplies the MHz values by 1000 to obtain the KHz value.
 
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+We then end up with situations like the following:
+ - powernow-k7 multiplies the multiplier by the FSB, and obtains a value
+   such as 1266768 KHz
+ - perflib belives the same state has frequency of 1266 MHz
+ - acpi_processor_ppc_notifier calls cpufreq_verify_within_limits to verify
+   that 1266768 is in the allowable range of 0 to 1266000 (i.e. 1266 * 1000)
+ - it's not, so that frequency is rejected
+ - the maximum CPU frequency is not reachable
+
+This patch solves the problem by rounding up the MHz values stored in perflib's
+tables. Additionally it corrects a broken URL.
+
+It also fixes http://bugzilla.kernel.org/show_bug.cgi?id=8255 although this
+case is a bit different: the frequencies in the _PSS tables are wildly wrong,
+but we get better results if we force ACPI to respect the fsb * multiplier
+calculations (even though it seems that the multiplier values aren't entirely
+correct either).
+
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
+Signed-off-by: Dave Jones <davej@redhat.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
-Fixed for 2.6.22 by 6a02c996bce297a782432e29c69268356e97fadd.
 
- drivers/usb/atm/cxacru.c |   40 ++++++++++++++++++++++++++++++++++++----
- 1 file changed, 36 insertions(+), 4 deletions(-)
+ arch/i386/kernel/cpu/cpufreq/powernow-k7.c |   36 ++++++++++++++++++++++-------
+ 1 file changed, 28 insertions(+), 8 deletions(-)
 
---- linux-2.6.21.1.orig/drivers/usb/atm/cxacru.c
-+++ linux-2.6.21.1/drivers/usb/atm/cxacru.c
-@@ -146,6 +146,12 @@ enum cxacru_info_idx {
- 	CXINF_MAX = 0x1c,
- };
+--- linux-2.6.21.1.orig/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
++++ linux-2.6.21.1/arch/i386/kernel/cpu/cpufreq/powernow-k7.c
+@@ -341,15 +341,17 @@ static int powernow_acpi_init(void)
+ 	pc.val = (unsigned long) acpi_processor_perf->states[0].control;
+ 	for (i = 0; i < number_scales; i++) {
+ 		u8 fid, vid;
+-		unsigned int speed;
++		struct acpi_processor_px *state =
++			&acpi_processor_perf->states[i];
++		unsigned int speed, speed_mhz;
  
-+enum poll_state {
-+	CX_INIT,
-+	CX_POLLING,
-+	CX_ABORT
-+};
+-		pc.val = (unsigned long) acpi_processor_perf->states[i].control;
++		pc.val = (unsigned long) state->control;
+ 		dprintk ("acpi:  P%d: %d MHz %d mW %d uS control %08x SGTC %d\n",
+ 			 i,
+-			 (u32) acpi_processor_perf->states[i].core_frequency,
+-			 (u32) acpi_processor_perf->states[i].power,
+-			 (u32) acpi_processor_perf->states[i].transition_latency,
+-			 (u32) acpi_processor_perf->states[i].control,
++			 (u32) state->core_frequency,
++			 (u32) state->power,
++			 (u32) state->transition_latency,
++			 (u32) state->control,
+ 			 pc.bits.sgtc);
+ 
+ 		vid = pc.bits.vid;
+@@ -360,6 +362,18 @@ static int powernow_acpi_init(void)
+ 		powernow_table[i].index |= (vid << 8); /* upper 8 bits */
+ 
+ 		speed = powernow_table[i].frequency;
++		speed_mhz = speed / 1000;
 +
- struct cxacru_modem_type {
- 	u32 pll_f_clk;
- 	u32 pll_b_clk;
-@@ -159,6 +165,8 @@ struct cxacru_data {
- 
- 	int line_status;
- 	struct delayed_work poll_work;
-+	struct mutex poll_state_serialize;
-+	enum poll_state poll_state;
- 
- 	/* contol handles */
- 	struct mutex cm_serialize;
-@@ -356,7 +364,7 @@ static int cxacru_atm_start(struct usbat
- 	/*
- 	struct atm_dev *atm_dev = usbatm_instance->atm_dev;
- 	*/
--	int ret;
-+	int ret, start_polling = 1;
- 
- 	dbg("cxacru_atm_start");
- 
-@@ -376,7 +384,15 @@ static int cxacru_atm_start(struct usbat
- 	}
- 
- 	/* Start status polling */
--	cxacru_poll_status(&instance->poll_work.work);
-+	mutex_lock(&instance->poll_state_serialize);
-+	if (instance->poll_state == CX_INIT)
-+		instance->poll_state = CX_POLLING;
-+	else /* poll_state == CX_ABORT */
-+		start_polling = 0;
-+	mutex_unlock(&instance->poll_state_serialize);
-+
-+	if (start_polling)
-+		cxacru_poll_status(&instance->poll_work.work);
- 	return 0;
- }
- 
-@@ -685,6 +701,9 @@ static int cxacru_bind(struct usbatm_dat
- 	instance->usbatm = usbatm_instance;
- 	instance->modem_type = (struct cxacru_modem_type *) id->driver_info;
- 
-+	mutex_init(&instance->poll_state_serialize);
-+	instance->poll_state = CX_INIT;
-+
- 	instance->rcv_buf = (u8 *) __get_free_page(GFP_KERNEL);
- 	if (!instance->rcv_buf) {
- 		dbg("cxacru_bind: no memory for rcv_buf");
-@@ -744,6 +763,7 @@ static void cxacru_unbind(struct usbatm_
- 		struct usb_interface *intf)
- {
- 	struct cxacru_data *instance = usbatm_instance->driver_data;
-+	int stop_polling = 1;
- 
- 	dbg("cxacru_unbind entered");
- 
-@@ -752,8 +772,20 @@ static void cxacru_unbind(struct usbatm_
- 		return;
- 	}
- 
--	while (!cancel_delayed_work(&instance->poll_work))
--	       flush_scheduled_work();
-+	mutex_lock(&instance->poll_state_serialize);
-+	if (instance->poll_state != CX_POLLING) {
-+		/* Polling hasn't started yet and with
-+		 * the mutex locked it can be prevented
-+		 * from starting.
++		/* processor_perflib will multiply the MHz value by 1000 to
++		 * get a KHz value (e.g. 1266000). However, powernow-k7 works
++		 * with true KHz values (e.g. 1266768). To ensure that all
++		 * powernow frequencies are available, we must ensure that
++		 * ACPI doesn't restrict them, so we round up the MHz value
++		 * to ensure that perflib's computed KHz value is greater than
++		 * or equal to powernow's KHz value.
 +		 */
-+		instance->poll_state = CX_ABORT;
-+		stop_polling = 0;
-+	}
-+	mutex_unlock(&instance->poll_state_serialize);
-+
-+	if (stop_polling)
-+		while (!cancel_delayed_work(&instance->poll_work))
-+			flush_scheduled_work();
++		if (speed % 1000 > 0)
++			speed_mhz++;
  
- 	usb_kill_urb(instance->snd_urb);
- 	usb_kill_urb(instance->rcv_urb);
+ 		if ((fid_codes[fid] % 10)==5) {
+ 			if (have_a0 == 1)
+@@ -368,10 +382,16 @@ static int powernow_acpi_init(void)
+ 
+ 		dprintk ("   FID: 0x%x (%d.%dx [%dMHz])  "
+ 			 "VID: 0x%x (%d.%03dV)\n", fid, fid_codes[fid] / 10,
+-			 fid_codes[fid] % 10, speed/1000, vid,
++			 fid_codes[fid] % 10, speed_mhz, vid,
+ 			 mobile_vid_table[vid]/1000,
+ 			 mobile_vid_table[vid]%1000);
+ 
++		if (state->core_frequency != speed_mhz) {
++			state->core_frequency = speed_mhz;
++			dprintk("   Corrected ACPI frequency to %d\n",
++				speed_mhz);
++		}
++
+ 		if (latency < pc.bits.sgtc)
+ 			latency = pc.bits.sgtc;
+ 
+@@ -602,7 +622,7 @@ static int __init powernow_cpu_init (str
+ 			result = powernow_acpi_init();
+ 			if (result) {
+ 				printk (KERN_INFO PFX "ACPI and legacy methods failed\n");
+-				printk (KERN_INFO PFX "See http://www.codemonkey.org.uk/projects/cpufreq/powernow-k7.shtml\n");
++				printk (KERN_INFO PFX "See http://www.codemonkey.org.uk/projects/cpufreq/powernow-k7.html\n");
+ 			}
+ 		} else {
+ 			/* SGTC use the bus clock as timer */
 
 -- 
