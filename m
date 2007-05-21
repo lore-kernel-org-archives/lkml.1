@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762317AbXEURuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762867AbXEURwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762317AbXEURuz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 13:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbXEURus
+	id S1762867AbXEURwE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 13:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbXEURvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 13:50:48 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:13279 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756329AbXEURur (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 13:50:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=sCIDCPRH2ECZ3K1pTtKznMNUEbcCzVKn7sH/aA3FAgo5KIvazSdvfrUAb6I7ozzXqRHoosz2H70L90nx3JD+nqSdcACszIdjawyrZIqir8vHAxgkVjZEYn6cCYP0XhZjFZCez2tlTHTs5Kb7BxnU4iodu4+ThT2VFe1tfugZUB8=
-Message-ID: <3ae72650705211050p6b6cefbdya70dd4e0a27e2d1b@mail.gmail.com>
-Date: Mon, 21 May 2007 19:50:46 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Pierre Ossman" <drzeus-list@drzeus.cx>
-Subject: Re: Race free attributes in sysfs
-Cc: "Greg KH" <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <46502A8B.70803@drzeus.cx>
+	Mon, 21 May 2007 13:51:55 -0400
+Received: from mx33.mail.ru ([194.67.23.194]:8537 "EHLO mx33.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756329AbXEURvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 13:51:54 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Date: Mon, 21 May 2007 21:51:28 +0400
+User-Agent: KMail/1.9.6
+Cc: Uwe Bugla <uwe.bugla@gmx.de>, Ken Chen <kenchen@google.com>,
+       Ray Lee <ray-lk@madrabbit.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <464F42F3.1080300@madrabbit.org> <200705211851.00187.uwe.bugla@gmx.de> <1179767466.3320.48.camel@lov.localdomain>
+In-Reply-To: <1179767466.3320.48.camel@lov.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart56183359.CUtqt26RI9";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46502A8B.70803@drzeus.cx>
-X-Google-Sender-Auth: 39889c36f30d573b
+Message-Id: <200705212151.44667.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/20/07, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> I'm reworking the sysfs stuff in the MMC layer to be a bit more flexible, but
-> there is one thing that has me baffled; how do you add attributes to an object
-> in a race free manner when you have a dynamic set of attributes.
->
-> I've looked at other parts of the kernel and they all use:
->
-> 1. Add object.
-> 2. Add attributes.
->
-> To me, it seems like there's a window between 1 and 2 where the object is in
-> /sys but doesn't have the proper attributes. Life for user space gets very
-> annoying if it has to add artificial delays to avoid this window.
->
-> So how do I do this properly? Something like this would, from my point of view,
-> be the sane method:
->
-> 1. Add hidden object.
-> 2. Add attributes.
-> 3. Show object.
+--nextPart56183359.CUtqt26RI9
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Do you have a fixed set of attribute names, where you just want to
-create a subset from that matches the individual device, or do you
-need some sort of free naming for the attributes?
+On Monday 21 May 2007, Kay Sievers wrote:
+> On Mon, 2007-05-21 at 18:50 +0200, Uwe Bugla wrote:
+> > Am Montag, 21. Mai 2007 18:37 schrieben Sie:
+> > > On 5/21/07, Ken Chen <kenchen@google.com> wrote:
+> > > > yes and no. in that commit, I automatically create n+1 device when
+> > > > loop device n is created, allergically was tested to be fine with
+> > > > casual usage of "losetup" and "mount -o loop".  However, there is a
+> > > > bug in that commit when loop.c was compiled as a module.  And when =
+Al
+> > > > fixed it, he also removed that magic "n+1" trick.
+> > > >
+> > > > Nevertheless, yes, I'm guilty of introducing the new behavior.
+> > >
+> > > The easiest way is to reinstate max_loop and create "max_loop" device
+> > > up front at module load time.  However, that will lose all the "fancy
+> > > on-demand device instantiation feature".
+> > >
+> > > So I propose we do the following:
+> > >
+> > > 1. have the module honor "max_loop" parameter and create that many
+> > > device upfront on module load (max_loop will also be a hard max) iff
+> > > user specify the parameter.
+> > > 2. if max_loop is not specified, default create 8 loop device.  User
+> > > can extent more loop device by create device node themselves and have
+> > > kernel automatically instantiate loop device on-demand.
+> >
+> > Sorry, Ken:
+> > My question on point 2 would be: Does "User can extent more loop device
+> > by create device node themselves and......." correspond or conflict to
+> > working with udev?
+>
+> Udev shouldn't care if the kernel tells udev about the new device, and
+> the node with the correct dev_t is already there, it will leave it as it
+> is, and only apply the configured user,group,mode values.
+>
+> The loop tools should probably extended to be able to request new
+> devices from the kernel in a different way than open().
+>
 
-Kay
+Except as already mentioned it will introduce races between tool requesting=
+=20
+new device and udev creating new node. We already had this with raw devices=
+=2E=20
+My comparison with /dev/pts was incorrect because it is using internal=20
+filesystem that creates devices synchronously.
+
+May be all such cases has to be converted to use common file system.
+
+mount -t nodefs -o device=3Dpts none /dev/pts
+mount -t nodefs -o device=3Dloop none /dev/loop
+
+--nextPart56183359.CUtqt26RI9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBGUdwhR6LMutpd94wRAgtYAJ9eFHViNa8sZSd9jdfaiSGgUBRGYgCgq6BI
+v5VS/ircspcexdIzz4t7WoI=
+=+J1r
+-----END PGP SIGNATURE-----
+
+--nextPart56183359.CUtqt26RI9--
