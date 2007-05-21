@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbXEUO3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbXEUOam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbXEUO3Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 10:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbXEUO3R
+	id S1759803AbXEUOam (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 10:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbXEUOaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 10:29:17 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48270 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755326AbXEUO3Q (ORCPT
+	Mon, 21 May 2007 10:30:35 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:27730 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756561AbXEUOae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 10:29:16 -0400
-Date: Mon, 21 May 2007 15:33:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] pci_find_slot: Mark deprecated
-Message-ID: <20070521153321.10c8dd35@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 May 2007 10:30:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from:sender;
+        b=OVcBLR7BVN9BfmvA4AZtKO/WXcQjHlP83KJie9fJk3TxSQb1C0rCUQxx7BPJ6BWX8uYf3z3iH2enC3BtjnEvCSNfH7vc9Ibw/5rVngzsjYszVNN4Uc9nNJIGPIBCijjJOqkvVYM95Onm+mMrC8WurlKojWn79jOjHvX+D0TtZ50=
+Date: Mon, 21 May 2007 22:30:22 +0800
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, Florin Malita <fmalita@gmail.com>
+Subject: Re: [2.6 patch] drivers/net/wireless/libertas/rx.c: fix
+	use-after-free
+Message-ID: <20070521143022.GA26452@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+References: <464DD957.9040803@redhat.com> <20070518174623.GA3492@tuxdriver.com> <464E6B82.40607@redhat.com> <20070521133124.GB9621@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521133124.GB9621@tuxdriver.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+From: Eugene Teo <eugeneteo@kernel.sg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've now fixed up most users of pci_find_slot, and the remainder are
-either hard and need someone with the hardware and info to work on it, or
-patches exist but are not yet merged.
+<quote sender="John W. Linville">
+> On Sat, May 19, 2007 at 11:14:10AM +0800, Eugene Teo wrote:
+> > John W. Linville wrote:
+> 
+> > >>  done:
+> > >>         LEAVE();
+> > >>
+> > >> -       skb->protocol = __constant_htons(0x0019);       /* ETH_P_80211_RAW */
+> > >> -
+> > > 
+> > > Except for this part...is this intentional?
+> > 
+> > skb could have been freed by then. And, in libertas_upload_rx_packet(), skb->protocol
+> > is initialized by eth_type_trans(skb, priv->wlan_dev.netdev).
+> 
+> OK, I see that.  Looks like Florin has reposted his patch, still
+> without this hunk.  Would you like to submit a patch for this hunk?
 
-Time therefore for some gentle encouragement
+skb could have been freed by then. Also, in libertas_upload_rx_packet(),
+skb->protocol is initialized by eth_type_trans().
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Cc: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+---
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/linux/pci.h linux-2.6.22-rc1-mm1/include/linux/pci.h
---- linux.vanilla-2.6.22-rc1-mm1/include/linux/pci.h	2007-05-18 16:22:56.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/linux/pci.h	2007-05-18 16:38:24.000000000 +0100
-@@ -478,7 +478,7 @@
- /* Generic PCI functions exported to card drivers */
+diff -uprN -X 2.6.22-rc2/Documentation/dontdiff 2.6.22-rc2.default/drivers/net/wireless/libertas/rx.c 2.6.22-rc2/drivers/net/wireless/libertas/rx.c
+--- 2.6.22-rc2.default/drivers/net/wireless/libertas/rx.c	2007-05-21 22:07:50.000000000 +0800
++++ 2.6.22-rc2/drivers/net/wireless/libertas/rx.c	2007-05-21 22:08:44.000000000 +0800
+@@ -453,7 +453,5 @@ static int process_rxed_802_11_packet(wl
+ done:
+ 	LEAVE();
  
- struct pci_dev __deprecated *pci_find_device (unsigned int vendor, unsigned int device, const struct pci_dev *from);
--struct pci_dev *pci_find_slot (unsigned int bus, unsigned int devfn);
-+struct pci_dev __deprecated *pci_find_slot (unsigned int bus, unsigned int devfn);
- int pci_find_capability (struct pci_dev *dev, int cap);
- int pci_find_next_capability (struct pci_dev *dev, u8 pos, int cap);
- int pci_find_ext_capability (struct pci_dev *dev, int cap);
+-	skb->protocol = __constant_htons(0x0019);	/* ETH_P_80211_RAW */
+-
+ 	return (ret);
+ }
+
+-- 
+1024D/58DF8823 print 47B9 90F6 AE4A 9C51 37E0  D6E1 EA84 C6A2 58DF 8823
+main(i) { putchar(182623909 >> (i-1) * 5&31|!!(i<7)<<6) && main(++i); }
