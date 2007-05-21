@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764462AbXEUKWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763584AbXEUKYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764462AbXEUKWd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 06:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762415AbXEUKWV
+	id S1763584AbXEUKYW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 06:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbXEUKYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 06:22:21 -0400
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:58235
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763062AbXEUKWU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 06:22:20 -0400
-Date: Mon, 21 May 2007 03:21:49 -0700
-To: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
-Cc: "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: [PATCH] lockdep: lock contention tracking
-Message-ID: <20070521102149.GD4593@gnuppy.monkey.org>
-References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org> <20070521060828.GB20277@elte.hu> <20070521064150.GC4442@gnuppy.monkey.org> <20070521075013.GA9419@elte.hu> <20070521091848.GB4593@gnuppy.monkey.org> <20070521093639.GA29025@elte.hu> <20070521095547.GA10697@infradead.org>
+	Mon, 21 May 2007 06:24:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39757 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756805AbXEUKYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 06:24:08 -0400
+Message-ID: <465172EC.3010303@redhat.com>
+Date: Mon, 21 May 2007 12:22:36 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521095547.GA10697@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]serial: make early_uart to use early_prarm instead of
+ console_initcall
+References: <200705181900.17101.yinghai.lu@sun.com>	 <20070520202332.145d93a6.akpm@linux-foundation.org> <86802c440705202129o6fe9fb89l47aef78e973c36c5@mail.gmail.com>
+In-Reply-To: <86802c440705202129o6fe9fb89l47aef78e973c36c5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 10:55:47AM +0100, Christoph Hellwig wrote:
-> On Mon, May 21, 2007 at 11:36:39AM +0200, Ingo Molnar wrote:
-> > you got the history wrong i think: the first version of lockdep was 
-> > released to lkml a year ago (May 2006), while the first time you 
-> > mentioned your lock contention patch was November 2006 and you released 
-> > it to lkml in December 2006 - so it was _you_ who was "replicating the 
-> > same work", not lockdep :-) And this was pointed out to you very early 
-> > on, many months ago.
-> 
-> And lockmeter, the very first patch of this sort is from the 90s, but
-> got mostly ignored here on lkml, of course :)
+Yinghai Lu wrote:
+> Gerd's patch  (console handover) was merged into mainline. it will
+> switch from early_printk to normal console in register_console via
+> CON_BOOT flags.. ===> only for x86
 
-Unfortunately, it's not nearly as cool as my patch by default because I wrote
-it. :)
+Tagging boot consoles (aka early_printk) with CON_BOOT certainly makes 
+sense.  Just doing that doesn't work for ia64?
 
-bill
+What is the point in making that work on x86 additionally to serial 
+support in early_printk?  It might make sense to split away the serial 
+bits from early_printk.c and move them out of arch/ into -- say -- 
+drivers/serial/, so other architectures can use that too and we have 
+only one serial earlyprintk implementation in the kernel.  Not sure it 
+is worth the effort given the code size.
+
+cheers,
+   Gerd
+
 
