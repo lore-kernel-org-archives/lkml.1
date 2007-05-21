@@ -1,109 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbXEUCIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbXEUCaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbXEUCIb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 22:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbXEUCIF
+	id S1755827AbXEUCaH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 22:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbXEUC34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 22:08:05 -0400
-Received: from mtoichi12.ns.itscom.net ([219.110.2.182]:60035 "EHLO
-	mtoichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbXEUCID (ORCPT
+	Sun, 20 May 2007 22:29:56 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:24906 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbXEUC3z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 22:08:03 -0400
-Date: Mon, 21 May 2007 11:05:09 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <lenb@kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: [2.6.22-rc1-mm1] vaio laptop (SZ72B) immediately resumes after STR
-Message-ID: <20070521020508.GA3484@inferi.kami.home>
-References: <20070518071523.GA3195@inferi.kami.home> <200705201138.05146.david-b@pacbell.net> <20070521004119.GA3103@inferi.kami.home> <200705201822.24138.david-b@pacbell.net>
+	Sun, 20 May 2007 22:29:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=I94J9XPhFEwCmmLmHyLLzuHFiYS6jofqHx4D31X1AmfoxulhFWvj/Wv2JM8eyuWkevkcktNBmK+qGgwk7Jfg3zOnBhPa0+sPbF6ah363mJhV9Kk44Tq9Yd2vDRgPmq/lHJXVpGrRuvD2/Cxu4lwkP7UK+wn/Eod3RqRQYSMQftw=
+Message-ID: <6defe8840705201929k1835f3bagf9f1e851f2493e33@mail.gmail.com>
+Date: Sun, 20 May 2007 22:29:54 -0400
+From: "Denver Gingerich" <denver@ossguy.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix compiler warning in fixed.c
+In-Reply-To: <6defe8840705091826j4395f090rc62aa2200f020536@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200705201822.24138.david-b@pacbell.net>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.22-rc1-mm1-3 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <6defe8840705091826j4395f090rc62aa2200f020536@mail.gmail.com>
+X-Google-Sender-Auth: cd4d1c08d7f733fe
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 20, 2007 at 06:22:23PM -0700, David Brownell wrote:
-> On Sunday 20 May 2007, Mattia Dongili wrote:
-> > 
-> > $ cat /proc/acpi/wakeup
-> > Device	S-state	  Status   Sysfs node
-> > PWRB	  S4	*enabled   
-> > S1F0	  S4	 disabled  
-> > S1F1	  S4	 disabled  
-> > S1F2	  S4	 disabled  
-> > S1F3	  S4	 disabled  
-> > S1F4	  S4	 disabled  
-> > S1F5	  S4	 disabled  
-> > S1F6	  S4	 disabled  
-> > S1F7	  S4	 disabled  
-> > TLAN	  S3	 disabled  pci:0000:07:00.0
-> > DLAN	  S3	 disabled  
-> > S6F0	  S4	 disabled  
-> > S6F1	  S4	 disabled  
-> > S6F2	  S4	 disabled  
-> > S6F3	  S4	 disabled  
-> > S6F4	  S4	 disabled  
-> > S6F5	  S4	 disabled  
-> > S6F6	  S4	 disabled  
-> > S6F7	  S4	 disabled  
-> > USB1	  S3	 disabled  pci:0000:00:1d.0
-> > USB2	  S3	 disabled  pci:0000:00:1d.1
-> > USB3	  S3	 disabled  pci:0000:00:1d.2
-> > USB4	  S3	 disabled  pci:0000:00:1d.3
-> > USB7	  S3	 disabled  pci:0000:00:1d.7
-> > SLT0	  S4	 disabled  
-> > LANC	  S3	 disabled  
-> > EC0	  S5	 disabled  
-> 
-> That's strangely busy ... what ARE all those devices?  :)
+---------- Forwarded message ----------
+From: Denver Gingerich <denver@ossguy.com>
+Date: May 9, 2007 9:26 PM
+Subject: [PATCH] fix compiler warning in fixed.c
+To: kernel-janitors@lists.linux-foundation.org
 
-the S[16]F* are tons of acpi devices... don't know what they are, they
-are attached to the PCI-E port
-00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 02)
-00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 (rev 02)
-00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 (rev 02)
-00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 4 (rev 02)
-if you're interested the DSDT is here:
-http://www.linux.it/~malattia/sony-laptop/DSDT.sz72b.type3.dsl
 
-> But only the PCI ones -- or certain devices connected to USB
-> root hubs -- could be affected by that patch.
-> 
-> So another experiment you could do, if you want faster info
-> than "git bisect" can provide, is building drivers for those
-> PCI devices as modules (ehci-hcd, uhci-hcd, sky2) and then
-> finding which one causes the trouble by removing them before
-> STR.
+Correct the following compiler warning (and warnings resulting from
+the correction):
+warning: 'fixed_mdio_register_device' defined but not used
 
-it's ehci-hcd! and apart from the fact that removing it causes a BUG in
-cpufreq no the system stays correctly asleep when suspended.
+Signed-off-by: Denver Gingerich <denver@ossguy.com>
 
-...
-> > > My suspicion, based on the dmesg and seeing what drivers actually
-> > > try to enable wakeup, would be the 'sky2' driver.  The other two
-> > 
-> > FWIW the sky2 is never functional upon resume, I need to ifdown, rmmod,
-> > modprobe and ifup again to get some networking...
-> 
-> Try "rmmod sky2" *before* suspend, to see if that matters.
-> 
-> Also "rmmod uhci-hcd", which will keep USB from doing anything
-> with that biometric thingie.
-> 
-> I suspect one or the other of those will be the issue.
+---
 
-very close :)
--- 
-mattia
-:wq!
+--- linux-2.6.21/drivers/net/phy/fixed.c.000    2007-05-09
+18:56:33.000000000 -0400
++++ linux-2.6.21/drivers/net/phy/fixed.c        2007-05-09
+21:07:35.000000000 -0400
+@@ -89,6 +89,7 @@ EXPORT_SYMBOL(fixed_mdio_set_link_update
+ /*-----------------------------------------------------------------------------
+  *  This is used for updating internal mii regs from the status
+  *-----------------------------------------------------------------------------*/
++#if defined(CONFIG_FIXED_MII_100_FDX) || defined(CONFIG_FIXED_MII_10_FDX)
+ static int fixed_mdio_update_regs(struct fixed_info *fixed)
+ {
+        u16 *regs = fixed->regs;
+@@ -165,6 +166,7 @@ static int fixed_mii_reset(struct mii_bu
+        /*nothing here - no way/need to reset it*/
+        return 0;
+ }
++#endif
+
+ static int fixed_config_aneg(struct phy_device *phydev)
+ {
+@@ -194,6 +196,7 @@ static struct phy_driver fixed_mdio_driv
+  * number is used to create multiple fixed PHYs, so that several devices can
+  * utilize them simultaneously.
+  *-----------------------------------------------------------------------------*/
++#if defined(CONFIG_FIXED_MII_100_FDX) || defined(CONFIG_FIXED_MII_10_FDX)
+ static int fixed_mdio_register_device(int number, int speed, int duplex)
+ {
+        struct mii_bus *new_bus;
+@@ -301,6 +304,7 @@ device_create_fail:
+
+        return err;
+ }
++#endif
+
+
+ MODULE_DESCRIPTION("Fixed PHY device & driver for PAL");
