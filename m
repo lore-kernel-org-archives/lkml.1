@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbXEUNgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbXEUNjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760231AbXEUNgp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 09:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXEUNgf
+	id S1758783AbXEUNjg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 09:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbXEUNj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 09:36:35 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:46733 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758838AbXEUNge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 09:36:34 -0400
-Date: Mon, 21 May 2007 14:36:08 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <lenb@kernel.org>, trenn@suse.de,
-       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
-Message-ID: <20070521133608.GB7540@srcf.ucam.org>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <200705171517.14087.lenb@kernel.org> <1179604609.16465.83.camel@sublime.suse.de> <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz>
+	Mon, 21 May 2007 09:39:29 -0400
+Received: from gw.goop.org ([64.81.55.164]:42565 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755323AbXEUNj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 09:39:28 -0400
+Message-ID: <4651A113.9020300@goop.org>
+Date: Mon, 21 May 2007 14:39:31 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521132948.GD8332@elf.ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Andi Kleen <ak@suse.de>
+CC: Sam Ravnborg <sam@ravnborg.org>, Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix section mismatch warnings in mtrr
+References: <200705191443.27161.arvidjaar@mail.ru> <20070519133257.GB23370@uranus.ravnborg.org> <200705191555.49376.ak@suse.de>
+In-Reply-To: <200705191555.49376.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 03:29:48PM +0200, Pavel Machek wrote:
-> > > No. Manually turning off fans is even worse hack.
-> > 
-> > It's significantly more correct.
-> 
-> Significantly more correct? It forces you to do all the thermal
-> management in userspace!
+Andi Kleen wrote:
+> On Saturday 19 May 2007 15:32, Sam Ravnborg wrote:
+>   
+>> Following section mismatch warnings were reported by Andrey Borzenkov:
+>>     
+>
+> In what configuration? I don't see this.
 
-Why's that a problem? Overriding the hardware policy has to be done 
-somewhere, and doing it in userspace is no more dangerous than 
-kernelspace.
+I'm pretty sure I made those functions __init when I cleaned up that
+code.  Did those pieces of the patch get mislayed?  I thought it made it
+into upstream.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+    J
