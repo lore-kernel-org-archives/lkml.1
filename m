@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbXEUWzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763013AbXEUWzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbXEUWzR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 18:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbXEUWzE
+	id S1763013AbXEUWzu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 18:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbXEUWzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 18:55:04 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:55068 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755947AbXEUWzD (ORCPT
+	Mon, 21 May 2007 18:55:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34936 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756165AbXEUWzk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 18:55:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=byMgPZgpan1Dixgov4j/X8Vw5Rn/uNjlGs5FYSFlIzarnHS7HkhW7QGUq7OuRa2Vzh+fi1jegGoU8M3uPfV5mxuivMUPQs+qgpgA+CR28gn5w79gXpi3yV1Jjo4qpLMGtbbPJYRyFtMFEdDFZYkPG1frkLPkOhb+t/ucljKSzKU=
-Message-ID: <2c0942db0705211555w70d6bdd0wdf458a3bf13b306d@mail.gmail.com>
-Date: Mon, 21 May 2007 15:55:01 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
+	Mon, 21 May 2007 18:55:40 -0400
+Date: Mon, 21 May 2007 15:54:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: "Uwe Bugla" <uwe.bugla@gmx.de>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
 Subject: Re: Kernel Oops with 2.6.21.1 on an AMD K7 machine
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Message-Id: <20070521155426.d0ad742b.akpm@linux-foundation.org>
 In-Reply-To: <20070521222857.87180@gmx.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 References: <20070521222857.87180@gmx.net>
-X-Google-Sender-Auth: 0698ef89c27bf7ba
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/07, Uwe Bugla <uwe.bugla@gmx.de> wrote:
+On Tue, 22 May 2007 00:28:57 +0200
+"Uwe Bugla" <uwe.bugla@gmx.de> wrote:
+
 > kernel 2.6.21.1 makes my machine Oops about 20 seconds after KDE 3,5 is brought up showing its graphical login (kdm):
 
-Please include the output out of the actual oops message. It has all
-sorts of information that will help track this down.
+We're completely blind unless we can see that oops info.  If it reached
+/var/log/messages then please send it.
 
-The "REPORTING-BUGS" file in the root of the kernel source directory
-has an example format that covers the sorts of stuff that they want to
-see.
+If it didn't please set up netconsole (Documentation/networking/netconsole.txt)
 
-Thanks,
+If for some reason that isn't possible then you couldry switching to
+the vga concole (alt-ctl-F1) before the ooops and see if the output
+is visible on the VGA screen.  If it is there, a digital photo will suit
+(you can email it to me and I can stick it on a server somewhere if
+you like).  The last option is to write the oops info down with a
+pencil and type it in again, but that's painful (all the hex addresses
+in the stack backtrace can be omitted)
 
-Ray
+Thanks.
