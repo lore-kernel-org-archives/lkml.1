@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935004AbXEUTna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934660AbXEUTnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935004AbXEUTna (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933637AbXEUT1r
+	id S934660AbXEUTnx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbXEUT1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:27:47 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52531 "EHLO
+	Mon, 21 May 2007 15:27:50 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52540 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933004AbXEUT1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:27:46 -0400
-Message-Id: <20070521191755.954599000@sous-sol.org>
+	id S933646AbXEUT1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:27:48 -0400
+Message-Id: <20070521191729.517094000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:17 -0700
+Date: Mon, 21 May 2007 12:16:46 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,112 +22,250 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@lists.netfilter.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 65/69] NETFILTER: {ip,nf}_conntrack: fix use-after-free in helper destroy callback invocation
-Content-Disposition: inline; filename=netfilter-ip-nf-_conntrack-fix-use-after-free-in-helper-destroy-callback-invocation.patch
+       alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
+       bunk@stusta.de, Vlad Yasevich <vladislav.yasevich@hp.com>
+Subject: [patch 34/69] SCTP: Fix sctp_getsockopt_local_addrs_old() to use local storage.
+Content-Disposition: inline; filename=sctp-fix-sctp_getsockopt_local_addrs_old-to-use-local-storage.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-When the helper module is removed for a master connection that has a
-fulfilled expectation, but has already timed out and got removed from
-the hash tables, nf_conntrack_helper_unregister can't find the master
-connection to unset the helper, causing a use-after-free when the
-expected connection is destroyed and releases the last reference to
-the master.
+sctp_getsockopt_local_addrs_old() in net/sctp/socket.c calls
+copy_to_user() while the spinlock addr_lock is held. this should not
+be done as copy_to_user() might sleep. the call to
+sctp_copy_laddrs_to_user() while holding the lock is also problematic
+as it calls copy_to_user()
 
-The helper destroy callback was introduced for the PPtP helper to clean
-up expectations and expected connections when the master connection
-times out, but doing this from destroy_conntrack only works for
-unfulfilled expectations since expected connections hold a reference
-to the master, preventing its destruction. Move the destroy callback to
-the timeout function, which fixes both problems.
-
-Reported/tested by Gabor Burjan <buga@buvoshetes.hu>.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+
 ---
-commit 441f15ce23ef5c4d149b7e7985f63c1ddd334c45
-tree 8783e067803def0fc2773ef3515190143ac47320
-parent 8d8b10482fffcb72b15515231bb942e2ad6395c9
-author Patrick McHardy <kaber@trash.net> Wed, 16 May 2007 18:52:36 +0200
-committer Patrick McHardy <kaber@trash.net> Wed, 16 May 2007 18:52:36 +0200
+ net/sctp/socket.c |   96 +++++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 60 insertions(+), 36 deletions(-)
 
- net/ipv4/netfilter/ip_conntrack_core.c |   10 +++++-----
- net/netfilter/nf_conntrack_core.c      |    8 ++++----
- 2 files changed, 9 insertions(+), 9 deletions(-)
-
---- linux-2.6.21.1.orig/net/ipv4/netfilter/ip_conntrack_core.c
-+++ linux-2.6.21.1/net/ipv4/netfilter/ip_conntrack_core.c
-@@ -302,7 +302,6 @@ destroy_conntrack(struct nf_conntrack *n
+--- linux-2.6.21.1.orig/net/sctp/socket.c
++++ linux-2.6.21.1/net/sctp/socket.c
+@@ -3847,7 +3847,7 @@ static int sctp_getsockopt_peer_addrs(st
+ 		memcpy(&temp, &from->ipaddr, sizeof(temp));
+ 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sp, &temp);
+ 		addrlen = sctp_get_af_specific(sk->sk_family)->sockaddr_len;
+-		if(space_left < addrlen)
++		if (space_left < addrlen)
+ 			return -ENOMEM;
+ 		if (copy_to_user(to, &temp, addrlen))
+ 			return -EFAULT;
+@@ -3936,8 +3936,9 @@ done:
+ /* Helper function that copies local addresses to user and returns the number
+  * of addresses copied.
+  */
+-static int sctp_copy_laddrs_to_user_old(struct sock *sk, __u16 port, int max_addrs,
+-					void __user *to)
++static int sctp_copy_laddrs_old(struct sock *sk, __u16 port,
++					int max_addrs, void *to,
++					int *bytes_copied)
  {
- 	struct ip_conntrack *ct = (struct ip_conntrack *)nfct;
- 	struct ip_conntrack_protocol *proto;
--	struct ip_conntrack_helper *helper;
- 	typeof(ip_conntrack_destroyed) destroyed;
+ 	struct list_head *pos, *next;
+ 	struct sctp_sockaddr_entry *addr;
+@@ -3954,10 +3955,10 @@ static int sctp_copy_laddrs_to_user_old(
+ 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sctp_sk(sk),
+ 								&temp);
+ 		addrlen = sctp_get_af_specific(temp.sa.sa_family)->sockaddr_len;
+-		if (copy_to_user(to, &temp, addrlen))
+-			return -EFAULT;
++		memcpy(to, &temp, addrlen);
  
- 	DEBUGP("destroy_conntrack(%p)\n", ct);
-@@ -312,10 +311,6 @@ destroy_conntrack(struct nf_conntrack *n
- 	ip_conntrack_event(IPCT_DESTROY, ct);
- 	set_bit(IPS_DYING_BIT, &ct->status);
+ 		to += addrlen;
++		*bytes_copied += addrlen;
+ 		cnt ++;
+ 		if (cnt >= max_addrs) break;
+ 	}
+@@ -3965,8 +3966,8 @@ static int sctp_copy_laddrs_to_user_old(
+ 	return cnt;
+ }
  
--	helper = ct->helper;
--	if (helper && helper->destroy)
--		helper->destroy(ct);
--
- 	/* To make sure we don't get any weird locking issues here:
- 	 * destroy_conntrack() MUST NOT be called with a write lock
- 	 * to ip_conntrack_lock!!! -HW */
-@@ -356,6 +351,11 @@ destroy_conntrack(struct nf_conntrack *n
- static void death_by_timeout(unsigned long ul_conntrack)
+-static int sctp_copy_laddrs_to_user(struct sock *sk, __u16 port,
+-				    void __user **to, size_t space_left)
++static int sctp_copy_laddrs(struct sock *sk, __u16 port, void *to,
++			    size_t space_left, int *bytes_copied)
  {
- 	struct ip_conntrack *ct = (void *)ul_conntrack;
-+	struct ip_conntrack_helper *helper;
+ 	struct list_head *pos, *next;
+ 	struct sctp_sockaddr_entry *addr;
+@@ -3983,14 +3984,14 @@ static int sctp_copy_laddrs_to_user(stru
+ 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sctp_sk(sk),
+ 								&temp);
+ 		addrlen = sctp_get_af_specific(temp.sa.sa_family)->sockaddr_len;
+-		if(space_left<addrlen)
++		if (space_left < addrlen)
+ 			return -ENOMEM;
+-		if (copy_to_user(*to, &temp, addrlen))
+-			return -EFAULT;
++		memcpy(to, &temp, addrlen);
+ 
+-		*to += addrlen;
++		to += addrlen;
+ 		cnt ++;
+ 		space_left -= addrlen;
++		bytes_copied += addrlen;
+ 	}
+ 
+ 	return cnt;
+@@ -4014,6 +4015,8 @@ static int sctp_getsockopt_local_addrs_o
+ 	int addrlen;
+ 	rwlock_t *addr_lock;
+ 	int err = 0;
++	void *addrs;
++	int bytes_copied = 0;
+ 
+ 	if (len != sizeof(struct sctp_getaddrs_old))
+ 		return -EINVAL;
+@@ -4041,6 +4044,15 @@ static int sctp_getsockopt_local_addrs_o
+ 
+ 	to = getaddrs.addrs;
+ 
++	/* Allocate space for a local instance of packed array to hold all
++	 * the data.  We store addresses here first and then put write them
++	 * to the user in one shot.
++	 */
++	addrs = kmalloc(sizeof(union sctp_addr) * getaddrs.addr_num,
++			GFP_KERNEL);
++	if (!addrs)
++		return -ENOMEM;
 +
-+	helper = ct->helper;
-+	if (helper && helper->destroy)
-+		helper->destroy(ct);
+ 	sctp_read_lock(addr_lock);
  
- 	write_lock_bh(&ip_conntrack_lock);
- 	/* Inside lock so preempt is disabled on module removal path.
---- linux-2.6.21.1.orig/net/netfilter/nf_conntrack_core.c
-+++ linux-2.6.21.1/net/netfilter/nf_conntrack_core.c
-@@ -315,7 +315,6 @@ static void
- destroy_conntrack(struct nf_conntrack *nfct)
- {
- 	struct nf_conn *ct = (struct nf_conn *)nfct;
--	struct nf_conn_help *help = nfct_help(ct);
- 	struct nf_conntrack_l3proto *l3proto;
- 	struct nf_conntrack_l4proto *l4proto;
- 	typeof(nf_conntrack_destroyed) destroyed;
-@@ -327,9 +326,6 @@ destroy_conntrack(struct nf_conntrack *n
- 	nf_conntrack_event(IPCT_DESTROY, ct);
- 	set_bit(IPS_DYING_BIT, &ct->status);
+ 	/* If the endpoint is bound to 0.0.0.0 or ::0, get the valid
+@@ -4050,13 +4062,9 @@ static int sctp_getsockopt_local_addrs_o
+ 		addr = list_entry(bp->address_list.next,
+ 				  struct sctp_sockaddr_entry, list);
+ 		if (sctp_is_any(&addr->a)) {
+-			cnt = sctp_copy_laddrs_to_user_old(sk, bp->port,
+-							   getaddrs.addr_num,
+-							   to);
+-			if (cnt < 0) {
+-				err = cnt;
+-				goto unlock;
+-			}
++			cnt = sctp_copy_laddrs_old(sk, bp->port,
++						   getaddrs.addr_num,
++						   addrs, &bytes_copied);
+ 			goto copy_getaddrs;
+ 		}
+ 	}
+@@ -4066,22 +4074,29 @@ static int sctp_getsockopt_local_addrs_o
+ 		memcpy(&temp, &addr->a, sizeof(temp));
+ 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sp, &temp);
+ 		addrlen = sctp_get_af_specific(temp.sa.sa_family)->sockaddr_len;
+-		if (copy_to_user(to, &temp, addrlen)) {
+-			err = -EFAULT;
+-			goto unlock;
+-		}
++		memcpy(addrs, &temp, addrlen);
+ 		to += addrlen;
++		bytes_copied += addrlen;
+ 		cnt ++;
+ 		if (cnt >= getaddrs.addr_num) break;
+ 	}
  
--	if (help && help->helper && help->helper->destroy)
--		help->helper->destroy(ct);
--
- 	/* To make sure we don't get any weird locking issues here:
- 	 * destroy_conntrack() MUST NOT be called with a write lock
- 	 * to nf_conntrack_lock!!! -HW */
-@@ -375,6 +371,10 @@ destroy_conntrack(struct nf_conntrack *n
- static void death_by_timeout(unsigned long ul_conntrack)
- {
- 	struct nf_conn *ct = (void *)ul_conntrack;
-+	struct nf_conn_help *help = nfct_help(ct);
+ copy_getaddrs:
++	sctp_read_unlock(addr_lock);
 +
-+	if (help && help->helper && help->helper->destroy)
-+		help->helper->destroy(ct);
++	/* copy the entire address list into the user provided space */
++	if (copy_to_user(to, addrs, bytes_copied)) {
++		err = -EFAULT;
++		goto error;
++	}
++
++	/* copy the leading structure back to user */
+ 	getaddrs.addr_num = cnt;
+ 	if (copy_to_user(optval, &getaddrs, sizeof(struct sctp_getaddrs_old)))
+ 		err = -EFAULT;
  
- 	write_lock_bh(&nf_conntrack_lock);
- 	/* Inside lock so preempt is disabled on module removal path.
+-unlock:
+-	sctp_read_unlock(addr_lock);
++error:
++	kfree(addrs);
+ 	return err;
+ }
+ 
+@@ -4101,7 +4116,8 @@ static int sctp_getsockopt_local_addrs(s
+ 	rwlock_t *addr_lock;
+ 	int err = 0;
+ 	size_t space_left;
+-	int bytes_copied;
++	int bytes_copied = 0;
++	void *addrs;
+ 
+ 	if (len <= sizeof(struct sctp_getaddrs))
+ 		return -EINVAL;
+@@ -4129,6 +4145,9 @@ static int sctp_getsockopt_local_addrs(s
+ 	to = optval + offsetof(struct sctp_getaddrs,addrs);
+ 	space_left = len - sizeof(struct sctp_getaddrs) -
+ 			 offsetof(struct sctp_getaddrs,addrs);
++	addrs = kmalloc(space_left, GFP_KERNEL);
++	if (!addrs)
++		return -ENOMEM;
+ 
+ 	sctp_read_lock(addr_lock);
+ 
+@@ -4139,11 +4158,11 @@ static int sctp_getsockopt_local_addrs(s
+ 		addr = list_entry(bp->address_list.next,
+ 				  struct sctp_sockaddr_entry, list);
+ 		if (sctp_is_any(&addr->a)) {
+-			cnt = sctp_copy_laddrs_to_user(sk, bp->port,
+-						       &to, space_left);
++			cnt = sctp_copy_laddrs(sk, bp->port, addrs,
++						space_left, &bytes_copied);
+ 			if (cnt < 0) {
+ 				err = cnt;
+-				goto unlock;
++				goto error;
+ 			}
+ 			goto copy_getaddrs;
+ 		}
+@@ -4154,26 +4173,31 @@ static int sctp_getsockopt_local_addrs(s
+ 		memcpy(&temp, &addr->a, sizeof(temp));
+ 		sctp_get_pf_specific(sk->sk_family)->addr_v4map(sp, &temp);
+ 		addrlen = sctp_get_af_specific(temp.sa.sa_family)->sockaddr_len;
+-		if(space_left < addrlen)
+-			return -ENOMEM; /*fixme: right error?*/
+-		if (copy_to_user(to, &temp, addrlen)) {
+-			err = -EFAULT;
+-			goto unlock;
++		if (space_left < addrlen) {
++			err =  -ENOMEM; /*fixme: right error?*/
++			goto error;
+ 		}
++		memcpy(addrs, &temp, addrlen);
+ 		to += addrlen;
++		bytes_copied += addrlen;
+ 		cnt ++;
+ 		space_left -= addrlen;
+ 	}
+ 
+ copy_getaddrs:
++	sctp_read_unlock(addr_lock);
++
++	if (copy_to_user(to, addrs, bytes_copied)) {
++		err = -EFAULT;
++		goto error;
++	}
+ 	if (put_user(cnt, &((struct sctp_getaddrs __user *)optval)->addr_num))
+ 		return -EFAULT;
+-	bytes_copied = ((char __user *)to) - optval;
+ 	if (put_user(bytes_copied, optlen))
+ 		return -EFAULT;
+ 
+-unlock:
+-	sctp_read_unlock(addr_lock);
++error:
++	kfree(addrs);
+ 	return err;
+ }
+ 
 
 -- 
