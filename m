@@ -1,82 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762250AbXEUMI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762385AbXEUMKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762250AbXEUMI4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 08:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbXEUMIs
+	id S1762385AbXEUMKI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 08:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755574AbXEUMJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 08:08:48 -0400
-Received: from userg503.nifty.com ([202.248.238.83]:18153 "EHLO
-	userg503.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755931AbXEUMIs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 08:08:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=userg503; d=nifty.com; c=nofws; q=dns;
-	b=y5DrPLwpnVMOU2fk3hbTxWTYq1VqUEK0KleObSA5YAftBvAvn+aevTTOi0YNiAIm6
-	uOFppqE/oYhRihehvkuRA==
-Date: Mon, 21 May 2007 21:08:44 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [SMP BUG]  [clockevents: i386 drivers patch]  introduces 
- irqbalance-does-not-work-properly problem
-Message-Id: <20070521210844.c85eb8fe.komurojun-mbn@nifty.com>
-In-Reply-To: <1179668825.21827.18.camel@chaos>
-References: <1178202559.3767.21.camel@localhost.localdomain>
-	<20070504233238.ca55c2d1.komurojun-mbn@nifty.com>
-	<1178463619.3793.14.camel@localhost.localdomain>
-	<1178777214.2951.18.camel@ymzhang>
-	<20070510160615.6aa9cef6.akpm@linux-foundation.org>
-	<20070513200444.9d2db4c3.komurojun-mbn@nifty.com>
-	<20070520111409.1793a2f6.komurojun-mbn@nifty.com>
-	<1179644956.21827.5.camel@chaos>
-	<20070520194801.6436597c.komurojun-mbn@nifty.com>
-	<1179668825.21827.18.camel@chaos>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 May 2007 08:09:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39273 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755931AbXEUMJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 08:09:56 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070521094224.GB1695@ff.dom.local>
+References: <20070521094224.GB1695@ff.dom.local>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Documentation/memory-barriers.txt: various fixes
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Mon, 21 May 2007 13:09:50 +0100
+Message-ID: <7846.1179749390@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007 15:47:04 +0200
-Thomas Gleixner <tglx@linutronix.de> wrote:
+Jarek Poplawski <jarkao2@o2.pl> wrote:
 
-> And how exactly is this related to clock events ?
+> I think at least some of these fixes are justified.
 
-Maybe, side-effects.
+Yeah.  I think you're right in most cases, but not all.  See below.
 
-I will re-analyze this problem.
+David
+---
 
-Thanks.
+> @@ -265,8 +265,8 @@
+> ...
+>  Such enforcement is important because the CPUs and other devices in a system
+> -can use a variety of tricks to improve performance - including reordering,
+> -deferral and combination of memory operations; speculative loads; speculative
+> +can use a variety of tricks to improve performance - including: reordering,
+> +deferral and combination of memory operations, speculative loads, speculative
+
+I disagree.  The colon looks wrong here.  If you say it out load, there's no
+break in the flow between "including" and "reordering".  I also think that
+semicolons are correct as there needs to be a bigger pause between "loads" and
+"speculative" than between "reordering" and "deferral".
+
+> @@ -300,7 +300,7 @@
+> ...
+> -     load will be directed), a data dependency barrier would be required to
+> +     load will be directed), the data dependency barrier would be required to
+
+I think that should be "a".
+
+> @@ -457,8 +457,8 @@
+> ...
+> -But! CPU 2's perception of P may be updated _before_ its perception of B, thus
+> +But (!) CPU 2's perception of P may be updated _before_ its perception of B,
+
+That's a matter of taste, I think.  However, if my solution is chosen, there
+should be an extra space after "But!".  Hmmm... actually, I think you're wrong
+because the "But!" isn't quite part of the following sentence.
+
+> @@ -602,21 +602,21 @@
+>  
+>  This sequence of events is committed to the memory coherence system in an order
+>  that the rest of the system might perceive as the unordered set of { STORE A,
+> -STORE B, STORE C } all occurring before the unordered set of { STORE D, STORE E
+> -}:
+> +STORE B, STORE C } - all occurring before the unordered set of { STORE D, STORE
+> +E }:
+
+Hmmm.  I don't think that a dash is correct here.  I think it changes the
+meaning, by changing the way the elements are grouped.
+
+>  	|       |   wwwwwwwwwwwwwwww }   <--- At this point the write barrier
+>  	|       |       +------+     }        requires all stores prior to the
+> -	|       |  :    | E=5  |     }        barrier to be committed before
+> -	|       |  :    +------+     }        further stores may be take place.
+> +	|       |  :    | E=5  |     }        barrier to be committed, before
+> +	|       |  :    +------+     }        further stores may take place
+
+That's partly wrong.  The operative term is "committed before".
+
+However "may be take" -> "may take" is correct.
+
+> @@ -644,7 +644,7 @@
+>  
+>  	+-------+       :      :                :       :
+>  	|       |       +------+                +-------+  | Sequence of update
+> -	|       |------>| B=2  |-----       --->| Y->8  |  | of perception on
+> +	|       |------>| B=2  |-----       --->| Y->8  |  | perception on
+
+I think this changes the meaning to one I don't want.  But I'm not entirely
+sure.  In a way the two concepts "update of perception" and "update perception"
+are different things.  I think this can be argued either way.
+
+> @@ -1143,14 +1143,14 @@
+> ...
+> -Therefore, from (1), (2) and (4) an UNLOCK followed by an unconditional LOCK is
+> -equivalent to a full barrier, but a LOCK followed by an UNLOCK is not.
+> +Therefore, from (1), (2) and (4) the UNLOCK followed by the unconditional LOCK
+> +is equivalent to a full barrier, but the LOCK followed by the UNLOCK is not.
+
+I think this should be "a" not "the".  I'm not talking about any locks in
+particular.
+
+> -A LOCK followed by an UNLOCK may not be assumed to be full memory barrier
+> +The LOCK followed by the UNLOCK may not be assumed to be full memory barrier
+
+Again "a" not "the".
+
+> @@ -1239,7 +1239,7 @@
+> ...
+> -Then there is no guarantee as to what order CPU #3 will see the accesses to *A
+> +Then there is no guarantee, as to what order CPU 3 will see the accesses to *A
+
+There shouldn't be a comma there.
+
+> @@ -1375,7 +1375,7 @@
+> ...
+> -operate without the use of a lock if at all possible.  In such a case
+> +operate without the use of the lock if at all possible.  In such a case
+
+That should definitely be "a" not "the".  There is no specific lock mentioned
+to be definite about.
+
+> @@ -1396,10 +1396,10 @@
+> ...
+> - (1) read the next pointer from this waiter's record to know as to where the
+> -     next waiter record is;
+> + (1) read the list.next pointer from this waiter's record to know as to where
+> +     the next waiter record is;
+
+That's unimportant, and also assumes that "list.next" exists and will exist in
+all implementations.
+
+> @@ -1423,7 +1423,7 @@
+> ...
+> -stack before the up*() function has a chance to read the next pointer.
+> +stack before the up_*() function has a chance to read the next pointer.
+
+That's unimportant as we're clearly talking about rwsems.  However, to be
+consistent, this should probably be up_xxx().
+
+> @@ -1659,16 +1660,16 @@
+> ...
+>       Whether these are guaranteed to be fully ordered and uncombined with
+> -     respect to each other on the issuing CPU depends on the characteristics
+> +     respect to each other on the issuing CPU - depends on the characteristics
+
+That dash is definitely wrong.  The sentence is of the form "Whether X is/are Y
+depends on Z".
+
+>       However, intermediary hardware (such as a PCI bridge) may indulge in
+> -     deferral if it so wishes; to flush a store, a load from the same location
+> +     deferral if it wishes so; to flush a store, a load from the same location
+
+I disagree on that one.  I would say the former, but not the latter.
 
 
-Best Regards
-Komuro
+Anyway, thanks for the review!  Any change in your patch I haven't mentioned is
+one I'm okay with.
 
-
-> On Sun, 2007-05-20 at 19:48 +0900, Komuro wrote:
-> > The problem is CPU1 receives 38239 interrupt-16
-> > but CPU0 receives only 15 interrupt-16
-> > CPU0 should receive more interrupts.
-> > 
-> >            CPU0       CPU1       
-> >   0:         85          0   IO-APIC-edge      timer
-> >   1:          0        698   IO-APIC-edge      i8042
-> >   6:          0          5   IO-APIC-edge      floppy
-> >   8:          0          1   IO-APIC-edge      rtc
-> >   9:          0          0   IO-APIC-fasteoi   acpi
-> >  12:          0        114   IO-APIC-edge      i8042
-> >  14:        369       2281   IO-APIC-edge      ide0
-> >  15:          0         24   IO-APIC-edge      ide1
-> >  16:         15      38239   IO-APIC-fasteoi   yenta, pcnet_cs   <<< problem
-> >  17:          0          0   IO-APIC-fasteoi   yenta
-> > NMI:          0          0 
-> > LOC:      50548      50547 
-> > ERR:          0
-> > MIS:      15503
-> 
-> And how exactly is this related to clock events ?
-> 
-> 	tglx
-> 
-> 
+David
