@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbXEUUe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbXEUUgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbXEUUe6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXEUUet
+	id S1756696AbXEUUgV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbXEUUgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:34:49 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:48009 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754946AbXEUUes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:34:48 -0400
-Date: Mon, 21 May 2007 13:31:11 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>, Chuck@hera.kernel.org,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       stable@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/69] -stable review
-Message-ID: <20070521203111.GJ3429@sequoia.sous-sol.org>
-References: <20070521191612.800400000@sous-sol.org> <20070521123148.a3dad5f2.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521123148.a3dad5f2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 21 May 2007 16:36:09 -0400
+Received: from www.osadl.org ([213.239.205.134]:56091 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752100AbXEUUgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 16:36:07 -0400
+Subject: Re: v2.6.21-rt3
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <1179779142.15427.44.camel@imap.mvista.com>
+References: <20070517194143.GA25394@elte.hu>
+	 <1179778266.15427.38.camel@imap.mvista.com>
+	 <1179779053.12708.45.camel@chaos>
+	 <1179779142.15427.44.camel@imap.mvista.com>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 22:36:05 +0200
+Message-Id: <1179779765.12708.50.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Mon, 21 May 2007 12:16:12 -0700
-> Chris Wright <chrisw@sous-sol.org> wrote:
+On Mon, 2007-05-21 at 13:25 -0700, Daniel Walker wrote:
+> On Mon, 2007-05-21 at 22:24 +0200, Thomas Gleixner wrote:
+> > On Mon, 2007-05-21 at 13:11 -0700, Daniel Walker wrote:
+> > > Where did the arm ep93xx changes come from? 
+> > 
+> > Grown out of my nose probably.
+> > 
+> > > It looks like patch below
+> > > came in with them in 2.6.21-rt6 ..
+> > 
+> > So what ?
 > 
-> > This is the start of the stable review cycle for the 2.6.21.2 release.
-> 
-> Gee a lot of these are fixing recently-added regressions :(
-> 
-> Did we fix oprofile on x86_64 yet?  If not, I'd suggest we should
-> hold off 2.6.21.2 until we have done so.
+> It's silencing a WARN_ON() with no real reason why it's happening, or
+> why/if it's safe to silence it .. Why is that there?
 
-No, we've seen 2 versions of the patch, no word from Andi, and nothing
-upstream that I saw.  Andi?
+Care to look at the code ? 
 
-> I assume ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/oprofile-allocation
-> is what we want.
+	tglx
+
+
