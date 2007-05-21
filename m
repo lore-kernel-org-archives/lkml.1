@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762992AbXEUPoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762475AbXEUPqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762992AbXEUPoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 11:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXEUPoJ
+	id S1762475AbXEUPqR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 11:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbXEUPqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 11:44:09 -0400
-Received: from mx34.mail.ru ([194.67.23.200]:23530 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756243AbXEUPoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 11:44:08 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bug 8498], [Bug 8510], and Re: Can't s2ram 22-rc2
-Date: Mon, 21 May 2007 19:43:55 +0400
-User-Agent: KMail/1.9.6
-Cc: Soeren Sonnenburg <kernel@nn7.de>, Avuton Olrich <avuton@gmail.com>,
-       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0705211040330.4496-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0705211040330.4496-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2188584.Z8pGUFHVNp";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 21 May 2007 11:46:06 -0400
+Received: from smtp.osdl.org ([207.189.120.12]:55043 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756380AbXEUPqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 11:46:05 -0400
+Date: Mon, 21 May 2007 08:45:49 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Mike Houston <mikeserv@bmts.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+Message-ID: <20070521084549.61a1aa71@freepuppy>
+In-Reply-To: <20070520170506.814a38d9.mikeserv@bmts.com>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+	<20070520170506.814a38d9.mikeserv@bmts.com>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705211943.57283.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2188584.Z8pGUFHVNp
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, 20 May 2007 17:05:06 -0400
+Mike Houston <mikeserv@bmts.com> wrote:
 
-On Monday 21 May 2007, Alan Stern wrote:
-> Andrey, Soeren, and Avuton: Please try this patch with 2.6.22-rc2 or
-> later and see if it fixes your problems.
->
+> On Fri, 18 May 2007 22:17:14 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> 
+> > Stephen Hemminger (7):
+> >       [TCP] slow start: Make comments and code logic clearer.
+> >       *** sky2: remove Gigabyte 88e8056 restriction ***
+> >       sky2: PHY register settings
+> >       sky2: keep track of receive alloc failures
+> >       sky2: MIB counter overflow handling
+> >       sky2: remove dual port workaround
+> >       sky2: memory barriers change
+> >
+> 
+> I tested this and it's still horribly broken for me with Gigabyte
+> 88E8056 onboard LAN. Same symptom as before, it works for several
+> seconds and then dies.
 
-It does; thank you!
+It's almost certainly a problem with the BIOS and hardware (not a sky2)
+driver issue. Since there are many similar boards and configurations, I made
+the decision not to enforce restrictions in the driver.
 
-> Greg, if this works then I'll send it in the proper form for a patch,
-> and you can use it to replace
->
-> 	usb-make-the-autosuspend-workqueue-thread-freezable.patch
->
-> Alan Stern
->
->
-> Index: 2.6.22-rc2/drivers/usb/core/usb.c
-> ===================================================================
-> --- 2.6.22-rc2.orig/drivers/usb/core/usb.c
-> +++ 2.6.22-rc2/drivers/usb/core/usb.c
-> @@ -205,7 +205,7 @@ struct device_type usb_device_type = {
->
->  static int ksuspend_usb_init(void)
->  {
-> -	ksuspend_usb_wq = create_singlethread_workqueue("ksuspend_usbd");
-> +	ksuspend_usb_wq = create_freezeable_workqueue("ksuspend_usbd");
->  	if (!ksuspend_usb_wq)
->  		return -ENOMEM;
->  	return 0;
-
-
-
---nextPart2188584.Z8pGUFHVNp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGUb49R6LMutpd94wRAn+gAKCHsimreEdVyPUPCfOTjOLzHjXFBACgh9Zt
-65H2C5t6OGVU1byEOntbduk=
-=DjLW
------END PGP SIGNATURE-----
-
---nextPart2188584.Z8pGUFHVNp--
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
