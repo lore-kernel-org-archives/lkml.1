@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763657AbXEUR1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbXEUR3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763657AbXEUR1f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 13:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbXEUR1Q
+	id S1760681AbXEUR3m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 13:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbXEUR3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 13:27:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57361 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756561AbXEUR1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 13:27:14 -0400
-Message-ID: <4651D628.1070206@redhat.com>
-Date: Mon, 21 May 2007 10:26:00 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 21 May 2007 13:29:34 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:53865 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755100AbXEUR3d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 13:29:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Jz5yZ9ZrrOXCbVqJeZC5C+3i1Eify22fvefU+3IjH+6CfeV9V4tQzb7s8AhYZM2ekb72r/1/Oj8JJwgjdjhXpJ14PCK0wanZTtOX4gqQGWY2kn2zgKSTZpDINxhL79Fnjx0tYehaDuv8eexcsBktSKwh1lYf0kL9y3YlcUZTNeM=
+Message-ID: <9e4733910705211029o177463aakaf476cd927359473@mail.gmail.com>
+Date: Mon, 21 May 2007 13:29:32 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+In-Reply-To: <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: second, bigger problem with private futexes
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705171423.46748.jesse.barnes@intel.com>
+	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>
+	 <200705210914.22663.jbarnes@virtuousgeek.org>
+	 <200705210934.58559.jbarnes@virtuousgeek.org>
+	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
+	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On 5/21/07, Dave Airlie <airlied@gmail.com> wrote:
+> > 3) Eliminate the need for a root priv controlling process. Get rid of
+> > the potential for a security hole.
+>
+> Stupid idea, we need something to control policy, this isn't going in
+> the kernel, it can be a lot smaller than X and auditable.. sticking
+> the DRI protocol in the kernel is just pointless..
 
-This one is a big problem:
+Try to be more flexible with your thinking. It is ok to have a
+transient, privileged command line app that does something like assign
+an output to be under the control of a specific CRTC. I have no
+problem with some of the IOCTLs requiring root priv.
 
-If I understand the code correctly, a FUTEX_CMP_REQUEUE from a private
-futex will add the waiters to the other futex as a private futex.  And
-similarly for shared.
+What is not ok is to require a permanently running root priv process.
+If the code is going to always be running make it as small as possible
+and put it in the device driver.
 
-I.e., it is not possible to have one futex private and the other shared.
- This is a huge problem.  The shared/private status of a conditional
-variable and the mutex used with it don't have to match.  But this is
-where FUTEX_CMP_REQUEUE is used.
-
-If this is not changed (assuming I'm right with my analysis of the
-kernel code) this means mutexes and condvars will not be able to use
-private futexes.
-
-What would be needed is an additional parameter for FUTEX_CMP_REQUEUE
-and FUTEX_CMP_REQUEUE_PI which specifies the state (shared/private) of
-the target futex.  The original futex' state is encoded in the command
-(the FUTEX_PRIVATE_FLAG ORed to FUTEX_CMP_REQUEUE*).
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGUdYo2ijCOnn/RHQRArmXAKCdW9a/nuJun/0KjftIcMrsURNnrwCgzCf8
-XGi6EzPV88DEIwHfnMfKdNg=
-=0hVr
------END PGP SIGNATURE-----
+-- 
+Jon Smirl
+jonsmirl@gmail.com
