@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935378AbXEUTve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935661AbXEUTvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935378AbXEUTve (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934096AbXEUT3W
+	id S935661AbXEUTvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933932AbXEUT3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:29:22 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52645 "EHLO
+	Mon, 21 May 2007 15:29:25 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52649 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934088AbXEUT3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:29:21 -0400
-Message-Id: <20070521191643.450300000@sous-sol.org>
+	id S933740AbXEUT3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:29:23 -0400
+Message-Id: <20070521191747.857874000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:15 -0700
+Date: Mon, 21 May 2007 12:17:03 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,39 +22,39 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Garzik <jgarzik@pobox.com>,
-       vwool@ru.mvista.com, dustin@sensoria.com,
-       Vitaly Wool <vitalywool@gmail.com>
-Subject: [patch 03/69] smc911x: fix compilation breakage wjen debug is on
-Content-Disposition: inline; filename=smc911x-fix-compilation-breakage-wjen-debug-is-on.patch
+       alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
+       bunk@stusta.de, Jamal Hadi Salim <hadi@cyberus.ca>
+Subject: [patch 51/69] NET_SCHED: prio qdisc boundary condition
+Content-Disposition: inline; filename=net_sched-prio-qdisc-boundary-condition.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Vitaly Wool <vwool@ru.mvista.com>
+From: Jamal Hadi Salim <hadi@cyberus.ca>
 
-the patch below fixes compilation breakage of smc911x driver when ENABLE_SMC_DEBUG_PKTS equals to 1.
+This fixes an out-of-boundary condition when the classified
+band equals q->bands. Caught by Alexey
 
-Signed-off-by: Vitaly Wool <vitalywool@gmail.com>
+Signed-off-by: Jamal Hadi Salim <hadi@cyberus.ca>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
 
- drivers/net/smc911x.c |    2 +-
+---
+ net/sched/sch_prio.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-
---- linux-2.6.21.1.orig/drivers/net/smc911x.c
-+++ linux-2.6.21.1/drivers/net/smc911x.c
-@@ -499,7 +499,7 @@ static inline void	 smc911x_rcv(struct n
- 		SMC_SET_RX_CFG(RX_CFG_RX_END_ALGN4_ | ((2<<8) & RX_CFG_RXDOFF_));
- 		SMC_PULL_DATA(data, pkt_len+2+3);
+--- linux-2.6.21.1.orig/net/sched/sch_prio.c
++++ linux-2.6.21.1/net/sched/sch_prio.c
+@@ -74,7 +74,7 @@ prio_classify(struct sk_buff *skb, struc
+ 		band = res.classid;
+ 	}
+ 	band = TC_H_MIN(band) - 1;
+-	if (band > q->bands)
++	if (band >= q->bands)
+ 		return q->queues[q->prio2band[0]];
  
--		DBG(SMC_DEBUG_PKTS, "%s: Received packet\n", dev->name,);
-+		DBG(SMC_DEBUG_PKTS, "%s: Received packet\n", dev->name);
- 		PRINT_PKT(data, ((pkt_len - 4) <= 64) ? pkt_len - 4 : 64);
- 		dev->last_rx = jiffies;
- 		skb->dev = dev;
+ 	return q->queues[band];
 
 -- 
