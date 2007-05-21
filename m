@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbXEUE3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXEUE3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbXEUE3a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 00:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbXEUE3W
+	id S1757847AbXEUE3p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 00:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbXEUE3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 00:29:22 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:5441 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752864AbXEUE3V (ORCPT
+	Mon, 21 May 2007 00:29:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36665 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756652AbXEUE33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 00:29:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eA0np/SmcdEJqKGpX7M7/rVYyY0rZ7JU3QtXeuLT29LwR8rsWDtV2FxnUkraWb0JdXIUEthLaNEcpkjXmZTbDiZSWZnTRn5skmAA0TO6GL1ZSOpQD6cihONMjXm1R8jbGtk94uhEPwvkjJM1qZTHcXO1U1myib9YqNHcx6rbii8=
-Message-ID: <86802c440705202129o6fe9fb89l47aef78e973c36c5@mail.gmail.com>
-Date: Sun, 20 May 2007 21:29:20 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH]serial: make early_uart to use early_prarm instead of console_initcall
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Gerd Hoffmann" <kraxel@redhat.com>, "Andi Kleen" <ak@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070520202332.145d93a6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 21 May 2007 00:29:29 -0400
+Date: Sun, 20 May 2007 21:26:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Davi Arnaut <davi@haxent.com.br>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] signalfd: retrieve multiple signals with one read()
+ call
+Message-Id: <20070520212627.398ffd23.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705202112230.22011@alien.or.mcafeemobile.com>
+References: <464F912F.3040205@haxent.com.br>
+	<20070520210210.9a895eec.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705202112230.22011@alien.or.mcafeemobile.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705181900.17101.yinghai.lu@sun.com>
-	 <20070520202332.145d93a6.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/20/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> I'll queue this up for some testing, but I'd be a bit reluctant to send it
-> into Linus due to my poor understanding of what it actually does.  What
-> _is_ an early console, and how does it differ from a non-early one?
->
-> Someone help, please.
->
-> Coudl you please provide a patch against
-> Documentation/kernel-parameters.txt as well?
->
-the story:
-Bjorn refer to andi's early_printk to create one early_uart. it took
-console=uart,io,0x3f8,9600n8
-or console=uart,mem,0xfxxx,115200n8.
-and it is called via console_init. --- it is not really early uart for
-platform other than ia64.
-ia64 call early_serial_console_init explicitly, so it is some early.
-but it needs to late_initcall to do console switch.
+On Sun, 20 May 2007 21:14:38 -0700 (PDT) Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Gerd's patch  (console handover) was merged into mainline. it will
-switch from early_printk to normal console in register_console via
-CON_BOOT flags.. ===> only for x86
+> On Sun, 20 May 2007, Andrew Morton wrote:
+> 
+> > If 'count' is not a multiple of sizeof(struct signalfd_siginfo)), the read()
+> > will return the next smallest multiple of `count'.
+> > 
+> > That is, unless `count' happens to be less than 1*sizeof(struct
+> > signalfd_siginfo)), in which case we return -EINVAL.
+> > 
+> > This seems inconsistent.
+> 
+> I think it fits the rule "buffer must be big enough for at least one sigingo".
+> We use the special return 0; as indicator that the process we were 
+> monitoring signals, detached the sighand.
+> 
 
-I produced one patch to change early_uart calling from console_init to
-early_param. So to make early_uart to real early_uart for all other
-platform in addition to ia64.
-it will take
-earlycon=uart,io,0x3f8,9600n8 console=ttyS0,9600n8
+hm.  Kernel violates proper read() semantics in many places.  Looks like we
+just did it again.
 
-but Bjorn said that don't let the customer to key two times about
-console command line.
-Then come this patch. will take
-earlycon=uart,io,0x3f8,9600n8
-and it will switch to console ttyS0 automatically. ---- by calling
-add_preferred_console.
+> 
+> > Also, I'm desperately hunting for the place where we zero out that local
+> > siginfo_t, and I ain't finding it.  Someone please convince me that we're
+> > not leaking bits of kernel memory out to userspace in that thing.
+> 
+> Hmm, __clear_user()?
 
-Still need Bjorn to:
-1. remove early_serial_console_init call in ia64 setup_arch.
-2. verify mem io 8250 compatiable card.
+oic, yes, that thing.  Usually we'd zero out the on-stack struct, assemble
+it then copy out the whole thing.  I guess doing it the way you have saves
+a few instructions.  But it's the cache hit against *uinfo which will have
+most of the cost, and we can't do anything about that.
 
-for 2, in x86 platform we need to use fix_to_virt and fix map to give
-it one fixed virtual address. == like Eric did for usb debug port
-console.
+Unless we just remove the __clear_user() altogether.  Who said that "Unused
+memebers should be zero"?
 
-I will send out another in email about updated early dbgp console with
-current tree.
-
-YH
