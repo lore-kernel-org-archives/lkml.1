@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934665AbXEUTiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbXEUTik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934665AbXEUTiL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765435AbXEUTWh
+	id S1754963AbXEUTik (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765375AbXEUTWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:22:37 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46540 "EHLO
+	Mon, 21 May 2007 15:22:39 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46542 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765562AbXEUTWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:22:35 -0400
-Message-Id: <20070521191756.918560000@sous-sol.org>
+	id S1765564AbXEUTWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:22:37 -0400
+Message-Id: <20070521191731.636832000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:19 -0700
+Date: Mon, 21 May 2007 12:16:49 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 67/69] CPUFREQ: Correct revision mask for powernow-k8
-Content-Disposition: inline; filename=correct-revision-mask-for-powernow-k8.patch
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, dwg@au1.ibm.com,
+       kenchen@google.com, mbligh@google.com, agl@us.ibm.com,
+       david@gibson.dropbear.id.au
+Subject: [patch 37/69] fix leaky resv_huge_pages when cpuset is in use
+Content-Disposition: inline; filename=fix-leaky-resv_huge_pages-when-cpuset-is-in-use.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Dave Jones <davej@redhat.com>
+From:  <kenchen@google.com>
 
-Mark Langsdorf points out that the correct define for this
-revision bump is 0x80000.  Also to save us having to keep
-renaming the #define, give it a more meaningful name.
+The internal hugetlb resv_huge_pages variable can permanently leak nonzero
+value in the error path of hugetlb page fault handler when hugetlb page is
+used in combination of cpuset.  The leaked count can permanently trap N
+number of hugetlb pages in unusable "reserved" state.
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+Steps to reproduce the bug:
+
+  (1) create two cpuset, user1 and user2
+  (2) reserve 50 htlb pages in cpuset user1
+  (3) attempt to shmget/shmat 50 htlb page inside cpuset user2
+  (4) kernel oom the user process in step 3
+  (5) ipcrm the shm segment
+
+At this point resv_huge_pages will have a count of 49, even though
+there are no active hugetlbfs file nor hugetlb shared memory segment
+in the system.  The leak is permanent and there is no recovery method
+other than system reboot. The leaked count will hold up all future use
+of that many htlb pages in all cpusets.
+
+The culprit is that the error path of alloc_huge_page() did not
+properly undo the change it made to resv_huge_page, causing
+inconsistent state.
+
+Signed-off-by: Ken Chen <kenchen@google.com>
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Cc: Adam Litke <agl@us.ibm.com>
+Cc: Martin Bligh <mbligh@google.com>
+Acked-by: David Gibson <dwg@au1.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/i386/kernel/cpu/cpufreq/powernow-k8.c |    2 +-
- arch/i386/kernel/cpu/cpufreq/powernow-k8.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c b/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-index 5c715f1..4ade55c 100644
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-@@ -521,7 +521,7 @@ static int check_supported_cpu(unsigned int cpu)
+ mm/hugetlb.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- linux-2.6.21.1.orig/mm/hugetlb.c
++++ linux-2.6.21.1/mm/hugetlb.c
+@@ -140,6 +140,8 @@ static struct page *alloc_huge_page(stru
+ 	return page;
  
- 	if ((eax & CPUID_XFAM) == CPUID_XFAM_K8) {
- 		if (((eax & CPUID_USE_XFAM_XMOD) != CPUID_USE_XFAM_XMOD) ||
--		    ((eax & CPUID_XMOD) > CPUID_XMOD_REV_H)) {
-+		    ((eax & CPUID_XMOD) > CPUID_XMOD_REV_MASK)) {
- 			printk(KERN_INFO PFX "Processor cpuid %x not supported\n", eax);
- 			goto out;
- 		}
-diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-index ae2d9da..b06c812 100644
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-@@ -46,7 +46,7 @@ struct powernow_k8_data {
- #define CPUID_XFAM			0x0ff00000	/* extended family */
- #define CPUID_XFAM_K8			0
- #define CPUID_XMOD			0x000f0000	/* extended model */
--#define CPUID_XMOD_REV_H		0x00070000
-+#define CPUID_XMOD_REV_MASK		0x00080000
- #define CPUID_XFAM_10H			0x00100000	/* family 0x10 */
- #define CPUID_USE_XFAM_XMOD		0x00000f00
- #define CPUID_GET_MAX_CAPABILITIES	0x80000000
+ fail:
++	if (vma->vm_flags & VM_MAYSHARE)
++		resv_huge_pages++;
+ 	spin_unlock(&hugetlb_lock);
+ 	return NULL;
+ }
 
 -- 
