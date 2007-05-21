@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbXEUE3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXEUEf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbXEUE3p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 00:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbXEUE3b
+	id S1757119AbXEUEf0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 00:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbXEUEfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 00:29:31 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36665 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756652AbXEUE33 (ORCPT
+	Mon, 21 May 2007 00:35:15 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:56142 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbXEUEfO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 00:29:29 -0400
-Date: Sun, 20 May 2007 21:26:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Davi Arnaut <davi@haxent.com.br>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] signalfd: retrieve multiple signals with one read()
- call
-Message-Id: <20070520212627.398ffd23.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705202112230.22011@alien.or.mcafeemobile.com>
-References: <464F912F.3040205@haxent.com.br>
-	<20070520210210.9a895eec.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705202112230.22011@alien.or.mcafeemobile.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Mon, 21 May 2007 00:35:14 -0400
+Date: Mon, 21 May 2007 10:05:40 +0530
+From: Maneesh Soni <maneesh@in.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Clemens Schwaighofer <cs@tequila.co.jp>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: [PATCH 1/2] sysfs: fix condition check in sysfs_drop_dentry()
+Message-ID: <20070521043540.GA9214@in.ibm.com>
+Reply-To: maneesh@in.ibm.com
+References: <20070515185350.2e77bf21.akpm@linux-foundation.org> <464AE56F.3040101@gmail.com> <20070516082935.fe112ab5.akpm@linux-foundation.org> <464B2605.9040200@gmail.com> <20070516091346.3c76cb46.akpm@linux-foundation.org> <464B4DE4.9060100@gmail.com> <20070517120423.GE17712@kroah.com> <20070517173912.GA14370@in.ibm.com> <464C95AB.3020209@gmail.com> <464C9675.3030101@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464C9675.3030101@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007 21:14:38 -0700 (PDT) Davide Libenzi <davidel@xmailserver.org> wrote:
-
-> On Sun, 20 May 2007, Andrew Morton wrote:
+On Thu, May 17, 2007 at 07:52:53PM +0200, Tejun Heo wrote:
+> The condition check doesn't make much sense as it basically always
+> succeeds.  This causes NULL dereferencing on certain cases.  It seems
+> that parentheses are put in the wrong place.  Fix it.
 > 
-> > If 'count' is not a multiple of sizeof(struct signalfd_siginfo)), the read()
-> > will return the next smallest multiple of `count'.
-> > 
-> > That is, unless `count' happens to be less than 1*sizeof(struct
-> > signalfd_siginfo)), in which case we return -EINVAL.
-> > 
-> > This seems inconsistent.
+> DON'T APPLY JUST YET
+> ---
 > 
-> I think it fits the rule "buffer must be big enough for at least one sigingo".
-> We use the special return 0; as indicator that the process we were 
-> monitoring signals, detached the sighand.
+> Maneesh, is this correct?
 > 
+Yes.
 
-hm.  Kernel violates proper read() semantics in many places.  Looks like we
-just did it again.
-
+>  fs/sysfs/inode.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> > Also, I'm desperately hunting for the place where we zero out that local
-> > siginfo_t, and I ain't finding it.  Someone please convince me that we're
-> > not leaking bits of kernel memory out to userspace in that thing.
-> 
-> Hmm, __clear_user()?
+> Index: work/fs/sysfs/inode.c
+> ===================================================================
+> --- work.orig/fs/sysfs/inode.c
+> +++ work/fs/sysfs/inode.c
+> @@ -250,7 +250,7 @@ void sysfs_drop_dentry(struct sysfs_dire
+>  	if (dentry) {
+>  		spin_lock(&dcache_lock);
+>  		spin_lock(&dentry->d_lock);
+> -		if (!(d_unhashed(dentry) && dentry->d_inode)) {
+> +		if (!d_unhashed(dentry) && dentry->d_inode) {
+>  			inode = dentry->d_inode;
+>  			spin_lock(&inode->i_lock);
+>  			__iget(inode);
 
-oic, yes, that thing.  Usually we'd zero out the on-stack struct, assemble
-it then copy out the whole thing.  I guess doing it the way you have saves
-a few instructions.  But it's the cache hit against *uinfo which will have
-most of the cost, and we can't do anything about that.
 
-Unless we just remove the __clear_user() altogether.  Who said that "Unused
-memebers should be zero"?
+Ack'ed
 
+Thanks
+Maneesh
+
+-- 
+Maneesh Soni
+Linux Technology Center,
+IBM India Systems and Technology Lab, 
+Bangalore, India
