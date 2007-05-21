@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbXEUKk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762517AbXEUKmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761491AbXEUKk5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 06:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbXEUKks
+	id S1762517AbXEUKmR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 06:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbXEUKmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 06:40:48 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:60346 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755066AbXEUKkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 06:40:47 -0400
-Date: Mon, 21 May 2007 12:41:43 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kconfig - scan all Kconfig files
-Message-ID: <20070521104143.GA32716@uranus.ravnborg.org>
-References: <20070520175203.GA24511@uranus.ravnborg.org> <Pine.LNX.4.64.0705210235030.1817@scrub.home>
+	Mon, 21 May 2007 06:42:03 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:25966 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754545AbXEUKmB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 06:42:01 -0400
+Date: Mon, 21 May 2007 12:41:58 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Denver Gingerich" <denver@ossguy.com>
+Cc: linux-kernel@vger.kernel.org, Greg K-H <greg@kroah.com>
+Subject: Re: [PATCH] fix compiler warning in dd.c
+Message-ID: <20070521124158.6503862b@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <6defe8840705201936s7c011750w5bd4613b33eb9c70@mail.gmail.com>
+References: <6defe8840705091829h44b78dc2w44f07c0993469128@mail.gmail.com>
+	<6defe8840705201936s7c011750w5bd4613b33eb9c70@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705210235030.1817@scrub.home>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 03:43:45AM +0200, Roman Zippel wrote:
-> Hi,
-> 
-> On Sun, 20 May 2007, Sam Ravnborg wrote:
-> 
-> > I did a quick hack so kconfig could scan all Kconfig files
-> > in the kernel tree.
-> > By scanning all Kconfig files we gain the following:
-> > 
-> > -> kconfig can report when a depends on refer to an undefined symbol
-> > -> kconfig can report when a select refer to an undefined symbol
-> > 
-> > Later we can push a lot of common stuff to the top-level Kconfig file.
-> > And that may in the end result in a better structure overall for
-> > Kconfig files.
-> 
-> Well, some of that stuff should already happen earlier (and included from 
-> the arch Kconfig files), but that doesn't work for everything.
-Agreed - but it seems that cleaning up Kconfig files are not sexy enough.
+On Sun, 20 May 2007 22:36:48 -0400,
+"Denver Gingerich" <denver@ossguy.com> wrote:
 
-> I don't think that simply allowing to parse a file multiple times is the 
-> right answer, as it duplicates a lot of data. A simple example would be 
-> help texts, right now they are per symbol, but they should really be per 
-> menu, so archs can provide different help texts for something.
-> "source" should become a bit more intelligent and parse a file only once 
-> and link the data into the menu structure.
-My quick hack was to parse the files only once which is obviously wrong.
+> This patch had been suggested by Indan Zupancic on May 13 but is not
+> in 2.6.22-rc2 so I'm re-sending it.  Prior to Indan's e-mail, I had
+> sent the same patch to the kernel janitors list.  I don't care whether
+> you credit the patch to me or Indan.
 
-I do not get the part about help text pr. menu??
+It seems you're about the fourth person to send that patch ;)
 
-I was more considering that we could share as much as possible between two symbols
-that are identical except for their dependencies.
-
-> > All the "choice values currently only support a single prompt" are caused
-> > by using the same config symbol in a choice list for several architectures.
-> > That will be the biggest challenge to fix before we can introduce this patch.
-> > Maybe we can extend kconfig to accept it???
-> 
-> Define "accept".
-> The basic rule for choice values must not be violated - none of them may 
-> depend on another value in the same group. The dependency tree allows for 
-> no loops, these choice groups allow for the only exception, but it has to 
-> stay within that group.
-> One option I'm thinking about is to extend that group by naming the choice 
-> option, so kconfig knows they are related. This won't work for everything, 
-> so quite some renaming may be needed.
-I do not follow you completely here.
-
-Anyway - the main purpose was to say that there are other ways to deal with
-select than just ignoring an otherwise good warning.
-
-	Sam
+(Greg has driver-core-kill-unused-code.patch sitting in his tree, so I
+guess he'll send this with his next round of patches.)
