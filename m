@@ -1,102 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbXEUQaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbXEUQf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763014AbXEUQaX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbXEUQaK
+	id S1758759AbXEUQf0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbXEUQfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:30:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34204 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755978AbXEUQaI (ORCPT
+	Mon, 21 May 2007 12:35:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:62728 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755369AbXEUQfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:30:08 -0400
-Date: Mon, 21 May 2007 09:30:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
-cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-In-Reply-To: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com>
-References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
+	Mon, 21 May 2007 12:35:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hYd5jMZcIeOdASEjdjWSRYmJS/dozwBJvC+PUHGKA+TeTQ+4nhJWz6RwKnaw0GPoB1pSOsBq4EFWEFL9I+zj5g7MgsPpRSTr2NdzfFQFK2KEpH8kPUrbR8pHf6iQ7geHCSnlsIuvbw2buMKxmW0lKKL0zDljdXxwmBuMsTVZoRA=
+Message-ID: <2c0942db0705210935r72cf076ap946c4f215a61ee5f@mail.gmail.com>
+Date: Mon, 21 May 2007 09:35:12 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Ken Chen" <kenchen@google.com>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Kay Sievers" <kay.sievers@vrfy.org>, "Al Viro" <viro@ftp.linux.org.uk>,
+       "Andrey Borzenkov" <arvidjaar@mail.ru>, "Uwe Bugla" <uwe.bugla@gmx.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <b040c32a0705210927q24e2cd8fm9f4616941fccfdea@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <464F42F3.1080300@madrabbit.org>
+	 <200705200845.43621.arvidjaar@mail.ru>
+	 <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
+	 <20070520062816.GA4095@ftp.linux.org.uk>
+	 <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
+	 <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
+	 <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com>
+	 <1179677799.3311.5.camel@lov.localdomain>
+	 <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
+	 <b040c32a0705210927q24e2cd8fm9f4616941fccfdea@mail.gmail.com>
+X-Google-Sender-Auth: 6ea74278089be224
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 20 May 2007, Srihari Vijayaraghavan wrote:
+On 5/21/07, Ken Chen <kenchen@google.com> wrote:
+> On 5/21/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > I don't have much choice. I assume it is
+> >
+> >    commit 73285082 "remove artificial software max_loop limit"
+> >
+> > that introduced the new behaviour. Ken?
+>
+> yes and no. in that commit, I automatically create n+1 device when
+> loop device n is created, allergically was tested to be fine with
+> casual usage of "losetup" and "mount -o loop".  However, there is a
+> bug in that commit when loop.c was compiled as a module.  And when Al
+> fixed it, he also removed that magic "n+1" trick.
 
-> With no CONFIG_SLUB_DEBUG, things have slightly improved. No more panic. Good.
-> Serial console is working. Good. But there is another problem:
+As I said before, the reporter *tested* with Al's two patches
+reverted, AND IT STILL FAILED. Your commit had to be reverted as well
+to fix the problem.
 
-Well this indicates that something destroys the sysfs pointer structure 
-that SLUB is using. Could you reenable CONFIG_SLUB_DEBUG and boot with the 
-option "slub_debug" on the kernel command line?
+> Nevertheless, yes, I'm guilty of introducing the new behavior.
 
-Also enable the list debug options in kernel hacking.
-
-This should show up on the console since the failure is in slub_sysfs_init 
-which is long after the console has been enabled. I wonder why it did not 
-show so far?
-
-> Freeing unused kernel memory: 308k freed
-> BUG: spinlock bad magic on CPU#1, init/1
->  lock: ffff81011ec0a100, .magic: ffff8101, .owner: <none>/-1, .owner_cpu: -1
-> 
-> Call Trace:
->  [<ffffffff802fc516>] _raw_spin_lock+0x22/0xf6
->  [<ffffffff8026f684>] vma_adjust+0x219/0x454
->  [<ffffffff8026f684>] vma_adjust+0x219/0x454
->  [<ffffffff8026fe0d>] vma_merge+0x147/0x1f4
->  [<ffffffff80270b55>] do_mmap_pgoff+0x414/0x7c7
->  [<ffffffff8040aa34>] _spin_unlock_irq+0x24/0x27
->  [<ffffffff8020f528>] sys_mmap+0xe5/0x110
->  [<ffffffff80209dde>] system_call+0x7e/0x83
-
-Hmmmm..... We have seen this before
-
-http://marc.info/?l=linux-kernel&m=117891943401284&w=2
-
-I suspect this is due to an interaction with other debug flags you have 
-set. What I see in your .config is
-
-CONFIG_DEBUG_RT_MUTEXES=y
-
-Try to switch this off if switching off the lockdep flags does not hel.
-
-CONFIG_DEBUG_PI_LIST=y
-
-Will go off with the above
-
-# CONFIG_RT_MUTEX_TESTER is not set
-
-Leave off
-
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-
-Try toggling if the disabling lockdep flags does not work.
-
-
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-
-I suspect the above are the main candidates for trouble. Could you
-switch those off?
-
-
-# CONFIG_DEBUG_LOCKDEP is not set
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-CONFIG_STACKTRACE=y
-
-# CONFIG_DEBUG_KOBJECT is not set
-
-Debug kobject may be helpful.
-
-CONFIG_DEBUG_BUGVERBOSE=y
-
-
-
+It's not a behavior, it's a bug. Whether you reintroduce the n+1
+inductive trick is immaterial to the problem at hand. loop.c needs to
+populate 8 or max_loop devices upon init to maintain current behavior.
