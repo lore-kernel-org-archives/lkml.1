@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762845AbXEUSZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763344AbXEUS1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762845AbXEUSZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 14:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbXEUSZm
+	id S1763344AbXEUS1j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 14:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbXEUS1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 14:25:42 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41020 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756400AbXEUSZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 14:25:41 -0400
-Date: Mon, 21 May 2007 11:25:39 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
-       Oliver Xymoron <oxymoron@waste.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-In-Reply-To: <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com>
-References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
- <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com>
+	Mon, 21 May 2007 14:27:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50932 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756400AbXEUS1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 14:27:31 -0400
+Message-ID: <4651E44A.9070301@redhat.com>
+Date: Mon, 21 May 2007 11:26:18 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: second, bigger problem with private futexes
+References: <4651D628.1070206@redhat.com> <4651E1D4.6010705@cosmosbay.com>
+In-Reply-To: <4651E1D4.6010705@cosmosbay.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Hugh Dickins wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Yes, sounded the same to me too: I couldn't reproduce it or see anything
-> wrong in the code back then.  But Srihari's info about CONFIG_DEBUG_SLUB
-> off has helped a lot: I was then able to reproduce it on my x86_64, and
-> after a lot of staring at the code, the problem became obvious...
+Eric Dumazet wrote:
+> Do you mean POSIX allowed to mix PROCESS_PRIVATE and PROCESS_SHARED
+> condvar and mutexes ? Seems silly to me :(
 
-Right. The #ifdef CONFIG_SLUB_DEBUG is at the wrong location. The best fix
-is to moving the #ifdef otherwise the size is still wrong for the 
-ctor case.
+Don't judge what you don't understand.  If all waiters are always in one
+process but the notifiers can be in different processes, this setup
+might make a lot of sense.
 
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-SLUB Debug: Fix object size calculation
-
-The object size calculation is wrong if !CONFIG_SLUB_DEBUG because
-the #ifdef CONFIG_SLUB_DEBUG is now switching off the size adjustments
-for DESTROY_BY_RCU and ctor.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/slub.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-05-21 11:21:36.000000000 -0700
-+++ slub/mm/slub.c	2007-05-21 11:21:49.000000000 -0700
-@@ -1943,7 +1943,6 @@ static int calculate_sizes(struct kmem_c
- 	 */
- 	s->inuse = size;
- 
--#ifdef CONFIG_SLUB_DEBUG
- 	if (((flags & (SLAB_DESTROY_BY_RCU | SLAB_POISON)) ||
- 		s->ctor)) {
- 		/*
-@@ -1958,6 +1957,7 @@ static int calculate_sizes(struct kmem_c
- 		size += sizeof(void *);
- 	}
- 
-+#ifdef CONFIG_SLUB_DEBUG
- 	if (flags & SLAB_STORE_USER)
- 		/*
- 		 * Need to store information about allocs and frees after
+iD8DBQFGUeRK2ijCOnn/RHQRAqRuAKCpc7cmhsnwfclz1DU81RNXRjm68ACgosZc
+RqWca4r+Ya54dp5zNztkYuk=
+=sW/1
+-----END PGP SIGNATURE-----
