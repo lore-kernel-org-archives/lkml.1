@@ -1,80 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764051AbXEUKOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762187AbXEUKP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764051AbXEUKOy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 06:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761946AbXEUKJg
+	id S1762187AbXEUKP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 06:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761952AbXEUKJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 21 May 2007 06:09:36 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:27800 "EHLO
+Received: from nwd2mail10.analog.com ([137.71.25.55]:4457 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761176AbXEUKJS (ORCPT
+	with ESMTP id S1761266AbXEUKJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 06:09:18 -0400
 X-IronPort-AV: i="4.14,560,1170651600"; 
-   d="scan'208"; a="39510264:sNHT34173209"
+   d="scan'208"; a="39510267:sNHT35131166"
 From: Bryan Wu <bryan.wu@analog.com>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Cc: Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 02/32] Blackfin arch: add SPI MMC driver support on bf533-stamp, tested on STAMP-BF533
-Date: Mon, 21 May 2007 18:09:10 +0800
-Message-Id: <1179742181341-git-send-email-bryan.wu@analog.com>
+Cc: Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <bryan.wu@analog.com>
+Subject: [PATCH 01/32] Blackfin arch: Add Workaround for ANOMALY 05000257
+Date: Mon, 21 May 2007 18:09:09 +0800
+Message-Id: <11797421812662-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.1.2
 In-Reply-To: <1179742180228-git-send-email-bryan.wu@analog.com>
 References: <1179742180228-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Michael Hennerich <michael.hennerich@analog.com>
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- arch/blackfin/mach-bf533/boards/stamp.c |   28 ++++++++++++++++++++++++++++
- 1 files changed, 28 insertions(+), 0 deletions(-)
+ arch/blackfin/lib/ins.S           |   20 ++++++++++++++------
+ arch/blackfin/mach-common/entry.S |    6 ++++++
+ 2 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/arch/blackfin/mach-bf533/boards/stamp.c b/arch/blackfin/mach-bf533/boards/stamp.c
-index d7b3a5d..7d3dfcb 100644
---- a/arch/blackfin/mach-bf533/boards/stamp.c
-+++ b/arch/blackfin/mach-bf533/boards/stamp.c
-@@ -164,6 +164,13 @@ static struct bfin5xx_spi_chip ad5304_chip_info = {
- };
- #endif
+diff --git a/arch/blackfin/lib/ins.S b/arch/blackfin/lib/ins.S
+index 730d2b4..7d5e984 100644
+--- a/arch/blackfin/lib/ins.S
++++ b/arch/blackfin/lib/ins.S
+@@ -29,6 +29,7 @@
+  */
  
-+#if defined(CONFIG_SPI_MMC) || defined(CONFIG_SPI_MMC_MODULE)
-+static struct bfin5xx_spi_chip spi_mmc_chip_info = {
-+	.enable_dma = 1,
-+	.bits_per_word = 8,
-+};
-+#endif
-+
- static struct spi_board_info bfin_spi_board_info[] __initdata = {
- #if defined(CONFIG_MTD_M25P80) || defined(CONFIG_MTD_M25P80_MODULE)
- 	{
-@@ -199,6 +206,27 @@ static struct spi_board_info bfin_spi_board_info[] __initdata = {
- 	},
- #endif
+ #include <linux/linkage.h>
++#include <asm/blackfin.h>
  
-+#if defined(CONFIG_SPI_MMC) || defined(CONFIG_SPI_MMC_MODULE)
-+	{
-+		.modalias = "spi_mmc_dummy",
-+		.max_speed_hz = 25000000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 1,
-+		.chip_select = 0,
-+		.platform_data = NULL,
-+		.controller_data = &spi_mmc_chip_info,
-+		.mode = SPI_MODE_3,
-+	},
-+	{
-+		.modalias = "spi_mmc",
-+		.max_speed_hz = 25000000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 1,
-+		.chip_select = CONFIG_SPI_MMC_CS_CHAN,
-+		.platform_data = NULL,
-+		.controller_data = &spi_mmc_chip_info,
-+		.mode = SPI_MODE_3,
-+	},
-+#endif
+ .align 2
+ 
+@@ -39,11 +40,14 @@ ENTRY(_insl)
+ 	P2 = R2;	/* P2 = count */
+ 	SSYNC;
+ 	LSETUP( .Llong_loop_s, .Llong_loop_e) LC0 = P2;
+-.Llong_loop_s: R0 = [P0];
+-.Llong_loop_e: [P1++] = R0;
++.Llong_loop_s:  R0 = [P0];
++		[P1++] = R0;
++		NOP;
++.Llong_loop_e: 	NOP;
+ 	sti R3;
+ 	RTS;
+ 
 +
- #if defined(CONFIG_PBX)
- 	{
- 		.modalias	= "fxs-spi",
+ ENTRY(_insw)
+ 	P0 = R0;	/* P0 = port */
+ 	cli R3;
+@@ -51,8 +55,10 @@ ENTRY(_insw)
+ 	P2 = R2;	/* P2 = count */
+ 	SSYNC;
+ 	LSETUP( .Lword_loop_s, .Lword_loop_e) LC0 = P2;
+-.Lword_loop_s: R0 = W[P0];
+-.Lword_loop_e: W[P1++] = R0;
++.Lword_loop_s:  R0 = W[P0];
++		W[P1++] = R0;
++		NOP;
++.Lword_loop_e: 	NOP;
+ 	sti R3;
+ 	RTS;
+ 
+@@ -63,7 +69,9 @@ ENTRY(_insb)
+ 	P2 = R2;	/* P2 = count */
+ 	SSYNC;
+ 	LSETUP( .Lbyte_loop_s, .Lbyte_loop_e) LC0 = P2;
+-.Lbyte_loop_s: R0 = B[P0];
+-.Lbyte_loop_e: B[P1++] = R0;
++.Lbyte_loop_s:  R0 = B[P0];
++		B[P1++] = R0;
++		NOP;
++.Lbyte_loop_e:  NOP;
+ 	sti R3;
+ 	RTS;
+diff --git a/arch/blackfin/mach-common/entry.S b/arch/blackfin/mach-common/entry.S
+index 8eb0a90..e463733 100644
+--- a/arch/blackfin/mach-common/entry.S
++++ b/arch/blackfin/mach-common/entry.S
+@@ -181,6 +181,12 @@ ENTRY(_ex_single_step)
+ 
+ _return_from_exception:
+ 	DEBUG_START_HWTRACE
++#ifdef ANOMALY_05000257
++	R7=LC0;
++	LC0=R7;
++	R7=LC1;
++	LC1=R7;
++#endif
+ 	(R7:6,P5:4) = [sp++];
+ 	ASTAT = [sp++];
+ 	sp = retn;
 -- 
 1.5.1.2
