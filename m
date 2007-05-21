@@ -1,77 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760546AbXEUVC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbXEUVEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760546AbXEUVC0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 17:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXEUVCS
+	id S1761001AbXEUVEp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 17:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbXEUVEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 17:02:18 -0400
-Received: from stinky.trash.net ([213.144.137.162]:63920 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755293AbXEUVCS (ORCPT
+	Mon, 21 May 2007 17:04:38 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53366 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755705AbXEUVEh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 17:02:18 -0400
-Message-ID: <465208D2.6070409@trash.net>
-Date: Mon, 21 May 2007 23:02:10 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 21 May 2007 17:04:37 -0400
+Date: Mon, 21 May 2007 14:04:33 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: bad networking related lag in v2.6.22-rc2
-References: <20070517174533.GA538@elte.hu> <20070521080351.GA13375@elte.hu> <20070521081201.GB13858@elte.hu> <200705220110.14175.kernel@prachanda.hub> <20070521204606.GA4354@elte.hu>
-In-Reply-To: <20070521204606.GA4354@elte.hu>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Jackson <pj@sgi.com>,
+       npiggin@suse.de
+Subject: Re: [PATCH 0/5] make slab gfp fair
+In-Reply-To: <1179780873.7019.65.camel@twins>
+Message-ID: <Pine.LNX.4.64.0705211358210.28867@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl> 
+ <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com> 
+ <1179385718.27354.17.camel@twins>  <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+  <20070517175327.GX11115@waste.org>  <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
+  <1179429499.2925.26.camel@lappy>  <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
+  <1179437209.2925.29.camel@lappy>  <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
+  <1179482054.2925.52.camel@lappy>  <Pine.LNX.4.64.0705181002400.9372@schroedinger.engr.sgi.com>
+  <1179650384.7019.33.camel@twins>  <Pine.LNX.4.64.0705210932500.25871@schroedinger.engr.sgi.com>
+  <1179776038.5735.39.camel@lappy>  <Pine.LNX.4.64.0705211239300.27622@schroedinger.engr.sgi.com>
+  <1179778127.7019.48.camel@twins>  <Pine.LNX.4.64.0705211326290.28504@schroedinger.engr.sgi.com>
+ <1179780873.7019.65.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Anant Nitya <kernel@prachanda.info> wrote:
-> 
-> 
->>I am posting links to the information you asked for. One more thing, 
->>after digging a bit more I found its QoS shaping that is making the 
->>box crawl. Once I disabled the traffic shaping everything comes back 
->>to smooth and normal. Shaping being done on very low speed residential 
->>ADSL 256/64 Kbps connection. If you want me to post shaping rules, 
->>please free to ask. BTW its a simple HTB/SFQ rules.
-> 
-> [...]
-> 
->>http://cybertek.info/taitai/trace-to-ingo.txt.bz2
-> 
-> 
-> thanks! This trace indeed includes the smoking gun, htb_dequeue() and 
-> __qdisc_run():
-> 
->    privoxy-12926 1.Ns1 1597us : rb_first (htb_dequeue)
-> 
-> this goes on, non-preemptible, for 160 milliseconds (!):
-> 
->  privoxy-12926 1.Ns1 161568us : rb_first (htb_dequeue)
->  privoxy-12926 1.Ns1 161568us : qdisc_watchdog_schedule (htb_dequeue)
-> 
-> and finally manages to escape the loop:
-> 
->  privoxy-12926 1.Ns1 161597us : rb_first (htb_dequeue)
->  privoxy-12926 1.Ns1 161597us : rb_first (htb_dequeue)
->  privoxy-12926 1.Ns1 161599us : htb_safe_rb_erase (htb_dequeue)
->  privoxy-12926 1.Ns1 161599us : rb_erase (htb_safe_rb_erase)
->  privoxy-12926 1.Ns1 161600us : htb_change_class_mode (htb_dequeue)
->  privoxy-12926 1.Ns1 161601us : htb_activate_prios (htb_change_class_mode)
-> 
-> and the system recovers.
-> 
-> David, any ideas about what's wrong with htb_dequeue(), based on this 
-> trace?
+On Mon, 21 May 2007, Peter Zijlstra wrote:
 
+> > Yes sure if we do not have a context then no restrictions originating 
+> > there can be enforced. So you want to restrict the logic now to
+> > interrupt allocs? I.e. GFP_ATOMIC?
+> 
+> No, any kernel alloc.
 
-This looks like fallout from the switch to hrtimers. Anant, please
-send me your HTB script, I'll try to reproduce it.
+Then we have the problem again.
+
+> > Correct. That is an optimization but it may be called anytime from the 
+> > perspective of an execution thread and that may cause problems with your 
+> > approach.
+> 
+> I'm not seeing how this would interfere; if the alloc can be handled
+> from a partial slab, that is fine.
+
+There is no guarantee that a partial slab is available.
+ 
+> > In the case 
+> > of a memory policy we may have limited the allocations to a single node 
+> > where there is no escape (the zonelist does *not* contain zones of other 
+> > nodes). 
+> 
+> Ah, this is the point I was missing; I assumed each zonelist would
+> always include all zones, but would just continue/break the loop using
+> things like cpuset_zone_allwed_*().
+> 
+> This might indeed foil the game.
+> 
+> I could 'fix' this by doing the PF_MEMALLOC allocation from the regular
+> node zonelist instead of from the one handed down....
+
+I wonder if this makes any sense at all given that the only point of 
+what you are doing is to help to decide which alloc should fail...
+
+> /me thinks out loud.. since direct reclaim runs in whatever process
+> context was handed out we're stuck with whatever policy we started from;
+> but since the allocations are kernel allocs - not userspace allocs, and
+> we're in dire straights, it makes sense to violate the tasks restraints
+> in order to keep the machine up.
+
+The memory policy constraints may have been setup to cage in an 
+application. It was setup to *stop* the application from using memory on 
+other nodes. If you now allow that then the semantics of memory policies
+are significantly changed. The cpuset constraints are sometimes not that 
+hard but I better let Paul speak for them.
+
+> memory policies are the only ones with 'short' zonelists, right? CPU
+> sets are on top of whatever zonelist is handed out, and the normal
+> zonelists include all nodes - ordered by distance
+
+GFP_THISNODE can have a similar effect.
+
+> > The only chance to bypass this is by only dealing with allocations 
+> > during interrupt that have no allocation context.
+> 
+> But you just said that interrupts are not exempt from memory policies,
+> and policies are the only ones that have 'short' zonelists. /me
+> confused.
+
+No I said that in an interrupt allocation we have no process context and 
+therefore no cpuset or memory policy context. Thus no policies or cpusets
+are applied to an allocation. You can allocate without restrictions.
 
