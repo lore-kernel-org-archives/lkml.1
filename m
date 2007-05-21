@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765407AbXEUTVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765476AbXEUTV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765407AbXEUTVj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764814AbXEUTVF
+	id S1765476AbXEUTV5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764988AbXEUTVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:21:05 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46204 "EHLO
+	Mon, 21 May 2007 15:21:09 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46203 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764313AbXEUTVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764253AbXEUTVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 15:21:02 -0400
-Message-Id: <20070521191756.528589000@sous-sol.org>
+Message-Id: <20070521191739.274076000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:17:18 -0700
+Date: Mon, 21 May 2007 12:16:54 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       James.Bottomley@steeleye.com
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,45 +23,55 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 66/69] CPUFREQ: Support rev H AMD64s in powernow-k8
-Content-Disposition: inline; filename=support-rev-h-amd64s-in-powernow-k8.patch
+       alan@lxorguk.ukuu.org.uk, Eric.Moore@lsil.com,
+       linux-scsi@vger.kernel.org, doug.chapman@hp.com
+Subject: [patch 42/69] fix for bugzilla 8426: massive slowdown on SCSI CD/DVD drive connected to mptspi driver
+Content-Disposition: inline; filename=fix-for-bugzilla-8426-massive-slowdown-on-scsi-cd-dvd-drive-connected-to-mptspi-driver.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Dave Jones <davej@redhat.com>
+From: Doug Chapman <doug.chapman@hp.com>
 
+Patch for: http://bugzilla.kernel.org/show_bug.cgi?id=8426
+
+A recent code cleanup that moved code from mptscsih to mptspi inadvertently
+change the order some code was called.  This caused a massive slowdown (of
+150x to 300x) on the CD/DVD drive on the high-end HP Integrity servers.
+
+Signed-off-by: Doug Chapman <doug.chapman@hp.com>
+Cc: <Eric.Moore@lsil.com>
+Cc: James Bottomley <James.Bottomley@steeleye.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/i386/kernel/cpu/cpufreq/powernow-k8.c |    2 +-
- arch/i386/kernel/cpu/cpufreq/powernow-k8.h |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+[chrisw: Why is this not upstream yet?]
 
---- linux-2.6.21.1.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-+++ linux-2.6.21.1/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-@@ -521,7 +521,7 @@ static int check_supported_cpu(unsigned 
+ drivers/message/fusion/mptspi.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+--- linux-2.6.21.1.orig/drivers/message/fusion/mptspi.c
++++ linux-2.6.21.1/drivers/message/fusion/mptspi.c
+@@ -726,13 +726,15 @@ static int mptspi_slave_configure(struct
+ 	struct _MPT_SCSI_HOST *hd =
+ 		(struct _MPT_SCSI_HOST *)sdev->host->hostdata;
+ 	VirtTarget *vtarget = scsi_target(sdev)->hostdata;
+-	int ret = mptscsih_slave_configure(sdev);
++	int ret;
++
++	mptspi_initTarget(hd, vtarget, sdev);
++
++	ret = mptscsih_slave_configure(sdev);
  
- 	if ((eax & CPUID_XFAM) == CPUID_XFAM_K8) {
- 		if (((eax & CPUID_USE_XFAM_XMOD) != CPUID_USE_XFAM_XMOD) ||
--		    ((eax & CPUID_XMOD) > CPUID_XMOD_REV_G)) {
-+		    ((eax & CPUID_XMOD) > CPUID_XMOD_REV_H)) {
- 			printk(KERN_INFO PFX "Processor cpuid %x not supported\n", eax);
- 			goto out;
- 		}
---- linux-2.6.21.1.orig/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-+++ linux-2.6.21.1/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-@@ -46,8 +46,8 @@ struct powernow_k8_data {
- #define CPUID_XFAM			0x0ff00000	/* extended family */
- #define CPUID_XFAM_K8			0
- #define CPUID_XMOD			0x000f0000	/* extended model */
--#define CPUID_XMOD_REV_G		0x00060000
--#define CPUID_XFAM_10H 			0x00100000	/* family 0x10 */
-+#define CPUID_XMOD_REV_H		0x00070000
-+#define CPUID_XFAM_10H			0x00100000	/* family 0x10 */
- #define CPUID_USE_XFAM_XMOD		0x00000f00
- #define CPUID_GET_MAX_CAPABILITIES	0x80000000
- #define CPUID_FREQ_VOLT_CAPABILITIES	0x80000007
+ 	if (ret)
+ 		return ret;
+ 
+-	mptspi_initTarget(hd, vtarget, sdev);
+-
+ 	ddvprintk((MYIOC_s_INFO_FMT "id=%d min_period=0x%02x"
+ 		" max_offset=0x%02x max_width=%d\n", hd->ioc->name,
+ 		sdev->id, spi_min_period(scsi_target(sdev)),
 
 -- 
