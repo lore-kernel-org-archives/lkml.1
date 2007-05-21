@@ -1,47 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762191AbXEUPdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763945AbXEUPeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762191AbXEUPdR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 11:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXEUPdG
+	id S1763945AbXEUPeR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 11:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbXEUPeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 11:33:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49174 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756599AbXEUPdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 11:33:04 -0400
-Date: Mon, 21 May 2007 11:20:50 -0400
-From: Dave Jones <davej@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, rdunlap@xenotime.net
-Subject: Re: RFC: Schedule EFS for removal.
-Message-ID: <20070521152050.GC6957@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, rdunlap@xenotime.net
-References: <20070521144618.GA6914@redhat.com> <20070521150242.GA25146@infradead.org> <20070521150937.GB6957@redhat.com> <20070521151209.GA25744@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 21 May 2007 11:34:06 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:62455 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757186AbXEUPeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 11:34:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=W1VQQgWefTYzz/UOPovMCOPu8T0Fgfh2LYSYSBI3sKJKMFyCd7lPxlNp0k81TxWKChlRxcKmxiAPYVLKUQcalAeT9ObihUO8Rt+H/r3usN6fnR3e1G8BdYYzZZb3naINzxv9CzgxrIxNgHhEWPsje1OXpZRDxYiqRmJzgz+ubgc=
+Message-ID: <9e4733910705210834s4b41cf31ka3f56d3bc36b5585@mail.gmail.com>
+Date: Mon, 21 May 2007 11:34:03 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+In-Reply-To: <4650F5F2.4000305@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070521151209.GA25744@infradead.org>
-User-Agent: Mutt/1.4.2.2i
+References: <200705171423.46748.jesse.barnes@intel.com>
+	 <pan.2007.05.20.17.41.22@gmail.com>
+	 <200705201610.32170.jbarnes@virtuousgeek.org>
+	 <9e4733910705201747n1847f7b1wd57a8e8640a857a8@mail.gmail.com>
+	 <4650F5F2.4000305@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 04:12:09PM +0100, Christoph Hellwig wrote:
- > > Ok, patch rescinded.  Any opinion on what to do about that bug?
- > > 
- > > "use loopback" would be one option I guess.
- > > Given its been an open bug for four years, there's obviously
- > > not that much interest in fixing the filesystem.
- > 
- > I don't think it's a bug, it's a lacking feature.  The error message
- > is quite accurate aswell.
+On 5/20/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Jon Smirl wrote:
+> > This design still requires a global server app since the heads share a
+> > single device.
+> > I am always concerned that the root priv code in the X server is a
+> > potential security hole. I would like to move away from a model where
+> > there is a global controlling app. I don't think we need a global
+> > controlling app at all.
+>
+>
+> If you have multiple "controlling" apps competing for a single device,
+> that either implies complexity in each app for sharing control, or
+> moving even more code into the kernel for 2D and 3D.
+>
+> I don't think the kernel community is yet interested in moving
+> everything of consequence into the kernel.
 
-It seems to be a regression in 2.6.x though.  From the report..
+Before dismissing this you might want to spend some time designing it.
 
-"Under 2.4.21, it doesnt do this."
+When I said head I should have been more specific and said CRTC. CRTCs
+are pretty much independent from each other and can be assigned one
+per device. I believe this has already been done in the Matrox fbdev
+driver. I have also prototyped this on the Radeon hardware and it
+works. It is how fbdev was designed to work. As for 3D support, making
+3D work on a per user basis is not very different from the way direct
+rendering works today.
 
-	Dave
+Supporting multiple users, one on each CRTC, has long been a feature
+request from people building low end educational systems, kiosks,
+Internet cafes, etc. If the entire graphics subsystem is going to get
+rewritten this feature should be added.
+
+After designing this I think you will find that the extra code that
+needs to go into the kernel is minimal. You have to split the video
+memory into multiple pools and keep people from accessing queues that
+they don't own. Code like this is supposed to be in the kernel.
+
+Having a multi-megabyte root priv graphics process always running is a
+scary security exposure. This privileged process is not necessary and
+through proper design it can be eliminated. After designing this I
+think you'll find that less than 1%  of the code ends up in the driver
+and the rest can run unprivileged in user space. Put the root priv
+code into the device driver where it will get the scrutiny it needs.
+
+>
+>         Jeff
+>
+>
+>
+
 
 -- 
-http://www.codemonkey.org.uk
+Jon Smirl
+jonsmirl@gmail.com
