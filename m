@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbXEUHub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbXEUH6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbXEUHub (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 03:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbXEUHuX
+	id S1757417AbXEUH6e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 03:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbXEUH60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 03:50:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53577 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754375AbXEUHuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 03:50:23 -0400
-Date: Mon, 21 May 2007 09:50:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bill Huey <billh@gnuppy.monkey.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] lockdep: lock contention tracking
-Message-ID: <20070521075013.GA9419@elte.hu>
-References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org> <20070521060828.GB20277@elte.hu> <20070521064150.GC4442@gnuppy.monkey.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521064150.GC4442@gnuppy.monkey.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 21 May 2007 03:58:26 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:51885 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016AbXEUH6Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 03:58:25 -0400
+Date: Mon, 21 May 2007 01:56:50 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
+In-reply-to: <200705210741.l4L7fDJi006732@turbo.physics.adelaide.edu.au>
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <465150C2.4080006@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <200705210741.l4L7fDJi006732@turbo.physics.adelaide.edu.au>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jonathan Woithe wrote:
+> I've just tried a quick test after enabling most of the PATA drivers under
+> the libata section including the Jmicron driver (basically everything except
+> those labelled "highly experimental").  As far as I can tell the
+> CDROM/DVDROM is still not detected even with all these built into the
+> kernel.  Maybe I do need one of those "highly experimental" drivers.
 
-* Bill Huey <billh@gnuppy.monkey.org> wrote:
+Can you post the entire lspci -v for this board?
 
-> On Mon, May 21, 2007 at 08:08:28AM +0200, Ingo Molnar wrote:
-> > To me it appears Peter's stuff is already a pretty complete solution on 
-> > its own, and it's a whole lot simpler (and less duplicative) than your 
-> > lockstat patch. Could you list the specific items/features that you 
-> > think Peter's stuff doesnt have?
 > 
-> First of all, this isn't an either/or kind of thing nor should it be 
-> thought of in that way.
+>> Also, it's unrelated to this problem, but you should check the BIOS 
+>> settings for the SATA controller - you really want to get the controller 
+>> into AHCI mode for best performance.
+> 
+> I've often wondered how the BIOS descriptions correlate with the modes the
+> controller ends up in.  I've always gone for things like "enhanced" or
+> "SATA" or "native" (the exact string of course being dependent on the BIOS
+> writer's mood on the day).  This seems to work out OK in practice.  How
+> can you tell from the Linux boot messages that the controller is in AHCI
+> mode - is it as simple as looking for AHCI driver messages?  In this case
+> the 
+> 
+>   scsi0 : ata_piix
+>   scsi1 : ata_piix
+> 
+> indicate that things are suboptimal I assume.
 
-why? Please be specific.
+Right, you should see that showing up as ahci.
 
-> Precise file/function/line placement for one thing. [...]
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Have you looked at the output Peter's patch produces? It prints out 
-precise symbols:
 
- dcache_lock: 3000 0 [618] [<ffffffff8033badd>] _atomic_dec_and_lock+0x39/0x58
-
-which can easily be turned into line numbers using debuginfo packages or 
-using gdb. (But normally one only needs the symbol name, and we 
-certainly do not want to burden the kernel source with tracking 
-__FILE__/__LINE__ metadata, if the same is already available via 
-CONFIG_DEBUG_INFO.)
-
-anything else?
-
-> [...] My stuff is potentially more extensible since I have other ideas 
-> for it that really are outside of the lockdep logic currently. [...]
-
-what do you mean, specifically?
-
-> That's why I was hessitant to completely unify with lockdep in the 
-> manner you suggested.
-
-i really need specifics. Currently i have the choice between your stuff:
-
-   17 files changed, 1425 insertions(+), 80 deletions(-)
-
-and Peter's patch:
-
-    6 files changed,  266 insertions(+), 18 deletions(-)
-
-and Peter's patch (if it works out fine in testing - and it seemed fine 
-so far on my testbox), is smaller, more maintainable, better integrated 
-and thus the clear candidate for merging into -rt and merging upstream 
-as well. It's far cleaner than i hoped this whole lock-stats thing could 
-be done based on lockdep, so i'm pretty happy with Peter's current patch 
-already.
-
-	Ingo
