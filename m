@@ -1,107 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbXEUVEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbXEUVKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761001AbXEUVEp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 17:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbXEUVEi
+	id S1760960AbXEUVKc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 17:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXEUVKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 17:04:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53366 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755705AbXEUVEh (ORCPT
+	Mon, 21 May 2007 17:10:25 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:55992 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753689AbXEUVKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 17:04:37 -0400
-Date: Mon, 21 May 2007 14:04:33 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Jackson <pj@sgi.com>,
-       npiggin@suse.de
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179780873.7019.65.camel@twins>
-Message-ID: <Pine.LNX.4.64.0705211358210.28867@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com> 
- <1179385718.27354.17.camel@twins>  <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-  <20070517175327.GX11115@waste.org>  <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
-  <1179429499.2925.26.camel@lappy>  <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
-  <1179437209.2925.29.camel@lappy>  <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
-  <1179482054.2925.52.camel@lappy>  <Pine.LNX.4.64.0705181002400.9372@schroedinger.engr.sgi.com>
-  <1179650384.7019.33.camel@twins>  <Pine.LNX.4.64.0705210932500.25871@schroedinger.engr.sgi.com>
-  <1179776038.5735.39.camel@lappy>  <Pine.LNX.4.64.0705211239300.27622@schroedinger.engr.sgi.com>
-  <1179778127.7019.48.camel@twins>  <Pine.LNX.4.64.0705211326290.28504@schroedinger.engr.sgi.com>
- <1179780873.7019.65.camel@twins>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 21 May 2007 17:10:24 -0400
+Date: Mon, 21 May 2007 17:03:58 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: UML doesn't compile in 2.6.21
+Message-ID: <20070521210358.GB9929@c2.user-mode-linux.org>
+References: <20070516224938.GN12319@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070516224938.GN12319@pengutronix.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Peter Zijlstra wrote:
-
-> > Yes sure if we do not have a context then no restrictions originating 
-> > there can be enforced. So you want to restrict the logic now to
-> > interrupt allocs? I.e. GFP_ATOMIC?
+On Thu, May 17, 2007 at 12:49:38AM +0200, Robert Schwebel wrote:
+> Jeff,
 > 
-> No, any kernel alloc.
-
-Then we have the problem again.
-
-> > Correct. That is an optimization but it may be called anytime from the 
-> > perspective of an execution thread and that may cause problems with your 
-> > approach.
+> Any idea how this could happen? I'm trying to build 2.6.21 for
+> ARCH=um, and the linker stage explodes here:
 > 
-> I'm not seeing how this would interfere; if the alloc can be handled
-> from a partial slab, that is fine.
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> lib/lib.a(bug.o): In function `find_bug':
+> bug.c:(.text+0x171): undefined reference to `__start___bug_table'
+> bug.c:(.text+0x177): undefined reference to `__stop___bug_table'
+> bug.c:(.text+0x180): undefined reference to `__start___bug_table'
+> bug.c:(.text+0x193): undefined reference to `__stop___bug_table'
 
-There is no guarantee that a partial slab is available.
- 
-> > In the case 
-> > of a memory policy we may have limited the allocations to a single node 
-> > where there is no escape (the zonelist does *not* contain zones of other 
-> > nodes). 
-> 
-> Ah, this is the point I was missing; I assumed each zonelist would
-> always include all zones, but would just continue/break the loop using
-> things like cpuset_zone_allwed_*().
-> 
-> This might indeed foil the game.
-> 
-> I could 'fix' this by doing the PF_MEMALLOC allocation from the regular
-> node zonelist instead of from the one handed down....
+No, I don't.  The bug_table symbols are rather unconditionally defined
+in asm-generic/vmlinux.lds.h.  This can't be affected by any config
+settings that I can see, let alone module support.  Further, the
+config I always build has modules enabled, and I've never seen this.
 
-I wonder if this makes any sense at all given that the only point of 
-what you are doing is to help to decide which alloc should fail...
+Can you try starting over with an mrproper and see if you can
+reproduce it?
 
-> /me thinks out loud.. since direct reclaim runs in whatever process
-> context was handed out we're stuck with whatever policy we started from;
-> but since the allocations are kernel allocs - not userspace allocs, and
-> we're in dire straights, it makes sense to violate the tasks restraints
-> in order to keep the machine up.
+				Jeff
 
-The memory policy constraints may have been setup to cage in an 
-application. It was setup to *stop* the application from using memory on 
-other nodes. If you now allow that then the semantics of memory policies
-are significantly changed. The cpuset constraints are sometimes not that 
-hard but I better let Paul speak for them.
-
-> memory policies are the only ones with 'short' zonelists, right? CPU
-> sets are on top of whatever zonelist is handed out, and the normal
-> zonelists include all nodes - ordered by distance
-
-GFP_THISNODE can have a similar effect.
-
-> > The only chance to bypass this is by only dealing with allocations 
-> > during interrupt that have no allocation context.
-> 
-> But you just said that interrupts are not exempt from memory policies,
-> and policies are the only ones that have 'short' zonelists. /me
-> confused.
-
-No I said that in an interrupt allocation we have no process context and 
-therefore no cpuset or memory policy context. Thus no policies or cpusets
-are applied to an allocation. You can allocate without restrictions.
-
+-- 
+Work email - jdike at linux dot intel dot com
