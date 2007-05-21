@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934670AbXEUUKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935741AbXEUULR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934670AbXEUUKl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763372AbXEUUJB
+	id S935741AbXEUULR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763657AbXEUUJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:09:01 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48356 "EHLO
+	Mon, 21 May 2007 16:09:03 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50575 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762076AbXEUUI6 (ORCPT
+	with ESMTP id S1761649AbXEUUI6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 16:08:58 -0400
 Date: Mon, 21 May 2007 15:08:56 -0500
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] hotplug cpu: move tasks in empty cpusets to parent
-Message-ID: <4651FC58.mailxOWN1A8Z7B@eag09.americas.sgi.com>
+Subject: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+Message-ID: <4651FC58.mailxOWT1QTGD9@eag09.americas.sgi.com>
 User-Agent: nail 11.4 8/29/04
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,361 +24,157 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-This patch corrects a situation that occurs when one disables all the cpus
-in a cpuset.
+(this is a third submission -- corrects a locking/blocking issue pointed
+ out by Nathan Lynch)
 
-At that point, any tasks in that cpuset were incorrectly moved.
-(Disabling all cpus in a cpuset caused it to inherit the cpus
- of its parent, which may overlap its exclusive sibling.)
+When a cpu is disabled, move_task_off_dead_cpu() is called for tasks
+that have been running on that cpu.
 
-Such tasks should be moved to the parent of their current cpuset. Or if the
-parent cpuset has no cpus, to its parent, etc.
+Currently, such a task is migrated:
+ 1) to any cpu on the same node as the disabled cpu, which is both online
+    and among that task's cpus_allowed
+ 2) to any cpu which is both online and among that task's cpus_allowed
 
-And the empty cpuset should be removed (if it is flagged notify_on_release).
+It is typical of a multithreaded application running on a large NUMA system
+to have its tasks confined to a cpuset so as to cluster them near the
+memory that they share. Furthermore, it is typical to explicitly place such
+a task on a specific cpu in that cpuset.  And in that case the task's
+cpus_allowed includes only a single cpu.
 
-This patch uses a workqueue thread to call the function that deletes the cpuset.
-That way we avoid the complexity of the cpuset locks.
+This patch inserts a preference to migrate such a task to some cpu within
+its cpuset (and set its cpus_allowed to its entire cpuset).
 
-(I've been working with Paul Jackson on this patch, and there is still a
- little functional subtlety to work out. Can be tweaked later.)
+With this patch, migrate the task to:
+ 1) to any cpu on the same node as the disabled cpu, which is both online
+    and among that task's cpus_allowed
+ 2) to any online cpu within the task's cpuset
+ 3) to any cpu which is both online and among that task's cpus_allowed
+
+
+In order to do this, move_task_off_dead_cpu() must make a call to
+cpuset_cpus_allowed(), which may block.
+
+move_task_off_dead_cpu() has been within a critical region when called
+from migrate_live_tasks().  So this patch also changes migrate_live_tasks()
+to enable interrupts before calling move_task_off_dead_cpu().
+Since the tasklist_lock is dropped, the list scan must be restarted from
+the top.
+It locks the migrating task by bumping its usage count.
+It disables interrupts in move_task_off_dead_cpu() before the
+ call to __migrate_task().
+
+This is the outline of the locking surrounding calls to
+move_task_off_dead_cpu(), after applying this patch:
+
+  migration_call()
+  | case CPU_DEAD
+  |   migrate_live_tasks(cpu)
+  |   | recheck:
+  |   | write_lock_irq(&tasklist_lock)
+  |   | do_each_thread(t, p) {
+  |   |         if (task_cpu(p) == src_cpu)
+  |   |                 get_task_struct(p)
+  |   |                 write_unlock_irq(&tasklist_lock)
+  |   |                 move_task_off_dead_cpu(src_cpu, p) <<<< noncritical
+  |   |                 put_task_struct(p);
+  |   |                 goto recheck
+  |   | } while_each_thread(t, p)
+  |   | write_unlock_irq(&tasklist_lock)
+  |
+  |   rq = task_rq_lock(rq->idle, &flags)
+  |
+  |   migrate_dead_tasks(cpu)
+  |   | for (arr = 0; arr < 2; arr++) {
+  |   |   for (i = 0; i < MAX_PRIO; i++) {
+  |   |     while (!list_empty(list))
+  |   |       migrate_dead(dead_cpu
+  |   |         get_task_struct(p)
+  |   |         spin_unlock_irq(&rq->lock)
+  |   |         move_task_off_dead_cpu(dead_cpu, p)        <<<< noncritcal
+  |   |         spin_lock_irq(&rq->lock)
+  |   |         put_task_struct(p)
+  |
+  |   task_rq_unlock(rq, &flags)
+
+[Side note: a task may be migrated off of its cpuset, but is still attached to
+ that cpuset (by pointer and reference count).  The cpuset will not be
+ released.  This patch does not change that.]
 
 Diffed against 2.6.21
 
 Signed-off-by: Cliff Wickman <cpw@sgi.com>
 
----
- kernel/cpuset.c |  221 ++++++++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 191 insertions(+), 30 deletions(-)
+ kernel/sched.c |   31 ++++++++++++++++++++++++++++---
+ 1 file changed, 28 insertions(+), 3 deletions(-)
 
-Index: linus.070504/kernel/cpuset.c
+Index: linus.070504/kernel/sched.c
 ===================================================================
---- linus.070504.orig/kernel/cpuset.c
-+++ linus.070504/kernel/cpuset.c
-@@ -54,6 +54,7 @@
- #include <asm/atomic.h>
- #include <linux/mutex.h>
- #include <linux/kfifo.h>
-+#include <linux/workqueue.h>
- 
- #define CPUSET_SUPER_MAGIC		0x27e0eb
- 
-@@ -111,6 +112,7 @@ typedef enum {
- 	CS_NOTIFY_ON_RELEASE,
- 	CS_SPREAD_PAGE,
- 	CS_SPREAD_SLAB,
-+	CS_RELEASED_RESOURCE,
- } cpuset_flagbits_t;
- 
- /* convenient tests for these bits */
-@@ -149,6 +151,11 @@ static inline int is_spread_slab(const s
- 	return test_bit(CS_SPREAD_SLAB, &cs->flags);
- }
- 
-+static inline int has_released_a_resource(const struct cpuset *cs)
-+{
-+	return test_bit(CS_RELEASED_RESOURCE, &cs->flags);
-+}
-+
+--- linus.070504.orig/kernel/sched.c
++++ linus.070504/kernel/sched.c
+@@ -4989,7 +4989,7 @@ wait_to_die:
+ #ifdef CONFIG_HOTPLUG_CPU
  /*
-  * Increment this integer everytime any cpuset changes its
-  * mems_allowed value.  Users of cpusets can track this generation
-@@ -543,7 +550,7 @@ static void cpuset_release_agent(const c
- static void check_for_release(struct cpuset *cs, char **ppathbuf)
- {
- 	if (notify_on_release(cs) && atomic_read(&cs->count) == 0 &&
--	    list_empty(&cs->children)) {
-+					list_empty(&cs->children)) {
- 		char *buf;
- 
- 		buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-@@ -835,7 +842,8 @@ update_cpu_domains_tree(struct cpuset *r
- 
- 	while (__kfifo_get(queue, (unsigned char *)&cp, sizeof(cp))) {
- 		list_for_each_entry(child, &cp->children, sibling)
--		    __kfifo_put(queue,(unsigned char *)&child,sizeof(child));
-+			__kfifo_put(queue, (unsigned char *)&child,
-+							sizeof(child));
- 		update_cpu_domains(cp);
- 	}
- 
-@@ -1101,7 +1109,7 @@ static int update_flag(cpuset_flagbits_t
- 	mutex_unlock(&callback_mutex);
- 
- 	if (cpu_exclusive_changed)
--                update_cpu_domains_tree(cs);
-+		update_cpu_domains_tree(cs);
- 	return 0;
- }
- 
-@@ -1279,6 +1287,7 @@ static int attach_task(struct cpuset *cs
- 
- 	from = oldcs->mems_allowed;
- 	to = cs->mems_allowed;
-+	set_bit(CS_RELEASED_RESOURCE, &oldcs->flags);
- 
- 	mutex_unlock(&callback_mutex);
- 
-@@ -1361,6 +1370,10 @@ static ssize_t cpuset_common_file_write(
- 		retval = update_flag(CS_MEM_EXCLUSIVE, cs, buffer);
- 		break;
- 	case FILE_NOTIFY_ON_RELEASE:
-+		/* Even if the cpuset had been emptied in the past
-+		   it must not be considered for release until it has
-+		   become non-empty again. */
-+		clear_bit(CS_RELEASED_RESOURCE, &cs->flags);
- 		retval = update_flag(CS_NOTIFY_ON_RELEASE, cs, buffer);
- 		break;
- 	case FILE_MEMORY_MIGRATE:
-@@ -2014,6 +2027,7 @@ static int cpuset_rmdir(struct inode *un
- 	cpuset_d_remove_dir(d);
- 	dput(d);
- 	number_of_cpusets--;
-+	set_bit(CS_RELEASED_RESOURCE, &parent->flags);
- 	mutex_unlock(&callback_mutex);
- 	if (list_empty(&parent->children))
- 		check_for_release(parent, &pathbuf);
-@@ -2081,50 +2095,188 @@ out:
- }
- 
- /*
-+ * Move every task that is a member of cpuset "from" to cpuset "to".
-+ *
-+ * Called with both manage_sem and callback_sem held
-+ */
-+static void move_member_tasks_to_cpuset(struct cpuset *from, struct cpuset *to)
-+{
-+	int moved=0;
-+	struct task_struct *g, *tsk;
-+
-+	read_lock(&tasklist_lock);
-+	do_each_thread(g, tsk) {
-+		if (tsk->cpuset == from) {
-+			moved++;
-+			task_lock(tsk);
-+			tsk->cpuset = to;
-+			task_unlock(tsk);
-+		}
-+	} while_each_thread(g, tsk);
-+	read_unlock(&tasklist_lock);
-+	atomic_add(moved, &to->count);
-+	atomic_set(&from->count, 0);
-+}
-+
-+/*
-  * If common_cpu_mem_hotplug_unplug(), below, unplugs any CPUs
-  * or memory nodes, we need to walk over the cpuset hierarchy,
-  * removing that CPU or node from all cpusets.  If this removes the
-- * last CPU or node from a cpuset, then the guarantee_online_cpus()
-- * or guarantee_online_mems() code will use that emptied cpusets
-- * parent online CPUs or nodes.  Cpusets that were already empty of
-- * CPUs or nodes are left empty.
-+ * last CPU or node from a cpuset, then move the tasks in the empty
-+ * cpuset to its next-highest non-empty parent.
-+ *
-+ * Called with both manage_sem and callback_sem held
-+ */
-+static void remove_tasks_in_empty_cpuset(struct cpuset *cs)
-+{
-+	int npids;
-+	struct cpuset *parent;
-+
-+	/* cs->count is the number of tasks using the cpuset */
-+	npids = atomic_read(&cs->count);
-+	if (!npids)
-+		return;
-+
-+	/* this cpuset has had member tasks */
-+	set_bit(CS_RELEASED_RESOURCE, &cs->flags);
-+
-+	/*
-+	 * Find its next-highest non-empty parent, (top cpuset
-+	 * has online cpus, so can't be empty).
-+	 */
-+	parent = cs->parent;
-+	while (parent && cpus_empty(parent->cpus_allowed)) {
-+		/*
-+		 * all these empty cpusets should now be considered to
-+		 * have been used, and therefore eligible for
-+		 * release when empty (if they are notify_on_release)
-+		 */
-+		set_bit(CS_RELEASED_RESOURCE, &parent->flags);
-+		parent = parent->parent;
-+	}
-+	/*
-+	 * the one that we find non-empty will be flagged releaseable when
-+	 * the tasks exit.
-+	 */
-+
-+	/* move member tasks to the non-empty parent cpuset */
-+	move_member_tasks_to_cpuset(cs, parent);
-+}
-+
-+/*
-+ * Walk the specified cpuset subtree and move any tasks found in
-+ * empty cpusets.  Also count the number of empty notify_on_release cpusets.
-  *
-- * This routine is intentionally inefficient in a couple of regards.
-- * It will check all cpusets in a subtree even if the top cpuset of
-- * the subtree has no offline CPUs or nodes.  It checks both CPUs and
-- * nodes, even though the caller could have been coded to know that
-- * only one of CPUs or nodes needed to be checked on a given call.
-- * This was done to minimize text size rather than cpu cycles.
-+ * Note that such a notify_on_release cpuset must have had, at some time,
-+ * member tasks or cpuset descendants and cpus and memory, before it can
-+ * be a candidate for release.
-  *
-- * Call with both manage_mutex and callback_mutex held.
-+ * Call with both manage_sem and callback_sem held so
-+ * that this function can modify cpus_allowed and mems_allowed.
-  *
-- * Recursive, on depth of cpuset subtree.
-+ * This walk processes the tree from top to bottom, completing one layer
-+ * before dropping down to the next.  It always processes a node before
-+ * any of its children.
+  * Figure out where task on dead CPU should go, use force if neccessary.
+- * NOTE: interrupts should be disabled by the caller
++ * NOTE: interrupts are not disabled by the caller
   */
-+static void remove_tasks_from_empty_cpusets(const struct cpuset *root, int *count)
-+{
-+	struct cpuset *cp;	/* scans cpusets being updated */
-+	struct cpuset *child;	/* scans child cpusets of cp */
-+	struct kfifo *queue;	/* fifo queue of cpusets to be updated */
-+
-+	queue = kfifo_alloc(number_of_cpusets * sizeof(cp), GFP_KERNEL, NULL);
-+	if (queue == ERR_PTR(-ENOMEM))
-+		return;
+ static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+ {
+@@ -5008,6 +5008,17 @@ restart:
+ 	if (dest_cpu == NR_CPUS)
+ 		dest_cpu = any_online_cpu(p->cpus_allowed);
  
--static void guarantee_online_cpus_mems_in_subtree(const struct cpuset *cur)
-+	__kfifo_put(queue, (unsigned char *)&root, sizeof(root));
-+
-+	while (__kfifo_get(queue, (unsigned char *)&cp, sizeof(cp))) {
-+		list_for_each_entry(child, &cp->children, sibling)
-+			__kfifo_put(queue, (unsigned char *)&child,
-+							sizeof(child));
-+		/* Remove offline cpus and mems from this cpuset. */
-+		cpus_and(cp->cpus_allowed, cp->cpus_allowed, cpu_online_map);
-+		nodes_and(cp->mems_allowed, cp->mems_allowed, node_online_map);
-+		if ((cpus_empty(cp->cpus_allowed) ||
-+		     nodes_empty(cp->mems_allowed))) {
-+		        /* Move tasks from the empty cpuset to a parent */
-+			remove_tasks_in_empty_cpuset(cp);
-+			if (notify_on_release(cp) &&
-+			    has_released_a_resource(cp))
-+				/* count the cpuset to be released */
-+				(*count)++;
-+		}
++	/* try to stay on the same cpuset */
++	if (dest_cpu == NR_CPUS) {
++		/*
++		 * Call to cpuset_cpus_allowed may sleep, so we depend
++		 * on move_task_off_dead_cpu() being called in a non-critical
++		 * region.
++		 */
++		p->cpus_allowed = cpuset_cpus_allowed(p);
++		dest_cpu = any_online_cpu(p->cpus_allowed);
 +	}
 +
-+	kfifo_free(queue);
-+	return;
-+}
-+
-+/*
-+ * Walk the specified cpuset subtree and release the empty
-+ * notify_on_release cpusets.
-+ *
-+ * This walk processes the tree from top to bottom, completing one layer
-+ * before dropping down to the next.  It always processes a node before
-+ * any of its children.
-+ *
-+ * We hold manage_mutex so that the hierarchy cannot change while
-+ * we are scanning it.
-+ */
-+static void release_empty_cpusets(const struct cpuset *root)
- {
--	struct cpuset *c;
-+	struct cpuset *cp;	/* scans cpusets being updated */
-+	struct cpuset *child;	/* scans child cpusets of cp */
-+	struct kfifo *queue;	/* fifo queue of cpusets to be updated */
-+	char *pathbuf = NULL;
- 
--	/* Each of our child cpusets mems must be online */
--	list_for_each_entry(c, &cur->children, sibling) {
--		guarantee_online_cpus_mems_in_subtree(c);
--		if (!cpus_empty(c->cpus_allowed))
--			guarantee_online_cpus(c, &c->cpus_allowed);
--		if (!nodes_empty(c->mems_allowed))
--			guarantee_online_mems(c, &c->mems_allowed);
-+	queue = kfifo_alloc(number_of_cpusets * sizeof(cp), GFP_KERNEL, NULL);
-+	if (queue == ERR_PTR(-ENOMEM))
-+		return;
-+
-+
-+	__kfifo_put(queue, (unsigned char *)&root, sizeof(root));
-+
-+	mutex_lock(&manage_mutex);
-+	while (__kfifo_get(queue, (unsigned char *)&cp, sizeof(cp))) {
-+		list_for_each_entry(child, &cp->children, sibling)
-+			__kfifo_put(queue, (unsigned char *)&child,
-+							sizeof(child));
-+		if ((notify_on_release(cp)) && has_released_a_resource(cp) &&
-+			(cpus_empty(cp->cpus_allowed) ||
-+			 nodes_empty(cp->mems_allowed))) {
-+			check_for_release(cp, &pathbuf);
-+			cpuset_release_agent(pathbuf);
-+		}
+ 	/* No more Mr. Nice Guy. */
+ 	if (dest_cpu == NR_CPUS) {
+ 		rq = task_rq_lock(p, &flags);
+@@ -5025,8 +5036,16 @@ restart:
+ 			       "longer affine to cpu%d\n",
+ 			       p->pid, p->comm, dead_cpu);
  	}
-+	mutex_unlock(&manage_mutex);
-+
-+	kfifo_free(queue);
-+
-+	return;
-+}
-+
-+/*
-+ * This runs from a workqueue.
-+ *
-+ * It's job is to remove any notify_on_release cpusets that have no
-+ * online cpus.
-+ *
-+ * The argument is not used.
-+ */
-+static void remove_empty_cpusets(struct work_struct *p)
-+{
-+	release_empty_cpusets(&top_cpuset);
+-	if (!__migrate_task(p, dead_cpu, dest_cpu))
++	/*
++	 * __migrate_task() requires interrupts to be disabled
++	 */
++	local_irq_disable();
++	if (!__migrate_task(p, dead_cpu, dest_cpu)) {
++		local_irq_enable();
+ 		goto restart;
++	}
++	local_irq_enable();
 +	return;
  }
  
-+static DECLARE_WORK(remove_empties_block, remove_empty_cpusets);
-+
  /*
-  * The cpus_allowed and mems_allowed nodemasks in the top_cpuset track
-  * cpu_online_map and node_online_map.  Force the top cpuset to track
-  * whats online after any CPU or memory node hotplug or unplug event.
-  *
-- * To ensure that we don't remove a CPU or node from the top cpuset
-- * that is currently in use by a child cpuset (which would violate
-- * the rule that cpusets must be subsets of their parent), we first
-- * call the recursive routine guarantee_online_cpus_mems_in_subtree().
-- *
-  * Since there are two callers of this routine, one for CPU hotplug
-  * events and one for memory node hotplug events, we could have coded
-  * two separate routines here.  We code it as a single common routine
-@@ -2133,12 +2285,18 @@ static void guarantee_online_cpus_mems_i
- 
- static void common_cpu_mem_hotplug_unplug(void)
+@@ -5054,14 +5073,20 @@ static void migrate_live_tasks(int src_c
  {
-+	int	empty_count=0;
-+
- 	mutex_lock(&manage_mutex);
- 	mutex_lock(&callback_mutex);
+ 	struct task_struct *p, *t;
  
--	guarantee_online_cpus_mems_in_subtree(&top_cpuset);
- 	top_cpuset.cpus_allowed = cpu_online_map;
- 	top_cpuset.mems_allowed = node_online_map;
-+	remove_tasks_from_empty_cpusets(&top_cpuset, &empty_count);
-+	if (empty_count)
-+		schedule_work(&remove_empties_block);
-+		/* release_empty_cpusets() will lock manage_mutex, but that
-+		   will be done in the context of the work queue */
++restartlist:
+ 	write_lock_irq(&tasklist_lock);
  
- 	mutex_unlock(&callback_mutex);
- 	mutex_unlock(&manage_mutex);
-@@ -2286,6 +2444,9 @@ void cpuset_exit(struct task_struct *tsk
- 		mutex_lock(&manage_mutex);
- 		if (atomic_dec_and_test(&cs->count))
- 			check_for_release(cs, &pathbuf);
-+		mutex_lock(&callback_mutex);
-+		set_bit(CS_RELEASED_RESOURCE, &cs->flags);
-+		mutex_unlock(&callback_mutex);
- 		mutex_unlock(&manage_mutex);
- 		cpuset_release_agent(pathbuf);
- 	} else {
+ 	do_each_thread(t, p) {
+ 		if (p == current)
+ 			continue;
+ 
+-		if (task_cpu(p) == src_cpu)
++		if (task_cpu(p) == src_cpu) {
++			get_task_struct(p);
++			write_unlock_irq(&tasklist_lock);
+ 			move_task_off_dead_cpu(src_cpu, p);
++			put_task_struct(p);
++			goto restartlist;
++		}
+ 	} while_each_thread(t, p);
+ 
+ 	write_unlock_irq(&tasklist_lock);
