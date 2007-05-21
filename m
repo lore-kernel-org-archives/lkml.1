@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935048AbXEUTl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934741AbXEUTld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935048AbXEUTl4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933617AbXEUT1Y
+	id S934741AbXEUTld (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933612AbXEUT1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:27:24 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:35816 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933613AbXEUT1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 15:27:22 -0400
-Message-Id: <20070521191641.037352000@sous-sol.org>
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:35810 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933602AbXEUT1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:27:19 -0400
+Message-Id: <20070521191740.534306000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:13 -0700
+Date: Mon, 21 May 2007 12:16:55 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, <yoshfuji@linux-ipv6.org>,
-       "David S. Miller" <davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Andi Kleen <ak@suse.de>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,65 +22,69 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [patch 01/69] ipv6: track device renames in snmp6
-Content-Disposition: inline; filename=ipv6-track-device-renames-in-snmp6.patch
+       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
+       guilherme@centralinf.com.br, johnstul@us.ibm.com
+Subject: [patch 43/69] i386: HPET, check if the counter works
+Content-Disposition: inline; filename=i386-hpet-check-if-the-counter-works.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-When network device's are renamed, the IPV6 snmp6 code
-gets confused. It doesn't track name changes so it will OOPS
-when network device's are removed.
+Some systems have a HPET which is not incrementing, which leads to a
+complete hang. Detect it during HPET setup.
 
-The fix is trivial, just unregister/re-register in notify handler.
-
-Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+[chrisw: Why is this not upstream yet?]
 
 ---
- net/ipv6/addrconf.c |    6 ++++--
- net/ipv6/proc.c     |    1 +
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/i386/kernel/hpet.c |   24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
 
---- linux-2.6.21.1.orig/net/ipv6/addrconf.c
-+++ linux-2.6.21.1/net/ipv6/addrconf.c
-@@ -2281,8 +2281,9 @@ static int addrconf_notify(struct notifi
- 		break;
+--- linux-2.6.21.1.orig/arch/i386/kernel/hpet.c
++++ linux-2.6.21.1/arch/i386/kernel/hpet.c
+@@ -226,7 +226,8 @@ int __init hpet_enable(void)
+ {
+ 	unsigned long id;
+ 	uint64_t hpet_freq;
+-	u64 tmp;
++	u64 tmp, start, now;
++	cycle_t t1;
  
- 	case NETDEV_CHANGENAME:
--#ifdef CONFIG_SYSCTL
- 		if (idev) {
-+			snmp6_unregister_dev(idev);
-+#ifdef CONFIG_SYSCTL
- 			addrconf_sysctl_unregister(&idev->cnf);
- 			neigh_sysctl_unregister(idev->nd_parms);
- 			neigh_sysctl_register(dev, idev->nd_parms,
-@@ -2290,8 +2291,9 @@ static int addrconf_notify(struct notifi
- 					      &ndisc_ifinfo_sysctl_change,
- 					      NULL);
- 			addrconf_sysctl_register(idev, &idev->cnf);
--		}
- #endif
-+			snmp6_register_dev(idev);
-+		}
- 		break;
- 	};
+ 	if (!is_hpet_capable())
+ 		return 0;
+@@ -273,6 +274,27 @@ int __init hpet_enable(void)
+ 	/* Start the counter */
+ 	hpet_start_counter();
  
---- linux-2.6.21.1.orig/net/ipv6/proc.c
-+++ linux-2.6.21.1/net/ipv6/proc.c
-@@ -236,6 +236,7 @@ int snmp6_unregister_dev(struct inet6_de
- 		return -EINVAL;
- 	remove_proc_entry(idev->stats.proc_dir_entry->name,
- 			  proc_net_devsnmp6);
-+	idev->stats.proc_dir_entry = NULL;
- 	return 0;
- }
- 
++	/* Verify whether hpet counter works */
++	t1 = read_hpet();
++	rdtscll(start);
++
++	/*
++	 * We don't know the TSC frequency yet, but waiting for
++	 * 200000 TSC cycles is safe:
++	 * 4 GHz == 50us
++	 * 1 GHz == 200us
++	 */
++	do {
++		rep_nop();
++		rdtscll(now);
++	} while ((now - start) < 200000UL);
++
++	if (t1 == read_hpet()) {
++		printk(KERN_WARNING
++		       "HPET counter not counting. HPET disabled\n");
++		goto out_nohpet;
++	}
++
+ 	/* Initialize and register HPET clocksource
+ 	 *
+ 	 * hpet period is in femto seconds per cycle
 
 -- 
