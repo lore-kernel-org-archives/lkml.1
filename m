@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760974AbXEUQ1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbXEUQ16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760974AbXEUQ1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759008AbXEUQ1d
+	id S1756405AbXEUQ16 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759148AbXEUQ1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:27:33 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:44561 "EHLO atlrel7.hp.com"
+	Mon, 21 May 2007 12:27:34 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:44568 "EHLO atlrel7.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756471AbXEUQ1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758913AbXEUQ1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 21 May 2007 12:27:32 -0400
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Andi Kleen <ak@suse.de>
 Subject: Re: [PATCH]serial: make early_uart to use early_prarm instead of console_initcall
-Date: Mon, 21 May 2007 10:27:04 -0600
 User-Agent: KMail/1.9.6
 Cc: Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <Yinghai.Lu@sun.com>,
        Gerd Hoffmann <kraxel@redhat.com>,
@@ -21,11 +20,12 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Yinghai Lu <Yinghai.Lu@sun.com>,
 References: <200705181900.17101.yinghai.lu@sun.com> <20070520202332.145d93a6.akpm@linux-foundation.org> <20070521104221.GU2012@bingen.suse.de>
 In-Reply-To: <20070521104221.GU2012@bingen.suse.de>
 MIME-Version: 1.0
+Content-Disposition: inline
+Date: Mon, 21 May 2007 10:27:38 -0600
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705211027.05315.bjorn.helgaas@hp.com>
+Message-Id: <200705211027.38958.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
