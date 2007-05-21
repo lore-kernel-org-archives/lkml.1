@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbXEUP6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbXEUP6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758482AbXEUP6W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 11:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbXEUP55
+	id S1755131AbXEUP6f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 11:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbXEUP6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 11:57:57 -0400
-Received: from outbound-mail-48.bluehost.com ([69.89.18.17]:42680 "HELO
-	outbound-mail-48.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755874AbXEUP5z (ORCPT
+	Mon, 21 May 2007 11:58:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:62068 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757685AbXEUP6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 11:57:55 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Date: Mon, 21 May 2007 08:57:44 -0700
-User-Agent: KMail/1.9.6
-Cc: Dave Airlie <airlied@gmail.com>, Jon Smirl <jonsmirl@verizon.net>,
-       Jesse Barnes <jesse.barnes@intel.com>, jonsmirl@gmail.com,
-       linux-kernel@vger.kernel.org
-References: <200705171423.46748.jesse.barnes@intel.com> <21d7e9970705210227x27234e2dme4e731a53f977082@mail.gmail.com> <46516A14.2000102@aitel.hist.no>
-In-Reply-To: <46516A14.2000102@aitel.hist.no>
+	Mon, 21 May 2007 11:58:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=T/V5Loxkl+eLZuG9L6EH+Rc/51VdLeq9CNV7Ikkf6RXRhUE9EVFFwXOLgvmmjb2epDc2KyzI8teBfhreWXLD8HNcN+LkFLG5GCzHpvAa0X2G0GFQ9biUxNJy/hDaKfBS4HJ+V3zg4bdi0eb0tLDCOYX6siAb3agJa77RVT0cBtg=
+Date: Mon, 21 May 2007 19:57:14 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] UDF: check for allocated memory for data of new inodes v2
+Message-ID: <20070521155714.GA10022@cvg>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705210857.44911.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, May 21, 2007, Helge Hafting wrote:
-> >> > TThe problem with that is the concept of heads is flawed... there
-> >> > is in reality no such
-> >> > thing, you have crtcs and outputs, no heads. So any attempt to
-> >> > enforce the head concept involves putting policy into the kernel,
-> >> > as if I have 3 outputs but 2 crtcs how do I decide the mappings
-> >> > without the admin telling the kernel,
-> >>
-> >> Solution:
-> >> One device per crtc. You can then have two users, running consoles
-> >> or xservers on their crtcs, without having to involve root.
-> >
-> > Thats pretty much what the code does, but you still are putting a
-> > certain amount of policy in the kernel...
->
-> What policy would that be?
-> The mapping is set by root from userspace, not by the kernel.
-> The same for ownership to crtc devices. The kernel may have to
-> provide some default so "init=/bin/sh" will work, that's all.
+This patch adds checking for granted memory for inode data
+at the moment of it's creation.
 
-The policy of mapping outputs to CRTCs.  Like Dave said, you may have 
-several outputs but only one or two CRTCs, with limitations on how they 
-can be routed.  So doing "one device per CRTC" isn't quite enough, you 
-also have to choose an initial output setup.  But like you say this could 
-be changed at boot time.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 
-> Sure.  Not multiseat by default, as the kernel can't know which output
-> goes with which keyboard. All I want it a system that allows
-> multiseat for those that care to set it up.
+---
 
-Sure, and like I mentioned to Jon in another mail, a decent multiseat setup 
-is possible with these interfaces, albeit with a userlevel graphics daemon 
-to arbitrate what the CRTC->output mappings are and to coordinate access 
-to the hw if needed.
+Andrew, it seems my previous patch didn't release mutex so there I've it fixed.
+Please replace the patch named 'udf-check-for-allocated-memory-for-data-of-new-inodes.patch'
+with this one.
 
-So really, I think the interfaces posted here will do what you want.  Maybe 
-you can take a closer look and make sure?
+ ialloc.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-Thanks,
-Jesse
+
+diff --git a/ialloc.c b/ialloc.c
+index 8206983..10f3188 100644
+--- a/ialloc.c
++++ b/ialloc.c
+@@ -50,7 +50,7 @@ void udf_free_inode(struct inode * inode)
+ 		else
+ 			UDF_SB_LVIDIU(sb)->numFiles =
+ 				cpu_to_le32(le32_to_cpu(UDF_SB_LVIDIU(sb)->numFiles) - 1);
+-		
++
+ 		mark_buffer_dirty(sbi->s_lvidbh);
+ 	}
+ 	mutex_unlock(&sbi->s_alloc_mutex);
+@@ -136,6 +136,13 @@ struct inode * udf_new_inode (struct inode *dir, int mode, int * err)
+ 		UDF_I_EFE(inode) = 0;
+ 		UDF_I_DATA(inode) = kzalloc(inode->i_sb->s_blocksize - sizeof(struct fileEntry), GFP_KERNEL);
+ 	}
++	if (!UDF_I_DATA(inode))
++	{
++		iput(inode);
++		*err = -ENOMEM;
++		mutex_unlock(&sbi->s_alloc_mutex);
++		return NULL;
++	}
+ 	if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_AD_IN_ICB))
+ 		UDF_I_ALLOCTYPE(inode) = ICBTAG_FLAG_AD_IN_ICB;
+ 	else if (UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_USE_SHORT_AD))
