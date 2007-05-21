@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbXEUFTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbXEUFTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755066AbXEUFTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 01:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbXEUFTJ
+	id S1759582AbXEUFTd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 01:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbXEUFTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 01:19:09 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:2814 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753191AbXEUFTH (ORCPT
+	Mon, 21 May 2007 01:19:15 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:4919 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758772AbXEUFTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 01:19:07 -0400
+	Mon, 21 May 2007 01:19:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=YwOXlbmlZ8quvfrh3w65ezOP1GzRaifd46ILNSTCOsHtmHFGQcSlOBzcwKMW9A2/+PHqJbOeL9gnaHohDTfBMD0Wexs4/OV7FzgaNsOAGww+wp3DqYIT+eH+V9RxwU6akx1aqBvqr18T9a//BKCaEUpr39LPQLVQ9uvDygIZsTI=
-Message-ID: <86802c440705202219w2adc73a0r34716f7daaf596b5@mail.gmail.com>
-Date: Sun, 20 May 2007 22:19:06 -0700
+        b=ON4V80N807frzk8u77PSelNtwRNiH4Cx3+mrBBO9d7h08LsOW2HP74u6Bzaj8INox7fAoJa+ZqA/PrUy+ehoEGzNxT1pO9gmXzz/IdfG6EQk1LRJACl/ih4hH64Kox/j/xs0KwH7SnHMEfbwbl3vMuet7Iki6l/tgdpgcqZ5Cy4=
+Message-ID: <86802c440705202219o21d11023od1018d253364bf5c@mail.gmail.com>
+Date: Sun, 20 May 2007 22:19:13 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>, "Greg KH" <gregkh@suse.de>,
        "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
        "Vivek Goyal" <vgoyal@in.ibm.com>
-Subject: [PATCH 1/3]x86_64: early init pgt for fix virtual addr in head.S
+Subject: [PATCH 2/3]i386: early init pgt for fix virtual addr in head.S
 Cc: "linux kernel mailing list" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_88080_2770622.1179724746426"
+	boundary="----=_Part_88084_21273204.1179724753442"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_88080_2770622.1179724746426
+------=_Part_88084_21273204.1179724753442
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 early init pgt for fix virtual addr in head.S, so can use set_fixmap
 before setup_arch.
-otherwise set_fixmap_nocache will not work for x86_64
+otherwise set_fixmap_nocache will not work for i386
 
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-------=_Part_88080_2770622.1179724746426
-Content-Type: text/x-patch; name=head_s_init_fix_x86_64.diff; 
+------=_Part_88084_21273204.1179724753442
+Content-Type: text/x-patch; name=head_s_init_fix_i386.diff; 
 	charset=ANSI_X3.4-1968
 Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f1yhsq31
-Content-Disposition: attachment; filename="head_s_init_fix_x86_64.diff"
+X-Attachment-Id: f_f1yhpnsz
+Content-Disposition: attachment; filename="head_s_init_fix_i386.diff"
 
-ZGlmZiAtLWdpdCBhL2FyY2gveDg2XzY0L2tlcm5lbC9oZWFkLlMgYi9hcmNoL3g4Nl82NC9rZXJu
-ZWwvaGVhZC5TCmluZGV4IDFmYWI0ODcuLjJkYTMwYWQgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2XzY0
-L2tlcm5lbC9oZWFkLlMKKysrIGIvYXJjaC94ODZfNjQva2VybmVsL2hlYWQuUwpAQCAtNzMsNyAr
-NzMsMTEgQEAgc3RhcnR1cF82NDoKIAlhZGRxCSVyYnAsIGluaXRfbGV2ZWw0X3BndCArICg1MTEq
-OCkoJXJpcCkKIAogCWFkZHEJJXJicCwgbGV2ZWwzX2lkZW50X3BndCArIDAoJXJpcCkKKwkKIAlh
-ZGRxCSVyYnAsIGxldmVsM19rZXJuZWxfcGd0ICsgKDUxMCo4KSglcmlwKQorCWFkZHEJJXJicCwg
-bGV2ZWwzX2tlcm5lbF9wZ3QgKyAoNTExKjgpKCVyaXApCisKKwlhZGRxCSVyYnAsIGxldmVsMl9m
-aXhtYXBfcGd0ICsgKDUwNio4KSglcmlwKQogCiAJLyogQWRkIGFuIElkZW50aXR5IG1hcHBpbmcg
-aWYgSSBhbSBhYm92ZSAxRyAqLwogCWxlYXEJX3RleHQoJXJpcCksICVyZGkKQEAgLTMxNCw3ICsz
-MTgsMTYgQEAgTkVYVF9QQUdFKGxldmVsM19rZXJuZWxfcGd0KQogCS5maWxsCTUxMCw4LDAKIAkv
-KiAoMl40OC0oMioxMDI0KjEwMjQqMTAyNCktKCgyXjM5KSo1MTEpKS8oMl4zMCkgPSA1MTAgKi8K
-IAkucXVhZAlsZXZlbDJfa2VybmVsX3BndCAtIF9fU1RBUlRfS0VSTkVMX21hcCArIF9LRVJOUEdf
-VEFCTEUKLQkuZmlsbAkxLDgsMAorIAkucXVhZAlsZXZlbDJfZml4bWFwX3BndCAtIF9fU1RBUlRf
-S0VSTkVMX21hcCArIF9QQUdFX1RBQkxFCisKK05FWFRfUEFHRShsZXZlbDJfZml4bWFwX3BndCkK
-KwkuZmlsbAk1MDYsOCwwCisJLnF1YWQJbGV2ZWwxX2ZpeG1hcF9wZ3QgLSBfX1NUQVJUX0tFUk5F
-TF9tYXAgKyBfS0VSTlBHX1RBQkxFCisJLyogOE1CIHJlc2VydmVkIGZvciB2c3lzY2FsbHMgKyBh
-IDJNQiBob2xlID0gNCArIDEgZW50cmllcyAqLworCS5maWxsCTUsOCwwCisKK05FWFRfUEFHRShs
-ZXZlbDFfZml4bWFwX3BndCkKKwkuZmlsbAk1MTIsOCwwCiAKIE5FWFRfUEFHRShsZXZlbDJfaWRl
-bnRfcGd0KQogCS8qIFNpbmNlIEkgZWFzaWx5IGNhbiwgbWFwIHRoZSBmaXJzdCAxRy4K
-------=_Part_88080_2770622.1179724746426--
+ZGlmZiAtLWdpdCBhL2FyY2gvaTM4Ni9rZXJuZWwvaGVhZC5TIGIvYXJjaC9pMzg2L2tlcm5lbC9o
+ZWFkLlMKaW5kZXggZjc0ZGZjNC4uMmQzNzg1MCAxMDA2NDQKLS0tIGEvYXJjaC9pMzg2L2tlcm5l
+bC9oZWFkLlMKKysrIGIvYXJjaC9pMzg2L2tlcm5lbC9oZWFkLlMKQEAgLTE2OCw2ICsxNjgsMTIg
+QEAgcGFnZV9wZGVfb2Zmc2V0ID0gKF9fUEFHRV9PRkZTRVQgPj4gMjApOwogLnNlY3Rpb24gLmlu
+aXQudGV4dCwiYXgiLEBwcm9nYml0cwogI2VuZGlmCiAKKwkvKiBEbyBhbiBlYXJseSBpbml0aWFs
+aXphdGlvbiBvZiB0aGUgZml4bWFwIGFyZWEgKi8KKwltb3ZsICQoc3dhcHBlcl9wZ19kaXIgLSBf
+X1BBR0VfT0ZGU0VUKSwgJWVkeAorCW1vdmwgJChzd2FwcGVyX3BnX3BtZCAtIF9fUEFHRV9PRkZT
+RVQpLCAlZWF4CisJYWRkbCAkMHgwMDcsICVlYXgJCQkvKiAweDAwNyA9IFBSRVNFTlQrUlcrVVNF
+UiAqLworCW1vdmwgJWVheCwgNDA5MiglZWR4KQorCiAjaWZkZWYgQ09ORklHX1NNUAogRU5UUlko
+c3RhcnR1cF8zMl9zbXApCiAJY2xkCkBAIC01MDcsNiArNTEzLDggQEAgRU5UUlkoX3N0ZXh0KQog
+LnNlY3Rpb24gIi5ic3MucGFnZV9hbGlnbmVkIiwidyIKIEVOVFJZKHN3YXBwZXJfcGdfZGlyKQog
+CS5maWxsIDEwMjQsNCwwCitFTlRSWShzd2FwcGVyX3BnX3BtZCkKKwkuZmlsbCAxMDI0LDQsMAkK
+IEVOVFJZKGVtcHR5X3plcm9fcGFnZSkKIAkuZmlsbCA0MDk2LDEsMAogCg==
+------=_Part_88084_21273204.1179724753442--
