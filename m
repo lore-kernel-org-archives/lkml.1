@@ -1,115 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbXEUUc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbXEUUe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbXEUUc7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXEUUcv
+	id S1755997AbXEUUe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXEUUet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:32:51 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51935 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752100AbXEUUcu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:32:50 -0400
-Date: Mon, 21 May 2007 13:32:47 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Jackson <pj@sgi.com>,
-       npiggin@suse.de
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179778127.7019.48.camel@twins>
-Message-ID: <Pine.LNX.4.64.0705211326290.28504@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com> 
- <1179385718.27354.17.camel@twins>  <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-  <20070517175327.GX11115@waste.org>  <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
-  <1179429499.2925.26.camel@lappy>  <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
-  <1179437209.2925.29.camel@lappy>  <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
-  <1179482054.2925.52.camel@lappy>  <Pine.LNX.4.64.0705181002400.9372@schroedinger.engr.sgi.com>
-  <1179650384.7019.33.camel@twins>  <Pine.LNX.4.64.0705210932500.25871@schroedinger.engr.sgi.com>
-  <1179776038.5735.39.camel@lappy>  <Pine.LNX.4.64.0705211239300.27622@schroedinger.engr.sgi.com>
- <1179778127.7019.48.camel@twins>
+	Mon, 21 May 2007 16:34:49 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:48009 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754946AbXEUUes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 16:34:48 -0400
+Date: Mon, 21 May 2007 13:31:11 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Andi Kleen <ak@suse.de>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>, Chuck@hera.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       stable@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/69] -stable review
+Message-ID: <20070521203111.GJ3429@sequoia.sous-sol.org>
+References: <20070521191612.800400000@sous-sol.org> <20070521123148.a3dad5f2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521123148.a3dad5f2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Peter Zijlstra wrote:
-
-> > This means we will disobey cpuset and memory policy constraints?
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Mon, 21 May 2007 12:16:12 -0700
+> Chris Wright <chrisw@sous-sol.org> wrote:
 > 
-> >From what I can make of it, yes. Although I'm a bit hazy on the
-> mempolicy code.
-
-In an interrupt context we do not have a process context. But there is
-no exemption from memory policy constraints.
-
-> > > > No the gfp zone flags are not uniform and placement of page allocator 
-> > > > allocs through SLUB do not always have the same allocation constraints.
-> > > 
-> > > It has to; since it can serve the allocation from a pre-existing slab
-> > > allocation. Hence any page allocation must be valid for all other users.
-> > 
-> > Why does it have to? This is not true.
+> > This is the start of the stable review cycle for the 2.6.21.2 release.
 > 
-> Say the slab gets allocated by an allocation from interrupt context; no
-> cpuset, no policy. This same slab must be valid for whatever allocation
-> comes next, right? Regardless of whatever policy or GFP_ flags are in
-> effect for that allocation.
-
-Yes sure if we do not have a context then no restrictions originating 
-there can be enforced. So you want to restrict the logic now to
-interrupt allocs? I.e. GFP_ATOMIC?
-
-> > The constraints come from the context of memory policies and cpusets. See
-> > get_any_partial().
+> Gee a lot of these are fixing recently-added regressions :(
 > 
-> but get_partial() will only be called if the cpu_slab is full, up until
-> that point you have to do with whatever is there.
+> Did we fix oprofile on x86_64 yet?  If not, I'd suggest we should
+> hold off 2.6.21.2 until we have done so.
 
-Correct. That is an optimization but it may be called anytime from the 
-perspective of an execution thread and that may cause problems with your 
-approach.
+No, we've seen 2 versions of the patch, no word from Andi, and nothing
+upstream that I saw.  Andi?
 
-> > > As far as I can see there cannot be a hard constraint here, because
-> > > allocations form interrupt context are at best node local. And node
-> > > affine zone lists still have all zones, just ordered on locality.
-> > 
-> > Interrupt context is something different. If we do not have a process 
-> > context then no cpuset and memory policy constraints can apply since we
-> > have no way of determining that. If you restrict your use of the reserve 
-> > cpuset to only interrupt allocs then we may indeed be fine.
-> 
-> No, what I'm saying is that if the slab gets refilled from interrupt
-> context the next process context alloc will have to work with whatever
-> the interrupt left behind. Hence there is no hard constraint.
-
-It will work with whatever was left behind in the case of SLUB and a 
-kmalloc alloc (optimization there). It wont if its SLAB (which is 
-stricter) or a kmalloc_node alloc. A kmalloc_node alloc will remove the 
-current cpuslab if its not on the right now.
-
-
-> > > >From what I can see, it takes pretty much any page it can get once you
-> > > hit it with PF_MEMALLOC. If the page allocation doesn't use ALLOC_CPUSET
-> > > the page can come from pretty much anywhere.
-> > 
-> > No it cannot. One the current cpuslab is exhaused (which can be anytime) 
-> > it will enforce the contextual allocation constraints. See 
-> > get_any_partial() in slub.c.
-> 
-> If it finds no partial slabs it goes back to the page allocator; and
-> when you allocate a page under PF_MEMALLOC and the normal allocations
-> are exhausted it takes a page from pretty much anywhere.
-
-If it finds no partial slab then it will go to the page allocator which 
-will allocate given the current contextual alloc constraints. In the case 
-of a memory policy we may have limited the allocations to a single node 
-where there is no escape (the zonelist does *not* contain zones of other 
-nodes). The only chance to bypass this is by only dealing with allocations 
-during interrupt that have no allocation context.
+> I assume ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/oprofile-allocation
+> is what we want.
