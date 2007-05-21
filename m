@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762463AbXEUQRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758990AbXEUQTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762463AbXEUQRQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754696AbXEUQQ4
+	id S1758990AbXEUQTB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbXEUQSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:16:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43820 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759863AbXEUQQy (ORCPT
+	Mon, 21 May 2007 12:18:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49359 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754183AbXEUQSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:16:54 -0400
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-In-Reply-To: <9e4733910705210834s4b41cf31ka3f56d3bc36b5585@mail.gmail.com>
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <pan.2007.05.20.17.41.22@gmail.com>
-	 <200705201610.32170.jbarnes@virtuousgeek.org>
-	 <9e4733910705201747n1847f7b1wd57a8e8640a857a8@mail.gmail.com>
-	 <4650F5F2.4000305@garzik.org>
-	 <9e4733910705210834s4b41cf31ka3f56d3bc36b5585@mail.gmail.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 21 May 2007 09:15:28 -0700
-Message-Id: <1179764128.3553.1.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 21 May 2007 12:18:53 -0400
+Date: Mon, 21 May 2007 09:11:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Ray Lee <ray-lk@madrabbit.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, Uwe Bugla <uwe.bugla@gmx.de>,
+       Ken Chen <kenchen@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+In-Reply-To: <1179677799.3311.5.camel@lov.localdomain>
+Message-ID: <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
+References: <464F42F3.1080300@madrabbit.org>  <20070519191751.E51233A23A2@muan.mtu.ru>
+  <200705200124.13026.uwe.bugla@gmx.de>  <200705200845.43621.arvidjaar@mail.ru>
+  <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com> 
+ <20070520062816.GA4095@ftp.linux.org.uk>  <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
+  <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com> 
+ <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com>
+ <1179677799.3311.5.camel@lov.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-21 at 11:34 -0400, Jon Smirl wrote:
-> Supporting multiple users, one on each CRTC, has long been a feature
-> request from people building low end educational systems, kiosks,
-> Internet cafes, etc. If the entire graphics subsystem is going to get
-> rewritten this feature should be added.
 
 
-are you going to write the code?
+On Sun, 20 May 2007, Kay Sievers wrote:
+> 
+> Right, providing "preallocated" devices, 8 or the number given in
+> max_loop, sounds like the best option until the tools can handle that.
 
-this topic has been on the table for YEARS and no code appeared. The
-patch here is a great step forward for the common case, and seems to
-allow more complex setups either already or with some minor future
-modifications.... so how about we move forward with this code that
-exists today, instead of doing more vaporware while holding the rest of
-the world back...
+Yes. Can somebody who actually _uses_ loop send a tested patch, please?
 
+We're not going to break existing user space over something idiotic like 
+this. Not acceptable. 
 
+The alternative is to just revert all the loop.c patches. Which I'll do 
+unless somebody sends me a tested fix - because as a non-loop user myself, 
+I don't have much choice. I assume it is 
+
+   commit 73285082 "remove artificial software max_loop limit"
+
+that introduced the new behaviour. Ken?
+
+		Linus
