@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbXEUP57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbXEUP6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756774AbXEUP57 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 11:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbXEUP5w
+	id S1758482AbXEUP6W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 11:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbXEUP55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 11:57:52 -0400
-Received: from www.osadl.org ([213.239.205.134]:42812 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755015AbXEUP5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 11:57:51 -0400
-Subject: Re: [realtime kernel 2.6.21-rt2 and up] Extremely slow bootup for
-	x86_64
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Frank Sorenson <frank@tuxrocks.com>
-Cc: Maarten Maathuis <madman2003@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4651B6A7.1060901@tuxrocks.com>
-References: <6d4bc9fc0705200525m1b72aaaevf8a1d090038bb7dc@mail.gmail.com>
-	 <1179669982.21827.25.camel@chaos>  <46512778.2050205@tuxrocks.com>
-	 <1179725216.6570.32.camel@chaos>  <4651B6A7.1060901@tuxrocks.com>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 18:04:34 +0200
-Message-Id: <1179763474.12708.7.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Mon, 21 May 2007 11:57:57 -0400
+Received: from outbound-mail-48.bluehost.com ([69.89.18.17]:42680 "HELO
+	outbound-mail-48.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755874AbXEUP5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 11:57:55 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+Date: Mon, 21 May 2007 08:57:44 -0700
+User-Agent: KMail/1.9.6
+Cc: Dave Airlie <airlied@gmail.com>, Jon Smirl <jonsmirl@verizon.net>,
+       Jesse Barnes <jesse.barnes@intel.com>, jonsmirl@gmail.com,
+       linux-kernel@vger.kernel.org
+References: <200705171423.46748.jesse.barnes@intel.com> <21d7e9970705210227x27234e2dme4e731a53f977082@mail.gmail.com> <46516A14.2000102@aitel.hist.no>
+In-Reply-To: <46516A14.2000102@aitel.hist.no>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705210857.44911.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-21 at 10:11 -0500, Frank Sorenson wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Thomas Gleixner wrote:
-> > On Mon, 2007-05-21 at 00:00 -0500, Frank Sorenson wrote:
-> > 
-> >> I see the slow bootup as well, even with 2.6.22-rc2-hrt1.  It takes at
-> >> least 5 times as long to boot, for X to start, to login, etc.
-> > 
-> > Can you provide me your .config and a boot log (please enable
-> > CONFIG_PRINTK_TIME and add "apic=verbose" to the kernel command line).
-> > 
-> > Can you also try with "hpet=disable" ?
-> 
-> All attached.  With "hpet=disable", it's still slow (clocksource becomes
-> acpi_pm).
+On Monday, May 21, 2007, Helge Hafting wrote:
+> >> > TThe problem with that is the concept of heads is flawed... there
+> >> > is in reality no such
+> >> > thing, you have crtcs and outputs, no heads. So any attempt to
+> >> > enforce the head concept involves putting policy into the kernel,
+> >> > as if I have 3 outputs but 2 crtcs how do I decide the mappings
+> >> > without the admin telling the kernel,
+> >>
+> >> Solution:
+> >> One device per crtc. You can then have two users, running consoles
+> >> or xservers on their crtcs, without having to involve root.
+> >
+> > Thats pretty much what the code does, but you still are putting a
+> > certain amount of policy in the kernel...
+>
+> What policy would that be?
+> The mapping is set by root from userspace, not by the kernel.
+> The same for ownership to crtc devices. The kernel may have to
+> provide some default so "init=/bin/sh" will work, that's all.
 
-> [   23.159166] Bluetooth: HCI device and connection manager initialized
-> [   23.159170] Bluetooth: HCI socket layer initialized
-> [   23.159179] BUG: at mm/slab.c:777 __find_general_cachep()
-> [   23.159181] 
-> [   23.159182] Call Trace:
-> [   23.159190]  [<ffffffff81097a67>] __kmalloc+0xa7/0xe0
-> [   23.159195]  [<ffffffff810238dd>] cache_k8_northbridges+0x9d/0x120
-> [   23.159200]  [<ffffffff814ddce3>] gart_iommu_init+0x33/0x5b0
-> [   23.159205]  [<ffffffff811d4027>] class_register+0x177/0x180
-> [   23.159210]  [<ffffffff814d8379>] pci_iommu_init+0x9/0x20
-> [   23.159214]  [<ffffffff814cf6cc>] kernel_init+0x14c/0x320
-> [   23.159218]  [<ffffffff8100b1b8>] child_rip+0xa/0x12
-> [   23.159223]  [<ffffffff81184150>] acpi_ds_init_one_object+0x0/0x7c
-> [   23.159227]  [<ffffffff814cf580>] kernel_init+0x0/0x320
-> [   23.159230]  [<ffffffff8100b1ae>] child_rip+0x0/0x12
+The policy of mapping outputs to CRTCs.  Like Dave said, you may have 
+several outputs but only one or two CRTCs, with limitations on how they 
+can be routed.  So doing "one device per CRTC" isn't quite enough, you 
+also have to choose an initial output setup.  But like you say this could 
+be changed at boot time.
 
-Hmm, other than this gem there is nothing obvious in the boot log. Does
-the box boot normal with 2.6.22-rc2 ? 
+> Sure.  Not multiseat by default, as the kernel can't know which output
+> goes with which keyboard. All I want it a system that allows
+> multiseat for those that care to set it up.
 
-Where does the slowness start ? Right from the beginning or later in the
-boot process ?
+Sure, and like I mentioned to Jon in another mail, a decent multiseat setup 
+is possible with these interfaces, albeit with a userlevel graphics daemon 
+to arbitrate what the CRTC->output mappings are and to coordinate access 
+to the hw if needed.
 
-	tglx
+So really, I think the interfaces posted here will do what you want.  Maybe 
+you can take a closer look and make sure?
 
-
+Thanks,
+Jesse
