@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763206AbXEUK0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbXEUK36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763206AbXEUK0o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 06:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbXEUK0g
+	id S1762050AbXEUK36 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 06:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756746AbXEUK3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 06:26:36 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1193 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755961AbXEUK0f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 06:26:35 -0400
-Date: Mon, 21 May 2007 12:25:14 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Elimar Riesebieter <riesebie@lxtec.de>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2 built on ppc (2)
-In-Reply-To: <1179741817.6570.44.camel@chaos>
-Message-ID: <Pine.LNX.4.64.0705211223350.1817@scrub.home>
-References: <20070520110815.GD3253@aragorn.home.lxtec.de> 
- <20070520143752.2f6be87a.akpm@linux-foundation.org> <1179741817.6570.44.camel@chaos>
+	Mon, 21 May 2007 06:29:48 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:53263
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756568AbXEUK3r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 06:29:47 -0400
+Date: Mon, 21 May 2007 03:28:56 -0700
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [PATCH] lockdep: lock contention tracking
+Message-ID: <20070521102856.GA20136@gnuppy.monkey.org>
+References: <1179657026.5915.10.camel@lappy> <20070521060446.GA4593@gnuppy.monkey.org> <20070521060828.GB20277@elte.hu> <20070521064150.GC4442@gnuppy.monkey.org> <20070521075013.GA9419@elte.hu> <20070521091848.GB4593@gnuppy.monkey.org> <20070521093639.GA29025@elte.hu> <20070521101946.GC4593@gnuppy.monkey.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521101946.GC4593@gnuppy.monkey.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, May 21, 2007 at 03:19:46AM -0700, Bill Huey wrote:
+> On Mon, May 21, 2007 at 11:36:39AM +0200, Ingo Molnar wrote:
+> > you got the history wrong i think: the first version of lockdep was 
+> > released to lkml a year ago (May 2006), while the first time you 
+> > mentioned your lock contention patch was November 2006 and you released 
+> > it to lkml in December 2006 - so it was _you_ who was "replicating the 
+> > same work", not lockdep :-) And this was pointed out to you very early 
+> > on, many months ago.
+> 
+> Yeah, and where do we disagree here again ? So I take it you're disagreeing
+> with my agreement with you that lockdep came first ? Geez, think about that
+> one for a bit. (chuckle) :)
 
-On Mon, 21 May 2007, Thomas Gleixner wrote:
+Yeah, sorry about the wording reversal. It was unintentional. I tend to drop
+minor words like "not" and stuff which can create confusion.
 
-> diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-> index cb25649..bb1bf86 100644
-> --- a/kernel/time/ntp.c
-> +++ b/kernel/time/ntp.c
-> @@ -304,10 +304,12 @@ int do_adjtimex(struct timex *txc)
->  			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
->  			if (time_offset < 0) {
->  			    temp64 = -temp64;
-> -			    do_div(temp64, mtemp);
-> +			    temp64 = div_long_long_rem_signed(temp64, mtemp,
-> +							      &rem);
->  			    freq_adj -= temp64;
->  			} else {
-> -			    do_div(temp64, mtemp);
-> +			    temp64 = div_long_long_rem_signed(temp64, mtemp,
-> +							      &rem);
->  			    freq_adj += temp64;
->  			}
->  		    }
+bill
 
-This only returns a long.
-
-bye, Roman
