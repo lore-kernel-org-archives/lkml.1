@@ -1,115 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934289AbXEUTbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934361AbXEUTbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934289AbXEUTbF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:31:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765442AbXEUTVu
+	id S934361AbXEUTbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765033AbXEUTVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:21:50 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46412 "EHLO
+	Mon, 21 May 2007 15:21:52 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:46417 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765440AbXEUTVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:21:48 -0400
-Message-Id: <20070521191734.512551000@sous-sol.org>
+	id S1765001AbXEUTVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:21:49 -0400
+Message-Id: <20070521191735.000962000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:51 -0700
+Date: Mon, 21 May 2007 12:16:52 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       NeilBrown <neilb@suse.de>, linux-raid@vger.kernel.org
-Subject: [patch 39/69] md: Avoid a possibility that a read error can wrongly propagate through md/raid1 to a filesystem.
-Content-Disposition: inline; filename=md-avoid-a-possibility-that-a-read-error-can-wrongly-propagate-through-md-raid1-to-a-filesystem.patch
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <htejun@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net,
+       Chris Rankin <rankincj@yahoo.com>
+Subject: [patch 40/69] driver-core: dont free devt_attr till the device is released
+Content-Disposition: inline; filename=driver-core-don-t-free-devt_attr-till-the-device-is-released.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Tejun Heo <htejun@gmail.com>
 
-When a raid1 has only one working drive, we want read error to
-propagate up to the filesystem as there is no point failing the last
-drive in an array.
+Currently, devt_attr for the "dev" file is freed immediately on device
+removal, but if the "dev" sysfs file is open when a device is removed,
+sysfs will access its attribute structure for further access including
+close resulting in jumping to garbled address.  Fix it by postponing
+freeing devt_attr to device release time.
 
-Currently the code perform this check is racy.  If a write and a read
-a both submitted to a device on a 2-drive raid1, and the write fails
-followed by the read failing, the read will see that there is only one
-working drive and will pass the failure up, even though the one
-working drive is actually the *other* one.
+Note that devt_attr for class_device is already freed on release.
 
-So, tighten up the locking.
+This bug is reported by Chris Rankin as bugzilla bug#8198.
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Chris Rankin <rankincj@yahoo.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
+Applies well to 2.6.20 and 21.  As sysfs-immediate-disconnect doesn't
+seem to be included in 2.6.22, this should be included in linus#master
+too (applies well there as well).
 
- drivers/md/raid1.c |   33 +++++++++++++++++++--------------
- 1 file changed, 19 insertions(+), 14 deletions(-)
+ drivers/base/core.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
---- linux-2.6.21.1.orig/drivers/md/raid1.c
-+++ linux-2.6.21.1/drivers/md/raid1.c
-@@ -271,21 +271,25 @@ static int raid1_end_read_request(struct
- 	 */
- 	update_head_pos(mirror, r1_bio);
+--- linux-2.6.21.1.orig/drivers/base/core.c
++++ linux-2.6.21.1/drivers/base/core.c
+@@ -93,6 +93,9 @@ static void device_release(struct kobjec
+ {
+ 	struct device * dev = to_dev(kobj);
  
--	if (uptodate || (conf->raid_disks - conf->mddev->degraded) <= 1) {
--		/*
--		 * Set R1BIO_Uptodate in our master bio, so that
--		 * we will return a good error code for to the higher
--		 * levels even if IO on some other mirrored buffer fails.
--		 *
--		 * The 'master' represents the composite IO operation to
--		 * user-side. So if something waits for IO, then it will
--		 * wait for the 'master' bio.
-+	if (uptodate)
-+		set_bit(R1BIO_Uptodate, &r1_bio->state);
-+	else {
-+		/* If all other devices have failed, we want to return
-+		 * the error upwards rather than fail the last device.
-+		 * Here we redefine "uptodate" to mean "Don't want to retry"
- 		 */
--		if (uptodate)
--			set_bit(R1BIO_Uptodate, &r1_bio->state);
-+		unsigned long flags;
-+		spin_lock_irqsave(&conf->device_lock, flags);
-+		if (r1_bio->mddev->degraded == conf->raid_disks ||
-+		    (r1_bio->mddev->degraded == conf->raid_disks-1 &&
-+		     !test_bit(Faulty, &conf->mirrors[mirror].rdev->flags)))
-+			uptodate = 1;
-+		spin_unlock_irqrestore(&conf->device_lock, flags);
-+	}
++	kfree(dev->devt_attr);
++	dev->devt_attr = NULL;
++
+ 	if (dev->release)
+ 		dev->release(dev);
+ 	else if (dev->type && dev->type->release)
+@@ -765,10 +768,8 @@ void device_del(struct device * dev)
  
-+	if (uptodate)
- 		raid_end_bio_io(r1_bio);
--	} else {
-+	else {
- 		/*
- 		 * oops, read error:
- 		 */
-@@ -992,13 +996,14 @@ static void error(mddev_t *mddev, mdk_rd
- 		unsigned long flags;
- 		spin_lock_irqsave(&conf->device_lock, flags);
- 		mddev->degraded++;
-+		set_bit(Faulty, &rdev->flags);
- 		spin_unlock_irqrestore(&conf->device_lock, flags);
- 		/*
- 		 * if recovery is running, make sure it aborts.
- 		 */
- 		set_bit(MD_RECOVERY_ERR, &mddev->recovery);
+ 	if (parent)
+ 		klist_del(&dev->knode_parent);
+-	if (dev->devt_attr) {
++	if (dev->devt_attr)
+ 		device_remove_file(dev, dev->devt_attr);
+-		kfree(dev->devt_attr);
 -	}
--	set_bit(Faulty, &rdev->flags);
-+	} else
-+		set_bit(Faulty, &rdev->flags);
- 	set_bit(MD_CHANGE_DEVS, &mddev->flags);
- 	printk(KERN_ALERT "raid1: Disk failure on %s, disabling device. \n"
- 		"	Operation continuing on %d devices\n",
+ 	if (dev->class) {
+ 		sysfs_remove_link(&dev->kobj, "subsystem");
+ 		/* If this is not a "fake" compatible device, remove the
 
 -- 
