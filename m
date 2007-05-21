@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764028AbXEURNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbXEUROZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764028AbXEURNY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 13:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbXEURNM
+	id S1762235AbXEUROZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 13:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbXEUROR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 13:13:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:60786 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757282AbXEURNK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 13:13:10 -0400
-Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Uwe Bugla <uwe.bugla@gmx.de>
-Cc: Ken Chen <kenchen@google.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Andrey Borzenkov <arvidjaar@mail.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <200705211851.00187.uwe.bugla@gmx.de>
-References: <464F42F3.1080300@madrabbit.org>
-	 <b040c32a0705210927q24e2cd8fm9f4616941fccfdea@mail.gmail.com>
-	 <b040c32a0705210937x3d1b8ac6wb9c8089337f5c683@mail.gmail.com>
-	 <200705211851.00187.uwe.bugla@gmx.de>
+	Mon, 21 May 2007 13:14:17 -0400
+Received: from smtp23.orange.fr ([193.252.23.111]:8850 "EHLO smtp23.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755902AbXEUROQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 13:14:16 -0400
+X-Greylist: delayed 1391 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 May 2007 13:14:15 EDT
+X-ME-UUID: 20070521165103328.503CC700009D@mwinf2313.orange.fr
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Helge Hafting <helge.hafting@aitel.hist.no>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <21d7e9970705210927s1454dc5ete89005715253f4b7@mail.gmail.com>
+References: <200705171423.46748.jesse.barnes@intel.com>
+	 <21d7e9970705210227x27234e2dme4e731a53f977082@mail.gmail.com>
+	 <46516A14.2000102@aitel.hist.no>
+	 <200705210857.44911.jbarnes@virtuousgeek.org>
+	 <9e4733910705210907g70142adfhcaf01bd6791f113d@mail.gmail.com>
+	 <21d7e9970705210927s1454dc5ete89005715253f4b7@mail.gmail.com>
 Content-Type: text/plain
-Date: Mon, 21 May 2007 19:11:06 +0200
-Message-Id: <1179767466.3320.48.camel@lov.localdomain>
+Date: Mon, 21 May 2007 18:50:55 +0200
+Message-Id: <1179766255.7699.216.camel@frg-rhel40-em64t-04>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+Am/EF90qLB7c+NAxpEzaeYYikRZybet8UyA4
- w4lhuZFGAD6p8EhSsX3Uq1hod5vgSEpC3zc4Qag4H7RUWTUImP
- y+sFpzgJiJHQjLPpbej/v17oahVUyfN
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-21 at 18:50 +0200, Uwe Bugla wrote:
-> Am Montag, 21. Mai 2007 18:37 schrieben Sie:
-> > On 5/21/07, Ken Chen <kenchen@google.com> wrote:
-> > > yes and no. in that commit, I automatically create n+1 device when
-> > > loop device n is created, allergically was tested to be fine with
-> > > casual usage of "losetup" and "mount -o loop".  However, there is a
-> > > bug in that commit when loop.c was compiled as a module.  And when Al
-> > > fixed it, he also removed that magic "n+1" trick.
-> > >
-> > > Nevertheless, yes, I'm guilty of introducing the new behavior.
-> >
-> > The easiest way is to reinstate max_loop and create "max_loop" device
-> > up front at module load time.  However, that will lose all the "fancy
-> > on-demand device instantiation feature".
-> >
-> > So I propose we do the following:
-> >
-> > 1. have the module honor "max_loop" parameter and create that many
-> > device upfront on module load (max_loop will also be a hard max) iff
-> > user specify the parameter.
-> > 2. if max_loop is not specified, default create 8 loop device.  User
-> > can extent more loop device by create device node themselves and have
-> > kernel automatically instantiate loop device on-demand.
+On Mon, 2007-05-21 at 17:27 +0100, Dave Airlie wrote:
+> > What about modifying the existing fbdev API? You could start with
+> one
+> > fbdev device per CRTC and then add a new IOCTL to control the output
+> > device. I haven't seen anything yet that justifies abandoning the
+> > existing fbdev API.
 > 
-> Sorry, Ken:
-> My question on point 2 would be: Does "User can extent more loop device by 
-> create device node themselves and......." correspond or conflict to working 
-> with udev?
+> Then you can't aribtrate properly output hooking is a root level
+> thing, you cannot allow the user in multiseat to just pick his own
+> outputs, if you claim to want a truly flexible interfaces, also the
+> crtc->output mappings aren't always simple, there are limitations on
+> most hw about which crtc can map to which output and when you can
+> clone etc.. putting policy for this stuff in-kernel would heavily
+> restrict what the user can do...
 
-Udev shouldn't care if the kernel tells udev about the new device, and
-the node with the correct dev_t is already there, it will leave it as it
-is, and only apply the configured user,group,mode values.
+Policy for this kind of thing should just go in HAL's ConsoleKit:
+http://lists.freedesktop.org/archives/hal/2007-January/007111.html
 
-The loop tools should probably extended to be able to request new
-devices from the kernel in a different way than open().
+	Xav
 
-Kay
 
