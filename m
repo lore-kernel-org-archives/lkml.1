@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935141AbXEUTmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935004AbXEUTna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935141AbXEUTmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763372AbXEUT1m
+	id S935004AbXEUTna (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933637AbXEUT1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:27:42 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:35838 "EHLO
+	Mon, 21 May 2007 15:27:47 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52531 "EHLO
 	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765876AbXEUT1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:27:39 -0400
-Message-Id: <20070521191705.575086000@sous-sol.org>
+	id S933004AbXEUT1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:27:46 -0400
+Message-Id: <20070521191755.954599000@sous-sol.org>
 References: <20070521191612.800400000@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:23 -0700
+Date: Mon, 21 May 2007 12:17:17 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,171 +23,111 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>, Adrian Bunk <bunk@stusta.de>,
-       Jorge Boncompte <jorge@dti2.net>
-Subject: [patch 11/69] NETFILTER: {ip,nf}_nat_proto_gre: do not modify/corrupt GREv0 packets through NAT
-Content-Disposition: inline; filename=ip-nf-_nat_proto_gre-do-not-modify-corrupt-grev0-packets-through-nat.patch
+       Netfilter Development Mailinglist 
+	<netfilter-devel@lists.netfilter.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 65/69] NETFILTER: {ip,nf}_conntrack: fix use-after-free in helper destroy callback invocation
+Content-Disposition: inline; filename=netfilter-ip-nf-_conntrack-fix-use-after-free-in-helper-destroy-callback-invocation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jorge Boncompte <jorge@dti2.net>
+From: Patrick McHardy <kaber@trash.net>
 
-While porting some changes of the 2.6.21-rc7 pptp/proto_gre conntrack
-and nat modules to a 2.4.32 kernel I noticed that the gre_key function
-returns a wrong pointer to the GRE key of a version 0 packet thus
-corrupting the packet payload.
-    
-The intended behaviour for GREv0 packets is to act like
-nf_conntrack_proto_generic/nf_nat_proto_unknown so I have ripped the
-offending functions (not used anymore) and modified the
-nf_nat_proto_gre modules to not touch version 0 (non PPTP) packets.
-    
-Signed-off-by: Jorge Boncompte <jorge@dti2.net>
+When the helper module is removed for a master connection that has a
+fulfilled expectation, but has already timed out and got removed from
+the hash tables, nf_conntrack_helper_unregister can't find the master
+connection to unset the helper, causing a use-after-free when the
+expected connection is destroyed and releases the last reference to
+the master.
+
+The helper destroy callback was introduced for the PPtP helper to clean
+up expectations and expected connections when the master connection
+times out, but doing this from destroy_conntrack only works for
+unfulfilled expectations since expected connections hold a reference
+to the master, preventing its destruction. Move the destroy callback to
+the timeout function, which fixes both problems.
+
+Reported/tested by Gabor Burjan <buga@buvoshetes.hu>.
+
 Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
 ---
-commit 244c67aee5750eb3a79c727d09c01a500e68bbbe
-tree 29bbce944bba681886a6d58c0c6b7bca3858c0e1
+commit 441f15ce23ef5c4d149b7e7985f63c1ddd334c45
+tree 8783e067803def0fc2773ef3515190143ac47320
 parent 8d8b10482fffcb72b15515231bb942e2ad6395c9
-author Jorge Boncompte <jorge@dti2.net> Thu, 03 May 2007 02:50:51 +0200
-committer Patrick McHardy <kaber@trash.net> Thu, 03 May 2007 02:50:51 +0200
+author Patrick McHardy <kaber@trash.net> Wed, 16 May 2007 18:52:36 +0200
+committer Patrick McHardy <kaber@trash.net> Wed, 16 May 2007 18:52:36 +0200
 
- include/linux/netfilter/nf_conntrack_proto_gre.h      |   18 ----------------
- include/linux/netfilter_ipv4/ip_conntrack_proto_gre.h |   19 -----------------
- net/ipv4/netfilter/ip_nat_proto_gre.c                 |   20 +++++++-----------
- net/ipv4/netfilter/nf_nat_proto_gre.c                 |   20 +++++++-----------
- 4 files changed, 16 insertions(+), 61 deletions(-)
+ net/ipv4/netfilter/ip_conntrack_core.c |   10 +++++-----
+ net/netfilter/nf_conntrack_core.c      |    8 ++++----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
---- linux-2.6.21.1.orig/include/linux/netfilter/nf_conntrack_proto_gre.h
-+++ linux-2.6.21.1/include/linux/netfilter/nf_conntrack_proto_gre.h
-@@ -87,24 +87,6 @@ int nf_ct_gre_keymap_add(struct nf_conn 
- /* delete keymap entries */
- void nf_ct_gre_keymap_destroy(struct nf_conn *ct);
+--- linux-2.6.21.1.orig/net/ipv4/netfilter/ip_conntrack_core.c
++++ linux-2.6.21.1/net/ipv4/netfilter/ip_conntrack_core.c
+@@ -302,7 +302,6 @@ destroy_conntrack(struct nf_conntrack *n
+ {
+ 	struct ip_conntrack *ct = (struct ip_conntrack *)nfct;
+ 	struct ip_conntrack_protocol *proto;
+-	struct ip_conntrack_helper *helper;
+ 	typeof(ip_conntrack_destroyed) destroyed;
  
--/* get pointer to gre key, if present */
--static inline __be32 *gre_key(struct gre_hdr *greh)
--{
--	if (!greh->key)
--		return NULL;
--	if (greh->csum || greh->routing)
--		return (__be32 *)(greh+sizeof(*greh)+4);
--	return (__be32 *)(greh+sizeof(*greh));
--}
+ 	DEBUGP("destroy_conntrack(%p)\n", ct);
+@@ -312,10 +311,6 @@ destroy_conntrack(struct nf_conntrack *n
+ 	ip_conntrack_event(IPCT_DESTROY, ct);
+ 	set_bit(IPS_DYING_BIT, &ct->status);
+ 
+-	helper = ct->helper;
+-	if (helper && helper->destroy)
+-		helper->destroy(ct);
 -
--/* get pointer ot gre csum, if present */
--static inline __sum16 *gre_csum(struct gre_hdr *greh)
--{
--	if (!greh->csum)
--		return NULL;
--	return (__sum16 *)(greh+sizeof(*greh));
--}
+ 	/* To make sure we don't get any weird locking issues here:
+ 	 * destroy_conntrack() MUST NOT be called with a write lock
+ 	 * to ip_conntrack_lock!!! -HW */
+@@ -356,6 +351,11 @@ destroy_conntrack(struct nf_conntrack *n
+ static void death_by_timeout(unsigned long ul_conntrack)
+ {
+ 	struct ip_conntrack *ct = (void *)ul_conntrack;
++	struct ip_conntrack_helper *helper;
++
++	helper = ct->helper;
++	if (helper && helper->destroy)
++		helper->destroy(ct);
+ 
+ 	write_lock_bh(&ip_conntrack_lock);
+ 	/* Inside lock so preempt is disabled on module removal path.
+--- linux-2.6.21.1.orig/net/netfilter/nf_conntrack_core.c
++++ linux-2.6.21.1/net/netfilter/nf_conntrack_core.c
+@@ -315,7 +315,6 @@ static void
+ destroy_conntrack(struct nf_conntrack *nfct)
+ {
+ 	struct nf_conn *ct = (struct nf_conn *)nfct;
+-	struct nf_conn_help *help = nfct_help(ct);
+ 	struct nf_conntrack_l3proto *l3proto;
+ 	struct nf_conntrack_l4proto *l4proto;
+ 	typeof(nf_conntrack_destroyed) destroyed;
+@@ -327,9 +326,6 @@ destroy_conntrack(struct nf_conntrack *n
+ 	nf_conntrack_event(IPCT_DESTROY, ct);
+ 	set_bit(IPS_DYING_BIT, &ct->status);
+ 
+-	if (help && help->helper && help->helper->destroy)
+-		help->helper->destroy(ct);
 -
- extern void nf_ct_gre_keymap_flush(void);
- extern void nf_nat_need_gre(void);
+ 	/* To make sure we don't get any weird locking issues here:
+ 	 * destroy_conntrack() MUST NOT be called with a write lock
+ 	 * to nf_conntrack_lock!!! -HW */
+@@ -375,6 +371,10 @@ destroy_conntrack(struct nf_conntrack *n
+ static void death_by_timeout(unsigned long ul_conntrack)
+ {
+ 	struct nf_conn *ct = (void *)ul_conntrack;
++	struct nf_conn_help *help = nfct_help(ct);
++
++	if (help && help->helper && help->helper->destroy)
++		help->helper->destroy(ct);
  
---- linux-2.6.21.1.orig/include/linux/netfilter_ipv4/ip_conntrack_proto_gre.h
-+++ linux-2.6.21.1/include/linux/netfilter_ipv4/ip_conntrack_proto_gre.h
-@@ -90,25 +90,6 @@ int ip_ct_gre_keymap_add(struct ip_connt
- /* delete keymap entries */
- void ip_ct_gre_keymap_destroy(struct ip_conntrack *ct);
- 
--
--/* get pointer to gre key, if present */
--static inline __be32 *gre_key(struct gre_hdr *greh)
--{
--	if (!greh->key)
--		return NULL;
--	if (greh->csum || greh->routing)
--		return (__be32 *) (greh+sizeof(*greh)+4);
--	return (__be32 *) (greh+sizeof(*greh));
--}
--
--/* get pointer ot gre csum, if present */
--static inline __sum16 *gre_csum(struct gre_hdr *greh)
--{
--	if (!greh->csum)
--		return NULL;
--	return (__sum16 *) (greh+sizeof(*greh));
--}
--
- #endif /* __KERNEL__ */
- 
- #endif /* _CONNTRACK_PROTO_GRE_H */
---- linux-2.6.21.1.orig/net/ipv4/netfilter/ip_nat_proto_gre.c
-+++ linux-2.6.21.1/net/ipv4/netfilter/ip_nat_proto_gre.c
-@@ -70,6 +70,11 @@ gre_unique_tuple(struct ip_conntrack_tup
- 	__be16 *keyptr;
- 	unsigned int min, i, range_size;
- 
-+	/* If there is no master conntrack we are not PPTP,
-+	   do not change tuples */
-+	if (!conntrack->master)
-+		return 0;
-+		
- 	if (maniptype == IP_NAT_MANIP_SRC)
- 		keyptr = &tuple->src.u.gre.key;
- 	else
-@@ -122,18 +127,9 @@ gre_manip_pkt(struct sk_buff **pskb,
- 	if (maniptype == IP_NAT_MANIP_DST) {
- 		/* key manipulation is always dest */
- 		switch (greh->version) {
--		case 0:
--			if (!greh->key) {
--				DEBUGP("can't nat GRE w/o key\n");
--				break;
--			}
--			if (greh->csum) {
--				/* FIXME: Never tested this code... */
--				nf_proto_csum_replace4(gre_csum(greh), *pskb,
--							*(gre_key(greh)),
--							tuple->dst.u.gre.key, 0);
--			}
--			*(gre_key(greh)) = tuple->dst.u.gre.key;
-+		case GRE_VERSION_1701:
-+			/* We do not currently NAT any GREv0 packets.
-+			 * Try to behave like "ip_nat_proto_unknown" */
- 			break;
- 		case GRE_VERSION_PPTP:
- 			DEBUGP("call_id -> 0x%04x\n",
---- linux-2.6.21.1.orig/net/ipv4/netfilter/nf_nat_proto_gre.c
-+++ linux-2.6.21.1/net/ipv4/netfilter/nf_nat_proto_gre.c
-@@ -72,6 +72,11 @@ gre_unique_tuple(struct nf_conntrack_tup
- 	__be16 *keyptr;
- 	unsigned int min, i, range_size;
- 
-+	/* If there is no master conntrack we are not PPTP,
-+	   do not change tuples */
-+	if (!conntrack->master)
-+		return 0;
-+		
- 	if (maniptype == IP_NAT_MANIP_SRC)
- 		keyptr = &tuple->src.u.gre.key;
- 	else
-@@ -122,18 +127,9 @@ gre_manip_pkt(struct sk_buff **pskb, uns
- 	if (maniptype != IP_NAT_MANIP_DST)
- 		return 1;
- 	switch (greh->version) {
--	case 0:
--		if (!greh->key) {
--			DEBUGP("can't nat GRE w/o key\n");
--			break;
--		}
--		if (greh->csum) {
--			/* FIXME: Never tested this code... */
--			nf_proto_csum_replace4(gre_csum(greh), *pskb,
--					       *(gre_key(greh)),
--					       tuple->dst.u.gre.key, 0);
--		}
--		*(gre_key(greh)) = tuple->dst.u.gre.key;
-+	case GRE_VERSION_1701:
-+		/* We do not currently NAT any GREv0 packets.
-+		 * Try to behave like "nf_nat_proto_unknown" */
- 		break;
- 	case GRE_VERSION_PPTP:
- 		DEBUGP("call_id -> 0x%04x\n", ntohs(tuple->dst.u.gre.key));
+ 	write_lock_bh(&nf_conntrack_lock);
+ 	/* Inside lock so preempt is disabled on module removal path.
 
 -- 
