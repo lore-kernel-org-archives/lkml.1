@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbXEUQLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761304AbXEUQMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbXEUQLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759464AbXEUQL1
+	id S1761304AbXEUQMd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbXEUQMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:11:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:21207 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756419AbXEUQL0 (ORCPT
+	Mon, 21 May 2007 12:12:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:21432 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755918AbXEUQMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:11:26 -0400
+	Mon, 21 May 2007 12:12:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=qGdDIGe6Dyb+9MjY0i+rMcfBJBDZAZUnxUWkXmG2jR1yNxGH0ScNvRRdn6QpuZLR518FkkDCjd9ZjdrGILnQz2JKZ37p6StsKPUrVbIPr0A51FavHe9xoOCPTHU1pIKCkVuF1ES6Z6J2kmL4H7u65A9Kj9wdpZJbR1sYYDXeblE=
-Message-ID: <4651C4A1.6000101@gmail.com>
-Date: Mon, 21 May 2007 18:11:13 +0200
-From: Robert de Rooy <robert.de.rooy@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EYZq6/MkinOPyvlXf1/ey1ZJ2+IdZt2HDCynEtw3n26SZzomTXI1dNcYLHkbhlOXQ+nAM3KyofVKuQqNjzufMcewm9qSTJ5jLKKLAQ0N7w+ot2QGKmK6a+EiwfhGEjxhfMafQa0FSDHNsECyjfsWQv5d8R8UGIQdQWTpTXUUVWM=
+Message-ID: <3aa654a40705210912l72a0e5bfp6fd1346eec2c023c@mail.gmail.com>
+Date: Mon, 21 May 2007 09:12:18 -0700
+From: "Avuton Olrich" <avuton@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [Bug 8498], [Bug 8510], and Re: Can't s2ram 22-rc2
+Cc: "Andrey Borzenkov" <arvidjaar@mail.ru>,
+       "Soeren Sonnenburg" <kernel@nn7.de>, "Greg KH" <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Jiri Slaby" <jirislaby@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "USB development list" <linux-usb-devel@lists.sourceforge.net>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       "Kernel development list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.0705211040330.4496-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: linux-kernel@vger.kernel.org, alan@redhat.com, bzolnier@gmail.com,
-       jgarzik@pobox.com
-Subject: Re: libata and legacy ide pcmcia failure
-References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com> <464CB7C9.2080807@gmail.com> <46503192.1040300@gmail.com> <4650B9E3.7070409@gmail.com> <46518798.2020808@gmail.com> <4651B66E.6030505@gmail.com> <4651B834.3060702@gmail.com>
-In-Reply-To: <4651B834.3060702@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070519164504.GA10675@kroah.com>
+	 <Pine.LNX.4.44L0.0705211040330.4496-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmm, good question. I do not have any other PCMCIA device to test.
-The only other device I have is a Cardbus Wi-Fi adapter without Linux 
-support (Marvell). If I insert that adapter lspci seems to list it 
-properly, but without resorting to ndiswrapper I have no way of testing 
-it. In any case, seeing how Cardbus is PCI based this is probably 
-pointless to resolving this issue.
+On 5/21/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> Andrey, Soeren, and Avuton: Please try this patch with 2.6.22-rc2 or
+> later and see if it fixes your problems.
 
-Would any other log data from the controller initialization or lspci help?
+It does, I already synced the -rc1 patch that was at the bug link for myself.
 
-Tejun Heo wrote:
-> Robert de Rooy wrote:
->   
->> This gets a little bit further again, but now I get lots of new errors....
->>     
->
-> Alright, this doesn't seem to be the CF reader's problem anymore.  It
-> seems the PCMCIA controller isn't passing interrupts properly.  Does any
-> other device work in the slot?
->
->   
-
+Thanks
+-- 
+avuton
+--
+ Anyone who quotes me in their sig is an idiot. -- Rusty Russell.
