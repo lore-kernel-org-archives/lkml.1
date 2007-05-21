@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762812AbXEUQgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759608AbXEUQhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762812AbXEUQgL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 12:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbXEUQf4
+	id S1759608AbXEUQhn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 12:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbXEUQhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 12:35:56 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:39766 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756019AbXEUQfz (ORCPT
+	Mon, 21 May 2007 12:37:36 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:32990 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755821AbXEUQhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 12:35:55 -0400
-Message-ID: <4651CA63.9030903@zytor.com>
-Date: Mon, 21 May 2007 09:35:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 21 May 2007 12:37:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=jHs2rkGwuAsYls0vUNgniA6Hjt7WErs6L3fp8//dq/OOsHQe3hjEoLmA8CJhFYHHG
+	ICU36HADWoNX766R5zmmQ==
+Message-ID: <b040c32a0705210937x3d1b8ac6wb9c8089337f5c683@mail.gmail.com>
+Date: Mon, 21 May 2007 09:37:26 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Cc: "Kay Sievers" <kay.sievers@vrfy.org>, "Ray Lee" <ray-lk@madrabbit.org>,
+       "Al Viro" <viro@ftp.linux.org.uk>,
+       "Andrey Borzenkov" <arvidjaar@mail.ru>, "Uwe Bugla" <uwe.bugla@gmx.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <b040c32a0705210927q24e2cd8fm9f4616941fccfdea@mail.gmail.com>
 MIME-Version: 1.0
-To: young dave <hidave.darkstar@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc1-mm1
-References: <20070515201914.16944e04.akpm@linux-foundation.org>	 <a8e1da0705180154v37e8ec5fs2cc4de9417cd44d2@mail.gmail.com>	 <a8e1da0705180307m60a91996r91c8bfcd1c863a94@mail.gmail.com>	 <464DDA40.6010101@zytor.com>	 <a8e1da0705201753i1527138ape2163817c6c0d3b5@mail.gmail.com>	 <465124EA.1020801@zytor.com>	 <a8e1da0705202200u5976d14do7ec1469941bb2967@mail.gmail.com>	 <46512821.9010905@zytor.com>	 <a8e1da0705202239r31d03a5dyc2f0ce6a795e0124@mail.gmail.com>	 <465138CC.3060605@zytor.com> <a8e1da0705210141m4d9f0ccevde3060fefcc55537@mail.gmail.com>
-In-Reply-To: <a8e1da0705210141m4d9f0ccevde3060fefcc55537@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <464F42F3.1080300@madrabbit.org>
+	 <200705200845.43621.arvidjaar@mail.ru>
+	 <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
+	 <20070520062816.GA4095@ftp.linux.org.uk>
+	 <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com>
+	 <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com>
+	 <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com>
+	 <1179677799.3311.5.camel@lov.localdomain>
+	 <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
+	 <b040c32a0705210927q24e2cd8fm9f4616941fccfdea@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-young dave wrote:
-> Hi,
-> 
-> kernel booting and stopped in edd.c:read_sector.
-> 
-> I add debug messages around the two inline assemblly sentence, recompile
-> kernel,
-> now strange thing happend, the kernel booting directly, but the printf
-> messages can't be seen because it's too rapid.
-> 
-> can we use printk in boot code?
+On 5/21/07, Ken Chen <kenchen@google.com> wrote:
+> yes and no. in that commit, I automatically create n+1 device when
+> loop device n is created, allergically was tested to be fine with
+> casual usage of "losetup" and "mount -o loop".  However, there is a
+> bug in that commit when loop.c was compiled as a module.  And when Al
+> fixed it, he also removed that magic "n+1" trick.
+>
+> Nevertheless, yes, I'm guilty of introducing the new behavior.
 
-Well, it's spelt "printf", but same thing.  (Since it doesn't take a
-logging priority, it seems better to name it printf.)
+The easiest way is to reinstate max_loop and create "max_loop" device
+up front at module load time.  However, that will lose all the "fancy
+on-demand device instantiation feature".
 
-This implies a miscompile somewhere, *or* that your bios stomps on
-registers that gcc expect preserved, and adding printf's disturbs the
-register allocation sufficiently.
+So I propose we do the following:
 
-Could you send me the arch/i386/boot/setup.elf file from the original,
-failed, build?
+1. have the module honor "max_loop" parameter and create that many
+device upfront on module load (max_loop will also be a hard max) iff
+user specify the parameter.
+2. if max_loop is not specified, default create 8 loop device.  User
+can extent more loop device by create device node themselves and have
+kernel automatically instantiate loop device on-demand.
 
-Thanks.
-
-	-hpa
+Is this acceptable?  Patch in a bit.
