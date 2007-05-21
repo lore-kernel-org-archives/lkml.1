@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbXEUVKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761606AbXEUVMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760960AbXEUVKc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 17:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXEUVKZ
+	id S1761606AbXEUVMe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 17:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbXEUVM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 17:10:25 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:55992 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753689AbXEUVKY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 17:10:24 -0400
-Date: Mon, 21 May 2007 17:03:58 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: UML doesn't compile in 2.6.21
-Message-ID: <20070521210358.GB9929@c2.user-mode-linux.org>
-References: <20070516224938.GN12319@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070516224938.GN12319@pengutronix.de>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 21 May 2007 17:12:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45371 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756822AbXEUVM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 17:12:26 -0400
+Message-ID: <46520B36.90409@garzik.org>
+Date: Mon, 21 May 2007 17:12:22 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Robert de Rooy <robert.de.rooy@gmail.com>, linux-kernel@vger.kernel.org,
+       Alan <alan@lxorguk.ukuu.org.uk>, bzolnier@gmail.com,
+       linux-pcmcia@lists.infradead.org
+Subject: Re: libata and legacy ide pcmcia failure
+References: <464A0321.3080201@gmail.com> <464C1575.8070005@gmail.com> <464CB7C9.2080807@gmail.com> <46503192.1040300@gmail.com> <4650B9E3.7070409@gmail.com> <46518798.2020808@gmail.com> <4651B66E.6030505@gmail.com> <4651B834.3060702@gmail.com> <4651C4A1.6000101@gmail.com> <4651C74B.7020108@gmail.com>
+In-Reply-To: <4651C74B.7020108@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 12:49:38AM +0200, Robert Schwebel wrote:
-> Jeff,
+Tejun Heo wrote:
+> Robert de Rooy wrote:
+>> Hmm, good question. I do not have any other PCMCIA device to test.
+>> The only other device I have is a Cardbus Wi-Fi adapter without Linux
+>> support (Marvell). If I insert that adapter lspci seems to list it
+>> properly, but without resorting to ndiswrapper I have no way of testing
+>> it. In any case, seeing how Cardbus is PCI based this is probably
+>> pointless to resolving this issue.
+>>
+>> Would any other log data from the controller initialization or lspci help?
 > 
-> Any idea how this could happen? I'm trying to build 2.6.21 for
-> ARCH=um, and the linker stage explodes here:
+> Hmmm... I don't really know much about PCMCIA.  cc'ing linux-pcmcia.
 > 
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> lib/lib.a(bug.o): In function `find_bug':
-> bug.c:(.text+0x171): undefined reference to `__start___bug_table'
-> bug.c:(.text+0x177): undefined reference to `__stop___bug_table'
-> bug.c:(.text+0x180): undefined reference to `__start___bug_table'
-> bug.c:(.text+0x193): undefined reference to `__stop___bug_table'
+> The original thread can be read from the following URL.
+> 
+>   http://thread.gmane.org/gmane.linux.kernel/530099
+> 
+> It seems we're losing interrupts from the CFA device.  Any ideas?
 
-No, I don't.  The bug_table symbols are rather unconditionally defined
-in asm-generic/vmlinux.lds.h.  This can't be affected by any config
-settings that I can see, let alone module support.  Further, the
-config I always build has modules enabled, and I've never seen this.
+Alan probably knows more, but ISTR some CFA PCMCIA devices that needed 
+polling...
 
-Can you try starting over with an mrproper and see if you can
-reproduce it?
+This isn't an ARM platform perchance, is it?
 
-				Jeff
+	Jeff
 
--- 
-Work email - jdike at linux dot intel dot com
+
