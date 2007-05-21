@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXEUBdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXEUBdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbXEUBdb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 21:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbXEUBdR
+	id S1754860AbXEUBdx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 21:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbXEUBdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 21:33:17 -0400
-Received: from ns1.suse.de ([195.135.220.2]:56599 "EHLO mx1.suse.de"
+	Sun, 20 May 2007 21:33:20 -0400
+Received: from mail.suse.de ([195.135.220.2]:56600 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082AbXEUBdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754139AbXEUBdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 20 May 2007 21:33:16 -0400
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 21 May 2007 11:32:57 +1000
+Date: Mon, 21 May 2007 11:33:03 +1000
+Message-Id: <1070521013303.6655@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
@@ -19,29 +20,46 @@ Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: "Jeff Zheng" <Jeff.Zheng@endace.com>
 Cc: Neil Brown <neilb@suse.de>
 Cc: stable@kernel.org
-Subject: [PATCH 000 of 7] md: Introduction EXPLAIN PATCH SET HERE
-Message-ID: <20070521111837.20906.patches@notabene>
+Subject: [PATCH 001 of 7] md: Avoid overflow in raid0 calculation with large components.
+References: <20070521111837.20906.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following are 7 patches for md in current main-line.
 
-The first two fix bugs that can cause data corruption, and so are suitable for -stable. 
+If a raid0 has a component device larger than 4TB, and is accessed on
+a 32bit machines, then as 'chunk' is unsigned lock,
+   chunk << chunksize_bits
+can overflow (this can be as high as the size of the device in KB).
+chunk itself will not overflow (without triggering a BUG).
 
-The next fixes some problems with hot-adding a device to a linear array.  As has not
-been tested by my test-suite until now, it hasn't worked properly until now :-(
+So change 'chunk' to be 'sector_t, and get rid of the 'BUG' as it becomes
+impossible to hit.
 
-The remainder are mainly cleaning up code and comments.  They could
-wait for 2.6.23, but are probably safe to go into 2.6.22 (maybe sit a week in -mm??)
+Cc: "Jeff Zheng" <Jeff.Zheng@endace.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+Cc: stable@kernel.org
 
-Thanks,
-NeilBrown
+### Diffstat output
+ ./drivers/md/raid0.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-
- [PATCH 001 of 7] md: Avoid overflow in raid0 calculation with large components.
- [PATCH 002 of 7] md: Don't write more than is required of the last page of a bitmap
- [PATCH 003 of 7] md: Fix bug with linear hot-add and elsewhere.
- [PATCH 004 of 7] md: Improve message about invalid superblock during autodetect.
- [PATCH 005 of 7] md: Improve the is_mddev_idle test fix
- [PATCH 006 of 7] md: Check that internal bitmap does not overlap other data.
- [PATCH 007 of 7] md: Change bitmap_unplug and others to void functions.
+diff .prev/drivers/md/raid0.c ./drivers/md/raid0.c
+--- .prev/drivers/md/raid0.c	2007-05-18 11:48:57.000000000 +1000
++++ ./drivers/md/raid0.c	2007-05-18 11:48:57.000000000 +1000
+@@ -415,7 +415,7 @@ static int raid0_make_request (request_q
+ 	raid0_conf_t *conf = mddev_to_conf(mddev);
+ 	struct strip_zone *zone;
+ 	mdk_rdev_t *tmp_dev;
+-	unsigned long chunk;
++	sector_t chunk;
+ 	sector_t block, rsect;
+ 	const int rw = bio_data_dir(bio);
+ 
+@@ -470,7 +470,6 @@ static int raid0_make_request (request_q
+ 
+ 		sector_div(x, zone->nb_dev);
+ 		chunk = x;
+-		BUG_ON(x != (sector_t)chunk);
+ 
+ 		x = block >> chunksize_bits;
+ 		tmp_dev = zone->dev[sector_div(x, zone->nb_dev)];
