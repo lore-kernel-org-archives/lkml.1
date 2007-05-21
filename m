@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760593AbXEUN6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbXEUODM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760593AbXEUN6e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 09:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbXEUN60
+	id S1758783AbXEUODM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 10:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbXEUOC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 09:58:26 -0400
-Received: from as4.cineca.com ([130.186.84.213]:34216 "EHLO as4.cineca.com"
+	Mon, 21 May 2007 10:02:58 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3907 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755939AbXEUN6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 09:58:25 -0400
-Message-ID: <4651A564.9090509@users.sourceforge.net>
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070326 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Andi Kleen <ak@suse.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, Rik van Riel <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-References: <464C9D82.60105@redhat.com> <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr> <20070520205500.GJ22452@vanheusden.com> <200705202314.57758.ak@suse.de> <46517817.1080208@users.sourceforge.net> <20070521110406.GA14802@vanheusden.com> <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr> <20070521124734.GB14802@vanheusden.com>
-In-Reply-To: <20070521124734.GB14802@vanheusden.com>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=77CEF397;
-	url=keyserver.veridis.com
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Date: Mon, 21 May 2007 15:58:25 +0200 (MEST)
+	id S1755459AbXEUOC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 10:02:57 -0400
+Date: Mon, 21 May 2007 09:31:24 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Eugene Teo <eteo@redhat.com>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, Florin Malita <fmalita@gmail.com>
+Subject: Re: [2.6 patch] drivers/net/wireless/libertas/rx.c: fix use-after-free
+Message-ID: <20070521133124.GB9621@tuxdriver.com>
+References: <464DD957.9040803@redhat.com> <20070518174623.GA3492@tuxdriver.com> <464E6B82.40607@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464E6B82.40607@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Folkert van Heusden wrote:
->>> What about the following enhancement: I check with sig_fatal if it would
->>> kill the process and only then emit a message. So when an application
->>> takes care itself of handling it nothing is printed.
->>> +	/* emit some logging for unhandled signals
->>> +	 */
->>> +	if (sig_fatal(t, sig))
->> Not unhandled_signal()?
+On Sat, May 19, 2007 at 11:14:10AM +0800, Eugene Teo wrote:
+> John W. Linville wrote:
+
+> >>  done:
+> >>         LEAVE();
+> >>
+> >> -       skb->protocol = __constant_htons(0x0019);       /* ETH_P_80211_RAW */
+> >> -
+> > 
+> > Except for this part...is this intentional?
 > 
-> Can we already use that one in send_signal? As the signal needs to be
-> send first I think before we know if it was handled or not? sig_fatal
-> checks if the handler is set to default - which is it is not taken care
-> of.
+> skb could have been freed by then. And, in libertas_upload_rx_packet(), skb->protocol
+> is initialized by eth_type_trans(skb, priv->wlan_dev.netdev).
 
-What about ptrace()'d processes? I don't think we should log signals for them...
+OK, I see that.  Looks like Florin has reposted his patch, still
+without this hunk.  Would you like to submit a patch for this hunk?
 
--Andrea
+Thanks,
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
