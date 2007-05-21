@@ -1,69 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936226AbXEUT74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936209AbXEUUAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936226AbXEUT74 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934957AbXEUToe
+	id S936209AbXEUUAg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935210AbXEUTwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:44:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45463 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934838AbXEUToc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:44:32 -0400
-Message-ID: <4651F653.9060802@redhat.com>
-Date: Mon, 21 May 2007 12:43:15 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: second, bigger problem with private futexes
-References: <4651D628.1070206@redhat.com> <4651E1D4.6010705@cosmosbay.com> <4651E44A.9070301@redhat.com> <4651E992.9080205@cosmosbay.com> <4651F261.2040903@cosmosbay.com>
-In-Reply-To: <4651F261.2040903@cosmosbay.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 21 May 2007 15:52:20 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:35997 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S935657AbXEUTwS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:52:18 -0400
+X-Greylist: delayed 1087 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 May 2007 15:52:17 EDT
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Jackson <pj@sgi.com>,
+       npiggin@suse.de
+In-Reply-To: <Pine.LNX.4.64.0705210932500.25871@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl>
+	 <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
+	 <1179385718.27354.17.camel@twins>
+	 <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
+	 <20070517175327.GX11115@waste.org>
+	 <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
+	 <1179429499.2925.26.camel@lappy>
+	 <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
+	 <1179437209.2925.29.camel@lappy>
+	 <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
+	 <1179482054.2925.52.camel@lappy>
+	 <Pine.LNX.4.64.0705181002400.9372@schroedinger.engr.sgi.com>
+	 <1179650384.7019.33.camel@twins>
+	 <Pine.LNX.4.64.0705210932500.25871@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 21:33:58 +0200
+Message-Id: <1179776038.5735.39.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, 2007-05-21 at 09:45 -0700, Christoph Lameter wrote:
+> On Sun, 20 May 2007, Peter Zijlstra wrote:
+> 
+> > I care about kernel allocations only. In particular about those that
+> > have PF_MEMALLOC semantics.
+> 
+> Hmmmm.. I wish I was more familiar with PF_MEMALLOC. ccing Nick.
+> 
+> >  - set page->reserve nonzero for each page allocated with
+> >    ALLOC_NO_WATERMARKS; which by the previous point implies that all
+> >    available zones are below ALLOC_MIN|ALLOC_HIGH|ALLOC_HARDER
+> 
+> Ok that adds a new field to the page struct. I suggested a page flag in 
+> slub before.
 
-Eric Dumazet wrote:
-> 3) if condvar is PRIVATE and mutex is SHARED, a FUTEX_WAKE_PRIVATE
-> should be done. (and loose the REQUEUE optim)
-> Yes we could add a special futex primitive for this special case. But I
-> cannot see how a program could use such a construct.
+No it doesn't; it overloads page->index. Its just used as extra return
+value, it need not be persistent. Definitely not worth a page-flag.
 
-Very easily: mutexes are often created independently from the condvars
-and they are used for many things.  Maybe a program is even creating all
-mutexes as shared to be ready for all situations.  Normally doing this
-is no big problem, the performance penalties are minimal.
+> >  - when a page->reserve slab is allocated store it in s->reserve_slab
+> >    and do not update the ->cpu_slab[] (this forces subsequent allocs to
+> >    retry the allocation).
+> 
+> Right that should work.
+>  
+> > All ALLOC_NO_WATERMARKS enabled slab allocations are served from
+> > ->reserve_slab, up until the point where a !page->reserve slab alloc
+> > succeeds, at which point the ->reserve_slab is pushed into the partial
+> > lists and ->reserve_slab set to NULL.
+> 
+> So the original issue is still not fixed. A slab alloc may succeed without
+> watermarks if that particular allocation is restricted to a different set 
+> of nodes. Then the reserve slab is dropped despite the memory scarcity on
+> another set of nodes?
+
+I can't see how. This extra ALLOC_MIN|ALLOC_HIGH|ALLOC_HARDER alloc will
+first deplete all other zones. Once that starts failing no node should
+still have pages accessible by any allocation context other than
+PF_MEMALLOC.
+
+> > Since only the allocation of a new slab uses the gfp zone flags, and
+> > other allocations placement hints they have to be uniform over all slab
+> > allocs for a given kmem_cache. Thus the s->reserve_slab/page->reserve
+> > status is kmem_cache wide.
+> 
+> No the gfp zone flags are not uniform and placement of page allocator 
+> allocs through SLUB do not always have the same allocation constraints.
+
+It has to; since it can serve the allocation from a pre-existing slab
+allocation. Hence any page allocation must be valid for all other users.
+
+> SLUB will check the node of the page that was allocated when the page 
+> allocator returns and put the page into that nodes slab list. This varies
+> depending on the allocation context.
+
+Yes, it keeps slabs on per node lists. I'm just not seeing how this puts
+hard constraints on the allocations.
+
+As far as I can see there cannot be a hard constraint here, because
+allocations form interrupt context are at best node local. And node
+affine zone lists still have all zones, just ordered on locality.
+
+> Allocations can be particular to uses of a slab in particular situations. 
+> A kmalloc cache can be used to allocate from various sets of nodes in 
+> different circumstances. kmalloc will allow serving a limited number of 
+> objects from the wrong nodes for performance reasons but the next 
+> allocation from the page allocator (or from the partial lists) will occur 
+> using the current set of allowed nodes in order to ensure a rough 
+> obedience to the memory policies and cpusets. kmalloc_node behaves 
+> differently and will enforce using memory from a particular node.
+
+>From what I can see, it takes pretty much any page it can get once you
+hit it with PF_MEMALLOC. If the page allocation doesn't use ALLOC_CPUSET
+the page can come from pretty much anywhere.
 
 
-> 4) if condvar is SHARED and mutex is private, we have a *problem*,
-> because the process doing the broadcast() can be in another mm. So a
-> requeue is not possible at all.
-
-It is if we can specify the owner of the mutex.  I.e., the PID.
-
-But yes, this case is extremely ugly.
-
-
-The problem is that all these cases worked nice so far.  They all had
-the same good performance.  Now we are severely penalizing code which
-mismatches condvar and mutex shared attributes.  There is a good reason
-why we introduced FUTEX_CMP_REQUEUE, the benefits in certain programs is
-huge.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGUfZT2ijCOnn/RHQRAkT0AJ4pgX7RtdUf8uwyP9v7o+nkv/9uMACfbx6+
-kBaJLSSvDBjN09KMgmLKnSI=
-=4XMz
------END PGP SIGNATURE-----
