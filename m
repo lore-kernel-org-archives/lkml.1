@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935912AbXEUT5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936112AbXEUT5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935912AbXEUT5H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934216AbXEUTdN
+	id S936112AbXEUT5i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934381AbXEUTeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:33:13 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:54421 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765637AbXEUTdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:33:11 -0400
-Message-Id: <20070521191744.685169000@sous-sol.org>
-References: <20070521191612.800400000@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:58 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Andi Kleen <ak@suse.de>
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Dumazet <dada1@cosmosbay.com>,
-       dang@gentoo.org, john stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 46/69] [PATCH] x86_64 : Fix vgettimeofday()
-Content-Disposition: inline; filename=x86_64-fix-vgettimeofday.patch
+	Mon, 21 May 2007 15:34:06 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45949 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933805AbXEUTeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:34:04 -0400
+Date: Mon, 21 May 2007 12:34:01 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Jens Axboe <jens.axboe@oracle.com>,
+       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+In-Reply-To: <Pine.LNX.4.64.0705212026080.5442@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0705211231250.27209@schroedinger.engr.sgi.com>
+References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com>
+ <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705211147100.26970@schroedinger.engr.sgi.com>
+ <20070521190043.GA4705@kernel.dk> <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705212026080.5442@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+On Mon, 21 May 2007, Hugh Dickins wrote:
 
-From: Eric Dumazet <dada1@cosmosbay.com>
+> > the problem. And the earlier case that you reported was a version of SLUB 
+> > that did not have the capability to switch off SLUB_DEBUG.
+> 
+> Are you sure?  If CONFIG_EMBEDDED=y then -rc1 and -rc2 give you the
+> choice to turn it off.
 
-vgettimeofday() may return some bad timeval values, (tv_usec = 1000000), because of a wrong compare.
+Right. That went in indeed shortly before the rc1 release.
 
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- arch/x86_64/kernel/vsyscall.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+So if both had disabled SLUB_DEBUG then this could be the reason for the 
+failure. However, CONFIG_SLUB_DEBUG was set in the .config that was 
+included when this bug was reported. So I think we still have not found 
+the real problem yet.
 
---- linux-2.6.21.1.orig/arch/x86_64/kernel/vsyscall.c
-+++ linux-2.6.21.1/arch/x86_64/kernel/vsyscall.c
-@@ -132,7 +132,7 @@ static __always_inline void do_vgettimeo
- 
- 	/* convert to usecs and add to timespec: */
- 	tv->tv_usec += nsec_delta / NSEC_PER_USEC;
--	while (tv->tv_usec > USEC_PER_SEC) {
-+	while (tv->tv_usec >= USEC_PER_SEC) {
- 		tv->tv_sec += 1;
- 		tv->tv_usec -= USEC_PER_SEC;
- 	}
-
--- 
