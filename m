@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760830AbXETXKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759797AbXEUAZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760830AbXETXKn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 20 May 2007 19:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760420AbXETXKc
+	id S1759797AbXEUAZa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 20 May 2007 20:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbXEUAZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 20 May 2007 19:10:32 -0400
-Received: from outbound-mail-59.bluehost.com ([69.89.20.39]:37885 "HELO
-	outbound-mail-59.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760401AbXETXKb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 20 May 2007 19:10:31 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Jon Smirl <jonsmirl@verizon.net>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Date: Sun, 20 May 2007 16:10:31 -0700
-User-Agent: KMail/1.9.6
-Cc: Jesse Barnes <jesse.barnes@intel.com>, jonsmirl@gmail.com,
-       linux-kernel@vger.kernel.org
-References: <200705171423.46748.jesse.barnes@intel.com> <pan.2007.05.20.17.41.22@gmail.com>
-In-Reply-To: <pan.2007.05.20.17.41.22@gmail.com>
+	Sun, 20 May 2007 20:25:25 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1254 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758321AbXEUAZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 20 May 2007 20:25:24 -0400
+Date: Mon, 21 May 2007 02:25:35 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: RFC: kconfig select warnings bogus?
+In-Reply-To: <20070519151523.GA26724@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0705210215170.1817@scrub.home>
+References: <20070519151523.GA26724@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705201610.32170.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, May 20, 2007, Jon Smirl wrote:
-> On Thu, 17 May 2007 14:23:45 -0700, Jesse Barnes wrote:
-> > In collaboration with the FB guys, we've been working on enhancing the
-> > kernel's graphics subsystem in an attempt to bring some sanity to the
-> > Linux graphics world and avoid the situation we have now where several
-> > kernel and userspace drivers compete for control of graphics devices.
->
-> How is supporting different users logged into each head going to work?
-> The original model for this was to give each head its own fbdev device.
-> It is important that each user be able to set their own mode without
-> being root.
+Hi,
 
-With the interfaces implemented here, a userspace application can create a 
-multiseat environment either with a single graphics card with multiple 
-outputs or multiple cards.  It could do this by creating several frame 
-buffer objects and associating them with whatever CRTCs were available, 
-and managing input via existing APIs.  I don't know of anyone that's done 
-this yet though...
+On Sat, 19 May 2007, Sam Ravnborg wrote:
 
-Jesse
+> We see a lot of these lately:
+>   GEN     /home/bor/build/linux-2.6.22/Makefile
+> scripts/kconfig/conf -s arch/i386/Kconfig
+> drivers/macintosh/Kconfig:116:warning: 'select' used by config symbol 'PMAC_APM_EMU' refers to undefined symbol 'SYS_SUPPORTS_APM_EMULATION'
+> drivers/net/Kconfig:2283:warning: 'select' used by config symbol 'UCC_GETH' refers to undefined symbol 'UCC_FAST'
+> drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+> drivers/input/mouse/Kconfig:182:warning: 'select' used by config symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+> 
+> 
+> Do this warning really add any value or should we just ignore them like this?
+
+The problem is that a select operation on a non bool/tristate symbol is 
+undefined. A runtime error would probably be even more ignored than this.
+"Proving" that this select can't be activated is theoretically possible, 
+but not really practical. An alternative might be to reverse the 
+dependency again and let it act like a "depends on".
+Just removing the warning is definitely not the right answer.
+
+bye, Roman
