@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbXEUIzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbXEUIzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759893AbXEUIzS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXEUIzH
+	id S1760960AbXEUIzi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbXEUIzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:55:07 -0400
-Received: from main.gmane.org ([80.91.229.2]:56173 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755724AbXEUIzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:55:05 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: John Miller <forall@mail15.com>
-Subject: UDP packet loss when running lsof
-Date: Mon, 21 May 2007 08:51:05 +0000 (UTC)
-Message-ID: <loom.20070521T090409-252@post.gmane.org>
+	Mon, 21 May 2007 04:55:25 -0400
+Received: from www.osadl.org ([213.239.205.134]:33227 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760402AbXEUIzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:55:22 -0400
+Subject: Re: [BUG] local_softirq_pending storm
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Anant Nitya <kernel@prachanda.info>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <200705211152.08518.kernel@prachanda.hub>
+References: <200705091942.22920.kernel@prachanda.hub>
+	 <200705200253.44992.kernel@prachanda.hub> <1179697388.6570.26.camel@chaos>
+	 <200705211152.08518.kernel@prachanda.hub>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 11:01:57 +0200
+Message-Id: <1179738117.6570.37.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 62.225.145.226 ()
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 2007-05-21 at 11:52 +0530, Anant Nitya wrote:
+> > You should find something like:
+> >
+> > (         swapper-0    |#0): new 67173 us user-latency.
+> >
+> > along with the familiar "NOHZ ......" message in your log file.
+> >
+> > Once that happened please do:
+> >
+> > $ cat /proc/latency_trace >trace.txt
+> >
+> > compress it and send it to me along with the full dmesg output or put
+> > both up to some place, where I can download it.
+> Hi Thomas
+> 
+> Here are the links...
+> http://cybertek.info/taitai/dmesg-2.6.22.rc2.hrt2-1.SMP.DN.LINUX.txt
+> http://cybertek.info/taitai/trace.txt.bz2
 
-I'm experiencing silent (no counter increased or log message) UDP
-packet loss inside the kernel (2.6.16.27 from Novell).
+Thanks. Sorry, I need more info. I uploaded a new tracer.diff to 
 
-My application receives about 50 MB of multicast UDP traffic and
-writes the packets into files. If I comment out the write() call,
-the application runs for days without packet loss. With the write()
-at some random times (20 minuntes or even hours) blocks of packets
-(from 10 to 300) are lost.
+http://www.tglx.de/private/tglx/ht-debug/tracer.diff
 
-While I can run 10 "while true; do true; done" or a "dd" that writes
-additional data to disk without any effect on the packet loss, a
-simple "lsof" forces packet loss most of the time.
+Can you please revert the first one and retest with the new one ?
 
-Are there any more configuration options of the kernel that will
-help? Which system calls of lsof are blocking the network data
-throughput of the kernel?
+Thanks,
 
-Some background about the things I already did:
+	tglx
 
-- I increased the max allowed receive buffer through
-proc/sys/net/core/rmem_max and the application calls the right
-syscall. "netstat -su" does not show any "packet receive errors".
-
-- After getting "kernel: swapper: page allocation failure.
-order:0, mode:0x20", I increased /proc/sys/vm/min_free_kbytes
-
-- ixgb.txt in kernel network documentation suggests to increase
-net.core.netdev_max_backlog to 300000. This did not help.
-
-- I also had to increase net.core.optmem_max, because the default
-value was too small for 700 multicast groups.
-
-- Network card is handled by bnx2 kernel module
-
-- The application uses multiple threads for receiving and writing,
-so the receiver threads can still receive while the writer threads
-are waiting for I/O completions.
-
-TIA for any help and suggestions.
-JM
 
 
