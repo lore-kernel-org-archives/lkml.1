@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbXEUIwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbXEUIzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759654AbXEUIwr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 04:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbXEUIwk
+	id S1759893AbXEUIzS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 04:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXEUIzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 04:52:40 -0400
-Received: from mga03.intel.com ([143.182.124.21]:46118 "EHLO mga03.intel.com"
+	Mon, 21 May 2007 04:55:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:56173 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754933AbXEUIwi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 04:52:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,560,1170662400"; 
-   d="scan'208";a="230280687"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.22-rc1-mm1 - s390 vs. md
-Date: Mon, 21 May 2007 01:52:36 -0700
-Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5201DEAE7F@azsmsx413.amr.corp.intel.com>
-In-Reply-To: <20070521092449.34a50f2e@gondolin.boeblingen.de.ibm.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.22-rc1-mm1 - s390 vs. md
-Thread-Index: AcebeSN/nnkYHvULSKKx95LFhHcs3AADAnfw
-From: "Williams, Dan J" <dan.j.williams@intel.com>
-To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, "NeilBrown" <neilb@suse.de>,
-       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
-       "linux-s390" <linux-s390@vger.kernel.org>
-X-OriginalArrivalTime: 21 May 2007 08:52:38.0035 (UTC) FILETIME=[61FE2630:01C79B85]
+	id S1755724AbXEUIzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 04:55:05 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: John Miller <forall@mail15.com>
+Subject: UDP packet loss when running lsof
+Date: Mon, 21 May 2007 08:51:05 +0000 (UTC)
+Message-ID: <loom.20070521T090409-252@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 62.225.145.226 ()
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Cornelia Huck [mailto:cornelia.huck@de.ibm.com]
-> On Fri, 18 May 2007 09:30:09 -0700,
-> "Williams, Dan J" <dan.j.williams@intel.com> wrote:
-> 
-> > When CONFIG_DMA_ENGINE=n async_tx_find_channel takes the form:
-> > ... async_tx_find_channel( ... )
-> > {
-> > 	return NULL;
-> > }
-> >
-> > So in the S390 case the entire asynchronous path will be compiled
-away.
-> 
-> Unfortunately, do_async_xor() (and others) is not ifdef'ed and
-contains
-> dma_map_page(), which led to the compile failure...
+Hi,
 
-Sorry, I did not realize dma_map_page did not exist on s390.  I am
-building an s390 cross compiler so I can clean up these errors.
+I'm experiencing silent (no counter increased or log message) UDP
+packet loss inside the kernel (2.6.16.27 from Novell).
+
+My application receives about 50 MB of multicast UDP traffic and
+writes the packets into files. If I comment out the write() call,
+the application runs for days without packet loss. With the write()
+at some random times (20 minuntes or even hours) blocks of packets
+(from 10 to 300) are lost.
+
+While I can run 10 "while true; do true; done" or a "dd" that writes
+additional data to disk without any effect on the packet loss, a
+simple "lsof" forces packet loss most of the time.
+
+Are there any more configuration options of the kernel that will
+help? Which system calls of lsof are blocking the network data
+throughput of the kernel?
+
+Some background about the things I already did:
+
+- I increased the max allowed receive buffer through
+proc/sys/net/core/rmem_max and the application calls the right
+syscall. "netstat -su" does not show any "packet receive errors".
+
+- After getting "kernel: swapper: page allocation failure.
+order:0, mode:0x20", I increased /proc/sys/vm/min_free_kbytes
+
+- ixgb.txt in kernel network documentation suggests to increase
+net.core.netdev_max_backlog to 300000. This did not help.
+
+- I also had to increase net.core.optmem_max, because the default
+value was too small for 700 multicast groups.
+
+- Network card is handled by bnx2 kernel module
+
+- The application uses multiple threads for receiving and writing,
+so the receiver threads can still receive while the writer threads
+are waiting for I/O completions.
+
+TIA for any help and suggestions.
+JM
+
+
