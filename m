@@ -1,104 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764870AbXEUSEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759778AbXEUSP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764870AbXEUSEy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 14:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbXEUSEs
+	id S1759778AbXEUSP2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 14:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbXEUSPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 14:04:48 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:5770 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759889AbXEUSEr (ORCPT
+	Mon, 21 May 2007 14:15:17 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:7902 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755701AbXEUSPP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 14:04:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D4XqrZoh5Jxmr37l2gVvVgC5JEkvRwdSa6ETNIRFRXwTAdbJ9SO9VSrPpEpbW/FpchpvUt+0A6UNOE6xuW16mB6HkHdKCBhIGPJpqMLHdXLWyh4agp+jYcY7fOWs/44/bLNTBEGp2k3sp5v4zAlMusu+6tU+T4g6UpJv+lAjKQI=
-Message-ID: <9e4733910705211104u143e7abercccc4f351441343e@mail.gmail.com>
-Date: Mon, 21 May 2007 14:04:45 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-In-Reply-To: <21d7e9970705211047n2328f970ref96ea85856f3ba8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>
-	 <200705210914.22663.jbarnes@virtuousgeek.org>
-	 <200705210934.58559.jbarnes@virtuousgeek.org>
-	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
-	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>
-	 <9e4733910705211042o8926e4cy2225c2dbcbf3ff2@mail.gmail.com>
-	 <21d7e9970705211047n2328f970ref96ea85856f3ba8@mail.gmail.com>
+	Mon, 21 May 2007 14:15:15 -0400
+Date: Mon, 21 May 2007 12:14:58 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: something strange in libata-core.c for kernel 2.6.22-rc3
+In-reply-to: <20070521121537.48dd2b2c@the-village.bc.nu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, l.genoni@oltrelinux.com
+Message-id: <4651E1A2.5000703@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.MCe9nCgx+WnsHp+weZyM9LiDF0s@ifi.uio.no>
+ <fa.rv8/6n3uBnAIoUHHNUW3eR7cJd8@ifi.uio.no>
+ <fa.LXy58QwLlPXDhsfVUU9kEfA3QbI@ifi.uio.no>
+ <fa.Ldjy2OubeKomZD0OV2gRm/wpUFo@ifi.uio.no> <46515983.6030206@shaw.ca>
+ <465161AF.6030002@gmail.com> <20070521121537.48dd2b2c@the-village.bc.nu>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/07, Dave Airlie <airlied@gmail.com> wrote:
-> On 5/21/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> > On 5/21/07, Dave Airlie <airlied@gmail.com> wrote:
-> > > This just needs a userspace console again a parallel problem that
-> > > really isn't much to do with the problem set this work is trying to
-> > > solve... it should enable it...
-> >
-> > When I went through the design process for all this I came to the same
-> > conclusion about needing a user space console process.
-> >
-> > User space console does impact on all of this because it implies that
-> > the current console should be be defeatured down until it becomes only
-> > a system recovery console and not a console for everyday use.
-> >
-> > For example, one part of the defeaturing would be to remove the
-> > drawing acceleration code in the existing fbdev console drivers and to
-> > rework it to support accelerated drawing from the user space console
-> > implementation. You want the system recovery console mode to be as
-> > simple as possible so that it is always guaranteed to work. User space
-> > console is also what leads to the idea of compiling VT out of the
-> > kernel.
-> >
-> > Once you decide that a user space console is needed then the per CRTC
-> > device node becomes more obvious since different people can be logged
-> > onto the different consoles.
-> >
-> > All of the points in the list are interrelated and the architecture
-> > needs to address everything as a unified whole.
->
-> you were doing fine up until the last point, they are interrelated but
-> not architecturally dependent, we can do a lot of work on this stuff
-> without that, we don't need to deprecate anything, just provide new
-> interfaces that new drivers can use to implement this stuff, then
-> people can pull over the old drivers at their own pace, like we can
-> just stick a flag in the console that says we can handle things like
-> dumping oopsen in KD_GRAPHICS etc.. drivers that can do it will do it,
-> drivers that can't won't.
+Alan Cox wrote:
+>> Yeah, that's consistent to what I've seen on my machine which is a
+>> variant of A8N.  No matter what value I through at _STM, _GTM just
+>> echoed the result thus always leading to 80c configuration.
+>>
+>>> I guess this means that what we have to do is trust that the BIOS set up
+>>> a reasonable mode and base the cable detect on that (either by reading
+>>> back the boot-up controller registers, or by calling GTM). I imagine
+>>> this is what the Windows default IDE driver is doing (just using the
+>>> boot-up mode and feeding it back using GTM/STM on suspend/resume cycles).
+>> Alan, what do you think?
+> 
+> Interesting, sounds like it is still useful rather than just reading the
+> registers as the GTM/STM seem to survive resume cycles which drive config
+> may not (eg if the driver is loaded after a s2ram/resume.
 
-You are describing a transition plan without knowing what the final
-design is going to look like. We really need to hash out the final
-design so that the right path is taken to get there.
+I don't think that case is handled in this BIOS anyway - if you call GTM 
+after resume without previously calling STM, it's just going to read 
+whatever random values are in the controller and give you timings based 
+on that, which presumably will be junk.
 
-For example I didn't have per CRTC device nodes or user space consoles
-in my original design, but after talking to some of the people that
-really wanted the multi-seat feature it led me down the user space
-console path and to the per CRTC device node solution. I also got beat
-up at OLS by people wanting full Unicode support on the console.
+It looks like the main purpose for what it's doing with saving those 
+registers in the _PTS method is to save and restore a couple of 
+controller registers called ID20 (PCI config space offset 0x50, 16 bits) 
+and ID22 (PCI config space offset 0x5C, 32 bits) which aren't otherwise 
+used in the AML. According to pata_amd, for the AMD IDE interface the 
+former is some reserved bits as well as the cable detect bits, while the 
+latter is the cycle time and address setup time register. Presumably 
+those aren't really the cable detect bits though, since the detection 
+based on those bits in pata_amd doesn't really work..
 
->
-> You don't compile VT out you just disable it when you have a driver
-> that supports the model,
->
-> You also require a heavy weight state switch for suspend/resume in any
-> case so this could be utilised for other things, e.g. text mode on
-> many cards can't be done while acceleration is operational, but
-> certainly don't want to bar text mode for people who want it..
->
-> Dave.
->
+> If it just echoes back we should also be able to detect this by using
+> knowingly invalid values.
 
+Well, this implementation doesn't purely echo back the same values, it 
+echoes back values derived from what the controller was actually set to, 
+so I imagine if you put in something ridiculous it would come back with 
+the closest possible mode that it was set to (PIO mode 0, etc.)
+
+I suspect the implementation we would need to use (which doesn't depend 
+on anything not given in the spec) would be:
+
+-On driver load, execute _GTM to get the timing mode the BIOS had set. 
+Assume this represents the fastest modes the controller supports, and 
+set cable detect based on whether it includes UDMA modes > 2.
+
+-If we decide to set a slower mode (speed down due to errors, etc.), set 
+it using _STM and then read back the actual values that were set using 
+_GTM (for possible use in suspend/resume).
+
+-On resume after suspend, re-set the last mode using _STM followed by 
+executing _GTF and running those commands.
+
+This won't handle the case where the driver is loaded after the system 
+was already suspended to RAM and resumed, however I don't know exactly 
+how one could handle that in this situation..
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
