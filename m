@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935622AbXEUTue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965668AbXEUTuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935622AbXEUTue (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933843AbXEUT3Q
+	id S965668AbXEUTuz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933814AbXEUT3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:29:16 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52642 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933020AbXEUT3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:29:14 -0400
-Message-Id: <20070521191728.137091000@sous-sol.org>
-References: <20070521191612.800400000@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 21 May 2007 12:16:44 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, David Miller <davem@davemloft.net>,
-       bunk@stusta.de, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Tom Rini <trini@kernel.crashing.org>,
-       Matt Mackall <mpm@selenic.com>
-Subject: [patch 32/69] NETPOLL: Fix TX queue overflow in trapped mode.
-Content-Disposition: inline; filename=netpoll-fix-tx-queue-overflow-in-trapped-mode.patch
+	Mon, 21 May 2007 15:29:20 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:12598 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934089AbXEUT3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:29:18 -0400
+Date: Mon, 21 May 2007 21:26:56 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+Message-ID: <20070521192656.GC4705@kernel.dk>
+References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com> <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com> <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com> <Pine.LNX.4.64.0705211147100.26970@schroedinger.engr.sgi.com> <20070521190043.GA4705@kernel.dk> <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+On Mon, May 21 2007, Christoph Lameter wrote:
+> On Mon, 21 May 2007, Jens Axboe wrote:
+> 
+> > I can test whatever you want tomorrow morning, it was 100% repeatable
+> > here. So which one, your patch or Hughs?
+> 
+> This was an effect of me suggesting to switch off CONFIG_SLUB_DEBUG. If 
+> you did not run without CONFIG_SLUB_DEBUG then you were not affected by 
+> the problem. And the earlier case that you reported was a version of SLUB 
+> that did not have the capability to switch off SLUB_DEBUG.
+> 
+> Is there any way we can boot with "slub_debug" on the kernel command line 
+> and get early printk output? Looks like an early failure that may have to 
+> do with other kernel debug options being on (lockdep or so?)
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-CONFIG_NETPOLL_TRAP causes the TX queue controls to be completely bypassed in
-the netpoll's "trapped" mode which easily causes overflows in the drivers with
-short TX queues (most notably, in 8139too with its 4-deep queue).  So, make
-this option more sensible by making it only bypass the TX softirq wakeup.
-
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Acked-by: Jeff Garzik <jgarzik@pobox.com>
-Acked-by: Tom Rini <trini@kernel.crashing.org>
-Acked-by: Matt Mackall <mpm@selenic.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- include/linux/netdevice.h |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
---- linux-2.6.21.1.orig/include/linux/netdevice.h
-+++ linux-2.6.21.1/include/linux/netdevice.h
-@@ -647,8 +647,10 @@ static inline void netif_start_queue(str
- static inline void netif_wake_queue(struct net_device *dev)
- {
- #ifdef CONFIG_NETPOLL_TRAP
--	if (netpoll_trap())
-+	if (netpoll_trap()) {
-+		clear_bit(__LINK_STATE_XOFF, &dev->state);
- 		return;
-+	}
- #endif
- 	if (test_and_clear_bit(__LINK_STATE_XOFF, &dev->state))
- 		__netif_schedule(dev);
-@@ -656,10 +658,6 @@ static inline void netif_wake_queue(stru
- 
- static inline void netif_stop_queue(struct net_device *dev)
- {
--#ifdef CONFIG_NETPOLL_TRAP
--	if (netpoll_trap())
--		return;
--#endif
- 	set_bit(__LINK_STATE_XOFF, &dev->state);
- }
- 
+Sure, I will try that as well. For reference, the last kernel tested on
+that box was HEAD 129a84de2347002f09721cda3155ccfd19fade40.
 
 -- 
+Jens Axboe
+
