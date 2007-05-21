@@ -1,72 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbXEUR6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764027AbXEUSAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbXEUR6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 13:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbXEUR6i
+	id S1764027AbXEUSAY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 14:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbXEUSAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 13:58:38 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:44189 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755701AbXEUR6i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 13:58:38 -0400
-From: Darren Hart <dvhltc@us.ibm.com>
-Organization: IBM Linux Technology Center
-To: Chris Wright <chrisw@sous-sol.org>
+	Mon, 21 May 2007 14:00:09 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:34277 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757798AbXEUSAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 14:00:07 -0400
+Date: Mon, 21 May 2007 10:57:13 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chris Wright <chrisw@sous-sol.org>, Darren Hart <dvhltc@us.ibm.com>,
+       Andrew Morton <akpm@osdl.org>, Stable Team <stable@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
 Subject: Re: [stable] [PATCH] Ignore bogus ACPI info for offline CPUs
-Date: Mon, 21 May 2007 10:58:32 -0700
-User-Agent: KMail/1.9.6
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       Stable Team <stable@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
-References: <1179584570.12981.123.camel@chaos> <200705210947.35350.dvhltc@us.ibm.com> <20070521170815.GE3429@sequoia.sous-sol.org>
-In-Reply-To: <20070521170815.GE3429@sequoia.sous-sol.org>
+Message-ID: <20070521175713.GH3429@sequoia.sous-sol.org>
+References: <1179584570.12981.123.camel@chaos> <200705210947.35350.dvhltc@us.ibm.com> <20070521170815.GE3429@sequoia.sous-sol.org> <1179768728.12708.31.camel@chaos>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705211058.34108.dvhltc@us.ibm.com>
+In-Reply-To: <1179768728.12708.31.camel@chaos>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 May 2007 10:08:15 Chris Wright wrote:
-> * Darren Hart (dvhltc@us.ibm.com) wrote:
-> > On Saturday 19 May 2007 07:22:50 Thomas Gleixner wrote:
-> > > Booting a SMP kernel with maxcpus=1 on a SMP system leads to a hard
-> > > hang, because ACPI ignores the maxcpus setting and sends timer
-> > > broadcast info for the offline CPUs. This results in a stuck for ever
-> > > call to smp_call_function_single() on an offline CPU.
-> > >
-> > > Ignore the bogus information and print a kernel error to remind ACPI
-> > > folks to fix it.
-> > >
-> > > Affects 2.6.21 / 2.6.22-rc
-> > >
-> > > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> >
-> > When I first booted with this patch I received the following in a loop:
-> >
-> > irq 9: nobody cared (try booting with the "irqpoll" option)
->
-> What happens when booting w/out this patch?  Don't want to add known
-> regression to -stable.
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> The irq 9 issue is a separate problem and only surfaces on some boxen,
+> but it's not related to this patch. It's related to maxcpus=1 as well.
 
-The system will boot w/o acpi=noirq with and without this patch if maxcpus is 
-not specified.  If maxcpus is specified without the patch, the system locks 
-up as Thomas described.  If maxcpus is specified with the patch, then 
-acpi=noirq is required to boot - but it will boot.  This does not introduce a 
-regression IMO.
+Thanks for confirming, just was double checking the two issues were
+indeed separate.
 
---Darren
-
->
-> thanks,
-> -chris
-
-
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Realtime Linux Team
+thanks,
+-chris
