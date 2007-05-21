@@ -1,161 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbXEUUyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbXEUU5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbXEUUyq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbXEUUyj
+	id S1759044AbXEUU5O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbXEUU47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:54:39 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:25207 "EHLO
-	viefep33-int.chello.at" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754914AbXEUUyi (ORCPT
+	Mon, 21 May 2007 16:56:59 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:58761 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754914AbXEUU46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:54:38 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Jackson <pj@sgi.com>,
-       npiggin@suse.de
-In-Reply-To: <Pine.LNX.4.64.0705211326290.28504@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705161957440.13458@schroedinger.engr.sgi.com>
-	 <1179385718.27354.17.camel@twins>
-	 <Pine.LNX.4.64.0705171027390.17245@schroedinger.engr.sgi.com>
-	 <20070517175327.GX11115@waste.org>
-	 <Pine.LNX.4.64.0705171101360.18085@schroedinger.engr.sgi.com>
-	 <1179429499.2925.26.camel@lappy>
-	 <Pine.LNX.4.64.0705171220120.3043@schroedinger.engr.sgi.com>
-	 <1179437209.2925.29.camel@lappy>
-	 <Pine.LNX.4.64.0705171516260.4593@schroedinger.engr.sgi.com>
-	 <1179482054.2925.52.camel@lappy>
-	 <Pine.LNX.4.64.0705181002400.9372@schroedinger.engr.sgi.com>
-	 <1179650384.7019.33.camel@twins>
-	 <Pine.LNX.4.64.0705210932500.25871@schroedinger.engr.sgi.com>
-	 <1179776038.5735.39.camel@lappy>
-	 <Pine.LNX.4.64.0705211239300.27622@schroedinger.engr.sgi.com>
-	 <1179778127.7019.48.camel@twins>
-	 <Pine.LNX.4.64.0705211326290.28504@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 22:54:32 +0200
-Message-Id: <1179780873.7019.65.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 21 May 2007 16:56:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=grmuTzDLLI1/4abnm3e7aLyMr9CY9lJ4hJOgW34iQJiqjs8fVDHOBrG7b4beMZdX+
+	ojLBoN0D4OHQsgxKZPccA==
+Message-ID: <6599ad830705211356l9f2d24jc3a7834e7db34458@mail.gmail.com>
+Date: Mon, 21 May 2007 13:56:31 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] Per container statistics
+Cc: vatsa@in.ibm.com, linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
+       akpm@linux-foundation.org, devel@openvz.org
+In-Reply-To: <20070514174454.15338.67171.sendpatchset@balbir-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070514174454.15338.67171.sendpatchset@balbir-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-21 at 13:32 -0700, Christoph Lameter wrote:
-> On Mon, 21 May 2007, Peter Zijlstra wrote:
-> 
-> > > This means we will disobey cpuset and memory policy constraints?
-> > 
-> > >From what I can make of it, yes. Although I'm a bit hazy on the
-> > mempolicy code.
-> 
-> In an interrupt context we do not have a process context. But there is
-> no exemption from memory policy constraints.
+Hi Balbir,
 
-Ah, see below.
+On 5/14/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+> This patch implements per container statistics infrastructure and re-uses
+> code from the taskstats interface. A new set of container operations are
+> registered with commands and attributes. It should be very easy to
+> extend per container statistics, by adding members to the containerstats
+> structure.
 
-> > > > > No the gfp zone flags are not uniform and placement of page allocator 
-> > > > > allocs through SLUB do not always have the same allocation constraints.
-> > > > 
-> > > > It has to; since it can serve the allocation from a pre-existing slab
-> > > > allocation. Hence any page allocation must be valid for all other users.
-> > > 
-> > > Why does it have to? This is not true.
-> > 
-> > Say the slab gets allocated by an allocation from interrupt context; no
-> > cpuset, no policy. This same slab must be valid for whatever allocation
-> > comes next, right? Regardless of whatever policy or GFP_ flags are in
-> > effect for that allocation.
-> 
-> Yes sure if we do not have a context then no restrictions originating 
-> there can be enforced. So you want to restrict the logic now to
-> interrupt allocs? I.e. GFP_ATOMIC?
+Sorry for the delay in looking at this. (I've been travelling a bit).
 
-No, any kernel alloc.
+The basic idea of being able to get stats on a per-container basis
+seems good, but I've got some suggestions on the API/implementation:
 
-> > > The constraints come from the context of memory policies and cpusets. See
-> > > get_any_partial().
-> > 
-> > but get_partial() will only be called if the cpu_slab is full, up until
-> > that point you have to do with whatever is there.
-> 
-> Correct. That is an optimization but it may be called anytime from the 
-> perspective of an execution thread and that may cause problems with your 
-> approach.
+- saving a mount pointer in the containerfsroot structure won't work
+because a hierarchy (superblock) can be mounted in more than one
+place, or even in zero places (if you unmount a hierarchy with active
+containers, the superblock and the containers stay active). Also it
+might be possible to move a mounted container hierarchy via mount
+--move, although I've not actually tried that.
 
-I'm not seeing how this would interfere; if the alloc can be handled
-from a partial slab, that is fine.
+- a cleaner way to pass in a container id would be to pass a file
+descriptor on a container directory. The dentry associated with this
+fd would unambiguously identify the hierarchy and the container, so
+then even if we didn't maintain a per-container task likst, the
+for_each_thread() loop would involve just a single comparison per task
+to see if the task was in the desired container.
 
-> > > > As far as I can see there cannot be a hard constraint here, because
-> > > > allocations form interrupt context are at best node local. And node
-> > > > affine zone lists still have all zones, just ordered on locality.
-> > > 
-> > > Interrupt context is something different. If we do not have a process 
-> > > context then no cpuset and memory policy constraints can apply since we
-> > > have no way of determining that. If you restrict your use of the reserve 
-> > > cpuset to only interrupt allocs then we may indeed be fine.
-> > 
-> > No, what I'm saying is that if the slab gets refilled from interrupt
-> > context the next process context alloc will have to work with whatever
-> > the interrupt left behind. Hence there is no hard constraint.
-> 
-> It will work with whatever was left behind in the case of SLUB and a 
-> kmalloc alloc (optimization there). It wont if its SLAB (which is 
-> stricter) or a kmalloc_node alloc. A kmalloc_node alloc will remove the 
-> current cpuslab if its not on the right now.
+- if we're trying to integrate this with taskstats, then it would be
+nice to support retrieving all the other taskstats values (where they
+make sense) on a per-container basis (in the same way that we can
+currently request them on a per-thread or a per-process basis). i.e.
+don't create a new container_taskstats structure, but instead augment
+the current taskstats structure, and allow the user to retrieve the
+aggregate of that for the entire container. Similarly, being able to
+get taskstats notifications based on the container memberships of a
+task might be nice.
 
-OK, that is my understanding too. So this should be good too.
-
-> > > > >From what I can see, it takes pretty much any page it can get once you
-> > > > hit it with PF_MEMALLOC. If the page allocation doesn't use ALLOC_CPUSET
-> > > > the page can come from pretty much anywhere.
-> > > 
-> > > No it cannot. One the current cpuslab is exhaused (which can be anytime) 
-> > > it will enforce the contextual allocation constraints. See 
-> > > get_any_partial() in slub.c.
-> > 
-> > If it finds no partial slabs it goes back to the page allocator; and
-> > when you allocate a page under PF_MEMALLOC and the normal allocations
-> > are exhausted it takes a page from pretty much anywhere.
-> 
-> If it finds no partial slab then it will go to the page allocator which 
-> will allocate given the current contextual alloc constraints. 
-
-> In the case 
-> of a memory policy we may have limited the allocations to a single node 
-> where there is no escape (the zonelist does *not* contain zones of other 
-> nodes). 
-
-Ah, this is the point I was missing; I assumed each zonelist would
-always include all zones, but would just continue/break the loop using
-things like cpuset_zone_allwed_*().
-
-This might indeed foil the game.
-
-I could 'fix' this by doing the PF_MEMALLOC allocation from the regular
-node zonelist instead of from the one handed down....
-
-/me thinks out loud.. since direct reclaim runs in whatever process
-context was handed out we're stuck with whatever policy we started from;
-but since the allocations are kernel allocs - not userspace allocs, and
-we're in dire straights, it makes sense to violate the tasks restraints
-in order to keep the machine up.
-
-memory policies are the only ones with 'short' zonelists, right? CPU
-sets are on top of whatever zonelist is handed out, and the normal
-zonelists include all nodes - ordered by distance
-
-> The only chance to bypass this is by only dealing with allocations 
-> during interrupt that have no allocation context.
-
-But you just said that interrupts are not exempt from memory policies,
-and policies are the only ones that have 'short' zonelists. /me
-confused.
-
+Paul
