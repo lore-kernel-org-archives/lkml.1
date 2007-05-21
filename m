@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764729AbXEUPq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764976AbXEUPql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764729AbXEUPq3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 11:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761811AbXEUPqP
+	id S1764976AbXEUPql (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 11:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763747AbXEUPqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 11:46:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56214 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761368AbXEUPqO (ORCPT
+	Mon, 21 May 2007 11:46:22 -0400
+Received: from outbound-mail-08.bluehost.com ([69.89.17.208]:33971 "HELO
+	outbound-mail-08.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1763603AbXEUPqU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 11:46:14 -0400
-Date: Mon, 21 May 2007 16:46:13 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Jones <davej@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, rdunlap@xenotime.net
-Subject: Re: RFC: Schedule EFS for removal.
-Message-ID: <20070521154613.GA27027@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, rdunlap@xenotime.net
-References: <20070521144618.GA6914@redhat.com> <20070521150242.GA25146@infradead.org> <20070521150937.GB6957@redhat.com> <20070521151209.GA25744@infradead.org> <20070521152050.GC6957@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 21 May 2007 11:46:20 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
+Subject: Re: [PATCH 4/8] Force detect and enable HPET on ICH
+Date: Mon, 21 May 2007 08:46:03 -0700
+User-Agent: KMail/1.9.6
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>
+References: <20070507203128.GD3926@linux-os.sc.intel.com> <20070521025822.506c3287@laptop.hypervisor.org>
+In-Reply-To: <20070521025822.506c3287@laptop.hypervisor.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070521152050.GC6957@redhat.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200705210846.03540.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 11:20:50AM -0400, Dave Jones wrote:
-> On Mon, May 21, 2007 at 04:12:09PM +0100, Christoph Hellwig wrote:
->  > > Ok, patch rescinded.  Any opinion on what to do about that bug?
->  > > 
->  > > "use loopback" would be one option I guess.
->  > > Given its been an open bug for four years, there's obviously
->  > > not that much interest in fixing the filesystem.
->  > 
->  > I don't think it's a bug, it's a lacking feature.  The error message
->  > is quite accurate aswell.
-> 
-> It seems to be a regression in 2.6.x though.  From the report..
-> 
-> "Under 2.4.21, it doesnt do this."
+On Sunday, May 20, 2007, Udo A. Steinberg wrote:
+> On Mon, 7 May 2007 13:31:28 -0700 Venki Pallipadi (VP) wrote:
+>
+> VP> Force detect and/or enable HPET on ICH chipsets. This patch just
+> handles the VP> detection part and following patches use this
+> information.
+> VP>
+> VP> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>
+> Venki,
+>
+> Is there any reason your patch only enables HPET on ICH6 and beyond?
+> HPET can be enabled on earlier ICH by setting bit 17 in GEN_CNTL on PCI
+> dev 31, func 0, offset d0. This seems to work for ICH3/4/5. Are there
+> any errata affecting these ICHs?
 
-Randy mentioned in bugzilla that 2.4.22 didn't work either, so I'd
-be very surprised if 2.4.21 works.
+I see it documented in the ICH5 datasheet, but that bit is marked reserved 
+in the ICH3 and ICH4 datasheets...  Which docs are you looking at?
+
+Jesse
