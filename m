@@ -1,114 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbXEUNQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbXEUNYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbXEUNQs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 09:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbXEUNQk
+	id S1757537AbXEUNYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 09:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXEUNYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 09:16:40 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:59581 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755100AbXEUNQk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 09:16:40 -0400
-Date: Mon, 21 May 2007 15:16:33 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Block devices and barriers
-Message-ID: <Pine.LNX.4.62.0705211434150.8776@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 21 May 2007 09:24:10 -0400
+Received: from pat.uio.no ([129.240.10.15]:47687 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755334AbXEUNYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 09:24:09 -0400
+Subject: Re: [PATCH] 2.6.21: nfs_readpages: Add missing braces
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64N.0705211402170.8263@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0705211402170.8263@blysk.ds.pg.gda.pl>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 09:24:05 -0400
+Message-Id: <1179753845.6535.9.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.095)
+X-UiO-Scanned: 4BD674BE2DD855813B35AA7AAEFAD2CF4062EB7C
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 920 total 1850347 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi,
+On Mon, 2007-05-21 at 14:09 +0100, Maciej W. Rozycki wrote:
+> A change a while ago added a call to gather statistics to a conditional 
+> statement, but braces were missed on that occasion resulting in a change 
+> of semanticts.  This a change to rectify.
 
-I'm adding cache flush support to the PS3 disk driver and have a few questions
-related to barriers.
+So you are proposing this as a stable update? It won't apply on
+2.6.22-rc2.
 
-In my driver, I do:
+Cheers
+  Trond
 
-    blk_queue_issue_flush_fn(queue, ps3disk_issue_flush);
-    blk_queue_ordered(queue, QUEUE_ORDERED_DRAIN_FLUSH, ps3disk_prepare_flush);
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+>  It should be obvious -- please apply.
+> 
+>   Maciej
+> 
+> patch-mips-2.6.18-20060920-nfs_readpages-0
+> diff -up --recursive --new-file linux-mips-2.6.18-20060920.macro/fs/nfs/read.c linux-mips-2.6.18-20060920/fs/nfs/read.c
+> --- linux-mips-2.6.18-20060920.macro/fs/nfs/read.c	2006-09-20 14:20:24.000000000 +0000
+> +++ linux-mips-2.6.18-20060920/fs/nfs/read.c	2007-05-20 15:01:31.000000000 +0000
+> @@ -696,9 +696,10 @@ int nfs_readpages(struct file *filp, str
+>  	ret = read_cache_pages(mapping, pages, readpage_async_filler, &desc);
+>  	if (!list_empty(&head)) {
+>  		int err = nfs_pagein_list(&head, server->rpages);
+> -		if (!ret)
+> +		if (!ret) {
+>  			nfs_add_stats(inode, NFSIOS_READPAGES, err);
+>  			ret = err;
+> +		}
+>  	}
+>  	put_nfs_open_context(desc.ctx);
+>  	return ret;
 
-but I can't find a way to actually trigger the calling of ps3disk_issue_flush()
-and ps3disk_prepare_flush().
-
- 1. My prepare_flush_fn() routine should be called from queue_flush(), which is
-    in turn called by start_ordered().
-    start_ordered() is called by blk_do_ordered(), but only if there's no
-    barrier (REQ_HARDBARRIER is not set).
-    Apart from drivers/block/pktcdvd.c and init_request_from_bio()
-    (BIO_RW_BARRIER is set by drivers/md/md.c only?), the only other way
-    REQ_HARDBARRIER can be set is in queue_flush(), which is not possible.
-
-  2. My issue_flush_fn() should be called from blkdev_issue_flush() (ignoring
-     drivers/md). But blkdev_issue_flush() is called by ReiserFS and XFS only.
-
-I read the Block Device chapter in Linux Device Drivers 3rd edition, which says
-to check blk_barrier_rq(), but the barrier part seems to be obsolete, as we now
-have the prepare_flush_fn parameter of blk_queue_ordered().
-
-Am I missing something? Should I care about barriers?
-
-Thanks!
-
-BTW, Documentation/block/barrier.txt seems to be out-of-date. Patch to update
-it is below.
-
----
-
-Documentation/block/barrier.txt is not in sync with the actual code:
-  - blk_queue_ordered() no longer has a gfp_mask parameter
-  - blk_queue_ordered_locked() no longer exists
-  - sd_prepare_flush() looks slightly different
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
---- a/Documentation/block/barrier.txt
-+++ b/Documentation/block/barrier.txt
-@@ -82,23 +82,12 @@ including draining and flushing.
- typedef void (prepare_flush_fn)(request_queue_t *q, struct request *rq);
- 
- int blk_queue_ordered(request_queue_t *q, unsigned ordered,
--		      prepare_flush_fn *prepare_flush_fn,
--		      unsigned gfp_mask);
--
--int blk_queue_ordered_locked(request_queue_t *q, unsigned ordered,
--			     prepare_flush_fn *prepare_flush_fn,
--			     unsigned gfp_mask);
--
--The only difference between the two functions is whether or not the
--caller is holding q->queue_lock on entry.  The latter expects the
--caller is holding the lock.
-+		      prepare_flush_fn *prepare_flush_fn);
- 
- @q			: the queue in question
- @ordered		: the ordered mode the driver/device supports
- @prepare_flush_fn	: this function should prepare @rq such that it
- 			  flushes cache to physical medium when executed
--@gfp_mask		: gfp_mask used when allocating data structures
--			  for ordered processing
- 
- For example, SCSI disk driver's prepare_flush_fn looks like the
- following.
-@@ -106,9 +95,10 @@ following.
- static void sd_prepare_flush(request_queue_t *q, struct request *rq)
- {
- 	memset(rq->cmd, 0, sizeof(rq->cmd));
--	rq->flags |= REQ_BLOCK_PC;
-+	rq->cmd_type = REQ_TYPE_BLOCK_PC;
- 	rq->timeout = SD_TIMEOUT;
- 	rq->cmd[0] = SYNCHRONIZE_CACHE;
-+	rq->cmd_len = 10;
- }
- 
- The following seven ordered modes are supported.  The following table
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
