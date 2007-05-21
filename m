@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965668AbXEUTuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935378AbXEUTve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965668AbXEUTuz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 15:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933814AbXEUT3U
+	id S935378AbXEUTve (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 15:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934096AbXEUT3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 15:29:20 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:12598 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934089AbXEUT3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 15:29:18 -0400
-Date: Mon, 21 May 2007 21:26:56 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
-       Oliver Xymoron <oxymoron@waste.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-Message-ID: <20070521192656.GC4705@kernel.dk>
-References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com> <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com> <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com> <Pine.LNX.4.64.0705211147100.26970@schroedinger.engr.sgi.com> <20070521190043.GA4705@kernel.dk> <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com>
+	Mon, 21 May 2007 15:29:22 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:52645 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934088AbXEUT3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 15:29:21 -0400
+Message-Id: <20070521191643.450300000@sous-sol.org>
+References: <20070521191612.800400000@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Mon, 21 May 2007 12:16:15 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jeff Garzik <jgarzik@pobox.com>,
+       vwool@ru.mvista.com, dustin@sensoria.com,
+       Vitaly Wool <vitalywool@gmail.com>
+Subject: [patch 03/69] smc911x: fix compilation breakage wjen debug is on
+Content-Disposition: inline; filename=smc911x-fix-compilation-breakage-wjen-debug-is-on.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21 2007, Christoph Lameter wrote:
-> On Mon, 21 May 2007, Jens Axboe wrote:
-> 
-> > I can test whatever you want tomorrow morning, it was 100% repeatable
-> > here. So which one, your patch or Hughs?
-> 
-> This was an effect of me suggesting to switch off CONFIG_SLUB_DEBUG. If 
-> you did not run without CONFIG_SLUB_DEBUG then you were not affected by 
-> the problem. And the earlier case that you reported was a version of SLUB 
-> that did not have the capability to switch off SLUB_DEBUG.
-> 
-> Is there any way we can boot with "slub_debug" on the kernel command line 
-> and get early printk output? Looks like an early failure that may have to 
-> do with other kernel debug options being on (lockdep or so?)
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-Sure, I will try that as well. For reference, the last kernel tested on
-that box was HEAD 129a84de2347002f09721cda3155ccfd19fade40.
+From: Vitaly Wool <vwool@ru.mvista.com>
+
+the patch below fixes compilation breakage of smc911x driver when ENABLE_SMC_DEBUG_PKTS equals to 1.
+
+Signed-off-by: Vitaly Wool <vitalywool@gmail.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+
+ drivers/net/smc911x.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+--- linux-2.6.21.1.orig/drivers/net/smc911x.c
++++ linux-2.6.21.1/drivers/net/smc911x.c
+@@ -499,7 +499,7 @@ static inline void	 smc911x_rcv(struct n
+ 		SMC_SET_RX_CFG(RX_CFG_RX_END_ALGN4_ | ((2<<8) & RX_CFG_RXDOFF_));
+ 		SMC_PULL_DATA(data, pkt_len+2+3);
+ 
+-		DBG(SMC_DEBUG_PKTS, "%s: Received packet\n", dev->name,);
++		DBG(SMC_DEBUG_PKTS, "%s: Received packet\n", dev->name);
+ 		PRINT_PKT(data, ((pkt_len - 4) <= 64) ? pkt_len - 4 : 64);
+ 		dev->last_rx = jiffies;
+ 		skb->dev = dev;
 
 -- 
-Jens Axboe
-
