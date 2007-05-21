@@ -1,122 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbXEUUlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbXEUUnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757480AbXEUUlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 16:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXEUUlK
+	id S1759254AbXEUUnl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 16:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXEUUne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 16:41:10 -0400
-Received: from haxent.com ([65.99.219.155]:2574 "EHLO haxent.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755092AbXEUUlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 16:41:08 -0400
-Message-ID: <465203DD.4080802@haxent.com.br>
-Date: Mon, 21 May 2007 17:41:01 -0300
-From: Davi Arnaut <davi@haxent.com.br>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070503)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: + signalfd-retrieve-multiple-signals-with-one-read-call.patch
- added to -mm tree
-References: <20070521192551.GA153@tv-sign.ru> <Pine.LNX.4.64.0705211313090.24209@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0705211313090.24209@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 21 May 2007 16:43:34 -0400
+Received: from h155.mvista.com ([63.81.120.158]:5061 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755038AbXEUUnd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 16:43:33 -0400
+Subject: Re: v2.6.21-rt3
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <1179779765.12708.50.camel@chaos>
+References: <20070517194143.GA25394@elte.hu>
+	 <1179778266.15427.38.camel@imap.mvista.com>
+	 <1179779053.12708.45.camel@chaos>
+	 <1179779142.15427.44.camel@imap.mvista.com>
+	 <1179779765.12708.50.camel@chaos>
+Content-Type: text/plain
+Date: Mon, 21 May 2007 13:41:12 -0700
+Message-Id: <1179780072.15427.51.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
-> On Mon, 21 May 2007, Oleg Nesterov wrote:
+On Mon, 2007-05-21 at 22:36 +0200, Thomas Gleixner wrote:
+> On Mon, 2007-05-21 at 13:25 -0700, Daniel Walker wrote:
+> > On Mon, 2007-05-21 at 22:24 +0200, Thomas Gleixner wrote:
+> > > On Mon, 2007-05-21 at 13:11 -0700, Daniel Walker wrote:
+> > > > Where did the arm ep93xx changes come from? 
+> > > 
+> > > Grown out of my nose probably.
+> > > 
+> > > > It looks like patch below
+> > > > came in with them in 2.6.21-rt6 ..
+> > > 
+> > > So what ?
+> > 
+> > It's silencing a WARN_ON() with no real reason why it's happening, or
+> > why/if it's safe to silence it .. Why is that there?
 > 
->>> +		schedule();
->>> +		locked = signalfd_lock(ctx, &lk);
->>> +		if (unlikely(!locked)) {
->>> +			/*
->>> +			 * Let the caller read zero byte, ala socket
->>> +			 * recv() when the peer disconnect. This test
->>> +			 * must be done before doing a dequeue_signal(),
->>> +			 * because if the sighand has been orphaned,
->>> +			 * the dequeue_signal() call is going to crash.
->>> +			 */
->> Imho, the comment is a bit confusing. dequeue_signal() needs ->siglock
->> even if signalfd_ctx is not orphaned.
-> 
-> The comment looks clear to me. It states:
-> 
-> 1) The policy of returning 0 when the sighand has been detached
-> 
-> 2) That we _must_not_ call dequeue_signal() in case signalfd_lock() fails
-> 
-> #ACK on the code mod below.
->
-> - Davide
-> 
+> Care to look at the code ? 
 
-Andrew, please apply on top.
+I copied the patch into the first email, I did look at it which is why
+you got an email. Your introducing the patch , it's for you to explain
+why it needs to be there.. considering that the comment says "hack" in
+it, I have to wonder what the non-hack version is ..
 
-Simplify signalfd locking following suggestions by Oleg Nesterov.
-
-Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
-
-Index: linux-2.6/fs/signalfd.c
-===================================================================
---- linux-2.6.orig/fs/signalfd.c
-+++ linux-2.6/fs/signalfd.c
-@@ -211,13 +211,11 @@ static int signalfd_copyinfo(struct sign
- static ssize_t signalfd_dequeue(struct signalfd_ctx *ctx, siginfo_t *info,
- 				int nonblock)
- {
--	int locked;
- 	ssize_t ret;
- 	struct signalfd_lockctx lk;
- 	DECLARE_WAITQUEUE(wait, current);
- 
--	locked = signalfd_lock(ctx, &lk);
--	if (!locked)
-+	if (!signalfd_lock(ctx, &lk))
- 		return 0;
- 
- 	ret = dequeue_signal(lk.tsk, &ctx->sigmask, info);
-@@ -235,24 +233,24 @@ static ssize_t signalfd_dequeue(struct s
- 	for (;;) {
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		ret = dequeue_signal(lk.tsk, &ctx->sigmask, info);
-+		signalfd_unlock(&lk);
- 		if (ret != 0)
- 			break;
- 		if (signal_pending(current)) {
- 			ret = -ERESTARTSYS;
- 			break;
- 		}
--		signalfd_unlock(&lk);
- 		schedule();
--		locked = signalfd_lock(ctx, &lk);
--		if (unlikely(!locked)) {
-+		ret = signalfd_lock(ctx, &lk);
-+		if (unlikely(!ret)) {
- 			/*
- 			 * Let the caller read zero byte, ala socket
- 			 * recv() when the peer disconnect. This test
- 			 * must be done before doing a dequeue_signal(),
- 			 * because if the sighand has been orphaned,
--			 * the dequeue_signal() call is going to crash.
-+			 * the dequeue_signal() call is going to crash
-+			 * because ->sighand will be long gone.
- 			 */
--			 ret = 0;
- 			 break;
- 		}
- 	}
-@@ -260,9 +258,6 @@ static ssize_t signalfd_dequeue(struct s
- 	remove_wait_queue(&ctx->wqh, &wait);
- 	__set_current_state(TASK_RUNNING);
- 
--	if (likely(locked))
--		signalfd_unlock(&lk);
--
- 	return ret;
- }
- 
- 
+Daniel
 
