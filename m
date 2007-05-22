@@ -1,108 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934968AbXEVPjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935569AbXEVPlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934968AbXEVPjG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 11:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbXEVPiz
+	id S935569AbXEVPlI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 11:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbXEVPk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 11:38:55 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:15499 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757419AbXEVPix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 11:38:53 -0400
-Date: Tue, 22 May 2007 17:36:22 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
-       Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
-       Oliver Xymoron <oxymoron@waste.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
-Message-ID: <20070522153622.GZ4705@kernel.dk>
-References: <559665.2852.qm@web52608.mail.re2.yahoo.com> <Pine.LNX.4.64.0705221358360.4904@blonde.wat.veritas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705221358360.4904@blonde.wat.veritas.com>
+	Tue, 22 May 2007 11:40:56 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:59169 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757885AbXEVPkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 11:40:55 -0400
+Message-ID: <46530F02.7010802@drzeus.cx>
+Date: Tue, 22 May 2007 17:40:50 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       "=?ISO-8859-1?Q?Kristian_H=F8gsberg?=" <krh@bitplanet.net>
+Subject: Re: Race free attributes in sysfs
+References: <46502A8B.70803@drzeus.cx>	 <3ae72650705211050p6b6cefbdya70dd4e0a27e2d1b@mail.gmail.com>	 <4651E866.5010304@drzeus.cx> <1179775695.3320.82.camel@lov.localdomain>
+In-Reply-To: <1179775695.3320.82.camel@lov.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22 2007, Hugh Dickins wrote:
-> On Tue, 22 May 2007, Srihari Vijayaraghavan wrote:
-> > --- Ingo Molnar <mingo@elte.hu> wrote:
-> > > * Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au> wrote:
-> > > > Yup, with CONFIG_SMP=n, I'm unable to reproduce the problem. It's 
-> > > > quite stable actually (having completed a dozen kernel compile 
-> > > > sessions so far).
-> > 
-> > [...]
-> > 
-> > > could you enable CONFIG_PROVE_LOCKING - does it spit out any warning 
-> > > into the syslog?
-> > 
-> > Compiled slub with SMP & CONFIG_PROVE_LOCKING. No luck. It still hangs solid
-> > after the second spinlock lockup call trace.
-> > 
-> > Here's the relevant sections of the kernel logs:
-> > 
-> > ...
-> > Freeing unused kernel memory: 228k freed
-> > BUG: spinlock bad magic on CPU#1, init/1
-> >  lock: ffff81011f5f1100, .magic: ffff8101, .owner: <none>/-1, .owner_cpu: -1
-> > 
-> > Call Trace:
-> >  [<ffffffff802f326a>] _raw_spin_lock+0x22/0xf6
-> >  [<ffffffff8026b2d5>] vma_adjust+0x21c/0x446
-> >  [<ffffffff8026b2d5>] vma_adjust+0x21c/0x446
-> >  [<ffffffff8026b9d4>] vma_merge+0x10c/0x195
-> >  [<ffffffff8026c757>] do_mmap_pgoff+0x3f5/0x794
-> >  [<ffffffff803fff0c>] _spin_unlock_irq+0x24/0x27
-> >  [<ffffffff8020f414>] sys_mmap+0xe5/0x110
-> >  [<ffffffff80209dde>] system_call+0x7e/0x83
-> > ...
-> > PM: Adding info for No Bus:vcsa1
-> > BUG: spinlock lockup on CPU#1, hostname/369, ffff81011f5f1fc0
-> > 
-> > Call Trace:
-> >  [<ffffffff802f3317>] _raw_spin_lock+0xcf/0xf6
-> >  [<ffffffff8026ec9c>] anon_vma_unlink+0x1c/0x68
-> >  [<ffffffff8026ec9c>] anon_vma_unlink+0x1c/0x68
-> >  [<ffffffff80269aa0>] free_pgtables+0x69/0xc4
-> >  [<ffffffff8026ad0e>] exit_mmap+0x91/0xeb
-> >  [<ffffffff80228cea>] mmput+0x2c/0x9f
-> >  [<ffffffff8022df72>] do_exit+0x22e/0x82e
-> >  [<ffffffff8022e5f4>] sys_exit_group+0x0/0xe
-> >  [<ffffffff80209dde>] system_call+0x7e/0x83
-> > 
-> > 
-> > Surprisingly, with CONFIG_SMP=n, CONFIG_PROVE_LOCKING produces this with slub
-> > (then hangs solid):
-> > 
-> > Freeing unused kernel memory: 188k freed
-> > BUG: spinlock lockup on CPU#0, init/1, ffff81011e9d3160
-> > 
-> > Call Trace:
-> >  [<ffffffff802eca20>] _raw_spin_lock+0xca/0xe8
-> >  [<ffffffff80265d6d>] vma_adjust+0x218/0x442
-> >  [<ffffffff80265d6d>] vma_adjust+0x218/0x442
-> >  [<ffffffff8026646b>] vma_merge+0x10c/0x195
-> >  [<ffffffff802671d5>] do_mmap_pgoff+0x3f5/0x790
-> >  [<ffffffff803f6e84>] _spin_unlock_irq+0x24/0x27
-> >  [<ffffffff8020ead0>] sys_mmap+0xe5/0x110
-> >  [<ffffffff80209cce>] system_call+0x7e/0x83
-> > 
-> > To recap:
-> > 1. No problems with slub on CONFIG_SMP=n & CONFIG_PROVE_LOCKING=n
-> > 2. Problem with slub on CONFIG_SMP=n & CONFIG_PROVE_LOCKING=y (perhaps a. some
-> > locking issue when slub is activated or b. something is wrong with 'prove
-> > locking' mechanism when slub is activated or c. something else I don't see) 
-> > 3. Problem with slub on CONFIG_SMP=y (even without CONFIG_PROVE_LOCKING=y)
-> 
-> You've made no mention of trying the patch I sent yesterday, or better,
-> the patch Christoph replied with to replace it.  Please clarify whether
-> you're getting the above after applying one of those patches - thanks.
+Kay Sievers wrote:
+> We could change the driver-core to suppress the creation of an attribute
+> if the attribute's show() or store() method returns something like
+> -ENOENT at registration time?
+> The driver would pass _all_ possible attributes of the device at
+> registration time, but the core would only create the attributes which
+> are implemented for this particular device? Would that work for you?
+>   
 
-Christophs patch works for me!
+Not sure. Not in an obvious way at least.
+
+It also doesn't feel like "the kernel way". Generally you can
+create/allocate an object, assign attributes to it, then activate it.
+Couldn't it be done so that I can add sysfs stuff to a device after I
+just initialized it? (but before I add it).
+
+> You can assign any number of attribute groups to the device. If they
+> don't have a group name, they will all be created directly at the device
+> level. Would that work for you?
+>
+>   
+
+I've had a look at sysfs groups and the biggest beef I have with those
+is that they're too low level. In order to use them I first need to
+create device attributes, then create an array of pointers to each attr
+member. It would be nice if I could just feed an array of device
+attributes (i.e. I want wrappers).
+
+Rgds
 
 -- 
-Jens Axboe
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
