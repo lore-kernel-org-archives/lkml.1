@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764073AbXEVWAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbXEVWBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764073AbXEVWAy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758936AbXEVWAr
+	id S1760599AbXEVWBU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765530AbXEVWA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:00:47 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:50238 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756275AbXEVWAq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:00:46 -0400
-Date: Tue, 22 May 2007 15:05:04 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
-       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       James Simmons <jsimmons@pentafluge.infradead.org>
-Subject: Re: [PATCH 2/2] make fbcon unregister when unloaded
-Message-Id: <20070522150504.b797213a.randy.dunlap@oracle.com>
-In-Reply-To: <200705221444.52675.jbarnes@virtuousgeek.org>
-References: <200705171423.46748.jesse.barnes@intel.com>
-	<200705171532.28799.jesse.barnes@intel.com>
-	<1179444190.5092.4.camel@daplas>
-	<200705221444.52675.jbarnes@virtuousgeek.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 22 May 2007 18:00:57 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:32976 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764324AbXEVWA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 18:00:56 -0400
+Date: Tue, 22 May 2007 15:00:44 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Greg KH <greg@kroah.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [stable] Wanted: Allow adding new device IDs during the
+	-stable cycle
+Message-ID: <20070522220044.GB3429@sequoia.sous-sol.org>
+References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com> <46533EA8.7020602@garzik.org> <20070522193538.GA885@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070522193538.GA885@kroah.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 14:44:52 -0700 Jesse Barnes wrote:
+* Greg KH (greg@kroah.com) wrote:
+> On Tue, May 22, 2007 at 03:04:08PM -0400, Jeff Garzik wrote:
+> >  Really, it is just silly to think that one-line PCI IDs patches will cause 
+> >  any harm at all, and it should be self-evident that there is clear potential 
+> >  to HELP Linux users.  That's why we're all here, right?
 
-> When unloaded, the fbcon driver should unregister itself from the VT
-> subsystem using unbind_con_driver.  This patch makes it use the newly
-> exported function to do just that.
+Yes, we're here to help.  The only compelling reasons not do to it were/are:
+
+1) -stable has never been about adding features (easy to consider new
+hardware support a feature).
+
+2) In theory new hardware can seem to work with a simple PCI ID
+update, and later we find it needs extra quirk handling or specific
+driver support.  This could mean adding buggy support for new hardware
+to -stable.  In practice, hopefully this isn't a real issue.
+
+3) It hasn't been a pressing issue brought to our attention until this
+thread and its predecessor earlier in the month.
+
+My own personal experience is each time I've needed a PCI ID update for
+new hardware it's also needed changes to the driver (read: e1000, every
+single time).  So from my perspective neither sysfs nor relaxing -stable
+rules slightly would actually help provide support for new hardware,
+but that's clearly limited experience.
+
+> I'm not disagreeing that it will help a set of users, or that it will
+> cause any harm at all.  It's just currently outside the scope for what
+> we defined -stable as, and it will slightly increase the workload that
+> Chris and I have in keeping up with these patches.
 > 
-> Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-> 
-> diff -Napur -X /home/jbarnes/dontdiff --exclude=Makefile linux-2.6.22-rc2/drivers/video/console/fbcon.c linux-2.6.22-rc2-modesetting/drivers/video/console/fbcon.c
-> --- linux-2.6.22-rc2/drivers/video/console/fbcon.c	2007-05-18 21:06:17.000000000 -0700
-> +++ linux-2.6.22-rc2-modesetting/drivers/video/console/fbcon.c	2007-05-22 14:26:20.000000000 -0700
-> @@ -2937,6 +2937,21 @@ static int fbcon_mode_deleted(struct fb_
->  	return found;
->  }
->  
-> +static int fbcon_fb_unbind(int idx)
-> +{
-> +	int i;
-> +
-> +        for (i = 0; i < MAX_NR_CONSOLES; i++) {
-> +                /* Assure we do not unbind other drivers */
-> +                if (idx == con2fb_map[i])
-> +                        /* can be optimize to minimize multiple calls to
-> +			   unbind_con_driver() */
+> So, if there is an overwhelming majority of people that strongly feel
+> that this is a good thing, fine, we can try it out.
 
-			/*
-			 * can be optimized to minimize multiple calls
-			 * to unbind_con_driver()
-			 */
+Yes, if it will serve -stable users better, we can give it a trial run
+to see how it goes.
 
-> +                        unbind_con_driver(&fb_con, i, i, 0); 
-> +        }
-> +
-> +	return 0;
-> +}
-
-Lots of whitespace mangling there (mostly spaces instead of tabs).
-
-> +
->  static int fbcon_fb_unregistered(int idx)
->  {
->  	int i;
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+thanks,
+-chris
