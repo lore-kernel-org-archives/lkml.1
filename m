@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbXEVTZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbXEVTbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbXEVTZe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 15:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbXEVTZ1
+	id S1761467AbXEVTbw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 15:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbXEVTbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 15:25:27 -0400
-Received: from khc.piap.pl ([195.187.100.11]:54151 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758662AbXEVTZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 15:25:26 -0400
-To: Adrian Bunk <bunk@stusta.de>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: any value to "NORET_TYPE" macro?
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
-	<20070522135927.GA2098@stusta.de>
-	<Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
-	<20070522161951.GC2098@stusta.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 22 May 2007 21:25:24 +0200
-In-Reply-To: <20070522161951.GC2098@stusta.de> (Adrian Bunk's message of "Tue, 22 May 2007 18:19:51 +0200")
-Message-ID: <m3ejl8k6e3.fsf@maximus.localdomain>
+	Tue, 22 May 2007 15:31:44 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:55090 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754973AbXEVTbn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 15:31:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ijxymAO/LGqlYCX5hbRJRvRPR1eypaa8PTYl2fMYBQz8K2JgajpLrjIdFKBnWrWjSV2UHnYyHG7xQuw89NO99BymjvIIKCM8a3p2+49E2FdEoq+bmNsRkAn+qIFp5GJKgkrCHmRnSJAWj5DgU5nzonCHkxPKagFdt++XxSd5swA=
+Date: Tue, 22 May 2007 21:31:49 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Jimmy Jazz <Jimmy.Jazz@gmx.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Daniel Drake <dsd@gentoo.org>,
+       linux list <linux-kernel@vger.kernel.org>
+Subject: Re: radeonfb and X800 cards
+Message-ID: <20070522193149.GA15040@dreamland.darkstar.lan>
+References: <464BB43D.2020407@gentoo.org> <1179367164.32247.256.camel@localhost.localdomain> <20070517195958.GA6489@dreamland.darkstar.lan> <1179451140.32247.326.camel@localhost.localdomain> <465044FC.30204@gmx.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465044FC.30204@gmx.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@stusta.de> writes:
+Il Sun, May 20, 2007 at 02:54:20PM +0200, Jimmy Jazz ha scritto: 
+> @Luca, if i remember well you have a X850, could you please try the
+> patch for me ?
 
->> no, i think you're thinking of the alternative ATTRIB_NORET macro.
->> as you can read in my previous post, NORET_TYPE used to resolve to
->> "__volatile__" for very old gcc.  so i think it's legitimately dead
->> and can be ripped out.
->
-> No doubt that it could be removed because it doesn't have any effect.
->
-> But locking at the usages, it seems to have been used when people 
-> thought it was what __noreturn now is, so replacing NORET_TYPE with 
-> __noreturn might be a small optimization (but every NORET_TYPE should 
-> be checked that it's actually correct).
+It does work - sort of; BIOS parsing code is correct. It lacks the
+proper connector detection though (esp. port sharing). ATOM BIOS has a
+different data layout, so this should be added (now radeonfb thinks that
+I've 2 monitors).
 
-Actually it seems all the NORET_TYPEs are in fact (should be)
-__attribute__((noreturn)) (2.6.21):
+I'll be away this weekend, so I'll try to come up with a patch as soon
+as I return home.
 
-Almost certainly:
-arch/mips/kernel/traps.c:NORET_TYPE void ATTRIB_NORET die()
-arch/ia64/kernel/machine_kexec.c:typedef NORET_TYPE void ()(
-arch/x86_64/kernel/machine_kexec.c:NORET_TYPE void machine_kexec()
-arch/arm26/kernel/traps.c:NORET_TYPE void die()
-arch/ppc/kernel/machine_kexec.c:typedef NORET_TYPE void ()(
-arch/ppc/kernel/machine_kexec.c:NORET_TYPE void machine_kexec()
-arch/ppc/amiga/config.c:static NORET_TYPE void amiga_reset()
-arch/powerpc/kernel/machine_kexec.c:NORET_TYPE void machine_kexec()
-arch/powerpc/kernel/machine_kexec_64.c:extern NORET_TYPE void kexec_sequence()
-arch/powerpc/kernel/machine_kexec_32.c:typedef NORET_TYPE void ()(
-arch/sh/kernel/machine_kexec.c:typedef NORET_TYPE void ()(
-arch/sh/kernel/machine_kexec.c:NORET_TYPE void machine_kexec()
-arch/arm/kernel/traps.c:NORET_TYPE void die()
-arch/i386/kernel/machine_kexec.c:NORET_TYPE void machine_kexec()
-arch/m68k/amiga/config.c:static NORET_TYPE void amiga_reset()
-drivers/s390/s390mach.c:static NORET_TYPE void s390_handle_damage()
-include/asm-i386/kexec.h:asmlinkage NORET_TYPE void
-include/asm-mips/ptrace.h:extern NORET_TYPE void die();
-include/asm-x86_64/kexec.h:NORET_TYPE void
-include/linux/kexec.h:extern NORET_TYPE void machine_kexec() ATTRIB_NORET;
-include/linux/linkage.h:#define NORET_TYPE    /**/
-include/linux/kernel.h:NORET_TYPE void panic()
-include/linux/kernel.h:fastcall NORET_TYPE void do_exit()
-include/linux/kernel.h:NORET_TYPE void complete_and_exit()
-include/linux/sched.h:extern NORET_TYPE void do_group_exit();
-kernel/exit.c:fastcall NORET_TYPE void do_exit()
-kernel/exit.c:NORET_TYPE void complete_and_exit()
-kernel/exit.c:NORET_TYPE void do_group_exit()
-kernel/panic.c:NORET_TYPE void panic()
-
-The remaining 2 ones should most probably be removed, e2fsprogs
-don't use it either (it was probably used by ext[23] in-kernel
-code in the past):
-
-include/linux/ext4_fs.h:# define NORET_TYPE    /**/
-include/linux/ext3_fs.h:# define NORET_TYPE    /**/
-
+Luca
 -- 
-Krzysztof Halasa
+"L'abilita` politica e` l'abilita` di prevedere quello che
+ accadra` domani, la prossima settimana, il prossimo mese e
+ l'anno prossimo. E di essere cosi` abili, piu` tardi,
+ da spiegare  perche' non e` accaduto."
