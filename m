@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbXEVIWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764284AbXEVIZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762596AbXEVIWN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 04:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756400AbXEVIWB
+	id S1764284AbXEVIZW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 04:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbXEVIZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 04:22:01 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:6833 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755293AbXEVIWA (ORCPT
+	Tue, 22 May 2007 04:25:07 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:63801 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755863AbXEVIZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 04:22:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bi/J3+U+M9wukXcXALK3WyiHt9jhuBN4tEKD8VXikqh+4QTjWsvsLwyqnVHZ6GMd4FBkKPYPCpZ7Yb7E161GQcUQsDyTw8wwM9OD10LtGgfMfsFpMEJ3JgWB4G4GwPqC2KwWQHSALXPo9smwpsMGSDg+OzI01gKue4RZAWQ3bD8=
-Message-ID: <21d7e9970705220121v78fe4f1by6539136f6823977a@mail.gmail.com>
-Date: Tue, 22 May 2007 18:21:57 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-In-Reply-To: <9e4733910705211756g3b72795ucc4a8883ff587861@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 May 2007 04:25:04 -0400
+Date: Tue, 22 May 2007 10:25:01 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [RFC PATCH] /sys/block -> /sys/class/block  (Fedora 3 & 4
+ testers wanted)
+Message-ID: <20070522102501.72f40828@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070521235353.GA6242@kroah.com>
+References: <20070521235353.GA6242@kroah.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>
-	 <200705210914.22663.jbarnes@virtuousgeek.org>
-	 <200705210934.58559.jbarnes@virtuousgeek.org>
-	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
-	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>
-	 <4652295E.7060305@garzik.org>
-	 <20070522013545.5c269641@the-village.bc.nu>
-	 <9e4733910705211745q40de7683xb6ede752b53538ed@mail.gmail.com>
-	 <9e4733910705211756g3b72795ucc4a8883ff587861@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What I don't want is a permanent root priv process hanging around in
-> the system. It simply isn't needed and I have prototyped a system that
-> runs without root so I know it can be done. With minor mods DRI can
-> run without the need for root, with more major mods the X server can
-> run without the need for root. Most of the mods to the X server are to
-> remove things like PCI bus probing, mode setting and VBIOS support.
->
+On Mon, 21 May 2007 16:53:53 -0700,
+Greg KH <greg@kroah.com> wrote:
 
-But you always lacked a transition plan and never showed a decent API if memory
-serves, your methods disregarded back compat usually.
-also there is no need to port all drivers there never has been we need
-to just add config options and work with distros to upgrade to the
-newer bits..
+> So, could anyone still running the crufty and unsupported Fedora 3 and 4
+> releases test this patch out and let us know if it boots your machine or
+> not?  I don't want to break legacy distros if we can possibly help it.
+> 
+> This has been successfully tested on both SuSE and Gentoo boxes, so
+> we do hope this works for others.
 
-As Jesse  said this is an RFC we are not merging it in the morning
-however all your comments are hand waving so far we need technical
-problems with this API.
+Unfortunately, it doesn't :(
 
-Dave.
+I tried this on one of our internal drivers, which is based on FC 3 (or
+4, can look this up). With s390 defconfig, it is unable to open the
+root device /dev/dasda1 (which is unsurprising, considering udev (063)
+decided to create /dev/dasda(1) as a character node instead of a block
+node). The only udev rule I found which could affect the dasd device
+nodes is
+
+SUBSYSTEM=="block",             GROUP="disk", MODE="0640"
+
+When I look at the system, /sys/block/ and /sys/class/block/ look sane
+at first glance (working on a 3270 console is usally PITA...)
+
+Even more surprisingly, the system comes up fine (once I added ptmx to
+makedev.d/) with CONFIG_SYSFS_DEPRECATED not set. /sys/block/
+and /sys/class/block/ look just like expected. (Unfortunately, our
+lsdasd tool breaks with this...)
+
+I'll see if I can find out more.
