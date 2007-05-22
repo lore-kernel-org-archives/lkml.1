@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765595AbXEVOtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934446AbXEVOu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765595AbXEVOtG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 10:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbXEVOs4
+	id S934446AbXEVOu1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 10:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbXEVOuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 10:48:56 -0400
-Received: from [216.16.235.2] ([216.16.235.2]:52965 "EHLO rubicon.netdirect.ca"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756350AbXEVOsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 10:48:55 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Tue, 22 May 2007 10:47:45 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Satyam Sharma <satyam.sharma@gmail.com>
-cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: any value to "NORET_TYPE" macro?
-In-Reply-To: <a781481a0705220709s40b80208h47f1f2f7c00a684d@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705221045020.14953@localhost.localdomain>
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain> 
- <alpine.DEB.0.99.0705220950160.3308@sigma.j-a-k-j.com> 
- <Pine.LNX.4.64.0705220959310.14408@localhost.localdomain>
- <a781481a0705220709s40b80208h47f1f2f7c00a684d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Tue, 22 May 2007 10:50:20 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50160 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754958AbXEVOuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 10:50:19 -0400
+Date: Tue, 22 May 2007 15:54:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Jeff Garzik" <jeff@garzik.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+Message-ID: <20070522155439.20bf509f@the-village.bc.nu>
+In-Reply-To: <9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com>
+References: <200705171423.46748.jesse.barnes@intel.com>
+	<465228E2.1030405@garzik.org>
+	<9e4733910705211726q38be6843ndac49f8adc25aad0@mail.gmail.com>
+	<200705211856.56228.jbarnes@virtuousgeek.org>
+	<9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007, Satyam Sharma wrote:
+> you display text in graphics mode entirely in kernel context. The
+> driver should also attempt to stop the GPU to try and make sure it
+> doesn't erase the OOPS display.
 
-> On 5/22/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+If we know how yes. Probably the X server needs to provide us with a
+simple list of operations to perform or failing that write 128K of null
+to the display then print the characters (the 128K should ensure any
+running FIFO for commands is stuffed and we get back to the framebuffer)
 
-> > actually, one of the folks on the KJ list found this:
-> >
-> >   http://www.ussg.iu.edu/hypermail/linux/kernel/9605/1957.html
-> >
-> > which speaks thusly:
-> >
-> > ...
-> > -#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5)
-> > -# define NORET_TYPE __volatile__
-> > -# define ATTRIB_NORET /**/
-> > -# define NORET_AND /**/
-> > -#else
-> > # define NORET_TYPE /**/
-> > # define ATTRIB_NORET __attribute__((noreturn))
-> > # define NORET_AND noreturn,
-> > -#endif
-> > ...
-> >
-> >   so it looks like a thoroughly obsolete macro which can be tossed.
-> > i'll make the patch and test it.
->
-> AFAICT, NORET_TYPE must've been introduced to silence gcc
-> _warnings_, and not do actually do anything useful that affects
-> functionality in any way. So the way to "test" your patch would be
-> to see if there is any increase / decrease in the number of
-> *warnings* blurted out by gcc during kernel build (best would be to
-> build with various gcc versions on various platforms :-)
+> Another simple thing that needs to be built is a mechanism to run the
+> VBIOS in x86 mode when the driver is first loaded. This can be
 
-i can understand that logic but, since that macro wouldn't have any
-effect since gcc-2.2.5 and the current version of the kernel won't
-even *build* with gcc < 3.2, i can't imagine how there could be any
-difference these days.
+We don't want to touch the video bios for most cards, its not as good as
+the X mode switcher code, nor for that matter does it work in a lot of
+cases as they use IRQ and DMA functions sometimes.
 
-of course, i've been unpleasantly surprised before.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Alan
