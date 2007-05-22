@@ -1,92 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965920AbXEVQjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966269AbXEVQka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965920AbXEVQjg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 12:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbXEVQj3
+	id S966269AbXEVQka (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 12:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbXEVQkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 12:39:29 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:19026 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757623AbXEVQj2 (ORCPT
+	Tue, 22 May 2007 12:40:21 -0400
+Received: from ik-out-1112.google.com ([66.249.90.180]:45423 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755001AbXEVQkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 12:39:28 -0400
-Date: Tue, 22 May 2007 12:35:11 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: filesystem benchmarking fun
-Message-ID: <20070522163511.GB6138@think.oraclecorp.com>
-References: <20070516144205.GV26766@think.oraclecorp.com> <464B2AC2.10206@redhat.com> <20070516171156.GY26766@think.oraclecorp.com> <20070516112515.b6f247b2.akpm@linux-foundation.org> <20070516191339.GA26766@think.oraclecorp.com> <20070516123342.714a11d8.akpm@linux-foundation.org> <20070516195359.GE26766@think.oraclecorp.com> <20070516130413.1fd391bf.akpm@linux-foundation.org> <20070516201414.GF26766@think.oraclecorp.com> <20070516133726.0c68a65f.akpm@linux-foundation.org>
+	Tue, 22 May 2007 12:40:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mJgC4doY40APOn8p8UeQekozcn1zL7pc3vGmpe5pIZJEyqPxLj+yZrbP0bTGNaBwJZFHOnpuUo6biKoPNDHGLSjX1o4CLZpFm+MzxC0wCvWEoWZHwVQW6vDKMc/LaSBnBj5m+/ca9P9LeSHePeAvpKq5qZUKQaHEomluKYOlYhE=
+Message-ID: <6bffcb0e0705220940p22275f1dk46942db747c0a2e0@mail.gmail.com>
+Date: Tue, 22 May 2007 18:40:17 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Luigi Genoni" <l.genoni@oltrelinux.com>
+Subject: Re: BUG: at mm/slab.c:777 __find_general_cachep()
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200705221835.11559.l.genoni@oltrelinux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070516133726.0c68a65f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+References: <200705221835.11559.l.genoni@oltrelinux.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 16, 2007 at 01:37:26PM -0700, Andrew Morton wrote:
-> On Wed, 16 May 2007 16:14:14 -0400
-> Chris Mason <chris.mason@oracle.com> wrote:
-> 
-> > On Wed, May 16, 2007 at 01:04:13PM -0700, Andrew Morton wrote:
-> > > > The good news is that if you let it run long enough, the times
-> > > > stabilize.  The bad news is:
-> > > > 
-> > > > create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
-> > > > create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
-> > > > create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
-> > > > create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
-> > > 
-> > > well hang on.  Doesn't this just mean that the first few runs were writing
-> > > into pagecache and the later ones were blocking due to dirty-memory limits?
-> > > 
-> > > Or do you have a sync in there?
-> > > 
-> > There's no sync,  but if you watch vmstat you can clearly see the log
-> > flushes, even when the overall create times are 11MB/s.  vmstat goes
-> > 30MB/s -> 4MB/s or less, then back up to 30MB/s.
-> 
-> How do you know that it is a log flush rather than, say, pdflush
-> hitting the blockdev inode and doing a big seeky write?
+Hi Luigi,
 
-Ok, I did some more work to split out the two cases (block device inode
-writeback and log flushing).
+On 22/05/07, Luigi Genoni <l.genoni@oltrelinux.com> wrote:
+> While doing eavy I/O on a RAID1 logical volume with reiserfs with kernel
+> 2.6.22-rc2 on Athlon64 3800+ X2, i got:
+>
+> BUG: at mm/slab.c:777 __find_general_cachep()
 
-I patched jbd's log_do_checkpoint to put all the blocks it wanted to
-write in a radix tree, then send them all down in order at the end.
-The elevator should be helping here, but jbd is sending down 2,000
-to 3,000 blocks during the checkpoint and upping nr_requests alone
-didn't seem to be doing the trick.
+Here is a patch
+http://lkml.org/lkml/diff/2007/5/18/19/1
 
-Unpatched ext3 would break down into seeks after 8 kernel trees are
-created (222MB each).  With the radix sorting, the first 15 kernel trees
-are created quickly, and then we slow down.
+Regards,
+Michal
 
-So I waited until around the 25th kernel tree was created, hit ctrl-c
-and ran sync.  vmstat showed writes going at 2MB/s, and sysrq-w showed
-sync was running the block device inode for most of the 2MB/s period.
-
-It looks as though the dirty pages on the block device inode are spread
-out far enough that we're not getting good streaming writes.  Mark
-Fasheh ran on a bigger raid array, where performance was consistently
-good for the whole run.  I'm assuming the larger write cache on the
-array was able to group the data writes with the metadata on disk, while
-my poor little sata drive wasn't.  Dave Chinner hinted that xfs is
-probably suffering a similar problem, which is usually fixed by backing
-the FS with stripes and big raid.
-
-My vaporware FS is able to maintain speed through the run because the
-allocator tries to keep data and metadata grouped into 256mb chunks,
-and so they don't end up mingling on disk until things get full.
-
-At any rate, it may be worth putzing with the writeback routines to try
-and find dirty pages close by in the block dev inode when doing data
-writeback.  My guess is that ext3 should be going 1.5x to 2x faster for
-this particular run, but that's a huge amount of complexity added so I'm
-not convinced it is a great idea.
-
--chris
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
