@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759813AbXEVAIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbXEVALA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759813AbXEVAIQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 20:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbXEVAIE
+	id S1758224AbXEVALA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 20:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXEVAKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 20:08:04 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:7852 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756646AbXEVAIB (ORCPT
+	Mon, 21 May 2007 20:10:53 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58874 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752449AbXEVAKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 20:08:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NjN5pCwwJhHm+U0fYQ1RM1Xp6OjZeT/wuqCRJN32IsLuarFyJRL+P1kCtRw/q+2rGtxuoroRVkVwQFPpiXjyAiIgvO5xwym67xut8i7gdOWvNasU4pf4rKjh0MFe95WV2lxE0drUn14rXITmjE2Hs3NrBEZ/pgsCMhfUagh30XQ=
-Message-ID: <9e4733910705211708p5a79fb9eg37a97a53d7ba0fce@mail.gmail.com>
-Date: Mon, 21 May 2007 20:08:00 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Cc: "Dave Airlie" <airlied@gmail.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       "Luc Verhaegen" <libv@skynet.be>
-In-Reply-To: <46522A3C.4090604@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 21 May 2007 20:10:53 -0400
+Date: Tue, 22 May 2007 01:10:38 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Ray Lee <ray-lk@madrabbit.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, Uwe Bugla <uwe.bugla@gmx.de>,
+       Ken Chen <kenchen@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
+Message-ID: <20070522001038.GC4095@ftp.linux.org.uk>
+References: <20070519191751.E51233A23A2@muan.mtu.ru> <200705200124.13026.uwe.bugla@gmx.de> <200705200845.43621.arvidjaar@mail.ru> <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com> <20070520062816.GA4095@ftp.linux.org.uk> <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com> <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com> <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com> <1179677799.3311.5.camel@lov.localdomain> <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <200705210934.58559.jbarnes@virtuousgeek.org>
-	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
-	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>
-	 <9e4733910705211042o8926e4cy2225c2dbcbf3ff2@mail.gmail.com>
-	 <21d7e9970705211047n2328f970ref96ea85856f3ba8@mail.gmail.com>
-	 <9e4733910705211104u143e7abercccc4f351441343e@mail.gmail.com>
-	 <21d7e9970705211144j219fa8f5n3e5ceab90f7d3f0b@mail.gmail.com>
-	 <9e4733910705211210h7b993da8g67d31a010eb4c3f3@mail.gmail.com>
-	 <46522A3C.4090604@garzik.org>
+In-Reply-To: <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/07, Jeff Garzik <jeff@garzik.org> wrote:
-> Jon Smirl wrote:
-> > There is a significant group of Linux users who want to be able to
-> > login separate users to each screen/head/crtc/output device. These
-> > people are concentrated in the third world and don't show up at OLS to
-> > argue their case.
-> >
-> > There is another group that wants Unicode consoles. The people I
-> > talked to were from India and Japan.
->
-> If these "significant groups" do not bubble up to the surface, nothing
-> we can do about that.
+On Mon, May 21, 2007 at 09:11:02AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Sun, 20 May 2007, Kay Sievers wrote:
+> > 
+> > Right, providing "preallocated" devices, 8 or the number given in
+> > max_loop, sounds like the best option until the tools can handle that.
+> 
+> Yes. Can somebody who actually _uses_ loop send a tested patch, please?
 
-You need to take into account that these features have been asked
-about for years and we didn't respond. People interested in this have
-turned to other solutions.
+FWIW, I do and I have tested it; what I did *not* do is using a testbox
+with dynamic /dev for testing.  Mea culpa...
 
-James Simmons maintained a multi-seat version of the 2.4 kernel for
-years that had many happy users. I don't know the details about why it
-never got merged. I believe two companies built special multi-head
-video hardware for it (Appian and Matrox? it has been a while).
-
-People needing Unicode console support can't speak English. How can
-they complain on LKML? Linux is an OS for the world, we really should
-make Unicode console work.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+AFAICS, patch that went to akpm (preallocate max_loop instances) is OK.
