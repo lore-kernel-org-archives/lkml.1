@@ -1,495 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934968AbXEVPUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934897AbXEVPUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934968AbXEVPUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 11:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763420AbXEVPTL
+	id S934897AbXEVPUf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 11:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965576AbXEVPTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 11:19:11 -0400
-Received: from host217-46-209-99.in-addr.btopenworld.com ([217.46.209.99]:4939
+	Tue, 22 May 2007 11:19:12 -0400
+Received: from host217-46-209-99.in-addr.btopenworld.com ([217.46.209.99]:4983
 	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758997AbXEVPTJ (ORCPT
+	with ESMTP id S1759822AbXEVPTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 11:19:09 -0400
-Message-Id: <20070522141252.030961467@goop.org>
+	Tue, 22 May 2007 11:19:10 -0400
+Message-Id: <20070522141251.598618585@goop.org>
 References: <20070522140941.802382212@goop.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 22 May 2007 15:09:55 +0100
+Date: Tue, 22 May 2007 15:09:50 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 14/33] xen: xen time implementation
-Content-Disposition: inline; filename=xen-time.patch
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Zachary Amsden <zach@vmware.com>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: [patch 09/33] xen: Add nosegneg capability to the vsyscall page notes
+Content-Disposition: inline; filename=xen-vsyscall-note.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen maintains a base clock which measures nanoseconds since system
-boot.  This is provided to guests via a shared page which contains a
-base time in ns, a tsc timestamp at that point and tsc frequency
-parameters.  Guests can compute the current time by reading the tsc
-and using it to extrapolate the current time from the basetime.  The
-hypervisor makes sure that the frequency parameters are updated
-regularly, paricularly if the tsc changes rate or stops.
+Add the "nosegneg" fake capabilty to the vsyscall page notes. This is
+used by the runtime linker to select a glibc version which then
+disables negative-offset accesses to the thread-local segment via
+%gs. These accesses require emulation in Xen (because segments are
+truncated to protect the hypervisor address space) and avoiding them
+provides a measurable performance boost.
 
-This is implemented as a clocksource, so the interface to the rest of
-the kernel is a simple clocksource which simply returns the current
-time directly in nanoseconds.
-
-Xen also provides a simple timer mechanism, which allows a timeout to
-be set in the future.  When that time arrives, a timer event is sent
-to the guest.  There are two timer interfaces:
- - An old one which also delivers a stream of (unused) ticks at 100Hz,
-   and on the same event, the actual timer events.  The 100Hz ticks
-   cause a lot of spurious wakeups, but are basically harmless.
- - The new timer interface doesn't have the 100Hz ticks, and can also
-   fail if the specified time is in the past.
-
-This code presents the Xen timer as a clockevent driver, and uses the
-new interface by preference.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Acked-by: Zachary Amsden <zach@vmware.com>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
 
 ---
- arch/i386/xen/Makefile    |    2 
- arch/i386/xen/enlighten.c |    6 
- arch/i386/xen/time.c      |  402 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 409 insertions(+), 1 deletion(-)
+ arch/i386/kernel/vsyscall-note.S |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
 ===================================================================
---- a/arch/i386/xen/Makefile
-+++ b/arch/i386/xen/Makefile
-@@ -1,2 +1,2 @@ obj-y		:= enlighten.o setup.o features.o
- obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o \
--			events.o
-+			events.o time.o
-===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -595,6 +595,12 @@ static const struct paravirt_ops xen_par
- 	.arch_setup = xen_arch_setup,
- 	.init_IRQ = xen_init_IRQ,
- 
-+	.time_init = xen_time_init,
-+	.set_wallclock = xen_set_wallclock,
-+	.get_wallclock = xen_get_wallclock,
-+	.get_cpu_khz = xen_cpu_khz,
-+	.sched_clock = xen_clocksource_read,
+--- a/arch/i386/kernel/vsyscall-note.S
++++ b/arch/i386/kernel/vsyscall-note.S
+@@ -12,3 +12,31 @@ ELFNOTE_START(Linux, 0, "a")
+ ELFNOTE_START(Linux, 0, "a")
+ 	.long LINUX_VERSION_CODE
+ ELFNOTE_END
 +
- 	.cpuid = xen_cpuid,
- 
- 	.set_debugreg = xen_set_debugreg,
-===================================================================
---- /dev/null
-+++ b/arch/i386/xen/time.c
-@@ -0,0 +1,402 @@
-+/*
-+ * Xen time implementation.
-+ *
-+ * This is implemented in terms of a clocksource driver which uses
-+ * the hypervisor clock as a nanosecond timebase, and a clockevent
-+ * driver which uses the hypervisor's timer mechanism.
-+ *
-+ * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
-+ */
-+#include <linux/kernel.h>
-+#include <linux/interrupt.h>
-+#include <linux/clocksource.h>
-+#include <linux/clockchips.h>
-+
-+#include <asm/xen/hypervisor.h>
-+#include <asm/xen/hypercall.h>
-+
-+#include <xen/events.h>
-+#include <xen/interface/xen.h>
-+#include <xen/interface/vcpu.h>
-+
-+#include "xen-ops.h"
-+
-+#define XEN_SHIFT 22
-+#define TIMER_SLOP	100000	/* Xen may fire a timer up to this many ns early */
-+
-+/* These are perodically updated in shared_info, and then copied here. */
-+struct shadow_time_info {
-+	u64 tsc_timestamp;     /* TSC at last update of time vals.  */
-+	u64 system_timestamp;  /* Time, in nanosecs, since boot.    */
-+	u32 tsc_to_nsec_mul;
-+	int tsc_shift;
-+	u32 version;
-+};
-+
-+static DEFINE_PER_CPU(struct shadow_time_info, shadow_time);
-+
-+unsigned long xen_cpu_khz(void)
-+{
-+	u64 cpu_khz = 1000000ULL << 32;
-+	const struct vcpu_time_info *info =
-+		&HYPERVISOR_shared_info->vcpu_info[0].time;
-+
-+	do_div(cpu_khz, info->tsc_to_system_mul);
-+	if (info->tsc_shift < 0)
-+		cpu_khz <<= -info->tsc_shift;
-+	else
-+		cpu_khz >>= info->tsc_shift;
-+
-+	return cpu_khz;
-+}
++#ifdef CONFIG_XEN
 +
 +/*
-+ * Reads a consistent set of time-base values from Xen, into a shadow data
-+ * area.
++ * Add a special note telling glibc's dynamic linker a fake hardware
++ * flavor that it will use to choose the search path for libraries in the
++ * same way it uses real hardware capabilities like "mmx".
++ * We supply "nosegneg" as the fake capability, to indicate that we
++ * do not like negative offsets in instructions using segment overrides,
++ * since we implement those inefficiently.  This makes it possible to
++ * install libraries optimized to avoid those access patterns in someplace
++ * like /lib/i686/tls/nosegneg.  Note that an /etc/ld.so.conf.d/file
++ * corresponding to the bits here is needed to make ldconfig work right.
++ * It should contain:
++ *	hwcap 1 nosegneg
++ * to match the mapping of bit to name that we give here.
 + */
-+static void get_time_values_from_xen(void)
-+{
-+	struct vcpu_time_info   *src;
-+	struct shadow_time_info *dst;
 +
-+	preempt_disable();
++/* Bit used for the pseudo-hwcap for non-negative segments.  We use
++   bit 1 to avoid bugs in some versions of glibc when bit 0 is
++   used; the choice is otherwise arbitrary. */
++#define VDSO_NOTE_NONEGSEG_BIT	1
 +
-+	src = &__get_cpu_var(xen_vcpu)->time;
-+	dst = &__get_cpu_var(shadow_time);
-+
-+	do {
-+		dst->version = src->version;
-+		rmb();
-+		dst->tsc_timestamp     = src->tsc_timestamp;
-+		dst->system_timestamp  = src->system_time;
-+		dst->tsc_to_nsec_mul   = src->tsc_to_system_mul;
-+		dst->tsc_shift         = src->tsc_shift;
-+		rmb();
-+	} while ((src->version & 1) | (dst->version ^ src->version));
-+
-+	preempt_enable();
-+}
-+
-+/*
-+ * Scale a 64-bit delta by scaling and multiplying by a 32-bit fraction,
-+ * yielding a 64-bit result.
-+ */
-+static inline u64 scale_delta(u64 delta, u32 mul_frac, int shift)
-+{
-+	u64 product;
-+#ifdef __i386__
-+	u32 tmp1, tmp2;
++ELFNOTE_START(GNU, 2, "a")
++	.long 1, 1<<VDSO_NOTE_NONEGSEG_BIT		/* ncaps, mask */
++	.byte VDSO_NOTE_NONEGSEG_BIT; .asciz "nosegneg"	/* bit, name */
++ELFNOTE_END
 +#endif
-+
-+	if (shift < 0)
-+		delta >>= -shift;
-+	else
-+		delta <<= shift;
-+
-+#ifdef __i386__
-+	__asm__ (
-+		"mul  %5       ; "
-+		"mov  %4,%%eax ; "
-+		"mov  %%edx,%4 ; "
-+		"mul  %5       ; "
-+		"xor  %5,%5    ; "
-+		"add  %4,%%eax ; "
-+		"adc  %5,%%edx ; "
-+		: "=A" (product), "=r" (tmp1), "=r" (tmp2)
-+		: "a" ((u32)delta), "1" ((u32)(delta >> 32)), "2" (mul_frac) );
-+#elif __x86_64__
-+	__asm__ (
-+		"mul %%rdx ; shrd $32,%%rdx,%%rax"
-+		: "=a" (product) : "0" (delta), "d" ((u64)mul_frac) );
-+#else
-+#error implement me!
-+#endif
-+
-+	return product;
-+}
-+
-+static u64 get_nsec_offset(struct shadow_time_info *shadow)
-+{
-+	u64 now, delta;
-+	rdtscll(now);
-+	delta = now - shadow->tsc_timestamp;
-+	return scale_delta(delta, shadow->tsc_to_nsec_mul, shadow->tsc_shift);
-+}
-+
-+cycle_t xen_clocksource_read(void)
-+{
-+	struct shadow_time_info *shadow = &get_cpu_var(shadow_time);
-+	cycle_t ret;
-+
-+	get_time_values_from_xen();
-+
-+	ret = shadow->system_timestamp + get_nsec_offset(shadow);
-+
-+	put_cpu_var(shadow_time);
-+
-+	return ret;
-+}
-+
-+static void xen_read_wallclock(struct timespec *ts)
-+{
-+	const struct shared_info *s = HYPERVISOR_shared_info;
-+	u32 version;
-+	u64 delta;
-+	struct timespec now;
-+
-+	/* get wallclock at system boot */
-+	do {
-+		version = s->wc_version;
-+		rmb();
-+		now.tv_sec  = s->wc_sec;
-+		now.tv_nsec = s->wc_nsec;
-+		rmb();
-+	} while ((s->wc_version & 1) | (version ^ s->wc_version));
-+
-+	delta = xen_clocksource_read();	/* time since system boot */
-+	delta += now.tv_sec * (u64)NSEC_PER_SEC + now.tv_nsec;
-+
-+	now.tv_nsec = do_div(delta, NSEC_PER_SEC);
-+	now.tv_sec = delta;
-+
-+	set_normalized_timespec(ts, now.tv_sec, now.tv_nsec);
-+}
-+
-+unsigned long xen_get_wallclock(void)
-+{
-+	struct timespec ts;
-+
-+	xen_read_wallclock(&ts);
-+
-+	return ts.tv_sec;
-+}
-+
-+int xen_set_wallclock(unsigned long now)
-+{
-+	/* do nothing for domU */
-+	return -1;
-+}
-+
-+static struct clocksource xen_clocksource __read_mostly = {
-+	.name = "xen",
-+	.rating = 400,
-+	.read = xen_clocksource_read,
-+	.mask = ~0,
-+	.mult = 1<<XEN_SHIFT,		/* time directly in nanoseconds */
-+	.shift = XEN_SHIFT,
-+	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+/*
-+   Xen clockevent implementation
-+
-+   Xen has two clockevent implementations:
-+
-+   The old timer_op one works with all released versions of Xen prior
-+   to version 3.0.4.  This version of the hypervisor provides a
-+   single-shot timer with nanosecond resolution.  However, sharing the
-+   same event channel is a 100Hz tick which is delivered while the
-+   vcpu is running.  We don't care about or use this tick, but it will
-+   cause the core time code to think the timer fired too soon, and
-+   will end up resetting it each time.  It could be filtered, but
-+   doing so has complications when the ktime clocksource is not yet
-+   the xen clocksource (ie, at boot time).
-+
-+   The new vcpu_op-based timer interface allows the tick timer period
-+   to be changed or turned off.  The tick timer is not useful as a
-+   periodic timer because events are only delivered to running vcpus.
-+   The one-shot timer can report when a timeout is in the past, so
-+   set_next_event is capable of returning -ETIME when appropriate.
-+   This interface is used when available.
-+*/
-+
-+
-+/*
-+  Get a hypervisor absolute time.  In theory we could maintain an
-+  offset between the kernel's time and the hypervisor's time, and
-+  apply that to a kernel's absolute timeout.  Unfortunately the
-+  hypervisor and kernel times can drift even if the kernel is using
-+  the Xen clocksource, because ntp can warp the kernel's clocksource.
-+*/
-+static s64 get_abs_timeout(unsigned long delta)
-+{
-+	return xen_clocksource_read() + delta;
-+}
-+
-+static void xen_timerop_set_mode(enum clock_event_mode mode,
-+				 struct clock_event_device *evt)
-+{
-+	switch(mode) {
-+	case CLOCK_EVT_MODE_PERIODIC:
-+		/* unsupported */
-+		WARN_ON(1);
-+		break;
-+
-+	case CLOCK_EVT_MODE_ONESHOT:
-+		break;
-+
-+	case CLOCK_EVT_MODE_UNUSED:
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		HYPERVISOR_set_timer_op(0);  /* cancel timeout */
-+		break;
-+	}
-+}
-+
-+static int xen_timerop_set_next_event(unsigned long delta,
-+				      struct clock_event_device *evt)
-+{
-+	WARN_ON(evt->mode != CLOCK_EVT_MODE_ONESHOT);
-+
-+	if (HYPERVISOR_set_timer_op(get_abs_timeout(delta)) < 0)
-+		BUG();
-+
-+	/* We may have missed the deadline, but there's no real way of
-+	   knowing for sure.  If the event was in the past, then we'll
-+	   get an immediate interrupt. */
-+
-+	return 0;
-+}
-+
-+static const struct clock_event_device xen_timerop_clockevent = {
-+	.name = "xen",
-+	.features = CLOCK_EVT_FEAT_ONESHOT,
-+
-+	.max_delta_ns = 0xffffffff,
-+	.min_delta_ns = TIMER_SLOP,
-+
-+	.mult = 1,
-+	.shift = 0,
-+	.rating = 500,
-+
-+	.set_mode = xen_timerop_set_mode,
-+	.set_next_event = xen_timerop_set_next_event,
-+};
-+
-+
-+
-+static void xen_vcpuop_set_mode(enum clock_event_mode mode,
-+				struct clock_event_device *evt)
-+{
-+	int cpu = smp_processor_id();
-+
-+	switch(mode) {
-+	case CLOCK_EVT_MODE_PERIODIC:
-+		WARN_ON(1);	/* unsupported */
-+		break;
-+
-+	case CLOCK_EVT_MODE_ONESHOT:
-+		if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL))
-+			BUG();
-+		break;
-+
-+	case CLOCK_EVT_MODE_UNUSED:
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		if (HYPERVISOR_vcpu_op(VCPUOP_stop_singleshot_timer, cpu, NULL) ||
-+		    HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL))
-+			BUG();
-+		break;
-+	}
-+}
-+
-+static int xen_vcpuop_set_next_event(unsigned long delta,
-+				     struct clock_event_device *evt)
-+{
-+	int cpu = smp_processor_id();
-+	struct vcpu_set_singleshot_timer single;
-+	int ret;
-+
-+	WARN_ON(evt->mode != CLOCK_EVT_MODE_ONESHOT);
-+
-+	single.timeout_abs_ns = get_abs_timeout(delta);
-+	single.flags = VCPU_SSHOTTMR_future;
-+
-+	ret = HYPERVISOR_vcpu_op(VCPUOP_set_singleshot_timer, cpu, &single);
-+
-+	BUG_ON(ret != 0 && ret != -ETIME);
-+
-+	return ret;
-+}
-+
-+static const struct clock_event_device xen_vcpuop_clockevent = {
-+	.name = "xen",
-+	.features = CLOCK_EVT_FEAT_ONESHOT,
-+
-+	.max_delta_ns = 0xffffffff,
-+	.min_delta_ns = TIMER_SLOP,
-+
-+	.mult = 1,
-+	.shift = 0,
-+	.rating = 500,
-+
-+	.set_mode = xen_vcpuop_set_mode,
-+	.set_next_event = xen_vcpuop_set_next_event,
-+};
-+
-+static const struct clock_event_device *xen_clockevent =
-+	&xen_timerop_clockevent;
-+static DEFINE_PER_CPU(struct clock_event_device, xen_clock_events);
-+
-+static irqreturn_t xen_timer_interrupt(int irq, void *dev_id)
-+{
-+	struct clock_event_device *evt = &__get_cpu_var(xen_clock_events);
-+	irqreturn_t ret;
-+
-+	ret = IRQ_NONE;
-+	if (evt->event_handler) {
-+		evt->event_handler(evt);
-+		ret = IRQ_HANDLED;
-+	}
-+
-+	return ret;
-+}
-+
-+static void xen_setup_timer(int cpu)
-+{
-+	const char *name;
-+	struct clock_event_device *evt;
-+	int irq;
-+
-+	printk("installing Xen timer for CPU %d\n", cpu);
-+
-+	name = kasprintf(GFP_KERNEL, "timer%d", cpu);
-+	if (!name)
-+		name = "<timer kasprintf failed>";
-+
-+	irq = bind_virq_to_irqhandler(VIRQ_TIMER, cpu, xen_timer_interrupt,
-+				      IRQF_DISABLED|IRQF_PERCPU|IRQF_NOBALANCING,
-+				      name, NULL);
-+
-+	evt = &get_cpu_var(xen_clock_events);
-+	memcpy(evt, xen_clockevent, sizeof(*evt));
-+
-+	evt->cpumask = cpumask_of_cpu(cpu);
-+	evt->irq = irq;
-+	clockevents_register_device(evt);
-+
-+	put_cpu_var(xen_clock_events);
-+}
-+
-+__init void xen_time_init(void)
-+{
-+	int cpu = smp_processor_id();
-+
-+	get_time_values_from_xen();
-+
-+	clocksource_register(&xen_clocksource);
-+
-+	if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL) == 0) {
-+		/* Successfully turned off 100hz tick, so we have the
-+		   vcpuop-based timer interface */
-+		printk(KERN_DEBUG "Xen: using vcpuop timer interface\n");
-+		xen_clockevent = &xen_vcpuop_clockevent;
-+	}
-+
-+	/* Set initial system time with full resolution */
-+	xen_read_wallclock(&xtime);
-+	set_normalized_timespec(&wall_to_monotonic,
-+				-xtime.tv_sec, -xtime.tv_nsec);
-+
-+	tsc_disable = 0;
-+
-+	xen_setup_timer(cpu);
-+}
 
 -- 
 
