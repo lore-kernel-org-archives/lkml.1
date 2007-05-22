@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966540AbXEVSbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763326AbXEVSk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966540AbXEVSbu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 14:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759837AbXEVSbk
+	id S1763326AbXEVSk5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 14:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbXEVSkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 14:31:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58099 "EHLO
+	Tue, 22 May 2007 14:40:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40706 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759829AbXEVSbj (ORCPT
+	by vger.kernel.org with ESMTP id S1756432AbXEVSks (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 14:31:39 -0400
-Date: Tue, 22 May 2007 11:29:51 -0700
+	Tue, 22 May 2007 14:40:48 -0400
+Date: Tue, 22 May 2007 11:39:26 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, xiaosuo@gmail.com
-Subject: Re: + procfs-directory-entry-cleanup.patch added to -mm tree
-Message-Id: <20070522112951.1a980a46.akpm@linux-foundation.org>
-In-Reply-To: <20070522174348.GA5689@martell.zuzino.mipt.ru>
-References: <200705210341.l4L3f1BH001692@shell0.pdx.osdl.net>
-	<20070522174348.GA5689@martell.zuzino.mipt.ru>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] UDF: possible usage of uninitialized variables
+Message-Id: <20070522113926.b7f1e690.akpm@linux-foundation.org>
+In-Reply-To: <20070522175223.GA8259@cvg>
+References: <20070522175223.GA8259@cvg>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,84 +25,45 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 21:43:49 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Tue, 22 May 2007 21:52:23 +0400
+Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-> On Sun, May 20, 2007 at 08:41:02PM -0700, akpm@linux-foundation.org wrote:
-> > Subject: procfs directory entry cleanup
-> > From: "Changli Gao" <xiaosuo@gmail.com>
-> >
-> > Function proc_register() will assign proc_dir_operations and
-> > proc_dir_inode_operations to ent's members proc_fops and proc_iops
-> > correctly if ent is a directory. So the early assignment isn't
-> > necessary.
-> 
-> > --- a/fs/proc/generic.c~procfs-directory-entry-cleanup
-> > +++ a/fs/proc/generic.c
-> > @@ -649,9 +649,6 @@ struct proc_dir_entry *proc_mkdir_mode(c
-> >  
-> >  	ent = proc_create(&parent, name, S_IFDIR | mode, 2);
-> >  	if (ent) {
-> > -		ent->proc_fops = &proc_dir_operations;
-> > -		ent->proc_iops = &proc_dir_inode_operations;
-> > -
-> >  		if (proc_register(parent, ent) < 0) {
-> >  			kfree(ent);
-> >  			ent = NULL;
-> > @@ -686,10 +683,6 @@ struct proc_dir_entry *create_proc_entry
-> >  
-> >  	ent = proc_create(&parent,name,mode,nlink);
-> >  	if (ent) {
-> > -		if (S_ISDIR(mode)) {
-> > -			ent->proc_fops = &proc_dir_operations;
-> > -			ent->proc_iops = &proc_dir_inode_operations;
-> > -		}
-> >  		if (proc_register(parent, ent) < 0) {
-> >  			kfree(ent);
-> >  			ent = NULL;
-> 
-> This should add race because new PDE for directory will be glued to tree
-> with NULL ->proc_iops and, at least, vfs_getattr() doesn't check for
-> NULL ->i_op.
-> 
-> I've tried to reproduce this scenario with udelay() inserted before
-> S_ISDIR checks in proc_register() but got some panic while in X,
-> so no cookie for me. Maybe it's impossible, indeed.
-> 
-> Anyway, this patch + moving ->proc_fops and ->proc_iops initialization
-> before gluing is OK with me.
+> A few variables could be used without being explicitly initialized.
+> Fixed.
 
-Like this?
+Are you sure?  I'm expecting that this is a gcc mistake.
 
-diff -puN fs/proc/generic.c~procfs-directory-entry-cleanup-fix fs/proc/generic.c
---- a/fs/proc/generic.c~procfs-directory-entry-cleanup-fix
-+++ a/fs/proc/generic.c
-@@ -529,12 +529,6 @@ static int proc_register(struct proc_dir
- 		return -EAGAIN;
- 	dp->low_ino = i;
- 
--	spin_lock(&proc_subdir_lock);
--	dp->next = dir->subdir;
--	dp->parent = dir;
--	dir->subdir = dp;
--	spin_unlock(&proc_subdir_lock);
--
- 	if (S_ISDIR(dp->mode)) {
- 		if (dp->proc_iops == NULL) {
- 			dp->proc_fops = &proc_dir_operations;
-@@ -550,6 +544,13 @@ static int proc_register(struct proc_dir
- 		if (dp->proc_iops == NULL)
- 			dp->proc_iops = &proc_file_inode_operations;
- 	}
-+
-+	spin_lock(&proc_subdir_lock);
-+	dp->next = dir->subdir;
-+	dp->parent = dir;
-+	dir->subdir = dp;
-+	spin_unlock(&proc_subdir_lock);
-+
- 	return 0;
- }
- 
-_
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+> 
+> 
+>  balloc.c |    6 +++++-
+>  super.c  |    5 ++++-
+>  2 files changed, 9 insertions(+), 2 deletions(-)
+> 
+> 
+> diff --git a/balloc.c b/balloc.c
+> index 4cec910..be37393 100644
+> --- a/balloc.c
+> +++ b/balloc.c
 
+Please always use `patch -p1' form from the top-level directory.  This should
+have been
+
+--- a/fs/udf/balloc.c
++++ b/fs/udf/balloc.c
+
+> @@ -744,7 +744,11 @@ static int udf_table_new_block(struct super_block * sb,
+>  	uint32_t spread = 0xFFFFFFFF, nspread = 0xFFFFFFFF;
+>  	uint32_t newblock = 0, adsize;
+>  	uint32_t elen, goal_elen = 0;
+> -	kernel_lb_addr eloc, goal_eloc;
+> +	kernel_lb_addr eloc;
+> +	kernel_lb_addr goal_eloc = {
+> +		.logicalBlockNum = 0,
+> +		.partitionReferenceNum = 0,
+> +	};
+
+	kernel_lb_addr goal_eloc = { };
+
+is equivalent and sufficient.
