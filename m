@@ -1,25 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbXEVAeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764366AbXEVAew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763500AbXEVAeh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 20:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757008AbXEVAea
+	id S1764366AbXEVAew (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 20:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbXEVAeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 20:34:30 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34984 "EHLO
+	Mon, 21 May 2007 20:34:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34985 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756867AbXEVAe3 (ORCPT
+	with ESMTP id S1757001AbXEVAea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 20:34:29 -0400
-Date: Tue, 22 May 2007 01:39:01 +0100
+	Mon, 21 May 2007 20:34:30 -0400
+Date: Tue, 22 May 2007 01:34:24 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: jesse.barnes@intel.com, jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       hancockr@shaw.ca (Robert Hancock), linux-kernel@vger.kernel.org
-Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
-Message-ID: <20070522013901.70bf7be8@the-village.bc.nu>
-In-Reply-To: <200705212351.l4LNpZjY010860@turbo.physics.adelaide.edu.au>
-References: <20070522001837.5104bfe1@the-village.bc.nu>
-	<200705212351.l4LNpZjY010860@turbo.physics.adelaide.edu.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Tejun Heo <htejun@gmail.com>, jeff@garzik.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       akpm@linux-foundation.org, Alan Cox <alan@redhat.com>
+Subject: Re: [patch 07/69] libata-sff: Undo bug introduced with pci_iomap
+ changes
+Message-ID: <20070522013424.3870ead3@the-village.bc.nu>
+In-Reply-To: <alpine.LFD.0.98.0705211614210.3890@woody.linux-foundation.org>
+References: <20070521191612.800400000@sous-sol.org>
+	<20070521191701.791285000@sous-sol.org>
+	<alpine.LFD.0.98.0705211614210.3890@woody.linux-foundation.org>
 X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -30,10 +39,25 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Are we talking CONFIG_PATA_MARVELL here?  If so then the kernel I just
-> booted has this set to "y" (ie: built-in) and yet the drive is still not
-> detected.  Is there a newer version of this driver somewhere?  The kernel
-> was 2.6.22-rc2.
+On Mon, 21 May 2007 16:18:25 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Should be current. Its known to work fine for that chip so you might need
-to do some debugging and provide more detail.
+> 
+> 
+> On Mon, 21 May 2007, Chris Wright wrote:
+> > ---
+> > [chrisw: Why is this not upstream yet?]
+> 
+> And equally importantly, why is it even in the stable queue if it's not 
+> upstream.
+
+Its not relevant to upstream - upstream has different updates which
+removed the bug but not in a clean "backport this" way.
+
+> It's against stable rules, and it means that we may have stuff that gets 
+> fixed in -stable and not in -upstream, if people don't notice. THAT IS 
+> BAD
+
+Then the rules are stupid in this specific case.
+
+Alan
