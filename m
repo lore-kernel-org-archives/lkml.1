@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966237AbXEVP7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966314AbXEVP7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966237AbXEVP7P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 11:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758582AbXEVP65
+	id S966314AbXEVP7l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 11:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765543AbXEVP73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 11:58:57 -0400
-Received: from outbound-mail-36.bluehost.com ([69.89.20.190]:43779 "HELO
-	outbound-mail-36.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965796AbXEVP64 (ORCPT
+	Tue, 22 May 2007 11:59:29 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:40772 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758582AbXEVP72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 11:58:56 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Wayne Sherman <wsherman@gmail.com>
-Subject: Re: PCI device problem - MMCONFIG, cannot allocate resource region, resource collisions
-Date: Tue, 22 May 2007 08:58:51 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-References: <46524A6D.5050601@gmail.com> <200705211903.46678.jbarnes@virtuousgeek.org> <46525710.7050803@gmail.com>
-In-Reply-To: <46525710.7050803@gmail.com>
+	Tue, 22 May 2007 11:59:28 -0400
+Date: Tue, 22 May 2007 16:59:03 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jeff Garzik <jeff@garzik.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Message-ID: <20070522155902.GA27987@srcf.ucam.org>
+References: <200705171423.46748.jesse.barnes@intel.com> <465228E2.1030405@garzik.org> <9e4733910705211726q38be6843ndac49f8adc25aad0@mail.gmail.com> <200705211856.56228.jbarnes@virtuousgeek.org> <9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com> <20070522155439.20bf509f@the-village.bc.nu> <9e4733910705220816j778e00ecle86e209ef0111b8e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705220858.51604.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <9e4733910705220816j778e00ecle86e209ef0111b8e@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, May 21, 2007, Wayne Sherman wrote:
-> Jesse Barnes wrote:
-> > There's a recent thread about PCI resource assignment (sounds like
-> > your BIOS might be buggy btw, or you're somehow running out of space),
-> > search for the title "PCI bridge range sizing bug".  You may need the
-> > kernel to reassign the resource for your NIC before you can use it.  I
-> > think Ivan has some test patches along these lines.
-> >
-> > If you can find out what resource it's colliding with, that might give
-> > you a clue.
->
-> I don't have anything else plugged in to the PC (except a USB drive).
-> BIOS is set to PNP OS.  How do I find out what it is colliding with?
->
-> 02:02.0 Non-VGA unclassified device: D-Link System Inc Unknown device
-> 4901 (rev 11)
-> 	Subsystem: D-Link System Inc Unknown device 4901
-> 	Flags: bus master, 66MHz, fast devsel, latency 64, IRQ 11
-> 	Memory at <ignored> (32-bit, non-prefetchable)
-> 	I/O ports at b800 [size=256]
-> 	Expansion ROM at <ignored> [disabled]
-> 	Capabilities: [48] Power Management version 2
-> 	Capabilities: [50] Vital Product Data
+On Tue, May 22, 2007 at 11:16:47AM -0400, Jon Smirl wrote:
 
-Can you dump the memory BAR for this device?  I guess lspci hides it by 
-default.  You may also be able to see it using 'od -t 
-x4 /sys/devices/pci0000\:00/0000:02:02.0/config'.  I'm not sure how much 
-that'll help though, you may be able to see which device its resources are 
-overlapping with, but unless your BIOS gives you an option to disable it 
-or change the way PCI space is allocated, you may be stuck...
+> The only reason the VBIOS is run is to initially reset the card. Once
+> we get the card reset it isn't used any more. For almost all cards
+> this is the only way to reset them, we have insufficient information
+> to write this ourselves.
 
-Jesse
+For suspend/resume to ever work reliably, we need to be able to 
+reinitialise cards without BIOS support. It would be more useful to 
+spend time on that.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
