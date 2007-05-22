@@ -1,173 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763656AbXEVC1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764651AbXEVCcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763656AbXEVC1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 22:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758228AbXEVC1g
+	id S1764651AbXEVCcv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 22:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758963AbXEVCco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 22:27:36 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38575 "EHLO e4.ny.us.ibm.com"
+	Mon, 21 May 2007 22:32:44 -0400
+Received: from sandeen.net ([209.173.210.139]:16037 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758159AbXEVC1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 22:27:35 -0400
-Subject: [RFC][PATCH] do_div_signed()
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Roman Zippel <zippel@linux-m68k.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Elimar Riesebieter <riesebie@lxtec.de>
-Content-Type: text/plain
-Date: Mon, 21 May 2007 19:27:32 -0700
-Message-Id: <1179800853.5910.59.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1758803AbXEVCcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 22:32:43 -0400
+Message-ID: <46525648.8050807@sandeen.net>
+Date: Mon, 21 May 2007 21:32:40 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
+MIME-Version: 1.0
+To: Eric Sandeen <sandeen@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Maneesh Soni <maneesh@in.ibm.com>,
+       stable@kernel.org
+Subject: Re: [stable] [PATCH] - store sysfs inode nrs in s_ino to avoid readdir
+ oopses
+References: <4651E0C9.3080609@redhat.com> <20070521153935.b549db8f.akpm@linux-foundation.org> <465236EF.40102@redhat.com>
+In-Reply-To: <465236EF.40102@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a quick pass at adding do_div_signed() which provides a signed
-version of do_div, avoiding having do_div users hack around signed
-issues (like in ntp.c).
+(2nd try, better(?) changelog, quilt refreshed(!) patch)
 
-It probably could be optimized further, so let me know if you have any
-suggestions.
+--
 
+Backport of
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/broken-out/gregkh-driver-sysfs-allocate-inode-number-using-ida.patch
 
-Other thoughts?
+For regular files in sysfs, sysfs_readdir wants to traverse
+sysfs_dirent->s_dentry->d_inode->i_ino to get to the inode number.
+But, the dentry can be reclaimed under memory pressure, and there
+is no synchronization with readdir.  This patch follows Tejun's
+scheme of allocating and storing an inode number in the new s_ino
+member of a sysfs_dirent, when dirents are created, and retrieving 
+it from there for readdir, so that the pointer chain doesn't have 
+to be traversed.
 
-thanks
--john
+Tejun's upstream patch uses a new-ish "ida" allocator which brings along
+some extra complexity; this -stable patch has a brain-dead incrementing
+counter which does not guarantee uniqueness, but because sysfs doesn't 
+hash inodes as iunique expects, uniqueness wasn't guaranteed today anyway.
 
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 
-Signed-off-by: John Stultz<johnstul@us.ibm.com>
-
-
-diff --git a/include/asm-arm/div64.h b/include/asm-arm/div64.h
-index 0b5f881..af44e10 100644
---- a/include/asm-arm/div64.h
-+++ b/include/asm-arm/div64.h
-@@ -225,5 +225,6 @@
- #endif
+Index: linux-2.6.21/fs/sysfs/dir.c
+===================================================================
+--- linux-2.6.21.orig/fs/sysfs/dir.c
++++ linux-2.6.21/fs/sysfs/dir.c
+@@ -30,6 +30,14 @@ static struct dentry_operations sysfs_de
+ 	.d_iput		= sysfs_d_iput,
+ };
  
- extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
-+extern int64_t do_div_signed(int64_t *n, int32_t base);
- 
- #endif
-diff --git a/include/asm-generic/div64.h b/include/asm-generic/div64.h
-index a4a4937..e1cac65 100644
---- a/include/asm-generic/div64.h
-+++ b/include/asm-generic/div64.h
-@@ -62,4 +62,5 @@ extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
- 
- #endif /* BITS_PER_LONG */
- 
-+extern int64_t do_div_signed(int64_t *n, int32_t base);
- #endif /* _ASM_GENERIC_DIV64_H */
-diff --git a/include/asm-i386/div64.h b/include/asm-i386/div64.h
-index 438e980..05320a5 100644
---- a/include/asm-i386/div64.h
-+++ b/include/asm-i386/div64.h
-@@ -49,4 +49,5 @@ div_ll_X_l_rem(long long divs, long div, long *rem)
- }
- 
- extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
-+extern int64_t do_div_signed(int64_t *n, int32_t base);
- #endif
-diff --git a/include/asm-m68k/div64.h b/include/asm-m68k/div64.h
-index 33caad1..3c76059 100644
---- a/include/asm-m68k/div64.h
-+++ b/include/asm-m68k/div64.h
-@@ -26,4 +26,5 @@
- })
- 
- extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
-+extern int64_t do_div_signed(int64_t *n, int32_t base);
- #endif /* _M68K_DIV64_H */
-diff --git a/include/asm-mips/div64.h b/include/asm-mips/div64.h
-index 66189f5..851ce40 100644
---- a/include/asm-mips/div64.h
-+++ b/include/asm-mips/div64.h
-@@ -111,5 +111,6 @@ static inline uint64_t div64_64(uint64_t dividend, uint64_t divisor)
- }
- 
- #endif /* (_MIPS_SZLONG == 64) */
-+extern int64_t do_div_signed(int64_t *n, int32_t base);
- 
- #endif /* _ASM_DIV64_H */
-diff --git a/include/asm-um/div64.h b/include/asm-um/div64.h
-index 7b73b2c..1fc4a2c 100644
---- a/include/asm-um/div64.h
-+++ b/include/asm-um/div64.h
-@@ -4,4 +4,5 @@
- #include "asm/arch/div64.h"
- 
- extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
-+extern int64_t do_div_signed(int64_t *n, int32_t base);
- #endif
-diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-index 87aa5ff..7c093ad 100644
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -302,16 +302,11 @@ int do_adjtimex(struct timex *txc)
- 		    freq_adj = time_offset * mtemp;
- 		    freq_adj = shift_right(freq_adj, time_constant * 2 +
- 					   (SHIFT_PLL + 2) * 2 - SHIFT_NSEC);
--		    if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC)) {
-+		    if (mtemp >= MINSEC && 
-+		    		(time_status & STA_FLL || mtemp > MAXSEC)) {
- 			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
--			if (time_offset < 0) {
--			    temp64 = -temp64;
--			    do_div(temp64, mtemp);
--			    freq_adj -= temp64;
--			} else {
--			    do_div(temp64, mtemp);
--			    freq_adj += temp64;
--			}
-+			do_div_signed(&temp64, mtemp);
-+			freq_adj += temp64;
- 		    }
- 		    freq_adj += time_freq;
- 		    freq_adj = min(freq_adj, (s64)MAXFREQ_NSEC);
-diff --git a/lib/div64.c b/lib/div64.c
-index b71cf93..e6ff440 100644
---- a/lib/div64.c
-+++ b/lib/div64.c
-@@ -79,3 +79,37 @@ uint64_t div64_64(uint64_t dividend, uint64_t divisor)
- EXPORT_SYMBOL(div64_64);
- 
- #endif /* BITS_PER_LONG == 32 */
-+
-+/* Signed 64 bit dividend, result, rem. Signed 32 bit divisor */
-+int64_t do_div_signed(int64_t *n, int32_t base)
++static unsigned int sysfs_inode_counter;
++ino_t sysfs_get_inum(void)
 +{
-+	uint64_t num, den;
-+	int64_t rem;
-+	int num_sign = (*n < 0);
-+	int den_sign = (base < 0);
-+
-+	if (num_sign)
-+		num = (uint64_t)(-*n);
-+	else
-+		num = (uint64_t)*n;
-+	
-+	/* XXX this is sort of obnoxious,but seems necessary 
-+	 * to handle the base possibly being negative as well
-+	 */
-+	if (den_sign)
-+		den = (uint32_t)(-base);
-+	else
-+	den = (uint32_t)base;
-+
-+	rem = do_div(num, den);
-+
-+	*n = (int64_t)num;
-+	if(num_sign ^ den_sign)
-+		*n = -*n;
-+	if(num_sign)
-+		rem = -rem;
-+
-+	return rem;
++	if (unlikely(sysfs_inode_counter < 3))
++		sysfs_inode_counter = 3;
++	return sysfs_inode_counter++;
 +}
 +
-+EXPORT_SYMBOL(do_div_signed);
-
+ /*
+  * Allocates a new sysfs_dirent and links it to the parent sysfs_dirent
+  */
+@@ -41,6 +49,7 @@ static struct sysfs_dirent * __sysfs_new
+ 	if (!sd)
+ 		return NULL;
+ 
++	sd->s_ino = sysfs_get_inum();
+ 	atomic_set(&sd->s_count, 1);
+ 	atomic_set(&sd->s_event, 1);
+ 	INIT_LIST_HEAD(&sd->s_children);
+@@ -509,7 +518,7 @@ static int sysfs_readdir(struct file * f
+ 
+ 	switch (i) {
+ 		case 0:
+-			ino = dentry->d_inode->i_ino;
++			ino = parent_sd->s_ino;
+ 			if (filldir(dirent, ".", 1, i, ino, DT_DIR) < 0)
+ 				break;
+ 			filp->f_pos++;
+@@ -538,10 +547,7 @@ static int sysfs_readdir(struct file * f
+ 
+ 				name = sysfs_get_name(next);
+ 				len = strlen(name);
+-				if (next->s_dentry)
+-					ino = next->s_dentry->d_inode->i_ino;
+-				else
+-					ino = iunique(sysfs_sb, 2);
++				ino = next->s_ino;
+ 
+ 				if (filldir(dirent, name, len, filp->f_pos, ino,
+ 						 dt_type(next)) < 0)
+Index: linux-2.6.21/fs/sysfs/inode.c
+===================================================================
+--- linux-2.6.21.orig/fs/sysfs/inode.c
++++ linux-2.6.21/fs/sysfs/inode.c
+@@ -140,6 +140,7 @@ struct inode * sysfs_new_inode(mode_t mo
+ 		inode->i_mapping->a_ops = &sysfs_aops;
+ 		inode->i_mapping->backing_dev_info = &sysfs_backing_dev_info;
+ 		inode->i_op = &sysfs_inode_operations;
++		inode->i_ino = sd->s_ino;
+ 		lockdep_set_class(&inode->i_mutex, &sysfs_inode_imutex_key);
+ 
+ 		if (sd->s_iattr) {
+Index: linux-2.6.21/fs/sysfs/mount.c
+===================================================================
+--- linux-2.6.21.orig/fs/sysfs/mount.c
++++ linux-2.6.21/fs/sysfs/mount.c
+@@ -33,6 +33,7 @@ static struct sysfs_dirent sysfs_root = 
+ 	.s_element	= NULL,
+ 	.s_type		= SYSFS_ROOT,
+ 	.s_iattr	= NULL,
++	.s_ino		= 1,
+ };
+ 
+ static void sysfs_clear_inode(struct inode *inode)
+Index: linux-2.6.21/fs/sysfs/sysfs.h
+===================================================================
+--- linux-2.6.21.orig/fs/sysfs/sysfs.h
++++ linux-2.6.21/fs/sysfs/sysfs.h
+@@ -5,6 +5,7 @@ struct sysfs_dirent {
+ 	void 			* s_element;
+ 	int			s_type;
+ 	umode_t			s_mode;
++	ino_t			s_ino;
+ 	struct dentry		* s_dentry;
+ 	struct iattr		* s_iattr;
+ 	atomic_t		s_event;
 
