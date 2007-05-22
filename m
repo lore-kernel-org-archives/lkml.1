@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762648AbXEVQch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765502AbXEVQe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762648AbXEVQch (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 12:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbXEVQca
+	id S1765502AbXEVQe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 12:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbXEVQeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 12:32:30 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:40948 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755718AbXEVQca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 12:32:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VS21IskyavijE7pnICbnShroHKJW3BBgOdesVL1NxpEnBHqTnfjqgEHjUrAqejIV2W7FxjedPqA28kIruFih7LTk8Kqr0z/hftECeDm/Ziqf7JKFLRDd4LcsYTEV8yshkBg9idjJxHXr4ACLaZdYmJidYkdphMPlEiUMBBY0UiQ=
-Message-ID: <9e4733910705220932x43e0e31bn39f7eb9223f3557e@mail.gmail.com>
-Date: Tue, 22 May 2007 12:32:25 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-In-Reply-To: <200705220915.50238.jbarnes@virtuousgeek.org>
+	Tue, 22 May 2007 12:34:19 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52973 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755359AbXEVQeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 12:34:19 -0400
+Message-ID: <46531B86.7030607@garzik.org>
+Date: Tue, 22 May 2007 12:34:14 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+CC: Dave Airlie <airlied@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+References: <200705171423.46748.jesse.barnes@intel.com>	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>	 <200705210914.22663.jbarnes@virtuousgeek.org>	 <200705210934.58559.jbarnes@virtuousgeek.org>	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>	 <4652295E.7060305@garzik.org>	 <21d7e9970705220107mc096135nc26af32830d83646@mail.gmail.com>	 <4652A6F9.1040502@garzik.org> <9e4733910705220906l323f3b9dw5204e7db700b30a6@mail.gmail.com>
+In-Reply-To: <9e4733910705220906l323f3b9dw5204e7db700b30a6@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <200705220846.53664.jbarnes@virtuousgeek.org>
-	 <9e4733910705220902y151d1922s7e478de041062aa4@mail.gmail.com>
-	 <200705220915.50238.jbarnes@virtuousgeek.org>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/22/07, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> On Tuesday, May 22, 2007, Jon Smirl wrote:
-> > I've talked to an ATI engineer about VBIOS initialization. The chips
-> > may have different steppings. They flash the right VBIOS that matches
-> > the chip into the ROM on the card.  Given all the various steppings
-> > this is the only sane way to initialize the hardware. I don't believe
-> > generic initialization code that can handle all of the various
-> > steppings exists for any hardware.
->
-> I think you must have misunderstood.  Last time I worked on ATI, there was
-> a single ROM image that supported several (maybe even all) of their addin
-> cards.  There's nothing magical about them...  But that's beside the
-> point.
+Jon Smirl wrote:
+> Someone just pinged me privately asking about virtualization support
+> for the console and graphics hardware. What's the plan for handling
+> virtualization?
 
-What about the poke the obscure value into this undocumented IO port
-class of problem where they are using the chip test interface to work
-around bugs in the silicon.
+Step one:  avoid VBIOS, and drive the hardware with open source software 
+we have written :)
 
-He also mentioned that all of the OEMs change the standard ROM image
-before loading it onto their cards to handle how they wired things up
-and bugs in other chips.
-
-Of course I don't have the source for the ROM so I don't know the
-accuracy of what I was told.
-
->
-> They may have hardcoded information about how a particular board is wired
-> up--it's ok to use that (makes the DAC discovery much easier).  We just
-> want to avoid relying on the VBIOS for DAC setup and output probing, since
-> we'll need to do that ourselves for suspend resume and to fully support
-> various multihead configurations.
->
-> Jesse
->
+	Jeff
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+
