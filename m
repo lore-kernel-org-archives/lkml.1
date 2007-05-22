@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763734AbXEVPHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765786AbXEVPMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763734AbXEVPHF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 11:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbXEVPGz
+	id S1765786AbXEVPMA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 11:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757026AbXEVPLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 11:06:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:47734 "EHLO mail.goop.org"
+	Tue, 22 May 2007 11:11:49 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:41033 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756197AbXEVPGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 11:06:54 -0400
-Message-ID: <46530708.3040402@goop.org>
-Date: Tue, 22 May 2007 16:06:48 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1756912AbXEVPLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 11:11:48 -0400
+Subject: Re: [PATCH] aic7xxx/aicasm build failure w/gcc-3.4.6
+In-Reply-To: <1179843982.3738.5.camel@mulgrave.il.steeleye.com>
+ "from James Bottomley at May 22, 2007 09:26:22 am"
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Date: Tue, 22 May 2007 10:11:47 -0500 (CDT)
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [patch 00/33] xen: Xen paravirt_ops implementation
-References: <20070522140941.802382212@goop.org> <200705221657.53607.ak@suse.de>
-In-Reply-To: <200705221657.53607.ak@suse.de>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070522151147.2BCA5DBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> This is the Xen implementation for the paravirt_ops interface.  The
->> series is based on 2.6.22-rc1-mm1, and I think its ready to be cooked
->> in -mm with a view to being merged in 2.6.23.
->>     
->
-> I already got it in my tree now from your previous post. Does this
-> version have changes over that one? 
+James Bottomley wrote:
+> We really don't want gcc making assumptions about prototypes ... even if
+> it's getting them right in all likelihood (doubtless unprototyped
+> assumed functions will become a warning and then an error in later gcc
+> versions ...), so this is a better fix
 
-Yes, I've done a few passes of tidying up, and spent some effort on
-beefing up the patch descriptions/changelogs.  There are no significant
-functional differences though.
+ACK.  The fix works here.  If you would be so kind, please push it
+upstream at your convenience.
 
-    J
+gcc-4.X violates the principle of least astonishment over even more
+nitnoid matters, but that's another flame for another day.
+
+-- 
+-----------------------------------------------------------------------
+Bob Tracy               | "Eagles may soar, but weasels don't get
+rct@frus.com            |  sucked into jet engines."       --Anon
+-----------------------------------------------------------------------
