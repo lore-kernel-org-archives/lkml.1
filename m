@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935309AbXEVTnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935364AbXEVTqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935309AbXEVTnq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 15:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760665AbXEVTni
+	id S935364AbXEVTqH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 15:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760408AbXEVTp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 15:43:38 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:21370 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757535AbXEVTnh (ORCPT
+	Tue, 22 May 2007 15:45:56 -0400
+Received: from adicia.telenet-ops.be ([195.130.132.56]:59157 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760004AbXEVTpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 15:43:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iYmOzzxvKpC28zh8x8jrbWfKT0x3F+6Y1qOqihoWNIbIa8gjr3XGpqg2YMGBMIHBmg69gczctbs6MhxcMzOArlgsWH5PUObPDKt5+reWL5YDX0a9evvhAAmck0sgplEue0d7VRqcuyB8H+4NIt52BSsARJepwoUZhVqLKoU6bTw=
-Message-ID: <86802c440705221243t11208094r82c83f42fd4aa0a1@mail.gmail.com>
-Date: Tue, 22 May 2007 12:43:35 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/3]x86_64: early_printk for early debug port support
-Cc: "Andi Kleen" <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Greg KH" <gregkh@suse.de>, "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Vivek Goyal" <vgoyal@in.ibm.com>,
-       "linux kernel mailing list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070522123137.699d7a87.akpm@linux-foundation.org>
+	Tue, 22 May 2007 15:45:55 -0400
+Date: Tue, 22 May 2007 21:45:51 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: any value to "NORET_TYPE" macro?
+In-Reply-To: <m3tzu4kjg8.fsf@maximus.localdomain>
+Message-ID: <Pine.LNX.4.64.0705222145350.19474@anakin>
+References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
+ <alpine.DEB.0.99.0705220950160.3308@sigma.j-a-k-j.com>
+ <Pine.LNX.4.64.0705220959310.14408@localhost.localdomain>
+ <a781481a0705220709s40b80208h47f1f2f7c00a684d@mail.gmail.com>
+ <a781481a0705220716l799ee2efm268deefc40993875@mail.gmail.com>
+ <m3tzu4kjg8.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440705202219k5aa758ffk217626424e613ec7@mail.gmail.com>
-	 <20070522123137.699d7a87.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/22/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> OK, I went through the exercise of removing all the unused-symbol warnings
-> which DBGP_DEBUG=0 produces and guess what?  None of the code which you've
-> added does anything!  It all has to be moved inside DBGP_DEBUG to avoid
-> unused-symbol warnings.  It's all a big no-op if DBGP_DEBUG=0.  I suspect
-> you did all your test and devel with DBGP_DEBUG=1, then turned DBGP_DEBUG
-> off and shipped the code without retesting?
+On Tue, 22 May 2007, Krzysztof Halasa wrote:
+> "Satyam Sharma" <satyam.sharma@gmail.com> writes:
+> 
+> > But of course, John is *bang right* that if /**/ makes gcc do (or not do)
+> > _anything at all_ (be it crying out a warning), then someone surely
+> > deserves to get his head bashed in ... :-)
+> 
+> I think it's impossible, comments are removed by preprocessor.
 
-Thanks. will format and test again. also will use KMail to mail it out.
+Maybe it's used by some lint-alike tools?
 
-YH
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
