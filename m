@@ -1,49 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966269AbXEVQka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966327AbXEVQmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966269AbXEVQka (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 12:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbXEVQkV
+	id S966327AbXEVQmj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 12:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759271AbXEVQmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 12:40:21 -0400
-Received: from ik-out-1112.google.com ([66.249.90.180]:45423 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755001AbXEVQkT (ORCPT
+	Tue, 22 May 2007 12:42:31 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:20553 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756132AbXEVQma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 12:40:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mJgC4doY40APOn8p8UeQekozcn1zL7pc3vGmpe5pIZJEyqPxLj+yZrbP0bTGNaBwJZFHOnpuUo6biKoPNDHGLSjX1o4CLZpFm+MzxC0wCvWEoWZHwVQW6vDKMc/LaSBnBj5m+/ca9P9LeSHePeAvpKq5qZUKQaHEomluKYOlYhE=
-Message-ID: <6bffcb0e0705220940p22275f1dk46942db747c0a2e0@mail.gmail.com>
-Date: Tue, 22 May 2007 18:40:17 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Luigi Genoni" <l.genoni@oltrelinux.com>
-Subject: Re: BUG: at mm/slab.c:777 __find_general_cachep()
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200705221835.11559.l.genoni@oltrelinux.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 22 May 2007 12:42:30 -0400
+Date: Tue, 22 May 2007 09:41:08 -0700
+From: Zach Brown <zach.brown@oracle.com>
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+Cc: Michael Halcrow <mhalcrow@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] eCryptfs: Delay writing 0's after llseek until write
+Message-ID: <20070522164108.GV364@mami.zabbo.net>
+References: <20070521230021.GD3621@us.ibm.com> <20070521210708.67d365dc.akpm@linux-foundation.org> <20070522145124.GA3616@us.ibm.com> <29495f1d0705220801v50e53f2dl24f9b198dd31c39c@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200705221835.11559.l.genoni@oltrelinux.com>
+In-Reply-To: <29495f1d0705220801v50e53f2dl24f9b198dd31c39c@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Luigi,
+> FWIW, I believe Andrew's point was that critical information for Joe
+> Enduser (and Joe Patch-Ho) was lacking in the original changelog.
 
-On 22/05/07, Luigi Genoni <l.genoni@oltrelinux.com> wrote:
-> While doing eavy I/O on a RAID1 logical volume with reiserfs with kernel
-> 2.6.22-rc2 on Athlon64 3800+ X2, i got:
->
-> BUG: at mm/slab.c:777 __find_general_cachep()
+and don't forget Joe eCryptfs-Maintainer-2-Years-In-The-Future.
 
-Here is a patch
-http://lkml.org/lkml/diff/2007/5/18/19/1
-
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
+- z
