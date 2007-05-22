@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765072AbXEVJUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763191AbXEVJWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765072AbXEVJUd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 05:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbXEVJU0
+	id S1763191AbXEVJWA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 05:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbXEVJVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 05:20:26 -0400
-Received: from stinky.trash.net ([213.144.137.162]:43408 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755571AbXEVJUY (ORCPT
+	Tue, 22 May 2007 05:21:51 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:49490 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755697AbXEVJVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 05:20:24 -0400
-Message-ID: <4652B53B.8080500@trash.net>
-Date: Tue, 22 May 2007 11:17:47 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Tue, 22 May 2007 05:21:50 -0400
+Date: Tue, 22 May 2007 10:16:31 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>, trenn@suse.de,
+       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
+Message-ID: <20070522091631.GA23309@srcf.ucam.org>
+References: <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <20070522090636.GO10714@elf.ucw.cz>
 MIME-Version: 1.0
-To: Anant Nitya <kernel@prachanda.info>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: bad networking related lag in v2.6.22-rc2
-References: <20070517174533.GA538@elte.hu> <465208D2.6070409@trash.net> <46520F77.5000408@trash.net> <200705221147.56571.kernel@prachanda.hub>
-In-Reply-To: <200705221147.56571.kernel@prachanda.hub>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070522090636.GO10714@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anant Nitya wrote:
->>Patrick McHardy wrote:
->>
->>I think I already found the bug, please try if this patch helps.
-> 
-> 
-> Sorry, but this patch is not helping here. I recompiled the kernel with this 
-> patch but same load pattern still make system to crawl.
-> 
-> Here is the link for script I use to shape traffic.
-> 
-> http://cybertek.info/taitai/adslbwopt.sh
+On Tue, May 22, 2007 at 11:06:36AM +0200, Pavel Machek wrote:
 
+> We need to ignore trip point updates from BIOS, and we need to poll
+> thermals when use overrides trip points. That's expected. Plus I've
+> yet to see platform actually updating the trip points.
 
-Thanks. Please also send the output of "tc -s -d qdisc show dev
-ppp0" and "tc -d -s class show dev ppp0" at the time the problem
-occurs.
+Try any recent HP bios.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
