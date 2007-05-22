@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764890AbXEVJnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbXEVJo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764890AbXEVJnt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 05:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbXEVJnj
+	id S932263AbXEVJo3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 05:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbXEVJoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 05:43:39 -0400
-Received: from tang.lemonia.org ([88.208.192.38]:50876 "EHLO tang.lemonia.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756037AbXEVJni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 05:43:38 -0400
-X-Greylist: delayed 2326 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 05:43:38 EDT
-Message-ID: <4652B227.60404@lemonia.org>
-Date: Tue, 22 May 2007 10:04:39 +0100
-From: Dunc <dunc@lemonia.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 22 May 2007 05:44:21 -0400
+Received: from assei2bl6.telenet-ops.be ([195.130.133.69]:33173 "EHLO
+	assei2bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756037AbXEVJoU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 05:44:20 -0400
+Date: Tue, 22 May 2007 11:44:17 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, ak@suse.de,
+       dada1@cosmosbay.com, wli@holomorphy.com, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+In-Reply-To: <Pine.LNX.4.64.0705211737450.24160@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0705221142340.11196@anakin>
+References: <20070518040854.GA15654@wotan.suse.de>
+ <Pine.LNX.4.64.0705191121480.17008@schroedinger.engr.sgi.com>
+ <464FCA28.9040009@cosmosbay.com> <200705201456.26283.ak@suse.de>
+ <Pine.LNX.4.64.0705211006550.26282@schroedinger.engr.sgi.com>
+ <20070522093050.0320d092.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0705211737450.24160@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Marc Donner <webmaster@poweraudio.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-References: <C2786969.24B46%webmaster@poweraudio.de> <20070522105738.f03cb83b.dada1@cosmosbay.com>
-In-Reply-To: <20070522105738.f03cb83b.dada1@cosmosbay.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 213.129.64.4
-Subject: Re: TCP_MD5 and Intel e1000
-X-SA-Exim-Version: 4.2
-X-SA-Exim-Scanned: Yes (on tang.lemonia.org)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> On Tue, 22 May 2007 09:33:29 +0200
-> Marc Donner <webmaster@poweraudio.de> wrote:
+On Mon, 21 May 2007, Christoph Lameter wrote:
+> On Tue, 22 May 2007, KAMEZAWA Hiroyuki wrote:
+> > For i386(32bit arch), there is not enough space for vmemmap.
 > 
->> Hi,
->>
->> I have tried to set up quagga with tcp-md5 support from kernel. All seems ok
->> with a intel e100 NIC, but as i testetd with a intel e1000 NIC the tcp
->> packets have an invalid md5 digest.
->> If i run tcpdump on the mashine the packets are generated, it shows on the
->> outgoing interface invalid md5 digests.
->> Are there known issues about tcp-md5 and e1000 NICs?
->>
-> 
-> Hi Marc
-> 
-> CCed netdev as more appropriate to discuss about network stuff.
-> 
-> Would be nice if you sent some tcpdump samples to share with us, and tell us
-> which exact linux version you tried.
-> 
-> You could try "ethtool -K tx off", and/or other ethtool -K settings
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I thought 32 bit would use flatmem? Is memory really sparse on 32 
+> bit? Likely difficult due to lack of address space?
 
-I had this with e1000 NICs and it was just because I had TSO on.
+Throwing in more crazy comments: many m68k boxes have really sparse memory, due
+to lack of memory and large address space.
 
-It is disabled with ethtool as Eric suggests
+Gr{oetje,eeting}s,
 
-Cheers,
+						Geert
 
-Dunc
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
