@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935123AbXEVTlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935350AbXEVTlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935123AbXEVTlU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 15:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbXEVTlM
+	id S935350AbXEVTlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 15:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759822AbXEVTlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 15:41:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41477 "EHLO mx1.redhat.com"
+	Tue, 22 May 2007 15:41:42 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:37868 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757233AbXEVTlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 15:41:11 -0400
-Date: Tue, 22 May 2007 15:40:30 -0400
-From: Dave Jones <davej@redhat.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] add "notime" boot option
-Message-ID: <20070522194030.GF12157@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	lkml <linux-kernel@vger.kernel.org>,
-	akpm <akpm@linux-foundation.org>
-References: <20070522120938.db67f1e9.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522120938.db67f1e9.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.2i
+	id S1758357AbXEVTll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 15:41:41 -0400
+Date: Tue, 22 May 2007 21:40:55 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Nitin Gupta <nitingupta910@gmail.com>
+cc: linux-kernel@vger.kernel.org, Richard Purdie <richard@openedhand.com>
+Subject: Re: [RFC] LZO1X de/compression support
+In-Reply-To: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705222139550.4452@yvahk01.tjqt.qr>
+References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 12:09:38PM -0700, Randy Dunlap wrote:
- > --- linux-2622-rc2.orig/kernel/printk.c
- > +++ linux-2622-rc2/kernel/printk.c
- > @@ -458,9 +458,17 @@ static int __init printk_time_setup(char
- >  	printk_time = 1;
- >  	return 1;
- >  }
- > -
- >  __setup("time", printk_time_setup);
- >  
- > +static int __init printk_notime_setup(char *str)
- > +{
- > +	if (*str)
- > +		return 0;
- > +	printk_time = 0;
- > +	return 1;
- > +}
- > +__setup("notime", printk_notime_setup);
- > +
- >  __attribute__((weak)) unsigned long long printk_clock(void)
- >  {
- >  	return sched_clock();
 
-Not disagreeing with the patch, but I wonder if it'd be a net win
-if we had a helper that would replace the zillion instances
-of "set this variable to a 0/1 depending if its prefixed with 'no'"
-with 1-2 lines.
+On May 18 2007 15:28, Nitin Gupta wrote:
+> +/* lzo1x.h -- public interface of the LZO1X compression algorithm
+> +
+> +   This file is part of the LZO real-time data compression library.
+> +
+> +   Copyright (C) 2005 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 2004 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 2003 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 2002 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 2001 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 2000 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 1999 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 1998 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 1997 Markus Franz Xaver Johannes Oberhumer
+> +   Copyright (C) 1996 Markus Franz Xaver Johannes Oberhumer
+> +   All Rights Reserved.
 
-	Dave
+Oh holy, this is almost as bad as a 4-clause BSD-style license.
+(Could the author just write "1996-2005" instead, like most
+GNU tools do?)
 
+
+	Jan
 -- 
-http://www.codemonkey.org.uk
