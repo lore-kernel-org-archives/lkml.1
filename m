@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762464AbXEVHSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763100AbXEVHUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762464AbXEVHSE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 03:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbXEVHRy
+	id S1763100AbXEVHUu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 03:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbXEVHUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 03:17:54 -0400
-Received: from ppsw-9.csi.cam.ac.uk ([131.111.8.139]:60208 "EHLO
-	ppsw-9.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755185AbXEVHRy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 03:17:54 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070522042811.GA3852@havoc.gtf.org>
-References: <20070522042811.GA3852@havoc.gtf.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BDA4331E-B2F3-44BF-AC30-4E631AEF92DA@cam.ac.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Tue, 22 May 2007 03:20:43 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47128 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755185AbXEVHUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 03:20:43 -0400
+Date: Tue, 22 May 2007 17:20:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Move three functions that are only needed for
+ CONFIG_MEMORY_HOTPLUG
+Message-Id: <20070522172041.dab14ed0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: [PATCH] partitions/LDM: build fix
-Date: Tue, 22 May 2007 08:17:41 +0100
-To: Jeff Garzik <jeff@garzik.org>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22 May 2007, at 05:28, Jeff Garzik wrote:
-> This from a "tested" patch...
+into the appropriate #ifdef.
 
-I had already posted a fix earlier:
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ mm/sparse.c |   42 +++++++++++++++++++++---------------------
+ 1 files changed, 21 insertions(+), 21 deletions(-)
 
-	From: 	  Anton Altaparmakov <aia21@cam.ac.uk>
-	Subject: 	Fix to the fix! - Re: [2.6 PATCH] LDM: Fix for Windows  
-Vista dynamic disks
-	Date: 	21 May 2007 21:13:37 BDT
-
-> Signed-off-by: Jeff Garzik <jeff@garzik.org>
->
-> diff --git a/fs/partitions/ldm.c b/fs/partitions/ldm.c
-> index c387812..99873a2 100644
-> --- a/fs/partitions/ldm.c
-> +++ b/fs/partitions/ldm.c
-> @@ -158,7 +158,7 @@ static bool ldm_parse_privhead(const u8 *data,  
-> struct privhead *ph)
->  		/* Warn the user and continue, carefully. */
->  		ldm_info("Database is normally %u bytes, it claims to "
->  			"be %llu bytes.", LDM_DB_SIZE,
-> -			udunsigned long long)ph->config_size);
-> +			(unsigned long long)ph->config_size);
->  	}
->  	if ((ph->logical_disk_size == 0) || (ph->logical_disk_start +
->  			ph->logical_disk_size > ph->config_start)) {
-
-Best regards,
-
-	Anton
 -- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 1302f83..fdc1454 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -229,6 +229,27 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+ 	return NULL;
+ }
+ 
++/*
++ * Allocate the accumulated non-linear sections, allocate a mem_map
++ * for each and record the physical to section mapping.
++ */
++void __init sparse_init(void)
++{
++	unsigned long pnum;
++	struct page *map;
++
++	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
++		if (!valid_section_nr(pnum))
++			continue;
++
++		map = sparse_early_mem_map_alloc(pnum);
++		if (!map)
++			continue;
++		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
++	}
++}
++
++#ifdef CONFIG_MEMORY_HOTPLUG
+ static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+ {
+ 	struct page *page, *ret;
+@@ -269,27 +290,6 @@ static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
+ }
+ 
+ /*
+- * Allocate the accumulated non-linear sections, allocate a mem_map
+- * for each and record the physical to section mapping.
+- */
+-void __init sparse_init(void)
+-{
+-	unsigned long pnum;
+-	struct page *map;
+-
+-	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+-		if (!valid_section_nr(pnum))
+-			continue;
+-
+-		map = sparse_early_mem_map_alloc(pnum);
+-		if (!map)
+-			continue;
+-		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
+-	}
+-}
+-
+-#ifdef CONFIG_MEMORY_HOTPLUG
+-/*
+  * returns the number of sections whose mem_maps were properly
+  * set.  If this is <=0, then that means that the passed-in
+  * map was not consumed and must be freed.
+-- 
+1.5.1.4
 
