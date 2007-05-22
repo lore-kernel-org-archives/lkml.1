@@ -1,99 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763100AbXEVHUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763100AbXEVH2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763100AbXEVHUu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 03:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbXEVHUn
+	id S1763100AbXEVH2Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 03:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbXEVH2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 03:20:43 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47128 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755185AbXEVHUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 03:20:43 -0400
-Date: Tue, 22 May 2007 17:20:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Move three functions that are only needed for
- CONFIG_MEMORY_HOTPLUG
-Message-Id: <20070522172041.dab14ed0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+	Tue, 22 May 2007 03:28:17 -0400
+Received: from www.osadl.org ([213.239.205.134]:52499 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755185AbXEVH2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 03:28:17 -0400
+Subject: Re: [PATCH -ak] Fix missing include
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200705220820.11688.ak@suse.de>
+References: <1179777839.12708.42.camel@chaos>
+	 <200705220820.11688.ak@suse.de>
+Content-Type: text/plain
+Date: Tue, 22 May 2007 09:28:15 +0200
+Message-Id: <1179818895.12708.98.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-into the appropriate #ifdef.
+On Tue, 2007-05-22 at 08:20 +0200, Andi Kleen wrote:
+> On Monday 21 May 2007 22:03, Thomas Gleixner wrote:
+> > ftp://firstfloor.org/pub/ak/x86_64/quilt/x86_64-2.6.22-rc2-070521-1.bz2
+> >
+> > explodes in various places due to missing defines of __cold. We can't
+> > rely on the assumption that linux/compiler.h is included magically
+> > before bug.h is included. Include it explicitely.
+> 
+> Hmm, somehow it worked here. Perhaps longer term it would be a good
+> idea to turn compiler.h into an -include
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- mm/sparse.c |   42 +++++++++++++++++++++---------------------
- 1 files changed, 21 insertions(+), 21 deletions(-)
+Might be not a bad idea. > 300 files include it directly and it's
+included from sched.h & co as well.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+	tglx
 
-diff --git a/mm/sparse.c b/mm/sparse.c
-index 1302f83..fdc1454 100644
---- a/mm/sparse.c
-+++ b/mm/sparse.c
-@@ -229,6 +229,27 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
- 	return NULL;
- }
- 
-+/*
-+ * Allocate the accumulated non-linear sections, allocate a mem_map
-+ * for each and record the physical to section mapping.
-+ */
-+void __init sparse_init(void)
-+{
-+	unsigned long pnum;
-+	struct page *map;
-+
-+	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
-+		if (!valid_section_nr(pnum))
-+			continue;
-+
-+		map = sparse_early_mem_map_alloc(pnum);
-+		if (!map)
-+			continue;
-+		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
-+	}
-+}
-+
-+#ifdef CONFIG_MEMORY_HOTPLUG
- static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
- {
- 	struct page *page, *ret;
-@@ -269,27 +290,6 @@ static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
- }
- 
- /*
-- * Allocate the accumulated non-linear sections, allocate a mem_map
-- * for each and record the physical to section mapping.
-- */
--void __init sparse_init(void)
--{
--	unsigned long pnum;
--	struct page *map;
--
--	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
--		if (!valid_section_nr(pnum))
--			continue;
--
--		map = sparse_early_mem_map_alloc(pnum);
--		if (!map)
--			continue;
--		sparse_init_one_section(__nr_to_section(pnum), pnum, map);
--	}
--}
--
--#ifdef CONFIG_MEMORY_HOTPLUG
--/*
-  * returns the number of sections whose mem_maps were properly
-  * set.  If this is <=0, then that means that the passed-in
-  * map was not consumed and must be freed.
--- 
-1.5.1.4
 
