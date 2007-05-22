@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbXEVBVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbXEVBad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762034AbXEVBVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 21:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbXEVBVV
+	id S1759392AbXEVBad (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 21:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756720AbXEVBaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 21:21:21 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:32062 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755378AbXEVBVT (ORCPT
+	Mon, 21 May 2007 21:30:24 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:4847 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756232AbXEVBaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 21:21:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lA3LUC/lXf/d08VHKJTxB7XlKY6vj/DKscgs+aRbee8eYVq8jGNQE2x8F526l1Ivly30Q9CFdONyuUV+dkIqyXsabhSBOKQulvyv+699+eiLovnEjKWOdPhEUVxUHcKVbNWhy/u5e0O3I4FgrVl7MnYPvmAJWpHdnx450use9q8=
-Message-ID: <29495f1d0705211821r4200a1fft2b5c07a62b0620b1@mail.gmail.com>
-Date: Mon, 21 May 2007 18:21:18 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: select(0, ..) is valid ?
-Cc: "Anton Blanchard" <anton@samba.org>, "Hugh Dickins" <hugh@veritas.com>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Badari Pulavarty" <pbadari@us.ibm.com>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, sfr@canb.auug.org.au
-In-Reply-To: <200705181521.34339.ak@suse.de>
+	Mon, 21 May 2007 21:30:23 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=lKFPATZQcMGIJaQEgnPA9rzfacU9U/f94eHpj4MuKz83bU2m+G4Vo0row1cs7Ci2q
+	fstL4SbmZ1ui08ad7A0Bw==
+Message-ID: <b040c32a0705211830h127dfd8dk8930de6655d37d90@mail.gmail.com>
+Date: Mon, 21 May 2007 18:30:15 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Al Viro" <viro@ftp.linux.org.uk>
+Subject: Re: + loop-preallocate-eight-loop-devices.patch added to -mm tree
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20070522001851.GE4095@ftp.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
-	 <Pine.LNX.4.64.0705151927360.28895@blonde.wat.veritas.com>
-	 <20070516153703.GA26912@kryten> <200705181521.34339.ak@suse.de>
+References: <200705212200.l4LM0tYK021050@shell0.pdx.osdl.net>
+	 <20070522001851.GE4095@ftp.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/18/07, Andi Kleen <ak@suse.de> wrote:
-> On Wednesday 16 May 2007 17:37, Anton Blanchard wrote:
-> > Hi Hugh,
-> >
-> > > It's interesting that compat_core_sys_select() shows this kmalloc(0)
-> > > failure but core_sys_select() does not.  That's because core_sys_select()
-> > > avoids kmalloc by using a buffer on the stack for small allocations (and
-> > > 0 sure is small).  Shouldn't compat_core_sys_select() do just the same?
-> > > Or is SLUB going to be so efficient that doing so is a waste of time?
-> >
-> > Nice catch, the original optimisation from Andi is:
-> >
-> > http://git.kernel.org/git-new/?p=linux/kernel/git/torvalds/linux-2.6.git;a=
-> >commit;h=70674f95c0a2ea694d5c39f4e514f538a09be36f
-> >
-> > And I think it makes sense for the compat code to do it too.
+On 5/21/07, Al Viro <viro@ftp.linux.org.uk> wrote:
+> On Mon, May 21, 2007 at 03:00:55PM -0700, akpm@linux-foundation.org wrote:
+> > +     if (register_blkdev(LOOP_MAJOR, "loop"))
+> > +             return -EIO;
+> > +     blk_register_region(MKDEV(LOOP_MAJOR, 0), range,
+> > +                               THIS_MODULE, loop_probe, NULL, NULL);
+> > +
+> > +     for (i = 0; i < nr; i++) {
+> > +             if (!loop_init_one(i))
+> > +                     goto err;
+> > +     }
+> > +
+> > +     printk(KERN_INFO "loop: module loaded\n");
+> > +     return 0;
+> > +err:
+> > +     loop_exit();
 >
-> Yes agreed. I just forgot the copy'n'pasted code when doing the original
-> change.
+> This isn't good.  You *can't* fail once a single disk has been registered.
+> Anyone could've opened it by now.
+>
+> IOW, you need to
+>         * register region *after* you are past the point of no return
 
-Is this headed upstream? It's causing some noise on test.kernel.org
-now that SLAB is also warning about kmalloc(0).
-
-Thanks,
-Nish
+That option is a lot harder than I thought.  This requires an array to
+keep intermediate result of preallocated "lo" device, blk_queue, and
+disk structure before calling add_disk() or register region.  And this
+array could be potentially 1 million entries.  Maybe I will use
+vmalloc for it, but seems rather sick.
