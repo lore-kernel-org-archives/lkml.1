@@ -1,47 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbXEVUtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbXEVUxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760408AbXEVUtc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbXEVUtY
+	id S1759168AbXEVUxX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXEVUxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:49:24 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:50945 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756592AbXEVUtX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:49:23 -0400
-Message-ID: <46535747.4000203@nortel.com>
-Date: Tue, 22 May 2007 14:49:11 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Tue, 22 May 2007 16:53:16 -0400
+Received: from mail1.cray.com ([136.162.0.111]:57235 "EHLO mail1.cray.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754887AbXEVUxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 16:53:15 -0400
+X-Greylist: delayed 3557 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 16:53:15 EDT
+From: Andrew Hastings <abh@cray.com>
+Message-Id: <200705221953.l4MJruA6011637@topaz58.us.cray.com>
+Date: Tue, 22 May 2007 14:53:56 -0500
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] bad uc_stack passed to signal handlers
+User-Agent: nail 11.25 7/29/05
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: William Lee Irwin III <wli@holomorphy.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v12
-References: <20070513153853.GA19846@elte.hu> <464A6698.3080400@bigpond.net.au> <20070516063625.GA9058@elte.hu> <464CE8FD.4070205@bigpond.net.au> <20070518071325.GB28702@elte.hu> <464DA61A.4040406@bigpond.net.au> <b647ffbd0705190627x4ff15f3cw19bc292e47257287@mail.gmail.com> <20070521082926.GH19966@holomorphy.com> <20070521085703.GA18755@elte.hu> <46531EF6.3020204@nortel.com> <20070522201518.GC6113@elte.hu>
-In-Reply-To: <20070522201518.GC6113@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 May 2007 20:49:15.0079 (UTC) FILETIME=[A8A42570:01C79CB2]
+X-Cray-VirusStatus: clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Chris Friesen <cfriesen@nortel.com> wrote:
+I'm experimenting with remapping the stack to hugepages.  I was hoping
+to use the Posix getcontext, sigaltstack, and sigaction interfaces to do
+this.  Unfortunately, the GNU/Linux implementations are not working as
+specified by Posix.
 
->>Is there a way in CFS to tune the amount of time over which the load 
->>balancer is fair?  (Of course there would be some overhead involved.)
+Omitting error checks, here's what I'm doing:
 
-> it should be fair pretty fast (see the 10 seconds run of massive_intr) - 
-> so it's not 1 minute (if you were worried about that).
+    ucontext_t main_uc;
 
-Good to know..that's exactly what I was worried about.  I work with guys 
-that really want predictability above all else, then fairness, and only 
-then performance--if we can't guarantee a given level of performance for 
-5-9s then its useless to us.
+    main()
+    {
+	...
+	getcontext(&main_uc);
+	alt.ss_sp = malloc(alt.ss_size = SIGSTKSZ);
+	alt.ss_flags = 0;
+	sigaltstack(&alt, (stack_t *)0);
+	sigemptyset(&set);
+	act.sa_sigaction = handler;
+	act.sa_mask = set;
+	act.sa_flags = SA_ONSTACK|SA_SIGINFO;
+	sigaction(SIGUSR1, &act, (struct sigaction *)0);
+	raise(SIGUSR1);
+    }
 
-Chris
+    void handler(int sig, siginfo_t *i, void *c)
+    {
+	ucontext_t *ucp = (ucontext_t *)c;
+	...
+
+According to Posix, ucp->uc_stack should "refer to the receiving
+thread's context that was interrupted when the signal was delivered."
+
+However, Linux always sets it to the sigaltstack.  (Even if SA_ONSTACK
+was not specified, in which case ucp->uc_stack points to a stack that
+has nothing to do with the running signal handler nor the context that
+was active when the signal was received.)
+
+FWIW, I ran on Linux 2.6.16.27-0.9-smp x86_64 and Linux
+2.6.16.27-0.6-default i386, but the code is the same in linux-2.6.22-rc1
+and all the architectures I inspected seem to have this same bug
+in setup_rt_frame.
+
+I was hoping to work around this with getcontext, but it appears to be 
+incompletely implemented, and does not set the main_uc.uc_stack field.
+There's a two-year-old bug report against glibc:
+http://sources.redhat.com/bugzilla/show_bug.cgi?id=759
+
+Reading the Posix specification, I would expect the values inside
+main_uc.uc_stack and ucp->uc_stack to be identifical.  Making Linux and
+glibc agree on these values would probably require turning getcontext
+into a system call.
+
+-Andrew Hastings
+ Cray Inc.
