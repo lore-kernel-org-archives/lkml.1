@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbXEVIzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759021AbXEVI5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbXEVIzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 04:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbXEVIzB
+	id S1759021AbXEVI5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 04:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbXEVI5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 04:55:01 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:16169 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755110AbXEVIzA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 04:55:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fDZht5jd5mtMoUUL13YPFp3aPczNymn4vLQFxhs0xN20ZlobvfY6wcH9VYdtQQcS6vOH4SXNbeQYLw+7ZXrBrbCsJ3d1460IXj8N0yaiBkm1niYZAcvJ2aZ6OxeQxLFp1jrTFKYrrZAdS5NW0p8vZhc5T8hrXfghOp+JMZtOUfY=
-Message-ID: <4cefeab80705220154k2b02a264id7774600087a80e5@mail.gmail.com>
-Date: Tue, 22 May 2007 14:24:59 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [RFC] LZO1X de/compression support
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>
-In-Reply-To: <84144f020705180342j4ff44d96iea5b73c23a69df0f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 May 2007 04:57:41 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:42680 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755219AbXEVI5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 04:57:40 -0400
+Date: Tue, 22 May 2007 10:57:38 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Marc Donner <webmaster@poweraudio.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: TCP_MD5 and Intel e1000
+Message-Id: <20070522105738.f03cb83b.dada1@cosmosbay.com>
+In-Reply-To: <C2786969.24B46%webmaster@poweraudio.de>
+References: <C2786969.24B46%webmaster@poweraudio.de>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
-	 <84144f020705180342j4ff44d96iea5b73c23a69df0f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 22 May 2007 09:33:29 +0200
+Marc Donner <webmaster@poweraudio.de> wrote:
 
-On 5/18/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On 5/18/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> > +#define DX2(p,s1,s2) \
-> > +       (((((size_t)((p)[2]) << (s2)) ^ (p)[1]) << (s1)) ^ (p)[0])
-> > +#define DX3(p,s1,s2,s3) ((DX2((p)+1,s2,s3) << (s1)) ^ (p)[0])
-> > +#define DMUL(a,b)      ((size_t) ((a) * (b)))
-> > +#define DMS(v,s)       ((size_t) (((v) & (D_MASK >> (s))) << (s)))
-> > +#define DM(v)          DMS(v,0)
-> > +
-> > +#define D_BITS         14
-> > +#define DINDEX1(d,p)   d = DM(DMUL(0x21,DX3(p,5,5,6)) >> 5)
-> > +#define DINDEX2(d,p)   d = (d & (D_MASK & 0x7ff)) ^ (D_HIGH | 0x1f)
-> > +#define DENTRY(p,in)   (p)
->
-> Please make these static inline functions.
->
+> Hi,
+> 
+> I have tried to set up quagga with tcp-md5 support from kernel. All seems ok
+> with a intel e100 NIC, but as i testetd with a intel e1000 NIC the tcp
+> packets have an invalid md5 digest.
+> If i run tcpdump on the mashine the packets are generated, it shows on the
+> outgoing interface invalid md5 digests.
+> Are there known issues about tcp-md5 and e1000 NICs?
+> 
 
-What if compiler decides not to actully inline them? In that case
-there will be significant perf. hit.
+Hi Marc
 
-> > +#define PTR(a)         ((unsigned long) (a))
-> > +#define PTR_LT(a,b)    (PTR(a) < PTR(b))
-> > +#define PTR_GE(a,b)    (PTR(a) >= PTR(b))
-> > +#define PTR_DIFF(a,b)  (PTR(a) - PTR(b))
-> > +#define pd(a,b)                ((size_t) ((a)-(b)))
->
-> [snip]
->
-> > +#define COPY4(dst,src) *(uint32_t *)(dst) = *(uint32_t *)(src)
->
-> Please drop these.
->
+CCed netdev as more appropriate to discuss about network stuff.
 
-Done. Please see newer version posted.
+Would be nice if you sent some tcpdump samples to share with us, and tell us
+which exact linux version you tried.
 
-Thanks for comments.
+You could try "ethtool -K tx off", and/or other ethtool -K settings
 
-Cheers,
-Nitin
