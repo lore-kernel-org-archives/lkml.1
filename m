@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbXEVJUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765072AbXEVJUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758464AbXEVJUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 05:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbXEVJTx
+	id S1765072AbXEVJUd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 05:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbXEVJU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 05:19:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:34856 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755571AbXEVJTw (ORCPT
+	Tue, 22 May 2007 05:20:26 -0400
+Received: from stinky.trash.net ([213.144.137.162]:43408 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755571AbXEVJUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 05:19:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NRQo29KFczEHgsoVC4zOpkMPiIsuJC7+kOU2ARHAFhiV1hmkLvFJ/RY3W+dbG113SKesNVfFv2lX/YHOjE8lWqv9H0bbQa/mvM9MMve4ww03ywjOkWGkF3zxf5+HE1H/32h3+u0vz6oSWwUokHRh/qy0Wj6g61LPplCnh6iER7U=
-Message-ID: <4cefeab80705220219qeb00e09u47e992e884152b5b@mail.gmail.com>
-Date: Tue, 22 May 2007 14:49:51 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Richard Purdie" <richard@openedhand.com>
-Subject: Re: [RFC] LZO1X de/compression support
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1179488817.5876.14.camel@localhost.localdomain>
+	Tue, 22 May 2007 05:20:24 -0400
+Message-ID: <4652B53B.8080500@trash.net>
+Date: Tue, 22 May 2007 11:17:47 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Anant Nitya <kernel@prachanda.info>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: bad networking related lag in v2.6.22-rc2
+References: <20070517174533.GA538@elte.hu> <465208D2.6070409@trash.net> <46520F77.5000408@trash.net> <200705221147.56571.kernel@prachanda.hub>
+In-Reply-To: <200705221147.56571.kernel@prachanda.hub>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>
-	 <1179488817.5876.14.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On 5/18/07, Richard Purdie <richard@openedhand.com> wrote:
-> > This patch, as of yet, only gives 'non-safe' version of decompressor.
-> > The 'safe' version  will be included soon.
->
-> How are you planning to add that back?
->
-
-Please see newer patch posted.
-
-> The LZO author had some concerns about this code. The major issue he
-> highlighted was that it was 64-bit unsafe. Have you addressed that
-> problem?
-I found certain parts which were 64-bit unsafe - corrected them. Now,
-I couldn't see any more of such instances and posted as RFC :)
-
->  Has it been tested on 64bit?
-No. I am still looking for some 64-bit machine to test on (also some
-Big-endian machine).
-
->
-> I'm worried that in converting this code the way you have, you've
-> possibly introduced potential security holes. You've removed all bounds
-> checking and are going to have to add that back to create the "safe"
-> version of the decompression function. Until I mentioned it, you seemed
-> unaware of the potential problem and the comments above suggest you
-> don't understand this code as fully as I'd like with regard to
-> overflows.
-
-I just did the 'logical' porting work. I don't understand the
-algorithm itself since I could not find any document that describes
-the same.
-
->
-> The version I submitted has at least been subject to userspace scrutiny
-> over a period of time and is basically unchanged with regard to
-> security. It is much uglier though.
->
-> Richard
-
-Yes. But it will be even better if we can verify/correct this
-cleaned-up version - shouldn't be that hard for just ~500 LOC :-)
+Anant Nitya wrote:
+>>Patrick McHardy wrote:
+>>
+>>I think I already found the bug, please try if this patch helps.
+> 
+> 
+> Sorry, but this patch is not helping here. I recompiled the kernel with this 
+> patch but same load pattern still make system to crawl.
+> 
+> Here is the link for script I use to shape traffic.
+> 
+> http://cybertek.info/taitai/adslbwopt.sh
 
 
-Thanks for your comments.
+Thanks. Please also send the output of "tc -s -d qdisc show dev
+ppp0" and "tc -d -s class show dev ppp0" at the time the problem
+occurs.
 
-- Nitin
