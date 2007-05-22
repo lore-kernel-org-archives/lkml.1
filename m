@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbXEVUcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbXEVUkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757005AbXEVUcZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757363AbXEVUcS
+	id S1759721AbXEVUkA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757530AbXEVUjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:32:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50288 "EHLO mx3.mail.elte.hu"
+	Tue, 22 May 2007 16:39:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59830 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757099AbXEVUcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:32:17 -0400
-Date: Tue, 22 May 2007 22:31:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Chang <thenewme91@gmail.com>
-Cc: Con Kolivas <kernel@kolivas.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ck] Re: [PATCH] mm: swap prefetch improvements
-Message-ID: <20070522203116.GA8656@elte.hu>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705222020.58474.kernel@kolivas.org> <20070522102530.GB2344@elte.hu> <200705222037.54741.kernel@kolivas.org> <20070522104648.GA10622@elte.hu> <b14e81f00705221318n43dbb53ex77a454e0eade4fb7@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b14e81f00705221318n43dbb53ex77a454e0eade4fb7@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1757445AbXEVUjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 16:39:51 -0400
+Message-ID: <46535503.4020702@redhat.com>
+Date: Tue, 22 May 2007 15:39:31 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Jan Kara <jack@suse.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] UDF cleanup and fixes
+References: <20070306164447.GC3661@duck.suse.cz> <4632710C.5030104@sandeen.net>
+In-Reply-To: <4632710C.5030104@sandeen.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Sandeen wrote:
 
-* Michael Chang <thenewme91@gmail.com> wrote:
-
-> > It clearly should not consider 'itself' as IO activity. This 
-> > suggests some bug in the 'detect activity' mechanism, agreed? I'm 
-> > wondering whether you are seeing the same problem, or is all 
-> > swap-prefetch IO on your system continuous until it's done [or some 
-> > other IO comes inbetween]?
+> Jan -
 > 
-> The only "problem" I can see with this idea is in the potential case 
-> that it takes up all the IO activity, and so there is never enough IO 
-> activity from other progams to trigger the wait mechanism because they 
-> don't get a chance to run.
-
-i dont understand what you mean. Any 'use only idle IO capacity' 
-mechanism should immediately cease to be active the moment any other app 
-tries to do IO - whether the IO subsystem is saturated or not.
-
-> That said, I don't think there are any issues with the code 
-> compensating for its own activity in the "detect activity" mechanism 
-> -- assuming there wasn't a major impact in e.g. maintainability or 
-> something.
+> I ran 2.6.21 + your udf patches from -mm through some udf tests which,
+> oddly enough, can be found in the xfstests test suite in xfsprogs cvs
+> from sgi.
 > 
-> As for the burstyness... considering the "no negative impact" stance, 
-> I can understand that. But it seems inefficient, at best...
+> It looks much better than before, but I was able to trip some of your
+> asserts.  They were generated while fsx was running.  The good news,
+> though, is that fsx passed.  :)  I haven't looked into it much further
+> yet, but wanted to let you know.
 
-well, it's a plain old bug (a not too serious one) in my book, i'm 
-surprised that we are now at mail #7 about it :-) I reported it, and i 
-guess Con will fix it eventually. There's really no need to deny that it 
-exists or to try to talk it out of existence. Sheesh! :-)
+Here's a short hacky testcase that trips the assert around line 123 of
+udf/truncate.c  I'm looking into it but you may immediately see what the
+problem is...?
 
-	Ingo
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main(int argc, char ** argv)
+{
+        int fd;
+        char buf[65536];
+
+        fd = open("testfile", O_WRONLY|O_CREAT);
+        lseek(fd, 16797, SEEK_SET);
+        write(fd, buf, 22935);
+        close(fd);
+
+        fd = open("testfile", O_WRONLY);
+        lseek(fd, 31281, SEEK_SET);
+        write(fd, buf, 9592);
+        close(fd);
+}
+
+-Eric
