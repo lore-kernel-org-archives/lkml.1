@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbXEVAvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762774AbXEVAwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbXEVAvr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 20:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbXEVAvk
+	id S1762774AbXEVAwc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 20:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756859AbXEVAwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 20:51:40 -0400
-Received: from home.keithp.com ([63.227.221.253]:1074 "EHLO keithp.com"
+	Mon, 21 May 2007 20:52:23 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60594 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755918AbXEVAvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 20:51:39 -0400
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-From: Keith Packard <keithp@keithp.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: keithp@keithp.com, Jesse Barnes <jesse.barnes@intel.com>,
-       James Simmons <jsimmons@pentafluge.infradead.org>,
-       dri-devel@lists.sourceforge.net, Dave Airlie <airlied@gmail.com>,
-       linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@gmail.com>
-In-Reply-To: <1179792587.32247.769.camel@localhost.localdomain>
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <1179792587.32247.769.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lyl7qq3a5uuAVnHkYeDI"
-Date: Mon, 21 May 2007 17:51:32 -0700
-Message-Id: <1179795093.5826.391.camel@neko.keithp.com>
+	id S1756678AbXEVAwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 20:52:22 -0400
+Date: Tue, 22 May 2007 02:52:16 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070522005216.GA27743@wotan.suse.de>
+References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com> <20070520092552.GA7318@wotan.suse.de> <20070521080813.GQ31925@holomorphy.com> <20070521092742.GA19642@wotan.suse.de> <20070521112603.GJ19966@holomorphy.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521112603.GJ19966@holomorphy.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 21, 2007 at 04:26:03AM -0700, William Lee Irwin III wrote:
+> On Mon, May 21, 2007 at 01:08:13AM -0700, William Lee Irwin III wrote:
+> >> Choosing k distinct integers (mem_map array indices) from the interval
+> >> [0,n-1] results in k(n-k+1)/n non-adjacent intervals of contiguous
+> >> array indices on average. The average interval length is
+> >> (n+1)/(n-k+1) - 1/C(n,k). Alignment considerations make going much
+> >> further somewhat hairy, but it should be clear that contiguity arising
+> >> from random choice is non-negligible.
+> 
+> On Mon, May 21, 2007 at 11:27:42AM +0200, Nick Piggin wrote:
+> > That doesn't say anything about temporal locality, though.
+> 
+> It doesn't need to. If what's in the cache is uniformly distributed,
+> you get that result for spatial locality. From there, it's counting
+> cachelines.
 
---=-lyl7qq3a5uuAVnHkYeDI
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+OK, so your 'k' is the number of struct pages that are in cache? Then
+that's fine.
 
-On Tue, 2007-05-22 at 10:09 +1000, Benjamin Herrenschmidt wrote:
+I'm not sure how many that is going to be, but I would be surprised if
+it were a significant proportion of mem_map, even on not-so-large
+memory systems.
 
-> I do stongly beleive that the decision of what mode to choose should not
-> be made in the kernel.
 
-That's the plan; the kernel just provides mechanism. The architecture
-used in the X server splits precisely at this point with the mechanism
-in the driver and the configuration and policy up in the X server
-proper. Quite a bit of that code could be broken out into a shared
-library for fbdev-based apps and the X server to share, but that's down
-the road a bit after the kernel APIs look a lot more solid.
+> On Mon, May 21, 2007 at 01:08:13AM -0700, William Lee Irwin III wrote:
+> >> In any event, I don't have all that much of an objection to what's
+> >> actually proposed, just this particular cache footprint argument.
+> >> One can motivate increases in sizeof(struct page), but not this way.
+> 
+> On Mon, May 21, 2007 at 01:08:13AM -0700, William Lee Irwin III wrote:
+> > Realise that you have to have a run of I think at least 7 or 8 contiguous
+> > pages and temporally close references in order to save a single cacheline.
+> > Then also that if the page being touched is not partially in cache from
+> > an earlier access, then it is statistically going to cost more lines to
+> > touch it (up to 75% if you touch the first and the last field, obviously 0%
+> > if you only touch a single field, but that's unlikely given that you
+> > usually take a reference then do at least something else like check flags).
+> > I think the problem with the cache footprint argument is just whether
+> > it makes any significant difference to performance. But..
+> 
+> The average interval ("run") length is (n+1)/(n-k+1) - 1/C(n,k), so for
+> that to be >= 8 you need (n+1)/(n-k+1) - 1/C(n,k) >= 8 which also happens
+> when (n+1)/(n-k+1) >= 9 or when n >= (9/8)*k - 1 or k <= (8/9)*(n+1).
+> Clearly a lower bound on k is required, but not obviously derivable.
+> k >= 8 is obvious, but the least k where (n+1)/(n-k+1) - 1/C(n,k) >= 8
+> is not entirely obvious. Numerically solving for the least such k finds
+> that k actually needs to be relatively close to (8/9)*n. A lower bound
+> of something like 0.87*n + O(1) probably holds.
 
-With the goal of getting to a single-mode-set boot to avoid screen
-flashing before login, the key here is to make any early user-mode
-graphics apps share the same kernel graphics infrastructure as the X
-server to identify the common cases where the startup and X modes are
-the same and avoid resetting the configuration.
+Ah, you worked it out... yeah I'd guess this is going to be pretty difficult
+a condition to satisfy (given that it isn't possible for a 4GB system, even
+if you had 32MB of cache to fill entirely with struct pages).
 
---=20
-keith.packard@intel.com
 
---=-lyl7qq3a5uuAVnHkYeDI
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> On Mon, May 21, 2007 at 01:08:13AM -0700, William Lee Irwin III wrote:
+> >> Now that I've been informed of the ->_count and ->_mapcount issues,
+> >> I'd say that they're grave and should be corrected even at the cost
+> >> of sizeof(struct page).
+> 
+> On Mon, May 21, 2007 at 11:27:42AM +0200, Nick Piggin wrote:
+> > ... yeah, something like that would bypass 
+> 
+> Did you get cut off here?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGUj6UQp8BWwlsTdMRAlWpAKCuBZxQhJa2HycNYGhFHYp1oZoWKACffdxN
-NiAHBS3wI5+nbrv+vAKmgAU=
-=PCw9
------END PGP SIGNATURE-----
-
---=-lyl7qq3a5uuAVnHkYeDI--
+Must have. I was going to say it would bypass the whole speed/size
+discussion anyway :P
