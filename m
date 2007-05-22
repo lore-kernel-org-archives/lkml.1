@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763835AbXEVVDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763317AbXEVVEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763835AbXEVVDB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 17:03:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbXEVVCh
+	id S1763317AbXEVVEd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 17:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbXEVVEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 17:02:37 -0400
-Received: from smtp106.sbc.mail.mud.yahoo.com ([68.142.198.205]:40336 "HELO
-	smtp106.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762990AbXEVVCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 17:02:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ySfYplN2lCKdnH3IojqEvLeWOPthGDxyTx1N4K1ZjNm8zdApupC+flVMMDowV3MXO+AGZwNBwgrsWC/bqfI9M2QoAp+ktDLoids5EFjdBX1KdkIaRwWpzpduBAaMs5MVGAs6D8tGVGBzGC61UZ9i3nmwweURueDU32GhBR4YUDI=  ;
-X-YMail-OSG: m6HqrKoVM1nMu_gqlLX3UqwSx4PIMSvpfSNsEMSDNk.Ha5BOLmiMjOV4LTsEQI1VRy2AHmBCJqgieOrMNolaQNbkPeoXLNQqDzQRK0j_vcaxJvBAm8odydMGhYz68A--
-From: David Brownell <david-b@pacbell.net>
-To: Dmitry Torokhov <dtor@mail.ru>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.22-rc2-git] ads7846: SPI_CPHA mode bugfix
-Date: Tue, 22 May 2007 13:59:11 -0700
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       Semih Hazar <semih.hazar@indefia.com>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Tony Lindgren <tony@atomide.com>, imre.deak@solidboot.com
+	Tue, 22 May 2007 17:04:25 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:54067 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755978AbXEVVEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 17:04:25 -0400
+Message-ID: <46535AD3.9060904@simon.arlott.org.uk>
+Date: Tue, 22 May 2007 22:04:19 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: use mutex instead of semaphore in RocketPort driver
+References: <200705081903.l48J3lr1012622@hera.kernel.org> <1179853142.3296.1.camel@laptopd505.fenrus.org> <20070522200601.GG22360@traven>
+In-Reply-To: <20070522200601.GG22360@traven>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705221359.12410.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Semih Hazar <semih.hazar@indefia.com>
+On 22/05/07 21:06, Matthias Kaehlcke wrote:
+> El Tue, May 22, 2007 at 09:59:01AM -0700 Arjan van de Ven ha dit:
+> 
+>>>  
 
-In commit [1] the SPI mode is set to 1, but it should be 0.  As stated
-in the commit, ads784x samples the data on the rising edge.  SPI mode 1
-samples on the falling edge [2] though.
+Please provide context when quoting a patch, git grep takes a while...
 
-The root cause of this is a bug in the omap_uwire code, which treats
-CPHA=1 incorrectly; so these two bugs cancel each other out on one
-of the main regression test platforms for this driver.
+>>> -	down_interruptible(&info->write_sem);
+>>> +	mutex_lock_interruptible(&info->write_mtx);
+>>>  
+>>>  #ifdef ROCKET_DEBUG_WRITE
+>>>  	printk(KERN_INFO "rp_write %d chars...", count);
+>>> @@ -1773,7 +1776,7 @@ end:
+>>>  		wake_up_interruptible(&tty->poll_wait);
+>>>  #endif
+>>>  	}
+>>> -	up(&info->write_sem);
+>>> +	mutex_unlock(&info->write_mtx);
+>>>  	return retval
+>> this code is very very buggy.
+> 
+> more buggy than with the use of a semaphore?
+>  
+>> mutex_lock_interruptible() may not get the mutex in case a signal
+>> happens... and yet you unlox the mutex unconditionally!!!
+> 
+> as far as i understand only the thread that locked the mutex can
+> unlock it (as opposed to semaphores, which can be released by any
+> thread/process). obviously this doesn't make the code be more
+> correct. what i don't know is how the kernel behaves when
+> trying to unlock a mutex the thread doesn't own. another and possibly
+> more important problem of the code is that in case of being
+> interrupted by a signal the data that should be protected by the
+> mutex/semaphore can be accessed/changed by two threads at the same
+> time.
+> 
+> would the following resolve the problem?
+> 
+> if(mutex_lock_interruptible(&info->write_mtx)) 
+>         return -ERESTARTSYS
+> 
+> thanks for your comments
+> 
 
-[1] kernel.org GIT 7937e86a70235e1584486654687dc9908a11e00a
-[2] http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus
+No. At least one user of tty_operations/tty_driver's write function 
+doesn't check the return value so it would never be retried, mutex_lock 
+should be used instead.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+All of the _interruptible and functions that return -ERESTARTSYS should 
+probably use __must_check...
 
----
- drivers/input/touchscreen/ads7846.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- g26.orig/drivers/input/touchscreen/ads7846.c	2007-05-20 21:08:30.000000000 -0700
-+++ g26/drivers/input/touchscreen/ads7846.c	2007-05-20 21:08:54.000000000 -0700
-@@ -847,7 +847,7 @@ static int __devinit ads7846_probe(struc
- 	 * may not.  So we stick to very-portable 8 bit words, both RX and TX.
- 	 */
- 	spi->bits_per_word = 8;
--	spi->mode = SPI_MODE_1;
-+	spi->mode = SPI_MODE_0;
- 	err = spi_setup(spi);
- 	if (err < 0)
- 		return err;
+-- 
+Simon Arlott
