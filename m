@@ -1,161 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765516AbXEVCl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765646AbXEVCm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765516AbXEVCl5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 22:41:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbXEVClu
+	id S1765646AbXEVCm0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 22:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbXEVCmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 22:41:50 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46933 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760240AbXEVClt (ORCPT
+	Mon, 21 May 2007 22:42:15 -0400
+Received: from moa.IfA.Hawaii.Edu ([128.171.168.48]:36182 "EHLO
+	moa.ifa.hawaii.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765561AbXEVCmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 22:41:49 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: [PATCH 3/3] rd: Simplify by using the same helper functions in libfs
-References: <m14pm5io6h.fsf@ebiederm.dsl.xmission.com>
-	<m1zm3xh9do.fsf@ebiederm.dsl.xmission.com>
-Date: Mon, 21 May 2007 20:40:02 -0600
-In-Reply-To: <m1zm3xh9do.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Mon, 21 May 2007 20:36:51 -0600")
-Message-ID: <m1veelh98d.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 21 May 2007 22:42:14 -0400
+Date: Mon, 21 May 2007 16:47:43 -1000
+From: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+To: Dave Jones <davej@redhat.com>, Ed Sweetman <safemode2@comcast.net>,
+       Duane Griffin <duaneg@dghda.com>, Prakash Punnoor <prakash@punnoor.de>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Drake <dsd@gentoo.org>
+Subject: Re: [PATCH] Kconfig powernow-k8 driver should depend on ACPI P-States driver
+Message-ID: <20070522024743.GA21514@ifa.hawaii.edu>
+References: <20070516011711.GE15763@ifa.hawaii.edu> <200705162039.02379.prakash@punnoor.de> <e9e943910705161253i75750876s1789b7844c87e97@mail.gmail.com> <20070516204807.GA23751@redhat.com> <20070518030436.GB20793@ifa.hawaii.edu> <464D2702.1060001@comcast.net> <20070518160108.GA28021@redhat.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
+Content-Disposition: inline
+In-Reply-To: <20070518160108.GA28021@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-While the ramdisk code in the page cache started with the ramfs
-code it has diverged, and is a result is more complicated then
-it currently needs to be.  This patch simplifies the ramfs
-code by syncing it with ramfs and similar pieces of code.
+--sm4nu43k4a2Rpi4c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The big difference is that the ramdisk must cope with people placing
-buffer heads on it's pages so there is extra code required to mark
-those buffer heads dirty and uptodate.
+On Fri, May 18, 2007 at 12:01:08PM -0400, Dave Jones wrote:
+> On Fri, May 18, 2007 at 12:09:38AM -0400, Ed Sweetman wrote:
+[snip]
+> still has unnecessary whitespace changes
+[snip]
+> and still wordwrapped.
+> (also capitalise ACPI)
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/block/rd.c |   76 +++------------------------------------------------
- 1 files changed, 5 insertions(+), 71 deletions(-)
+I haven't seen any more e-mail traffic on this topic so I'm assuming
+that the ball has been dropped.  Please excuse me if an acceptable patch
+has been submitted that I wasn't CC'd on.=20
 
-diff --git a/drivers/block/rd.c b/drivers/block/rd.c
-index 41de0f4..56b2b54 100644
---- a/drivers/block/rd.c
-+++ b/drivers/block/rd.c
-@@ -92,36 +92,16 @@ static int rd_blocksize = CONFIG_BLK_DEV_RAM_BLOCKSIZE;
-  * aops copied from ramfs.
-  */
- 
--/*
-- * If a ramdisk page has buffers, some may be uptodate and some may be not.
-- * To bring the page uptodate we zero out the non-uptodate buffers.  The
-- * page must be locked.
-- */
- static void make_page_uptodate(struct page *page)
- {
-+	clear_highpage(page);
- 	if (page_has_buffers(page)) {
- 		struct buffer_head *bh = page_buffers(page);
- 		struct buffer_head *head = bh;
- 
- 		do {
--			if (!buffer_uptodate(bh)) {
--				memset(bh->b_data, 0, bh->b_size);
--				/*
--				 * akpm: I'm totally undecided about this.  The
--				 * buffer has just been magically brought "up to
--				 * date", but nobody should want to be reading
--				 * it anyway, because it hasn't been used for
--				 * anything yet.  It is still in a "not read
--				 * from disk yet" state.
--				 *
--				 * But non-uptodate buffers against an uptodate
--				 * page are against the rules.  So do it anyway.
--				 */
--				 set_buffer_uptodate(bh);
--			}
-+			set_buffer_uptodate(bh);
- 		} while ((bh = bh->b_this_page) != head);
--	} else {
--		memset(page_address(page), 0, PAGE_CACHE_SIZE);
- 	}
- 	flush_dcache_page(page);
- 	SetPageUptodate(page);
-@@ -129,55 +109,11 @@ static void make_page_uptodate(struct page *page)
- 
- static int ramdisk_readpage(struct file *file, struct page *page)
- {
--	if (!PageUptodate(page))
--		make_page_uptodate(page);
-+	make_page_uptodate(page);
- 	unlock_page(page);
- 	return 0;
- }
- 
--static int ramdisk_prepare_write(struct file *file, struct page *page,
--				unsigned offset, unsigned to)
--{
--	if (!PageUptodate(page))
--		make_page_uptodate(page);
--	return 0;
--}
--
--static int ramdisk_commit_write(struct file *file, struct page *page,
--				unsigned offset, unsigned to)
--{
--	set_page_dirty(page);
--	return 0;
--}
--
--/*
-- * ->writepage to the blockdev's mapping has to redirty the page so that the
-- * VM doesn't go and steal it.  We return AOP_WRITEPAGE_ACTIVATE so that the VM
-- * won't try to (pointlessly) write the page again for a while.
-- *
-- * Really, these pages should not be on the LRU at all.
-- */
--static int ramdisk_writepage(struct page *page, struct writeback_control *wbc)
--{
--	if (!PageUptodate(page))
--		make_page_uptodate(page);
--	SetPageDirty(page);
--	if (wbc->for_reclaim)
--		return AOP_WRITEPAGE_ACTIVATE;
--	unlock_page(page);
--	return 0;
--}
--
--/*
-- * This is a little speedup thing: short-circuit attempts to write back the
-- * ramdisk blockdev inode to its non-existent backing store.
-- */
--static int ramdisk_writepages(struct address_space *mapping,
--				struct writeback_control *wbc)
--{
--	return 0;
--}
--
- /*
-  * ramdisk blockdev pages have their own ->set_page_dirty() because we don't
-  * want them to contribute to dirty memory accounting.
-@@ -206,11 +142,9 @@ static int ramdisk_set_page_dirty(struct page *page)
- 
- static const struct address_space_operations ramdisk_aops = {
- 	.readpage	= ramdisk_readpage,
--	.prepare_write	= ramdisk_prepare_write,
--	.commit_write	= ramdisk_commit_write,
--	.writepage	= ramdisk_writepage,
-+	.prepare_write	= simple_prepare_write,
-+	.commit_write	= simple_commit_write,
- 	.set_page_dirty	= ramdisk_set_page_dirty,
--	.writepages	= ramdisk_writepages,
- };
- 
- static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
--- 
-1.5.1.1.181.g2de0
+Here is cleaned up version of Ed's patch that I believe addresses Dave's
+stylistic concerns applies the relevant changes to both x86 & x86_64.
 
+Signed-off-by: Joshua Hoblitt <jhoblitt@ifa.hawaii.edu>
+--
+ i386/kernel/cpu/cpufreq/Kconfig |   13 ++++++++++---
+ x86_64/kernel/cpufreq/Kconfig   |   13 ++++++++++---
+ 2 files changed, 20 insertions(+), 6 deletions(-)
+
+diff -Nurp linux-2.6.22-rc1-mm1.orig/arch/i386/kernel/cpu/cpufreq/Kconfig l=
+inux-2.6.22-rc1-mm1/arch/i386/kernel/cpu/cpufreq/Kconfig
+--- linux-2.6.22-rc1-mm1.orig/arch/i386/kernel/cpu/cpufreq/Kconfig	2007-04-=
+27 11:49:26.000000000 -1000
++++ linux-2.6.22-rc1-mm1/arch/i386/kernel/cpu/cpufreq/Kconfig	2007-05-21 16=
+:20:47.000000000 -1000
+@@ -90,10 +90,17 @@ config X86_POWERNOW_K8
+ 	  If in doubt, say N.
+=20
+ config X86_POWERNOW_K8_ACPI
+-	bool
+-	depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
+-	depends on !(X86_POWERNOW_K8 =3D y && ACPI_PROCESSOR =3D m)
++	bool "ACPI Support"
++	select ACPI_PROCESSOR
++	depends on X86_POWERNOW_K8
+ 	default y
++	help
++	  This provides access to the K8s Processor Performance States via ACPI.
++	  This driver is probably required for CPUFreq to work with multi-socket =
+and
++	  SMP systems.  It is not required on at least some single-socket yet
++	  multi-core systems, even if SMP is enabled.
++
++	  It is safe to say Y here.
+=20
+ config X86_GX_SUSPMOD
+ 	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
+diff -Nurp linux-2.6.22-rc1-mm1.orig/arch/x86_64/kernel/cpufreq/Kconfig lin=
+ux-2.6.22-rc1-mm1/arch/x86_64/kernel/cpufreq/Kconfig
+--- linux-2.6.22-rc1-mm1.orig/arch/x86_64/kernel/cpufreq/Kconfig	2007-05-21=
+ 16:11:16.000000000 -1000
++++ linux-2.6.22-rc1-mm1/arch/x86_64/kernel/cpufreq/Kconfig	2007-05-21 16:2=
+9:11.000000000 -1000
+@@ -24,10 +24,17 @@ config X86_POWERNOW_K8
+ 	  If in doubt, say N.
+=20
+ config X86_POWERNOW_K8_ACPI
+-	bool
+-	depends on X86_POWERNOW_K8 && ACPI_PROCESSOR
+-	depends on !(X86_POWERNOW_K8 =3D y && ACPI_PROCESSOR =3D m)
++	bool "ACPI Support"
++	select ACPI_PROCESSOR
++	depends on X86_POWERNOW_K8
+ 	default y
++	help
++	  This provides access to the K8s Processor Performance States via ACPI.
++	  This driver is probably required for CPUFreq to work with multi-socket =
+and
++	  SMP systems.  It is not required on at least some single-socket yet
++	  multi-core systems, even if SMP is enabled.
++=09
++	  It is safe to say Y here.
+=20
+ config X86_SPEEDSTEP_CENTRINO
+ 	tristate "Intel Enhanced SpeedStep (deprecated)"
+
+--sm4nu43k4a2Rpi4c
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFGUlnPWa2BU+b7tU0RAmFSAKCPEmm4D3JlBEqeabCW133rnK458QCcC8nY
+eGk7MV12kpLt4RkMPpaySnw=
+=Au5F
+-----END PGP SIGNATURE-----
+
+--sm4nu43k4a2Rpi4c--
