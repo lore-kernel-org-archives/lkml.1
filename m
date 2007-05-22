@@ -1,581 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935322AbXEVWJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935467AbXEVWK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935322AbXEVWJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759653AbXEVWJm
+	id S935467AbXEVWK6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760485AbXEVWKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:09:42 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:53113 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758936AbXEVWJl (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:09:41 -0400
-Date: Tue, 22 May 2007 15:09:39 -0700
-From: Richard Griffiths <res07ml0@verizon.net>
-Subject: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-To: Linux-kernel@vger.kernel.org
-Reply-to: richard.griffiths@windriver.com
-Message-id: <1179871779.24163.11.camel@localhost.localdomain>
-MIME-version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6)
-Content-type: multipart/mixed; boundary="=-S0dG57Ywk57TBUTYzNac"
+	Tue, 22 May 2007 18:10:48 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51620 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758936AbXEVWKr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 18:10:47 -0400
+Date: Tue, 22 May 2007 23:10:46 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] file as directory
+Message-ID: <20070522221045.GH4095@ftp.linux.org.uk>
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 22, 2007 at 08:48:49PM +0200, Miklos Szeredi wrote:
+> Why do we want this?
+> --------------------
+> 
+> That depends on who you ask.  My answer is this:
+> 
+>   'foo.tar.gz/foo/bar' or
+>   'foo.tar.gz/contents/foo/bar'
+> 
+> or something similar.
+> 
+> Others might suggest accessing streams, resource forks or extended
+> attributes through such an interface.  However this patch only deals
+> with the non-directory case, so directories would be excluded from
+> that interface.
+> 
+> But otherwise this patch doesn't limit the uses of the "file as
+> directory" concept in any way.  It just adds the infrastructure to
+> support these whacky beasts.
+> 
+> How is it done?
+> ---------------
+> 
+> (See this [1] thread for more discussion on the subject)
+> 
+> When a non-directory object is accessed without a trailing slash, then
+> path resolution returns the object itself as usual.
+> 
+> If a non-directory object is accessed with a trailing slash, then the
+> filesystem may opt to let the file be accessed as a directory.  In
+> this case "something" (as supplied by the filesystem) is mounted on
+> top of the non-directory object.
+> 
+> This mount will have special properties:
+> 
+>  - If there's no trailing slash is after the file name, the mount
+>    won't be followed, even if the path resolution would otherwise
+>    follow mounts.
+> 
+>  - The mount only stays there while it is referenced by some external
+>    object, like a pwd or an open file.  When it is no longer
+>    referenced, it is automatically unmounted.
+> 
+>  - Unlike "real" mounts, this won't block unlink(2) or rename(2) on
+>    the underlying object.
 
---=-S0dG57Ywk57TBUTYzNac
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Interesting...  How do you deal with mount propagation and things like
+mount --move?  As for unlink...  How do you deal with having that thing
+mounted, mounting something _under_ it (so that vfsmount would be kept
+busy) and then unlinking that sucker?
 
-Venerable cramfs fs Linear XIP patch originally from MontaVista, used in
-the embedded Linux community for years, updated for 2.6.21. Tested on
-several systems with NOR Flash. PXA270, TI OMAP2430, ARM Versatile and
-Freescale iMX31ADS.
-
----
-
-Richard
----
-
-
---=-S0dG57Ywk57TBUTYzNac
-Content-Disposition: attachment; filename=cramfs-linear-xip.patch
-Content-Type: text/x-patch; name=cramfs-linear-xip.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-Signed-off-by: Zumeng Chen <zumeng.chen@windriver.com>
-Signed-off-by: Richard Griffiths <richard.griffiths@windriver.com>
----
- fs/Kconfig                   |   45 +++++++++
- fs/cramfs/inode.c            |  212 +++++++++++++++++++++++++++++++++++++++++--
- include/linux/cramfs_fs_sb.h |    4 
- include/linux/mm.h           |    1 
- init/do_mounts.c             |   17 +++
- mm/memory.c                  |   61 ++++++++++++
- 6 files changed, 333 insertions(+), 7 deletions(-)
----
-
---- linux-2.6.20.org/include/linux/cramfs_fs_sb.h	2007-03-22 17:32:35.000000000 +0800
-+++ linux-2.6.20/include/linux/cramfs_fs_sb.h	2007-03-22 17:09:22.000000000 +0800
-@@ -10,6 +10,10 @@ struct cramfs_sb_info {
- 			unsigned long blocks;
- 			unsigned long files;
- 			unsigned long flags;
-+#ifdef CONFIG_CRAMFS_LINEAR
-+			unsigned long linear_phys_addr;
-+			char *        linear_virt_addr;
-+#endif /* CONFIG_CRAMFS_LINEAR */
- };
- 
- static inline struct cramfs_sb_info *CRAMFS_SB(struct super_block *sb)
---- linux-2.6.20.org/include/linux/mm.h	2007-03-22 17:32:44.000000000 +0800
-+++ linux-2.6.20/include/linux/mm.h	2007-03-22 17:38:21.000000000 +0800
-@@ -164,6 +164,7 @@ extern unsigned int kobjsize(const void 
- #define VM_DONTEXPAND	0x00040000	/* Cannot expand with mremap() */
- #define VM_RESERVED	0x00080000	/* Count as reserved_vm like IO */
- #define VM_ACCOUNT	0x00100000	/* Is a VM accounted object */
-+#define VM_XIP          0x00200000      /* Execute In Place from ROM/flash */
- #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
- #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
- #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
---- linux-2.6.20.org/init/do_mounts.c	2007-03-22 17:33:14.000000000 +0800
-+++ linux-2.6.20/init/do_mounts.c	2007-03-22 17:11:28.000000000 +0800
-@@ -343,6 +343,16 @@ static int __init mount_nfs_root(void)
- }
- #endif
- 
-+#ifdef CONFIG_ROOT_CRAMFS_LINEAR
-+static int __init mount_cramfs_linear_root(void)
-+{
-+	create_dev("/dev/root", ROOT_DEV);
-+	if (do_mount_root("/dev/root","cramfs",root_mountflags,root_mount_data) == 0)
-+		return 1;
-+	return 0;
-+}
-+#endif
-+
- #if defined(CONFIG_BLK_DEV_RAM) || defined(CONFIG_BLK_DEV_FD)
- void __init change_floppy(char *fmt, ...)
- {
-@@ -375,6 +385,13 @@ void __init change_floppy(char *fmt, ...
- 
- void __init mount_root(void)
- {
-+#ifdef CONFIG_ROOT_CRAMFS_LINEAR
-+        if (ROOT_DEV == MKDEV(0, 0)) {
-+	        if (mount_cramfs_linear_root())
-+		        return;
-+		printk (KERN_ERR "VFS: Unable to mount linear cramfs root.\n");
-+	}
-+#endif
- #ifdef CONFIG_ROOT_NFS
- 	if (MAJOR(ROOT_DEV) == UNNAMED_MAJOR) {
- 		if (mount_nfs_root())
---- linux-2.6.20.org/fs/cramfs/inode.c	2007-03-22 17:33:48.000000000 +0800
-+++ linux-2.6.20/fs/cramfs/inode.c	2007-03-22 17:11:58.000000000 +0800
-@@ -11,6 +11,39 @@
-  * The actual compression is based on zlib, see the other files.
-  */
- 
-+/* Linear Addressing code
-+ *
-+ * Copyright (C) 2000 Shane Nay.
-+ *
-+ * Allows you to have a linearly addressed cramfs filesystem.
-+ * Saves the need for buffer, and the munging of the buffer.
-+ * Savings a bit over 32k with default PAGE_SIZE, BUFFER_SIZE
-+ * etc.  Usefull on embedded platform with ROM :-).
-+ *
-+ * Downsides- Currently linear addressed cramfs partitions
-+ * don't co-exist with block cramfs partitions.
-+ *
-+ */
-+
-+/*
-+ * 28-Dec-2000: XIP mode for linear cramfs
-+ * Copyright (C) 2000 Robert Leslie <rob@mars.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
- #include <linux/module.h>
- #include <linux/fs.h>
- #include <linux/pagemap.h>
-@@ -26,9 +59,10 @@
- #include <asm/semaphore.h>
- 
- #include <asm/uaccess.h>
-+#include <asm/tlbflush.h>
- 
--static const struct super_operations cramfs_ops;
--static const struct inode_operations cramfs_dir_inode_operations;
-+static struct super_operations cramfs_ops;
-+static struct inode_operations cramfs_dir_inode_operations;
- static const struct file_operations cramfs_directory_operations;
- static const struct address_space_operations cramfs_aops;
- 
-@@ -99,6 +134,67 @@ static int cramfs_iget5_set(struct inode
- 	return 0;
- }
- 
-+ #ifdef CONFIG_CRAMFS_LINEAR_XIP
-+ static int cramfs_mmap(struct file *file, struct vm_area_struct *vma)
-+ {
-+ 	unsigned long address, length;
-+ 	struct inode *inode = file->f_dentry->d_inode;
-+ 	struct super_block *sb = inode->i_sb;
-+ 	struct cramfs_sb_info *sbi = CRAMFS_SB(sb);
-+ 
-+ 	/* this is only used in the case of read-only maps for XIP */
-+ 
-+ 	if (vma->vm_flags & VM_WRITE)
-+ 		return generic_file_mmap(file, vma);
-+ 
-+ 	if ((vma->vm_flags & VM_SHARED) && (vma->vm_flags & VM_MAYWRITE))
-+ 		return -EINVAL;
-+ 
-+ 	address  = PAGE_ALIGN(sbi->linear_phys_addr + OFFSET(inode));
-+ 	address += vma->vm_pgoff << PAGE_SHIFT;
-+ 
-+ 	length = vma->vm_end - vma->vm_start;
-+ 
-+ 	if (length > inode->i_size)
-+ 		length = inode->i_size;
-+ 
-+ 	length = PAGE_ALIGN(length);
-+ 
-+ 	/*
-+ 	 * Don't dump addresses that are not real memory to a core file.
-+ 	 */
-+ 	vma->vm_flags |= (VM_IO | VM_XIP);
-+ 	flush_tlb_page(vma, address);
-+ 	if (remap_pfn_range(vma, vma->vm_start, address >> PAGE_SHIFT, length,
-+ 			     vma->vm_page_prot))
-+ 		return -EAGAIN;
-+ 
-+ #ifdef DEBUG_CRAMFS_XIP
-+ 	printk("cramfs_mmap: mapped %s at 0x%08lx, length %lu to vma 0x%08lx"
-+ 		", page_prot 0x%08lx\n",
-+ 		file->f_dentry->d_name.name, address, length,
-+ 		vma->vm_start, pgprot_val(vma->vm_page_prot));
-+ #endif
-+ 
-+ 	return 0;
-+ }
-+ 
-+ static struct file_operations cramfs_linear_xip_fops = {
-+   aio_read:   generic_file_aio_read,
-+ 	read:	do_sync_read,
-+ 	mmap:	cramfs_mmap,
-+ };
-+ 
-+ #define CRAMFS_INODE_IS_XIP(x) ((x)->i_mode & S_ISVTX)
-+ 
-+ #endif
-+ 
-+ #ifdef CONFIG_CRAMFS_LINEAR
-+ static struct backing_dev_info cramfs_backing_dev_info = {
-+ 	.ra_pages	= 0,	/* No readahead */
-+ };
-+ #endif
-+
- static struct inode *get_cramfs_inode(struct super_block *sb,
- 				struct cramfs_inode * cramfs_inode)
- {
-@@ -106,11 +200,32 @@ static struct inode *get_cramfs_inode(st
- 					    cramfs_iget5_test, cramfs_iget5_set,
- 					    cramfs_inode);
- 	if (inode && (inode->i_state & I_NEW)) {
-+#ifdef CONFIG_CRAMFS_LINEAR
-+                inode->i_mapping->backing_dev_info = &cramfs_backing_dev_info;
-+#endif
-+
-+#ifdef CONFIG_CRAMFS_LINEAR_XIP
-+             	if(S_ISREG(inode->i_mode)) 
-+			inode->i_fop = CRAMFS_INODE_IS_XIP(inode) ? &cramfs_linear_xip_fops : &generic_ro_fops;
-+#endif          
- 		unlock_new_inode(inode);
- 	}
- 	return inode;
- }
- 
-+#ifdef CONFIG_CRAMFS_LINEAR
-+/*
-+ * Return a pointer to the block in the linearly addressed cramfs image.
-+ */
-+static void *cramfs_read(struct super_block *sb, unsigned int offset, unsigned int len)
-+{
-+	struct cramfs_sb_info *sbi = CRAMFS_SB(sb);
-+
-+	if (!len)
-+		return NULL;
-+	return (void*)(sbi->linear_virt_addr + offset);
-+}
-+#else /* Not linear addressing - aka regular block mode. */
- /*
-  * We have our own block cache: don't fill up the buffer cache
-  * with the rom-image, because the way the filesystem is set
-@@ -218,6 +333,7 @@ static void *cramfs_read(struct super_bl
- 	}
- 	return read_buffers[buffer] + offset;
- }
-+#endif /* CONFIG_CRAMFS_LINEAR */
- 
- static void cramfs_put_super(struct super_block *sb)
- {
-@@ -233,7 +349,11 @@ static int cramfs_remount(struct super_b
- 
- static int cramfs_fill_super(struct super_block *sb, void *data, int silent)
- {
-+#ifndef CONFIG_CRAMFS_LINEAR
- 	int i;
-+#else
-+	char *p;
-+#endif
- 	struct cramfs_super super;
- 	unsigned long root_offset;
- 	struct cramfs_sb_info *sbi;
-@@ -246,11 +366,48 @@ static int cramfs_fill_super(struct supe
- 		return -ENOMEM;
- 	sb->s_fs_info = sbi;
- 
-+#ifndef CONFIG_CRAMFS_LINEAR
- 	/* Invalidate the read buffers on mount: think disk change.. */
- 	mutex_lock(&read_mutex);
- 	for (i = 0; i < READ_BUFFERS; i++)
- 		buffer_blocknr[i] = -1;
- 
-+#else /* CONFIG_CRAMFS_LINEAR */
-+        /*
-+         * The physical location of the cramfs image is specified as
-+         * a mount parameter.  This parameter is mandatory for obvious
-+         * reasons.  Some validation is made on the phys address but this
-+         * is not exhaustive and we count on the fact that someone using
-+         * this feature is supposed to know what he/she's doing.
-+         */
-+        if (!data || !(p = strstr((char *)data, "physaddr="))) {
-+                printk(KERN_ERR "cramfs: unknown physical address for linear cramfs image\n");
-+                goto out;
-+        }
-+        sbi->linear_phys_addr = simple_strtoul(p + 9, NULL, 0);
-+        if (sbi->linear_phys_addr & (PAGE_SIZE-1)) {
-+                printk(KERN_ERR "cramfs: physical address 0x%lx for linear cramfs isn't aligned to a page boundary\n",
-+                       sbi->linear_phys_addr);
-+                goto out;
-+        }
-+        if (sbi->linear_phys_addr == 0) { 
-+                printk(KERN_ERR "cramfs: physical address for linear cramfs image can't be 0\n");
-+                goto out;
-+        }
-+        printk(KERN_INFO "cramfs: checking physical address 0x%lx for linear cramfs image\n",
-+               sbi->linear_phys_addr);
-+
-+        /* Map only one page for now.  Will remap it when fs size is known. */
-+        sbi->linear_virt_addr =
-+                ioremap(sbi->linear_phys_addr, PAGE_SIZE);
-+        if (!sbi->linear_virt_addr) {
-+                printk(KERN_ERR "cramfs: ioremap of the linear cramfs image failed\n");
-+                goto out;
-+        }
-+
-+        mutex_lock(&read_mutex);
-+#endif /* CONFIG_CRAMFS_LINEAR */
-+
- 	/* Read the first block and get the superblock from it */
- 	memcpy(&super, cramfs_read(sb, 0, sizeof(super)), sizeof(super));
- 	mutex_unlock(&read_mutex);
-@@ -311,8 +468,27 @@ static int cramfs_fill_super(struct supe
- 		iput(root);
- 		goto out;
- 	}
-+
-+#ifdef CONFIG_CRAMFS_LINEAR
-+	/* Remap the whole filesystem now */
-+	iounmap(sbi->linear_virt_addr);
-+	printk(KERN_INFO "cramfs: linear cramfs image appears to be %lu KB in size\n",
-+	       sbi->size/1024);
-+
-+	sbi->linear_virt_addr =
-+		ioremap_cached(sbi->linear_phys_addr, sbi->size);
-+
-+	if (!sbi->linear_virt_addr) {
-+		printk(KERN_ERR "cramfs: ioremap of the linear cramfs image failed\n");
-+		goto out;
-+	}
-+#endif /* CONFIG_CRAMFS_LINEAR */
- 	return 0;
- out:
-+#ifdef CONFIG_CRAMFS_LINEAR
-+	if (sbi->linear_virt_addr)
-+		iounmap(sbi->linear_virt_addr);
-+#endif /* CONFIG_CRAMFS_LINEAR */
- 	kfree(sbi);
- 	sb->s_fs_info = NULL;
- 	return -EINVAL;
-@@ -472,6 +648,20 @@ static int cramfs_readpage(struct file *
- 		u32 blkptr_offset = OFFSET(inode) + page->index*4;
- 		u32 start_offset, compr_len;
- 
-+#ifdef CONFIG_CRAMFS_LINEAR_XIP
-+		if(CRAMFS_INODE_IS_XIP(inode)) {
-+			blkptr_offset = 
-+				PAGE_ALIGN(OFFSET(inode)) + 
-+				page->index * PAGE_CACHE_SIZE;
-+			mutex_lock(&read_mutex);
-+			memcpy(page_address(page),
-+				cramfs_read(sb, blkptr_offset, PAGE_CACHE_SIZE),
-+				PAGE_CACHE_SIZE);
-+			mutex_unlock(&read_mutex);
-+			bytes_filled = PAGE_CACHE_SIZE;
-+			pgdata = kmap(page);
-+		} else {
-+#endif /* CONFIG_CRAMFS_LINEAR_XIP */
- 		start_offset = OFFSET(inode) + maxblock*4;
- 		mutex_lock(&read_mutex);
- 		if (page->index)
-@@ -491,6 +681,9 @@ static int cramfs_readpage(struct file *
- 				 compr_len);
- 			mutex_unlock(&read_mutex);
- 		}
-+#ifdef CONFIG_CRAMFS_LINEAR_XIP
-+		}
-+#endif /* CONFIG_CRAMFS_LINEAR_XIP */
- 	} else
- 		pgdata = kmap(page);
- 	memset(pgdata + bytes_filled, 0, PAGE_CACHE_SIZE - bytes_filled);
-@@ -518,11 +711,11 @@ static const struct file_operations cram
- 	.readdir	= cramfs_readdir,
- };
- 
--static const struct inode_operations cramfs_dir_inode_operations = {
-+static struct inode_operations cramfs_dir_inode_operations = {
- 	.lookup		= cramfs_lookup,
- };
- 
--static const struct super_operations cramfs_ops = {
-+static struct super_operations cramfs_ops = {
- 	.put_super	= cramfs_put_super,
- 	.remount_fs	= cramfs_remount,
- 	.statfs		= cramfs_statfs,
-@@ -531,8 +724,12 @@ static const struct super_operations cra
- static int cramfs_get_sb(struct file_system_type *fs_type,
- 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
- {
--	return get_sb_bdev(fs_type, flags, dev_name, data, cramfs_fill_super,
--			   mnt);
-+
-+#ifdef CONFIG_CRAMFS_LINEAR
-+       return get_sb_nodev(fs_type, flags, data, cramfs_fill_super,mnt);
-+#else
-+	return get_sb_bdev(fs_type, flags, dev_name, data, cramfs_fill_super, mnt);
-+#endif
- }
- 
- static struct file_system_type cramfs_fs_type = {
-@@ -540,7 +737,9 @@ static struct file_system_type cramfs_fs
- 	.name		= "cramfs",
- 	.get_sb		= cramfs_get_sb,
- 	.kill_sb	= kill_block_super,
-+#ifndef CONFIG_CRAMFS_LINEAR
- 	.fs_flags	= FS_REQUIRES_DEV,
-+#endif /* CONFIG_CRAMFS_LINEAR */
- };
- 
- static int __init init_cramfs_fs(void)
---- linux-2.6.20.org/fs/Kconfig	2007-03-22 17:34:03.000000000 +0800
-+++ linux-2.6.20/fs/Kconfig	2007-03-22 18:13:20.000000000 +0800
-@@ -1396,6 +1396,51 @@ config CRAMFS
- 
- 	  If unsure, say N.
- 
-+config CRAMFS_LINEAR
-+	bool "Use linear addressing for CramFs"
-+	depends on CRAMFS
-+	help
-+	  This option tells the CramFs driver to load data directly from
-+	  a linear adressed memory range (usually non volatile memory
-+	  like flash) instead of going through the block device layer.
-+	  This saves some memory since no intermediate buffering is
-+	  necessary.
-+
-+	  This is also a prerequisite for XIP of binaries stored on the
-+	  filesystem.
-+
-+	  The location of the CramFs image in memory is board
-+	  dependent. Therefore, if you say Y, you must know the proper
-+	  physical address where to store the CramFs image and specify
-+	  it using the physaddr=0x******** mount option (for example:
-+	  "mount -t cramfs -o physaddr=0x100000 none /mnt").
-+
-+	  If unsure, say N.
-+
-+config CRAMFS_LINEAR_XIP
-+	bool "Support XIP on linear CramFs"
-+	depends on CRAMFS_LINEAR
-+	help
-+	  You must say Y to this option if you want to be able to run
-+	  applications directly from non-volatile memory.  XIP
-+	  applications are marked by setting the sticky bit (ie, "chmod
-+	  +t <app name>").  A cramfs file system then needs to be
-+	  created using mkcramfs (with XIP cramfs support in
-+	  it). Applications marked for XIP execution will not be
-+	  compressed since they have to run directly from flash.
-+
-+config ROOT_CRAMFS_LINEAR
-+	bool "Root file system on linear CramFs"
-+	depends on CRAMFS_LINEAR
-+	help
-+	  Say Y if you have enabled linear CramFs, and you want to be
-+	  able to use the linear CramFs image as a root file system.  To
-+	  actually have the kernel mount this CramFs image as a root
-+	  file system, you must also pass the command line parameter
-+	  "root=/dev/null rootflags=physaddr=0x********" to the kernel
-+	  (replace 0x******** with the physical address location of the
-+	  linear CramFs image to boot with).
-+
- config VXFS_FS
- 	tristate "FreeVxFS file system support (VERITAS VxFS(TM) compatible)"
- 	depends on BLOCK
---- linux-2.6.20.org/mm/memory.c	2007-03-27 13:06:06.000000000 +0800
-+++ linux-2.6.20/mm/memory.c	2007-03-27 12:08:59.000000000 +0800
-@@ -1035,7 +1035,8 @@ int get_user_pages(struct task_struct *t
- 			continue;
- 		}
- 
--		if (!vma || (vma->vm_flags & (VM_IO | VM_PFNMAP))
-+		if (!vma || ((vma->vm_flags & (VM_IO | VM_PFNMAP))
-+				&& !(vma->vm_flags & VM_XIP))
- 				|| !(vm_flags & vma->vm_flags))
- 			return i ? : -EFAULT;
- 
-@@ -1486,6 +1487,21 @@ static inline pte_t maybe_mkwrite(pte_t 
- 	return pte;
- }
- 
-+/*
-+ * We hold the mm semaphore for reading and vma->vm_mm->page_table_lock
-+ */
-+static inline void break_cow(struct vm_area_struct * vma, struct page * new_page, unsigned long address,
-+                pte_t *page_table)
-+{
-+        pte_t entry;
-+
-+        entry = maybe_mkwrite(pte_mkdirty(mk_pte(new_page, vma->vm_page_prot)),
-+                              vma);
-+        ptep_establish(vma, address, page_table, entry);
-+        update_mmu_cache(vma, address, entry);
-+        lazy_mmu_prot_update(entry);
-+}
-+
- static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
- {
- 	/*
-@@ -1537,10 +1553,53 @@ static int do_wp_page(struct mm_struct *
- 		spinlock_t *ptl, pte_t orig_pte)
- {
- 	struct page *old_page, *new_page;
-+	unsigned long pfn = pte_pfn(orig_pte);
- 	pte_t entry;
- 	int reuse = 0, ret = VM_FAULT_MINOR;
- 	struct page *dirty_page = NULL;
- 
-+	if (unlikely(!pfn_valid(pfn))) {
-+                if ((vma->vm_flags & VM_XIP) && pte_present(orig_pte) && 
-+			pte_read(orig_pte)) {
-+                        /*
-+                         * Handle COW of XIP memory.
-+                         * Note that the source memory actually isn't a ram
-+                         * page so no struct page is associated to the source
-+                         * pte.
-+                         */
-+                        char *dst;
-+                        int ret;
-+
-+                        spin_unlock(&mm->page_table_lock);
-+                        new_page = alloc_page(GFP_HIGHUSER);
-+                        if (!new_page)
-+                                return VM_FAULT_OOM;
-+
-+                        /* copy XIP data to memory */
-+
-+                        dst = kmap_atomic(new_page, KM_USER0);
-+                        ret = copy_from_user(dst, (void*)address, PAGE_SIZE);
-+                        kunmap_atomic(dst, KM_USER0);
-+
-+                        /* make sure pte didn't change while we dropped the
-+                           lock */
-+                        spin_lock(&mm->page_table_lock);
-+                        if (!ret && pte_same(*page_table, orig_pte)) {
-+				inc_mm_counter(mm, file_rss);
-+                                break_cow(vma, new_page, address, page_table);
-+                                lru_cache_add(new_page);
-+                                page_add_file_rmap(new_page);
-+                                spin_unlock(&mm->page_table_lock);
-+                                return VM_FAULT_MINOR;  /* Minor fault */
-+                        }
-+
-+                        /* pte changed: back off */
-+                        spin_unlock(&mm->page_table_lock);
-+                        page_cache_release(new_page);
-+                        return ret ? VM_FAULT_OOM : VM_FAULT_MINOR;
-+        	}
-+	}
-+
- 	old_page = vm_normal_page(vma, address, orig_pte);
- 	if (!old_page)
- 		goto gotten;
-
---=-S0dG57Ywk57TBUTYzNac--
-
+I'll look through the patch tonight; it sounds interesting, assuming that
+we don't run into serious crap with locking and <shudder> revalidation
+logics.
