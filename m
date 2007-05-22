@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbXEVE4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbXEVFBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbXEVE4v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 00:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbXEVE4m
+	id S1758761AbXEVFBo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 01:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbXEVFBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 00:56:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51277 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754914AbXEVE4m (ORCPT
+	Tue, 22 May 2007 01:01:37 -0400
+Received: from fed1rmmtao103.cox.net ([68.230.241.43]:65492 "EHLO
+	fed1rmmtao103.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752449AbXEVFBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 00:56:42 -0400
-Date: Mon, 21 May 2007 21:52:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-cc: ben.collins@ubuntu.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, sam@ravnborg.org, dwmw2@infradead.org,
-       adobriyan@gmail.com
-Subject: Re: [RFC] Crash on modpost, addend_386_rel()
-In-Reply-To: <20070522.134015.65004318.nemoto@toshiba-tops.co.jp>
-Message-ID: <alpine.LFD.0.98.0705212150000.3890@woody.linux-foundation.org>
-References: <1179799287.7485.17.camel@cunning>
- <20070522.134015.65004318.nemoto@toshiba-tops.co.jp>
+	Tue, 22 May 2007 01:01:37 -0400
+From: Junio C Hamano <junkio@cox.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org
+Subject: [PATCH] Match DMA blacklist entries between ide-dma.c and libata-core.c
+References: <20070521145042.GA6957@redhat.com>
+	<20070521171551.0f81a0be@the-village.bc.nu>
+cc: Dave Jones <davej@redhat.com>
+Date: Mon, 21 May 2007 22:01:35 -0700
+In-Reply-To: <20070521171551.0f81a0be@the-village.bc.nu> (Alan Cox's message
+	of "Mon, 21 May 2007 17:15:51 +0100")
+Message-ID: <7v3b1pbgeo.fsf_-_@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There are a few entries in ata_device_blacklist[] in libata-core.c
+marked with HORKAGE_NODMA but are missing from drive_blacklist[]
+in ide-dma.c.  This patch makes the lists in sync.
+
+Also remove a duplicated entry for "SanDisk SDP3B-64".
+
+Signed-off-by: Junio C Hamano <junkio@cox.net>
+---
+
+ * Recently Alan Cox responded that libata blacklist needs to be
+   kept in sync when Dave Jones added STT20000A to DMA blacklist
+   in ide-dma.c
+---
+ drivers/ide/ide-dma.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
+index b77b7d1..ead141e 100644
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -119,15 +119,17 @@ static const struct drive_list_entry drive_blacklist [] = {
+ 	{ "HITACHI CDR-8335"	,	"ALL"		},
+ 	{ "HITACHI CDR-8435"	,	"ALL"		},
+ 	{ "Toshiba CD-ROM XM-6202B"	,	"ALL"		},
++	{ "TOSHIBA CD-ROM XM-1702BC",	"ALL"		},
+ 	{ "CD-532E-A"		,	"ALL"		},
+ 	{ "E-IDE CD-ROM CR-840",	"ALL"		},
+ 	{ "CD-ROM Drive/F5A",	"ALL"		},
+ 	{ "WPI CDD-820",		"ALL"		},
+ 	{ "SAMSUNG CD-ROM SC-148C",	"ALL"		},
+ 	{ "SAMSUNG CD-ROM SC",	"ALL"		},
+-	{ "SanDisk SDP3B-64"	,	"ALL"		},
+ 	{ "ATAPI CD-ROM DRIVE 40X MAXIMUM",	"ALL"		},
+ 	{ "_NEC DV5800A",               "ALL"           },  
++	{ "SAMSUNG CD-ROM SN-124",	"N001" },
++	{ "Seagate STT20000A",		"ALL" },
+ 	{ NULL			,	NULL		}
+ 
+ };
+-- 
+1.5.2.24.g93d4
 
 
-On Tue, 22 May 2007, Atsushi Nemoto wrote:
-> 
-> Anyway, here is a updated patch tested on i386 (RELOCATABLE=y/n), arm,
-> and mips.  On calculation of 'location', sh_addr should be subtracted
-> (thank you for debugging, Linus).  And this patch contains an another
-> fix and an improvement of added_mips_rel
-
-Would you mind also just making this whole logic (that is generic and 
-shared with all the different arch versions) be an inline function of its 
-own? 
-
-> +	Elf_Shdr *sechdrs = elf->sechdrs;
-> +	unsigned int *location;
-> +	int section = sechdrs[rsection].sh_info;
-> +
-> +	location = (void *)elf->hdr + sechdrs[section].sh_offset +
-> +		(r->r_offset - sechdrs[section].sh_addr);
-
-so that all the functions could just use some generic
-
-	location = reloc_location(elf, rsection, r);
-
-or similar, instead of having that complex thing duplicated three times 
-(arm, mips and i386)?
-
-Especially since other architectures will likely end up doing the same 
-thing too...
-
-		Linus
