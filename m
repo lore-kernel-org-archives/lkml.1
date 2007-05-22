@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbXEVALA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760805AbXEVAL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbXEVALA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 20:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXEVAKx
+	id S1760805AbXEVAL0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 20:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbXEVALR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 20:10:53 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58874 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbXEVAKx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 20:10:53 -0400
-Date: Tue, 22 May 2007 01:10:38 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Ray Lee <ray-lk@madrabbit.org>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, Uwe Bugla <uwe.bugla@gmx.de>,
-       Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
-Message-ID: <20070522001038.GC4095@ftp.linux.org.uk>
-References: <20070519191751.E51233A23A2@muan.mtu.ru> <200705200124.13026.uwe.bugla@gmx.de> <200705200845.43621.arvidjaar@mail.ru> <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com> <20070520062816.GA4095@ftp.linux.org.uk> <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com> <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com> <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com> <1179677799.3311.5.camel@lov.localdomain> <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
+	Mon, 21 May 2007 20:11:17 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44697 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752449AbXEVALQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 20:11:16 -0400
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       James Simmons <jsimmons@pentafluge.infradead.org>,
+       Dave Airlie <airlied@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       dri-devel@lists.sourceforge.net
+In-Reply-To: <200705171423.46748.jesse.barnes@intel.com>
+References: <200705171423.46748.jesse.barnes@intel.com>
+Content-Type: text/plain
+Date: Tue, 22 May 2007 10:09:47 +1000
+Message-Id: <1179792587.32247.769.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 09:11:02AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sun, 20 May 2007, Kay Sievers wrote:
-> > 
-> > Right, providing "preallocated" devices, 8 or the number given in
-> > max_loop, sounds like the best option until the tools can handle that.
-> 
-> Yes. Can somebody who actually _uses_ loop send a tested patch, please?
 
-FWIW, I do and I have tested it; what I did *not* do is using a testbox
-with dynamic /dev for testing.  Mea culpa...
+> In collaboration with the FB guys, we've been working on enhancing
+> the 
+> kernel's graphics subsystem in an attempt to bring some sanity to the 
+> Linux graphics world and avoid the situation we have now where
+> several 
+> kernel and userspace drivers compete for control of graphics devices.
 
-AFAICS, patch that went to akpm (preallocate max_loop instances) is OK.
+ .../...
+
+A little note about initial mode setting at boot...
+
+I do stongly beleive that the decision of what mode to choose should not
+be made in the kernel. At boot the kernel should either leave the HW in
+whatever state the FW set it (and text mode is fine) or setup some sane
+default (ie 640x480 has the most chances of working) if that's not an
+option, maybe some very minimum EDID parsing in case you have a fixed
+frequency weirdo panel, but that's it (unless it's a mac an OF tells you
+what to use :-)
+
+The kernel would provide userland with connector infos (presence load
+detect, EDID, ...) and userland gets to decide what to do.
+
+Some reasons to keep that policy completely out of the kernel even at
+boot time are:
+
+ - User may want to configure his default gfx setup and have it up early
+
+ - EDID do lie, monitors routinely ship with windows .inf files
+containing "updated" infos apple has that too in OS X (EDID overrides
+afaik) etc.... and if we're going to do such a database of known
+monitors, it should definitely not be in the kernel. Besides, we want to
+add more infos that EDIDs don't provide most of the time to it like
+subpixel ordering etc...
+
+ - It sounds better that way :-) (yeah, that's the best reason !)
+
+So while I agree that the register frobbing, memory management, etc...
+should be indeed moved to the kernel as you guys have been doing lately,
+the policy of deciding what mode to set should totally stick to
+userland.
+
+IMHO, the best would be a lib (or daemon or both) for monitor detection
+& mode setting that is separate from X :-) That could handle storing the
+admin's default setup (including weird monitor info if any) and
+restoring it at boot time, etc...
+
+Cheers,
+Ben.
+
+
