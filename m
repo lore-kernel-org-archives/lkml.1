@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbXEVUkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762636AbXEVUkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759721AbXEVUkA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757530AbXEVUjw
+	id S1762636AbXEVUkX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757884AbXEVUjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:39:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59830 "EHLO mx1.redhat.com"
+	Tue, 22 May 2007 16:39:53 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38585 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757445AbXEVUjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757431AbXEVUjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 May 2007 16:39:51 -0400
-Message-ID: <46535503.4020702@redhat.com>
-Date: Tue, 22 May 2007 15:39:31 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: any value to "NORET_TYPE" macro?
+References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
+	<20070522135927.GA2098@stusta.de>
+	<Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
+	<20070522161951.GC2098@stusta.de> <m3ejl8k6e3.fsf@maximus.localdomain>
+	<Pine.LNX.4.64.0705221616270.18792@localhost.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 22 May 2007 22:39:50 +0200
+In-Reply-To: <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain> (Robert P. J. Day's message of "Tue, 22 May 2007 16:17:48 -0400 (EDT)")
+Message-ID: <m37ir0iodl.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/6] UDF cleanup and fixes
-References: <20070306164447.GC3661@duck.suse.cz> <4632710C.5030104@sandeen.net>
-In-Reply-To: <4632710C.5030104@sandeen.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
+"Robert P. J. Day" <rpjday@mindspring.com> writes:
 
-> Jan -
-> 
-> I ran 2.6.21 + your udf patches from -mm through some udf tests which,
-> oddly enough, can be found in the xfstests test suite in xfsprogs cvs
-> from sgi.
-> 
-> It looks much better than before, but I was able to trip some of your
-> asserts.  They were generated while fsx was running.  The good news,
-> though, is that fsx passed.  :)  I haven't looked into it much further
-> yet, but wanted to let you know.
+> that may be but, as i suggested earlier, that would get into guessing
+> what those developers were thinking, and i just didn't want to go
+> there.
 
-Here's a short hacky testcase that trips the assert around line 123 of
-udf/truncate.c  I'm looking into it but you may immediately see what the
-problem is...?
+No guessing, I just checked it (though a second check wouldn't do
+any harm).
 
+> the simple version of the patch is now in andrew's tree, and i'll
+> worry about the harder stuff next time.
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-int main(int argc, char ** argv)
-{
-        int fd;
-        char buf[65536];
-
-        fd = open("testfile", O_WRONLY|O_CREAT);
-        lseek(fd, 16797, SEEK_SET);
-        write(fd, buf, 22935);
-        close(fd);
-
-        fd = open("testfile", O_WRONLY);
-        lseek(fd, 31281, SEEK_SET);
-        write(fd, buf, 9592);
-        close(fd);
-}
-
--Eric
+The "next time" would be much harder as there would be no key for
+searching for these functions.
+-- 
+Krzysztof Halasa
