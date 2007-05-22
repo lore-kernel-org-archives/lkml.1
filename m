@@ -1,51 +1,670 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbXEVTbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764529AbXEVTdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761467AbXEVTbw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 15:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbXEVTbo
+	id S1764529AbXEVTdl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 15:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbXEVTde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 15:31:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:55090 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754973AbXEVTbn (ORCPT
+	Tue, 22 May 2007 15:33:34 -0400
+Received: from nwk-ea-fw-1.sun.com ([192.18.42.249]:51366 "EHLO
+	nwk-ea-fw-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756727AbXEVTdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 15:31:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ijxymAO/LGqlYCX5hbRJRvRPR1eypaa8PTYl2fMYBQz8K2JgajpLrjIdFKBnWrWjSV2UHnYyHG7xQuw89NO99BymjvIIKCM8a3p2+49E2FdEoq+bmNsRkAn+qIFp5GJKgkrCHmRnSJAWj5DgU5nzonCHkxPKagFdt++XxSd5swA=
-Date: Tue, 22 May 2007 21:31:49 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Jimmy Jazz <Jimmy.Jazz@gmx.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Daniel Drake <dsd@gentoo.org>,
-       linux list <linux-kernel@vger.kernel.org>
-Subject: Re: radeonfb and X800 cards
-Message-ID: <20070522193149.GA15040@dreamland.darkstar.lan>
-References: <464BB43D.2020407@gentoo.org> <1179367164.32247.256.camel@localhost.localdomain> <20070517195958.GA6489@dreamland.darkstar.lan> <1179451140.32247.326.camel@localhost.localdomain> <465044FC.30204@gmx.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465044FC.30204@gmx.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 22 May 2007 15:33:32 -0400
+Date: Tue, 22 May 2007 12:31:59 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: PATCH] serial: convert early_uart to earlycon for 8250
+In-reply-to: <200705151348.15355.yinghai.lu@sun.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       bjorn.helgaas@hp.com, rmk@arm.linux.org.uk
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200705221231.59694.yinghai.lu@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
+ <4648B2CC.2020403@sun.com> <200705151348.15355.yinghai.lu@sun.com>
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Sun, May 20, 2007 at 02:54:20PM +0200, Jimmy Jazz ha scritto: 
-> @Luca, if i remember well you have a X850, could you please try the
-> patch for me ?
+PATCH] serial: convert early_uart to earlycon for 8250
 
-It does work - sort of; BIOS parsing code is correct. It lacks the
-proper connector detection though (esp. port sharing). ATOM BIOS has a
-different data layout, so this should be added (now radeonfb thinks that
-I've 2 monitors).
+Beacuse SERIAL_PORT_DFNS is removed from include/asm-i386/serial.h and
+include/asm-x86_64/serial.h. the serial8250_ports need to be probed late
+in serial initializing stage. the console_init=>serial8250_console_init=>
+register_console=>serial8250_console_setup will return -ENDEV, and console
+ttyS0 can not be enabled at that time.
+need to wait till uart_add_one_port in drivers/serial/serial_core.c to call
+register_console to get console ttyS0. that is too late.
 
-I'll be away this weekend, so I'll try to come up with a patch as soon
-as I return home.
+Make early_uart to use early_param, so uart console can be used earlier.
+Make it to be bootconsole with CON_BOOT flag, so can use console handover
+feature. and it will switch to corresponding normal serial console
+automatically.
 
-Luca
--- 
-"L'abilita` politica e` l'abilita` di prevedere quello che
- accadra` domani, la prossima settimana, il prossimo mese e
- l'anno prossimo. E di essere cosi` abili, piu` tardi,
- da spiegare  perche' non e` accaduto."
+new command line will be:
+	console=uart8250,io,0x3f8,9600n8
+	console=uart8250,mmio,0xff5e0000,115200n8
+or
+	earlycon=uart8250,io,0x3f8,9600n8
+	earlycon=uart8250,mmio,0xff5e0000,115200n8
+
+it will print in very early stage:
+	Early serial console at I/O port 0x3f8 (options '9600n8')
+	console [uart0] enabled
+later for console it will print:
+	console handover: boot [uart0] -> real [ttyS0]
+
+Signed-off-by: <yinghai.lu@sun.com>
+
+ Documentation/kernel-parameters.txt |   12 +++-
+ arch/i386/kernel/head.S             |    8 ++
+ arch/ia64/kernel/setup.c            |    4 -
+ arch/x86_64/kernel/head.S           |   15 ++++-
+ drivers/serial/8250.c               |   26 +--------
+ drivers/serial/8250_early.c         |  103 ++++++++++++++----------------------
+ drivers/serial/Kconfig              |    8 ++
+ drivers/serial/serial_core.c        |    5 +
+ include/asm-i386/fixmap.h           |    2 
+ include/asm-i386/io.h               |   13 ++++
+ include/asm-ia64/io.h               |    4 +
+ include/asm-x86_64/fixmap.h         |    4 +
+ include/asm-x86_64/io.h             |   13 ++++
+ include/linux/console.h             |    1 
+ include/linux/serial.h              |    6 --
+ include/linux/serial_8250.h         |    3 +
+ include/linux/serial_core.h         |    5 +
+ init/main.c                         |    5 +
+ kernel/printk.c                     |   17 +++++
+ 19 files changed, 156 insertions(+), 98 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 09220a1..634d809 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -444,8 +444,16 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Documentation/networking/netconsole.txt for an
+ 			alternative.
+ 
+-		uart,io,<addr>[,options]
+-		uart,mmio,<addr>[,options]
++		uart8250,io,<addr>[,options]
++		uart8250,mmio,<addr>[,options]
++			Start an early, polled-mode console on the 8250/16550
++			UART at the specified I/O port or MMIO address,
++			switching to the matching ttyS device later.  The
++			options are the same as for ttyS, above.
++
++	earlycon=	[KNL] Output early console device and options.
++		uart8250,io,<addr>[,options]
++		uart8250,mmio,<addr>[,options]
+ 			Start an early, polled-mode console on the 8250/16550
+ 			UART at the specified I/O port or MMIO address,
+ 			switching to the matching ttyS device later.  The
+diff --git a/arch/i386/kernel/head.S b/arch/i386/kernel/head.S
+index f74dfc4..8271466 100644
+--- a/arch/i386/kernel/head.S
++++ b/arch/i386/kernel/head.S
+@@ -168,6 +168,12 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
+ .section .init.text,"ax",@progbits
+ #endif
+ 
++	/* Do an early initialization of the fixmap area */
++	movl $(swapper_pg_dir - __PAGE_OFFSET), %edx
++	movl $(swapper_pg_pmd - __PAGE_OFFSET), %eax
++	addl $0x007, %eax			/* 0x007 = PRESENT+RW+USER */
++	movl %eax, 4092(%edx)
++
+ #ifdef CONFIG_SMP
+ ENTRY(startup_32_smp)
+ 	cld
+@@ -507,6 +513,8 @@ ENTRY(_stext)
+ .section ".bss.page_aligned","w"
+ ENTRY(swapper_pg_dir)
+ 	.fill 1024,4,0
++ENTRY(swapper_pg_pmd)
++	.fill 1024,4,0
+ ENTRY(empty_zero_page)
+ 	.fill 4096,1,0
+ 
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index eaa6a24..dd7f95b 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -390,10 +390,6 @@ early_console_setup (char *cmdline)
+ 	if (!efi_setup_pcdp_console(cmdline))
+ 		earlycons++;
+ #endif
+-#ifdef CONFIG_SERIAL_8250_CONSOLE
+-	if (!early_serial_console_init(cmdline))
+-		earlycons++;
+-#endif
+ 
+ 	return (earlycons) ? 0 : -1;
+ }
+diff --git a/arch/x86_64/kernel/head.S b/arch/x86_64/kernel/head.S
+index 1fab487..941c84b 100644
+--- a/arch/x86_64/kernel/head.S
++++ b/arch/x86_64/kernel/head.S
+@@ -73,7 +73,11 @@ startup_64:
+ 	addq	%rbp, init_level4_pgt + (511*8)(%rip)
+ 
+ 	addq	%rbp, level3_ident_pgt + 0(%rip)
++
+ 	addq	%rbp, level3_kernel_pgt + (510*8)(%rip)
++	addq	%rbp, level3_kernel_pgt + (511*8)(%rip)
++
++	addq	%rbp, level2_fixmap_pgt + (506*8)(%rip)
+ 
+ 	/* Add an Identity mapping if I am above 1G */
+ 	leaq	_text(%rip), %rdi
+@@ -314,7 +318,16 @@ NEXT_PAGE(level3_kernel_pgt)
+ 	.fill	510,8,0
+ 	/* (2^48-(2*1024*1024*1024)-((2^39)*511))/(2^30) = 510 */
+ 	.quad	level2_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
+-	.fill	1,8,0
++	.quad	level2_fixmap_pgt - __START_KERNEL_map + _PAGE_TABLE
++
++NEXT_PAGE(level2_fixmap_pgt)
++	.fill	506,8,0
++	.quad	level1_fixmap_pgt - __START_KERNEL_map + _PAGE_TABLE
++	/* 8MB reserved for vsyscalls + a 2MB hole = 4 + 1 entries */
++	.fill	5,8,0
++
++NEXT_PAGE(level1_fixmap_pgt)
++	.fill	512,8,0
+ 
+ NEXT_PAGE(level2_ident_pgt)
+ 	/* Since I easily can, map the first 1G.
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index c84dab0..e341fb9 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2367,6 +2367,9 @@ static struct uart_ops serial8250_pops = {
+ 	.request_port	= serial8250_request_port,
+ 	.config_port	= serial8250_config_port,
+ 	.verify_port	= serial8250_verify_port,
++#ifdef CONFIG_SERIAL_8250_CONSOLE
++	.find_port_for_earlycon = serial8250_find_port_for_earlycon,
++#endif
+ };
+ 
+ static struct uart_8250_port serial8250_ports[UART_NR];
+@@ -2402,6 +2405,7 @@ static void __init serial8250_isa_init_ports(void)
+ 	for (i = 0, up = serial8250_ports;
+ 	     i < ARRAY_SIZE(old_serial_port) && i < nr_uarts;
+ 	     i++, up++) {
++		printk(KERN_INFO "serial8250_isa_init_ports 2  idx=%d\n",i);
+ 		up->port.iobase   = old_serial_port[i].port;
+ 		up->port.irq      = irq_canonicalize(old_serial_port[i].irq);
+ 		up->port.uartclk  = old_serial_port[i].baud_base * 16;
+@@ -2533,7 +2537,7 @@ static int __init serial8250_console_init(void)
+ }
+ console_initcall(serial8250_console_init);
+ 
+-static int __init find_port(struct uart_port *p)
++int __init find_port_serial8250(struct uart_port *p)
+ {
+ 	int line;
+ 	struct uart_port *port;
+@@ -2546,26 +2550,6 @@ static int __init find_port(struct uart_port *p)
+ 	return -ENODEV;
+ }
+ 
+-int __init serial8250_start_console(struct uart_port *port, char *options)
+-{
+-	int line;
+-
+-	line = find_port(port);
+-	if (line < 0)
+-		return -ENODEV;
+-
+-	add_preferred_console("ttyS", line, options);
+-	printk("Adding console on ttyS%d at %s 0x%lx (options '%s')\n",
+-		line, port->iotype == UPIO_MEM ? "MMIO" : "I/O port",
+-		port->iotype == UPIO_MEM ? (unsigned long) port->mapbase :
+-		    (unsigned long) port->iobase, options);
+-	if (!(serial8250_console.flags & CON_ENABLED)) {
+-		serial8250_console.flags &= ~CON_PRINTBUFFER;
+-		register_console(&serial8250_console);
+-	}
+-	return line;
+-}
+-
+ #define SERIAL8250_CONSOLE	&serial8250_console
+ #else
+ #define SERIAL8250_CONSOLE	NULL
+diff --git a/drivers/serial/8250_early.c b/drivers/serial/8250_early.c
+index 7e51119..7063a81 100644
+--- a/drivers/serial/8250_early.c
++++ b/drivers/serial/8250_early.c
+@@ -17,13 +17,11 @@
+  * we locate the device directly by its MMIO or I/O port address.
+  *
+  * The user can specify the device directly, e.g.,
+- *	console=uart,io,0x3f8,9600n8
+- *	console=uart,mmio,0xff5e0000,115200n8
+- * or platform code can call early_uart_console_init() to set
+- * the early UART device.
+- *
+- * After the normal serial driver starts, we try to locate the
+- * matching ttyS device and start a console there.
++ *	earlycon=uart8250,io,0x3f8,9600n8
++ *	earlycon=uart8250,mmio,0xff5e0000,115200n8
++ * or
++ *	console=uart8250,io,0x3f8,9600n8
++ *	console=uart8250,mmio,0xff5e0000,115200n8
+  */
+ 
+ #include <linux/tty.h>
+@@ -32,17 +30,17 @@
+ #include <linux/serial_core.h>
+ #include <linux/serial_reg.h>
+ #include <linux/serial.h>
++#include <linux/serial_8250.h>
+ #include <asm/io.h>
+ #include <asm/serial.h>
+ 
+-struct early_uart_device {
++struct early_serial8250_device {
+ 	struct uart_port port;
+ 	char options[16];		/* e.g., 115200n8 */
+ 	unsigned int baud;
+ };
+ 
+-static struct early_uart_device early_device __initdata;
+-static int early_uart_registered __initdata;
++static struct early_serial8250_device early_device __initdata;
+ 
+ static unsigned int __init serial_in(struct uart_port *port, int offset)
+ {
+@@ -80,7 +78,7 @@ static void __init putc(struct uart_port *port, int c)
+ 	serial_out(port, UART_TX, c);
+ }
+ 
+-static void __init early_uart_write(struct console *console, const char *s, unsigned int count)
++static void __init early_serial8250_write(struct console *console, const char *s, unsigned int count)
+ {
+ 	struct uart_port *port = &early_device.port;
+ 	unsigned int ier;
+@@ -111,7 +109,7 @@ static unsigned int __init probe_baud(struct uart_port *port)
+ 	return (port->uartclk / 16) / quot;
+ }
+ 
+-static void __init init_port(struct early_uart_device *device)
++static void __init init_port(struct early_serial8250_device *device)
+ {
+ 	struct uart_port *port = &device->port;
+ 	unsigned int divisor;
+@@ -130,10 +128,9 @@ static void __init init_port(struct early_uart_device *device)
+ 	serial_out(port, UART_LCR, c & ~UART_LCR_DLAB);
+ }
+ 
+-static int __init parse_options(struct early_uart_device *device, char *options)
++static int __init parse_options(struct early_serial8250_device *device, char *options)
+ {
+ 	struct uart_port *port = &device->port;
+-	int mapsize = 64;
+ 	int mmio, length;
+ 
+ 	if (!options)
+@@ -143,12 +140,7 @@ static int __init parse_options(struct early_uart_device *device, char *options)
+ 	if (!strncmp(options, "mmio,", 5)) {
+ 		port->iotype = UPIO_MEM;
+ 		port->mapbase = simple_strtoul(options + 5, &options, 0);
+-		port->membase = ioremap(port->mapbase, mapsize);
+-		if (!port->membase) {
+-			printk(KERN_ERR "%s: Couldn't ioremap 0x%lx\n",
+-				__FUNCTION__, port->mapbase);
+-			return -ENOMEM;
+-		}
++		port->membase = fix_ioremap(FIX_EARLYCON_MEM_BASE, port->mapbase);
+ 		mmio = 1;
+ 	} else if (!strncmp(options, "io,", 3)) {
+ 		port->iotype = UPIO_PORT;
+@@ -175,9 +167,16 @@ static int __init parse_options(struct early_uart_device *device, char *options)
+ 	return 0;
+ }
+ 
+-static int __init early_uart_setup(struct console *console, char *options)
++static struct console early_serial8250_console __initdata = {
++	.name	= "uart",
++	.write	= early_serial8250_write,
++	.flags	= CON_PRINTBUFFER,
++	.index	= -1,
++};
++
++static int __init early_serial8250_setup(char *options)
+ {
+-	struct early_uart_device *device = &early_device;
++	struct early_serial8250_device *device = &early_device;
+ 	int err;
+ 
+ 	if (device->port.membase || device->port.iobase)
+@@ -190,61 +189,43 @@ static int __init early_uart_setup(struct console *console, char *options)
+ 	return 0;
+ }
+ 
+-static struct console early_uart_console __initdata = {
+-	.name	= "uart",
+-	.write	= early_uart_write,
+-	.setup	= early_uart_setup,
+-	.flags	= CON_PRINTBUFFER,
+-	.index	= -1,
+-};
+-
+-static int __init early_uart_console_init(void)
+-{
+-	if (!early_uart_registered) {
+-		register_console(&early_uart_console);
+-		early_uart_registered = 1;
+-	}
+-	return 0;
+-}
+-console_initcall(early_uart_console_init);
+-
+-int __init early_serial_console_init(char *cmdline)
++static int __init setup_early_serial8250_console(char *cmdline)
+ {
+ 	char *options;
+ 	int err;
+ 
+-	options = strstr(cmdline, "console=uart,");
++	options = strstr(cmdline, "uart8250,");
+ 	if (!options)
+-		return -ENODEV;
++		return 0;
+ 
+ 	options = strchr(cmdline, ',') + 1;
+-	if ((err = early_uart_setup(NULL, options)) < 0)
++	if ((err = early_serial8250_setup(options)) < 0)
+ 		return err;
+-	return early_uart_console_init();
++
++	early_serial8250_console.flags |= CON_BOOT;
++	register_console(&early_serial8250_console);
++
++	/* add one dummy entry in console_cmdline*/
++	add_preferred_console("ttyS", 255, early_device.options);
++
++	return 0;
+ }
+ 
+-static int __init early_uart_console_switch(void)
++int serial8250_find_port_for_earlycon(void)
+ {
+-	struct early_uart_device *device = &early_device;
++	struct early_serial8250_device *device = &early_device;
+ 	struct uart_port *port = &device->port;
+-	int mmio, line;
++	int line;
+ 
+-	if (!(early_uart_console.flags & CON_ENABLED))
+-		return 0;
++	line = find_port_serial8250(port);
+ 
+-	/* Try to start the normal driver on a matching line.  */
+-	mmio = (port->iotype == UPIO_MEM);
+-	line = serial8250_start_console(port, device->options);
+ 	if (line < 0)
+-		printk("No ttyS device at %s 0x%lx for console\n",
+-			mmio ? "MMIO" : "I/O port",
+-			mmio ? port->mapbase :
+-			    (unsigned long) port->iobase);
++		return -ENODEV;
+ 
+-	unregister_console(&early_uart_console);
+-	if (mmio)
+-		iounmap(port->membase);
++	/* update the dummy entry to what we want console type */
++	update_console_cmdline_console_index("ttyS", 255, line);
+ 
+ 	return 0;
+ }
+-late_initcall(early_uart_console_switch);
++
++early_param("earlycon", setup_early_serial8250_console);
+diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+index 315ea99..4206ace 100644
+--- a/drivers/serial/Kconfig
++++ b/drivers/serial/Kconfig
+@@ -62,6 +62,14 @@ config SERIAL_8250_CONSOLE
+ 	  kernel will automatically use the first serial line, /dev/ttyS0, as
+ 	  system console.
+ 
++	  you can set that using a kernel command line option such as
++	  "earlycon=uart8250,io,0x3f8,9600n8"
++	  "earlycon=uart8250,mmio,0xff5e0000,115200n8" or
++	  "console=uart8250,io,0x3f8,9600n8"
++	  "console=uart8250,mmio,0xff5e0000,115200n8".
++	  and it will switch to normal serial console when correponding port is
++	  ready.
++
+ 	  If unsure, say N.
+ 
+ config SERIAL_8250_GSC
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index 326020f..4f60767 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -2303,8 +2303,11 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *port)
+ 	 * It may be that the port was not available.
+ 	 */
+ 	if (port->type != PORT_UNKNOWN &&
+-	    port->cons && !(port->cons->flags & CON_ENABLED))
++	    port->cons && !(port->cons->flags & CON_ENABLED)) {
++		if(port->ops && port->ops->find_port_for_earlycon)
++			port->ops->find_port_for_earlycon();
+ 		register_console(port->cons);
++	}
+ 
+ 	/*
+ 	 * Ensure UPF_DEAD is not set.
+diff --git a/include/asm-i386/fixmap.h b/include/asm-i386/fixmap.h
+index 80ea052..249e753 100644
+--- a/include/asm-i386/fixmap.h
++++ b/include/asm-i386/fixmap.h
+@@ -54,6 +54,8 @@ extern unsigned long __FIXADDR_TOP;
+ enum fixed_addresses {
+ 	FIX_HOLE,
+ 	FIX_VDSO,
++	FIX_DBGP_BASE,
++	FIX_EARLYCON_MEM_BASE,
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
+ #endif
+diff --git a/include/asm-i386/io.h b/include/asm-i386/io.h
+index e797586..6c8748d 100644
+--- a/include/asm-i386/io.h
++++ b/include/asm-i386/io.h
+@@ -130,6 +130,19 @@ extern void iounmap(volatile void __iomem *addr);
+ extern void *bt_ioremap(unsigned long offset, unsigned long size);
+ extern void bt_iounmap(void *addr, unsigned long size);
+ 
++#include <asm/pgtable.h>
++#include <asm/fixmap.h>
++
++static inline void __iomem * fix_ioremap (unsigned idx, unsigned long phys)
++{
++	void __iomem * vaddr;
++	set_fixmap_nocache(idx, phys & PAGE_MASK);
++	vaddr = (void __iomem *)__fix_to_virt(idx);
++	vaddr += phys & ~PAGE_MASK;
++
++	return vaddr;
++}
++
+ /* Use early IO mappings for DMI because it's initialized early */
+ #define dmi_ioremap bt_ioremap
+ #define dmi_iounmap bt_iounmap
+diff --git a/include/asm-ia64/io.h b/include/asm-ia64/io.h
+index eb17a86..e29eaf8 100644
+--- a/include/asm-ia64/io.h
++++ b/include/asm-ia64/io.h
+@@ -423,6 +423,10 @@ extern void __iomem * ioremap(unsigned long offset, unsigned long size);
+ extern void __iomem * ioremap_nocache (unsigned long offset, unsigned long size);
+ extern void iounmap (volatile void __iomem *addr);
+ 
++/* for console=uart8250,mmio,0xffe5000,9600n8 */
++#define FIX_EARLYCON_MEM_BASE 1
++#define fix_ioremap(idx, phys) ioremap(phys, 64)
++
+ /* Use normal IO mappings for DMI */
+ #define dmi_ioremap ioremap
+ #define dmi_iounmap(x,l) iounmap(x)
+diff --git a/include/asm-x86_64/fixmap.h b/include/asm-x86_64/fixmap.h
+index e90e167..2acb9b7 100644
+--- a/include/asm-x86_64/fixmap.h
++++ b/include/asm-x86_64/fixmap.h
+@@ -35,6 +35,8 @@ enum fixed_addresses {
+ 	VSYSCALL_LAST_PAGE,
+ 	VSYSCALL_FIRST_PAGE = VSYSCALL_LAST_PAGE + ((VSYSCALL_END-VSYSCALL_START) >> PAGE_SHIFT) - 1,
+ 	VSYSCALL_HPET,
++	FIX_DBGP_BASE,
++	FIX_EARLYCON_MEM_BASE,
+ 	FIX_HPET_BASE,
+ 	FIX_APIC_BASE,	/* local (CPU) APIC) -- required for SMP or not */
+ 	FIX_IO_APIC_BASE_0,
+@@ -84,7 +86,7 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
+ 	if (idx >= __end_of_fixed_addresses)
+ 		__this_fixmap_does_not_exist();
+ 
+-        return __fix_to_virt(idx);
++	return __fix_to_virt(idx);
+ }
+ 
+ #endif
+diff --git a/include/asm-x86_64/io.h b/include/asm-x86_64/io.h
+index de2cd9a..e2d66de 100644
+--- a/include/asm-x86_64/io.h
++++ b/include/asm-x86_64/io.h
+@@ -145,6 +145,19 @@ extern void early_iounmap(void *addr, unsigned long size);
+ extern void __iomem * ioremap_nocache (unsigned long offset, unsigned long size);
+ extern void iounmap(volatile void __iomem *addr);
+ 
++#include <asm/pgtable.h>
++#include <asm/fixmap.h>
++
++static inline void __iomem * fix_ioremap (unsigned idx, unsigned long phys)
++{
++	void __iomem * vaddr;
++	set_fixmap_nocache(idx, phys & PAGE_MASK);
++	vaddr = (void __iomem *)__fix_to_virt(idx);
++	vaddr += phys & ~PAGE_MASK;
++
++	return vaddr;
++}
++
+ /*
+  * ISA I/O bus memory addresses are 1:1 with the physical address.
+  */
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 62ef6e1..4cb7749 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -107,6 +107,7 @@ struct console {
+ };
+ 
+ extern int add_preferred_console(char *name, int idx, char *options);
++extern int update_console_cmdline_console_index(char *name, int idx_old, int idx_new);
+ extern void register_console(struct console *);
+ extern int unregister_console(struct console *);
+ extern struct console *console_drivers;
+diff --git a/include/linux/serial.h b/include/linux/serial.h
+index 33fc8cb..deb7143 100644
+--- a/include/linux/serial.h
++++ b/include/linux/serial.h
+@@ -177,11 +177,5 @@ struct serial_icounter_struct {
+ #ifdef __KERNEL__
+ #include <linux/compiler.h>
+ 
+-/* Allow architectures to override entries in serial8250_ports[] at run time: */
+-struct uart_port;	/* forward declaration */
+-extern int early_serial_setup(struct uart_port *port);
+-extern int early_serial_console_init(char *options);
+-extern int serial8250_start_console(struct uart_port *port, char *options);
+-
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_SERIAL_H */
+diff --git a/include/linux/serial_8250.h b/include/linux/serial_8250.h
+index 71310d8..0d79fc5 100644
+--- a/include/linux/serial_8250.h
++++ b/include/linux/serial_8250.h
+@@ -60,4 +60,7 @@ void serial8250_unregister_port(int line);
+ void serial8250_suspend_port(int line);
+ void serial8250_resume_port(int line);
+ 
++extern int find_port_serial8250(struct uart_port *p);
++extern int serial8250_find_port_for_earlycon(void);
++
+ #endif
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index a3ac4c8..ac2b13c 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -199,6 +199,11 @@ struct uart_ops {
+ 	void		(*config_port)(struct uart_port *, int);
+ 	int		(*verify_port)(struct uart_port *, struct serial_struct *);
+ 	int		(*ioctl)(struct uart_port *, unsigned int, unsigned long);
++
++	/*
++	 * for earlycon to console switch
++	 */
++	int		(*find_port_for_earlycon)(void);
+ };
+ 
+ #define UART_CONFIG_TYPE	(1 << 0)
+diff --git a/init/main.c b/init/main.c
+index eb8bdba..58dbe75 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -452,7 +452,10 @@ static int __init do_early_param(char *param, char *val)
+ 	struct obs_kernel_param *p;
+ 
+ 	for (p = __setup_start; p < __setup_end; p++) {
+-		if (p->early && strcmp(param, p->str) == 0) {
++		if ((p->early && strcmp(param, p->str) == 0) ||
++		    (strcmp(param, "console") == 0 &&
++		     strcmp(p->str, "earlycon") == 0)
++		) {
+ 			if (p->setup_func(val) != 0)
+ 				printk(KERN_WARNING
+ 				       "Malformed early option '%s'\n", param);
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 0bbdeac..8f3d91e 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -726,6 +726,20 @@ int __init add_preferred_console(char *name, int idx, char *options)
+ 	return 0;
+ }
+ 
++int __init update_console_cmdline_console_index(char *name, int idx_old, int idx_new)
++{
++	int i;
++
++	for(i = 0; i < MAX_CMDLINECONSOLES && console_cmdline[i].name[0]; i++)
++		if (strcmp(console_cmdline[i].name, name) == 0 &&
++			  console_cmdline[i].index == idx_old) {
++				console_cmdline[i].index = idx_new;
++				return 0;
++		}
++
++	return 0;
++}
++
+ #ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
+ /**
+  * suspend_console - suspend the console subsystem
+@@ -991,6 +1005,9 @@ void register_console(struct console *console)
+ 		       console->name, console->index);
+ 		unregister_console(bootconsole);
+ 		console->flags &= ~CON_PRINTBUFFER;
++	} else {
++		printk(KERN_INFO "console [%s%d] enabled\n",
++		       console->name, console->index);
+ 	}
+ 
+ 	/*
