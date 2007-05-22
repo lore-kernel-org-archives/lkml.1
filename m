@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762810AbXEVU56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762269AbXEVVCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762810AbXEVU56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbXEVU5t
+	id S1762269AbXEVVCU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 17:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147AbXEVVCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:57:49 -0400
-Received: from hermes1.dur.ac.uk ([129.234.8.20]:35041 "EHLO hermes1.dur.ac.uk"
+	Tue, 22 May 2007 17:02:11 -0400
+Received: from 1wt.eu ([62.212.114.60]:2715 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756017AbXEVU5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:57:48 -0400
-X-Greylist: delayed 923 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 16:57:48 EDT
-Date: Tue, 22 May 2007 21:42:22 +0100
-From: Ash Milsted <thatistosayiseenem@gawab.com>
-To: ck@vds.kolivas.org
-Cc: linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>
-Subject: Re: [ck] Re: [PATCH] mm: swap prefetch improvements
-Message-Id: <20070522214222.8b197247.thatistosayiseenem@gawab.com>
-In-Reply-To: <200705222037.54741.kernel@kolivas.org>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<200705222020.58474.kernel@kolivas.org>
-	<20070522102530.GB2344@elte.hu>
-	<200705222037.54741.kernel@kolivas.org>
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
+	id S1757308AbXEVVCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 17:02:07 -0400
+Date: Tue, 22 May 2007 23:01:54 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Dave Jones <davej@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, rdunlap@xenotime.net
+Subject: Re: RFC: Schedule EFS for removal.
+Message-ID: <20070522210152.GM943@1wt.eu>
+References: <20070521144618.GA6914@redhat.com> <20070521150242.GA25146@infradead.org> <20070521150937.GB6957@redhat.com> <20070521151209.GA25744@infradead.org> <20070521152050.GC6957@redhat.com> <20070521154613.GA27027@infradead.org> <20070521171109.GC9653@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-DurhamAcUk-MailScanner: Found to be clean, Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521171109.GC9653@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 20:37:54 +1000
-Con Kolivas <kernel@kolivas.org> wrote:
-
-> On Tuesday 22 May 2007 20:25, Ingo Molnar wrote:
-> > * Con Kolivas <kernel@kolivas.org> wrote:
-> > > > > there was nothing else running on the system - so i suspect the
-> > > > > swapin activity flagged 'itself' as some 'other' activity and
-> > > > > stopped? The swapins happened in 4 bursts, separated by 5 seconds
-> > > > > total idleness.
-> > > >
-> > > > I've noted burst swapins separated by some seconds of pause in my
-> > > > desktop system too (with sp_tester and an idle gnome).
-> > >
-> > > That really is expected, as just about anything, including journal
-> > > writeout, would be enough to put it back to sleep for 5 more seconds.
-> >
-> > note that nothing like that happened on my system - in the
-> > swap-prefetch-off case there was _zero_ IO activity during the sleep
-> > period.
+On Mon, May 21, 2007 at 01:11:09PM -0400, Dave Jones wrote:
+> On Mon, May 21, 2007 at 04:46:13PM +0100, Christoph Hellwig wrote:
+>  > On Mon, May 21, 2007 at 11:20:50AM -0400, Dave Jones wrote:
+>  > > On Mon, May 21, 2007 at 04:12:09PM +0100, Christoph Hellwig wrote:
+>  > >  > > Ok, patch rescinded.  Any opinion on what to do about that bug?
+>  > >  > > 
+>  > >  > > "use loopback" would be one option I guess.
+>  > >  > > Given its been an open bug for four years, there's obviously
+>  > >  > > not that much interest in fixing the filesystem.
+>  > >  > 
+>  > >  > I don't think it's a bug, it's a lacking feature.  The error message
+>  > >  > is quite accurate aswell.
+>  > > 
+>  > > It seems to be a regression in 2.6.x though.  From the report..
+>  > > 
+>  > > "Under 2.4.21, it doesnt do this."
+>  > 
+>  > Randy mentioned in bugzilla that 2.4.22 didn't work either, so I'd
+>  > be very surprised if 2.4.21 works.
 > 
-> Ok, granted it's _very_ conservative. I really don't want to risk its presence 
-> being a burden on anything, and the iowait it induces probably makes it turn 
-> itself off for another PREFETCH_DELAY (5s). I really don't want to cross the 
-> line to where it is detrimental in any way. Not dropping out on a 
-> cond_resched and perhaps making the delay tunable should be enough to make it 
-> a little less "sleepy".
-> 
-> -- 
-> -ck
+> good point.  I don't see anything obvious in 2.4.22 that would have
+> caused a regression, so this sounds suspect.
+> I'll close the bugzilla out based on your comments, thanks for looking at it.
 
-Hi. I just did some video encoding on my desktop and I was noticing
-(for the first time in a while) that running apps had to hit swap quite
-a lot when I switched to them (the encoding was going at full blast for
-most of the day, and most of the time other running apps were
-idle). Now, a good half of my RAM appeared to be free during all this,
-so I was thinking at the time that it would be nice if swap prefetch
-could be tunably more aggressive. I guess it would be ideal in this
-case if it could kick in during tunably low disk-IO periods, even if
-the CPU is rather busy. I'm sure you've considered this, so I only butt
-in here to cast a vote for it. :)
+In my experience, often when people speak about 2.4.21 (which is quite old),
+they in fact refer to an RHEL3 kernel, which has a "few" addon patches :-)
+While I don't think that anything related to EFS might be changed in RHEL,
+may it be possible that it works as a side effect of a patch in this
+kernel ?
 
-Of course, I could be completely wrong about the possibility.. and I
-seem to remember that the disk cache can take up about half the ram by
-default without this showing up in 'gnome-system-monitor'... which I
-guess might happen during heavy encoding.. but even if it did, I could
-have set the limit lower, and would then have still appreciated
-prefetching.
+That's just pure guess anyway.
 
-Ash
+Cheers,
+Willy
+
