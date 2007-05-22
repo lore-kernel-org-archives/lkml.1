@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbXEVANr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbXEVAP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760147AbXEVANr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 20:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbXEVANk
+	id S1760600AbXEVAP0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 20:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbXEVAPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 20:13:40 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41396 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754732AbXEVANj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 20:13:39 -0400
-Date: Tue, 22 May 2007 01:13:26 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Ray Lee <ray-lk@madrabbit.org>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, Uwe Bugla <uwe.bugla@gmx.de>,
-       Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
-Message-ID: <20070522001326.GD4095@ftp.linux.org.uk>
-References: <200705200124.13026.uwe.bugla@gmx.de> <200705200845.43621.arvidjaar@mail.ru> <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com> <20070520062816.GA4095@ftp.linux.org.uk> <2c0942db0705200822j685ec3b2x399a080622b6fc05@mail.gmail.com> <3ae72650705200854x6a2c829fueff3652653fc21da@mail.gmail.com> <2c0942db0705200910t777214efud489f4bc94433bf5@mail.gmail.com> <1179677799.3311.5.camel@lov.localdomain> <alpine.LFD.0.98.0705210908170.3890@woody.linux-foundation.org> <20070522001038.GC4095@ftp.linux.org.uk>
+	Mon, 21 May 2007 20:15:17 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44713 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755127AbXEVAPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 20:15:15 -0400
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+In-Reply-To: <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>
+References: <200705171423.46748.jesse.barnes@intel.com>
+	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>
+	 <200705210914.22663.jbarnes@virtuousgeek.org>
+	 <200705210934.58559.jbarnes@virtuousgeek.org>
+	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>
+	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 22 May 2007 10:15:07 +1000
+Message-Id: <1179792908.32247.772.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522001038.GC4095@ftp.linux.org.uk>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 01:10:38AM +0100, Al Viro wrote:
-> On Mon, May 21, 2007 at 09:11:02AM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Sun, 20 May 2007, Kay Sievers wrote:
-> > > 
-> > > Right, providing "preallocated" devices, 8 or the number given in
-> > > max_loop, sounds like the best option until the tools can handle that.
-> > 
-> > Yes. Can somebody who actually _uses_ loop send a tested patch, please?
+On Mon, 2007-05-21 at 18:14 +0100, Dave Airlie wrote:
 > 
-> FWIW, I do and I have tested it; what I did *not* do is using a testbox
-> with dynamic /dev for testing.  Mea culpa...
+> > 6) Eliminate the existing VT swap driver free for all. I would
+> compile
+> > out the VT layer and replace it with a compatible API that enforces
+> > some sanity.
 > 
-> AFAICS, patch that went to akpm (preallocate max_loop instances) is OK.
+> I'm hoping to look into this but it is a parallel problem to what this
+> code does, the VT switch API sucks rocks, so providing something
+> compatible is going to suck rocks..
 
-... except that it needs to do cleanup on failure in loop_init().
+Yeah, please, don't even go near that until everything else is done &
+merged or you'll never have anything finished :-) VT is a can of worms
+that will take some time to sort out and has nothing to do with what we
+are talking about right now anyway :-)
+
+Ben.
+
+
