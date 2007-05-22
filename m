@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764642AbXEVRDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934560AbXEVRE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764642AbXEVRDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 13:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758368AbXEVRDI
+	id S934560AbXEVRE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 13:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759152AbXEVREW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 13:03:08 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:55359 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757937AbXEVRDG (ORCPT
+	Tue, 22 May 2007 13:04:22 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:51188 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758796AbXEVREV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 13:03:06 -0400
-Message-ID: <46532247.6030803@s5r6.in-berlin.de>
-Date: Tue, 22 May 2007 19:03:03 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Tue, 22 May 2007 13:04:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=buGCZCznCwxYND8cDqcaciovlHU2qzbZA1QePWzqWJdQ/nCD0/9HvIN9OvX0poCD/WU1gEXzTfnCLmoQnZGlDHX7/zAy0sgrxLI2JTfdWIaSpGxdqn59u5YXp+nlDJFK7sKhFLxdmWm0VSaj9NSzzky8NmAeN1fP/iXtpWf6J84=
+Message-ID: <a781481a0705221004t4058154akb8b142dfdd2d6073@mail.gmail.com>
+Date: Tue, 22 May 2007 22:34:19 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: any value to "NORET_TYPE" macro?
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070522161951.GC2098@stusta.de>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Simon Horman <horms@verge.net.au>, Adrian Bunk <bunk@stusta.de>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: RFC: kconfig select warnings bogus?
-References: <20070519151523.GA26724@uranus.ravnborg.org>	 <a781481a0705191753r25e0cay82785ed56c04b6eb@mail.gmail.com>	 <a781481a0705191804u7f5a344cr92f2a1981c502bf7@mail.gmail.com>	 <4650074A.6000307@s5r6.in-berlin.de>	 <a781481a0705200438s634712e6v957d7085bca7407@mail.gmail.com>	 <46503542.50300@s5r6.in-berlin.de>	 <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com>	 <46504876.9040802@s5r6.in-berlin.de>	 <a781481a0705200650v2ef7be85h19f8c8eb026a303b@mail.gmail.com>	 <46505DBD.5010005@s5r6.in-berlin.de> <a781481a0705220753g25bb0dd8u33bbf8ddaf00f50c@mail.gmail.com>
-In-Reply-To: <a781481a0705220753g25bb0dd8u33bbf8ddaf00f50c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
+	 <20070522135927.GA2098@stusta.de>
+	 <Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
+	 <20070522161951.GC2098@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> On 5/20/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> > On 5/20/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> >> config A
->> >>         bool-or-tristate "option A"
->> >>         depends on !PLATFORM_X || HELPER_N_ON_PLATFORM_X
-[...]
-> Umm, if A requires helper code N (which is available only on platform X),
-[And, I assumed, 'A' works without helper 'N' on all platforms except
-'X'.  This is a synthetic example which might not have a real-world
-application.]
-> then why/how do we want A to depend on platforms _other_ than X?
+On 5/22/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Tue, May 22, 2007 at 10:04:16AM -0400, Robert P. J. Day wrote:
+> > On Tue, 22 May 2007, Adrian Bunk wrote:
+> >
+> > > On Tue, May 22, 2007 at 09:09:22AM -0400, Robert P. J. Day wrote:
+> > > >
+> > > >   given that:
+> > > >
+> > > > $ grep -r "define.*NORET_TYPE" *
+> > > > include/linux/ext4_fs.h:# define NORET_TYPE    /**/
+> > > > include/linux/linkage.h:#define NORET_TYPE    /**/
+> > > > include/linux/ext3_fs.h:# define NORET_TYPE    /**/
+> > > > $
+> > > >
+> > > > is there any obvious value to the 30 or so uses of that macro
+> > > > sprinkled throughout the tree?
+> > >
+> > > I can be mistaken, but it seems the uses should be replaced with your
+> > > __noreturn
+> >
+> > no, i think you're thinking of the alternative ATTRIB_NORET macro.
+> > as you can read in my previous post, NORET_TYPE used to resolve to
+> > "__volatile__" for very old gcc.  so i think it's legitimately dead
+> > and can be ripped out.
+>
+> No doubt that it could be removed because it doesn't have any effect.
+>
+> But locking at the usages, it seems to have been used when people
+> thought it was what __noreturn now is, so replacing NORET_TYPE with
+> __noreturn might be a small optimization (but every NORET_TYPE should
+> be checked that it's actually correct).
 
-The expression means:  'A' can be enabled on all platforms.  Except on
-platform_X, there it can only be enabled if helper_N is built too.
+Adrian's right, and in fact from ...
 
-[...]
->>         depends on PM
->>         depends on SWAP
->>         depends on (X86 && !SMP) ||
->>                    (X86 && SUSPEND_SMP) ||
->>                    (PPC64_SWSUSP && !SMP) ||
->>                    (PPC64_SWSUSP && SUSPEND_SMP) ||
->>                    (FRV   && !SMP) ||
->>                    (PPC32 && !SMP)
-> 
-> Ok, so perhaps you actually meant X && N_ON_X above.
+http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html
 
-No.  I meant "(X && N_ON_X) || Any_one_platform_other_than_X" above.
+... we know why that macro existed and evaluated to __volatile__
+for pre-2.5 gcc. Perhaps most of today's users of NORET_TYPE were
+probably looking for ATTRIB_NORET (which is quite common) actually.
 
-The 2nd example is a whitelist, while the 1st example is some kind of
-blacklist.  A real-world example of blacklist style:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a73df4dfdb0e01a1cbf119416a00e520a5e22306
-(Lived only 2 days in Linus' tree.)
--- 
-Stefan Richter
--=====-=-=== -=-= =-==-
-http://arcgraph.de/sr/
+[ __noreturn is defined in compiler-gcc.h, so the easier way would be
+to kill NORET_TYPE and replace its usages with ATTRIB_NORET instead.
+Of course, after verifying that the function _really_ never returns. ]
