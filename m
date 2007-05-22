@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935467AbXEVWK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935306AbXEVWO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935467AbXEVWK6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760485AbXEVWKs
+	id S935306AbXEVWO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759977AbXEVWOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:10:48 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51620 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758936AbXEVWKr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:10:47 -0400
-Date: Tue, 22 May 2007 23:10:46 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [RFC PATCH] file as directory
-Message-ID: <20070522221045.GH4095@ftp.linux.org.uk>
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 22 May 2007 18:14:20 -0400
+Received: from mga03.intel.com ([143.182.124.21]:7613 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759904AbXEVWOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 18:14:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,567,1170662400"; 
+   d="scan'208";a="230991416"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 2/2] make fbcon unregister when unloaded
+Date: Tue, 22 May 2007 15:14:16 -0700
+User-Agent: KMail/1.9.6
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, linux-kernel@vger.kernel.org,
+       James Simmons <jsimmons@pentafluge.infradead.org>
+References: <200705171423.46748.jesse.barnes@intel.com> <200705221444.52675.jbarnes@virtuousgeek.org> <20070522150504.b797213a.randy.dunlap@oracle.com>
+In-Reply-To: <20070522150504.b797213a.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200705221514.17041.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 08:48:49PM +0200, Miklos Szeredi wrote:
-> Why do we want this?
-> --------------------
-> 
-> That depends on who you ask.  My answer is this:
-> 
->   'foo.tar.gz/foo/bar' or
->   'foo.tar.gz/contents/foo/bar'
-> 
-> or something similar.
-> 
-> Others might suggest accessing streams, resource forks or extended
-> attributes through such an interface.  However this patch only deals
-> with the non-directory case, so directories would be excluded from
-> that interface.
-> 
-> But otherwise this patch doesn't limit the uses of the "file as
-> directory" concept in any way.  It just adds the infrastructure to
-> support these whacky beasts.
-> 
-> How is it done?
-> ---------------
-> 
-> (See this [1] thread for more discussion on the subject)
-> 
-> When a non-directory object is accessed without a trailing slash, then
-> path resolution returns the object itself as usual.
-> 
-> If a non-directory object is accessed with a trailing slash, then the
-> filesystem may opt to let the file be accessed as a directory.  In
-> this case "something" (as supplied by the filesystem) is mounted on
-> top of the non-directory object.
-> 
-> This mount will have special properties:
-> 
->  - If there's no trailing slash is after the file name, the mount
->    won't be followed, even if the path resolution would otherwise
->    follow mounts.
-> 
->  - The mount only stays there while it is referenced by some external
->    object, like a pwd or an open file.  When it is no longer
->    referenced, it is automatically unmounted.
-> 
->  - Unlike "real" mounts, this won't block unlink(2) or rename(2) on
->    the underlying object.
+On Tuesday, May 22, 2007 3:05 pm Randy Dunlap wrote:
+> On Tue, 22 May 2007 14:44:52 -0700 Jesse Barnes wrote:
+> > When unloaded, the fbcon driver should unregister itself from the
+> > VT subsystem using unbind_con_driver.  This patch makes it use the
+> > newly exported function to do just that.
+> >
+> > Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
+> >
+> > diff -Napur -X /home/jbarnes/dontdiff --exclude=Makefile
+> > linux-2.6.22-rc2/drivers/video/console/fbcon.c
+> > linux-2.6.22-rc2-modesetting/drivers/video/console/fbcon.c ---
+> > linux-2.6.22-rc2/drivers/video/console/fbcon.c	2007-05-18
+> > 21:06:17.000000000 -0700 +++
+> > linux-2.6.22-rc2-modesetting/drivers/video/console/fbcon.c	2007-05-
+> >22 14:26:20.000000000 -0700 @@ -2937,6 +2937,21 @@ static int
+> > fbcon_mode_deleted(struct fb_ return found;
+> >  }
+> >
+> > +static int fbcon_fb_unbind(int idx)
+> > +{
+> > +	int i;
+> > +
+> > +        for (i = 0; i < MAX_NR_CONSOLES; i++) {
+> > +                /* Assure we do not unbind other drivers */
+> > +                if (idx == con2fb_map[i])
+> > +                        /* can be optimize to minimize multiple
+> > calls to +			   unbind_con_driver() */
+>
+> 			/*
+> 			 * can be optimized to minimize multiple calls
+> 			 * to unbind_con_driver()
+> 			 */
+>
+> > +                        unbind_con_driver(&fb_con, i, i, 0);
+> > +        }
+> > +
+> > +	return 0;
+> > +}
+>
+> Lots of whitespace mangling there (mostly spaces instead of tabs).
 
-Interesting...  How do you deal with mount propagation and things like
-mount --move?  As for unlink...  How do you deal with having that thing
-mounted, mounting something _under_ it (so that vfsmount would be kept
-busy) and then unlinking that sucker?
+Oops, thanks for looking.  Somehow my emacs configuration broke and I 
+don't see this as readily as I used to.  If Antonio is ok with the 
+patch otherwise, I'll respin it with the cleanups.
 
-I'll look through the patch tonight; it sounds interesting, assuming that
-we don't run into serious crap with locking and <shudder> revalidation
-logics.
+Thanks,
+Jesse
