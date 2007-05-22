@@ -1,394 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966080AbXEVP5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966164AbXEVP6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966080AbXEVP5g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 11:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXEVP53
+	id S966164AbXEVP6f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 11:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758582AbXEVP60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 11:57:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48070 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758060AbXEVP51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 11:57:27 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070522140316.GB4527@ff.dom.local>
-References: <20070522140316.GB4527@ff.dom.local> <20070521135048.GB4050@ff.dom.local> <20070521094224.GB1695@ff.dom.local> <7846.1179749390@redhat.com> <12203.1179756727@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>
-Cc: linux-kernel@vger.kernel.org, "Robert P\. J\. Day" <rpjday@mindspring.com>,
-       dhowells@redhat.com
-Subject: [PATCH (take 4)] Documentation/memory-barriers.txt: various fixes
-X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
-Date: Tue, 22 May 2007 16:56:40 +0100
-Message-ID: <4072.1179849400@redhat.com>
+	Tue, 22 May 2007 11:58:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:19116 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758368AbXEVP6Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 11:58:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=I2//JdBA/+FL3iF8Yjq5Icj6SrpoeFeloj6FSDUfzaI27XCJWNdvfALZQErff+6AYf6vSkCMZ7B3KkwkaXPGBeLeAWqjAp6twUZ4BPhFuNB7QeOy6bLkaLWRXqr/PHduonqiDlVxGNS566D80jfsM3I3UWQIm/2i8cCSVoYN8cc=
+Message-ID: <59ad55d30705220858i593352b6p87a6b385aea23748@mail.gmail.com>
+Date: Tue, 22 May 2007 11:58:23 -0400
+From: "=?UTF-8?Q?Kristian_H=C3=B8gsberg?=" <krh@bitplanet.net>
+To: "Pierre Ossman" <drzeus-list@drzeus.cx>
+Subject: Re: Race free attributes in sysfs
+Cc: "Kay Sievers" <kay.sievers@vrfy.org>, "Greg KH" <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <46530F02.7010802@drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46502A8B.70803@drzeus.cx>
+	 <3ae72650705211050p6b6cefbdya70dd4e0a27e2d1b@mail.gmail.com>
+	 <4651E866.5010304@drzeus.cx>
+	 <1179775695.3320.82.camel@lov.localdomain>
+	 <46530F02.7010802@drzeus.cx>
+X-Google-Sender-Auth: 5e29feb98c0f7b22
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 5/22/07, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+> Kay Sievers wrote:
+> > We could change the driver-core to suppress the creation of an attribute
+> > if the attribute's show() or store() method returns something like
+> > -ENOENT at registration time?
+> > The driver would pass _all_ possible attributes of the device at
+> > registration time, but the core would only create the attributes which
+> > are implemented for this particular device? Would that work for you?
+> >
+>
+> Not sure. Not in an obvious way at least.
+>
+> It also doesn't feel like "the kernel way". Generally you can
+> create/allocate an object, assign attributes to it, then activate it.
+> Couldn't it be done so that I can add sysfs stuff to a device after I
+> just initialized it? (but before I add it).
 
-From: Jarek Poplawski <jarkao2@o2.pl>
+I agree here - if it was just possible to do this between create and
+add, this discussion would be moot.
 
-Fix various grammatical issues in Documentation/memory-barriers.txt.
+> > You can assign any number of attribute groups to the device. If they
+> > don't have a group name, they will all be created directly at the device
+> > level. Would that work for you?
+>
+> I've had a look at sysfs groups and the biggest beef I have with those
+> is that they're too low level. In order to use them I first need to
+> create device attributes, then create an array of pointers to each attr
+> member. It would be nice if I could just feed an array of device
+> attributes (i.e. I want wrappers).
 
-CC: "Robert P. J. Day" <rpjday@mindspring.com>
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-Signed-off-by: David Howells <dhowells@redhat.com>
+I did a little helper struct for the firewire subsystem that might be
+useful on a more general level.  It's struct fw_attribute_group in
+drivers/firewire/fw-device.h and the implementation is
+init_fw_attribute_group in drivers/firewire/fw-device.c.  But I agree,
+attribute groups require a fair bit of boiler plate code.
 
----
-
-diff -Nur 2.6.22-rc1-git7-/Documentation/memory-barriers.txt 2.6.22-rc1-git7/Documentation/memory-barriers.txt
---- 2.6.22-rc1-git7-/Documentation/memory-barriers.txt	2007-04-26 05:08:32.000000000 +0200
-+++ 2.6.22-rc1-git7/Documentation/memory-barriers.txt	2007-05-22 15:56:35.000000000 +0200
-@@ -24,7 +24,7 @@
-  (*) Explicit kernel barriers.
- 
-      - Compiler barrier.
--     - The CPU memory barriers.
-+     - CPU memory barriers.
-      - MMIO write barrier.
- 
-  (*) Implicit kernel memory barriers.
-@@ -265,7 +265,7 @@
- ordering over the memory operations on either side of the barrier.
- 
- Such enforcement is important because the CPUs and other devices in a system
--can use a variety of tricks to improve performance - including reordering,
-+can use a variety of tricks to improve performance, including reordering,
- deferral and combination of memory operations; speculative loads; speculative
- branch prediction and various types of caching.  Memory barriers are used to
- override or suppress these tricks, allowing the code to sanely control the
-@@ -457,7 +457,7 @@
- 	(Q == &A) implies (D == 1)
- 	(Q == &B) implies (D == 4)
- 
--But! CPU 2's perception of P may be updated _before_ its perception of B, thus
-+But!  CPU 2's perception of P may be updated _before_ its perception of B, thus
- leading to the following situation:
- 
- 	(Q == &B) and (D == 2) ????
-@@ -573,7 +573,7 @@
- the "weaker" type.
- 
- [!] Note that the stores before the write barrier would normally be expected to
--match the loads after the read barrier or data dependency barrier, and vice
-+match the loads after the read barrier or the data dependency barrier, and vice
- versa:
- 
- 	CPU 1                           CPU 2
-@@ -588,7 +588,7 @@
- EXAMPLES OF MEMORY BARRIER SEQUENCES
- ------------------------------------
- 
--Firstly, write barriers act as a partial orderings on store operations.
-+Firstly, write barriers act as partial orderings on store operations.
- Consider the following sequence of events:
- 
- 	CPU 1
-@@ -608,15 +608,15 @@
- 	+-------+       :      :
- 	|       |       +------+
- 	|       |------>| C=3  |     }     /\
--	|       |  :    +------+     }-----  \  -----> Events perceptible
--	|       |  :    | A=1  |     }        \/       to rest of system
-+	|       |  :    +------+     }-----  \  -----> Events perceptible to
-+	|       |  :    | A=1  |     }        \/       the rest of the system
- 	|       |  :    +------+     }
- 	| CPU 1 |  :    | B=2  |     }
- 	|       |       +------+     }
- 	|       |   wwwwwwwwwwwwwwww }   <--- At this point the write barrier
- 	|       |       +------+     }        requires all stores prior to the
- 	|       |  :    | E=5  |     }        barrier to be committed before
--	|       |  :    +------+     }        further stores may be take place.
-+	|       |  :    +------+     }        further stores may take place
- 	|       |------>| D=4  |     }
- 	|       |       +------+
- 	+-------+       :      :
-@@ -626,7 +626,7 @@
- 	                   V
- 
- 
--Secondly, data dependency barriers act as a partial orderings on data-dependent
-+Secondly, data dependency barriers act as partial orderings on data-dependent
- loads.  Consider the following sequence of events:
- 
- 	CPU 1			CPU 2
-@@ -975,7 +975,7 @@
- 
- 	barrier();
- 
--This a general barrier - lesser varieties of compiler barrier do not exist.
-+This is a general barrier - lesser varieties of compiler barrier do not exist.
- 
- The compiler barrier has no direct effect on the CPU, which may then reorder
- things however it wishes.
-@@ -997,7 +997,7 @@
- All CPU memory barriers unconditionally imply compiler barriers.
- 
- SMP memory barriers are reduced to compiler barriers on uniprocessor compiled
--systems because it is assumed that a CPU will be appear to be self-consistent,
-+systems because it is assumed that a CPU will appear to be self-consistent,
- and will order overlapping accesses correctly with respect to itself.
- 
- [!] Note that SMP memory barriers _must_ be used to control the ordering of
-@@ -1146,9 +1146,9 @@
- Therefore, from (1), (2) and (4) an UNLOCK followed by an unconditional LOCK is
- equivalent to a full barrier, but a LOCK followed by an UNLOCK is not.
- 
--[!] Note: one of the consequence of LOCKs and UNLOCKs being only one-way
--    barriers is that the effects instructions outside of a critical section may
--    seep into the inside of the critical section.
-+[!] Note: one of the consequences of LOCKs and UNLOCKs being only one-way
-+    barriers is that the effects of instructions outside of a critical section
-+    may seep into the inside of the critical section.
- 
- A LOCK followed by an UNLOCK may not be assumed to be full memory barrier
- because it is possible for an access preceding the LOCK to happen after the
-@@ -1239,7 +1239,7 @@
- 	UNLOCK M			UNLOCK Q
- 	*D = d;				*H = h;
- 
--Then there is no guarantee as to what order CPU #3 will see the accesses to *A
-+Then there is no guarantee as to what order CPU 3 will see the accesses to *A
- through *H occur in, other than the constraints imposed by the separate locks
- on the separate CPUs. It might, for example, see:
- 
-@@ -1269,12 +1269,12 @@
- 					UNLOCK M	[2]
- 					*H = h;
- 
--CPU #3 might see:
-+CPU 3 might see:
- 
- 	*E, LOCK M [1], *C, *B, *A, UNLOCK M [1],
- 		LOCK M [2], *H, *F, *G, UNLOCK M [2], *D
- 
--But assuming CPU #1 gets the lock first, it won't see any of:
-+But assuming CPU 1 gets the lock first, CPU 3 won't see any of:
- 
- 	*B, *C, *D, *F, *G or *H preceding LOCK M [1]
- 	*A, *B or *C following UNLOCK M [1]
-@@ -1327,12 +1327,12 @@
- 					mmiowb();
- 					spin_unlock(Q);
- 
--this will ensure that the two stores issued on CPU #1 appear at the PCI bridge
--before either of the stores issued on CPU #2.
-+this will ensure that the two stores issued on CPU 1 appear at the PCI bridge
-+before either of the stores issued on CPU 2.
- 
- 
--Furthermore, following a store by a load to the same device obviates the need
--for an mmiowb(), because the load forces the store to complete before the load
-+Furthermore, following a store by a load from the same device obviates the need
-+for the mmiowb(), because the load forces the store to complete before the load
- is performed:
- 
- 	CPU 1				CPU 2
-@@ -1363,7 +1363,7 @@
- 
-  (*) Atomic operations.
- 
-- (*) Accessing devices (I/O).
-+ (*) Accessing devices.
- 
-  (*) Interrupts.
- 
-@@ -1399,7 +1399,7 @@
-  (1) read the next pointer from this waiter's record to know as to where the
-      next waiter record is;
- 
-- (4) read the pointer to the waiter's task structure;
-+ (2) read the pointer to the waiter's task structure;
- 
-  (3) clear the task pointer to tell the waiter it has been given the semaphore;
- 
-@@ -1407,7 +1407,7 @@
- 
-  (5) release the reference held on the waiter's task struct.
- 
--In otherwords, it has to perform this sequence of events:
-+In other words, it has to perform this sequence of events:
- 
- 	LOAD waiter->list.next;
- 	LOAD waiter->task;
-@@ -1502,7 +1502,7 @@
- such the implicit memory barrier effects are necessary.
- 
- 
--The following operation are potential problems as they do _not_ imply memory
-+The following operations are potential problems as they do _not_ imply memory
- barriers, but might be used for implementing such things as UNLOCK-class
- operations:
- 
-@@ -1517,7 +1517,7 @@
- 
- The following also do _not_ imply memory barriers, and so may require explicit
- memory barriers under some circumstances (smp_mb__before_atomic_dec() for
--instance)):
-+instance):
- 
- 	atomic_add();
- 	atomic_sub();
-@@ -1641,8 +1641,8 @@
-      indeed have special I/O space access cycles and instructions, but many
-      CPUs don't have such a concept.
- 
--     The PCI bus, amongst others, defines an I/O space concept - which on such
--     CPUs as i386 and x86_64 cpus readily maps to the CPU's concept of I/O
-+     The PCI bus, amongst others, defines an I/O space concept which - on such
-+     CPUs as i386 and x86_64 - readily maps to the CPU's concept of I/O
-      space.  However, it may also be mapped as a virtual I/O space in the CPU's
-      memory map, particularly on those CPUs that don't support alternate I/O
-      spaces.
-@@ -1664,7 +1664,7 @@
-      i386 architecture machines, for example, this is controlled by way of the
-      MTRR registers.
- 
--     Ordinarily, these will be guaranteed to be fully ordered and uncombined,,
-+     Ordinarily, these will be guaranteed to be fully ordered and uncombined,
-      provided they're not accessing a prefetchable device.
- 
-      However, intermediary hardware (such as a PCI bridge) may indulge in
-@@ -1689,7 +1689,7 @@
- 
-  (*) ioreadX(), iowriteX()
- 
--     These will perform as appropriate for the type of access they're actually
-+     These will perform appropriately for the type of access they're actually
-      doing, be it inX()/outX() or readX()/writeX().
- 
- 
-@@ -1705,7 +1705,7 @@
- 
- This means that it must be considered that the CPU will execute its instruction
- stream in any order it feels like - or even in parallel - provided that if an
--instruction in the stream depends on the an earlier instruction, then that
-+instruction in the stream depends on an earlier instruction, then that
- earlier instruction must be sufficiently complete[*] before the later
- instruction may proceed; in other words: provided that the appearance of
- causality is maintained.
-@@ -1795,8 +1795,8 @@
- become apparent in the same order on those other CPUs.
- 
- 
--Consider dealing with a system that has pair of CPUs (1 & 2), each of which has
--a pair of parallel data caches (CPU 1 has A/B, and CPU 2 has C/D):
-+Consider dealing with a system that has a pair of CPUs (1 & 2), each of which
-+has a pair of parallel data caches (CPU 1 has A/B, and CPU 2 has C/D):
- 
- 	            :
- 	            :                          +--------+
-@@ -1835,7 +1835,7 @@
- 
-  (*) the coherency queue is not flushed by normal loads to lines already
-      present in the cache, even though the contents of the queue may
--     potentially effect those loads.
-+     potentially affect those loads.
- 
- Imagine, then, that two writes are made on the first CPU, with a write barrier
- between them to guarantee that they will appear to reach that CPU's caches in
-@@ -1845,7 +1845,7 @@
- 	===============	===============	=======================================
- 					u == 0, v == 1 and p == &u, q == &u
- 	v = 2;
--	smp_wmb();			Make sure change to v visible before
-+	smp_wmb();			Make sure change to v is visible before
- 					 change to p
- 	<A:modify v=2>			v is now in cache A exclusively
- 	p = &v;
-@@ -1853,7 +1853,7 @@
- 
- The write memory barrier forces the other CPUs in the system to perceive that
- the local CPU's caches have apparently been updated in the correct order.  But
--now imagine that the second CPU that wants to read those values:
-+now imagine that the second CPU wants to read those values:
- 
- 	CPU 1		CPU 2		COMMENT
- 	===============	===============	=======================================
-@@ -1861,7 +1861,7 @@
- 			q = p;
- 			x = *q;
- 
--The above pair of reads may then fail to happen in expected order, as the
-+The above pair of reads may then fail to happen in the expected order, as the
- cacheline holding p may get updated in one of the second CPU's caches whilst
- the update to the cacheline holding v is delayed in the other of the second
- CPU's caches by some other cache event:
-@@ -1916,7 +1916,7 @@
- 
- Other CPUs may also have split caches, but must coordinate between the various
- cachelets for normal memory accesses.  The semantics of the Alpha removes the
--need for coordination in absence of memory barriers.
-+need for coordination in the absence of memory barriers.
- 
- 
- CACHE COHERENCY VS DMA
-@@ -1931,10 +1931,10 @@
- 
- In addition, the data DMA'd to RAM by a device may be overwritten by dirty
- cache lines being written back to RAM from a CPU's cache after the device has
--installed its own data, or cache lines simply present in a CPUs cache may
--simply obscure the fact that RAM has been updated, until at such time as the
--cacheline is discarded from the CPU's cache and reloaded.  To deal with this,
--the appropriate part of the kernel must invalidate the overlapping bits of the
-+installed its own data, or cache lines present in the CPU's cache may simply
-+obscure the fact that RAM has been updated, until at such time as the cacheline
-+is discarded from the CPU's cache and reloaded.  To deal with this, the
-+appropriate part of the kernel must invalidate the overlapping bits of the
- cache on each CPU.
- 
- See Documentation/cachetlb.txt for more information on cache management.
-@@ -1944,7 +1944,7 @@
- -----------------------
- 
- Memory mapped I/O usually takes place through memory locations that are part of
--a window in the CPU's memory space that have different properties assigned than
-+a window in the CPU's memory space that has different properties assigned than
- the usual RAM directed window.
- 
- Amongst these properties is usually the fact that such accesses bypass the
-@@ -1960,7 +1960,7 @@
- =========================
- 
- A programmer might take it for granted that the CPU will perform memory
--operations in exactly the order specified, so that if a CPU is, for example,
-+operations in exactly the order specified, so that if the CPU is, for example,
- given the following piece of code to execute:
- 
- 	a = *A;
-@@ -1969,7 +1969,7 @@
- 	d = *D;
- 	*E = e;
- 
--They would then expect that the CPU will complete the memory operation for each
-+they would then expect that the CPU will complete the memory operation for each
- instruction before moving on to the next one, leading to a definite sequence of
- operations as seen by external observers in the system:
- 
-@@ -1986,8 +1986,8 @@
-  (*) loads may be done speculatively, and the result discarded should it prove
-      to have been unnecessary;
- 
-- (*) loads may be done speculatively, leading to the result having being
--     fetched at the wrong time in the expected sequence of events;
-+ (*) loads may be done speculatively, leading to the result having been fetched
-+     at the wrong time in the expected sequence of events;
- 
-  (*) the order of the memory accesses may be rearranged to promote better use
-      of the CPU buses and caches;
-@@ -2069,12 +2069,12 @@
- 
- The DEC Alpha CPU is one of the most relaxed CPUs there is.  Not only that,
- some versions of the Alpha CPU have a split data cache, permitting them to have
--two semantically related cache lines updating at separate times.  This is where
-+two semantically-related cache lines updated at separate times.  This is where
- the data dependency barrier really becomes necessary as this synchronises both
- caches with the memory coherence system, thus making it seem like pointer
- changes vs new data occur in the right order.
- 
--The Alpha defines the Linux's kernel's memory barrier model.
-+The Alpha defines the Linux kernel's memory barrier model.
- 
- See the subsection on "Cache Coherency" above.
- 
+cheers,
+Kristian
