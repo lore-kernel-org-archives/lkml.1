@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966817AbXEVTEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934635AbXEVTGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966817AbXEVTEY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 15:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966755AbXEVTEO
+	id S934635AbXEVTGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 15:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758482AbXEVTGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 15:04:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54239 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966754AbXEVTEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 15:04:12 -0400
-Message-ID: <46533EA8.7020602@garzik.org>
-Date: Tue, 22 May 2007 15:04:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [stable] Wanted: Allow adding new device IDs during the	-stable
- cycle
-References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com>
-In-Reply-To: <20070522184733.GA9357@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 May 2007 15:06:12 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:62535 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756385AbXEVTGL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 15:06:11 -0400
+Date: Tue, 22 May 2007 12:09:38 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] add "notime" boot option
+Message-Id: <20070522120938.db67f1e9.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> What's wrong with the current sysfs way of adding new device ids without
-> touching the kernel?  Devices described above was the very reason we
-> added that functionality, so users would not have to constantly update
-> their kernel.  The distros provide userspace tools that enable these ids
-> to be added and at boot time, everything "just works" properly.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I haven't found a single distro that (a) makes it trivial to add PCI IDs 
-at install time, and then (b) ensures those PCI IDs remain persistent 
-for each boot.  We are not at all to the "just works" stage yet.
+Add "notime" boot option to prevent timing data from being printed on
+each printk message line.
 
-> So, because of that, I don't really see a need to be adding new device
-> ids to the -stable tree.
+We've seen a few cases of 'time' data locking problems (possibly
+involving netconsole or net drivers).  If a kernel is built with
+CONFIG_PRINTK_TIME=y, it may have a boot locking hang.  Booting
+with "notime" may (i.e., could) prevent the lock hang and allow the
+kernel to boot successfully, without requiring a kernel rebuild.
 
-Maybe you are just not seeing all the developers that keep bringing this 
-up??
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/kernel-parameters.txt |    2 ++
+ kernel/printk.c                     |   10 +++++++++-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-Really, it is just silly to think that one-line PCI IDs patches will 
-cause any harm at all, and it should be self-evident that there is clear 
-potential to HELP Linux users.  That's why we're all here, right?
-
-	Jeff
-
-
+--- linux-2622-rc2.orig/Documentation/kernel-parameters.txt
++++ linux-2622-rc2/Documentation/kernel-parameters.txt
+@@ -1227,6 +1227,8 @@ and is between 256 and 4096 characters. 
+ 
+ 	nosync		[HW,M68K] Disables sync negotiation for all devices.
+ 
++	notime		Do not print timing data on each printk message line.
++
+ 	notsc		[BUGS=IA-32] Disable Time Stamp Counter
+ 
+ 	nousb		[USB] Disable the USB subsystem
+--- linux-2622-rc2.orig/kernel/printk.c
++++ linux-2622-rc2/kernel/printk.c
+@@ -458,9 +458,17 @@ static int __init printk_time_setup(char
+ 	printk_time = 1;
+ 	return 1;
+ }
+-
+ __setup("time", printk_time_setup);
+ 
++static int __init printk_notime_setup(char *str)
++{
++	if (*str)
++		return 0;
++	printk_time = 0;
++	return 1;
++}
++__setup("notime", printk_notime_setup);
++
+ __attribute__((weak)) unsigned long long printk_clock(void)
+ {
+ 	return sched_clock();
