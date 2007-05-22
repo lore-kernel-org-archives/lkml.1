@@ -1,99 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759813AbXEVEr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbXEVEsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759813AbXEVEr7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 00:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXEVErw
+	id S1761287AbXEVEsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 00:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbXEVErw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 22 May 2007 00:47:52 -0400
-Received: from omta04ps.mx.bigpond.com ([144.140.83.156]:45104 "EHLO
-	omta04ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755093AbXEVErv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: from frodo.csolve.net ([207.164.81.3]:58537 "EHLO frodo.csolve.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755149AbXEVErv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 22 May 2007 00:47:51 -0400
-Message-ID: <465275EF.8060905@bigpond.net.au>
-Date: Tue, 22 May 2007 14:47:43 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+X-Greylist: delayed 2292 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 00:47:51 EDT
+Message-ID: <46526CBA.9060803@csolve.net>
+Date: Tue, 22 May 2007 00:08:26 -0400
+From: makalski <makalski@csolve.net>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070317)
 MIME-Version: 1.0
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v12
-References: <20070513153853.GA19846@elte.hu> <464A6698.3080400@bigpond.net.au>	 <20070516063625.GA9058@elte.hu> <464CE8FD.4070205@bigpond.net.au>	 <20070518071325.GB28702@elte.hu> <464DA61A.4040406@bigpond.net.au> <b647ffbd0705210825y25331066x8b2a4d50cdb7c266@mail.gmail.com> <46523081.6050007@bigpond.net.au>
-In-Reply-To: <46523081.6050007@bigpond.net.au>
+To: linux-kernel@vger.kernel.org
+Subject: Kernel panic during hibernation
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta04ps.mx.bigpond.com from [60.231.45.148] using ID pwil3058@bigpond.net.au at Tue, 22 May 2007 04:47:48 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Williams wrote:
-> Dmitry Adamushko wrote:
->> On 18/05/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
->> [...]
->>> One thing that might work is to jitter the load balancing interval a
->>> bit.  The reason I say this is that one of the characteristics of top
->>> and gkrellm is that they run at a more or less constant interval (and,
->>> in this case, X would also be following this pattern as it's doing
->>> screen updates for top and gkrellm) and this means that it's possible
->>> for the load balancing interval to synchronize with their intervals
->>> which in turn causes the observed problem.
->>
->> Hum.. I guess, a 0/4 scenario wouldn't fit well in this explanation..
-> 
-> No, and I haven't seen one.
-> 
->> all 4 spinners "tend" to be on CPU0 (and as I understand each gets
->> ~25% approx.?), so there must be plenty of moments for
->> *idle_balance()* to be called on CPU1 - as gkrellm, top and X consume
->> together just a few % of CPU. Hence, we should not be that dependent
->> on the load balancing interval here..
-> 
-> The split that I see is 3/1 and neither CPU seems to be favoured with 
-> respect to getting the majority.  However, top, gkrellm and X seem to be 
-> always on the CPU with the single spinner.  The CPU% reported by top is 
-> approx. 33%, 33%, 33% and 100% for the spinners.
-> 
-> If I renice the spinners to -10 (so that there load weights dominate the 
-> run queue load calculations) the problem goes away and the spinner to 
-> CPU allocation is 2/2 and top reports them all getting approx. 50% each.
+Hi,
 
-For no good reason other than curiosity, I tried a variation of this 
-experiment where I reniced the spinners to 10 instead of -10 and, to my 
-surprise, they were allocated 2/2 to the CPUs on average.  I say on 
-average because the allocations were a little more volatile and 
-occasionally 0/4 splits would occur but these would last for less than 
-one top cycle before the 2/2 was re-established.  The quickness of these 
-recoveries would indicate that it was most likely the idle balance 
-mechanism that restored the balance.
+I have kernel panic message when trying to put Dell Inspiron 6400 into 
+hibernation.
 
-This may point the finger at the tick based load balance mechanism being 
-too conservative in when it decides whether tasks need to be moved.  In 
-the case where the spinners are at nice == 0, the idle balance mechanism 
-never comes into play as the 0/4 split is never seen so only the tick 
-based mechanism is in force in this case and this is where the anomalies 
-are seen.
+The following is the message:
 
-This tick rebalance mechanism only situation is also true for the nice 
-== -10 case but in this case the high load weights of the spinners 
-overcomes the tick based load balancing mechanism's conservatism e.g. 
-the difference in queue loads for a 1/3 split in this case is the 
-equivalent to the difference that would be generated by an imbalance of 
-about 18 nice == 0 spinners i.e. too big to be ignored.
+Process pm-hibernate (pid: 3168, threadinfo ffff810013dba000, task 
+ffff810018d0e
+860)
+Stack: 0000000000000000 0000000000000000 000001bc7e40f260 00000000000007ef
+ 00000000000fdff0 ffffffff800a74aa ffff810037e206f8 ffffffff880777bc
+ 000000001ebf7000 000000000001ebf7 000000000001enf6 0000000000000000
+Call Trace:
+ [<ffffffff800a74aa>] swsusp_write+0x2fa/0x440
+ [<ffffffff880777bc>] :scsi_mod:scsi_schedule_eh+0x45/0x55
+ [<ffffffff800a5817>] pm_suspend_disk+0x5b/0xce
+ [<ffffffff800a46ec>] enter_state+0x52/0x19b
+ [<ffffffff800a4898>] state_store+0x5e/0x79
+ [<ffffffff800fa3f7>] sysfs_write_file+0xb9/0xe8
+ [<ffffffff80016121>] vfs_write+0xce/0x174
+ [<ffffffff800169b2>] sys_write+0x45/0x6e
+ [<ffffffff8005b2c1>] tracesys+0xd1/0xdc
 
-The evidence seems to indicate that IF a rebalance operation gets 
-initiated then the right amount of load will get moved.
 
-This new evidence weakens (but does not totally destroy) my 
-synchronization (a.k.a. conspiracy) theory.
+Code 0f ba 6d 00 00 19 c0 85 c0 74 08 48 89 ef e8 49 c0 f7 ff 48
+RIP  [<ffffffff800c3099>] rw_swap_page_sync+0x1c/0xc2
+ RSP <ffff810013dbbd68>
+ <0>Kernel panic - not syncing: Fatal exception
 
-Peter
-PS As the total load weight for 4 nice == 10 tasks is only about 40% of 
-the load weight of a single nice == 0 task, the occasional 0/4 split in 
-the spinners at nice == 10 case is not unexpected as it would be the 
-desirable allocation if there were exactly one other running task at 
-nice == 0.
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+I am using "Linux localhost.localdomain 2.6.18-8.el5 #1 SMP Thu Mar 15 
+19:46:53 EDT 2007 x86_64 x86_64 x86_64 GNU/Linux", CentOs 5.
+
+Could you please tell me if there is a fix for this problem already, I 
+couldn't find anything yet.
+
+Thank You,
+
+Vlad.
+
+
