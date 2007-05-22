@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbXEVGVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbXEVGVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757351AbXEVGVS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 02:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760810AbXEVGU4
+	id S1758570AbXEVGVd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 02:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762139AbXEVGVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 02:20:56 -0400
-Received: from d061844a.dreamhost.com ([208.97.132.74]:49986 "EHLO
-	spaceymail-a4.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760226AbXEVGUz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 02:20:55 -0400
-From: Anant Nitya <kernel@prachanda.info>
-Organization: Prachanda Hub
-To: linux-kernel@vger.kernel.org
-Subject: Re: bad networking related lag in v2.6.22-rc2
-Date: Tue, 22 May 2007 11:50:34 +0530
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>
-References: <20070517174533.GA538@elte.hu> <200705211544.58018.kernel@prachanda.hub> <20070521102009.GA12196@elte.hu>
-In-Reply-To: <20070521102009.GA12196@elte.hu>
+	Tue, 22 May 2007 02:21:20 -0400
+Received: from ms.trustica.cz ([82.208.32.68]:44542 "EHLO ms.trustica.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762086AbXEVGVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 02:21:18 -0400
+Message-ID: <46528B6F.3050701@assembler.cz>
+Date: Tue, 22 May 2007 08:19:27 +0200
+From: Rudolf Marek <r.marek@assembler.cz>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070520)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705221150.35774.kernel@prachanda.hub>
+To: Luca <kronos.it@gmail.com>
+CC: lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [lm-sensors] [RFC] ACPI based hwmon driver for ASUS
+References: <20070513223329.GA29207@dreamland.darkstar.lan>	 <46520F36.4080006@assembler.cz> <68676e00705211453n69de6868lc5da2cad64f65699@mail.gmail.com>
+In-Reply-To: <68676e00705211453n69de6868lc5da2cad64f65699@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 May 2007 15:50:09 Ingo Molnar wrote:
-> * Anant Nitya <kernel@prachanda.info> wrote:
-> > Tcp:
-> >     5 connections established
->
-> hm, this does not explain the /proc/net/tcp overhead i think - although
-> it could be a red herring. Will have a closer look at your new trace.
->
-> if possible please try to generate the automatic softirq trace for
-> Thomas, and then a separate trace for the firefox/net-lag thing, using
-> trace-it-10sec.c. Btw., for the second trace, could you boot with
-> maxcpus=1? That would make the second trace quite a bit more
-> straightforward to analyze. You probably need both cpus to trigger the
-> softirq problem.
->
-> 	Ingo
+Hi,
 
-here is the link for new trace with maxcpus=1.
-http://cybertek.info/taitai/trace-it-10sec-to-ingo-with-maxcpus=1.bz2
+I have following readings:
 
-Regards
-Ananitya
+w83627ehf-isa-0290
+Adapter: ISA adapter
+VCore:     +1.52 V  (min =  +0.00 V, max =  +1.74 V)
+in1:      +12.30 V  (min = +13.46 V, max = +13.04 V) ALARM
+AVCC:      +3.36 V  (min =  +4.08 V, max =  +3.95 V) ALARM
+3VCC:      +3.36 V  (min =  +4.05 V, max =  +3.06 V) ALARM
+in4:       +2.04 V  (min =  +1.78 V, max =  +2.04 V)
+in5:       +1.60 V  (min =  +2.04 V, max =  +2.02 V) ALARM
+in6:       +5.12 V  (min =  +6.12 V, max =  +6.53 V) ALARM
+VSB:       +3.36 V  (min =  +4.08 V, max =  +4.08 V) ALARM
+VBAT:      +3.30 V  (min =  +4.08 V, max =  +3.04 V) ALARM
+in9:       +1.65 V  (min =  +0.98 V, max =  +2.04 V)
+Case Fan:    0 RPM  (min =    0 RPM, div = 8)
+CPU Fan:  1638 RPM  (min =    0 RPM, div = 4)
+Aux Fan:  1436 RPM  (min = 4272 RPM, div = 4) ALARM
+fan5:        0 RPM  (min =    0 RPM, div = 16)
+Sys Temp:    +28°C  (high =   -65°C, hyst =   -34°C)   ALARM
+CPU Temp:  +34.0°C  (high = +80.0°C, hyst = +75.0°C)
+AUX Temp:  +38.5°C  (high = +80.0°C, hyst = +75.0°C)
 
--- 
-Out of many thousands, one may endeavor for perfection, and of
-those who have achieved perfection, hardly one knows Me in truth.
-				-- Gita Sutra Of Mysticism
+Fan4 is disabled in the chip. I think the board has 4 connectors. I dont have 
+time right now to check the manual.
+
+Rudolf
+
