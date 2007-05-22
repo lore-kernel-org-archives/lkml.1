@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbXEVK4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbXEVK6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934041AbXEVK4l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 06:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757659AbXEVK4a
+	id S933793AbXEVK6Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 06:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758482AbXEVK6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 06:56:30 -0400
-Received: from mail.dbd-breitband.de ([217.188.211.21]:33963 "EHLO
-	dbd-mpx01.dbd-breitband.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754788AbXEVK43 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 06:56:29 -0400
-X-Greylist: delayed 1352 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 06:56:28 EDT
-From: Marc Donner <donner@dbd-breitband.de>
-Organization: DBD DeutscheBreitbandDienste
-To: David Miller <davem@davemloft.net>
-Subject: Re: TCP_MD5 and Intel e1000
-Date: Tue, 22 May 2007 12:33:25 +0200
-User-Agent: KMail/1.9.6
-Cc: yoshfuji@linux-ipv6.org, dada1@cosmosbay.com, webmaster@poweraudio.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <C2786969.24B46%webmaster@poweraudio.de> <20070522.183647.75785266.yoshfuji@linux-ipv6.org> <20070522.031432.08079709.davem@davemloft.net>
-In-Reply-To: <20070522.031432.08079709.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
+	Tue, 22 May 2007 06:58:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37434 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757659AbXEVK6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 06:58:03 -0400
+Date: Tue, 22 May 2007 12:57:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Antonino Ingargiola <tritemio@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] mm: swap prefetch improvements
+Message-ID: <20070522105710.GA12833@elte.hu>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705222037.54741.kernel@kolivas.org> <20070522104648.GA10622@elte.hu> <200705222054.46488.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705221233.25858.donner@dbd-breitband.de>
+In-Reply-To: <200705222054.46488.kernel@kolivas.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 May 2007, David Miller wrote:
-> From: YOSHIFUJI Hideaki / 吉藤英明 <yoshfuji@linux-ipv6.org>
-> Date: Tue, 22 May 2007 18:36:47 +0900 (JST)
->
-> > In article <20070522105738.f03cb83b.dada1@cosmosbay.com> (at Tue, 22 May 
-2007 10:57:38 +0200), Eric Dumazet <dada1@cosmosbay.com> says:
-> > > > I have tried to set up quagga with tcp-md5 support from kernel. All
-> > > > seems ok with a intel e100 NIC, but as i testetd with a intel e1000
-> > > > NIC the tcp packets have an invalid md5 digest.
-> > > > If i run tcpdump on the mashine the packets are generated, it shows
-> > > > on the outgoing interface invalid md5 digests.
-> > > > Are there known issues about tcp-md5 and e1000 NICs?
-> > >
-> > > You could try "ethtool -K tx off", and/or other ethtool -K settings
-> >
-> > Disabling offloading should help; currently tcp-md5 stack
-> > blindly copy md5-signature from the first segment
-> > which is not appropriate for rest of segments.
->
-> It is clear we should disable TSO for sockets making use of TCP-MD5.
 
-disabling tso works. thanks
+* Con Kolivas <kernel@kolivas.org> wrote:
+
+> On Tuesday 22 May 2007 20:46, Ingo Molnar wrote:
+> > It clearly should not consider 'itself' as IO activity. This 
+> > suggests some bug in the 'detect activity' mechanism, agreed? I'm 
+> > wondering whether you are seeing the same problem, or is all 
+> > swap-prefetch IO on your system continuous until it's done [or some 
+> > other IO comes inbetween]?
+> 
+> When nothing else is happening anywhere on the system it reads in 
+> bursts and goes to sleep during journal writeout.
+
+hm, what do you call 'journal writeout' here that would be happening on 
+my system?
+
+	Ingo
