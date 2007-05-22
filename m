@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbXEVATA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761845AbXEVATV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760635AbXEVATA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 20:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756493AbXEVASw
+	id S1761845AbXEVATV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 20:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759404AbXEVAS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 20:18:52 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:36694 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755204AbXEVASw (ORCPT
+	Mon, 21 May 2007 20:18:59 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:18803 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758260AbXEVAS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 20:18:52 -0400
-Date: Tue, 22 May 2007 01:18:51 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, kenchen@google.com, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: + loop-preallocate-eight-loop-devices.patch added to -mm tree
-Message-ID: <20070522001851.GE4095@ftp.linux.org.uk>
-References: <200705212200.l4LM0tYK021050@shell0.pdx.osdl.net>
+	Mon, 21 May 2007 20:18:58 -0400
+Date: Mon, 21 May 2007 17:23:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: error in recent patch to fs/partitions/ldm.c
+Message-Id: <20070521172300.b1e9da3b.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0705211923270.1886@localhost.localdomain>
+References: <Pine.LNX.4.64.0705211923270.1886@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705212200.l4LM0tYK021050@shell0.pdx.osdl.net>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 03:00:55PM -0700, akpm@linux-foundation.org wrote:
-> +	if (register_blkdev(LOOP_MAJOR, "loop"))
-> +		return -EIO;
-> +	blk_register_region(MKDEV(LOOP_MAJOR, 0), range,
-> +				  THIS_MODULE, loop_probe, NULL, NULL);
-> +
-> +	for (i = 0; i < nr; i++) {
-> +		if (!loop_init_one(i))
-> +			goto err;
-> +	}
-> +
-> +	printk(KERN_INFO "loop: module loaded\n");
-> +	return 0;
-> +err:
-> +	loop_exit();
+On Mon, 21 May 2007 19:24:57 -0400 (EDT) Robert P. J. Day wrote:
 
-This isn't good.  You *can't* fail once a single disk has been registered.
-Anyone could've opened it by now.
+> 
+> $ git show dde33348e53ecab687a9768bf5262f0b8f79b7f2
+> ...
+> --- a/fs/partitions/ldm.c
+> +++ b/fs/partitions/ldm.c
+> ...
+> -                       (unsigned long long)ph->config_size );
+> +                       udunsigned long long)ph->config_size);
+>                         ^^^^^^^^^^
 
-IOW, you need to
-	* register region *after* you are past the point of no return
-	* either not fail on failing loop_init_one() here, or separate
-allocations and actual add_disk().
+Patch has already been posted to lkml:
+
+From:	Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Fix to the fix! - Re: [2.6 PATCH] LDM: Fix for Windows Vista dynamic disks
+Date:	Mon, 21 May 2007 21:13:37 +0100 (BST)
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
