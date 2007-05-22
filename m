@@ -1,106 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765129AbXEVMxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764158AbXEVM5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765129AbXEVMxk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 08:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXEVMxd
+	id S1764158AbXEVM5b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 08:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbXEVM5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 08:53:33 -0400
-Received: from smtp2.wanadoo.co.uk ([193.252.22.157]:5916 "EHLO
-	smtp2.freeserve.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757249AbXEVMxc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 08:53:32 -0400
-X-ME-UUID: 20070522125331445.6CB635800083@mwinf3114.me.freeserve.com
-Message-ID: <4652E7CA.9060909@cjsoftuk.dyndns.org>
-Date: Tue, 22 May 2007 13:53:30 +0100
-From: Chris Malton <chrism@cjsoftuk.dyndns.org>
-Organization: CJSoft UK
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 22 May 2007 08:57:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34610 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756489AbXEVM5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 08:57:22 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 2/2] AF_RXRPC: Make call state names available if
+	CONFIG_PROC_FS=n
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, netdeg@vger.kernel.org, dhowells@redhat.com
+Date: Tue, 22 May 2007 13:56:10 +0100
+Message-ID: <20070522125610.27625.60126.stgit@warthog.cambridge.redhat.com>
+In-Reply-To: <20070522125605.27625.42682.stgit@warthog.cambridge.redhat.com>
+References: <20070522125605.27625.42682.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: NCPFS can't handle extended characters.
-References: <4652E735.7000206@cjsoftuk.dyndns.org>
-In-Reply-To: <4652E735.7000206@cjsoftuk.dyndns.org>
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms050504050604050803090304"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a cryptographically signed message in MIME format.
+Make the call state names array available even if CONFIG_PROC_FS is disabled
+as it's used in other places (such as debugging statements) too.
 
---------------ms050504050604050803090304
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Oops, see inline comments!
+ net/rxrpc/ar-call.c |   19 +++++++++++++++++++
+ net/rxrpc/ar-proc.c |   19 -------------------
+ 2 files changed, 19 insertions(+), 19 deletions(-)
 
-Chris Malton wrote:
-> I found a bug in NCPFS that I haven't the time to fix right now.
-> 
-> Here's the problem: if a file contains an extended (Charcodes 128-255) 
-> character, especially ` (or a even worse, an word converted ' (curled 
-> apostrophe) NCPFS goes butter side down on the directory listing.
-> 
-> It doesn't hand the machine, but it does cause some serious issues on 
-> our network, is there a way to make NCPFS understand extended characters 
-> in file names?
-
-I mean hang, and our network has lots of extended file system characters 
-on it.
-
-> 
-> I would appreciate this being patched.
-> 
-> I'll get round to it post-exams if nobody else does.
-> 
-> Chris
-
-Chris
-
---------------ms050504050604050803090304
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-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
---------------ms050504050604050803090304--
+diff --git a/net/rxrpc/ar-call.c b/net/rxrpc/ar-call.c
+index 4d92d88..3c04b00 100644
+--- a/net/rxrpc/ar-call.c
++++ b/net/rxrpc/ar-call.c
+@@ -15,6 +15,25 @@
+ #include <net/af_rxrpc.h>
+ #include "ar-internal.h"
+ 
++const char *rxrpc_call_states[] = {
++	[RXRPC_CALL_CLIENT_SEND_REQUEST]	= "ClSndReq",
++	[RXRPC_CALL_CLIENT_AWAIT_REPLY]		= "ClAwtRpl",
++	[RXRPC_CALL_CLIENT_RECV_REPLY]		= "ClRcvRpl",
++	[RXRPC_CALL_CLIENT_FINAL_ACK]		= "ClFnlACK",
++	[RXRPC_CALL_SERVER_SECURING]		= "SvSecure",
++	[RXRPC_CALL_SERVER_ACCEPTING]		= "SvAccept",
++	[RXRPC_CALL_SERVER_RECV_REQUEST]	= "SvRcvReq",
++	[RXRPC_CALL_SERVER_ACK_REQUEST]		= "SvAckReq",
++	[RXRPC_CALL_SERVER_SEND_REPLY]		= "SvSndRpl",
++	[RXRPC_CALL_SERVER_AWAIT_ACK]		= "SvAwtACK",
++	[RXRPC_CALL_COMPLETE]			= "Complete",
++	[RXRPC_CALL_SERVER_BUSY]		= "SvBusy  ",
++	[RXRPC_CALL_REMOTELY_ABORTED]		= "RmtAbort",
++	[RXRPC_CALL_LOCALLY_ABORTED]		= "LocAbort",
++	[RXRPC_CALL_NETWORK_ERROR]		= "NetError",
++	[RXRPC_CALL_DEAD]			= "Dead    ",
++};
++
+ struct kmem_cache *rxrpc_call_jar;
+ LIST_HEAD(rxrpc_calls);
+ DEFINE_RWLOCK(rxrpc_call_lock);
+diff --git a/net/rxrpc/ar-proc.c b/net/rxrpc/ar-proc.c
+index 58f4b4e..1c0be0e 100644
+--- a/net/rxrpc/ar-proc.c
++++ b/net/rxrpc/ar-proc.c
+@@ -25,25 +25,6 @@ static const char *rxrpc_conn_states[] = {
+ 	[RXRPC_CONN_NETWORK_ERROR]	= "NetError",
+ };
+ 
+-const char *rxrpc_call_states[] = {
+-	[RXRPC_CALL_CLIENT_SEND_REQUEST]	= "ClSndReq",
+-	[RXRPC_CALL_CLIENT_AWAIT_REPLY]		= "ClAwtRpl",
+-	[RXRPC_CALL_CLIENT_RECV_REPLY]		= "ClRcvRpl",
+-	[RXRPC_CALL_CLIENT_FINAL_ACK]		= "ClFnlACK",
+-	[RXRPC_CALL_SERVER_SECURING]		= "SvSecure",
+-	[RXRPC_CALL_SERVER_ACCEPTING]		= "SvAccept",
+-	[RXRPC_CALL_SERVER_RECV_REQUEST]	= "SvRcvReq",
+-	[RXRPC_CALL_SERVER_ACK_REQUEST]		= "SvAckReq",
+-	[RXRPC_CALL_SERVER_SEND_REPLY]		= "SvSndRpl",
+-	[RXRPC_CALL_SERVER_AWAIT_ACK]		= "SvAwtACK",
+-	[RXRPC_CALL_COMPLETE]			= "Complete",
+-	[RXRPC_CALL_SERVER_BUSY]		= "SvBusy  ",
+-	[RXRPC_CALL_REMOTELY_ABORTED]		= "RmtAbort",
+-	[RXRPC_CALL_LOCALLY_ABORTED]		= "LocAbort",
+-	[RXRPC_CALL_NETWORK_ERROR]		= "NetError",
+-	[RXRPC_CALL_DEAD]			= "Dead    ",
+-};
+-
+ /*
+  * generate a list of extant and dead calls in /proc/net/rxrpc_calls
+  */
 
