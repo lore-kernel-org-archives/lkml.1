@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935533AbXEVWk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935964AbXEVWl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935533AbXEVWk5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761287AbXEVWku
+	id S935964AbXEVWl0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934408AbXEVWlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:40:50 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:54393 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760079AbXEVWkt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:40:49 -0400
-Date: Tue, 22 May 2007 15:38:41 -0700
-From: Greg KH <greg@kroah.com>
-To: Maneesh Soni <maneesh@in.ibm.com>
-Cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Clemens Schwaighofer <cs@tequila.co.jp>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: [PATCH 2/2] sysfs: fix race condition around sd->s_dentry,
-	take#2
-Message-ID: <20070522223841.GB2874@kroah.com>
-References: <20070516082935.fe112ab5.akpm@linux-foundation.org> <464B2605.9040200@gmail.com> <20070516091346.3c76cb46.akpm@linux-foundation.org> <464B4DE4.9060100@gmail.com> <20070517120423.GE17712@kroah.com> <20070517173912.GA14370@in.ibm.com> <464C95AB.3020209@gmail.com> <464C9801.8000606@gmail.com> <464C9BEA.7060309@gmail.com> <20070521050101.GC9214@in.ibm.com>
+	Tue, 22 May 2007 18:41:16 -0400
+Received: from khc.piap.pl ([195.187.100.11]:57593 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761287AbXEVWlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 18:41:15 -0400
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: any value to "NORET_TYPE" macro?
+References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
+	<20070522135927.GA2098@stusta.de>
+	<Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
+	<20070522161951.GC2098@stusta.de> <m3ejl8k6e3.fsf@maximus.localdomain>
+	<Pine.LNX.4.64.0705221616270.18792@localhost.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 23 May 2007 00:41:13 +0200
+In-Reply-To: <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain> (Robert P. J. Day's message of "Tue, 22 May 2007 16:17:48 -0400 (EDT)")
+Message-ID: <m3646klbw6.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521050101.GC9214@in.ibm.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 10:31:01AM +0530, Maneesh Soni wrote:
-> On Thu, May 17, 2007 at 08:16:10PM +0200, Tejun Heo wrote:
-> > Allowing attribute and symlink dentries to be reclaimed means
-> > sd->s_dentry can change dynamically.  However, updates to the field
-> > are unsynchronized leading to race conditions.  This patch adds
-> > sysfs_lock and use it to synchronize updates to sd->s_dentry.
-> > 
-> > Due to the locking around ->d_iput, the check in sysfs_drop_dentry()
-> > is complex.  sysfs_lock only protect sd->s_dentry pointer itself.  The
-> > validity of the dentry is protected by dcache_lock, so whether dentry
-> > is alive or not can only be tested while holding both locks.
-> > 
-> > This is minimal backport of sysfs_drop_dentry() rewrite in devel
-> > branch.
-> > 
-> > DONT APPLY JUST YET
-> 
-> Looks ok to me.. I have tested it it but unfortunately I couldn't
-> recreate the race without the patch also. It would be helpful if
-> people actually seeing the race, provide the test results.
-> 
-> Greg, please merge this one once we have some test results.
+"Robert P. J. Day" <rpjday@mindspring.com> writes:
 
-Can someone just resend it after those test results are in, with the
-proper signed-off-by, so I know it's safe to apply?
+> that may be but, as i suggested earlier, that would get into guessing
+> what those developers were thinking, and i just didn't want to go
+> there.
+>
+> the simple version of the patch is now in andrew's tree, and i'll
+> worry about the harder stuff next time.
 
-thanks,
-
-greg k-h
+Ok, we will see.
+-- 
+Krzysztof Halasa
