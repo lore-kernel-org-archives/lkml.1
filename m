@@ -1,149 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762953AbXEVMsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762230AbXEVMqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762953AbXEVMsK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 08:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbXEVMr5
+	id S1762230AbXEVMqW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 08:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbXEVMqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 08:47:57 -0400
-Received: from mailbigip.dreamhost.com ([208.97.132.5]:52889 "EHLO
-	spaceymail-a3.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755931AbXEVMr4 (ORCPT
+	Tue, 22 May 2007 08:46:12 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:52169 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756617AbXEVMqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 08:47:56 -0400
-From: Anant Nitya <kernel@prachanda.info>
-Organization: Prachanda Hub
-To: linux-kernel@vger.kernel.org
-Subject: Re: bad networking related lag in v2.6.22-rc2
-Date: Tue, 22 May 2007 18:17:33 +0530
-User-Agent: KMail/1.9.6
-Cc: Patrick McHardy <kaber@trash.net>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>
-References: <20070517174533.GA538@elte.hu> <200705221147.56571.kernel@prachanda.hub> <4652B53B.8080500@trash.net>
-In-Reply-To: <4652B53B.8080500@trash.net>
+	Tue, 22 May 2007 08:46:11 -0400
+Message-ID: <4652E385.30803@cs.columbia.edu>
+Date: Tue, 22 May 2007 08:35:17 -0400
+From: Shaya Potter <spotter@cs.columbia.edu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_mZuUGiyErcQIhza"
-Message-Id: <200705221817.34854.kernel@prachanda.hub>
+To: bharata@linux.vnet.ibm.com
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH 10/14] In-kernel file copy between union mounted
+ filesystems
+References: <20070514093722.GB4139@in.ibm.com> <20070514094329.GL4139@in.ibm.com> <Pine.LNX.4.61.0705160951140.9570@yvahk01.tjqt.qr> <20070518111042.GC4869@in.ibm.com> <464DAE73.7000302@cs.columbia.edu> <20070522031327.GA4728@in.ibm.com> <Pine.LNX.4.61.0705220824320.4452@yvahk01.tjqt.qr> <20070522083826.GD4728@in.ibm.com>
+In-Reply-To: <20070522083826.GD4728@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_mZuUGiyErcQIhza
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Bharata B Rao wrote:
+> On Tue, May 22, 2007 at 08:25:16AM +0200, Jan Engelhardt wrote:
+>> On May 22 2007 08:43, Bharata B Rao wrote:
+>>> On Fri, May 18, 2007 at 09:47:31AM -0400, Shaya Potter wrote:
+>>>> Bharata B Rao wrote:
+>>>>
+>>>>> Not really. This is called during copyup of a file residing in a lower
+>>>>> layer. And that is done only for regular files.
+>>>> That is broken.
+>>> But it only breaks the semantics (in other cases we allow writes only to the
+>>> top layer files). So the question is why do we have to copy up the device
+>>> node ? What difference it makes to writing to the device itself ?
+>> Because `chmod 666 blockdevnode` is not the same as writing
+>> to the device itself?
+> 
+> What if that chmod is applied on the lower level device node ? This is what
+> we do currently, even for regular files. Copyup happens only when the file
+> is opened for writing.
+> 
+> Let me rephrase my earlier question:
+> 
+> In case of regular files, when we copyup a file, we are actually preventing
+> any writes to the lower layers (which we have designated as read only).
+> 
+> Applying the same logic to devices, what do we achieve by copying them up ?
+> How does it matter if we write to the device through a node in the upper
+> layer or in the lower layer. Both the writes eventually do the same thing.
 
-On Tuesday 22 May 2007 14:47:47 Patrick McHardy wrote:
-> Anant Nitya wrote:
-> >>Patrick McHardy wrote:
-> >>
-> >>I think I already found the bug, please try if this patch helps.
-> >
-> > Sorry, but this patch is not helping here. I recompiled the kernel with
-> > this patch but same load pattern still make system to crawl.
-> >
-> > Here is the link for script I use to shape traffic.
-> >
-> > http://cybertek.info/taitai/adslbwopt.sh
->
-> Thanks. Please also send the output of "tc -s -d qdisc show dev
-> ppp0" and "tc -d -s class show dev ppp0" at the time the problem
-> occurs.
+What happens if the lower layer is on a read only medium.  But the top 
+layer is RW.  Why can't one change permissions?  In your model, one can't.
 
-Here it goes...
-
-
-Regards
-Ananitya
-
-
--- 
-Out of many thousands, one may endeavor for perfection, and of
-those who have achieved perfection, hardly one knows Me in truth.
-				-- Gita Sutra Of Mysticism
-
---Boundary-00=_mZuUGiyErcQIhza
-Content-Type: text/plain;
-  charset="iso-8859-15";
-  name="tc_qdisc_stats_while_crawl"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="tc_qdisc_stats_while_crawl"
-
-qdisc htb 1: r2q 1 default 50 direct_packets_stat 0 ver 3.17
- Sent 837184 bytes 3603 pkt (dropped 0, overlimits 60528154 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
-qdisc sfq 4210: parent 1:10 limit 50p quantum 1492b flows 50/1024 perturb 10sec 
- Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
-qdisc sfq 4220: parent 1:20 limit 50p quantum 1492b flows 50/1024 perturb 10sec 
- Sent 102922 bytes 2364 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
-qdisc sfq 4230: parent 1:30 limit 64p quantum 1492b flows 64/1024 perturb 10sec 
- Sent 12690 bytes 167 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
-qdisc sfq 4240: parent 1:40 limit 128p quantum 1492b flows 128/1024 perturb 10sec 
- Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
-qdisc sfq 4250: parent 1:50 limit 64p quantum 1492b flows 64/1024 perturb 10sec 
- Sent 714095 bytes 944 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
-qdisc sfq 666: parent 1:666 limit 128p quantum 1492b flows 128/1024 perturb 10sec 
- Sent 7477 bytes 128 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
-
---Boundary-00=_mZuUGiyErcQIhza
-Content-Type: text/x-java;
-  charset="iso-8859-15";
-  name="tc_class_stats_while_crawl"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="tc_class_stats_while_crawl"
-
-class htb 1:10 parent 1:1 leaf 4210: prio 0 quantum 1000 rate 7000bit ceil 57000bit burst 1599b/8 mpu 0b overhead 0b cburst 1599b/8 mpu 0b overhead 0b level 0 
- Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
- lended: 0 borrowed: 0 giants: 0
- tokens: 1785713 ctokens: 219297
-
-class htb 1:1 root rate 64000bit ceil 64000bit burst 1599b/8 mpu 0b overhead 0b cburst 1599b/8 mpu 0b overhead 0b level 7 
- Sent 1533899 bytes 5926 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 74640bit 31pps backlog 0b 0p requeues 0 
- lended: 1113 borrowed: 0 giants: 0
- tokens: -255221 ctokens: -255221
-
-class htb 1:20 parent 1:1 leaf 4220: prio 1 quantum 3125 rate 25000bit ceil 57000bit burst 1599b/8 mpu 0b overhead 0b cburst 1599b/8 mpu 0b overhead 0b level 0 
- Sent 171357 bytes 3931 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 7376bit 21pps backlog 0b 0p requeues 0 
- lended: 3931 borrowed: 0 giants: 0
- tokens: 341211 ctokens: 150341
-
-class htb 1:30 parent 1:1 leaf 4230: prio 4 quantum 1250 rate 10000bit ceil 51000bit burst 1600b/8 mpu 0b overhead 0b cburst 1599b/8 mpu 0b overhead 0b level 0 
- Sent 15578 bytes 205 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 336bit 0pps backlog 0b 0p requeues 0 
- lended: 205 borrowed: 0 giants: 0
- tokens: 1137614 ctokens: 223153
-
-class htb 1:40 parent 1:1 leaf 4240: prio 4 quantum 1000 rate 8000bit ceil 51000bit burst 1600b/8 mpu 0b overhead 0b cburst 1599b/8 mpu 0b overhead 0b level 0 
- Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 0bit 0pps backlog 0b 0p requeues 0 
- lended: 0 borrowed: 0 giants: 0
- tokens: 1562500 ctokens: 245097
-
-class htb 1:50 parent 1:1 leaf 4250: prio 4 quantum 1000 rate 7000bit ceil 60000bit burst 1599b/8 mpu 0b overhead 0b cburst 1599b/8 mpu 0b overhead 0b level 0 
- Sent 1329025 bytes 1455 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 65384bit 6pps backlog 0b 0p requeues 0 
- lended: 342 borrowed: 1113 giants: 0
- tokens: -2865704 ctokens: 1887
-
-class htb 1:666 parent 1:1 leaf 666: prio 7 quantum 1492 rate 3000bit ceil 48000bit burst 1599b/8 mpu 0b overhead 0b cburst 1599b/8 mpu 0b overhead 0b level 0 
- Sent 17939 bytes 335 pkt (dropped 0, overlimits 0 requeues 0) 
- rate 1104bit 2pps backlog 0b 0p requeues 0 
- lended: 335 borrowed: 0 giants: 0
- tokens: 3937910 ctokens: 246505
+What happens if one wants to share a lower layer read-only (I'm doing 
+this with my research into uses of union file systems), one doesn't want 
+permission change in one use of the lower layer to affect any of the 
+other uses.
 
 
---Boundary-00=_mZuUGiyErcQIhza--
+> What I am trying to understand is, if the need for copyup is purely a matter
+> of conforming to semantics (of not allowing writes to the lower layers in
+> case of union mount) or do we achieve anything else by doing a device
+> copyup ? Are there any cases where copying up of device nodes are absolutely
+> essential for sane behaviour ?
+
+If the lower layer is relatively immutable (ignoring atime) it can be 
+shared in a RO manner by multiple unions.  If it's not, it can't be. 
+Also, copyup is needed in general as the RO union layer can be on a RO 
+file system but the union will not be RO.
