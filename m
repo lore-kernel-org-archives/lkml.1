@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935364AbXEVTqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbXEVTqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935364AbXEVTqH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 15:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760408AbXEVTp4
+	id S1756407AbXEVTqZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 15:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759998AbXEVTqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 15:45:56 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:59157 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760004AbXEVTpz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 15:45:55 -0400
-Date: Tue, 22 May 2007 21:45:51 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: any value to "NORET_TYPE" macro?
-In-Reply-To: <m3tzu4kjg8.fsf@maximus.localdomain>
-Message-ID: <Pine.LNX.4.64.0705222145350.19474@anakin>
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
- <alpine.DEB.0.99.0705220950160.3308@sigma.j-a-k-j.com>
- <Pine.LNX.4.64.0705220959310.14408@localhost.localdomain>
- <a781481a0705220709s40b80208h47f1f2f7c00a684d@mail.gmail.com>
- <a781481a0705220716l799ee2efm268deefc40993875@mail.gmail.com>
- <m3tzu4kjg8.fsf@maximus.localdomain>
+	Tue, 22 May 2007 15:46:13 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:39878 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935400AbXEVTqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 15:46:11 -0400
+Date: Tue, 22 May 2007 21:44:32 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Nitin Gupta <nitingupta910@gmail.com>
+cc: Andrey Panin <pazke@donpac.ru>, linux-kernel@vger.kernel.org,
+       Richard Purdie <richard@openedhand.com>
+Subject: Re: [RFC] LZO1X de/compression support
+In-Reply-To: <4cefeab80705220208w2200b2f1x1d7a8c7e0c01dfb9@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705222143070.4452@yvahk01.tjqt.qr>
+References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com> 
+ <20070518111107.GA27003@pazke.donpac.ru> <4cefeab80705220208w2200b2f1x1d7a8c7e0c01dfb9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007, Krzysztof Halasa wrote:
-> "Satyam Sharma" <satyam.sharma@gmail.com> writes:
-> 
-> > But of course, John is *bang right* that if /**/ makes gcc do (or not do)
-> > _anything at all_ (be it crying out a warning), then someone surely
-> > deserves to get his head bashed in ... :-)
-> 
-> I think it's impossible, comments are removed by preprocessor.
 
-Maybe it's used by some lint-alike tools?
+On May 22 2007 14:38, Nitin Gupta wrote:
+> On 5/18/07, Andrey Panin <pazke@donpac.ru> wrote:
+>> On 138, 05 18, 2007 at 03:28:31PM +0530, Nitin Gupta wrote:
+>> > +     register const unsigned char *ip;
+>> 
+>> register keyword is meaningless for today's compiler.
+>
+> But can we assume that gcc is being used? What if we use compiler for
+> which it does matter (can't give example for this...)?
 
-Gr{oetje,eeting}s,
+How dumb must a compiler be? Although I cannot give an example either,
+the register keyword MAY 'clog up' a register, making it harder for
+cc to optimally use the whole register set. Imagine we had even less
+regs than the x86(_32) already does.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Jan
+-- 
