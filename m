@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965558AbXEVQhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965920AbXEVQjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965558AbXEVQhe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 12:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbXEVQh1
+	id S965920AbXEVQjg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 12:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbXEVQj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 12:37:27 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:46016 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755001AbXEVQh0 (ORCPT
+	Tue, 22 May 2007 12:39:29 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:19026 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757623AbXEVQj2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 12:37:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rmArmDBzsquS7ifQHn1Qvd4FMzyX7GuusgIx0wTPpkRWxPS4N7B6jv1Juf2P4yvtic/viNdOx5YJmXyJTRxkECE2E9t9RS424Wgy0ZZe5by2AyeSlzWEZ1StTj+P4E45lCPvl5LwUuKKwjcDYVSrqQZWW+ab5U0iUPCt0lFVqO0=
-Message-ID: <8aa016e10705220937t6cfbacbj4fe8fc97d135924@mail.gmail.com>
-Date: Tue, 22 May 2007 22:07:24 +0530
-From: "Dhaval Giani" <dhaval.giani@gmail.com>
-To: paapaa125@hotmail.com
-Subject: Re: Enabling power states for Core 2 Duo
-Cc: linux-kernel@vger.kernel.org, hancockr@shaw.ca
-In-Reply-To: <292f39920705220935h664175a9wbcf1713f7f912d05@mail.gmail.com>
+	Tue, 22 May 2007 12:39:28 -0400
+Date: Tue, 22 May 2007 12:35:11 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Message-ID: <20070522163511.GB6138@think.oraclecorp.com>
+References: <20070516144205.GV26766@think.oraclecorp.com> <464B2AC2.10206@redhat.com> <20070516171156.GY26766@think.oraclecorp.com> <20070516112515.b6f247b2.akpm@linux-foundation.org> <20070516191339.GA26766@think.oraclecorp.com> <20070516123342.714a11d8.akpm@linux-foundation.org> <20070516195359.GE26766@think.oraclecorp.com> <20070516130413.1fd391bf.akpm@linux-foundation.org> <20070516201414.GF26766@think.oraclecorp.com> <20070516133726.0c68a65f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4652FD77.6090709@shaw.ca>
-	 <BAY20-F21042242E1DE82AF8A4EE7F9360@phx.gbl>
-	 <292f39920705220935h664175a9wbcf1713f7f912d05@mail.gmail.com>
+In-Reply-To: <20070516133726.0c68a65f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>I'm probably missing something crucial here. So how do I enable power
-> >>states? I'm using 64-bit Gentoo. My mobo is Asus P5B Deluxe. Otherwise
-> >>ACPI works fine.
-> >
-> >The BIOS has to expose this support in ACPI, if it doesn't (which is often
-> >the case on desktop boards) you won't get any C-state support (well, except
-> >for C1 which is just the normal halt state).
->
-> But unless I'm not mistaken, I don't have even the C1 state available. I
-> seem to have only C0 according to "active state". "Active state is the sleep
-> state currently used when the system is idle", isn't it? Here is the source:
->
-> http://acpi.sourceforge.net/documentation/processor.html
->
-> But are you saying that with most desktop mobos one doesn't usually have the
-> different power states available at all? So basically the only means to
-> conserve power is to scale the frequency?
->
+On Wed, May 16, 2007 at 01:37:26PM -0700, Andrew Morton wrote:
+> On Wed, 16 May 2007 16:14:14 -0400
+> Chris Mason <chris.mason@oracle.com> wrote:
+> 
+> > On Wed, May 16, 2007 at 01:04:13PM -0700, Andrew Morton wrote:
+> > > > The good news is that if you let it run long enough, the times
+> > > > stabilize.  The bad news is:
+> > > > 
+> > > > create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
+> > > > create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
+> > > > create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
+> > > > create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
+> > > 
+> > > well hang on.  Doesn't this just mean that the first few runs were writing
+> > > into pagecache and the later ones were blocking due to dirty-memory limits?
+> > > 
+> > > Or do you have a sync in there?
+> > > 
+> > There's no sync,  but if you watch vmstat you can clearly see the log
+> > flushes, even when the overall create times are 11MB/s.  vmstat goes
+> > 30MB/s -> 4MB/s or less, then back up to 30MB/s.
+> 
+> How do you know that it is a log flush rather than, say, pdflush
+> hitting the blockdev inode and doing a big seeky write?
 
-Please update your BIOS and try.
+Ok, I did some more work to split out the two cases (block device inode
+writeback and log flushing).
 
-Thanks and regards
-Dhaval
+I patched jbd's log_do_checkpoint to put all the blocks it wanted to
+write in a radix tree, then send them all down in order at the end.
+The elevator should be helping here, but jbd is sending down 2,000
+to 3,000 blocks during the checkpoint and upping nr_requests alone
+didn't seem to be doing the trick.
+
+Unpatched ext3 would break down into seeks after 8 kernel trees are
+created (222MB each).  With the radix sorting, the first 15 kernel trees
+are created quickly, and then we slow down.
+
+So I waited until around the 25th kernel tree was created, hit ctrl-c
+and ran sync.  vmstat showed writes going at 2MB/s, and sysrq-w showed
+sync was running the block device inode for most of the 2MB/s period.
+
+It looks as though the dirty pages on the block device inode are spread
+out far enough that we're not getting good streaming writes.  Mark
+Fasheh ran on a bigger raid array, where performance was consistently
+good for the whole run.  I'm assuming the larger write cache on the
+array was able to group the data writes with the metadata on disk, while
+my poor little sata drive wasn't.  Dave Chinner hinted that xfs is
+probably suffering a similar problem, which is usually fixed by backing
+the FS with stripes and big raid.
+
+My vaporware FS is able to maintain speed through the run because the
+allocator tries to keep data and metadata grouped into 256mb chunks,
+and so they don't end up mingling on disk until things get full.
+
+At any rate, it may be worth putzing with the writeback routines to try
+and find dirty pages close by in the block dev inode when doing data
+writeback.  My guess is that ext3 should be going 1.5x to 2x faster for
+this particular run, but that's a huge amount of complexity added so I'm
+not convinced it is a great idea.
+
+-chris
