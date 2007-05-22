@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934446AbXEVOu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934576AbXEVOv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934446AbXEVOu1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 10:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbXEVOuU
+	id S934576AbXEVOv1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 10:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759494AbXEVOvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 10:50:20 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50160 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754958AbXEVOuT (ORCPT
+	Tue, 22 May 2007 10:51:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:57368 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759449AbXEVOvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 10:50:19 -0400
-Date: Tue, 22 May 2007 15:54:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Jeff Garzik" <jeff@garzik.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Message-ID: <20070522155439.20bf509f@the-village.bc.nu>
-In-Reply-To: <9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com>
-References: <200705171423.46748.jesse.barnes@intel.com>
-	<465228E2.1030405@garzik.org>
-	<9e4733910705211726q38be6843ndac49f8adc25aad0@mail.gmail.com>
-	<200705211856.56228.jbarnes@virtuousgeek.org>
-	<9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 22 May 2007 10:51:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=a8OyKx89/mBKbEHjsRhtcYA0HQ719HUhHFknVNcVqN4MpvPBQbPG2Zi48vlXF3dq+pObM7g4x8XPWpghDkj2SCxwjvF81RZ4emf1f0wDFjLmbnKfj5OHLWsIal4yKQoXpLpQ0DzCbfEaUplpODODtmNUIDRnxxlDRz6xXcV99xU=
+Message-ID: <2c0942db0705220751m202c4848j2c4a34793337713a@mail.gmail.com>
+Date: Tue, 22 May 2007 07:51:10 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [1/5] 2.6.22-rc2: known regressions
+Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Adrian McMenamin" <adrian@newgolddream.dyndns.info>,
+       linux-acpi@vger.kernel.org, "Len Brown" <lenb@kernel.org>
+In-Reply-To: <200705221401.41272.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <464F74BB.9070402@googlemail.com>
+	 <2c0942db0705211729r185d7d77r2750d82f4a3b3e9c@mail.gmail.com>
+	 <200705221401.41272.rjw@sisk.pl>
+X-Google-Sender-Auth: 8b8ec9cffce333c2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> you display text in graphics mode entirely in kernel context. The
-> driver should also attempt to stop the GPU to try and make sure it
-> doesn't erase the OOPS display.
+On 5/22/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, 22 May 2007 02:29, Ray Lee wrote:
+> > Hey there,
+> >
+> > On 5/19/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> > > Here is a list of some known regressions in 2.6.22-rc2.
+> > >
+> > > Feel free to add new regressions/remove fixed etc.
+> > > http://kernelnewbies.org/known_regressions
+> > >
+> > > Subject    : nx6125 has lost fan control
+> > > References : http://lkml.org/lkml/2007/5/16/249
+> > > Submitter  : Ray Lee <ray-lk@madrabbit.org>
+> > > Status     : Unknown
+> >
+> > I'm withdrawing this one. At boot, it wasn't controlling the fans, but
+> > after a suspend-resume it started up fine. My subsequent boots have
+> > also been okay, so I'm at a loss to explain what I saw.
+> >
+> > Regardless, given that it's hard to reproduce, I have no evidence that
+> > it's a regression, it could just be something that's really rare.
+>
+> Such things sometimes happen on nx6325 too.  Apparently, after a reboot
+> the BIOS (or rather the platform firmware) sometimes gets confused and behaves
+> like this.
 
-If we know how yes. Probably the X server needs to provide us with a
-simple list of operations to perform or failing that write 128K of null
-to the display then print the characters (the 128K should ensure any
-running FIFO for commands is stuffed and we get back to the framebuffer)
+Okay, so I'm not crazy; good to know :-). It's not a big deal as
+suspend to ram and back will clear it out.
 
-> Another simple thing that needs to be built is a mechanism to run the
-> VBIOS in x86 mode when the driver is first loaded. This can be
+Thanks for the insight,
 
-We don't want to touch the video bios for most cards, its not as good as
-the X mode switcher code, nor for that matter does it work in a lot of
-cases as they use IRQ and DMA functions sometimes.
-
-Alan
+Ray
