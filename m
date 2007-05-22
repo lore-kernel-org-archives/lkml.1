@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763281AbXEVKOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933082AbXEVKOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763281AbXEVKOk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 06:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbXEVKOb
+	id S933082AbXEVKOz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 06:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765057AbXEVKOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 06:14:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52564
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757015AbXEVKOa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 06:14:30 -0400
-Date: Tue, 22 May 2007 03:14:32 -0700 (PDT)
-Message-Id: <20070522.031432.08079709.davem@davemloft.net>
-To: yoshfuji@linux-ipv6.org
-Cc: dada1@cosmosbay.com, webmaster@poweraudio.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: TCP_MD5 and Intel e1000
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070522.183647.75785266.yoshfuji@linux-ipv6.org>
-References: <C2786969.24B46%webmaster@poweraudio.de>
-	<20070522105738.f03cb83b.dada1@cosmosbay.com>
-	<20070522.183647.75785266.yoshfuji@linux-ipv6.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 22 May 2007 06:14:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52177 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762776AbXEVKOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 06:14:40 -0400
+Date: Tue, 22 May 2007 12:14:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pranith Kumar D <pranith-kumar_d@mentor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CFS: sched-design-CFS.txt - ambiguity about leftmost and some formatting
+Message-ID: <20070522101437.GA32528@elte.hu>
+References: <465292B0.8040604@mentorg.com> <20070522083051.GA9699@elte.hu> <4652B7B6.4080002@mentorg.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4652B7B6.4080002@mentorg.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: YOSHIFUJI Hideaki / 吉藤英明 <yoshfuji@linux-ipv6.org>
-Date: Tue, 22 May 2007 18:36:47 +0900 (JST)
 
-> In article <20070522105738.f03cb83b.dada1@cosmosbay.com> (at Tue, 22 May 2007 10:57:38 +0200), Eric Dumazet <dada1@cosmosbay.com> says:
-> 
-> > > I have tried to set up quagga with tcp-md5 support from kernel. All seems ok
-> > > with a intel e100 NIC, but as i testetd with a intel e1000 NIC the tcp
-> > > packets have an invalid md5 digest.
-> > > If i run tcpdump on the mashine the packets are generated, it shows on the
-> > > outgoing interface invalid md5 digests.
-> > > Are there known issues about tcp-md5 and e1000 NICs?
-> :
-> > You could try "ethtool -K tx off", and/or other ethtool -K settings
-> 
-> Disabling offloading should help; currently tcp-md5 stack
-> blindly copy md5-signature from the first segment
-> which is not appropriate for rest of segments.
+* Pranith Kumar D <pranith-kumar_d@mentor.com> wrote:
 
-It is clear we should disable TSO for sockets making use of TCP-MD5.
+> The document is very clear and explains the basic mechanism of CFS 
+> very well. But, i find that the descriptions are a bit up and down. I 
+> mean, u use leftmost and rightmost before mentioning that CFS uses 
+> rbtree.( which comes much later).
+> 
+> In the following patch I mentioned the rbtree, the first time you 
+> talked about 'leftmost'. Also i did some basic formatting. Hope its 
+> not a pain. :)
+
+thanks - but the patch is whitespace damaged and wont apply:
+
+patch: **** malformed patch at line 10: 80% of CFS's design can be 
+
+that's because the leading space got stripped by your mailer.
+
+	Ingo
