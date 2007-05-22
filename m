@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbXEVSyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966755AbXEVSzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbXEVSyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 14:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760438AbXEVSyB
+	id S966755AbXEVSzd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 14:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760628AbXEVSzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 14:54:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54743 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760112AbXEVSyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 14:54:00 -0400
-Date: Tue, 22 May 2007 14:53:53 -0400
-From: Dave Jones <davej@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [stable] Wanted: Allow adding new device IDs during the -stable cycle
-Message-ID: <20070522185353.GE12157@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Chris Wright <chrisw@sous-sol.org>
-References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522184733.GA9357@kroah.com>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 22 May 2007 14:55:25 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51289 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758895AbXEVSzY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 14:55:24 -0400
+Date: Tue, 22 May 2007 11:55:23 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Fenghua Yu <fenghua.yu@intel.com>
+cc: akpm@linux-foundation.org, suresh.b.siddha@intel.com, kiran@scalex86.org,
+       rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Use the new percpu interface for shared data --
+ version 3
+In-Reply-To: <20070522182022.GA27317@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0705221154510.29456@schroedinger.engr.sgi.com>
+References: <1162040333.1178030136225.JavaMail.was6@nci57003d.marriott.com>
+ <20070522182022.GA27317@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 11:47:33AM -0700, Greg Kroah-Hartman wrote:
- > On Tue, May 22, 2007 at 02:14:44PM -0400, Chuck Ebbert wrote:
- > > I'd like to propose we allow adding new device IDs as part
- > > of the -stable process, but only under certain conditions:
- > 
- > Who would be the primary benifactor of this?
- > 
- > The very large majority of users out there use a distro kernel, and they
- > provide the ids whenever possible as patches to their kernels, _or_ as a
- > config option at startup that adds the ids to the drivers through sysfs.
+On Tue, 22 May 2007, Fenghua Yu wrote:
 
-It does mean however that there's lots of duplicated work between
-distros as everyone adds these patches anyway.
+> -DEFINE_PER_CPU(struct tss_struct, init_tss) ____cacheline_internodealigned_in_smp = INIT_TSS;
+> +DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss) = INIT_TSS;
 
- > What's wrong with the current sysfs way of adding new device ids without
- > touching the kernel?
+Good work but could we call this something shorter?
 
-sure, that works in some cases, but for others (quirks etc) it obviously doesn't.
+Like
 
- > > http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=823777181b4c0200923dcb026efa5b37f55c0ecf
- > > 
- > > Adds ATI sb700 quirk, using exactly the same one as sb600.
- > 
- > That's a quirk addition, not a new device id following the above
- > mentioned rules you set out :)
+DEFINE_CPU_SHARED(...)
 
-Right, but adding the quirk alone would be pointless with the ID.
-This is a case where 'use sysfs' doesn't work.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
