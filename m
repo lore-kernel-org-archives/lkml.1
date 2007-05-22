@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763971AbXEVBHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763338AbXEVBIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763971AbXEVBHm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 21:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760995AbXEVBHa
+	id S1763338AbXEVBIj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 21:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbXEVBIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 21:07:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41909 "EHLO mx1.redhat.com"
+	Mon, 21 May 2007 21:08:30 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33103 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760135AbXEVBH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 21:07:28 -0400
-Date: Mon, 21 May 2007 18:07:52 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Patch] Off by one in floppy.c
-Message-Id: <20070521180752.c0afc106.zaitcev@redhat.com>
-In-Reply-To: <20070521225755.GC16194@alice>
-References: <20070521225755.GC16194@alice>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+	id S1755872AbXEVBI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 21:08:29 -0400
+Date: Tue, 22 May 2007 03:08:23 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Matt Mackall <mpm@selenic.com>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070522010823.GC27743@wotan.suse.de>
+References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com> <20070520092552.GA7318@wotan.suse.de> <20070521080813.GQ31925@holomorphy.com> <20070521092742.GA19642@wotan.suse.de> <20070521224316.GC11166@waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521224316.GC11166@waste.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 00:57:56 +0200, Eric Sesterhenn / Snakebyte <snakebyte@gmx.de> wrote:
+On Mon, May 21, 2007 at 05:43:16PM -0500, Matt Mackall wrote:
+> On Mon, May 21, 2007 at 11:27:42AM +0200, Nick Piggin wrote:
+> > 
+> > ... yeah, something like that would bypass 
+> 
+> As long as we're throwing out crazy unpopular ideas, try this one:
+> 
+> Divide struct page in two such that all the most commonly used
+> elements are in one piece that's nicely sized and the rest are in
+> another. Have two parallel arrays containing these pieces and accessor
+> functions around the unpopular bits.
+> 
+> Whether a sensible divide between popular and unpopular bits isn't
+> clear to me. But hey, I said it was crazy.
 
-> http://marc.info/?l=linux-kernel&m=115144559823592&w=2
+That would be unpopular with pagecache, because that uses pretty well
+all fields.
 
-Shows how much we care about floppy... It's going to be a year old soon.
-
-> +++ linux-2.6/drivers/block/floppy.c	2007-05-22 00:54:18.000000000 +0200
-> @@ -670,7 +670,7 @@ static void __reschedule_timeout(int dri
->  	if (drive == current_reqD)
->  		drive = current_drive;
->  	del_timer(&fd_timeout);
-> -	if (drive < 0 || drive > N_DRIVE) {
-> +	if (drive < 0 || drive >= N_DRIVE) {
-
-You need to find someone willing to take this. Maybe Andrew.
-
--- Pete
