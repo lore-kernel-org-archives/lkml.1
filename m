@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758889AbXEVW4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbXEVW44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758889AbXEVW4S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbXEVW4J
+	id S1759784AbXEVW44 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbXEVW4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:56:09 -0400
-Received: from web90313.mail.mud.yahoo.com ([216.252.100.150]:21514 "HELO
-	web90313.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755837AbXEVW4I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:56:08 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 18:56:08 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=eaIqeBfO6p6wCyZhAqqXxORfGtwEr5dLNdNx6btzhYv+Y6r5ebeO0BFvXHYlK+uWi/I4Q6LnZDI38iabCQ3eG1QTYjMpksqTKng6Lf/jpyENuewM7QZezqsXkJl9t7EkpnVwSWPIIkHkawU1RTxMcaBUUA1NARHqe58fZYr3EU4=;
-X-YMail-OSG: ueOMrTAVM1kV_zqGVvNpOAuJo_alwnBKgkSNdtslB3lO1uxKQY7pVXPktsEFSrFftg--
-Date: Tue, 22 May 2007 15:49:25 -0700 (PDT)
-From: Y Khan <ykhanportland@yahoo.com>
-Subject: class_device_create() and the mode of the device file in /dev.
-To: linux-kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <288328.633.qm@web90313.mail.mud.yahoo.com>
+	Tue, 22 May 2007 18:56:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38515 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756166AbXEVW4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 18:56:47 -0400
+Date: Tue, 22 May 2007 18:56:40 -0400
+From: Dave Jones <davej@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [stable] Wanted: Allow adding new device IDs during the -stable cycle
+Message-ID: <20070522225640.GG22628@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>,
+	Jeff Garzik <jeff@garzik.org>, Chuck Ebbert <cebbert@redhat.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Chris Wright <chrisw@sous-sol.org>
+References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com> <46533EA8.7020602@garzik.org> <20070522193538.GA885@kroah.com> <20070522195135.GG12157@redhat.com> <20070522221718.GC2302@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070522221718.GC2302@kroah.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Tue, May 22, 2007 at 03:17:18PM -0700, Greg Kroah-Hartman wrote:
 
-I am porting a driver from 2.4 to 2.6. I have replaced
-the call devfs_register() with class_create() and
-class_device_create(). Now, udev is automatically
-creating the device file in /dev.
+ > >  > >  I haven't found a single distro that (a) makes it trivial to add PCI IDs at 
+ > >  > >  install time, and then (b) ensures those PCI IDs remain persistent for each 
+ > >  > >  boot.  We are not at all to the "just works" stage yet.
+ > >  > 
+ > >  > Well, SuSE handles this just fine, but I do notice that RHEL 5 disables
+ > >  > the new_id stuff entirely, so I can see why you might get this
+ > >  > impression :)
+ > > 
+ > > That's news to me.  I didn't even realise it was possible to disable this.
+ > > Pointer?
+ > 
+ > Jon Masters told me this last week at FreedomHEC, so I don't have a
+ > pointer to the patch that disables it, sorry.
 
-The device file being created has a default mode of
-0600. Is it possible to override this default mode
-from inside the kernel. I do not want to do anything
-in the configuration file for udev.
+Either there's some miscommunication, or bonghits.
 
-I could modify the attribute of the class and the
-class device but I do not think that they will change
-the default permissions for the /dev device file.
+(18:54:00:davej@gelk:kernel-2.6.18)$ kdiff vanilla/drivers/pci/pci-driver.c linux-2.6.18.noarch/drivers/pci/pci-driver.c 
+(18:54:10:davej@gelk:kernel-2.6.18)$ 
 
-devfs_register() used to take a mode argument.
+And as there's no CONFIG option other than CONFIG_HOTPLUG (which we obviously enable)
+I don't see any reason why this wouldn't be enabled in RHEL5.
+(And I think mdomsch would have probably had a fit if he found out we were
+ disabling it, but that's another story ;-)
 
-So, is there anyway of achieving this in 2.6.
+ > > Theres more to this than just PCI IDs though.
+ > > ac97 ID updates, usb id updates, etc, etc.
+ > 
+ > USB ids also can be added through sysfs :)
 
--Y
+oh cool, I had missed that.
 
+	Dave
 
-
-
-       
-____________________________________________________________________________________Building a website is a piece of cake. Yahoo! Small Business gives you all the tools to get online.
-http://smallbusiness.yahoo.com/webhosting 
+-- 
+http://www.codemonkey.org.uk
