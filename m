@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbXEVWVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935306AbXEVWVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbXEVWVA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbXEVWUW
+	id S935306AbXEVWVb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933775AbXEVWVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:20:22 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:49006 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759500AbXEVWUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:20:19 -0400
-Date: Tue, 22 May 2007 15:19:57 -0700
-From: Greg KH <greg@kroah.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] Wanted: Allow adding new device IDs during the
-	-stable cycle
-Message-ID: <20070522221957.GD2302@kroah.com>
-References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com> <46533EA8.7020602@garzik.org> <20070522193538.GA885@kroah.com> <20070522220044.GB3429@sequoia.sous-sol.org>
+	Tue, 22 May 2007 18:21:21 -0400
+Received: from mail.tmr.com ([64.65.253.246]:43953 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764428AbXEVWVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 18:21:19 -0400
+Message-ID: <46536D52.9010707@tmr.com>
+Date: Tue, 22 May 2007 18:23:14 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522220044.GB3429@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Newsgroups: gmane.linux.kernel
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Scheduling tests on IPC methods, fc6, sd0.48, cfs12
+References: <464CE4AE.3030908@tmr.com> <20070521073016.GB3915@elte.hu>
+In-Reply-To: <20070521073016.GB3915@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 03:00:44PM -0700, Chris Wright wrote:
-> * Greg KH (greg@kroah.com) wrote:
-> > On Tue, May 22, 2007 at 03:04:08PM -0400, Jeff Garzik wrote:
-> > >  Really, it is just silly to think that one-line PCI IDs patches will cause 
-> > >  any harm at all, and it should be self-evident that there is clear potential 
-> > >  to HELP Linux users.  That's why we're all here, right?
-> > 
-> > So, if there is an overwhelming majority of people that strongly feel
-> > that this is a good thing, fine, we can try it out.
+Ingo Molnar wrote:
+> * Bill Davidsen <davidsen@tmr.com> wrote:
 > 
-> Yes, if it will serve -stable users better, we can give it a trial run
-> to see how it goes.
+>> I have posted the results of my initial testing, measuring IPC rates 
+>> using various schedulers under no load, limited nice load, and heavy 
+>> load at nice 0.
+>>
+>> http://www.tmr.com/~davidsen/ctxbench_testing.html
+> 
+> nice! For this to become really representative though i'd like to ask 
+> for a real workload function to be used after the task gets the 
+> lock/message. The reason is that there is an inherent balancing conflict 
+> in this area: should the scheduler 'spread' tasks to other CPUs or not? 
+> In general, for all workloads that matter, the answer is almost always: 
+> 'yes, it should'.
+> 
+Added to the short to-do list. Note that this was originally simply a 
+check to see which IPC works best (or at all) in an o/s. It has been 
+useful for some other things, and an option for work will be forthcoming.
 
-Ok, let's try it.  Send on the "only add a new device id" patches and
-let's see how it works out.
+> But in your ctxbench results the work a task performs after doing IPC is 
+> not reflected (the benchmark goes about to do the next IPC - hence 
+> penalizing scheduling strategies that move tasks to other CPUs) - hence 
+> the bonus of a scheduler properly spreading out tasks is not measured 
+> fairly. A real-life IPC workload is rarely just about messaging around 
+> (a single task could do that itself) - some real workload function is 
+> used. You can see this effect yourself: do a "taskset -p 01 $$" before 
+> running ctxbench and you'll see the numbers improve significantly on all 
+> of the schedulers.
+> 
+> As a solution i'd suggest to add a workload function with a 100 or 200 
+> usecs (or larger) cost (as a fixed-length loop or something like that) 
+> so that the 'spreading' effect/benefit gets measured fairly too.
+> 
+Can do.
 
-But we still do reserve the right to stop doing this, if it turns out
-that it causes more problems.  Rembember, -stable should not be adding
-new features, and I _really_ want to keep it that way, as it's the only
-way that Chris and I can stay relativly sane...
-
-thanks,
-
-greg k-h
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
