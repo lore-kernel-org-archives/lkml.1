@@ -1,95 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764678AbXEVB5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764099AbXEVB7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764678AbXEVB5d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 21:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758278AbXEVB5I
+	id S1764099AbXEVB7t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 21:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758344AbXEVB7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 21:57:08 -0400
-Received: from mail.suse.de ([195.135.220.2]:35289 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757969AbXEVB5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 21:57:05 -0400
-Date: Tue, 22 May 2007 03:57:03 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070522015703.GE27743@wotan.suse.de>
-References: <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com> <20070520092552.GA7318@wotan.suse.de> <20070521080813.GQ31925@holomorphy.com> <20070521092742.GA19642@wotan.suse.de> <20070521224316.GC11166@waste.org> <20070522013951.GP19966@holomorphy.com>
-Mime-Version: 1.0
+	Mon, 21 May 2007 21:59:42 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:55181 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758288AbXEVB7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 21:59:41 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200705220159.l4M1xTmN015593@turbo.physics.adelaide.edu.au>
+Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
+To: alan@lxorguk.ukuu.org.uk (Alan Cox)
+Date: Tue, 22 May 2007 11:29:29 +0930 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe), jesse.barnes@intel.com,
+       hancockr@shaw.ca (Robert Hancock), linux-kernel@vger.kernel.org
+In-Reply-To: <20070522013901.70bf7be8@the-village.bc.nu> from "Alan Cox" at May 22, 2007 01:39:01 AM
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522013951.GP19966@holomorphy.com>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 06:39:51PM -0700, William Lee Irwin III wrote:
-> On Mon, May 21, 2007 at 11:27:42AM +0200, Nick Piggin wrote:
-> >> ... yeah, something like that would bypass 
+> > Are we talking CONFIG_PATA_MARVELL here?  If so then the kernel I just
+> > booted has this set to "y" (ie: built-in) and yet the drive is still not
+> > detected.  Is there a newer version of this driver somewhere?  The kernel
+> > was 2.6.22-rc2.
 > 
-> On Mon, May 21, 2007 at 05:43:16PM -0500, Matt Mackall wrote:
-> > As long as we're throwing out crazy unpopular ideas, try this one:
-> > Divide struct page in two such that all the most commonly used
-> > elements are in one piece that's nicely sized and the rest are in
-> > another. Have two parallel arrays containing these pieces and accessor
-> > functions around the unpopular bits.
-> > Whether a sensible divide between popular and unpopular bits isn't
-> > clear to me. But hey, I said it was crazy.
-> 
-> I have a crazier and even less popular idea. Eliminate struct page
-> entirely as an accounting structure (and, of course, mem_map with it).
-> Filesystems can keep the per-page metadata they need in their own
-> accounting structures, slab mutatis mutandis, etc. The brilliant bit
-> here is that devolving the accounting structures this way allows the
-> fs and/or subsystem to arrange for strong cache locality, file offset
-> adjacency to imply memory adjacency of the page accounting fields,
-> etc., where grabbing random structures out of some array is a real
-> cache thrasher.
-> 
-> The page allocation and page replacement algorithms would have to be
-> adjusted, and things would have to allocate their own refcounts,
-> supposing they want/need refcounts, but it's not so far out. Refer to
-> filesystem pages by <mapping, index> pairs, refer to slab pages by
+> Should be current. Its known to work fine for that chip so you might need
+> to do some debugging and provide more detail.
 
-BTW. I think the filesystem APIs (at least the VM-side ones) should be
-doing this anyway (not even index, but offset). Passing things like
-lists of pages around is just horrible. See my write_begin/write_end
-and perform_write aops for (what I think is) a step in the right
-direction.
+I got someone to go into the BIOS setup (I am debugging this remotely) and
+check the IDE/ATA related options.  The two relevant options were set
+as follows:
 
+  ATA/IDE Mode: <Native>    [ Choices: Legacy, Native ]
+  Configure SATA as: <IDE>  [ Choices: IDE, RAID, AHCI ]
 
-> address (virtual and physical are trivially inter-convertible), mock
-> up something akin to what filesystems do for anonymous pages, etc.
-> 
-> The real objection everyone's going to have is that driver writers
-> will stain their shorts when faced with the rules for handling such
-> things. The thing is, I'm not entirely sure who these driver writers
-> that would have such trouble are, since the driver writers I know
-> personally are sophisticates rather than walking disaster areas as such
-> would imply. I suppose they may not be representative of the whole.
+I had them change the "Configure SATA as" setting from "IDE" to "AHCI"
+and then reboot into 2.6.22-rc2.  At this point things appear to be much
+happier:
 
-That's not the objection I would have. I would say that firstly, I
-don't think the mem_map overhead is very significant (at any rate,
-an allocated-on-demand metadata is not going to be any smaller if
-you fill up on pagecache...). Secondly, I think there is merit to
-having the same page metadata used by the major subsystems, because
-it helps for locality of reference.
+  ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+  Probing IDE interface ide0...
+  Probing IDE interface ide1...
+  :
+  ahci 0000:00:1f.2: version 2.1
+  ACPI: PCI Interrupt 0000:00:1f.2[A] -> GSI 19 (level, low) -> IRQ 19
+  ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 6 ports 3 Gbps 0x3f impl SATA mode
+  ahci 0000:00:1f.2: flags: 64bit ncq led clo pio slum part 
+  PCI: Setting latency timer of device 0000:00:1f.2 to 64
+  scsi0 : ahci
+  :
+  scsi5 : ahci
+  ata1: SATA max UDMA/133 cmd 0xf882a100 ctl 0x00000000 bmdma 0x00000000 irq 0
+  :
+  ata6: SATA max UDMA/133 cmd 0xf882a380 ctl 0x00000000 bmdma 0x00000000 irq 0
+  ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  ata1.00: ata_hpa_resize 1: sectors = 488397168, hpa_sectors = 488397168
+  ata1.00: ATA-7: WDC WD2500AAJS-00RYA0, 12.01B01, max UDMA/133
+  ata1.00: 488397168 sectors, multi 16: LBA48 NCQ (depth 31/32)
+  ata1.00: ata_hpa_resize 1: sectors = 488397168, hpa_sectors = 488397168
+  ata1.00: configured for UDMA/133
+  ata2: SATA link down (SStatus 0 SControl 300)
+  :
+  ata6: SATA link down (SStatus 0 SControl 300)
+  scsi 0:0:0:0: Direct-Access     ATA      WDC WD2500AAJS-0 12.0 PQ: 0 ANSI: 5
+  sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
+  sd 0:0:0:0: [sda] Write Protect is off
+  :
+  sd 0:0:0:0: [sda] Attached SCSI disk
+  ACPI: PCI Interrupt 0000:02:00.0[A] -> GSI 17 (level, low) -> IRQ 16
+  PCI: Setting latency timer of device 0000:02:00.0 to 64
+  scsi6 : pata_marvell
+  scsi7 : pata_marvell
+  ata7: PATA max UDMA/100 cmd 0x00011018 ctl 0x00011026 bmdma 0x00011000 irq 0
+  ata8: DUMMY
+  BAR5:00:00 01:7F 02:22 03:CA 04:00 05:00 06:00 07:00 08:00 09:00 0A:00 0B:00 0C:01 0D:00 0E:00 0F:00 
+  ata7.00: ATAPI, max UDMA/66
+  ata7.00: limited to UDMA/33 due to 40-wire cable
+  ata7.00: configured for UDMA/33
+  scsi 6:0:0:0: CD-ROM            SONY     DVD RW DRU-830A  SS25 PQ: 0 ANSI: 5
+  sr0: scsi3-mmc drive: 40x/40x writer dvd-ram cd/rw xa/form2 cdda tray
+  Uniform CD-ROM driver Revision: 3.20
+  sr 6:0:0:0: Attached scsi CD-ROM sr0
+  sr 6:0:0:0: Attached scsi generic sg1 type 5
 
-But I haven't explored the idea enough myself to know whether there
-would be any really killer benefits to this. Delayed metadata freeing
-via RCU without holding up the freeing of the actual page would have
-been something, however I can do similar with speculative references
-now (or whenever the code gets merged), which doesn't even require the
-RCU overhead.
+Therefore it seems that for whatever reason, the marvell_pata driver will
+only find the Marvell PATA IDE controller if the *SATA* mode in the BIOS is
+set to "AHCI".  It's somewhat counter-intuitive, but since AHCI is the
+"correct" setting for SATA performance reasons it's probably not such a bad
+thing.
 
+So, thanks for all the suggestions; the problem appears solved.
 
-> -- wli
-> 
-> P.S. This idea is not plucked out of the air; it has precedents. A
-> number of microkernels do this, and IIRC k42 does so also.
-
-Psst, just say "kernels" when you mention this to Linus ;)
+Regards
+  jonathan
