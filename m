@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbXEVDHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbXEVDXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760931AbXEVDHx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 23:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbXEVDHn
+	id S1760042AbXEVDXS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 23:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbXEVDXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 23:07:43 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:37501 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755038AbXEVDHm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 23:07:42 -0400
-Date: Tue, 22 May 2007 08:43:27 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Shaya Potter <spotter@cs.columbia.edu>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
-Subject: Re: [RFC][PATCH 10/14] In-kernel file copy between union mounted filesystems
-Message-ID: <20070522031327.GA4728@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070514093722.GB4139@in.ibm.com> <20070514094329.GL4139@in.ibm.com> <Pine.LNX.4.61.0705160951140.9570@yvahk01.tjqt.qr> <20070518111042.GC4869@in.ibm.com> <464DAE73.7000302@cs.columbia.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464DAE73.7000302@cs.columbia.edu>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 21 May 2007 23:23:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48086 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755116AbXEVDXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 23:23:07 -0400
+Message-ID: <46526216.2040000@garzik.org>
+Date: Mon, 21 May 2007 23:23:02 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "George T. Joseph (development)" <gtj.devel@peakin.com>
+CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ahci: add Marvell support (WIP)
+References: <20070519054704.GA352@havoc.gtf.org> <22E26940476D1E48AA6F292B5316C9C33823@bes1.peakin.com>
+In-Reply-To: <22E26940476D1E48AA6F292B5316C9C33823@bes1.peakin.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 18, 2007 at 09:47:31AM -0400, Shaya Potter wrote:
-> Bharata B Rao wrote:
+George T. Joseph (development) wrote:
+> Hi Jeff,
 > 
-> >
-> >Not really. This is called during copyup of a file residing in a lower
-> >layer. And that is done only for regular files.
+> Two issues with the patch...
 > 
-> That is broken.
-
-But it only breaks the semantics (in other cases we allow writes only to the
-top layer files). So the question is why do we have to copy up the device
-node ? What difference it makes to writing to the device itself ? Currently
-we allow write to the device using the lower layer device node itself.
-
+> msi has to be disabled for the Marvell or the driver load will throw a
+> "nobody cared" message and eventually hang before discovering all the
+> drives.
 > 
-> You should be able to change the permissions on a device node on a layer 
-> that is RO.
+> Light I/O works fine but heavy I/O generates 
+> "exception Emask 0x0 Sact 0xb Serr 0x0 action 0x2 frozen"
+> Then softreset and identify failures.
+> Adding AHCI_FLAG_NO_NCQ to the flags fixes this.
 > 
+> I've been running with both these changes over your original patch for a
+> few months now with no problems.  This is on a very heavily used 4 drive
+> mdraid10 array.  
 
-Hmm not sure why we need to touch the permissions of the device. See below.
 
-> so it would copy it up (1. mknod, 2. copy attributes) and then the 
-> appropriate attribute notification change would be called.
+I poked Marvell about this, we'll see what they say.
 
-With union mount, when a regular file is opened for write, it is checked
-if it resides in the lower layer and if so copied up to the topmost layer
-and this new fd is returned from open. And any subsequent writes using this
-fd will go to the newly created topmost file. (We are aware that we are not
-yet copying the (extended) attributes to the newly created topmost file,
-which we have to do).
+If I don't hear anything useful, I'll push the no-MSI, no-NCQ version 
+upstream.
 
-Regards,
-Bharata.
+	Jeff
+
+
