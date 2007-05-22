@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764099AbXEVJFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbXEVJG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764099AbXEVJFm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 05:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbXEVJFd
+	id S1762290AbXEVJG5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 05:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbXEVJGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 05:05:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36874
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755687AbXEVJFc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 05:05:32 -0400
-Date: Tue, 22 May 2007 02:05:34 -0700 (PDT)
-Message-Id: <20070522.020534.07643900.davem@davemloft.net>
-To: mikpe@it.uu.se
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG sparc64] 2.6.22-rc broke X on Ultra5
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18002.44181.639121.720839@alkaid.it.uu.se>
-References: <18002.44181.639121.720839@alkaid.it.uu.se>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 22 May 2007 05:06:49 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38466 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755131AbXEVJGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 05:06:47 -0400
+Date: Tue, 22 May 2007 11:06:36 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Len Brown <lenb@kernel.org>, trenn@suse.de,
+       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+Message-ID: <20070522090636.GO10714@elf.ucw.cz>
+References: <1179604609.16465.83.camel@sublime.suse.de> <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070522003153.GA18162@srcf.ucam.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikael Pettersson <mikpe@it.uu.se>
-Date: Tue, 22 May 2007 10:40:53 +0200
+Hi!
 
-> 2.6.21 works fine on my Ultra5, but with 2.6.22-rc the X
-> server (from Aurora 2) fails to mmap() the PCI frame buffer
-> (atyfb).
+> > > So don't do it badly. The advantage of doing so is that you can make it 
+> > > work properly, which you can't by putting it in the kernel.
+> > 
+> > You want stuff like critical shutdowns to work even if userspace is
+> > dead.
 > 
-> I noticed a lot of PCI-related changes both in `dmesg' and
-> /var/log/Xorg.0.log between 2.6.21 and 2.6.22-rc, so my
-> guess is that PCI resources get broken somewhere.
+> I don't think anyone suggested putting the critical shutdown control in 
+> userspace. The kernel already handles that fine.
+
+No it does not. That is what this thread is about.
+
+(On old xe3, critical trip point set by BIOS is ~95C, but machine dies
+by hw safeguard at ~83C. Workaround is to lower critical trip point to
+80C or so. Len broke this.)
+
+> Imagine the following situation:
 > 
-> I'll try a bisect between 2.6.21 and 2.6.22-rc1 next, but
-> I'm also willing to test patches in case anyone thinks they
-> know what the fix is.
+> 1) Platform sets critical shutdown trip point to 85C
+> 2) Userspace sets critical shutdown trip point to 95C
+> 3) Temperature reaches 90C
+> 4) Platform forces reevaluation of trip points
+> 5) Entire invasion fleet is lost
+> 
+> How do you avoid that? Disable the ability for the platform to set trip 
+> points? You're breaking the spec and potentially causing hardware 
 
-Start your bisect with the change right before this one:
+We need to ignore trip point updates from BIOS, and we need to poll
+thermals when use overrides trip points. That's expected. Plus I've
+yet to see platform actually updating the trip points.
 
-commit a2fb23af1c31ad6e0c281e56d385f803229d57fa
-Author: David S. Miller <davem@sunset.davemloft.net>
-Date:   Wed Feb 28 23:35:04 2007 -0800
+Speaking about hw damage... The broken BIOS on xe3 definitely caused
+damage to its harddrive, so... we are preventing hw damage here.
 
-    [SPARC64]: Probe PCI bus using OF device tree.
-    
-    Almost entirely taken from the 64-bit PowerPC PCI code.
-    
-    This allowed to eliminate a ton of cruft from the sparc64
-    PCI layer.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-Unfortunately, if the tree works right before this change,
-you can't just add this one because a subsequent fix is
-needed before ultra5/ultra10 will work again, but it's
-this one:
-
-commit 01f94c4a6ced476ce69b895426fc29bfc48c69bd
-Author: David S. Miller <davem@ultra5.davemloft.net>
-Date:   Sun Mar 4 12:53:19 2007 -0800
-
-    [SPARC64]: Fix sabre pci controllers with new probing scheme.
- ...
-
-So you could test these two commits:
-
-deb66c4521e119442aa266553e8cbfc86eb71232
-a2fb23af1c31ad6e0c281e56d385f803229d57fa
-
-Thanks.
+(Plus, Len's patch broke user-kernel in stable series, without warning).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
