@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbXEVGkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762130AbXEVGug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762210AbXEVGkX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 02:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbXEVGkM
+	id S1762130AbXEVGug (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 02:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbXEVGu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 02:40:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51981 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756392AbXEVGkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 02:40:11 -0400
-Date: Tue, 22 May 2007 08:38:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Stable Team <stable@kernel.org>, Anant Nitya <kernel@prachanda.info>
-Subject: Re: [PATCH] Prevent going idle with softirq pending
-Message-ID: <20070522063850.GA23854@elte.hu>
-References: <1179783264.12708.70.camel@chaos> <20070521233214.42ba9f12.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521233214.42ba9f12.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 22 May 2007 02:50:29 -0400
+Received: from relay1.mentorg.com ([192.94.38.131]:47026 "EHLO
+	relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756921AbXEVGu3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 02:50:29 -0400
+Message-ID: <465292B0.8040604@mentorg.com>
+Date: Tue, 22 May 2007 12:20:24 +0530
+From: Pranith Kumar D <pranith-kumar_d@mentor.com>
+User-Agent: Thunderbird 1.5 (X11/20051201)
+MIME-Version: 1.0
+To: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH] CFS: sched-design-CFS.txt - ambiguity about leftmost
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 May 2007 06:50:24.0722 (UTC) FILETIME=[79692320:01C79C3D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+I felt the description of the leftmost task a bit ambiguous. Is it the 
+leftmost task in the rbtree?
+or did u mean the "most leftout task" in the task list? If it is so then 
+this patch should correct the leftmost task as "most leftout task". NACK 
+it if I'm wrong. Just trying to help. :)
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Changes "leftmost task" to "most leftout task".
 
-> [  550.280860] BUG: at kernel/softirq.c:138 local_bh_enable()
+Signed-off by: Pranith Kumar D<pranith-kumar_d@mentorg.com>
 
-yep. The correct patch is the one below.
+--- sched-design-CFS.txt.orig    2007-05-22 12:04:43.000000000 +0530
++++ sched-design-CFS.txt    2007-05-22 12:11:35.000000000 +0530
+@@ -37,9 +37,9 @@ the task schedules (or a scheduler tick
+ 'accounted for': the (small) time it just spent using the physical CPU
+ is deducted from p->wait_runtime. [minus the 'fair share' it would have
+ gotten anyway]. Once p->wait_runtime gets low enough so that another
+-task becomes the 'leftmost task' (plus a small amount of 'granularity'
+-distance relative to the leftmost task so that we do not over-schedule
+-tasks and trash the cache) then the new leftmost task is picked and the
++task becomes the 'most leftout task' (plus a small amount of 'granularity'
++distance relative to the most leftout task so that we do not over-schedule
++tasks and trash the cache) then the new most leftout task is picked and the
+ current task is preempted.
+ 
+ The rq->fair_clock value tracks the 'CPU time a runnable task would have
+@@ -47,10 +47,10 @@ fairly gotten, had it been runnable duri
+ rq->fair_clock values we can accurately timestamp and measure the
+ 'expected CPU time' a task should have gotten. All runnable tasks are
+ sorted in the rbtree by the "rq->fair_clock - p->wait_runtime" key, and
+-CFS picks the 'leftmost' task and sticks to it. As the system progresses
++CFS picks the 'most leftout' task and sticks to it. As the system 
+progresses
+ forwards, newly woken tasks are put into the tree more and more to the
+ right - slowly but surely giving a chance for every task to become the
+-'leftmost task' and thus get on the CPU within a deterministic amount of
++'most leftout task' and thus get on the CPU within a deterministic 
+amount of
+ time.
+ 
+ Some implementation details:
 
-	Ingo
-
---------------------->
-Subject: Prevent going idle with softirq pending
-From: Thomas Gleixner <tglx@linutronix.de>
- 
-The NOHZ patch contains a check for softirqs pending when a CPU goes 
-idle. The BUG is unrelated to NOHZ, it just was made visible by the NOHZ 
-patch. The BUG showed up mainly on P4 / hyperthreading enabled machines 
-which lead the investigations into the wrong direction in the first 
-place.  The real cause is in cond_resched_softirq():
- 
-cond_resched_softirq() is enabling softirqs without invoking the softirq 
-daemon when softirqs are pending.  This leads to the warning message in 
-the NOHZ idle code:
- 
-t1 runs softirq disabled code on CPU#0
-interrupt happens, softirq is raised, but deferred (softirqs disabled)
-t1 calls cond_resched_softirq()
-	enables softirqs via _local_bh_enable()
-	calls schedule()
-t2 runs
-t1 is migrated to CPU#1
-t2 is done and invokes idle()
-NOHZ detects the pending softirq
- 
-Fix: change _local_bh_enable() to local_bh_enable() so the softirq
-daemon is invoked.
- 
-Thanks to Anant Nitya for debugging this with great patience !
- 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -4212,9 +4212,7 @@ int __sched cond_resched_softirq(void)
- 	BUG_ON(!in_softirq());
- 
- 	if (need_resched() && system_state == SYSTEM_RUNNING) {
--		raw_local_irq_disable();
--		_local_bh_enable();
--		raw_local_irq_enable();
-+		local_bh_enable();
- 		__cond_resched();
- 		local_bh_disable();
- 		return 1;
