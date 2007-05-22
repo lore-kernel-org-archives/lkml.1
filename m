@@ -1,110 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934112AbXEVLBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbXEVLGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934112AbXEVLBk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 07:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbXEVLBd
+	id S933793AbXEVLGQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 07:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbXEVLGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 07:01:33 -0400
-Received: from web52608.mail.re2.yahoo.com ([206.190.48.211]:30364 "HELO
-	web52608.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757476AbXEVLBc (ORCPT
+	Tue, 22 May 2007 07:06:05 -0400
+Received: from mail29.syd.optusnet.com.au ([211.29.132.171]:42172 "EHLO
+	mail29.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758582AbXEVLGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 07:01:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=mzvG6EosfGlf0cxLuj0wBFml3tdw8n720ubzxpmTi495TiH7DndfhqsPwwHiitmTIPKcVxQfuM9haZxo2kfXF5MV4FCbyCIgX5qwuqRp7HPIkgl75SyXJ2OZ4yQJ0PD3TL6zrswrAPUVk/XOnjE4Y3ChBGAuUu1zAeKi35xrc7k=;
-X-YMail-OSG: y9bxu1MVM1nYFTH3YRiyjzJZTRYd7Y2ci8xwdUEvFsG457mW60N3ZZv6JQ9EBEaaVZ_OJVWtrfHxvkBadu4yMuYvPkMs6Q8JmvkipfsBo166bOAT8YCwENAxtvhr
-Date: Tue, 22 May 2007 21:01:31 +1000 (EST)
-From: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
-Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+	Tue, 22 May 2007 07:06:04 -0400
+From: Con Kolivas <kernel@kolivas.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <clameter@sgi.com>, Hugh Dickins <hugh@veritas.com>,
-       Oliver Xymoron <oxymoron@waste.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070522092439.GA19895@elte.hu>
+Subject: Re: [PATCH] mm: swap prefetch improvements
+Date: Tue, 22 May 2007 21:04:20 +1000
+User-Agent: KMail/1.9.5
+Cc: Antonino Ingargiola <tritemio@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705222054.46488.kernel@kolivas.org> <20070522105710.GA12833@elte.hu>
+In-Reply-To: <20070522105710.GA12833@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <559665.2852.qm@web52608.mail.re2.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705222104.20580.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Ingo Molnar <mingo@elte.hu> wrote:
-> * Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au> wrote:
-> > Yup, with CONFIG_SMP=n, I'm unable to reproduce the problem. It's 
-> > quite stable actually (having completed a dozen kernel compile 
-> > sessions so far).
+On Tuesday 22 May 2007 20:57, Ingo Molnar wrote:
+> * Con Kolivas <kernel@kolivas.org> wrote:
+> > On Tuesday 22 May 2007 20:46, Ingo Molnar wrote:
+> > > It clearly should not consider 'itself' as IO activity. This
+> > > suggests some bug in the 'detect activity' mechanism, agreed? I'm
+> > > wondering whether you are seeing the same problem, or is all
+> > > swap-prefetch IO on your system continuous until it's done [or some
+> > > other IO comes inbetween]?
+> >
+> > When nothing else is happening anywhere on the system it reads in
+> > bursts and goes to sleep during journal writeout.
+>
+> hm, what do you call 'journal writeout' here that would be happening on
+> my system?
 
-[...]
+Not really sure what you have in terms of fs, but here even with nothing going 
+on, ext3 writes to disk every 5 seconds with kjournald.
 
-> could you enable CONFIG_PROVE_LOCKING - does it spit out any warning 
-> into the syslog?
-
-Compiled slub with SMP & CONFIG_PROVE_LOCKING. No luck. It still hangs solid
-after the second spinlock lockup call trace.
-
-Here's the relevant sections of the kernel logs:
-
-...
-Freeing unused kernel memory: 228k freed
-BUG: spinlock bad magic on CPU#1, init/1
- lock: ffff81011f5f1100, .magic: ffff8101, .owner: <none>/-1, .owner_cpu: -1
-
-Call Trace:
- [<ffffffff802f326a>] _raw_spin_lock+0x22/0xf6
- [<ffffffff8026b2d5>] vma_adjust+0x21c/0x446
- [<ffffffff8026b2d5>] vma_adjust+0x21c/0x446
- [<ffffffff8026b9d4>] vma_merge+0x10c/0x195
- [<ffffffff8026c757>] do_mmap_pgoff+0x3f5/0x794
- [<ffffffff803fff0c>] _spin_unlock_irq+0x24/0x27
- [<ffffffff8020f414>] sys_mmap+0xe5/0x110
- [<ffffffff80209dde>] system_call+0x7e/0x83
-...
-PM: Adding info for No Bus:vcsa1
-BUG: spinlock lockup on CPU#1, hostname/369, ffff81011f5f1fc0
-
-Call Trace:
- [<ffffffff802f3317>] _raw_spin_lock+0xcf/0xf6
- [<ffffffff8026ec9c>] anon_vma_unlink+0x1c/0x68
- [<ffffffff8026ec9c>] anon_vma_unlink+0x1c/0x68
- [<ffffffff80269aa0>] free_pgtables+0x69/0xc4
- [<ffffffff8026ad0e>] exit_mmap+0x91/0xeb
- [<ffffffff80228cea>] mmput+0x2c/0x9f
- [<ffffffff8022df72>] do_exit+0x22e/0x82e
- [<ffffffff8022e5f4>] sys_exit_group+0x0/0xe
- [<ffffffff80209dde>] system_call+0x7e/0x83
-
-
-Surprisingly, with CONFIG_SMP=n, CONFIG_PROVE_LOCKING produces this with slub
-(then hangs solid):
-
-Freeing unused kernel memory: 188k freed
-BUG: spinlock lockup on CPU#0, init/1, ffff81011e9d3160
-
-Call Trace:
- [<ffffffff802eca20>] _raw_spin_lock+0xca/0xe8
- [<ffffffff80265d6d>] vma_adjust+0x218/0x442
- [<ffffffff80265d6d>] vma_adjust+0x218/0x442
- [<ffffffff8026646b>] vma_merge+0x10c/0x195
- [<ffffffff802671d5>] do_mmap_pgoff+0x3f5/0x790
- [<ffffffff803f6e84>] _spin_unlock_irq+0x24/0x27
- [<ffffffff8020ead0>] sys_mmap+0xe5/0x110
- [<ffffffff80209cce>] system_call+0x7e/0x83
-
-To recap:
-1. No problems with slub on CONFIG_SMP=n & CONFIG_PROVE_LOCKING=n
-2. Problem with slub on CONFIG_SMP=n & CONFIG_PROVE_LOCKING=y (perhaps a. some
-locking issue when slub is activated or b. something is wrong with 'prove
-locking' mechanism when slub is activated or c. something else I don't see) 
-3. Problem with slub on CONFIG_SMP=y (even without CONFIG_PROVE_LOCKING=y)
-
-Thanks
-
-
-
-      ___________________________________________________________________________________
-How would you spend $50,000 to create a more sustainable environment in Australia?  Go to Yahoo!7 Answers and share your idea.
-http://advision.webevents.yahoo.com/aunz/lifestyle/answers/y7ans-babp_reg.html
-
+-- 
+-ck
