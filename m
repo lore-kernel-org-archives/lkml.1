@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761576AbXEVUUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbXEVUYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761576AbXEVUUG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbXEVUTz
+	id S1760077AbXEVUYL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbXEVUX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:19:55 -0400
-Received: from [216.16.235.2] ([216.16.235.2]:41963 "EHLO rubicon.netdirect.ca"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756821AbXEVUTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:19:55 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Tue, 22 May 2007 16:17:48 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: any value to "NORET_TYPE" macro?
-In-Reply-To: <m3ejl8k6e3.fsf@maximus.localdomain>
-Message-ID: <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain>
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
- <20070522135927.GA2098@stusta.de> <Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
- <20070522161951.GC2098@stusta.de> <m3ejl8k6e3.fsf@maximus.localdomain>
+	Tue, 22 May 2007 16:23:58 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:50293 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755936AbXEVUX5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 16:23:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ozshkrTCai4xRUZQRhFZjbfqK2RP8X7CRQbHKNwh4oJDLIJz0q6uBT9UpVhYs5Vr82N+qo11owE4+mml+uK9K/F2f1F8HxXuby+r3uTU0Q+e3gL1HCpedQ31gAcS3n1E3mSXFvWl5GCN720fmKm7WI+ImmqZLXBXF3/CJNGTkp0=
+Message-ID: <6bffcb0e0705221323r75c54997s1d34890dbb1c67f4@mail.gmail.com>
+Date: Tue, 22 May 2007 22:23:56 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [BUG] local_softirq_pending storm
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Anant Nitya" <kernel@prachanda.info>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070522201046.GA6113@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705091942.22920.kernel@prachanda.hub>
+	 <200705191525.28400.kernel@prachanda.hub>
+	 <1179601868.12981.127.camel@chaos>
+	 <200705200253.44992.kernel@prachanda.hub>
+	 <1179697388.6570.26.camel@chaos>
+	 <6bffcb0e0705221203s1ba21ed3j641e91036859db7d@mail.gmail.com>
+	 <20070522201046.GA6113@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007, Krzysztof Halasa wrote:
-
-> Adrian Bunk <bunk@stusta.de> writes:
+On 22/05/07, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> >> no, i think you're thinking of the alternative ATTRIB_NORET macro.
-> >> as you can read in my previous post, NORET_TYPE used to resolve to
-> >> "__volatile__" for very old gcc.  so i think it's legitimately dead
-> >> and can be ripped out.
-> >
-> > No doubt that it could be removed because it doesn't have any effect.
-> >
-> > But locking at the usages, it seems to have been used when people
-> > thought it was what __noreturn now is, so replacing NORET_TYPE with
-> > __noreturn might be a small optimization (but every NORET_TYPE should
-> > be checked that it's actually correct).
+> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 >
-> Actually it seems all the NORET_TYPEs are in fact (should be)
-> __attribute__((noreturn)) (2.6.21):
+> > Bad news - I hit a bug in 2.6.22-rc2-hrt3. Bug symptoms:
+> > - X hangs (keyboard, mouse, sound etc.)
+> > - only Magic SysRq works
+>
+> please try the patch below! I think we have nailed this bug.
 
-that may be but, as i suggested earlier, that would get into guessing
-what those developers were thinking, and i just didn't want to go
-there.
+I picked it from -hrt5 and so far so good.
 
-the simple version of the patch is now in andrew's tree, and i'll
-worry about the harder stuff next time.
+Regards,
+Michal
 
-rday
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
