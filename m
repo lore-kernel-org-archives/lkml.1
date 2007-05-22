@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbXEVWBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935129AbXEVWCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760599AbXEVWBU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765530AbXEVWA5
+	id S935129AbXEVWCS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760119AbXEVWCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:00:57 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:32976 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764324AbXEVWA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:00:56 -0400
-Date: Tue, 22 May 2007 15:00:44 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Greg KH <greg@kroah.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [stable] Wanted: Allow adding new device IDs during the
-	-stable cycle
-Message-ID: <20070522220044.GB3429@sequoia.sous-sol.org>
-References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com> <46533EA8.7020602@garzik.org> <20070522193538.GA885@kroah.com>
+	Tue, 22 May 2007 18:02:09 -0400
+Received: from mail.tmr.com ([64.65.253.246]:43924 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759712AbXEVWCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 18:02:07 -0400
+Message-ID: <465368D6.1010906@tmr.com>
+Date: Tue, 22 May 2007 18:04:06 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522193538.GA885@kroah.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Tomas Carnecky <tom@dbservice.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: SideWinder GameVoice driver
+References: <464C5FAC.8060609@dbservice.com>
+In-Reply-To: <464C5FAC.8060609@dbservice.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH (greg@kroah.com) wrote:
-> On Tue, May 22, 2007 at 03:04:08PM -0400, Jeff Garzik wrote:
-> >  Really, it is just silly to think that one-line PCI IDs patches will cause 
-> >  any harm at all, and it should be self-evident that there is clear potential 
-> >  to HELP Linux users.  That's why we're all here, right?
-
-Yes, we're here to help.  The only compelling reasons not do to it were/are:
-
-1) -stable has never been about adding features (easy to consider new
-hardware support a feature).
-
-2) In theory new hardware can seem to work with a simple PCI ID
-update, and later we find it needs extra quirk handling or specific
-driver support.  This could mean adding buggy support for new hardware
-to -stable.  In practice, hopefully this isn't a real issue.
-
-3) It hasn't been a pressing issue brought to our attention until this
-thread and its predecessor earlier in the month.
-
-My own personal experience is each time I've needed a PCI ID update for
-new hardware it's also needed changes to the driver (read: e1000, every
-single time).  So from my perspective neither sysfs nor relaxing -stable
-rules slightly would actually help provide support for new hardware,
-but that's clearly limited experience.
-
-> I'm not disagreeing that it will help a set of users, or that it will
-> cause any harm at all.  It's just currently outside the scope for what
-> we defined -stable as, and it will slightly increase the workload that
-> Chris and I have in keeping up with these patches.
+Tomas Carnecky wrote:
+> Despite it's a Microsoft product, it's actually very nice and useful. A
+> little pad with a few buttons and connectors for a headset. It's an USB
+> device, but it doesn't represent itself as an input/HID device:
+>    HID device not claimed by input or hiddev
 > 
-> So, if there is an overwhelming majority of people that strongly feel
-> that this is a good thing, fine, we can try it out.
+> I plugged it into a windows box and the USB protocol it uses looks very
+> simple (see attachment): everytime I press one of the eight buttons, it
+> sends one byte, a bitmap of the pressed buttons.
+> 
+> What would be the best way to have this device appear in the system?
+> Having a separate driver/device node? Or is it possible to have a small
+> driver that would translate the gamevoice commands into evdev messages
+> and have a new /dev/input/eventX device appear?
+> 
+> I could write something like that myself, my C skills are good enough
+> for that, I'd just need some advice how to use the kernel USB/evdev
+> interfaces.
+> 
+ From your description it sounds as though it would be useful in 
+applications where voice connect was useful and visual wasn't, such as 
+blind users and embedded applications where a USB pluggable interface 
+might be useful in unusual situations.
 
-Yes, if it will serve -stable users better, we can give it a trial run
-to see how it goes.
-
-thanks,
--chris
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
