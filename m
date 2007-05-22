@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965884AbXEVRiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965654AbXEVRme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965884AbXEVRiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 13:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758940AbXEVRiq
+	id S965654AbXEVRme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 13:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758169AbXEVRm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 13:38:46 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:55451 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758139AbXEVRiq (ORCPT
+	Tue, 22 May 2007 13:42:27 -0400
+Received: from mail.tmr.com ([64.65.253.246]:43784 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757579AbXEVRm0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 13:38:46 -0400
-Message-ID: <46532AA4.6080501@s5r6.in-berlin.de>
-Date: Tue, 22 May 2007 19:38:44 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Tue, 22 May 2007 13:42:26 -0400
+Message-ID: <46532BC1.6010808@tmr.com>
+Date: Tue, 22 May 2007 13:43:29 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Simon Horman <horms@verge.net.au>, Adrian Bunk <bunk@stusta.de>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: RFC: kconfig select warnings bogus?
-References: <20070519151523.GA26724@uranus.ravnborg.org>	 <4650074A.6000307@s5r6.in-berlin.de>	 <a781481a0705200438s634712e6v957d7085bca7407@mail.gmail.com>	 <46503542.50300@s5r6.in-berlin.de>	 <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com>	 <46504876.9040802@s5r6.in-berlin.de>	 <a781481a0705200650v2ef7be85h19f8c8eb026a303b@mail.gmail.com>	 <46505DBD.5010005@s5r6.in-berlin.de>	 <a781481a0705220753g25bb0dd8u33bbf8ddaf00f50c@mail.gmail.com>	 <46532247.6030803@s5r6.in-berlin.de> <a781481a0705221013m45f82054tca9a9a78ea8935d4@mail.gmail.com>
-In-Reply-To: <a781481a0705221013m45f82054tca9a9a78ea8935d4@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de, mingo@elte.hu,
+       yi.zhu@intel.com, linux-kernel@vger.kernel.org, arjan@infradead.org,
+       venkatesh.pallipadi@intel.com, trenn@suse.de
+Subject: Re: Increased ipw2200 power usage with dynticks
+References: <20070518154629.GA27105@atjola.homenet> <20070519171011.GA1995@atjola.homenet> <p733b1re34o.fsf@bingen.suse.de> <20070521074938.GA15678@atjola.homenet>
+In-Reply-To: <20070521074938.GA15678@atjola.homenet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> On 5/22/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> >> > On 5/20/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> >> >>         depends on !PLATFORM_X || HELPER_N_ON_PLATFORM_X
-...
->> This is a synthetic example which might not have a real-world application.]
+Björn Steinbrink wrote:
+> On 2007.05.20 20:55:35 +0200, Andi Kleen wrote:
+>> Björn Steinbrink <B.Steinbrink@gmx.de> writes:
+>>> Ok, it seems that ipw2200 is just a trigger for the problem here. AFAICT
+>>> the cause of the worse C state usage is that after ipw2200 has woken the
+>>> cpu, acpi_processor_idle() chooses C2 (due to dma? bm? I have no
+>>> idea...) as the prefered sleep state. Now without NO_HZ or when I hold
+>>> down a key, there are interrupts that wake up the CPU and when
+>>> acpi_processor_idle() is called again the promotion to C3/C4 happens.
+>>> But with NO_HZ, there are no such interrupts, most wakeups are caused by
+>>> ipw2200 and so the processor doesn't go any deeper than C2 most of the
+>>> time and thus wastes lots of power.
+>> The cpuidle governour code Venki is working on is supposed to address this.
+>> There have been also earlier prototype patches by Adam Belay and
+>> Thomas Renninger.
 > 
-> Well, it is not relevant / equivalent to any of the four symbols that caused the
-> warnings that this thread is about, at least.
+> Venki (at least I think it was him) also told me about cpuidle and the
+> menu governor on #powertop. Unfortunately, cpuidle seems to be gone from
+> acpi-test (or I'm simply still too stupid for git/gitweb). I manually
+> added the cpuidle and menu governor patches on top of my 2.6.22-rc1-hrt8
+> kernel, but that broke C-state duration accounting.
+> 
+> On the bright side of things is power usage though, which is down to an
+> incredible 13.9W in idle+ipw2200 :)
+> 
+Very encouraging, hopefully that can get into mainline soon, as power 
+usage is an issue with laptops. Until then, it sounds as if dynticks is 
+a negative power save for ipw2200 (and probably many other things).
 
-(Have I ever said that this concrete expression can be used in whatever
-fix?)
+Dare we hope that this will allow use of USB on laptops without draining 
+the battery?
 
-...
-> and as I said, this was totally *not* the problem being discussed /
-> solved in this thread (and by that patch).
-
-My point was not about that particular expression. My point was:
-
-	I'm not advocating any specific fixes or pseudo-fixes.
-	I'm advocating the notation of dependencies in the direction
-	"A requires B".
-
-When I said "The standard and maintainable way (for drivers at least)
-is..." I didn't mean the example expression, I meant the *direction* in
-which the example was stating dependencies.
 -- 
-Stefan Richter
--=====-=-=== -=-= =-==-
-http://arcgraph.de/sr/
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
