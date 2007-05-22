@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933975AbXEVQqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966475AbXEVQrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933975AbXEVQqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 12:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbXEVQqZ
+	id S966475AbXEVQrA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 12:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbXEVQqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 12:46:25 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53079 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758993AbXEVQqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 12:46:25 -0400
-Message-ID: <46531E58.6030506@garzik.org>
-Date: Tue, 22 May 2007 12:46:16 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 22 May 2007 12:46:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:21912 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757533AbXEVQqt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 12:46:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tjP3KeY9jih9xtipBr506Zg4NFg8L7/FidXDBVVZvHuY4jZCtgpHdv6kMZjxn4bW5VTDljOfo4vlyLSt3kSyA9mb0qtPdasuGTlnMY9iLLZd6Rqj5JFoKuZiw22e58/jFJMivA6HE+P74fupFyw4+FCYjNEFP7QfolYrKAc4EV0=
+Message-ID: <a781481a0705220946v1c94e0a0r897e6811abcd23c4@mail.gmail.com>
+Date: Tue, 22 May 2007 22:16:46 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: BUG: at mm/slab.c:777 __find_general_cachep()
+Cc: "Luigi Genoni" <l.genoni@oltrelinux.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <6bffcb0e0705220940p22275f1dk46942db747c0a2e0@mail.gmail.com>
 MIME-Version: 1.0
-To: kkeil@suse.de
-CC: Andrew Morton <akpm@linux-foundation.org>, kai.germaschewski@gmx.de,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ISDN: move card state init to separate function
-References: <20070522124458.GA25591@havoc.gtf.org> <20070522151814.GA4280@pingi.kke.suse.de>
-In-Reply-To: <20070522151814.GA4280@pingi.kke.suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <200705221835.11559.l.genoni@oltrelinux.com>
+	 <6bffcb0e0705220940p22275f1dk46942db747c0a2e0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karsten Keil wrote:
-> So what is the reason to do this now, does this block some changes in
-> other places ? I did not change this code for long time because I know
-> that this is a nightmare, the code was grown and grown (supporting more and
-> more cards/chipsets) and is really nothing which should be used in future.
-> So I would say it maybe better, if it doesn't block anything else, to
-> replace HiSax completely with a new modular design. I know that here was not
-> so much effort in the past years, but now I got some time to push mISDN
-> forward and it looks not so bad to get the first parts ready for mainline
-> in June.
+On 5/22/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> Hi Luigi,
+>
+> On 22/05/07, Luigi Genoni <l.genoni@oltrelinux.com> wrote:
+> > While doing eavy I/O on a RAID1 logical volume with reiserfs with kernel
+> > 2.6.22-rc2 on Athlon64 3800+ X2, i got:
+> >
+> > BUG: at mm/slab.c:777 __find_general_cachep()
+>
+> Here is a patch
+> http://lkml.org/lkml/diff/2007/5/18/19/1
 
-ISDN is the biggest chunk of code blocking removal of some deprecated 
-PCI interfaces.
-
-If you want to replace the code completely with a newfangled modular 
-design, I will gladly step out of the way and let that happen :)  I only 
-know what I see right now, which is code that has sat around for a while 
-not getting updated to the new PCI API.
-
-Since I do not have any ISDN hardware, my plan was to do equivalent 
-transformations of the code.  Each patch just shuffles code, but 
-maintains a working state at all time, making it trivial to prove 
-(mathematically, or with testing, or with git-bisect) that the code 
-continues to work.
-
-So, just tell me which you would prefer.  If you are going to fix all 
-this stuff, there is plenty of other stuff on my list to work on. 
-Otherwise I will create equivalent-transform patches that take the 
-existing code and modify it just enough to be correct for the new PCI API.
-
-	Jeff
-
-
+Eek, no ... he wants this one: http://lkml.org/lkml/diff/2007/5/16/513/1
