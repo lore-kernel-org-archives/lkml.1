@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934038AbXEVROy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765560AbXEVRT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934038AbXEVROy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 13:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758248AbXEVROr
+	id S1765560AbXEVRT4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 13:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbXEVRTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 13:14:47 -0400
-Received: from bay0-omc2-s19.bay0.hotmail.com ([65.54.246.155]:16512 "EHLO
-	bay0-omc2-s19.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756805AbXEVROr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 13:14:47 -0400
-Message-ID: <BAY20-F1412F1EDFF34450CE1F213F9360@phx.gbl>
-X-Originating-IP: [88.112.28.249]
-X-Originating-Email: [paapaa125@hotmail.com]
-In-Reply-To: <8aa016e10705220937t6cfbacbj4fe8fc97d135924@mail.gmail.com>
-From: "Paa Paa" <paapaa125@hotmail.com>
-To: dhaval.giani@gmail.com
-Cc: linux-kernel@vger.kernel.org, hancockr@shaw.ca
-Subject: Re: Enabling power states for Core 2 Duo
-Date: Tue, 22 May 2007 17:14:45 +0000
+	Tue, 22 May 2007 13:19:48 -0400
+Received: from smtp.osdl.org ([207.189.120.12]:44275 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754973AbXEVRTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 13:19:47 -0400
+Date: Tue, 22 May 2007 10:19:26 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Mike Houston <mikeserv@bmts.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+Message-ID: <20070522101926.481d3ec7@freepuppy>
+In-Reply-To: <alpine.LFD.0.98.0705212153220.3890@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+	<20070520170506.814a38d9.mikeserv@bmts.com>
+	<20070521084549.61a1aa71@freepuppy>
+	<20070521131055.0017404f.mikeserv@bmts.com>
+	<20070521103755.51b954e1@freepuppy>
+	<20070521225806.bb18d589.mikeserv@bmts.com>
+	<20070521213146.3e220a44@freepuppy>
+	<4652733F.4030708@garzik.org>
+	<20070521214255.3dc36445@freepuppy>
+	<alpine.LFD.0.98.0705212153220.3890@woody.linux-foundation.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-X-OriginalArrivalTime: 22 May 2007 17:14:46.0858 (UTC) FILETIME=[B29572A0:01C79C94]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>But are you saying that with most desktop mobos one doesn't usually have 
->>the
->>different power states available at all? So basically the only means to
->>conserve power is to scale the frequency?
->>
->
->Please update your BIOS and try.
+On Mon, 21 May 2007 22:04:26 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I updated my Asus P5B Deluxe BIOS with no luck (this latest BIOS is about 1 
-month old). Still no power states. I would be nice to know if _any_ desktop 
-C2D mobos have these C-states? (In x86_64 system).
+> 
+> 
+> On Mon, 21 May 2007, Stephen Hemminger wrote:
+> >
+> > AHCI on this motherboard doesn't seem to use MSI. The problems occur
+> > even if I boot with nomsi.
+> 
+> Have you tried playing with PCI latency counters etc? 
+> 
+> Maybe the SATA/AHCI thing is better at saturating the bus, and the sky2 
+> hardware gets upset if it has overlong DMA access latencies due to some 
+> other controller keeping the bus busy with a long burst access?
+> 
+> I can't really see that being a real problem in this day and age of PCI-X 
+> etc, but it _used_ to be a possible issue a decade ago. Maybe you've found 
+> a case where it matters even on modern hardware? We occasionally used to 
+> set the PCI latency timer to make people happy.
+> 
+> (Not that I'm convinced it even has any semantic meaning on a modern PCI 
+> system..)
+> 
+> 		Linus
 
-I think I never mentioned:
+The device in question is PCI Express, and the latency has no meaning (at
+least in vendor spec).
 
-I'm using 2.6.21.1 (actually gentoo-sources-2.6.21-r1)
-My CPU is E6400.
-
-_________________________________________________________________
-Don't just search. Find. Check out the new MSN Search! 
-http://search.msn.click-url.com/go/onm00200636ave/direct/01/
-
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
