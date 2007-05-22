@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763326AbXEVSk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966385AbXEVSmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763326AbXEVSk5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 14:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbXEVSkt
+	id S966385AbXEVSmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 14:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbXEVSmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 14:40:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40706 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756432AbXEVSks (ORCPT
+	Tue, 22 May 2007 14:42:05 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:15367 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757299AbXEVSmE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 14:40:48 -0400
-Date: Tue, 22 May 2007 11:39:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] UDF: possible usage of uninitialized variables
-Message-Id: <20070522113926.b7f1e690.akpm@linux-foundation.org>
-In-Reply-To: <20070522175223.GA8259@cvg>
-References: <20070522175223.GA8259@cvg>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 22 May 2007 14:42:04 -0400
+Date: Tue, 22 May 2007 14:39:35 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Message-ID: <20070522183935.GF6138@think.oraclecorp.com>
+References: <20070516171156.GY26766@think.oraclecorp.com> <20070516112515.b6f247b2.akpm@linux-foundation.org> <20070516191339.GA26766@think.oraclecorp.com> <20070516123342.714a11d8.akpm@linux-foundation.org> <20070516195359.GE26766@think.oraclecorp.com> <20070516130413.1fd391bf.akpm@linux-foundation.org> <20070516201414.GF26766@think.oraclecorp.com> <20070516133726.0c68a65f.akpm@linux-foundation.org> <20070522163511.GB6138@think.oraclecorp.com> <20070522112120.4a5c6a5d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070522112120.4a5c6a5d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 21:52:23 +0400
-Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-
-> A few variables could be used without being explicitly initialized.
-> Fixed.
-
-Are you sure?  I'm expecting that this is a gcc mistake.
-
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> ---
+On Tue, May 22, 2007 at 11:21:20AM -0700, Andrew Morton wrote:
+> > 
+> > I patched jbd's log_do_checkpoint to put all the blocks it wanted to
+> > write in a radix tree, then send them all down in order at the end.
 > 
+> Side note: we already have all of that capability in the kernel:
+> sync_inode(blockdev_inode, wbc) will do an ascending-LBA write of the whole
+> blockdev.
 > 
->  balloc.c |    6 +++++-
->  super.c  |    5 ++++-
->  2 files changed, 9 insertions(+), 2 deletions(-)
+> It could be that as a quick diddle, running sync_inode() in
+> do-block-on-queue-congestion mode prior to doing the checkpoint would have
+> some benefit.
+
+I had played with this in the past (although not this time around), but
+I had performance problems with newly dirtied blocks sneaking in.
+
+> > At any rate, it may be worth putzing with the writeback routines to try
+> > and find dirty pages close by in the block dev inode when doing data
+> > writeback.  My guess is that ext3 should be going 1.5x to 2x faster for
+> > this particular run, but that's a huge amount of complexity added so I'm
+> > not convinced it is a great idea.
 > 
+> Yes, this is a distinct disadvantage of the whole per-address-space
+> writeback scheme - we're leaving IO scheduling optimisations on the floor,
+> especially wrt the blockdev inode, but probably also wrt regular-file
+> versus regular-file.  Even if one makes the request queue tremendously
+> huge, that won't help if there's dirty data close-by the disk head which
+> hasn't even been put into the queue yet.
 > 
-> diff --git a/balloc.c b/balloc.c
-> index 4cec910..be37393 100644
-> --- a/balloc.c
-> +++ b/balloc.c
 
-Please always use `patch -p1' form from the top-level directory.  This should
-have been
+I'm not sure yet on a good way to fix it, but I do think I've nailed
+it down as the cause of the strange performance numbers I'm getting.
 
---- a/fs/udf/balloc.c
-+++ b/fs/udf/balloc.c
+-chris
 
-> @@ -744,7 +744,11 @@ static int udf_table_new_block(struct super_block * sb,
->  	uint32_t spread = 0xFFFFFFFF, nspread = 0xFFFFFFFF;
->  	uint32_t newblock = 0, adsize;
->  	uint32_t elen, goal_elen = 0;
-> -	kernel_lb_addr eloc, goal_eloc;
-> +	kernel_lb_addr eloc;
-> +	kernel_lb_addr goal_eloc = {
-> +		.logicalBlockNum = 0,
-> +		.partitionReferenceNum = 0,
-> +	};
-
-	kernel_lb_addr goal_eloc = { };
-
-is equivalent and sufficient.
