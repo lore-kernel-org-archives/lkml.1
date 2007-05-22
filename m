@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbXEVFFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761426AbXEVFGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759711AbXEVFFk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 01:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbXEVFFd
+	id S1761426AbXEVFGZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 01:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbXEVFGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 01:05:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51204 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752449AbXEVFFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 01:05:32 -0400
-Date: Tue, 22 May 2007 07:04:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, David Miller <davem@davemloft.net>,
-       Stable Team <stable@kernel.org>, Anant Nitya <kernel@prachanda.info>
-Subject: Re: [PATCH] Prevent going idle with softirq pending
-Message-ID: <20070522050410.GA9295@elte.hu>
-References: <1179783264.12708.70.camel@chaos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179783264.12708.70.camel@chaos>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 22 May 2007 01:06:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52890 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752449AbXEVFGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 01:06:17 -0400
+Date: Mon, 21 May 2007 22:04:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+cc: Jeff Garzik <jeff@garzik.org>, Mike Houston <mikeserv@bmts.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+In-Reply-To: <20070521214255.3dc36445@freepuppy>
+Message-ID: <alpine.LFD.0.98.0705212153220.3890@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+ <20070520170506.814a38d9.mikeserv@bmts.com> <20070521084549.61a1aa71@freepuppy>
+ <20070521131055.0017404f.mikeserv@bmts.com> <20070521103755.51b954e1@freepuppy>
+ <20070521225806.bb18d589.mikeserv@bmts.com> <20070521213146.3e220a44@freepuppy>
+ <4652733F.4030708@garzik.org> <20070521214255.3dc36445@freepuppy>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> The NOHZ patch contains a check for softirqs pending when a CPU goes 
-> idle. The BUG is unrelated to NOHZ, it just was made visible by the 
-> NOHZ patch. The BUG showed up mainly on P4 / hyperthreading enabled 
-> machines which lead the investigations into the wrong direction in the 
-> first place. The real cause is in cond_resched_softirq():
-> 
-> cond_resched_softirq() is enabling softirqs without invoking the 
-> softirq daemon when softirqs are pending. This leads to the warning 
-> message in the NOHZ idle code:
+On Mon, 21 May 2007, Stephen Hemminger wrote:
+>
+> AHCI on this motherboard doesn't seem to use MSI. The problems occur
+> even if I boot with nomsi.
 
-good find!
+Have you tried playing with PCI latency counters etc? 
 
->  		raw_local_irq_disable();
-> -		_local_bh_enable();
-> +		local_bh_enable();
->  		raw_local_irq_enable();
+Maybe the SATA/AHCI thing is better at saturating the bus, and the sky2 
+hardware gets upset if it has overlong DMA access latencies due to some 
+other controller keeping the bus busy with a long burst access?
 
-hm, i think this should be done without having irqs disabled?
+I can't really see that being a real problem in this day and age of PCI-X 
+etc, but it _used_ to be a possible issue a decade ago. Maybe you've found 
+a case where it matters even on modern hardware? We occasionally used to 
+set the PCI latency timer to make people happy.
 
-	Ingo
+(Not that I'm convinced it even has any semantic meaning on a modern PCI 
+system..)
+
+		Linus
