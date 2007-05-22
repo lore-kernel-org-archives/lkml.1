@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbXEVUxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761323AbXEVU4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759168AbXEVUxX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXEVUxQ
+	id S1761323AbXEVU4Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbXEVU4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:53:16 -0400
-Received: from mail1.cray.com ([136.162.0.111]:57235 "EHLO mail1.cray.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754887AbXEVUxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:53:15 -0400
-X-Greylist: delayed 3557 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 16:53:15 EDT
-From: Andrew Hastings <abh@cray.com>
-Message-Id: <200705221953.l4MJruA6011637@topaz58.us.cray.com>
-Date: Tue, 22 May 2007 14:53:56 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] bad uc_stack passed to signal handlers
-User-Agent: nail 11.25 7/29/05
+	Tue, 22 May 2007 16:56:18 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:3758 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755978AbXEVU4R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 16:56:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=iy6RDVsikeA66RZ8XbTgk5Kjt3XpjuiVVnqF7h1cCJGppcs9CXoc3FLlMzBBLDmLpkKWusKWtJ2TIJ4hyVcFL+cRMd0P6dyLpcM2s+nnY2EugNGCC1BLWx1EH/rLXBhwACIBYdYrI6Nay8BO0RMzgb6ymIFt81iXdKCaahOIRq0=
+Date: Tue, 22 May 2007 03:25:48 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, zohar@us.ibm.com, kjhall@us.ibm.com
+Subject: Re: 2.6.22-rc1-mm1: evm BUG when reading sysfs file
+Message-ID: <20070522072548.GA9067@nineveh.local>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, zohar@us.ibm.com, kjhall@us.ibm.com
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Cray-VirusStatus: clean
+Content-Disposition: inline
+In-Reply-To: <20070515201914.16944e04.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: jfannin@gmail.com (Joseph Fannin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm experimenting with remapping the stack to hugepages.  I was hoping
-to use the Posix getcontext, sigaltstack, and sigaction interfaces to do
-this.  Unfortunately, the GNU/Linux implementations are not working as
-specified by Posix.
+On Tue, May 15, 2007 at 08:19:14PM -0700, Andrew Morton wrote:
+>
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/
 
-Omitting error checks, here's what I'm doing:
+I've been getting this since 2.6.21-rc7-mm1:
 
-    ucontext_t main_uc;
+[    2.379310] BUG: unable to handle kernel paging request at virtual address 4400d340
+[    2.379491]  printing eip:
+[    2.379573] c021c978
+[    2.379656] *pdpt = 000000000353c001
+[    2.379739] *pde = 0000000000000000
+[    2.379824] Oops: 0000 [#1]
+[    2.379906] PREEMPT SMP
+[    2.380059] Modules linked in: thermal processor dm_mod
+[    2.380288] CPU:    0
+[    2.380289] EIP:    0060:[<c021c978>]    Not tainted VLI
+[    2.380291] EFLAGS: 00010297   (2.6.22-rc1-mm1 #2)
+[    2.380547] EIP is at vsnprintf+0x448/0x5d0
+[    2.380633] eax: 4400d340   ebx: c348f034   ecx: 4400d340   edx: fffffffe
+[    2.380721] esi: c03e0100   edi: 4400d340   ebp: c357ecc0   esp: c357ec68
+[    2.380810] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+[    2.380898] Process udevtrigger (pid: 686, ti=c357e000 task=c1876df0 task.ti=c357e000)
+[    2.380987] Stack: c348f014 00000fec c03e1c60 c03e3cec c357eccc c0499b88 c357ece0 c0282513
+[    2.381428]        c348f014 00000fec 3cb70fcb c348f034 ffffffff 00000000 ffffffff ffffffff
+[    2.381867]        ffffffff fffffffe c03e017c c357ed18 00000034 c0494a20 c357ece0 c021cb9f
+[    2.382305] Call Trace:
+[    2.382470]  [<c021cb9f>] sprintf+0x1f/0x30
+[    2.382594]  [<c02815ed>] show_uevent+0xed/0x130
+[    2.382720]  [<c0281163>] dev_attr_show+0x23/0x30
+[    2.382843]  [<c01dc077>] sysfs_read_file+0x97/0x140
+[    2.382968]  [<c019502f>] vfs_read+0xaf/0x180
+[    2.383096]  [<c0198c3a>] kernel_read+0x3a/0x50
+[    2.383221]  [<c01f126c>] evm_calc_hash+0x11c/0x240
+[    2.383347]  [<c01efd39>] evm_file_free+0xb9/0x330
+[    2.383470]  [<c0195a3a>] __fput+0xba/0x180
+[    2.383593]  [<c0195c32>] fput+0x22/0x40
+[    2.383715]  [<c0192e07>] filp_close+0x47/0x70
+[    2.383839]  [<c0194109>] sys_close+0x69/0xc0
+[    2.383965]  [<c01043c8>] syscall_call+0x7/0xb
+[    2.384092]  [<b7ebd0a7>] 0xb7ebd0a7
+[    2.384212]  =======================
+[    2.384295] INFO: lockdep is turned off.
+[    2.384379] Code: 21 fd ff ff c6 03 25 e9 19 fd ff ff 8d 4f 04 b8
+3b a2 3d c0 8b 55 e4 89 4d 08 8b 3f 81 ff ff 0f 00 00 0f 46 f8 89 f9
+89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 89 c6 8b 45 e0
+f6 45
+[    2.386787] EIP: [<c021c978>] vsnprintf+0x448/0x5d0 SS:ESP 0068:c357ec68
 
-    main()
-    {
-	...
-	getcontext(&main_uc);
-	alt.ss_sp = malloc(alt.ss_size = SIGSTKSZ);
-	alt.ss_flags = 0;
-	sigaltstack(&alt, (stack_t *)0);
-	sigemptyset(&set);
-	act.sa_sigaction = handler;
-	act.sa_mask = set;
-	act.sa_flags = SA_ONSTACK|SA_SIGINFO;
-	sigaction(SIGUSR1, &act, (struct sigaction *)0);
-	raise(SIGUSR1);
-    }
+    This comes a bit after IMA bails out successfully, if that's relevant:
 
-    void handler(int sig, siginfo_t *i, void *c)
-    {
-	ucontext_t *ucp = (ucontext_t *)c;
-	...
+[    1.708761] ima (ima_init): No TPM chip found(rc = -19), activating
+TPM-bypass!
 
-According to Posix, ucp->uc_stack should "refer to the receiving
-thread's context that was interrupted when the signal was delivered."
+--
+Joseph Fannin
+jfannin@gmail.com
 
-However, Linux always sets it to the sigaltstack.  (Even if SA_ONSTACK
-was not specified, in which case ucp->uc_stack points to a stack that
-has nothing to do with the running signal handler nor the context that
-was active when the signal was received.)
-
-FWIW, I ran on Linux 2.6.16.27-0.9-smp x86_64 and Linux
-2.6.16.27-0.6-default i386, but the code is the same in linux-2.6.22-rc1
-and all the architectures I inspected seem to have this same bug
-in setup_rt_frame.
-
-I was hoping to work around this with getcontext, but it appears to be 
-incompletely implemented, and does not set the main_uc.uc_stack field.
-There's a two-year-old bug report against glibc:
-http://sources.redhat.com/bugzilla/show_bug.cgi?id=759
-
-Reading the Posix specification, I would expect the values inside
-main_uc.uc_stack and ucp->uc_stack to be identifical.  Making Linux and
-glibc agree on these values would probably require turning getcontext
-into a system call.
-
--Andrew Hastings
- Cray Inc.
