@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbXEVJFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764099AbXEVJFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760665AbXEVJFF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 05:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbXEVJE4
+	id S1764099AbXEVJFm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 05:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbXEVJFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 05:04:56 -0400
-Received: from ku-gbr.de ([81.3.11.18]:46074 "EHLO ku-gbr.de"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755571AbXEVJEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 05:04:55 -0400
-X-Greylist: delayed 2010 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 05:04:55 EDT
-Date: Tue, 22 May 2007 10:30:53 +0200
-From: Konstantin Kletschke <lists@ku-gbr.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 8250_pnp is confused... (udev?)
-Message-ID: <20070522083052.GA2779@z1.synertronixx>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <46528811.2010302@cyte.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46528811.2010302@cyte.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 22 May 2007 05:05:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36874
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755687AbXEVJFc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 05:05:32 -0400
+Date: Tue, 22 May 2007 02:05:34 -0700 (PDT)
+Message-Id: <20070522.020534.07643900.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG sparc64] 2.6.22-rc broke X on Ultra5
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18002.44181.639121.720839@alkaid.it.uu.se>
+References: <18002.44181.639121.720839@alkaid.it.uu.se>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 2007-05-21 23:05 -0700 schrieb Jeff Wiegley:
-> I've used serial ports a lot in the past but not for the
-> past year so. Did something fundamental change?
+From: Mikael Pettersson <mikpe@it.uu.se>
+Date: Tue, 22 May 2007 10:40:53 +0200
 
-I use a serial PCI adaptor:
+> 2.6.21 works fine on my Ultra5, but with 2.6.22-rc the X
+> server (from Aurora 2) fails to mmap() the PCI frame buffer
+> (atyfb).
+> 
+> I noticed a lot of PCI-related changes both in `dmesg' and
+> /var/log/Xorg.0.log between 2.6.21 and 2.6.22-rc, so my
+> guess is that PCI resources get broken somewhere.
+> 
+> I'll try a bisect between 2.6.21 and 2.6.22-rc1 next, but
+> I'm also willing to test patches in case anyone thinks they
+> know what the fix is.
 
-00:0b.0 Serial controller: NetMos Technology PCI 9835 Multi-I/O
-Controller (rev 01)
+Start your bisect with the change right before this one:
 
-Well, I have also not used ttyS2 for a while and recently I realized, it
-does not like, when I past with a mouse a line into any terminal with a
-line break (Input Output Error). ttyS1 (same card) works fine.
+commit a2fb23af1c31ad6e0c281e56d385f803229d57fa
+Author: David S. Miller <davem@sunset.davemloft.net>
+Date:   Wed Feb 28 23:35:04 2007 -0800
 
-> and things are quite weird... I get all of the /dev/ttyS's
-> that I DON'T have and none of the ones that I do!
+    [SPARC64]: Probe PCI bus using OF device tree.
+    
+    Almost entirely taken from the 64-bit PowerPC PCI code.
+    
+    This allowed to eliminate a ton of cruft from the sparc64
+    PCI layer.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-When I have 8250* build as modules I get:
+Unfortunately, if the tree works right before this change,
+you can't just add this one because a subsequent fix is
+needed before ultra5/ultra10 will work again, but it's
+this one:
 
-ttyS0: OnBoard
-ttyS1: PCI card, first Port
-ttyS3: bogus, could have been meant to become ttyS2, second Port.
+commit 01f94c4a6ced476ce69b895426fc29bfc48c69bd
+Author: David S. Miller <davem@ultra5.davemloft.net>
+Date:   Sun Mar 4 12:53:19 2007 -0800
 
-So there is weird stuff going on since recent Kernel versions. May be
-since 2.6.19 until 2.6.21 (As said, I did not use the ttyS2 for a
-while).
+    [SPARC64]: Fix sabre pci controllers with new probing scheme.
+ ...
 
-Konsti
+So you could test these two commits:
 
+deb66c4521e119442aa266553e8cbfc86eb71232
+a2fb23af1c31ad6e0c281e56d385f803229d57fa
 
--- 
-GPG KeyID EF62FCEF
-Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
+Thanks.
