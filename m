@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933929AbXEVKpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763795AbXEVKrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933929AbXEVKpE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 06:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933590AbXEVKos
+	id S1763795AbXEVKrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 06:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbXEVKrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 06:44:48 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52581 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933351AbXEVKoq (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 06:44:46 -0400
-Date: Tue, 22 May 2007 20:44:30 +1000
-From: David Chinner <dgc@sgi.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: David Chinner <dgc@sgi.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       xfs-masters@oss.sgi.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [xfs-masters] Re: 2.6.22-rc1-mm1
-Message-ID: <20070522104429.GN86004887@sgi.com>
-References: <20070515201914.16944e04.akpm@linux-foundation.org> <464B304C.5040104@googlemail.com> <20070516094133.bec04e65.akpm@linux-foundation.org> <20070517020600.GS85884050@sgi.com> <20070517084135.GA8510@lst.de> <464CB577.5080106@googlemail.com> <20070518021114.GV86004887@sgi.com> <20070521101141.GX86004887@sgi.com> <20070521102321.GA2632@lst.de>
+	Tue, 22 May 2007 06:47:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34209 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754788AbXEVKrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 06:47:08 -0400
+Date: Tue, 22 May 2007 12:46:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Antonino Ingargiola <tritemio@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] mm: swap prefetch improvements
+Message-ID: <20070522104648.GA10622@elte.hu>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705222020.58474.kernel@kolivas.org> <20070522102530.GB2344@elte.hu> <200705222037.54741.kernel@kolivas.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070521102321.GA2632@lst.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200705222037.54741.kernel@kolivas.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 12:23:21PM +0200, Christoph Hellwig wrote:
-> On Mon, May 21, 2007 at 08:11:42PM +1000, David Chinner wrote:
-> > Christoph - this is an interaction with xfs_buf_associate_memory();
-> > I'm not sure what it is doing is at all safe now that it never gets
-> > passed kmem_alloc()d memory - it works for the log recovery case
-> > because we use it in pairs - once to shorten the buffer and then once
-> > to put it back the way it was.
-> > 
-> > But that doesn't work for the log buffers (we never return them to their
-> > original state) and the log wrap case looks to work mostly by accident
-> > now (and could posibly lead to double freeing pages)....
-> > 
-> > It seems that what we really need with the new code is a xfs_buf_clone()
-> > operation followed by trimming the range to what the secondary I/O needs
-> > to span. This would work for the log buffer case as well. Your thoughts?
+
+* Con Kolivas <kernel@kolivas.org> wrote:
+
+> On Tuesday 22 May 2007 20:25, Ingo Molnar wrote:
+> > * Con Kolivas <kernel@kolivas.org> wrote:
+> > > > > there was nothing else running on the system - so i suspect the
+> > > > > swapin activity flagged 'itself' as some 'other' activity and
+> > > > > stopped? The swapins happened in 4 bursts, separated by 5 seconds
+> > > > > total idleness.
+> > > >
+> > > > I've noted burst swapins separated by some seconds of pause in my
+> > > > desktop system too (with sp_tester and an idle gnome).
+> > >
+> > > That really is expected, as just about anything, including journal
+> > > writeout, would be enough to put it back to sleep for 5 more seconds.
+> >
+> > note that nothing like that happened on my system - in the
+> > swap-prefetch-off case there was _zero_ IO activity during the sleep
+> > period.
 > 
-> xfs_buf_associate_memory is a mess.  My original plan was to get rid of
-> it, but I kept that out to keep that patchset small and easily reviable,
-> but it seems like that was a mistake.  My plan is the following:
-> 
->  - xlog_bread and thus the whole buffer I/O path grows an iooffset
->    paramater that specifies at which offset into the buffer we start
->    the actual I/O.  That gets rid of all the xfs_buf_associate_memory
->    memory uses in the log recovery code
+> Ok, granted it's _very_ conservative. [...]
 
-Perhaps a new field in the xfs_buf structure - that way call paths
-don't need to grow extra parameters and potentially increase
-stack usage. The read path tends to be at the top of the stack
-when it gets blown in the writeback path....
+but your first reaction was "it should not have slept for 5 seconds":
 
->  - add a buffer clone operation as suggested by you above, and use
->    the offset in xlog_sync aswell.
+| Hmm.. The timer waits 5 seconds before trying to prefetch, but then 
+| only stops if it detects any activity elsewhere. It doesn't actually 
+| try to go idle in between
+ 
+It clearly should not consider 'itself' as IO activity. This suggests 
+some bug in the 'detect activity' mechanism, agreed? I'm wondering 
+whether you are seeing the same problem, or is all swap-prefetch IO on 
+your system continuous until it's done [or some other IO comes 
+inbetween]?
 
-I don't want to have to introduce a mempool just for one xfs_buf per
-filesystem, so this would need to be able to take a xfs_buf (log->l_xbuf)
-that it clones to.... 
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+	Ingo
