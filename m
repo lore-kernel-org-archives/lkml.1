@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966634AbXEVRyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966523AbXEVRz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966634AbXEVRyc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 13:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966555AbXEVRyU
+	id S966523AbXEVRz4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 13:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761023AbXEVRzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 13:54:20 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:55504 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966542AbXEVRyT (ORCPT
+	Tue, 22 May 2007 13:55:48 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:40745 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760665AbXEVRzs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 13:54:19 -0400
-Message-ID: <46532E49.6020402@s5r6.in-berlin.de>
-Date: Tue, 22 May 2007 19:54:17 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Tue, 22 May 2007 13:55:48 -0400
+Message-ID: <46532E44.4000701@zytor.com>
+Date: Tue, 22 May 2007 10:54:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Simon Horman <horms@verge.net.au>, Adrian Bunk <bunk@stusta.de>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: RFC: kconfig select warnings bogus?
-References: <20070519151523.GA26724@uranus.ravnborg.org>	 <46503542.50300@s5r6.in-berlin.de>	 <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com>	 <46504876.9040802@s5r6.in-berlin.de>	 <a781481a0705200650v2ef7be85h19f8c8eb026a303b@mail.gmail.com>	 <46505DBD.5010005@s5r6.in-berlin.de>	 <a781481a0705220753g25bb0dd8u33bbf8ddaf00f50c@mail.gmail.com>	 <46532247.6030803@s5r6.in-berlin.de>	 <a781481a0705221013m45f82054tca9a9a78ea8935d4@mail.gmail.com>	 <46532AA4.6080501@s5r6.in-berlin.de> <a781481a0705221046p6d94a652k3081eacdba01ca8d@mail.gmail.com>
-In-Reply-To: <a781481a0705221046p6d94a652k3081eacdba01ca8d@mail.gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Mike Houston <mikeserv@bmts.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org> <20070520170506.814a38d9.mikeserv@bmts.com> <20070521084549.61a1aa71@freepuppy> <20070521131055.0017404f.mikeserv@bmts.com> <20070521103755.51b954e1@freepuppy> <20070521225806.bb18d589.mikeserv@bmts.com> <20070521213146.3e220a44@freepuppy> <4652733F.4030708@garzik.org> <20070521214255.3dc36445@freepuppy> <alpine.LFD.0.98.0705212153220.3890@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705212153220.3890@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> On 5/22/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> When I said "The standard and maintainable way (for drivers at least)
->> is..." I didn't mean the example expression, I meant the *direction* in
->> which the example was stating dependencies.
+Linus Torvalds wrote:
 > 
-> In that case I wish "the points" you make on threads are relevant to them.
+> I can't really see that being a real problem in this day and age of PCI-X 
+> etc, but it _used_ to be a possible issue a decade ago. Maybe you've found 
+> a case where it matters even on modern hardware? We occasionally used to 
+> set the PCI latency timer to make people happy.
+> 
+> (Not that I'm convinced it even has any semantic meaning on a modern PCI 
+> system..)
+> 
 
-My initial reply was on a patch which removed the A-to-B declaration of
-dependency.
--- 
-Stefan Richter
--=====-=-=== -=-= =-==-
-http://arcgraph.de/sr/
+The PCI latency counters matter as long as you're talking a PCI or PCI-X
+bus.  It matters not one iota on anything that pretends to be a PCI bus
+but isn't, i.e. PCI Express, HyperTransport, etc.
+
+	-hpa
