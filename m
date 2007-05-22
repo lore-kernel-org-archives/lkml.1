@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbXEVV0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763767AbXEVV3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759195AbXEVV0F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 17:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758468AbXEVVZy
+	id S1763767AbXEVV3Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 17:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758750AbXEVV3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 17:25:54 -0400
-Received: from rtr.ca ([64.26.128.89]:3181 "EHLO mail.rtr.ca"
+	Tue, 22 May 2007 17:29:00 -0400
+Received: from waste.org ([66.93.16.53]:35684 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757137AbXEVVZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 17:25:53 -0400
-Message-ID: <46535FDD.3030801@rtr.ca>
-Date: Tue, 22 May 2007 17:25:49 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1757023AbXEVV27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 17:28:59 -0400
+Date: Tue, 22 May 2007 16:25:24 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Mason <chris.mason@oracle.com>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: filesystem benchmarking fun
+Message-ID: <20070522212524.GD11166@waste.org>
+References: <20070516171156.GY26766@think.oraclecorp.com> <20070516112515.b6f247b2.akpm@linux-foundation.org> <20070516191339.GA26766@think.oraclecorp.com> <20070516123342.714a11d8.akpm@linux-foundation.org> <20070516195359.GE26766@think.oraclecorp.com> <20070516130413.1fd391bf.akpm@linux-foundation.org> <20070516201414.GF26766@think.oraclecorp.com> <20070516133726.0c68a65f.akpm@linux-foundation.org> <20070522163511.GB6138@think.oraclecorp.com> <20070522112120.4a5c6a5d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-Subject: Re: Race free attributes in sysfs
-References: <46502A8B.70803@drzeus.cx>	 <3ae72650705211050p6b6cefbdya70dd4e0a27e2d1b@mail.gmail.com>	 <4651E866.5010304@drzeus.cx> <1179775695.3320.82.camel@lov.localdomain> <46530F02.7010802@drzeus.cx>
-In-Reply-To: <46530F02.7010802@drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070522112120.4a5c6a5d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Kay Sievers wrote:
->> We could change the driver-core to suppress the creation of an attribute
->> if the attribute's show() or store() method returns something like
->> -ENOENT at registration time?
->> The driver would pass _all_ possible attributes of the device at
->> registration time, but the core would only create the attributes which
->> are implemented for this particular device? Would that work for you?
->>   
+On Tue, May 22, 2007 at 11:21:20AM -0700, Andrew Morton wrote:
+> On Tue, 22 May 2007 12:35:11 -0400
+> Chris Mason <chris.mason@oracle.com> wrote:
 > 
-> Not sure. Not in an obvious way at least.
+> > On Wed, May 16, 2007 at 01:37:26PM -0700, Andrew Morton wrote:
+> > > On Wed, 16 May 2007 16:14:14 -0400
+> > > Chris Mason <chris.mason@oracle.com> wrote:
+> > > 
+> > > > On Wed, May 16, 2007 at 01:04:13PM -0700, Andrew Morton wrote:
+> > > > > > The good news is that if you let it run long enough, the times
+> > > > > > stabilize.  The bad news is:
+> > > > > > 
+> > > > > > create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
+> > > > > > create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
+> > > > > > create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
+> > > > > > create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
+> > > > > 
+> > > > > well hang on.  Doesn't this just mean that the first few runs were writing
+> > > > > into pagecache and the later ones were blocking due to dirty-memory limits?
+> > > > > 
+> > > > > Or do you have a sync in there?
+> > > > > 
+> > > > There's no sync,  but if you watch vmstat you can clearly see the log
+> > > > flushes, even when the overall create times are 11MB/s.  vmstat goes
+> > > > 30MB/s -> 4MB/s or less, then back up to 30MB/s.
+> > > 
+> > > How do you know that it is a log flush rather than, say, pdflush
+> > > hitting the blockdev inode and doing a big seeky write?
+> > 
+> > Ok, I did some more work to split out the two cases (block device inode
+> > writeback and log flushing).
+> > 
+> > I patched jbd's log_do_checkpoint to put all the blocks it wanted to
+> > write in a radix tree, then send them all down in order at the end.
 > 
-> It also doesn't feel like "the kernel way". Generally you can
-> create/allocate an object, assign attributes to it, then activate it.
-> Couldn't it be done so that I can add sysfs stuff to a device after I
-> just initialized it? (but before I add it).
-> 
->> You can assign any number of attribute groups to the device. If they
->> don't have a group name, they will all be created directly at the device
->> level. Would that work for you?
->>
-> I've had a look at sysfs groups and the biggest beef I have with those
-> is that they're too low level. In order to use them I first need to
-> create device attributes, then create an array of pointers to each attr
-> member. It would be nice if I could just feed an array of device
-> attributes (i.e. I want wrappers).
+> Side note: we already have all of that capability in the kernel:
+> sync_inode(blockdev_inode, wbc) will do an ascending-LBA write of the whole
+> blockdev.
 
-And how does this help to avoid the race condition?
-Just curious.
+Why don't we simply plug the queue, do all the writes, and let the I/O
+scheduler sort it out instead?
+
+-- 
+Mathematics is the supreme nostalgia of our time.
