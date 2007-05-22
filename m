@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbXEVU4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762810AbXEVU56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762699AbXEVU4y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbXEVU4p
+	id S1762810AbXEVU56 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbXEVU5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:56:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41311 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760103AbXEVU4o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:56:44 -0400
-Date: Tue, 22 May 2007 17:52:39 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB updates
-Message-Id: <1179867371.32496.98.camel@localhost>
+	Tue, 22 May 2007 16:57:49 -0400
+Received: from hermes1.dur.ac.uk ([129.234.8.20]:35041 "EHLO hermes1.dur.ac.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756017AbXEVU5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 16:57:48 -0400
+X-Greylist: delayed 923 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 16:57:48 EDT
+Date: Tue, 22 May 2007 21:42:22 +0100
+From: Ash Milsted <thatistosayiseenem@gawab.com>
+To: ck@vds.kolivas.org
+Cc: linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>
+Subject: Re: [ck] Re: [PATCH] mm: swap prefetch improvements
+Message-Id: <20070522214222.8b197247.thatistosayiseenem@gawab.com>
+In-Reply-To: <200705222037.54741.kernel@kolivas.org>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<200705222020.58474.kernel@kolivas.org>
+	<20070522102530.GB2344@elte.hu>
+	<200705222037.54741.kernel@kolivas.org>
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-DurhamAcUk-MailScanner: Found to be clean, Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, 22 May 2007 20:37:54 +1000
+Con Kolivas <kernel@kolivas.org> wrote:
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+> On Tuesday 22 May 2007 20:25, Ingo Molnar wrote:
+> > * Con Kolivas <kernel@kolivas.org> wrote:
+> > > > > there was nothing else running on the system - so i suspect the
+> > > > > swapin activity flagged 'itself' as some 'other' activity and
+> > > > > stopped? The swapins happened in 4 bursts, separated by 5 seconds
+> > > > > total idleness.
+> > > >
+> > > > I've noted burst swapins separated by some seconds of pause in my
+> > > > desktop system too (with sp_tester and an idle gnome).
+> > >
+> > > That really is expected, as just about anything, including journal
+> > > writeout, would be enough to put it back to sleep for 5 more seconds.
+> >
+> > note that nothing like that happened on my system - in the
+> > swap-prefetch-off case there was _zero_ IO activity during the sleep
+> > period.
+> 
+> Ok, granted it's _very_ conservative. I really don't want to risk its presence 
+> being a burden on anything, and the iowait it induces probably makes it turn 
+> itself off for another PREFETCH_DELAY (5s). I really don't want to cross the 
+> line to where it is detrimental in any way. Not dropping out on a 
+> cond_resched and perhaps making the delay tunable should be enough to make it 
+> a little less "sleepy".
+> 
+> -- 
+> -ck
 
-For the following:
+Hi. I just did some video encoding on my desktop and I was noticing
+(for the first time in a while) that running apps had to hit swap quite
+a lot when I switched to them (the encoding was going at full blast for
+most of the day, and most of the time other running apps were
+idle). Now, a good half of my RAM appeared to be free during all this,
+so I was thinking at the time that it would be nice if swap prefetch
+could be tunably more aggressive. I guess it would be ideal in this
+case if it could kick in during tunably low disk-IO periods, even if
+the CPU is rather busy. I'm sure you've considered this, so I only butt
+in here to cast a vote for it. :)
 
-   - Two fixes on Kconfig dependencies (ivtv and em28xx)
-   - Adding new fields to v4l2_pix_format broke the ABI, reverted that change
-   - Dvb-core: Handle failures to create devices
-   - Fix dst usage count
-   - Fix suport for SECAM with FI1216MF
-   - OLPC: Cafe_ccic and ov7670 fixes
+Of course, I could be completely wrong about the possibility.. and I
+seem to remember that the disk cache can take up about half the ram by
+default without this showing up in 'gnome-system-monitor'... which I
+guess might happen during heavy encoding.. but even if it did, I could
+have set the limit lower, and would then have still appreciated
+prefetching.
 
-Cheers,
-Mauro.
-
----
-
- drivers/media/dvb/bt8xx/dst.c          |    3 ---
- drivers/media/dvb/dvb-core/dvbdev.c    |   15 +++++++++++----
- drivers/media/video/cafe_ccic-regs.h   |    6 ++++++
- drivers/media/video/cafe_ccic.c        |   18 +++++++++++++++++-
- drivers/media/video/em28xx/Kconfig     |    3 +--
- drivers/media/video/ivtv/Kconfig       |    2 +-
- drivers/media/video/ivtv/ivtv-driver.h |    8 --------
- drivers/media/video/ivtv/ivtv-ioctl.c  |   12 ++----------
- drivers/media/video/ov7670.c           |   21 ++++++++++++++++++---
- drivers/media/video/tuner-simple.c     |   10 +++++++---
- include/linux/videodev2.h              |    2 --
- 11 files changed, 63 insertions(+), 37 deletions(-)
-
-Hans Verkuil (1):
-      V4L/DVB (5670): Adding new fields to v4l2_pix_format broke the ABI, reverted that change
-
-Jonathan Corbet (2):
-      V4L/DVB (5690): Cafe_ccic: Properly power down the sensor
-      V4L/DVB (5691): Ov7670: reset clkrc in rgb565 mode
-
-Manu Abraham (1):
-      V4L/DVB (5639a): Fix dst usage count
-
-Matthieu CASTET (1):
-      V4L/DVB (5680): Tuner-simple.c fix suport for SECAM with FI1216MF
-
-Mauro Carvalho Chehab (2):
-      V4L/DVB (5639): Fix Kconfig dependencies for ivtv
-      V4L/DVB (5640): Fix: em28xx shouldn't be selecting VIDEO_BUF
-
-Simon Arlott (1):
-      V4L/DVB (5630): Dvb-core: Handle failures to create devices
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
-
+Ash
