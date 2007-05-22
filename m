@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbXEVW44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbXEVW7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbXEVW44 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbXEVW4s
+	id S1759490AbXEVW7X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbXEVW7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:56:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38515 "EHLO mx1.redhat.com"
+	Tue, 22 May 2007 18:59:16 -0400
+Received: from mail.windriver.com ([147.11.1.11]:33529 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756166AbXEVW4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:56:47 -0400
-Date: Tue, 22 May 2007 18:56:40 -0400
-From: Dave Jones <davej@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [stable] Wanted: Allow adding new device IDs during the -stable cycle
-Message-ID: <20070522225640.GG22628@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>,
-	Jeff Garzik <jeff@garzik.org>, Chuck Ebbert <cebbert@redhat.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Chris Wright <chrisw@sous-sol.org>
-References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com> <46533EA8.7020602@garzik.org> <20070522193538.GA885@kroah.com> <20070522195135.GG12157@redhat.com> <20070522221718.GC2302@kroah.com>
+	id S1755362AbXEVW7P (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 18:59:15 -0400
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+From: "Richard Griffiths (wrs)" <richard.griffiths@windriver.com>
+Reply-To: richard.griffiths@windriver.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux-kernel@vger.kernel.org, Carsten Otte <cotte@de.ibm.com>
+In-Reply-To: <20070522154905.1d7e8a2e.akpm@linux-foundation.org>
+References: <1179871779.24163.11.camel@localhost.localdomain>
+	 <20070522154905.1d7e8a2e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Linux Product Development
+Date: Tue, 22 May 2007 15:58:29 -0700
+Message-Id: <1179874709.17209.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522221718.GC2302@kroah.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 22 May 2007 22:58:30.0307 (UTC) FILETIME=[B71E0730:01C79CC4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 03:17:18PM -0700, Greg Kroah-Hartman wrote:
+On Tue, 2007-05-22 at 15:49 -0700, Andrew Morton wrote:
+> On Tue, 22 May 2007 15:09:39 -0700
+> Richard Griffiths <res07ml0@verizon.net> wrote:
+> 
+> > Venerable cramfs fs Linear XIP patch originally from MontaVista, used in
+> > the embedded Linux community for years, updated for 2.6.21. Tested on
+> > several systems with NOR Flash. PXA270, TI OMAP2430, ARM Versatile and
+> > Freescale iMX31ADS.
+> 
+> It's good to see some of these secret embedded patches heading in
+> the mainline direction.
+> 
+> But we'd expected and hoped that flash-based XIP would be able to use
+> the existing xip infrastructure, in mm/filemap_xip.c.  Not possible?
+I don't know I'll look into it and see if it is possible.
+> 
+> The de-constification of cramfs_ops and cramfs_dir_inode_operations
+> was, I assume, a mistake?
+oops. Yes, Thanks Andrew.
 
- > >  > >  I haven't found a single distro that (a) makes it trivial to add PCI IDs at 
- > >  > >  install time, and then (b) ensures those PCI IDs remain persistent for each 
- > >  > >  boot.  We are not at all to the "just works" stage yet.
- > >  > 
- > >  > Well, SuSE handles this just fine, but I do notice that RHEL 5 disables
- > >  > the new_id stuff entirely, so I can see why you might get this
- > >  > impression :)
- > > 
- > > That's news to me.  I didn't even realise it was possible to disable this.
- > > Pointer?
- > 
- > Jon Masters told me this last week at FreedomHEC, so I don't have a
- > pointer to the patch that disables it, sorry.
+Richard
 
-Either there's some miscommunication, or bonghits.
-
-(18:54:00:davej@gelk:kernel-2.6.18)$ kdiff vanilla/drivers/pci/pci-driver.c linux-2.6.18.noarch/drivers/pci/pci-driver.c 
-(18:54:10:davej@gelk:kernel-2.6.18)$ 
-
-And as there's no CONFIG option other than CONFIG_HOTPLUG (which we obviously enable)
-I don't see any reason why this wouldn't be enabled in RHEL5.
-(And I think mdomsch would have probably had a fit if he found out we were
- disabling it, but that's another story ;-)
-
- > > Theres more to this than just PCI IDs though.
- > > ac97 ID updates, usb id updates, etc, etc.
- > 
- > USB ids also can be added through sysfs :)
-
-oh cool, I had missed that.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
