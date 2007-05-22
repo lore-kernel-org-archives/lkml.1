@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935579AbXEVWTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935693AbXEVWU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935579AbXEVWTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 18:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbXEVWTL
+	id S935693AbXEVWU3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 18:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760741AbXEVWUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 18:19:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54736 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756275AbXEVWTJ (ORCPT
+	Tue, 22 May 2007 18:20:20 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:49003 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758029AbXEVWUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 18:19:09 -0400
-Date: Tue, 22 May 2007 15:07:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Romano Giannetti <romanol@upcomillas.es>
-cc: Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/69] -stable review
-In-Reply-To: <1179870110.16656.2.camel@localhost>
-Message-ID: <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
-References: <20070521191612.800400000@sous-sol.org>  <4652070D.3090509@redhat.com>
-  <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org> 
- <20070521212522.GL3429@sequoia.sous-sol.org>
- <1179870110.16656.2.camel@localhost>
+	Tue, 22 May 2007 18:20:19 -0400
+Date: Tue, 22 May 2007 15:15:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [stable] Wanted: Allow adding new device IDs during the
+	-stable cycle
+Message-ID: <20070522221533.GB2302@kroah.com>
+References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com> <46533EA8.7020602@garzik.org> <20070522193538.GA885@kroah.com> <46535164.8080604@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46535164.8080604@garzik.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 22 May 2007, Romano Giannetti wrote:
+On Tue, May 22, 2007 at 04:24:04PM -0400, Jeff Garzik wrote:
+>  Greg KH wrote:
+> > Well, SuSE handles this just fine, but I do notice that RHEL 5 disables
+> > the new_id stuff entirely, so I can see why you might get this
+> > impression :)
 > 
-> It's an useful patch for me. Without it, my sony vaio pcg-fx701 was very
-> erratic in resume (kernel 2.6.21.1; it works well with the .17 ubuntu
-> kernel). With this patch, I have done 7 cycles flawlessly. Even the
-> out-of-tree rtl8180 wireless driver [1] works ok across resumes. 
-
-Ok, good to hear.
-
-> The only problem is that there is an gaping delay of 60 seconds (more or
-> less) on resume. I have the syslog trace copied below; could be a timer
-> problem? Is it known? (It is scaring because the laptop seems dead
-> during this time. I'm not and expert, but it seems here:
-
-It's not known, no, and yeah, that's scary (and 60 seconds is long enough 
-that most people would have grown bored and pushed the power button for 
-five seconds, having considered the resume a failure).
-
-> [    1.617972] pcmcia: registering new device pcmcia1.0 
-> [   61.612517] PM: Writing back config space on device 0000:00:[...]
+>  I looked at distros other than those produced by my employer.
 > 
-> ...and time do not advance.
+>  Apparently you did not.
+> 
+>  This is not how we best serve Linux users.
 
-Do you mean that doing "date" twice does not increase the seconds? If so, 
-that's almost certainly related to the gaping delay. Which timer do you 
-end up using (what does "dmesg | grep clocksource" say)? Does adding 
-"clocksource=acpi_pm" to the kernel command line change things?
+See that ":)" above?
 
-Also, what does your lspci look like?
+Anyway, I'm pretty sure that Ubuntu also handles new device ids through
+sysfs, or so I was told once, but I don't have a box to test that out
+on.  Oh, and Dell has some userspace tools that also use this interface
+for adding new ids.
 
-		Linus
+thanks,
+
+greg k-h
