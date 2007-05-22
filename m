@@ -1,51 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759837AbXEVU1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761663AbXEVU3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759837AbXEVU1M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757076AbXEVU07
+	id S1761663AbXEVU3O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756687AbXEVU27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:26:59 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:38952 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756687AbXEVU06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:26:58 -0400
-Date: Tue, 22 May 2007 22:18:41 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: Ray Lee <ray-lk@madrabbit.org>, Andrey Borzenkov <arvidjaar@mail.ru>,
-       Uwe Bugla <uwe.bugla@gmx.de>, Ken Chen <kenchen@google.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: bug in 2.6.22-rc2: loop mount limited to one single iso image
-In-Reply-To: <20070520062816.GA4095@ftp.linux.org.uk>
-Message-ID: <Pine.LNX.4.61.0705222217300.4452@yvahk01.tjqt.qr>
-References: <464F42F3.1080300@madrabbit.org> <20070519191751.E51233A23A2@muan.mtu.ru>
- <200705200124.13026.uwe.bugla@gmx.de> <200705200845.43621.arvidjaar@mail.ru>
- <2c0942db0705192316s2682807chd23df6f4de29edcb@mail.gmail.com>
- <20070520062816.GA4095@ftp.linux.org.uk>
+	Tue, 22 May 2007 16:28:59 -0400
+Received: from smtp3.wanadoo.co.uk ([193.252.22.156]:49325 "EHLO
+	smtp3.freeserve.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756000AbXEVU27 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 16:28:59 -0400
+X-ME-UUID: 20070522202856444.6C8001C00087@mwinf3206.me.freeserve.com
+Message-ID: <46535287.7060904@cjsoftuk.dyndns.org>
+Date: Tue, 22 May 2007 21:28:55 +0100
+From: Chris Malton <chrism@cjsoftuk.dyndns.org>
+Organization: CJSoft UK
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: NCPFS can't handle extended characters.
+References: <4652E735.7000206@cjsoftuk.dyndns.org> <20070522205723.0d0dc5ce@the-village.bc.nu>
+In-Reply-To: <20070522205723.0d0dc5ce@the-village.bc.nu>
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms030902000506030803060700"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a cryptographically signed message in MIME format.
 
-On May 20 2007 07:28, Al Viro wrote:
->On Sat, May 19, 2007 at 11:16:59PM -0700, Ray Lee wrote:
->> Ken? Ball's in your court. As the patch isn't providing a killer
->> feature for 2.6.22, I'd suggest just reverting it for now until the
->> issues are ironed out.
->
->Hold it.  The real question here is which logics do we want there.
->IOW, and how many device nodes do we want to appear and _when_ do
->we want them to appear?
+--------------ms030902000506030803060700
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-"min_loop" (max_loop?) nodes should appear (but without a backing
-gendisk), and when they are opened, they should get their gendisk
-allocated and assigned.
+Alan Cox wrote:
+> For any real hope to answer things like that it would be useful to have
+> precise descriptions of what fails, any messages logged when it occurs
+> etc.
+
+OK,
+
+What fails: A dir on the folder containing the offending file results in 
+part listings or no listing at all.
+
+There are no messages logged anywhere, dir completes successfully 
+without complaining.  I'm going to recompile with the latest kernel and 
+debug in a few weeks time (add the debug option to the NCPFS kernel module).
+
+On this occasion the offending files had a character produced by MS Word 
+in them.  I can't find out which charcode at present (think it was 
+charcode 180).
+
+Chris
+
+> 
+> Alan
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
 
+--------------ms030902000506030803060700
+Content-Type: application/x-pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
 
-	Jan
--- 
+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
+--------------ms030902000506030803060700--
+
