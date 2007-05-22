@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbXEVUF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759006AbXEVUKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759614AbXEVUF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbXEVUFQ
+	id S1759006AbXEVUKd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXEVUK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:05:16 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40402 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755284AbXEVUFP (ORCPT
+	Tue, 22 May 2007 16:10:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33302 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755346AbXEVUKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:05:15 -0400
-Date: Tue, 22 May 2007 23:05:13 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] revoke: fix zero-length kmalloc
-Message-ID: <Pine.LNX.4.64.0705222304500.22904@sbz-30.cs.Helsinki.FI>
+	Tue, 22 May 2007 16:10:25 -0400
+Date: Tue, 22 May 2007 13:08:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Maxim Uvarov <muvarov@ru.mvista.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] Performance Stats: Kernel patch
+Message-Id: <20070522130824.a78976aa.akpm@linux-foundation.org>
+In-Reply-To: <20070522171950.23728.95735.stgit@localhost.localdomain>
+References: <20070522171950.23728.95735.stgit@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Tue, 22 May 2007 17:19:52 +0000
+Maxim Uvarov <muvarov@ru.mvista.com> wrote:
 
-Fix a zero-length kmalloc in the case where there is nothing to revoke.
+> Sorry for bothering you. I know you are very busy but could 
+> you please tell me what is situation of this patch?
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- fs/revoke.c |   21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+I'd like to add the context-switch accounting to the taskstats payload.
 
-Index: 26-mm/fs/revoke.c
-===================================================================
---- 26-mm.orig/fs/revoke.c	2007-05-22 22:58:17.000000000 +0300
-+++ 26-mm/fs/revoke.c	2007-05-22 23:01:17.000000000 +0300
-@@ -547,22 +547,12 @@ static struct fileset *__alloc_revoke_fs
- 	return NULL;
- }
- 
--static struct fileset *alloc_revoke_fset(struct inode *inode, struct file *to_exclude)
--{
--	unsigned long nr_fds;
--
--	read_lock(&tasklist_lock);
--	nr_fds = inode_fds(inode, to_exclude);
--	read_unlock(&tasklist_lock);
--
--	return __alloc_revoke_fset(nr_fds);
--}
--
- static int do_revoke(struct inode *inode, struct file *to_exclude)
- {
- 	struct revoke_details details;
- 	struct fileset *fset = NULL;
- 	struct task_struct *g, *p;
-+	unsigned long nr_fds;
- 	int err = 0;
- 
- 	if (current->fsuid != inode->i_uid && !capable(CAP_FOWNER)) {
-@@ -576,11 +566,18 @@ static int do_revoke(struct inode *inode
- 		goto out;
- 	}
- 
-+	read_lock(&tasklist_lock);
-+	nr_fds = inode_fds(inode, to_exclude);
-+	read_unlock(&tasklist_lock);
-+
-+	if (!nr_fds)
-+		goto out;
-+
- 	/*
- 	 * Pre-allocate memory because the first pass is done under
- 	 * tasklist_lock.
- 	 */
--	fset = alloc_revoke_fset(inode, to_exclude);
-+	fset = __alloc_revoke_fset(nr_fds);
- 	if (!fset) {
- 		err = -ENOMEM;
- 		goto out;
+As we'd then need to uprev the taskstats payload and version it makes sense
+to have a look around, see if there's anything else which should be in
+there but got missed.
+
+
+
+I don't think we can accept the number-of-syscalls accounting feature.  It
+adds a memory increment into the kernel's number-one hotpath.  Something
+which people like to obsessively microbenchmark.
+
+And as I said earlier, a 32-bit counter can be overflowed in mere seconds,
+so that needs to become 64-bit, in which case we add a memory increment and
+a test-n-branch to that hottest path.
+
+
+There _is_ some cumulative overhead here, and I don't see how the value of
+the syscall counter can justify it.
