@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763108AbXEVG6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762475AbXEVHKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763108AbXEVG6o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 02:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756493AbXEVG6i
+	id S1762475AbXEVHKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 03:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbXEVHKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 02:58:38 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:52127 "EHLO pasmtpA.tele.dk"
+	Tue, 22 May 2007 03:10:07 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:10230 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756455AbXEVG6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 02:58:37 -0400
-Date: Tue, 22 May 2007 06:43:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ben Collins <ben.collins@ubuntu.com>
-Cc: linux-kernel@vger.kernel.org, Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: Re: [RFC] Crash on modpost, addend_386_rel()
-Message-ID: <20070522044348.GB7795@uranus.ravnborg.org>
-References: <1179799287.7485.17.camel@cunning>
+	id S1754953AbXEVHKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 03:10:06 -0400
+Date: Tue, 22 May 2007 09:07:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh@veritas.com>,
+       Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+Message-ID: <20070522070738.GI4705@kernel.dk>
+References: <20070520133505.46147.qmail@web52609.mail.re2.yahoo.com> <Pine.LNX.4.64.0705210917280.25871@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705211835140.26666@blonde.wat.veritas.com> <Pine.LNX.4.64.0705211121570.26794@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705211930370.31659@blonde.wat.veritas.com> <Pine.LNX.4.64.0705211147100.26970@schroedinger.engr.sgi.com> <20070521190043.GA4705@kernel.dk> <Pine.LNX.4.64.0705211208270.27129@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705212026080.5442@blonde.wat.veritas.com> <Pine.LNX.4.64.0705211524060.29480@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1179799287.7485.17.camel@cunning>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0705211524060.29480@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 10:01:27PM -0400, Ben Collins wrote:
-> Got this crash in modpost. Bisect blames this commit:
+On Mon, May 21 2007, Christoph Lameter wrote:
+> Ok booting SLUB without "slub_debug" and having
 > 
-> commit f892b7d480eec809a5dfbd6e65742b3f3155e50e
-> Author: Atsushi Nemoto <anemo@mba.ocn.ne.jp> 
-> Date:   Thu May 17 01:14:38 2007 +0900
->     kbuild: make better section mismatch reports on i386, arm and mips
+> CONFIG_DEBUG_LOCK_ALLOC
+> CONFIG_LOCKDEP
 > 
->     On i386, ARM and MIPS, warn_sec_mismatch() sometimes fails to show
->     usefull symbol name.  This is because empty 'refsym' due to 0 r_addend
->     value.  This patch is to adjust r_addend value, consulting with
->     apply_relocate() routine in kernel code.
+> will trigger the problem.
 > 
-> Sorry, I don't know enough about the elf stuff to fix this up myself.
-> Config that causes it is at the end.
+> So I guess the issue is that lockdep does a slab alloc while we get the 
+> slab lock during slab alloc?
 
-Thanks. Linus already reported the same in private mail and I asked him to
-revert this commit which he has done by now.
-When properly fixed it will be re-added but this time it will cook
-a little in -mm first.
+If I have CONFIG_SLUB_DEBUG set, then box boots fine. If I don't have it
+set, then it hard hangs sometime after boot:
 
-	Sam
+[...]
+ReiserFS: sda2: Using r5 hash to sort names
+VFS: Mounted root (reiserfs filesystem) readonly.
+Freeing unused kernel memory: 180k freed
+
+which is usually followed by messages bringing up the network link, etc.
+Let me know which tests you want run, or which patches to try.
+
+-- 
+Jens Axboe
+
