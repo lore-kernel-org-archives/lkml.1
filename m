@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762164AbXEVBNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764833AbXEVBNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762164AbXEVBNR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 21:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbXEVBNH
+	id S1764833AbXEVBNn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 21:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbXEVBNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 21:13:07 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34170 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756786AbXEVBNG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 21:13:06 -0400
-Date: Mon, 21 May 2007 18:13:03 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Matt Mackall <mpm@selenic.com>, William Lee Irwin III <wli@holomorphy.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-In-Reply-To: <20070522010823.GC27743@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0705211812440.24359@schroedinger.engr.sgi.com>
-References: <20070518040854.GA15654@wotan.suse.de>
- <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com>
- <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com>
- <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com>
- <20070520092552.GA7318@wotan.suse.de> <20070521080813.GQ31925@holomorphy.com>
- <20070521092742.GA19642@wotan.suse.de> <20070521224316.GC11166@waste.org>
- <20070522010823.GC27743@wotan.suse.de>
+	Mon, 21 May 2007 21:13:33 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:44389 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757152AbXEVBNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 21:13:33 -0400
+Date: Mon, 21 May 2007 18:09:41 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <htejun@gmail.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, jeff@garzik.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Alan Cox <alan@redhat.com>, Dave Jones <davej@redhat.com>,
+       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
+       stable@kernel.org
+Subject: Re: [stable] [patch 07/69] libata-sff: Undo bug introduced with
+	pci_iomap changes
+Message-ID: <20070522010941.GT3429@sequoia.sous-sol.org>
+References: <20070521191612.800400000@sous-sol.org> <20070521191701.791285000@sous-sol.org> <alpine.LFD.0.98.0705211614210.3890@woody.linux-foundation.org> <20070521233840.GS3429@sequoia.sous-sol.org> <20070522013640.5232029b@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070522013640.5232029b@the-village.bc.nu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007, Nick Piggin wrote:
+* Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> Yeah - fix your mailer, you got a reply 5 days ago.
 
-> That would be unpopular with pagecache, because that uses pretty well
-> all fields.
+Sure wouldn't be the first time something broke.  I'll take a look.
 
-SLUB also uses all fields....
-
+thanks,
+-chris
