@@ -1,48 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762924AbXEVGYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763436AbXEVGZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762924AbXEVGYy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 02:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbXEVGYr
+	id S1763436AbXEVGZX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 02:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763108AbXEVGZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 02:24:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39130 "EHLO mx3.mail.elte.hu"
+	Tue, 22 May 2007 02:25:06 -0400
+Received: from mx1.suse.de ([195.135.220.2]:48221 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756114AbXEVGYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 02:24:46 -0400
-Date: Tue, 22 May 2007 08:24:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anant Nitya <kernel@prachanda.info>
-Cc: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: bad networking related lag in v2.6.22-rc2
-Message-ID: <20070522062411.GA20464@elte.hu>
-References: <20070517174533.GA538@elte.hu> <465208D2.6070409@trash.net> <46520F77.5000408@trash.net> <200705221147.56571.kernel@prachanda.hub> <20070522062328.GB20002@elte.hu>
+	id S1756652AbXEVGZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 02:25:04 -0400
+Date: Tue, 22 May 2007 08:24:53 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070522062452.GA29807@wotan.suse.de>
+References: <20070519181501.GC19966@holomorphy.com> <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com> <20070520092552.GA7318@wotan.suse.de> <20070521080813.GQ31925@holomorphy.com> <20070521092742.GA19642@wotan.suse.de> <20070521224316.GC11166@waste.org> <20070522013951.GP19966@holomorphy.com> <20070522015703.GE27743@wotan.suse.de> <20070522050410.GQ19966@holomorphy.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070522062328.GB20002@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070522050410.GQ19966@holomorphy.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > Sorry, but this patch is not helping here. [...]
+On Mon, May 21, 2007 at 10:04:10PM -0700, William Lee Irwin III wrote:
+> On Mon, May 21, 2007 at 06:39:51PM -0700, William Lee Irwin III wrote:
+> >> address (virtual and physical are trivially inter-convertible), mock
+> >> up something akin to what filesystems do for anonymous pages, etc.
+> >> The real objection everyone's going to have is that driver writers
+> >> will stain their shorts when faced with the rules for handling such
+> >> things. The thing is, I'm not entirely sure who these driver writers
+> >> that would have such trouble are, since the driver writers I know
+> >> personally are sophisticates rather than walking disaster areas as such
+> >> would imply. I suppose they may not be representative of the whole.
 > 
-> btw., could you please send this patch on-list too please?
+> On Tue, May 22, 2007 at 03:57:03AM +0200, Nick Piggin wrote:
+> > That's not the objection I would have. I would say that firstly, I
+> > don't think the mem_map overhead is very significant (at any rate,
+> > an allocated-on-demand metadata is not going to be any smaller if
+> > you fill up on pagecache...). Secondly, I think there is merit to
+> > having the same page metadata used by the major subsystems, because
+> > it helps for locality of reference.
+> 
+> The size isn't the advantage being cited; I'd actually expect the net
+> result to be larger. It's the control over the layout of the metadata
+> for cache locality and even things like having enough flags, folding
+> buffer_head -like affairs into the per-page metadata for filesystems
+> and so reaping cache locality benefits even there (assuming it works
+> out in other respects), and so on.
+> 
+> Passing pages between subsystems doesn't seem very significant to me.
+> There isn't going to be much locality of reference, or even any
+> guarantee that the subsystem gets fed a cache hot page structure. The
+> subsystem being passed the page will have its own cache hot accounting
+> structures to stick the information about the memory into.
 
-disregard this - just found Patrick's patch.
+Well consider the page allocator and pagecache. The page allocator
+uses page metadata rather than eg. a bitmap, and it uses page list
+heads for the per-cpu allocator.
 
-	Ingo
+If we were to instead perhaps use external bitmaps and arrays to 
+keep track of pages, then the pagecache would have to go and allocate
+its own structures rather than reuse the cache hot page allocator
+structures.
+
+Buffer heads might be something that would work well, but we'd still
+like to be able to deallocate them without freeing the whole pagecache
+(because they tend to be associated with less frequent operations like
+IO). But anyway, I don't know. I'm sure there would be cases where it
+works better.
+
+
+> On Tue, May 22, 2007 at 03:57:03AM +0200, Nick Piggin wrote:
+> > But I haven't explored the idea enough myself to know whether there
+> > would be any really killer benefits to this. Delayed metadata freeing
+> > via RCU without holding up the freeing of the actual page would have
+> > been something, however I can do similar with speculative references
+> > now (or whenever the code gets merged), which doesn't even require the
+> > RCU overhead.
+> 
+> I'm not entirely sure what you're on about there, but it sounds
+> interesting.
+
+Heh :) Well the lockless pagecache would become basically trivial if we
+could RCU-free pagecache pages, however doing that is really awful for
+a number of reasons. However if you had a system where the metadata is
+decoupled, you could simply RCU-free the 'struct page' (while still
+immediately freeing the page itself) which would make lockless pagecache
+(and potentially similar things) equally trivial.
+
+I assumed K42 might have been into that angle.
+
