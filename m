@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbXEVGVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbXEVGXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758570AbXEVGVd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 02:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762139AbXEVGVU
+	id S1761534AbXEVGXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 02:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756651AbXEVGXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 02:21:20 -0400
-Received: from ms.trustica.cz ([82.208.32.68]:44542 "EHLO ms.trustica.cz"
+	Tue, 22 May 2007 02:23:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59203 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762086AbXEVGVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 02:21:18 -0400
-Message-ID: <46528B6F.3050701@assembler.cz>
-Date: Tue, 22 May 2007 08:19:27 +0200
-From: Rudolf Marek <r.marek@assembler.cz>
-User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070520)
-MIME-Version: 1.0
-To: Luca <kronos.it@gmail.com>
-CC: lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [lm-sensors] [RFC] ACPI based hwmon driver for ASUS
-References: <20070513223329.GA29207@dreamland.darkstar.lan>	 <46520F36.4080006@assembler.cz> <68676e00705211453n69de6868lc5da2cad64f65699@mail.gmail.com>
-In-Reply-To: <68676e00705211453n69de6868lc5da2cad64f65699@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1755955AbXEVGXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 02:23:13 -0400
+Date: Tue, 22 May 2007 08:22:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Anant Nitya <kernel@prachanda.info>
+Cc: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: bad networking related lag in v2.6.22-rc2
+Message-ID: <20070522062233.GA20002@elte.hu>
+References: <20070517174533.GA538@elte.hu> <465208D2.6070409@trash.net> <46520F77.5000408@trash.net> <200705221147.56571.kernel@prachanda.hub>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705221147.56571.kernel@prachanda.hub>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I have following readings:
+* Anant Nitya <kernel@prachanda.info> wrote:
 
-w83627ehf-isa-0290
-Adapter: ISA adapter
-VCore:     +1.52 V  (min =  +0.00 V, max =  +1.74 V)
-in1:      +12.30 V  (min = +13.46 V, max = +13.04 V) ALARM
-AVCC:      +3.36 V  (min =  +4.08 V, max =  +3.95 V) ALARM
-3VCC:      +3.36 V  (min =  +4.05 V, max =  +3.06 V) ALARM
-in4:       +2.04 V  (min =  +1.78 V, max =  +2.04 V)
-in5:       +1.60 V  (min =  +2.04 V, max =  +2.02 V) ALARM
-in6:       +5.12 V  (min =  +6.12 V, max =  +6.53 V) ALARM
-VSB:       +3.36 V  (min =  +4.08 V, max =  +4.08 V) ALARM
-VBAT:      +3.30 V  (min =  +4.08 V, max =  +3.04 V) ALARM
-in9:       +1.65 V  (min =  +0.98 V, max =  +2.04 V)
-Case Fan:    0 RPM  (min =    0 RPM, div = 8)
-CPU Fan:  1638 RPM  (min =    0 RPM, div = 4)
-Aux Fan:  1436 RPM  (min = 4272 RPM, div = 4) ALARM
-fan5:        0 RPM  (min =    0 RPM, div = 16)
-Sys Temp:    +28°C  (high =   -65°C, hyst =   -34°C)   ALARM
-CPU Temp:  +34.0°C  (high = +80.0°C, hyst = +75.0°C)
-AUX Temp:  +38.5°C  (high = +80.0°C, hyst = +75.0°C)
+> > I think I already found the bug, please try if this patch helps.
+> 
+> Sorry, but this patch is not helping here. I recompiled the kernel 
+> with this patch but same load pattern still make system to crawl.
+> 
+> Here is the link for script I use to shape traffic.
+> 
+> http://cybertek.info/taitai/adslbwopt.sh
 
-Fan4 is disabled in the chip. I think the board has 4 connectors. I dont have 
-time right now to check the manual.
+could you also apply the fix for the softirq problem below, to make sure 
+it does not interact?
 
-Rudolf
+	Ingo
 
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
+@@ -4212,9 +4212,7 @@ int __sched cond_resched_softirq(void)
+ 	BUG_ON(!in_softirq());
+ 
+ 	if (need_resched() && system_state == SYSTEM_RUNNING) {
+-		raw_local_irq_disable();
+-		_local_bh_enable();
+-		raw_local_irq_enable();
++		local_bh_enable();
+ 		__cond_resched();
+ 		local_bh_disable();
+ 		return 1;
