@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765867AbXEVIRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764329AbXEVIT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765867AbXEVIRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 04:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764671AbXEVIRG
+	id S1764329AbXEVIT7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 04:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbXEVITr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 04:17:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49738 "EHLO mail.dvmed.net"
+	Tue, 22 May 2007 04:19:47 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:54796 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757259AbXEVIRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 04:17:04 -0400
-Message-ID: <4652A6F9.1040502@garzik.org>
-Date: Tue, 22 May 2007 04:16:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1755971AbXEVITr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 04:19:47 -0400
+Message-ID: <4652A77B.6020306@free.fr>
+Date: Tue, 22 May 2007 10:19:07 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Dave Airlie <airlied@gmail.com>
-CC: Jon Smirl <jonsmirl@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-References: <200705171423.46748.jesse.barnes@intel.com>	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>	 <200705210914.22663.jbarnes@virtuousgeek.org>	 <200705210934.58559.jbarnes@virtuousgeek.org>	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>	 <4652295E.7060305@garzik.org> <21d7e9970705220107mc096135nc26af32830d83646@mail.gmail.com>
-In-Reply-To: <21d7e9970705220107mc096135nc26af32830d83646@mail.gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Dumping the checksums in a module
+References: <464DC019.6010008@free.fr> <Pine.LNX.4.61.0705182225450.9015@yvahk01.tjqt.qr> <20070518204650.GA17343@uranus.ravnborg.org>
+In-Reply-To: <20070518204650.GA17343@uranus.ravnborg.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie wrote:
->> It is a quite sensible idea.
+Sam Ravnborg wrote:
+> On Fri, May 18, 2007 at 10:27:06PM +0200, Jan Engelhardt wrote:
+>> On May 18 2007 17:02, John Sigler wrote:
+>>> I'm getting "disagrees about version of symbol struct_module" messages,
+>>> and I'm trying to understand why.
+>>>
+>>> As far as I understand (which is not very far), if I define
+>>> CONFIG_MODVERSIONS, then checksums for various functions (all exported
+>>> functions?) and various structures (which ones?) will be included inside
+>>> the kernel image, and written to Module.symvers. When an out-of-tree
+>>> module is built, it will also include these checksums.
+>>>
+>>> How do I list the checksums within a module?
+>>>
+>>> Is there a simpler way to list all the checksums?
+>> 22:25 ichi:~ > modinfo aes
+>> srcversion:     8CB82B3A254D5A950FD0D14
 >>
->> The userspace X server SHOULD be running under a non-root user, with
->> appropriate fine-grained privs granted to it.
->>
->> "I need root to do graphics" is a myopic, antiquated view of the world.
-> 
-> Did I say the X server? There are policy decisions that are root only
-> also authorisation of processes to render etc..
+>> I think this one checksum is computed out of all functions that
+>> the module uses.
+>
+> It is computed based on all files used for the module.
+> Check help for "Loadable module support | Source Checksum for all modules"
 
-Root only today, maybe, but this thread is talking about future 
-directions.  Don't lock your design into a coarse-grained security model.
+How do I list *all* the checksums inside a given module?
 
+For example, I want to know the checksum for "struct_module" in test.ko
 
-> I'm not sure we can punt all that in-kernel.
+$ grep struct_module Module.symvers
+0x71d1e11f      struct_module   vmlinux EXPORT_SYMBOL
 
-See my response to Alan.
+That's for the kernel.
 
-	Jeff
+$(MAGIC_COMMAND_TO_DUMP_CHECKSUMS) test.ko | grep struct_module
+=> ...
 
-
-
+Regards.
