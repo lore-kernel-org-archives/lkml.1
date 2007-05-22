@@ -1,81 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760871AbXEVXFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759579AbXEVXOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760871AbXEVXFo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 19:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759554AbXEVXF3
+	id S1759579AbXEVXOM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 19:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbXEVXN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 19:05:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47782 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758598AbXEVXF1 (ORCPT
+	Tue, 22 May 2007 19:13:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44041
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756912AbXEVXNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 19:05:27 -0400
-Date: Tue, 22 May 2007 16:02:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: eranian@hpl.hp.com
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, ak@suse.de,
-       tony.luck@intel.com
-Subject: Re: is TIF_NOTIFY_RESUME used?
-Message-Id: <20070522160207.e147a8a6.akpm@linux-foundation.org>
-In-Reply-To: <20070522225135.GF28287@frankl.hpl.hp.com>
-References: <20070522124713.GB27428@frankl.hpl.hp.com>
-	<20070522090210.1388ff3e.akpm@linux-foundation.org>
-	<20070522160737.GI27631@frankl.hpl.hp.com>
-	<20070522091517.251cc2d0.akpm@linux-foundation.org>
-	<20070522225135.GF28287@frankl.hpl.hp.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 22 May 2007 19:13:55 -0400
+Date: Tue, 22 May 2007 16:13:58 -0700 (PDT)
+Message-Id: <20070522.161358.45179068.davem@davemloft.net>
+To: dhowells@redhat.com
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, netdeg@vger.kernel.org
+Subject: Re: [PATCH 1/2] AF_RXRPC: AF_RXRPC depends on IPv4
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070522125605.27625.42682.stgit@warthog.cambridge.redhat.com>
+References: <20070522125605.27625.42682.stgit@warthog.cambridge.redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 15:51:35 -0700
-Stephane Eranian <eranian@hpl.hp.com> wrote:
+From: David Howells <dhowells@redhat.com>
+Date: Tue, 22 May 2007 13:56:05 +0100
 
-> Andrew,
+> Add a dependency for CONFIG_AF_RXRPC on CONFIG_INET.  This fixes this error:
 > 
-> On Tue, May 22, 2007 at 09:15:17AM -0700, Andrew Morton wrote:
-> > On Tue, 22 May 2007 09:07:37 -0700
-> > Stephane Eranian <eranian@hpl.hp.com> wrote:
-> > 
-> > > Andrew,
-> > > 
-> > > On Tue, May 22, 2007 at 09:02:10AM -0700, Andrew Morton wrote:
-> > > > On Tue, 22 May 2007 05:47:13 -0700
-> > > > Stephane Eranian <eranian@hpl.hp.com> wrote:
-> > > > 
-> > > > > Hello,
-> > > > > 
-> > > > > For perfmon, we need a couple of TIF bits. It seems that with 2.6.22-rc2
-> > > > > there is now a TIF_RESTORE_SIGMASK which uses the last remaining bit in the
-> > > > > first 7 bits of the thread flag. Many architectures, including IA-64, rely
-> > > > > on the fact that some of the TIF flags (TIF_ALL_WORKMASK or TIF_ALL_WORK)
-> > > > > tested on kernel exit reside in the low 8-bit or 7-bit because they use
-> > > > > instructions (such as add r1=imm8,r2 on IA-64) which operate on 8 or 7 bit
-> > > > > immediate.
-> > > > > 
-> > > > > On IA-64, adding that one perfmon flag (as bit 7) would cause some
-> > > > > restructuring in the kernel exit path but also in all the lightweight syscall
-> > > > > handlers.
-> > > > > 
-> > > > > I looked at all the low order TIF flags and found that TIF_NOTIFY_RESUME 
-> > > > > was never set nor used anywhere in any architecture. Is that really the case?
-> > > > > 
-> > > > > If so, we could get rid of it and free up one low-order TIF bit.
-> > > > > 
-> > > > 
-> > > > My grepping argees with yours.  The only place where TIF_NOTIFY_RESUME gets
-> > > > altered is in ./arch/ia64/kernel/perfmon.c.
-> > > 
-> > > Yes, and that is with the old IA-64 code. In the new one I used a dedicated
-> > > TIF flag.
-> > > 
-> > > Shall we just get rid of the flag, then?
-> > > 
-> > 
-> > I'd say so, yes.
+> net/built-in.o: In function `rxrpc_get_peer':
+> (.text+0x42824): undefined reference to `ip_route_output_key'
 > 
-> Do you want a single patch or small patches broken-down by arch (and there are many...)?
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-One patch is OK for this, thanks.
+Applied.
