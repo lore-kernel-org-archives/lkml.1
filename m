@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763197AbXEVAb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763386AbXEVAcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763197AbXEVAb6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 20:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756658AbXEVAbu
+	id S1763386AbXEVAcy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 20:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757367AbXEVAcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 20:31:50 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42150 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755701AbXEVAbs (ORCPT
+	Mon, 21 May 2007 20:32:45 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:55875 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756658AbXEVAco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 20:31:48 -0400
-X-Greylist: delayed 64999 seconds by postgrey-1.27 at vger.kernel.org; Mon, 21 May 2007 20:31:48 EDT
-Date: Tue, 22 May 2007 09:30:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: ak@suse.de, dada1@cosmosbay.com, wli@holomorphy.com, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-Id: <20070522093050.0320d092.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0705211006550.26282@schroedinger.engr.sgi.com>
-References: <20070518040854.GA15654@wotan.suse.de>
-	<Pine.LNX.4.64.0705191121480.17008@schroedinger.engr.sgi.com>
-	<464FCA28.9040009@cosmosbay.com>
-	<200705201456.26283.ak@suse.de>
-	<Pine.LNX.4.64.0705211006550.26282@schroedinger.engr.sgi.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 21 May 2007 20:32:44 -0400
+Date: Tue, 22 May 2007 01:31:53 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>, trenn@suse.de,
+       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
+Message-ID: <20070522003153.GA18162@srcf.ucam.org>
+References: <200705171517.14087.lenb@kernel.org> <1179604609.16465.83.camel@sublime.suse.de> <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070521224200.GF10714@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007 10:08:06 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Sun, 20 May 2007, Andi Kleen wrote:
+On Tue, May 22, 2007 at 12:42:00AM +0200, Pavel Machek wrote:
+> On Mon 2007-05-21 14:45:53, Matthew Garrett wrote:
+> > So don't do it badly. The advantage of doing so is that you can make it 
+> > work properly, which you can't by putting it in the kernel.
 > 
-> > Besides with the scarcity of pageflags it might make sense to do "64 bit only"
-> > flags at some point.
-> 
-> There is no scarcity of page flags. There is
-> 
-> 1. Hoarding by Andrew
-> 
-> 2. Waste by Sparsemem (section flags no longer necessary with
->    virtual memmap)
+> You want stuff like critical shutdowns to work even if userspace is
+> dead.
 
-For i386(32bit arch), there is not enough space for vmemmap.
-For 64bit arch, page flags are not exhausted yet.
+I don't think anyone suggested putting the critical shutdown control in 
+userspace. The kernel already handles that fine.
 
--Kame
+> I do not think you can control passive cooling adequately from 
+> userspace, and you can certainly not prevent kernel from slowing 
+> machine down too soon.
 
+Given the choice between something impossible and something difficult, 
+I'm inclined towards picking the difficult one.
 
+> Plus, this is actually nasty user-visible change, and a regression
+> from 2.6.21. I am not sure why we are even debating this; user-kernel
+> interface changed without warning. Patch should be simply reverted.
+
+In http://lkml.org/lkml/2007/1/27/93 you were more than happy to break 
+an interface even though it could be fixed in a (ugly) way that made it 
+work again. Here, there's no way to fix this properly - the platform 
+will quite happily do things based on what it believes the trip points 
+should be, and one of those things may be to alter the trip points. 
+Imagine the following situation:
+
+1) Platform sets critical shutdown trip point to 85C
+2) Userspace sets critical shutdown trip point to 95C
+3) Temperature reaches 90C
+4) Platform forces reevaluation of trip points
+5) Entire invasion fleet is lost
+
+How do you avoid that? Disable the ability for the platform to set trip 
+points? You're breaking the spec and potentially causing hardware 
+damage. If you have specific hardware that requires specific spec 
+breakage, then a better approach would probably be to quirk the kernel 
+to rectify it. On the other hand, if it works with the Other Leading OS, 
+we ought to be able to just fix the problem properly.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
