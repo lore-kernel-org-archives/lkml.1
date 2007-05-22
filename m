@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760051AbXEVXlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759756AbXEVXoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760051AbXEVXlp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 19:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757510AbXEVXlj
+	id S1759756AbXEVXoH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 19:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbXEVXn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 19:41:39 -0400
-Received: from homer.mvista.com ([63.81.120.158]:63529 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756706AbXEVXli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 19:41:38 -0400
-Subject: Re: [PATCH -rt] ARM TLB flush fix: don't forget to re-enable
-	preemption
-From: Kevin Hilman <khilman@mvista.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <1179876320.15427.214.camel@imap.mvista.com>
-References: <20070522230128.891568116@mvista.com>
-	 <1179876320.15427.214.camel@imap.mvista.com>
+	Tue, 22 May 2007 19:43:56 -0400
+Received: from rwcrmhc11.comcast.net ([204.127.192.81]:35206 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757669AbXEVXn4 (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 19:43:56 -0400
+Subject: [PATCH] 2.6.21-rt6
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: LKML <Linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1179874795.25500.40.camel@sx.thebigcorporation.com>
+References: <1179874795.25500.40.camel@sx.thebigcorporation.com>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Tue, 22 May 2007 16:41:36 -0700
-Message-Id: <1179877296.6122.74.camel@vence.hilman.org>
+Organization: The Big Corporation
+Date: Tue, 22 May 2007 16:36:19 -0700
+Message-Id: <1179876979.25500.54.camel@sx.thebigcorporation.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-22 at 16:25 -0700, Daniel Walker wrote:
-> On Tue, 2007-05-22 at 16:01 -0700, Kevin Hilman wrote:
-> > Add a preempt_enable() to flush_tlb_kernel_page() since -rt4 patch
-> > adds a preempt_disable but no preempt_enable().
-> > 
-> > Signed-off-by: Kevin Hilman <khilman@mvista.com>
-> > 
-> > 
-> > ---
-> >  include/asm-arm/tlbflush.h |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > Index: linux-2.6.21/include/asm-arm/tlbflush.h
-> > ===================================================================
-> > --- linux-2.6.21.orig/include/asm-arm/tlbflush.h
-> > +++ linux-2.6.21/include/asm-arm/tlbflush.h
-> > @@ -378,6 +378,7 @@ static inline void local_flush_tlb_kerne
-> >  		asm("mcr p15, 0, %0, c8, c6, 1" : : "r" (kaddr) : "cc");
-> >  	if (tlb_flag(TLB_V6_I_PAGE))
-> >  		asm("mcr p15, 0, %0, c8, c5, 1" : : "r" (kaddr) : "cc");
-> 
-> Aren't these mcr operations atomic?
-> 
+On Tue, 2007-05-22 at 15:59 -0700, Sven-Thorsten Dietrich wrote:
+> Add 
+<correct>
+> header and export for rt_write_trylock_irqsave.
 
-Individually, yes.  But the point of the preempt_disable/enable is to
-make the whole sequence atomic.
+Disregard the last patch, flags parameter was missing in the header.
 
-Kevin
+Index: linux-2.6.21/include/linux/spinlock.h
+===================================================================
+--- linux-2.6.21.orig/include/linux/spinlock.h
++++ linux-2.6.21/include/linux/spinlock.h
+@@ -294,6 +294,8 @@ do {									\
+ extern void __lockfunc rt_write_lock(rwlock_t *rwlock);
+ extern void __lockfunc rt_read_lock(rwlock_t *rwlock);
+ extern int __lockfunc rt_write_trylock(rwlock_t *rwlock);
++extern int __lockfunc rt_write_trylock_irqsave(rwlock_t *trylock, 
++					       unsigned long *flags);
+ extern int __lockfunc rt_read_trylock(rwlock_t *rwlock);
+ extern void __lockfunc rt_write_unlock(rwlock_t *rwlock);
+ extern void __lockfunc rt_read_unlock(rwlock_t *rwlock);
+Index: linux-2.6.21/kernel/rt.c
+===================================================================
+--- linux-2.6.21.orig/kernel/rt.c
++++ linux-2.6.21/kernel/rt.c
+@@ -178,6 +178,7 @@ int __lockfunc rt_write_trylock_irqsave(
+ 	*flags = 0;
+ 	return rt_write_trylock(rwlock);
+ }
++EXPORT_SYMBOL(rt_write_trylock_irqsave);
+ 
+ int __lockfunc rt_read_trylock(rwlock_t *rwlock)
+ {
+
 
