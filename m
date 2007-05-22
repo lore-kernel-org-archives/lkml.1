@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbXEVUEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbXEVUF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758827AbXEVUEA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbXEVUDx
+	id S1759614AbXEVUF0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbXEVUFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:03:53 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:50286
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754887AbXEVUDw (ORCPT
+	Tue, 22 May 2007 16:05:16 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40402 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbXEVUFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:03:52 -0400
-Date: Tue, 22 May 2007 22:06:02 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: use mutex instead of semaphore in RocketPort driver
-Message-ID: <20070522200601.GG22360@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200705081903.l48J3lr1012622@hera.kernel.org> <1179853142.3296.1.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
+	Tue, 22 May 2007 16:05:15 -0400
+Date: Tue, 22 May 2007 23:05:13 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] revoke: fix zero-length kmalloc
+Message-ID: <Pine.LNX.4.64.0705222304500.22904@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179853142.3296.1.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, May 22, 2007 at 09:59:01AM -0700 Arjan van de Ven ha dit:
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> >  
-> > -	down_interruptible(&info->write_sem);
-> > +	mutex_lock_interruptible(&info->write_mtx);
-> >  
-> >  #ifdef ROCKET_DEBUG_WRITE
-> >  	printk(KERN_INFO "rp_write %d chars...", count);
-> > @@ -1773,7 +1776,7 @@ end:
-> >  		wake_up_interruptible(&tty->poll_wait);
-> >  #endif
-> >  	}
-> > -	up(&info->write_sem);
-> > +	mutex_unlock(&info->write_mtx);
-> >  	return retval
-> 
-> this code is very very buggy.
+Fix a zero-length kmalloc in the case where there is nothing to revoke.
 
-more buggy than with the use of a semaphore?
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/revoke.c |   21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
+
+Index: 26-mm/fs/revoke.c
+===================================================================
+--- 26-mm.orig/fs/revoke.c	2007-05-22 22:58:17.000000000 +0300
++++ 26-mm/fs/revoke.c	2007-05-22 23:01:17.000000000 +0300
+@@ -547,22 +547,12 @@ static struct fileset *__alloc_revoke_fs
+ 	return NULL;
+ }
  
-> mutex_lock_interruptible() may not get the mutex in case a signal
-> happens... and yet you unlox the mutex unconditionally!!!
-
-as far as i understand only the thread that locked the mutex can
-unlock it (as opposed to semaphores, which can be released by any
-thread/process). obviously this doesn't make the code be more
-correct. what i don't know is how the kernel behaves when
-trying to unlock a mutex the thread doesn't own. another and possibly
-more important problem of the code is that in case of being
-interrupted by a signal the data that should be protected by the
-mutex/semaphore can be accessed/changed by two threads at the same
-time.
-
-would the following resolve the problem?
-
-if(mutex_lock_interruptible(&info->write_mtx)) 
-        return -ERESTARTSYS
-
-thanks for your comments
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-            Nothing is more despicable than respect based on fear
-                              (Albert Camus)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+-static struct fileset *alloc_revoke_fset(struct inode *inode, struct file *to_exclude)
+-{
+-	unsigned long nr_fds;
+-
+-	read_lock(&tasklist_lock);
+-	nr_fds = inode_fds(inode, to_exclude);
+-	read_unlock(&tasklist_lock);
+-
+-	return __alloc_revoke_fset(nr_fds);
+-}
+-
+ static int do_revoke(struct inode *inode, struct file *to_exclude)
+ {
+ 	struct revoke_details details;
+ 	struct fileset *fset = NULL;
+ 	struct task_struct *g, *p;
++	unsigned long nr_fds;
+ 	int err = 0;
+ 
+ 	if (current->fsuid != inode->i_uid && !capable(CAP_FOWNER)) {
+@@ -576,11 +566,18 @@ static int do_revoke(struct inode *inode
+ 		goto out;
+ 	}
+ 
++	read_lock(&tasklist_lock);
++	nr_fds = inode_fds(inode, to_exclude);
++	read_unlock(&tasklist_lock);
++
++	if (!nr_fds)
++		goto out;
++
+ 	/*
+ 	 * Pre-allocate memory because the first pass is done under
+ 	 * tasklist_lock.
+ 	 */
+-	fset = alloc_revoke_fset(inode, to_exclude);
++	fset = __alloc_revoke_fset(nr_fds);
+ 	if (!fset) {
+ 		err = -ENOMEM;
+ 		goto out;
