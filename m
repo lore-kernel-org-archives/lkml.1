@@ -1,62 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765646AbXEVJ3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764099AbXEVJd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765646AbXEVJ3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 05:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbXEVJ3q
+	id S1764099AbXEVJd4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 05:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbXEVJdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 05:29:46 -0400
-Received: from ires.in2p3.fr ([193.48.86.184]:47811 "EHLO IReS.in2p3.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755234AbXEVJ3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 05:29:45 -0400
-Message-ID: <4652B7B8.9030503@free.fr>
-Date: Tue, 22 May 2007 11:28:24 +0200
-From: Goulven Guillard <lecotegougdelaforce@free.fr>
-Reply-To: lecotegougdelaforce@free.fr
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 22 May 2007 05:33:50 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42790 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755971AbXEVJdt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 05:33:49 -0400
+Message-ID: <4652B90F.2090004@cs.helsinki.fi>
+Date: Tue, 22 May 2007 12:34:07 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, trenn@suse.de,
-       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-References: <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <20070522090636.GO10714@elf.ucw.cz> <20070522091631.GA23309@srcf.ucam.org>
-In-Reply-To: <20070522091631.GA23309@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+To: Nitin Gupta <nitingupta910@gmail.com>
+CC: linux-kernel@vger.kernel.org, Richard Purdie <richard@openedhand.com>
+Subject: Re: [RFC] LZO1X de/compression support
+References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>	 <84144f020705180342j4ff44d96iea5b73c23a69df0f@mail.gmail.com>	 <4cefeab80705220154k2b02a264id7774600087a80e5@mail.gmail.com>	 <4652B0E3.5090601@cs.helsinki.fi> <4cefeab80705220210s98c6784k76c9d9752676112a@mail.gmail.com>
+In-Reply-To: <4cefeab80705220210s98c6784k76c9d9752676112a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 05/22/2007 11:16 AM, Matthew Garrett a déclaré :
-> On Tue, May 22, 2007 at 11:06:36AM +0200, Pavel Machek wrote:
-> 
->> We need to ignore trip point updates from BIOS, and we need to poll
->> thermals when use overrides trip points. That's expected. Plus I've
->> yet to see platform actually updating the trip points.
-> 
-> Try any recent HP bios.
-> 
+Nitin Gupta wrote:
+> Ok. I will make them inline functions now.
 
-man cron... ;-)
-
-
-
-
-
--- 
-    ~~
-   |Oo|   La banquise fond !!! Adoptez un pingouin...
-  /|\/|\
-   |__|            => http://doc.ubuntu-fr.org/
-   ^__^
-~~~|  |~~~
-
-
-
-
-
-
-
-
+Btw, the only reason why any sane compiler would not inline
+them is because it has reason to believe the end-result will
+be more efficient. AFAIK you only need to use
+__always_inline where it matters for correctness (like, for
+example, in mm/slab.c) with GCC 4.0 and up.
