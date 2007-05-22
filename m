@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763191AbXEVJWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762110AbXEVJYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763191AbXEVJWA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 05:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbXEVJVv
+	id S1762110AbXEVJYR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 05:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbXEVJYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 05:21:51 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:49490 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755697AbXEVJVu (ORCPT
+	Tue, 22 May 2007 05:24:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60915 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754973AbXEVJYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 05:21:50 -0400
-Date: Tue, 22 May 2007 10:16:31 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <lenb@kernel.org>, trenn@suse.de,
-       Chuck Ebbert <cebbert@redhat.com>, len.brown@intel.com,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, torvalds@linux-foundation.org
-Message-ID: <20070522091631.GA23309@srcf.ucam.org>
-References: <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <20070522090636.GO10714@elf.ucw.cz>
-MIME-Version: 1.0
+	Tue, 22 May 2007 05:24:05 -0400
+Date: Tue, 22 May 2007 11:23:59 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       Andi Kleen <andi@firstfloor.org>, "Brown, Len" <len.brown@intel.com>,
+       tglx@linutronix.de, mingo@elte.hu, "Zhu, Yi" <yi.zhu@intel.com>,
+       linux-kernel@vger.kernel.org, arjan@infradead.org, trenn@suse.de
+Subject: Re: Increased ipw2200 power usage with dynticks
+Message-ID: <20070522092359.GA13298@one.firstfloor.org>
+References: <20070521074938.GA15678@atjola.homenet> <653FFBB4508B9042B5D43DC9E18836F5EA4D36@scsmsx415.amr.corp.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070522090636.GO10714@elf.ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.22-rc1-mm1 [cannot change thermal trip points]
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5EA4D36@scsmsx415.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 11:06:36AM +0200, Pavel Machek wrote:
+> 
+> Nice to hear that cpuidle-menu governor gets 13.9W :-).
+> Powertop will need some changes to go with cpuidle, but that should be simple.
+> 
+> We need some more testing for cpuidle before it gets into git.
+> Len: Looks like cpuidle got dropped out of mm again. Can you merge it back it please.
 
-> We need to ignore trip point updates from BIOS, and we need to poll
-> thermals when use overrides trip points. That's expected. Plus I've
-> yet to see platform actually updating the trip points.
+It probably needs some good review. I'm still not completely convinced
+its full generity is needed for example. e.g. how would different governours
+look like?  Wouldn't it make more sense to concentrate on a single
+policy ?
 
-Try any recent HP bios.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+-Andi
