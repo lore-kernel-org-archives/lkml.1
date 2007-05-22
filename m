@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765107AbXEVLOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXEVLVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765107AbXEVLOJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 07:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbXEVLN5
+	id S932409AbXEVLVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 07:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610AbXEVLVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 07:13:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43348 "EHLO mx3.mail.elte.hu"
+	Tue, 22 May 2007 07:21:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37748 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755280AbXEVLN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 07:13:56 -0400
-Date: Tue, 22 May 2007 13:12:30 +0200
+	id S1755701AbXEVLVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 07:21:03 -0400
+Date: Tue, 22 May 2007 13:20:11 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Antonino Ingargiola <tritemio@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] mm: swap prefetch improvements
-Message-ID: <20070522111230.GA15616@elte.hu>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705222054.46488.kernel@kolivas.org> <20070522105710.GA12833@elte.hu> <200705222104.20580.kernel@kolivas.org> <20070522111104.GA14950@elte.hu>
+To: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
+Cc: Christoph Lameter <clameter@sgi.com>, Hugh Dickins <hugh@veritas.com>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+Message-ID: <20070522112008.GA16308@elte.hu>
+References: <20070522092439.GA19895@elte.hu> <559665.2852.qm@web52608.mail.re2.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070522111104.GA14950@elte.hu>
+In-Reply-To: <559665.2852.qm@web52608.mail.re2.yahoo.com>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -36,18 +36,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Con Kolivas <kernel@kolivas.org> wrote:
- 
-> > hm, what do you call 'journal writeout' here that would be happening 
-> > on my system?
-> 
-> Not really sure what you have in terms of fs, but here even with 
-> nothing going on, ext3 writes to disk every 5 seconds with kjournald.
+* Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au> wrote:
 
-i have ext3, but it doesnt do that on my box. Also, i would have noticed 
-any IO activity in the 'swap prefetch off' case. When i said completely 
-idle, i really meant it ;-)
+> Compiled slub with SMP & CONFIG_PROVE_LOCKING. No luck. It still hangs 
+> solid after the second spinlock lockup call trace.
 
-so swap-prefetch stops for 5 seconds for no apparent reason.
- 
+hm. This suggests that the spinlock got corrupted - otherwise lockdep 
+would have complained about the lockup before the spinlock-debug code 
+had its chance.
+
+> Surprisingly, with CONFIG_SMP=n, CONFIG_PROVE_LOCKING produces this 
+> with slub (then hangs solid):
+
+yes - PROVE_LOCKING reactivates spinlocks even on UP. At least this 
+suggests that you'd have gotten the hang even with maxcpus=1 - i.e. the 
+spinlock corruption is not caused by some genuine SMP race.
+
+furthermore, PROVE_LOCKING also turns on DEBUG_LOCK_ALLOC, so we now 
+know that it's most likely not use-after-free type of corruption.
+
 	Ingo
