@@ -1,71 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763767AbXEVV3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765024AbXEVVaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763767AbXEVV3Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 17:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758750AbXEVV3A
+	id S1765024AbXEVVaT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 17:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759146AbXEVV35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 17:29:00 -0400
-Received: from waste.org ([66.93.16.53]:35684 "EHLO waste.org"
+	Tue, 22 May 2007 17:29:57 -0400
+Received: from mail.tmr.com ([64.65.253.246]:43901 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757023AbXEVV27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 17:28:59 -0400
-Date: Tue, 22 May 2007 16:25:24 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Mason <chris.mason@oracle.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: filesystem benchmarking fun
-Message-ID: <20070522212524.GD11166@waste.org>
-References: <20070516171156.GY26766@think.oraclecorp.com> <20070516112515.b6f247b2.akpm@linux-foundation.org> <20070516191339.GA26766@think.oraclecorp.com> <20070516123342.714a11d8.akpm@linux-foundation.org> <20070516195359.GE26766@think.oraclecorp.com> <20070516130413.1fd391bf.akpm@linux-foundation.org> <20070516201414.GF26766@think.oraclecorp.com> <20070516133726.0c68a65f.akpm@linux-foundation.org> <20070522163511.GB6138@think.oraclecorp.com> <20070522112120.4a5c6a5d.akpm@linux-foundation.org>
+	id S1758750AbXEVV3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 17:29:55 -0400
+Message-ID: <46536128.50504@tmr.com>
+Date: Tue, 22 May 2007 17:31:20 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522112120.4a5c6a5d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeff Zheng <Jeff.Zheng@endace.com>
+CC: Neil Brown <neilb@suse.de>, david@lang.hm,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Software raid0 will crash the file-system, when each disk is
+ 5TB
+References: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com><6bffcb0e0705151629j78920ca2r9337dccdfc1bb6a9@mail.gmail.com><17994.19043.771733.453896@notabene.brown><659F626D666070439A4A5965CD6EBF406B31C5@gazelle.ad.endace.com><17995.42562.870806.396617@notabene.brown><659F626D666070439A4A5965CD6EBF406B33ED@gazelle.ad.endace.com><17995.49602.427417.500049@notabene.brown><Pine.LNX.4.64.0705162145060.31624@asgard.lang.hm><17995.57891.56738.592100@notabene.brown> <17995.59547.368508.202596@notabene.brown> <659F626D666070439A4A5965CD6EBF406B348A@gazelle.ad.endace.com> <659F626D666070439A4A5965CD6EBF406B352A@gazelle.ad.endace.com>
+In-Reply-To: <659F626D666070439A4A5965CD6EBF406B352A@gazelle.ad.endace.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 11:21:20AM -0700, Andrew Morton wrote:
-> On Tue, 22 May 2007 12:35:11 -0400
-> Chris Mason <chris.mason@oracle.com> wrote:
+Jeff Zheng wrote:
+>  Fix confirmed, filled the whole 11T hard disk, without crashing.
+> I presume this would go into 2.6.22
 > 
-> > On Wed, May 16, 2007 at 01:37:26PM -0700, Andrew Morton wrote:
-> > > On Wed, 16 May 2007 16:14:14 -0400
-> > > Chris Mason <chris.mason@oracle.com> wrote:
-> > > 
-> > > > On Wed, May 16, 2007 at 01:04:13PM -0700, Andrew Morton wrote:
-> > > > > > The good news is that if you let it run long enough, the times
-> > > > > > stabilize.  The bad news is:
-> > > > > > 
-> > > > > > create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
-> > > > > > create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
-> > > > > > create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
-> > > > > > create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
-> > > > > 
-> > > > > well hang on.  Doesn't this just mean that the first few runs were writing
-> > > > > into pagecache and the later ones were blocking due to dirty-memory limits?
-> > > > > 
-> > > > > Or do you have a sync in there?
-> > > > > 
-> > > > There's no sync,  but if you watch vmstat you can clearly see the log
-> > > > flushes, even when the overall create times are 11MB/s.  vmstat goes
-> > > > 30MB/s -> 4MB/s or less, then back up to 30MB/s.
-> > > 
-> > > How do you know that it is a log flush rather than, say, pdflush
-> > > hitting the blockdev inode and doing a big seeky write?
-> > 
-> > Ok, I did some more work to split out the two cases (block device inode
-> > writeback and log flushing).
-> > 
-> > I patched jbd's log_do_checkpoint to put all the blocks it wanted to
-> > write in a radix tree, then send them all down in order at the end.
-> 
-> Side note: we already have all of that capability in the kernel:
-> sync_inode(blockdev_inode, wbc) will do an ascending-LBA write of the whole
-> blockdev.
+Since it results in a full loss of data, I would hope it goes into 
+2.6.21.x -stable.
 
-Why don't we simply plug the queue, do all the writes, and let the I/O
-scheduler sort it out instead?
+> Thanks again.
+> 
+> Jeff
+> 
+>> -----Original Message-----
+>> From: linux-raid-owner@vger.kernel.org 
+>> [mailto:linux-raid-owner@vger.kernel.org] On Behalf Of Jeff Zheng
+>> Sent: Thursday, 17 May 2007 5:39 p.m.
+>> To: Neil Brown; david@lang.hm; Michal Piotrowski; Ingo 
+>> Molnar; linux-raid@vger.kernel.org; 
+>> linux-kernel@vger.kernel.org; linux-fsdevel@vger.kernel.org
+>> Subject: RE: Software raid0 will crash the file-system, when 
+>> each disk is 5TB
+>>
+>>
+>> Yeah, seems you've locked it down, :D. I've written 600GB of 
+>> data now, and anything is still fine.
+>> Will let it run overnight, and fill the whole 11T. I'll post 
+>> the result tomorrow
+>>
+>> Thanks a lot though.
+>>
+>> Jeff 
+>>
+>>> -----Original Message-----
+>>> From: Neil Brown [mailto:neilb@suse.de]
+>>> Sent: Thursday, 17 May 2007 5:31 p.m.
+>>> To: david@lang.hm; Jeff Zheng; Michal Piotrowski; Ingo Molnar; 
+>>> linux-raid@vger.kernel.org; linux-kernel@vger.kernel.org; 
+>>> linux-fsdevel@vger.kernel.org
+>>> Subject: RE: Software raid0 will crash the file-system, 
+>> when each disk 
+>>> is 5TB
+>>>
+>>> On Thursday May 17, neilb@suse.de wrote:
+>>>> Uhm, I just noticed something.
+>>>> 'chunk' is unsigned long, and when it gets shifted up, we
+>>> might lose
+>>>> bits.  That could still happen with the 4*2.75T 
+>> arrangement, but is 
+>>>> much more likely in the 2*5.5T arrangement.
+>>> Actually, it cannot be a problem with the 4*2.75T arrangement.
+>>>   chuck << chunksize_bits
+>>>
+>>> will not exceed the size of the underlying device *in*kilobytes*.
+>>> In that case that is 0xAE9EC800 which will git in a 32bit long.
+>>> We don't double it to make sectors until after we add
+>>> zone->dev_offset, which is "sector_t" and so 64bit 
+>> arithmetic is used.
+>>> So I'm quite certain this bug will cause exactly the problems 
+>>> experienced!!
+>>>
+>>>> Jeff, can you try this patch?
+>>> Don't bother about the other tests I mentioned, just try this one.
+>>> Thanks.
+>>>
+>>> NeilBrown
+>>>
+>>>> Signed-off-by: Neil Brown <neilb@suse.de>
+>>>>
+>>>> ### Diffstat output
+>>>>  ./drivers/md/raid0.c |    2 +-
+>>>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>
+>>>> diff .prev/drivers/md/raid0.c ./drivers/md/raid0.c
+>>>> --- .prev/drivers/md/raid0.c	2007-05-17 
+>>> 10:33:30.000000000 +1000
+>>>> +++ ./drivers/md/raid0.c	2007-05-17 15:02:15.000000000 +1000
+>>>> @@ -475,7 +475,7 @@ static int raid0_make_request (request_q
+>>>>  		x = block >> chunksize_bits;
+>>>>  		tmp_dev = zone->dev[sector_div(x, zone->nb_dev)];
+>>>>  	}
+>>>> -	rsect = (((chunk << chunksize_bits) + zone->dev_offset)<<1)
+>>>> +	rsect = ((((sector_t)chunk << chunksize_bits) +
+>>>> +zone->dev_offset)<<1)
+>>>>  		+ sect_in_chunk;
+>>>>   
+>>>>  	bio->bi_bdev = tmp_dev->bdev;
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe 
+>> linux-raid" in the body of a message to 
+>> majordomo@vger.kernel.org More majordomo info at  
+>> http://vger.kernel.org/majordomo-info.html
+>>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
