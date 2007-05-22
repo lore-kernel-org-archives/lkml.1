@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763338AbXEVBIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763402AbXEVBK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763338AbXEVBIj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 21:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbXEVBIa
+	id S1763402AbXEVBK3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 21:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbXEVBKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 21:08:30 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33103 "EHLO mx1.suse.de"
+	Mon, 21 May 2007 21:10:22 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46108 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755872AbXEVBI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 21:08:29 -0400
-Date: Tue, 22 May 2007 03:08:23 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Matt Mackall <mpm@selenic.com>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070522010823.GC27743@wotan.suse.de>
-References: <20070518040854.GA15654@wotan.suse.de> <Pine.LNX.4.64.0705181112250.11881@schroedinger.engr.sgi.com> <20070519012530.GB15569@wotan.suse.de> <20070519181501.GC19966@holomorphy.com> <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com> <20070520092552.GA7318@wotan.suse.de> <20070521080813.GQ31925@holomorphy.com> <20070521092742.GA19642@wotan.suse.de> <20070521224316.GC11166@waste.org>
+	id S1756156AbXEVBKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 21:10:21 -0400
+Date: Tue, 22 May 2007 11:10:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Fix headers check fallout
+Message-Id: <20070522111019.a29cf062.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070521224316.GC11166@waste.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 05:43:16PM -0500, Matt Mackall wrote:
-> On Mon, May 21, 2007 at 11:27:42AM +0200, Nick Piggin wrote:
-> > 
-> > ... yeah, something like that would bypass 
-> 
-> As long as we're throwing out crazy unpopular ideas, try this one:
-> 
-> Divide struct page in two such that all the most commonly used
-> elements are in one piece that's nicely sized and the rest are in
-> another. Have two parallel arrays containing these pieces and accessor
-> functions around the unpopular bits.
-> 
-> Whether a sensible divide between popular and unpopular bits isn't
-> clear to me. But hey, I said it was crazy.
+commit e8edc6e03a5c8562dc70a6d969f732bdb355a7e7 added an include of
+linux/jiffies.h in linux/smb_fs.h outside the ifdef __KERNEL__.
 
-That would be unpopular with pagecache, because that uses pretty well
-all fields.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/linux/smb_fs.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/linux/smb_fs.h b/include/linux/smb_fs.h
+index 6b51a48..2c5cd55 100644
+--- a/include/linux/smb_fs.h
++++ b/include/linux/smb_fs.h
+@@ -9,7 +9,6 @@
+ #ifndef _LINUX_SMB_FS_H
+ #define _LINUX_SMB_FS_H
+ 
+-#include <linux/jiffies.h>
+ #include <linux/smb.h>
+ 
+ /*
+@@ -30,6 +29,7 @@
+ #include <linux/pagemap.h>
+ #include <linux/vmalloc.h>
+ #include <linux/smb_mount.h>
++#include <linux/jiffies.h>
+ #include <asm/unaligned.h>
+ 
+ static inline struct smb_sb_info *SMB_SB(struct super_block *sb)
+-- 
+1.5.1.4
 
