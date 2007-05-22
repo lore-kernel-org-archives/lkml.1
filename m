@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933404AbXEVKhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765162AbXEVKjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933404AbXEVKhk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 06:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbXEVKhe
+	id S1765162AbXEVKjO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 06:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbXEVKjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 06:37:34 -0400
-Received: from www.osadl.org ([213.239.205.134]:45340 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754788AbXEVKhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 06:37:33 -0400
-Subject: Re: [PATCH] i386: fix early usage of atomic_add_return and
-	local_add_return on real i386
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200705221234.28289.ak@suse.de>
-References: <1179827338.12708.110.camel@chaos>
-	 <200705221234.28289.ak@suse.de>
-Content-Type: text/plain
-Date: Tue, 22 May 2007 12:37:28 +0200
-Message-Id: <1179830248.12708.120.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Tue, 22 May 2007 06:39:00 -0400
+Received: from mail36.syd.optusnet.com.au ([211.29.133.76]:52155 "EHLO
+	mail36.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756884AbXEVKi7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 06:38:59 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] mm: swap prefetch improvements
+Date: Tue, 22 May 2007 20:37:54 +1000
+User-Agent: KMail/1.9.5
+Cc: Antonino Ingargiola <tritemio@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705222020.58474.kernel@kolivas.org> <20070522102530.GB2344@elte.hu>
+In-Reply-To: <20070522102530.GB2344@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705222037.54741.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-22 at 12:34 +0200, Andi Kleen wrote:
-> On Tuesday 22 May 2007 11:48, Thomas Gleixner wrote:
-> > The check (boot_cpu_data.x86 == 3) in atomic_add_return() and
-> > local_add_return() fails, when those operations are used before
-> > boot_cpu_data is filled in.
+On Tuesday 22 May 2007 20:25, Ingo Molnar wrote:
+> * Con Kolivas <kernel@kolivas.org> wrote:
+> > > > there was nothing else running on the system - so i suspect the
+> > > > swapin activity flagged 'itself' as some 'other' activity and
+> > > > stopped? The swapins happened in 4 bursts, separated by 5 seconds
+> > > > total idleness.
+> > >
+> > > I've noted burst swapins separated by some seconds of pause in my
+> > > desktop system too (with sp_tester and an idle gnome).
 > >
-> > Change the check to (boot_cpu_data.x86 <= 3) to fix this.
-> 
-> That's a critical boot fix for 386, right?
+> > That really is expected, as just about anything, including journal
+> > writeout, would be enough to put it back to sleep for 5 more seconds.
+>
+> note that nothing like that happened on my system - in the
+> swap-prefetch-off case there was _zero_ IO activity during the sleep
+> period.
 
-Yup. Hit me with some debug option enabled, but might happen anywhere
-else too.
+Ok, granted it's _very_ conservative. I really don't want to risk its presence 
+being a burden on anything, and the iowait it induces probably makes it turn 
+itself off for another PREFETCH_DELAY (5s). I really don't want to cross the 
+line to where it is detrimental in any way. Not dropping out on a 
+cond_resched and perhaps making the delay tunable should be enough to make it 
+a little less "sleepy".
 
-	tglx
-
-
+-- 
+-ck
