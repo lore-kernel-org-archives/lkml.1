@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765339AbXEVC7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbXEVDHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765339AbXEVC7k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 21 May 2007 22:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbXEVC7c
+	id S1760931AbXEVDHx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 21 May 2007 23:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbXEVDHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 21 May 2007 22:59:32 -0400
-Received: from nicole.bmts.com ([216.183.128.225]:45862 "EHLO nicole.bmts.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754512AbXEVC7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 21 May 2007 22:59:31 -0400
-Date: Mon, 21 May 2007 22:58:06 -0400
-From: Mike Houston <mikeserv@bmts.com>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22-rc2
-Message-Id: <20070521225806.bb18d589.mikeserv@bmts.com>
-In-Reply-To: <20070521103755.51b954e1@freepuppy>
-References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
-	<20070520170506.814a38d9.mikeserv@bmts.com>
-	<20070521084549.61a1aa71@freepuppy>
-	<20070521131055.0017404f.mikeserv@bmts.com>
-	<20070521103755.51b954e1@freepuppy>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 21 May 2007 23:07:43 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:37501 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755038AbXEVDHm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 21 May 2007 23:07:42 -0400
+Date: Tue, 22 May 2007 08:43:27 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Shaya Potter <spotter@cs.columbia.edu>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH 10/14] In-kernel file copy between union mounted filesystems
+Message-ID: <20070522031327.GA4728@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070514093722.GB4139@in.ibm.com> <20070514094329.GL4139@in.ibm.com> <Pine.LNX.4.61.0705160951140.9570@yvahk01.tjqt.qr> <20070518111042.GC4869@in.ibm.com> <464DAE73.7000302@cs.columbia.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
-X-brucetelecom.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464DAE73.7000302@cs.columbia.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007 10:37:55 -0700
-Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-
-> On Mon, 21 May 2007 13:10:55 -0400
-> Mike Houston <mikeserv@bmts.com> wrote:
+On Fri, May 18, 2007 at 09:47:31AM -0400, Shaya Potter wrote:
+> Bharata B Rao wrote:
 > 
-> > On Mon, 21 May 2007 08:45:49 -0700
-> > Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > 
-> > > It's almost certainly a problem with the BIOS and hardware (not
-> > > a sky2) driver issue. Since there are many similar boards and
-> > > configurations, I made the decision not to enforce restrictions
-> > > in the driver.
-> > 
-> > >> May 20 15:57:48 cramit kernel: sky2 0000:04:00.0: v1.14 addr
-> > >> 0xf8000000 irq 16 Yukon-EC Ultra (0xb4) rev 2
-> > 
-> > Thank you for your answer. I was half wondering if that was the
-> > case after staring at those log messages several more times. I
-> > don't understand hardware at the low level but got thinking maybe
-> > interrupt routing issue. There's an Nvidia PCI Express card in
-> > there that gets IRQ 16, though it was not initialized by a driver
-> > at the time. (plain old VGA console after fresh cold boot... no
-> > framebuffer, no X, no nvidia module). I guess some things don't
-> > share well.
-> > 
-> > It works well in that other OS that came with the hardware, but
-> > that's beside the point.
+> >
+> >Not really. This is called during copyup of a file residing in a lower
+> >layer. And that is done only for regular files.
 > 
-> It is some low level PCI Express related stuff, try latest BIOS (F9)
-> and if that doesn't help there is a EEPROM update from Gigabyte
-> for the Marvell hardware that might help.
+> That is broken.
 
-Thanks for your suggestions, I followed through on them. It may still
-be interesting/useful to hear from me that it didn't help. The
-problem is the same.
+But it only breaks the semantics (in other cases we allow writes only to the
+top layer files). So the question is why do we have to copy up the device
+node ? What difference it makes to writing to the device itself ? Currently
+we allow write to the device using the lower layer device node itself.
 
-My motherboard is a newer revision (Gigabyte GA-965P-DS3 Rev 3.3) and
-already had the "F10" bios version, but I flashed to the latest F11
-version anyways. I also flashed with the EEPROM update from Gigabyte,
-from a FAQ entry for my motherboard revision.
-(faq_marvell_eeprom.zip). Both operations were successful. I cleared
-the CMOS and reconfigured after the bios flash too.
+> 
+> You should be able to change the permissions on a device node on a layer 
+> that is RO.
+> 
 
-Incidently, it was showing IRQ 16 in that early initialization
-message, but actually getting a MSI interrupt (IRQ 219, PCI-MSI-edge)
+Hmm not sure why we need to touch the permissions of the device. See below.
 
-I've disabled the onboard yukon2 adapter in bios and gone
-back to the PCI card now. I think we can consider the matter closed,
-since it's not a problem with the driver, but just so you know, I'm
-always willing to help test when it's hardware that I have.
+> so it would copy it up (1. mknod, 2. copy attributes) and then the 
+> appropriate attribute notification change would be called.
 
-Mike Houston
+With union mount, when a regular file is opened for write, it is checked
+if it resides in the lower layer and if so copied up to the topmost layer
+and this new fd is returned from open. And any subsequent writes using this
+fd will go to the newly created topmost file. (We are aware that we are not
+yet copying the (extended) attributes to the newly created topmost file,
+which we have to do).
+
+Regards,
+Bharata.
