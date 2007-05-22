@@ -1,61 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760427AbXEVUPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbXEVUQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760427AbXEVUPg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 16:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147AbXEVUPa
+	id S1761277AbXEVUQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 16:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbXEVUQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 16:15:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55143 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756996AbXEVUP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 16:15:29 -0400
-Date: Tue, 22 May 2007 22:15:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v12
-Message-ID: <20070522201518.GC6113@elte.hu>
-References: <20070513153853.GA19846@elte.hu> <464A6698.3080400@bigpond.net.au> <20070516063625.GA9058@elte.hu> <464CE8FD.4070205@bigpond.net.au> <20070518071325.GB28702@elte.hu> <464DA61A.4040406@bigpond.net.au> <b647ffbd0705190627x4ff15f3cw19bc292e47257287@mail.gmail.com> <20070521082926.GH19966@holomorphy.com> <20070521085703.GA18755@elte.hu> <46531EF6.3020204@nortel.com>
-Mime-Version: 1.0
+	Tue, 22 May 2007 16:16:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:64865 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756253AbXEVUQF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 16:16:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=GE9SY2Y8vVCugxvJLuDQPDgEz+aRuH/Uy9YCt64qimCjdwJSiumiMFDJ4Z+RQ/FVLPMnqFnFlvkge5C/i8hksyvxvLNyD8g32E8BuoGDIEZCy8RlMeas+hXsHN8jG8QXXob4odXscunnj+OyAzofrkd9sSeNMUg/ZBKFXIgk3+w=
+Date: Wed, 23 May 2007 00:16:39 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, xiaosuo@gmail.com
+Subject: Re: + procfs-directory-entry-cleanup.patch added to -mm tree
+Message-ID: <20070522201638.GB5689@martell.zuzino.mipt.ru>
+References: <200705210341.l4L3f1BH001692@shell0.pdx.osdl.net> <20070522174348.GA5689@martell.zuzino.mipt.ru> <20070522112951.1a980a46.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46531EF6.3020204@nortel.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070522112951.1a980a46.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Chris Friesen <cfriesen@nortel.com> wrote:
-
-> Ingo Molnar wrote:
+On Tue, May 22, 2007 at 11:29:51AM -0700, Andrew Morton wrote:
+> On Tue, 22 May 2007 21:43:49 +0400
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> >CFS is fair even on SMP. Consider for example the worst-case 
-> >3-tasks-on-2-CPUs workload on a 2-CPU box:
-> >
-> >  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> > 2658 mingo     20   0  1580  248  200 R   67  0.0   0:56.30 loop
-> > 2656 mingo     20   0  1580  252  200 R   66  0.0   0:55.55 loop
-> > 2657 mingo     20   0  1576  248  200 R   66  0.0   0:55.24 loop
-> >
-> >66% of CPU time for each task. The 'TIME+' column shows a 2% spread 
-> >between the slowest and the fastest loop after just 1 minute of runtime 
-> >(and the spread gets narrower with time).
+> > On Sun, May 20, 2007 at 08:41:02PM -0700, akpm@linux-foundation.org wrote:
+> > > Subject: procfs directory entry cleanup
+> > > From: "Changli Gao" <xiaosuo@gmail.com>
+> > >
+> > > Function proc_register() will assign proc_dir_operations and
+> > > proc_dir_inode_operations to ent's members proc_fops and proc_iops
+> > > correctly if ent is a directory. So the early assignment isn't
+> > > necessary.
+> > 
+> > > --- a/fs/proc/generic.c~procfs-directory-entry-cleanup
+> > > +++ a/fs/proc/generic.c
+> > > @@ -649,9 +649,6 @@ struct proc_dir_entry *proc_mkdir_mode(c
+> > >  
+> > >  	ent = proc_create(&parent, name, S_IFDIR | mode, 2);
+> > >  	if (ent) {
+> > > -		ent->proc_fops = &proc_dir_operations;
+> > > -		ent->proc_iops = &proc_dir_inode_operations;
+> > > -
+> > >  		if (proc_register(parent, ent) < 0) {
+> > >  			kfree(ent);
+> > >  			ent = NULL;
+> > > @@ -686,10 +683,6 @@ struct proc_dir_entry *create_proc_entry
+> > >  
+> > >  	ent = proc_create(&parent,name,mode,nlink);
+> > >  	if (ent) {
+> > > -		if (S_ISDIR(mode)) {
+> > > -			ent->proc_fops = &proc_dir_operations;
+> > > -			ent->proc_iops = &proc_dir_inode_operations;
+> > > -		}
+> > >  		if (proc_register(parent, ent) < 0) {
+> > >  			kfree(ent);
+> > >  			ent = NULL;
+> > 
+> > This should add race because new PDE for directory will be glued to tree
+> > with NULL ->proc_iops and, at least, vfs_getattr() doesn't check for
+> > NULL ->i_op.
+> > 
+> > I've tried to reproduce this scenario with udelay() inserted before
+> > S_ISDIR checks in proc_register() but got some panic while in X,
+> > so no cookie for me. Maybe it's impossible, indeed.
+> > 
+> > Anyway, this patch + moving ->proc_fops and ->proc_iops initialization
+> > before gluing is OK with me.
 > 
-> Is there a way in CFS to tune the amount of time over which the load 
-> balancer is fair?  (Of course there would be some overhead involved.)
+> Like this?
 
-it should be fair pretty fast (see the 10 seconds run of massive_intr) - 
-so it's not 1 minute (if you were worried about that).
+Yes, exactly.
 
-	Ingo
+> --- a/fs/proc/generic.c~procfs-directory-entry-cleanup-fix
+> +++ a/fs/proc/generic.c
+> @@ -529,12 +529,6 @@ static int proc_register(struct proc_dir
+>  		return -EAGAIN;
+>  	dp->low_ino = i;
+>  
+> -	spin_lock(&proc_subdir_lock);
+> -	dp->next = dir->subdir;
+> -	dp->parent = dir;
+> -	dir->subdir = dp;
+> -	spin_unlock(&proc_subdir_lock);
+> -
+>  	if (S_ISDIR(dp->mode)) {
+>  		if (dp->proc_iops == NULL) {
+>  			dp->proc_fops = &proc_dir_operations;
+> @@ -550,6 +544,13 @@ static int proc_register(struct proc_dir
+>  		if (dp->proc_iops == NULL)
+>  			dp->proc_iops = &proc_file_inode_operations;
+>  	}
+> +
+> +	spin_lock(&proc_subdir_lock);
+> +	dp->next = dir->subdir;
+> +	dp->parent = dir;
+> +	dir->subdir = dp;
+> +	spin_unlock(&proc_subdir_lock);
+> +
+>  	return 0;
+>  }
+>  
+> _
+
