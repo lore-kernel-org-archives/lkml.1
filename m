@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765419AbXEVIOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765248AbXEVIQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765419AbXEVIOg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 04:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbXEVIOX
+	id S1765248AbXEVIQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 04:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbXEVIQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 04:14:23 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:52252 "EHLO smtp4-g19.free.fr"
+	Tue, 22 May 2007 04:16:36 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:62968 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755359AbXEVIOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 04:14:21 -0400
-Message-ID: <4652A635.8070507@free.fr>
-Date: Tue, 22 May 2007 10:13:41 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	id S1756673AbXEVIQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 04:16:34 -0400
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Dumping the checksums in a module
-References: <464DC019.6010008@free.fr> <Pine.LNX.4.61.0705182225450.9015@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0705182225450.9015@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18002.42712.248696.433735@alkaid.it.uu.se>
+Date: Tue, 22 May 2007 10:16:24 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Hans A Eide <h.a.eide@usit.uio.no>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] sata_promise: Port enumeration order - SATA 150 TX4,
+In-Reply-To: <CEAADB30-FB4E-4F2B-BBF9-DD085FBF9B55@usit.uio.no>
+References: <CEAADB30-FB4E-4F2B-BBF9-DD085FBF9B55@usit.uio.no>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
+[added cc:linux-ide]
 
-> On May 18 2007 17:02, John Sigler wrote:
->> I'm getting "disagrees about version of symbol struct_module" messages,
->> and I'm trying to understand why.
->>
->> As far as I understand (which is not very far), if I define
->> CONFIG_MODVERSIONS, then checksums for various functions (all exported
->> functions?) and various structures (which ones?) will be included inside
->> the kernel image, and written to Module.symvers. When an out-of-tree
->> module is built, it will also include these checksums.
->>
->> How do I list the checksums within a module?
->>
->> Is there a simpler way to list all the checksums?
-> 
-> 22:25 ichi:~ > modinfo aes
-> srcversion:     8CB82B3A254D5A950FD0D14
-> 
-> I think this one checksum is computed out of all functions that
-> the module uses.
+Hans A Eide writes:
+ > 
+ >  > Evan Harris wrote:
+ >  >>
+ >  >> I have a card that mirrors this one from your list:
+ >  >>
+ >  >> Retail name: SATA300 TX4
+ >  >> Chip label: PDC40718-GP  SATAII300
+ >  >> Vendor-Device number: 105a:3d17 (rev 02)
+ >  >>
+ >  >> Through testing, I've found linux 2.6.16 and 2.6.17 find the  
+ > ports in
+ >  >> this order (the list is ordered by linux detection):
+ >  >>
+ >  >> 1. silkscreen port 3
+ >  >> 2. silkscreen port 2
+ >  >> 3. silkscreen port 4
+ >  >> 4. silkscreen port 1
+ >  >>> NOTE: the patch I have submitted (
+ >  >>> http://marc.theaimsgroup.com/?l=linux- 
+ > ide&m=114082978311290&w=2 ) is a
+ >  >>> solution that doesn't know about the older Promise SATA  
+ > controllers,
+ >  >>> which are not affected with the "new wiring" problem, so the older
+ >  >>> controllers will appear screwed if you use it.
+ >  >>>
+ >  >>> Hopefully we will collect enough info about all the SATA Promise
+ >  >>> controllers to distinguish the new and the old wiring controllers,
+ >  >>> then produce a new patch that will be a correct solution to the  
+ > "new
+ >  >>> wiring" problem.
+ >  >
+ >  > Mikael Pettersson has been doing some excellent work recently on
+ >  > sata_promise.  If enough data has been collected on this sata_promise
+ >  > port enumeration problem, maybe the data could be collated and  
+ > proposed
+ >  > via Mikael as a patch?
+ >  >
+ >  > 	Jeff
+ > 
+ > Sorry, any updates on this?
 
-You've enabled MODULE_SRCVERSION_ALL which adds a checksum computed from 
-the source files used to build a given module. What I want is to list 
-ALL the checksums of the symbols included inside a given module.
+You should have posted this to linux-ide not linux-scsi.
 
-e.g. for the kernel:
+The Promise SATAII TX4 port enumeration issue is fixed in
+current 2.6.22-rc kernels. A patch for 2.6.21 can be found
+in <http://marc.info/?l=linux-ide&m=117728096711046&w=2>.
 
-$ head Module.symvers
-0x4da3749b      firmware_unregister     vmlinux EXPORT_SYMBOL_GPL
-0xbf9d1364      generic_file_splice_write       vmlinux EXPORT_SYMBOL
-0x436417ac      set_anon_super  vmlinux EXPORT_SYMBOL
-0x894bc434      kmem_cache_alloc        vmlinux EXPORT_SYMBOL
-0x1120b731      request_firmware        vmlinux EXPORT_SYMBOL
-0x0a2487e0      unblock_all_signals     vmlinux EXPORT_SYMBOL
-0x07d50a24      csum_partial    vmlinux EXPORT_SYMBOL
-0xcd6c78f9      __generic_unplug_device vmlinux EXPORT_SYMBOL
-0x59ab4080      cap_bset        vmlinux EXPORT_SYMBOL
-0xee413334      softirq_preemption      vmlinux EXPORT_SYMBOL
-[...]
-
-
-config MODVERSIONS
-bool "Module versioning support"
-depends on MODULES
-help
-   Usually, you have to use modules compiled with your kernel.
-   Saying Y here makes it sometimes possible to use modules
-   compiled for different kernels, by adding enough information
-   to the modules to (hopefully) spot any changes which would
-   make them incompatible with the kernel you are running.  If
-   unsure, say N.
-
-config MODULE_SRCVERSION_ALL
-bool "Source checksum for all modules"
-depends on MODULES
-help
-   Modules which contain a MODULE_VERSION get an extra "srcversion"
-   field inserted into their modinfo section, which contains a
-   sum of the source files which made it.  This helps maintainers
-   see exactly which source was used to build a module (since
-   others sometimes change the module source without updating
-   the version).  With this option, such a "srcversion" field
-   will be created for all modules.  If unsure, say N.
-
-Regards.
+/Mikael
