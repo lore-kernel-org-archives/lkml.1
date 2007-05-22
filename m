@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765248AbXEVIQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765867AbXEVIRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765248AbXEVIQw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 04:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbXEVIQg
+	id S1765867AbXEVIRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 04:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764671AbXEVIRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 04:16:36 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:62968 "EHLO aun.it.uu.se"
+	Tue, 22 May 2007 04:17:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49738 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756673AbXEVIQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 04:16:34 -0400
+	id S1757259AbXEVIRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 04:17:04 -0400
+Message-ID: <4652A6F9.1040502@garzik.org>
+Date: Tue, 22 May 2007 04:16:57 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dave Airlie <airlied@gmail.com>
+CC: Jon Smirl <jonsmirl@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+References: <200705171423.46748.jesse.barnes@intel.com>	 <9e4733910705210901v5996cacas640f211404c519c6@mail.gmail.com>	 <200705210914.22663.jbarnes@virtuousgeek.org>	 <200705210934.58559.jbarnes@virtuousgeek.org>	 <9e4733910705211005k761c976o1a6b270d87b49589@mail.gmail.com>	 <21d7e9970705211014j6eb59326u85f7347a3000f3d3@mail.gmail.com>	 <4652295E.7060305@garzik.org> <21d7e9970705220107mc096135nc26af32830d83646@mail.gmail.com>
+In-Reply-To: <21d7e9970705220107mc096135nc26af32830d83646@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18002.42712.248696.433735@alkaid.it.uu.se>
-Date: Tue, 22 May 2007 10:16:24 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Hans A Eide <h.a.eide@usit.uio.no>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] sata_promise: Port enumeration order - SATA 150 TX4,
-In-Reply-To: <CEAADB30-FB4E-4F2B-BBF9-DD085FBF9B55@usit.uio.no>
-References: <CEAADB30-FB4E-4F2B-BBF9-DD085FBF9B55@usit.uio.no>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added cc:linux-ide]
+Dave Airlie wrote:
+>> It is a quite sensible idea.
+>>
+>> The userspace X server SHOULD be running under a non-root user, with
+>> appropriate fine-grained privs granted to it.
+>>
+>> "I need root to do graphics" is a myopic, antiquated view of the world.
+> 
+> Did I say the X server? There are policy decisions that are root only
+> also authorisation of processes to render etc..
 
-Hans A Eide writes:
- > 
- >  > Evan Harris wrote:
- >  >>
- >  >> I have a card that mirrors this one from your list:
- >  >>
- >  >> Retail name: SATA300 TX4
- >  >> Chip label: PDC40718-GP  SATAII300
- >  >> Vendor-Device number: 105a:3d17 (rev 02)
- >  >>
- >  >> Through testing, I've found linux 2.6.16 and 2.6.17 find the  
- > ports in
- >  >> this order (the list is ordered by linux detection):
- >  >>
- >  >> 1. silkscreen port 3
- >  >> 2. silkscreen port 2
- >  >> 3. silkscreen port 4
- >  >> 4. silkscreen port 1
- >  >>> NOTE: the patch I have submitted (
- >  >>> http://marc.theaimsgroup.com/?l=linux- 
- > ide&m=114082978311290&w=2 ) is a
- >  >>> solution that doesn't know about the older Promise SATA  
- > controllers,
- >  >>> which are not affected with the "new wiring" problem, so the older
- >  >>> controllers will appear screwed if you use it.
- >  >>>
- >  >>> Hopefully we will collect enough info about all the SATA Promise
- >  >>> controllers to distinguish the new and the old wiring controllers,
- >  >>> then produce a new patch that will be a correct solution to the  
- > "new
- >  >>> wiring" problem.
- >  >
- >  > Mikael Pettersson has been doing some excellent work recently on
- >  > sata_promise.  If enough data has been collected on this sata_promise
- >  > port enumeration problem, maybe the data could be collated and  
- > proposed
- >  > via Mikael as a patch?
- >  >
- >  > 	Jeff
- > 
- > Sorry, any updates on this?
+Root only today, maybe, but this thread is talking about future 
+directions.  Don't lock your design into a coarse-grained security model.
 
-You should have posted this to linux-ide not linux-scsi.
 
-The Promise SATAII TX4 port enumeration issue is fixed in
-current 2.6.22-rc kernels. A patch for 2.6.21 can be found
-in <http://marc.info/?l=linux-ide&m=117728096711046&w=2>.
+> I'm not sure we can punt all that in-kernel.
 
-/Mikael
+See my response to Alan.
+
+	Jeff
+
+
+
