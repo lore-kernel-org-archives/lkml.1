@@ -1,91 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934532AbXEVOfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764892AbXEVOna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934532AbXEVOfW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 10:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758240AbXEVOfG
+	id S1764892AbXEVOna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 10:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbXEVOnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 10:35:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:25670 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757473AbXEVOfD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 10:35:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lvy0UV07EvxIJGq493/cANko039/28jLYHpw5dojOKA7qTaVq697tXw0RGHXAomDN7K7EpCHxLYI+Hdtf2iKHZT0aYOMNMQAdHqoYqtDN0wgdxdjpPdeIxFD7l8/MaSLpVDkzXrCHtYYMzDwTM+oSfgPFwKXpk6iJdt6UmhJi0M=
-Message-ID: <21d7e9970705220735j37bc8eeck87db7193c08c4c24@mail.gmail.com>
-Date: Tue, 22 May 2007 15:35:02 +0100
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, "Jeff Garzik" <jeff@garzik.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-In-Reply-To: <9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com>
+	Tue, 22 May 2007 10:43:22 -0400
+Received: from khc.piap.pl ([195.187.100.11]:40364 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754958AbXEVOnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 10:43:21 -0400
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: any value to "NORET_TYPE" macro?
+References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
+	<alpine.DEB.0.99.0705220950160.3308@sigma.j-a-k-j.com>
+	<Pine.LNX.4.64.0705220959310.14408@localhost.localdomain>
+	<a781481a0705220709s40b80208h47f1f2f7c00a684d@mail.gmail.com>
+	<a781481a0705220716l799ee2efm268deefc40993875@mail.gmail.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 22 May 2007 16:43:19 +0200
+In-Reply-To: <a781481a0705220716l799ee2efm268deefc40993875@mail.gmail.com> (Satyam Sharma's message of "Tue, 22 May 2007 19:46:42 +0530")
+Message-ID: <m3tzu4kjg8.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <465228E2.1030405@garzik.org>
-	 <9e4733910705211726q38be6843ndac49f8adc25aad0@mail.gmail.com>
-	 <200705211856.56228.jbarnes@virtuousgeek.org>
-	 <9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/22/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 5/21/07, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > Jon, that's why I'm posting this stuff in the first place! :)  Again, if
-> > you have specific problems with the proposed interfaces (problems that
-> > would preclude your wishlist from being fully implementable), please let
-> > me know (preferably with specifics).
->
-> A simple place to start is OOPS display while in graphics mode. If we
-> going to tear up the kernel graphics system this is something that
-> needs to be fixed.
->
-> I don't think it is safe for the OOPS code to attempt a mode change to
-> text mode when the OOPS happens. The OOPS could have happened in a 3D
-> driver and left the GPU messed up. The safest thing to do is to
-> display the OOPS using the mode that is already set.
->
-> This implies that the kernel driver needs to track the dimensions and
-> location of the framebuffer and whether it is in text/graphics mode
-> (this hasn't been possible before because X never tells the kernel
-> what mode it is setting). You also need to bring in the bitmap copy
-> code and fonts over from fbdev. When the OOPS happens you use this
-> info to paint the OOPS onto the screen. The code from fbdev will let
-> you display text in graphics mode entirely in kernel context. The
-> driver should also attempt to stop the GPU to try and make sure it
-> doesn't erase the OOPS display.
+"Satyam Sharma" <satyam.sharma@gmail.com> writes:
 
-What does this have to do with Jesse's patches? this is a totally
-orthogonal issue..
+> But of course, John is *bang right* that if /**/ makes gcc do (or not do)
+> _anything at all_ (be it crying out a warning), then someone surely
+> deserves to get his head bashed in ... :-)
 
-We will fix this once we have the basic modesetting code working,
-
-> Another simple thing that needs to be built is a mechanism to run the
-> VBIOS in x86 mode when the driver is first loaded. This can be
-> achieved by using call_usermode helper to trigger an external app. You
-> also need to get the x86 emulator working so that this will work on
-> non-x86 platforms (benh has already done this). I've aput the hooks
-> into place to give you access to the VBIOS from sysfs. This app is a
-> prime candidate for klibc. This app is strongly coupled to the problem
-> of VGA arbitration.
->
-
-Again orthogonal problem, VGA arbitration isn't going to matter for
-this stuff, and we can have initramfs sw do vbetool post on
-non-initialised cards at startup even now (it may not always work as
-some cards may not have BIOSes in the right place s and we need the
-VGA arb to work to do it properly...)
-
-These are nothing to do with the work we are doing, and I think a big
-part of your problem with working on this previously is you have
-linked together a group of orthogonal problems into one big problem,
-when really there are 5-10 problems all of which can be solved
-separately...
-
-Dave.
+I think it's impossible, comments are removed by preprocessor.
+-- 
+Krzysztof Halasa
