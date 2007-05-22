@@ -1,59 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934368AbXEVO3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765946AbXEVOer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934368AbXEVO3v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 10:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbXEVO3o
+	id S1765946AbXEVOer (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 10:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbXEVOeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 10:29:44 -0400
-Received: from pool-72-92-171-78.albyny.east.verizon.net ([72.92.171.78]:50193
-	"EHLO posidon.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758169AbXEVO3o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 10:29:44 -0400
-Message-ID: <4652FDEF.8060209@tmr.com>
-Date: Tue, 22 May 2007 10:27:59 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Tue, 22 May 2007 10:34:37 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:40216 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756504AbXEVOeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 10:34:36 -0400
+Date: Tue, 22 May 2007 07:34:32 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Steve Fox <drfickle@linux.vnet.ibm.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, Anton Blanchard <anton@samba.org>,
+       Hugh Dickins <hugh@veritas.com>, Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, sfr@canb.auug.org.au, ak@suse.de,
+       Andy Whitcroft <andyw@uk.ibm.com>
+Subject: Re: select(0, ..) is valid ?
+Message-ID: <20070522143432.GA1938@us.ibm.com>
+References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com> <20070515104453.f901e91f.akpm@linux-foundation.org> <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0705151927360.28895@blonde.wat.veritas.com> <20070516153703.GA26912@kryten> <1179363553.16195.10.camel@dyn9047017100.beaverton.ibm.com> <1179843397.3124.109.camel@drfickle.rchland.ibm.com>
 MIME-Version: 1.0
-To: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Scheduler smoothness and fairness - results and package
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179843397.3124.109.camel@drfickle.rchland.ibm.com>
+X-Operating-System: Linux 2.6.21-cfs-v9-dirty (x86_64)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks to the suggestions of several people and some encouragement, I've 
-done another upgrade of the schedular characteristic package glitch1. 
-For "bottom line" folks, the results are at
-	http://www.tmr.com/~davidsen/sched_smooth_03.html
+On 22.05.2007 [09:16:37 -0500], Steve Fox wrote:
+> On Wed, 2007-05-16 at 17:59 -0700, Badari Pulavarty wrote:
+> 
+> > Here it is ..
+> > 
+> > Should I do one for poll() also ?
+> > 
+> > Thanks,
+> > Badari
+> > 
+> > Optimize select by a using stack space for small fd sets.
+> > core_sys_select() already has this optimization. This is
+> > for compat version. 
+> > 
+> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > ---
+> >  fs/compat.c |   17 +++++++++++------
+> >  1 file changed, 11 insertions(+), 6 deletions(-)
+> > 
+> > Index: linux-2.6.22-rc1/fs/compat.c
+> > ===================================================================
+> > --- linux-2.6.22-rc1.orig/fs/compat.c	2007-05-12 18:45:56.000000000 -0700
+> > +++ linux-2.6.22-rc1/fs/compat.c	2007-05-16 17:50:39.000000000 -0700
+> > @@ -1544,9 +1544,10 @@ int compat_core_sys_select(int n, compat
+> >  	compat_ulong_t __user *outp, compat_ulong_t __user *exp, s64 *timeout)
+> >  {
+> >  	fd_set_bits fds;
+> > -	char *bits;
+> > +	void *bits;
+> >  	int size, max_fds, ret = -EINVAL;
+> >  	struct fdtable *fdt;
+> > +	long stack_fds[SELECT_STACK_ALLOC/sizeof(long)];
+> > 
+> >  	if (n < 0)
+> >  		goto out_nofds;
+> > @@ -1564,11 +1565,14 @@ int compat_core_sys_select(int n, compat
+> >  	 * since we used fdset we need to allocate memory in units of
+> >  	 * long-words.
+> >  	 */
+> > -	ret = -ENOMEM;
+> >  	size = FDS_BYTES(n);
+> > -	bits = kmalloc(6 * size, GFP_KERNEL);
+> > -	if (!bits)
+> > -		goto out_nofds;
+> > +	bits = stack_fds;
+> > +	if (size > sizeof(stack_fds) / 6) {
+> > +		bits = kmalloc(6 * size, GFP_KERNEL);
+> > +		ret = -ENOMEM;
+> > +		if (!bits)
+> > +			goto out_nofds;
+> > +	}
+> >  	fds.in      = (unsigned long *)  bits;
+> >  	fds.out     = (unsigned long *) (bits +   size);
+> >  	fds.ex      = (unsigned long *) (bits + 2*size);
+> > @@ -1600,7 +1604,8 @@ int compat_core_sys_select(int n, compat
+> >  	    compat_set_fd_set(n, exp, fds.res_ex))
+> >  		ret = -EFAULT;
+> >  out:
+> > -	kfree(bits);
+> > +	if (bits != stack_fds)
+> > +		kfree(bits);
+> >  out_nofds:
+> >  	return ret;
+> >  }
+> 
+> Andy put this through a couple machines on test.kernel.org and elm3b6
+> was fixed, however elm3b239 still had a boot error.
+> 
+> BUG: at mm/slab.c:777 __find_general_cachep()
+> 
+> Call Trace:
+>  [<ffffffff802729c6>] __kmalloc+0xa6/0xe0
+>  [<ffffffff8021d21b>] cache_k8_northbridges+0x9b/0x120
 
-This package runs four fast scrolling xterms and a copy of glxgears to 
-produce both screen update and CPU load. In addition to the human 
-observation of smoothness, the glxgears speeds are characterized by 
-variance from sample to sample, and the number of random numbers 
-generated by the xterm programs are also characterized.
+I believe this is fixed by:
 
-Changes:
+http://lkml.org/lkml/2007/5/18/19
 
-- Reruns for a given configuration are shown in a single row.
-- The analysis has had minor output format and statistical tweaks for 
-correctness as well as handling of multiple run output in a single row.
-- the glxgears 1st value is shown as a separate item, since there is a 
-large stoppage on the first sample after cold boot with some schedulers.
+Care to stack it on top and retest?
 
-The full source and doc is now available from
-	http://www.tmr.com/~public/source/
-so people can do their own runs. Note that values between different 
-machines are almost certainly not meaningful.
-
-Having run all this on a dual core Core2duo in x86 (32 bit) mode, I'm 
-now off to rerun in x86_64 mode, and on a single CPU hyperthreaded 
-machine, and a pure uniprocessor. I'm going to create a page for all the 
-results in one place for anyone who cares.
+Thanks,
+Nish
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
