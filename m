@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934753AbXEVPTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759929AbXEVPTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934753AbXEVPTW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 11:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759237AbXEVPTH
+	id S1759929AbXEVPTm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 11:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759413AbXEVPTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 11:19:07 -0400
-Received: from host217-46-209-99.in-addr.btopenworld.com ([217.46.209.99]:4933
+	Tue, 22 May 2007 11:19:08 -0400
+Received: from host217-46-209-99.in-addr.btopenworld.com ([217.46.209.99]:4937
 	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757702AbXEVPTG (ORCPT
+	with ESMTP id S1756289AbXEVPTH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 11:19:06 -0400
-Message-Id: <20070522141251.160703868@goop.org>
+	Tue, 22 May 2007 11:19:07 -0400
+X-Greylist: delayed 1796 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 11:19:05 EDT
+Message-Id: <20070522141252.117813186@goop.org>
 References: <20070522140941.802382212@goop.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 22 May 2007 15:09:45 +0100
+Date: Tue, 22 May 2007 15:09:56 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>
-Subject: [patch 04/33] xen: paravirt: unstatic leave_mm
-Content-Disposition: inline; filename=paravirt-unstatic-leave_mm.patch
+Subject: [patch 15/33] xen: xen configuration
+Content-Disposition: inline; filename=xen-config.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make globally leave_mm visible, specifically so that Xen can use it to
-shoot-down lazy uses of cr3.
+Put config options for Xen after the core pieces are in place.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- arch/i386/kernel/smp.c         |    5 +++--
- include/asm-i386/mmu_context.h |    2 ++
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/i386/Kconfig     |    2 ++
+ arch/i386/xen/Kconfig |   11 +++++++++++
+ 2 files changed, 13 insertions(+)
 
 ===================================================================
---- a/include/asm-i386/mmu_context.h
-+++ b/include/asm-i386/mmu_context.h
-@@ -31,6 +31,8 @@ static inline void enter_lazy_tlb(struct
- 		per_cpu(cpu_tlbstate, cpu).state = TLBSTATE_LAZY;
- #endif
- }
+--- a/arch/i386/Kconfig
++++ b/arch/i386/Kconfig
+@@ -217,6 +217,8 @@ config PARAVIRT
+ 	  under a hypervisor, improving performance significantly.
+ 	  However, when run without a hypervisor the kernel is
+ 	  theoretically slower.  If in doubt, say N.
 +
-+void leave_mm (unsigned long cpu);
++source "arch/i386/xen/Kconfig"
  
- static inline void switch_mm(struct mm_struct *prev,
- 			     struct mm_struct *next,
+ config VMI
+ 	bool "VMI Paravirt-ops support"
 ===================================================================
---- a/arch/i386/kernel/smp.c
-+++ b/arch/i386/kernel/smp.c
-@@ -22,6 +22,7 @@
- 
- #include <asm/mtrr.h>
- #include <asm/tlbflush.h>
-+#include <asm/mmu_context.h>
- #include <mach_apic.h>
- 
- /*
-@@ -249,13 +250,13 @@ static DEFINE_SPINLOCK(tlbstate_lock);
- static DEFINE_SPINLOCK(tlbstate_lock);
- 
- /*
-- * We cannot call mmdrop() because we are in interrupt context, 
-+ * We cannot call mmdrop() because we are in interrupt context,
-  * instead update mm->cpu_vm_mask.
-  *
-  * We need to reload %cr3 since the page tables may be going
-  * away from under us..
-  */
--static inline void leave_mm (unsigned long cpu)
-+void leave_mm (unsigned long cpu)
- {
- 	if (per_cpu(cpu_tlbstate, cpu).state == TLBSTATE_OK)
- 		BUG();
+--- /dev/null
++++ b/arch/i386/xen/Kconfig
+@@ -0,0 +1,11 @@
++#
++# This Kconfig describes xen options
++#
++
++config XEN
++	bool "Enable support for Xen hypervisor"
++	depends on PARAVIRT && !PREEMPT && !SMP
++	help
++	  This is the Linux Xen port.  Enabling this will allow the
++	  kernel to boot in a paravirtualized environment under the
++	  Xen hypervisor.
 
 -- 
 
