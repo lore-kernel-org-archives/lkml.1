@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763918AbXEVMvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765129AbXEVMxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763918AbXEVMvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 08:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757407AbXEVMvJ
+	id S1765129AbXEVMxk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 08:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbXEVMxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 08:51:09 -0400
-Received: from smtp2.wanadoo.co.uk ([193.252.22.157]:2594 "EHLO
+	Tue, 22 May 2007 08:53:33 -0400
+Received: from smtp2.wanadoo.co.uk ([193.252.22.157]:5916 "EHLO
 	smtp2.freeserve.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757345AbXEVMvI (ORCPT
+	with ESMTP id S1757249AbXEVMxc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 08:51:08 -0400
-X-ME-UUID: 20070522125106563.0DBB12C00081@mwinf3101.me.freeserve.com
-Message-ID: <4652E735.7000206@cjsoftuk.dyndns.org>
-Date: Tue, 22 May 2007 13:51:01 +0100
+	Tue, 22 May 2007 08:53:32 -0400
+X-ME-UUID: 20070522125331445.6CB635800083@mwinf3114.me.freeserve.com
+Message-ID: <4652E7CA.9060909@cjsoftuk.dyndns.org>
+Date: Tue, 22 May 2007 13:53:30 +0100
 From: Chris Malton <chrism@cjsoftuk.dyndns.org>
 Organization: CJSoft UK
 User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Subject: NCPFS can't handle extended characters.
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms080906080306000407000203"
+Subject: Re: NCPFS can't handle extended characters.
+References: <4652E735.7000206@cjsoftuk.dyndns.org>
+In-Reply-To: <4652E735.7000206@cjsoftuk.dyndns.org>
+Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms050504050604050803090304"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a cryptographically signed message in MIME format.
 
---------------ms080906080306000407000203
+--------------ms050504050604050803090304
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-I found a bug in NCPFS that I haven't the time to fix right now.
+Oops, see inline comments!
 
-Here's the problem: if a file contains an extended (Charcodes 128-255) 
-character, especially ` (or a even worse, an word converted ' (curled 
-apostrophe) NCPFS goes butter side down on the directory listing.
+Chris Malton wrote:
+> I found a bug in NCPFS that I haven't the time to fix right now.
+> 
+> Here's the problem: if a file contains an extended (Charcodes 128-255) 
+> character, especially ` (or a even worse, an word converted ' (curled 
+> apostrophe) NCPFS goes butter side down on the directory listing.
+> 
+> It doesn't hand the machine, but it does cause some serious issues on 
+> our network, is there a way to make NCPFS understand extended characters 
+> in file names?
 
-It doesn't hand the machine, but it does cause some serious issues on 
-our network, is there a way to make NCPFS understand extended characters 
-in file names?
+I mean hang, and our network has lots of extended file system characters 
+on it.
 
-I would appreciate this being patched.
-
-I'll get round to it post-exams if nobody else does.
+> 
+> I would appreciate this being patched.
+> 
+> I'll get round to it post-exams if nobody else does.
+> 
+> Chris
 
 Chris
 
---------------ms080906080306000407000203
+--------------ms050504050604050803090304
 Content-Type: application/x-pkcs7-signature; name="smime.p7s"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="smime.p7s"
@@ -78,8 +89,8 @@ r2HBmlJod/cWG4lZX10/NfpQXXLAjZJZUxuY+GL3MYIDYDCCA1wCAQEwgZ4wgZYxEjAQBgNV
 BAoTCUNKU29mdCBVSzEMMAoGA1UECxMDSUNUMSkwJwYJKoZIhvcNAQkBFhpjaHJpc21AY2pz
 b2Z0dWsuZHluZG5zLm9yZzETMBEGA1UEBxMKQ2hlbG1zZm9yZDEOMAwGA1UECBMFRXNzZXgx
 CzAJBgNVBAYTAlVLMRUwEwYDVQQDEwxDaHJpcyBNYWx0b24CAxAAATAJBgUrDgMCGgUAoIIC
-FzAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0wNzA1MjIxMjUx
-MDFaMCMGCSqGSIb3DQEJBDEWBBRDFKjgqnEfwRAGMTDbfnShCpu6TTBSBgkqhkiG9w0BCQ8x
+FzAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0wNzA1MjIxMjUz
+MzBaMCMGCSqGSIb3DQEJBDEWBBTaFVBL8U4VQwP5vI2lwGg5Ry2qCzBSBgkqhkiG9w0BCQ8x
 RTBDMAoGCCqGSIb3DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMC
 BzANBggqhkiG9w0DAgIBKDCBrwYJKwYBBAGCNxAEMYGhMIGeMIGWMRIwEAYDVQQKEwlDSlNv
 ZnQgVUsxDDAKBgNVBAsTA0lDVDEpMCcGCSqGSIb3DQEJARYaY2hyaXNtQGNqc29mdHVrLmR5
@@ -88,8 +99,8 @@ EwJVSzEVMBMGA1UEAxMMQ2hyaXMgTWFsdG9uAgMQAAEwgbEGCyqGSIb3DQEJEAILMYGhoIGe
 MIGWMRIwEAYDVQQKEwlDSlNvZnQgVUsxDDAKBgNVBAsTA0lDVDEpMCcGCSqGSIb3DQEJARYa
 Y2hyaXNtQGNqc29mdHVrLmR5bmRucy5vcmcxEzARBgNVBAcTCkNoZWxtc2ZvcmQxDjAMBgNV
 BAgTBUVzc2V4MQswCQYDVQQGEwJVSzEVMBMGA1UEAxMMQ2hyaXMgTWFsdG9uAgMQAAEwDQYJ
-KoZIhvcNAQEBBQAEgYAA/QHL3D+BKznD2DPsODhcCATdW6fCctFRsXUXgBAKIT8GLNiSSp1b
-dqqaGokbXxb8H5eNPWZHqvNsBq8Z5F2TSSoNvS4/A2gpbFZ2gzSjmCYgCQ4YA7E6HTxE14Eb
-XlT1zrorClg4RzoClHMavEYXt5x2H1AZSvt7XEPq6YjK6QAAAAAAAA==
---------------ms080906080306000407000203--
+KoZIhvcNAQEBBQAEgYBlDhRE7GVCH9EJ+ikxMdA+Mh1CjcofCrIleNSbKIa0EAWMYePXpy97
+nBZQDEwBLkJhoJqPSou3KLF0o00R9MTjrf/PtjgbZZkoLKaHZiCOmFcG8r4o672qdpNLN7au
+yeAF3rBYxJwbesUj3S11e/Bely9oamLt6Wr7dDylAkulKAAAAAAAAA==
+--------------ms050504050604050803090304--
 
