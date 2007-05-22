@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbXEVK6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934160AbXEVK7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933793AbXEVK6Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 06:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758482AbXEVK6E
+	id S934160AbXEVK7E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 06:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbXEVK6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 06:58:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37434 "EHLO mx2.mail.elte.hu"
+	Tue, 22 May 2007 06:58:53 -0400
+Received: from holomorphy.com ([66.93.40.71]:50597 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757659AbXEVK6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 06:58:03 -0400
-Date: Tue, 22 May 2007 12:57:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Antonino Ingargiola <tritemio@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] mm: swap prefetch improvements
-Message-ID: <20070522105710.GA12833@elte.hu>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705222037.54741.kernel@kolivas.org> <20070522104648.GA10622@elte.hu> <200705222054.46488.kernel@kolivas.org>
-Mime-Version: 1.0
+	id S1756385AbXEVK6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 06:58:51 -0400
+Date: Tue, 22 May 2007 03:59:35 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: [rfc] increase struct page size?!
+Message-ID: <20070522105935.GR19966@holomorphy.com>
+References: <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com> <20070520092552.GA7318@wotan.suse.de> <20070521080813.GQ31925@holomorphy.com> <20070521092742.GA19642@wotan.suse.de> <20070521224316.GC11166@waste.org> <20070522013951.GP19966@holomorphy.com> <20070522015703.GE27743@wotan.suse.de> <20070522050410.GQ19966@holomorphy.com> <20070522062452.GA29807@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705222054.46488.kernel@kolivas.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070522062452.GA29807@wotan.suse.de>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 21, 2007 at 10:04:10PM -0700, William Lee Irwin III wrote:
+>> The size isn't the advantage being cited; I'd actually expect the net
+>> result to be larger. It's the control over the layout of the metadata
+>> for cache locality and even things like having enough flags, folding
+>> buffer_head -like affairs into the per-page metadata for filesystems
+>> and so reaping cache locality benefits even there (assuming it works
+>> out in other respects), and so on.
+>> Passing pages between subsystems doesn't seem very significant to me.
+>> There isn't going to be much locality of reference, or even any
+>> guarantee that the subsystem gets fed a cache hot page structure. The
+>> subsystem being passed the page will have its own cache hot accounting
+>> structures to stick the information about the memory into.
 
-* Con Kolivas <kernel@kolivas.org> wrote:
+On Tue, May 22, 2007 at 08:24:53AM +0200, Nick Piggin wrote:
+> Well consider the page allocator and pagecache. The page allocator
+> uses page metadata rather than eg. a bitmap, and it uses page list
+> heads for the per-cpu allocator.
+> If we were to instead perhaps use external bitmaps and arrays to 
+> keep track of pages, then the pagecache would have to go and allocate
+> its own structures rather than reuse the cache hot page allocator
+> structures.
+> Buffer heads might be something that would work well, but we'd still
+> like to be able to deallocate them without freeing the whole pagecache
+> (because they tend to be associated with less frequent operations like
+> IO). But anyway, I don't know. I'm sure there would be cases where it
+> works better.
 
-> On Tuesday 22 May 2007 20:46, Ingo Molnar wrote:
-> > It clearly should not consider 'itself' as IO activity. This 
-> > suggests some bug in the 'detect activity' mechanism, agreed? I'm 
-> > wondering whether you are seeing the same problem, or is all 
-> > swap-prefetch IO on your system continuous until it's done [or some 
-> > other IO comes inbetween]?
-> 
-> When nothing else is happening anywhere on the system it reads in 
-> bursts and goes to sleep during journal writeout.
+The page allocator maintains a number of bitmaps, but anyway. Each
+subsystem will basically have its own cache-hot structures. Instead
+of passing around metadata that's hot, each tries to keep its own
+"working set" of metadata hot. Basically yes, it will work better in
+some situations and the current metadata passing will work better in
+others. I'd expect the control over the layout to be more advantageous
+more often, especially since it arranges cache contiguity while pages
+are in use.
 
-hm, what do you call 'journal writeout' here that would be happening on 
-my system?
 
-	Ingo
+On Mon, May 21, 2007 at 10:04:10PM -0700, William Lee Irwin III wrote:
+>> I'm not entirely sure what you're on about there, but it sounds
+>> interesting.
+
+On Tue, May 22, 2007 at 08:24:53AM +0200, Nick Piggin wrote:
+> Heh :) Well the lockless pagecache would become basically trivial if we
+> could RCU-free pagecache pages, however doing that is really awful for
+> a number of reasons. However if you had a system where the metadata is
+> decoupled, you could simply RCU-free the 'struct page' (while still
+> immediately freeing the page itself) which would make lockless pagecache
+> (and potentially similar things) equally trivial.
+> I assumed K42 might have been into that angle.
+
+That does sound convenient. I'll add that to the list of benefits.
+
+
+-- wli
