@@ -1,112 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934575AbXEVOxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934642AbXEVOzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934575AbXEVOxh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 10:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759303AbXEVOxa
+	id S934642AbXEVOzg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 10:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758139AbXEVOz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 10:53:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:61827 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759271AbXEVOx3 (ORCPT
+	Tue, 22 May 2007 10:55:28 -0400
+Received: from fregatti-new.mermit.fi ([194.100.131.2]:51754 "HELO
+	fregatti.mermit.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1754958AbXEVOz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 10:53:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PySLhAhNCFxg/exfdIHQu+lVpyyL9YGWYndW3tD+KiAGZxZQZqBV2n+UNHdWRgpbVaw03y1X8M6BnbyAZLMWvmTD981R3q5oIMyd4rrRuMqm3YEaxO+i3DIoFhA8GDe2dqj9J+tBVdhDconP7qvJgOuZ/8XthaFcwX7xGKdb5Ow=
-Message-ID: <a781481a0705220753g25bb0dd8u33bbf8ddaf00f50c@mail.gmail.com>
-Date: Tue, 22 May 2007 20:23:27 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: RFC: kconfig select warnings bogus?
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "Kumar Gala" <galak@kernel.crashing.org>,
-       "Simon Horman" <horms@verge.net.au>, "Adrian Bunk" <bunk@stusta.de>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-In-Reply-To: <46505DBD.5010005@s5r6.in-berlin.de>
+	Tue, 22 May 2007 10:55:28 -0400
+X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Tue, 22 May 2007 10:55:27 EDT
+X-fsav-clean: Database version: 2007-05-22_06
+Message-ID: <465302A9.8080701@kolumbus.fi>
+Date: Tue, 22 May 2007 17:48:09 +0300
+From: =?ISO-8859-1?Q?Mika_Penttil=E4?= <mika.penttila@kolumbus.fi>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+CC: torvalds@linux-foundation.org, ben.collins@ubuntu.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       sam@ravnborg.org, dwmw2@infradead.org, adobriyan@gmail.com
+Subject: Re: [RFC] Crash on modpost, addend_386_rel()
+References: <20070522.134015.65004318.nemoto@toshiba-tops.co.jp>	<alpine.LFD.0.98.0705212150000.3890@woody.linux-foundation.org>	<20070522.142929.05161433.nemoto@toshiba-tops.co.jp> <20070522.182739.48825006.nemoto@toshiba-tops.co.jp>
+In-Reply-To: <20070522.182739.48825006.nemoto@toshiba-tops.co.jp>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070519151523.GA26724@uranus.ravnborg.org>
-	 <a781481a0705191753r25e0cay82785ed56c04b6eb@mail.gmail.com>
-	 <a781481a0705191804u7f5a344cr92f2a1981c502bf7@mail.gmail.com>
-	 <4650074A.6000307@s5r6.in-berlin.de>
-	 <a781481a0705200438s634712e6v957d7085bca7407@mail.gmail.com>
-	 <46503542.50300@s5r6.in-berlin.de>
-	 <a781481a0705200457v70aae469n97be31fe55af4d91@mail.gmail.com>
-	 <46504876.9040802@s5r6.in-berlin.de>
-	 <a781481a0705200650v2ef7be85h19f8c8eb026a303b@mail.gmail.com>
-	 <46505DBD.5010005@s5r6.in-berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/20/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-[ I was wondering whether to reply or not (this has become sort of a
-a dead thread and subsumed by Sam's proposal to scan all Kconfig
-files, but still) ... ]
-
-> Satyam Sharma wrote:
-> > On 5/20/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> >> config A
-> >>         bool-or-tristate "option A"
-> >>         depends on !PLATFORM_X || HELPER_N_ON_PLATFORM_X
-> >
-> > ??? I didn't get this entry,
+Atsushi Nemoto kirjoitti:
+> On Tue, 22 May 2007 14:29:29 +0900 (JST), Atsushi Nemoto <nemoto@toshiba-tops.co.jp> wrote:
+>   
+>> Subject: [PATCH] kbuild: make better section mismatch reports on i386, arm and mips (take 3)
+>>     
 >
-> "A is available if N is there or if it's a platform other than X."
+> Updated again to get a little bit better report on i386 relocatable
+> vmlinux.
 >
-> That would be adequate if N is only present and required on platform X.
-
-Umm, if A requires helper code N (which is available only on platform X),
-then why/how do we want A to depend on platforms _other_ than X?
-That "||" OR there is totally incorrect, because it allows A to be selected
-even _without_ N, which won't even allow A to build properly! Remember,
-something "depends on" or wishes to "select" some other thing only if
-it *reuses code exported* by the dependency.
-
-Beginning to wonder if you even _understood_ the problem that was
-being solved there ... I seriously recommend that if / when you _really_
-think you have some good idea to solve some problem, then submitting
-a working patch is invariably always better (and causes lesser noise :-)
-
-> > can you give a solid example
 >
-> Nothing exactly of this sort, but compare for example kernel/power/Kconfig:
+> Subject: [PATCH] kbuild: make better section mismatch reports on i386, arm and mips (take 4)
 >
-> config SOFTWARE_SUSPEND
->         bool "Software Suspend (Hibernation)"
->         depends on PM && SWAP && (((X86 || PPC64_SWSUSP) &&
->                 (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
+> On i386, ARM and MIPS, warn_sec_mismatch() sometimes fails to show
+> usefull symbol name.  This is because empty 'refsym' due to 0 r_addend
+> value.  This patch is to adjust r_addend value, consulting with
+> apply_relocate() routine in kernel code.
 >
-> Of course this could be written in a clearer fashion, for example as
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
+> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+> index 8e5610d..760b2b3 100644
+> --- a/scripts/mod/modpost.c
+> +++ b/scripts/mod/modpost.c
+> @@ -374,6 +374,7 @@ static int parse_elf(struct elf_info *info, const char *filename)
+>  	hdr->e_shstrndx = TO_NATIVE(hdr->e_shstrndx);
+>  	hdr->e_shnum    = TO_NATIVE(hdr->e_shnum);
+>  	hdr->e_machine  = TO_NATIVE(hdr->e_machine);
+> +	hdr->e_type     = TO_NATIVE(hdr->e_type);
+>  	sechdrs = (void *)hdr + hdr->e_shoff;
+>  	info->sechdrs = sechdrs;
+>  
+> @@ -384,6 +385,8 @@ static int parse_elf(struct elf_info *info, const char *filename)
+>  		sechdrs[i].sh_size   = TO_NATIVE(sechdrs[i].sh_size);
+>  		sechdrs[i].sh_link   = TO_NATIVE(sechdrs[i].sh_link);
+>  		sechdrs[i].sh_name   = TO_NATIVE(sechdrs[i].sh_name);
+> +		sechdrs[i].sh_info   = TO_NATIVE(sechdrs[i].sh_info);
+> +		sechdrs[i].sh_addr   = TO_NATIVE(sechdrs[i].sh_addr);
+>  	}
+>  	/* Find symbol table. */
+>  	for (i = 1; i < hdr->e_shnum; i++) {
+> @@ -753,6 +756,8 @@ static Elf_Sym *find_elf_symbol(struct elf_info *elf, Elf_Addr addr,
+>  	for (sym = elf->symtab_start; sym < elf->symtab_stop; sym++) {
+>  		if (sym->st_shndx != relsym->st_shndx)
+>  			continue;
+> +		if (ELF_ST_TYPE(sym->st_info) == STT_SECTION)
+> +			continue;
+>  		if (sym->st_value == addr)
+>  			return sym;
+>  	}
+> @@ -895,6 +900,72 @@ static void warn_sec_mismatch(const char *modname, const char *fromsec,
+>  	}
+>  }
+>  
+> +static inline unsigned int *reloc_location(struct elf_info *elf,
+> +					   int rsection, Elf_Rela *r)
+> +{
+> +	Elf_Shdr *sechdrs = elf->sechdrs;
+> +	int section = sechdrs[rsection].sh_info;
+> +
+> +	return (void *)elf->hdr + sechdrs[section].sh_offset +
+> +		(r->r_offset - sechdrs[section].sh_addr);
+> +}
+> +
+> +static void addend_386_rel(struct elf_info *elf, int rsection, Elf_Rela *r)
+> +{
+> +	unsigned int r_typ = ELF_R_TYPE(r->r_info);
+> +	unsigned int *location = reloc_location(elf, rsection, r);
+> +
+> +	switch (r_typ) {
+> +	case R_386_32:
+> +		r->r_addend = TO_NATIVE(*location);
+> +		break;
+> +	case R_386_PC32:
+> +		r->r_addend = TO_NATIVE(*location) + 4;
+> +		/* For CONFIG_RELOCATABLE=y */
+> +		if (elf->hdr->e_type == ET_EXEC)
+> +			r->r_addend += r->r_offset;
+> +		break;
+> +	}
+> +}
+> +
+> +static void addend_arm_rel(struct elf_info *elf, int rsection, Elf_Rela *r)
+> +{
+> +	unsigned int r_typ = ELF_R_TYPE(r->r_info);
+> +	unsigned int *location = reloc_location(elf, rsection, r);
+> +
+> +	switch (r_typ) {
+> +	case R_ARM_ABS32:
+> +		r->r_addend = TO_NATIVE(*location);
+> +		break;
+> +	case R_ARM_PC24:
+> +		r->r_addend = ((TO_NATIVE(*location) & 0x00ffffff) << 2) + 8;
+> +		break;
+> +	}
+> +}
+> +
+> +static int addend_mips_rel(struct elf_info *elf, int rsection, Elf_Rela *r)
+> +{
+> +	unsigned int r_typ = ELF_R_TYPE(r->r_info);
+> +	unsigned int *location = reloc_location(elf, rsection, r);
+> +	unsigned int inst;
+> +
+> +	if (r_typ == R_MIPS_HI16)
+> +		return 1;	/* skip this */
+> +	inst = TO_NATIVE(*location);
+> +	switch (r_typ) {
+> +	case R_MIPS_LO16:
+> +		r->r_addend = inst & 0xffff;
+> +		break;
+> +	case R_MIPS_26:
+> +		r->r_addend = (inst & 0x03ffffff) << 2;
+> +		break;
+> +	case R_MIPS_32:
+> +		r->r_addend = inst;
+> +		break;
+> +	}
+> +	return 0;
+> +}
+> +
+>  /**
+>   * A module includes a number of sections that are discarded
+>   * either when loaded or when used as built-in.
+> @@ -938,8 +1009,11 @@ static void check_sec_ref(struct module *mod, const char *modname,
+>  				r.r_offset = TO_NATIVE(rela->r_offset);
+>  #if KERNEL_ELFCLASS == ELFCLASS64
+>  				if (hdr->e_machine == EM_MIPS) {
+> +					unsigned int r_typ;
+>  					r_sym = ELF64_MIPS_R_SYM(rela->r_info);
+>  					r_sym = TO_NATIVE(r_sym);
+> +					r_typ = ELF64_MIPS_R_TYPE(rela->r_info);
+> +					r.r_info = ELF64_R_INFO(r_sym, r_typ);
+>  				} else {
+>  					r.r_info = TO_NATIVE(rela->r_info);
+>  					r_sym = ELF_R_SYM(r.r_info);
+> @@ -972,8 +1046,11 @@ static void check_sec_ref(struct module *mod, const char *modname,
+>  				r.r_offset = TO_NATIVE(rel->r_offset);
+>  #if KERNEL_ELFCLASS == ELFCLASS64
+>  				if (hdr->e_machine == EM_MIPS) {
+> +					unsigned int r_typ;
+>  					r_sym = ELF64_MIPS_R_SYM(rel->r_info);
+>  					r_sym = TO_NATIVE(r_sym);
+> +					r_typ = ELF64_MIPS_R_TYPE(rel->r_info);
+> +					r.r_info = ELF64_R_INFO(r_sym, r_typ);
+>  				} else {
+>  					r.r_info = TO_NATIVE(rel->r_info);
+>  					r_sym = ELF_R_SYM(r.r_info);
+> @@ -983,6 +1060,14 @@ static void check_sec_ref(struct module *mod, const char *modname,
+>  				r_sym = ELF_R_SYM(r.r_info);
+>  #endif
+>  				r.r_addend = 0;
+> +				if (hdr->e_machine == EM_386)
+> +					addend_386_rel(elf, i, &r);
+> +				else if (hdr->e_machine == EM_ARM)
+> +					addend_arm_rel(elf, i, &r);
+> +				else if (hdr->e_machine == EM_MIPS) {
+> +					if (addend_mips_rel(elf, i, &r))
+> +						continue;
+> +				}
+>  				sym = elf->symtab_start + r_sym;
+>  				/* Skip special sections */
+>  				if (sym->st_shndx >= SHN_LORESERVE)
+> diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
+> index 0858caa..4156dd3 100644
+> --- a/scripts/mod/modpost.h
+> +++ b/scripts/mod/modpost.h
+> @@ -60,6 +60,9 @@ typedef union
+>  #define ELF64_MIPS_R_SYM(i) \
+>    ((__extension__ (_Elf64_Mips_R_Info_union)(i)).r_info_fields.r_sym)
+>  
+> +#define ELF64_MIPS_R_TYPE(i) \
+> +  ((__extension__ (_Elf64_Mips_R_Info_union)(i)).r_info_fields.r_type1)
+> +
+>  #if KERNEL_ELFDATA != HOST_ELFDATA
+>  
+>  static inline void __endian(const void *src, void *dest, unsigned int size)
+> -
 >
->         depends on PM
->         depends on SWAP
->         depends on (X86 && !SMP) ||
->                    (X86 && SUSPEND_SMP) ||
->                    (PPC64_SWSUSP && !SMP) ||
->                    (PPC64_SWSUSP && SUSPEND_SMP) ||
->                    (FRV   && !SMP) ||
->                    (PPC32 && !SMP)
+>   
+I can't see how this use of r_attend is going to work. find_elf_symbol
+compares relsym->st_value to Elf_Rela->r_attend. I think it doesn't work
+for RELA archs and even with this patch for REL.
 
-Ok, so perhaps you actually meant X && N_ON_X above. But your
-suggestion is _still_ wrong. Using "depends on" instead of "select" does
-get rid of the warnings, but that conversion would *not* maintain current
-behaviour (that of the config option being visible and automatically
-selecting its dependency -- "default y if ..." otoh does preserve current
-behaviour and hence _can_ replace select).
+--Mika
 
-This is precisely what Trent meant that the kind of dependencies you
-were suggesting in your mails can't be "select"ed in the first place.
 
-Anyway, I've had enough of this thread. The patch that I had sent was
-a 7-line *triviality* that merely (1) preserved current behaviour, (2) did
-not cause _any_ build problems, and (3) got rid of bogus warnings in
-a way that was completely standard when dealing with arch/.../Kconfig's
-and better than the initial suggestion by Sam. Can't quite understand
-how this became such a fiasco that ruined my Sunday :-)
-
-Satyam
