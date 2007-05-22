@@ -1,117 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935115AbXEVSY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934751AbXEVS0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935115AbXEVSY1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 14:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758796AbXEVSYF
+	id S934751AbXEVS0g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 14:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbXEVS03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 14:24:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36078 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759355AbXEVSX7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 14:23:59 -0400
-Date: Tue, 22 May 2007 11:21:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: filesystem benchmarking fun
-Message-Id: <20070522112120.4a5c6a5d.akpm@linux-foundation.org>
-In-Reply-To: <20070522163511.GB6138@think.oraclecorp.com>
-References: <20070516144205.GV26766@think.oraclecorp.com>
-	<464B2AC2.10206@redhat.com>
-	<20070516171156.GY26766@think.oraclecorp.com>
-	<20070516112515.b6f247b2.akpm@linux-foundation.org>
-	<20070516191339.GA26766@think.oraclecorp.com>
-	<20070516123342.714a11d8.akpm@linux-foundation.org>
-	<20070516195359.GE26766@think.oraclecorp.com>
-	<20070516130413.1fd391bf.akpm@linux-foundation.org>
-	<20070516201414.GF26766@think.oraclecorp.com>
-	<20070516133726.0c68a65f.akpm@linux-foundation.org>
-	<20070522163511.GB6138@think.oraclecorp.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 22 May 2007 14:26:29 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50791 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756747AbXEVS02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 14:26:28 -0400
+Subject: Re: [RFC][PATCH] do_div_signed()
+From: john stultz <johnstul@us.ibm.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Elimar Riesebieter <riesebie@lxtec.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705221343440.1817@scrub.home>
+References: <1179800853.5910.59.camel@localhost>
+	 <Pine.LNX.4.64.0705221343440.1817@scrub.home>
+Content-Type: text/plain
+Date: Tue, 22 May 2007 11:26:21 -0700
+Message-Id: <1179858382.18193.0.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 12:35:11 -0400
-Chris Mason <chris.mason@oracle.com> wrote:
-
-> On Wed, May 16, 2007 at 01:37:26PM -0700, Andrew Morton wrote:
-> > On Wed, 16 May 2007 16:14:14 -0400
-> > Chris Mason <chris.mason@oracle.com> wrote:
+On Tue, 2007-05-22 at 13:52 +0200, Roman Zippel wrote:
+> Hi,
+> 
+> On Mon, 21 May 2007, john stultz wrote:
+> 
+> > Here's a quick pass at adding do_div_signed() which provides a signed
+> > version of do_div, avoiding having do_div users hack around signed
+> > issues (like in ntp.c).
 > > 
-> > > On Wed, May 16, 2007 at 01:04:13PM -0700, Andrew Morton wrote:
-> > > > > The good news is that if you let it run long enough, the times
-> > > > > stabilize.  The bad news is:
-> > > > > 
-> > > > > create dir kernel-86 222MB in 15.85 seconds (14.03 MB/s)
-> > > > > create dir kernel-87 222MB in 28.67 seconds (7.76 MB/s)
-> > > > > create dir kernel-88 222MB in 18.12 seconds (12.27 MB/s)
-> > > > > create dir kernel-89 222MB in 19.77 seconds (11.25 MB/s)
-> > > > 
-> > > > well hang on.  Doesn't this just mean that the first few runs were writing
-> > > > into pagecache and the later ones were blocking due to dirty-memory limits?
-> > > > 
-> > > > Or do you have a sync in there?
-> > > > 
-> > > There's no sync,  but if you watch vmstat you can clearly see the log
-> > > flushes, even when the overall create times are 11MB/s.  vmstat goes
-> > > 30MB/s -> 4MB/s or less, then back up to 30MB/s.
+> > It probably could be optimized further, so let me know if you have any
+> > suggestions.
 > > 
-> > How do you know that it is a log flush rather than, say, pdflush
-> > hitting the blockdev inode and doing a big seeky write?
+> > 
+> > Other thoughts?
 > 
-> Ok, I did some more work to split out the two cases (block device inode
-> writeback and log flushing).
+> Did I mention that this API could use a little cleanup? :)
+> Below is what I had in mind, this makes it more clear what types the 
+> functions are working on. As bonus I cleaned up the i386 div64 
+> implementation to get rid of the ugly asm casts, so gcc can do better 
+> register allocation and generate better code.
 > 
-> I patched jbd's log_do_checkpoint to put all the blocks it wanted to
-> write in a radix tree, then send them all down in order at the end.
 
-Side note: we already have all of that capability in the kernel:
-sync_inode(blockdev_inode, wbc) will do an ascending-LBA write of the whole
-blockdev.
+Yep. Much nicer then mine!
 
-It could be that as a quick diddle, running sync_inode() in
-do-block-on-queue-congestion mode prior to doing the checkpoint would have
-some benefit.
+thanks!
+-john
 
-> The elevator should be helping here, but jbd is sending down 2,000
-> to 3,000 blocks during the checkpoint and upping nr_requests alone
-> didn't seem to be doing the trick.
 > 
-> Unpatched ext3 would break down into seeks after 8 kernel trees are
-> created (222MB each).  With the radix sorting, the first 15 kernel trees
-> are created quickly, and then we slow down.
-> 
-> So I waited until around the 25th kernel tree was created, hit ctrl-c
-> and ran sync.  vmstat showed writes going at 2MB/s, and sysrq-w showed
-> sync was running the block device inode for most of the 2MB/s period.
-> 
-> It looks as though the dirty pages on the block device inode are spread
-> out far enough that we're not getting good streaming writes.  Mark
-> Fasheh ran on a bigger raid array, where performance was consistently
-> good for the whole run.  I'm assuming the larger write cache on the
-> array was able to group the data writes with the metadata on disk, while
-> my poor little sata drive wasn't.  Dave Chinner hinted that xfs is
-> probably suffering a similar problem, which is usually fixed by backing
-> the FS with stripes and big raid.
-> 
-> My vaporware FS is able to maintain speed through the run because the
-> allocator tries to keep data and metadata grouped into 256mb chunks,
-> and so they don't end up mingling on disk until things get full.
-> 
-> At any rate, it may be worth putzing with the writeback routines to try
-> and find dirty pages close by in the block dev inode when doing data
-> writeback.  My guess is that ext3 should be going 1.5x to 2x faster for
-> this particular run, but that's a huge amount of complexity added so I'm
-> not convinced it is a great idea.
+> Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
 
-Yes, this is a distinct disadvantage of the whole per-address-space
-writeback scheme - we're leaving IO scheduling optimisations on the floor,
-especially wrt the blockdev inode, but probably also wrt regular-file
-versus regular-file.  Even if one makes the request queue tremendously
-huge, that won't help if there's dirty data close-by the disk head which
-hasn't even been put into the queue yet.
+Acked-by: John Stultz <johnstul@us.ibm.com>
+
+
+> ---
+>  include/asm-generic/div64.h |   14 ++++++++++++++
+>  include/asm-i386/div64.h    |   20 ++++++++++++++++++++
+>  include/linux/calc64.h      |   28 ++++++++++++++++++++++++++++
+>  kernel/time.c               |   26 +++++++-------------------
+>  kernel/time/ntp.c           |   21 +++++----------------
+>  lib/div64.c                 |   21 ++++++++++++++++++++-
+>  6 files changed, 94 insertions(+), 36 deletions(-)
+> 
+> Index: linux-2.6/include/asm-generic/div64.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-generic/div64.h
+> +++ linux-2.6/include/asm-generic/div64.h
+> @@ -35,6 +35,20 @@ static inline uint64_t div64_64(uint64_t
+>  	return dividend / divisor;
+>  }
+> 
+> +static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
+> +{
+> +	*remainder = dividend % divisor;
+> +	return dividend / divisor;
+> +}
+> +#define div_u64_rem	div_u64_rem
+> +
+> +static inline s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder)
+> +{
+> +	*remainder = dividend % divisor;
+> +	return dividend / divisor;
+> +}
+> +#define div_s64_rem	div_s64_rem
+> +
+>  #elif BITS_PER_LONG == 32
+> 
+>  extern uint32_t __div64_32(uint64_t *dividend, uint32_t divisor);
+> Index: linux-2.6/include/asm-i386/div64.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-i386/div64.h
+> +++ linux-2.6/include/asm-i386/div64.h
+> @@ -48,5 +48,25 @@ div_ll_X_l_rem(long long divs, long div,
+> 
+>  }
+> 
+> +static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
+> +{
+> +	union {
+> +		u64 v64;
+> +		u32 v32[2];
+> +	} d = { dividend };
+> +	u32 upper;
+> +
+> +	upper = d.v32[1];
+> +	if (upper) {
+> +		upper = d.v32[1] % divisor;
+> +		d.v32[1] = d.v32[1] / divisor;
+> +	}
+> +	asm ("divl %2" : "=a" (d.v32[0]), "=d" (*remainder) :
+> +		"rm" (divisor), "0" (d.v32[0]), "1" (upper));
+> +	return d.v64;
+> +}
+> +#define div_u64_rem	div_u64_rem
+> +
+>  extern uint64_t div64_64(uint64_t dividend, uint64_t divisor);
+> +
+>  #endif
+> Index: linux-2.6/include/linux/calc64.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/calc64.h
+> +++ linux-2.6/include/linux/calc64.h
+> @@ -46,4 +46,32 @@ static inline long div_long_long_rem_sig
+>  	return res;
+>  }
+> 
+> +#ifndef div_u64_rem
+> +static inline u64 div_u64_rem(u64 dividend, u32 divisor, u32 *remainder)
+> +{
+> +	*remainder = do_div(dividend, divisor);
+> +	return dividend;
+> +}
+> +#endif
+> +
+> +#ifndef div_u64
+> +static inline u64 div_u64(u64 dividend, u32 divisor)
+> +{
+> +	u32 remainder;
+> +	return div_u64_rem(dividend, divisor, &remainder);
+> +}
+> +#endif
+> +
+> +#ifndef div_s64_rem
+> +extern s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder);
+> +#endif
+> +
+> +#ifndef div_s64
+> +static inline s64 div_s64(s64 dividend, s32 divisor)
+> +{
+> +	s32 remainder;
+> +	return div_s64_rem(dividend, divisor, &remainder);
+> +}
+> +#endif
+> +
+>  #endif
+> Index: linux-2.6/kernel/time.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/time.c
+> +++ linux-2.6/kernel/time.c
+> @@ -661,9 +661,7 @@ clock_t jiffies_to_clock_t(long x)
+>  #if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
+>  	return x / (HZ / USER_HZ);
+>  #else
+> -	u64 tmp = (u64)x * TICK_NSEC;
+> -	do_div(tmp, (NSEC_PER_SEC / USER_HZ));
+> -	return (long)tmp;
+> +	return div_u64((u64)x * TICK_NSEC, NSEC_PER_SEC / USER_HZ);
+>  #endif
+>  }
+>  EXPORT_SYMBOL(jiffies_to_clock_t);
+> @@ -675,16 +673,12 @@ unsigned long clock_t_to_jiffies(unsigne
+>  		return ~0UL;
+>  	return x * (HZ / USER_HZ);
+>  #else
+> -	u64 jif;
+> -
+>  	/* Don't worry about loss of precision here .. */
+>  	if (x >= ~0UL / HZ * USER_HZ)
+>  		return ~0UL;
+> 
+>  	/* .. but do try to contain it here */
+> -	jif = x * (u64) HZ;
+> -	do_div(jif, USER_HZ);
+> -	return jif;
+> +	return div_u64((u64)x * HZ, USER_HZ);
+>  #endif
+>  }
+>  EXPORT_SYMBOL(clock_t_to_jiffies);
+> @@ -692,17 +686,15 @@ EXPORT_SYMBOL(clock_t_to_jiffies);
+>  u64 jiffies_64_to_clock_t(u64 x)
+>  {
+>  #if (TICK_NSEC % (NSEC_PER_SEC / USER_HZ)) == 0
+> -	do_div(x, HZ / USER_HZ);
+> +	return div_u64(x, HZ / USER_HZ);
+>  #else
+>  	/*
+>  	 * There are better ways that don't overflow early,
+>  	 * but even this doesn't overflow in hundreds of years
+>  	 * in 64 bits, so..
+>  	 */
+> -	x *= TICK_NSEC;
+> -	do_div(x, (NSEC_PER_SEC / USER_HZ));
+> +	return div_u64(x * TICK_NSEC, NSEC_PER_SEC / USER_HZ);
+>  #endif
+> -	return x;
+>  }
+> 
+>  EXPORT_SYMBOL(jiffies_64_to_clock_t);
+> @@ -710,21 +702,17 @@ EXPORT_SYMBOL(jiffies_64_to_clock_t);
+>  u64 nsec_to_clock_t(u64 x)
+>  {
+>  #if (NSEC_PER_SEC % USER_HZ) == 0
+> -	do_div(x, (NSEC_PER_SEC / USER_HZ));
+> +	return div_u64(x, NSEC_PER_SEC / USER_HZ);
+>  #elif (USER_HZ % 512) == 0
+> -	x *= USER_HZ/512;
+> -	do_div(x, (NSEC_PER_SEC / 512));
+> +	return div_u64(x * USER_HZ / 512, NSEC_PER_SEC / 512);
+>  #else
+>  	/*
+>           * max relative error 5.7e-8 (1.8s per year) for USER_HZ <= 1024,
+>           * overflow after 64.99 years.
+>           * exact for HZ=60, 72, 90, 120, 144, 180, 300, 600, 900, ...
+>           */
+> -	x *= 9;
+> -	do_div(x, (unsigned long)((9ull * NSEC_PER_SEC + (USER_HZ/2)) /
+> -				  USER_HZ));
+> +	return div_u64(x * 9, (9ull * NSEC_PER_SEC + (USER_HZ / 2)) / USER_HZ);
+>  #endif
+> -	return x;
+>  }
+> 
+>  #if (BITS_PER_LONG < 64)
+> Index: linux-2.6/kernel/time/ntp.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/time/ntp.c
+> +++ linux-2.6/kernel/time/ntp.c
+> @@ -53,10 +53,8 @@ static void ntp_update_frequency(void)
+> 
+>  	tick_length_base = second_length;
+> 
+> -	do_div(second_length, HZ);
+> -	tick_nsec = second_length >> TICK_LENGTH_SHIFT;
+> -
+> -	do_div(tick_length_base, NTP_INTERVAL_FREQ);
+> +	tick_nsec = div_u64(second_length, HZ) >> TICK_LENGTH_SHIFT;
+> +	tick_length_base = div_u64(tick_length_base, NTP_INTERVAL_FREQ);
+>  }
+> 
+>  /**
+> @@ -197,7 +195,7 @@ void __attribute__ ((weak)) notify_arch_
+>  int do_adjtimex(struct timex *txc)
+>  {
+>  	long mtemp, save_adjust, rem;
+> -	s64 freq_adj, temp64;
+> +	s64 freq_adj;
+>  	int result;
+> 
+>  	/* In order to modify anything, you gotta be super-user! */
+> @@ -300,17 +298,8 @@ int do_adjtimex(struct timex *txc)
+>  		    freq_adj = time_offset * mtemp;
+>  		    freq_adj = shift_right(freq_adj, time_constant * 2 +
+>  					   (SHIFT_PLL + 2) * 2 - SHIFT_NSEC);
+> -		    if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC)) {
+> -			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
+> -			if (time_offset < 0) {
+> -			    temp64 = -temp64;
+> -			    do_div(temp64, mtemp);
+> -			    freq_adj -= temp64;
+> -			} else {
+> -			    do_div(temp64, mtemp);
+> -			    freq_adj += temp64;
+> -			}
+> -		    }
+> +		    if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC))
+> +			freq_adj += div_s64(time_offset << (SHIFT_NSEC - SHIFT_FLL), mtemp);
+>  		    freq_adj += time_freq;
+>  		    freq_adj = min(freq_adj, (s64)MAXFREQ_NSEC);
+>  		    time_freq = max(freq_adj, (s64)-MAXFREQ_NSEC);
+> Index: linux-2.6/lib/div64.c
+> ===================================================================
+> --- linux-2.6.orig/lib/div64.c
+> +++ linux-2.6/lib/div64.c
+> @@ -18,7 +18,7 @@
+> 
+>  #include <linux/types.h>
+>  #include <linux/module.h>
+> -#include <asm/div64.h>
+> +#include <linux/calc64.h>
+> 
+>  /* Not needed on 64bit architectures */
+>  #if BITS_PER_LONG == 32
+> @@ -78,4 +78,23 @@ uint64_t div64_64(uint64_t dividend, uin
+>  }
+>  EXPORT_SYMBOL(div64_64);
+> 
+> +#ifndef div_s64_rem
+> +s64 div_s64_rem(s64 dividend, s32 divisor, s32 *remainder)
+> +{
+> +	u64 quotient;
+> +
+> +	if (dividend < 0) {
+> +		quotient = div_u64_rem(-dividend, abs(divisor), (u32 *)remainder);
+> +		*remainder = -*remainder;
+> +		if (divisor > 0)
+> +			quotient = -quotient;
+> +	} else {
+> +		quotient = div_u64_rem(dividend, abs(divisor), (u32 *)remainder);
+> +		if (divisor < 0)
+> +			quotient = -quotient;
+> +	}
+> +	return quotient;
+> +}
+> +#endif
+> +
+>  #endif /* BITS_PER_LONG == 32 */
 
