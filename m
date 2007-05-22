@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbXEVEe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759215AbXEVEg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbXEVEe4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 00:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbXEVEeu
+	id S1759215AbXEVEg1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 00:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbXEVEgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 00:34:50 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:45874 "EHLO havoc.gtf.org"
+	Tue, 22 May 2007 00:36:20 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48417 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755568AbXEVEet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 00:34:49 -0400
-Date: Tue, 22 May 2007 00:34:49 -0400
+	id S1755827AbXEVEgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 00:36:20 -0400
+Message-ID: <4652733F.4030708@garzik.org>
+Date: Tue, 22 May 2007 00:36:15 -0400
 From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] smbfs: fix header_check (and build)
-Message-ID: <20070522043448.GA6192@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Mike Houston <mikeserv@bmts.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>	<20070520170506.814a38d9.mikeserv@bmts.com>	<20070521084549.61a1aa71@freepuppy>	<20070521131055.0017404f.mikeserv@bmts.com>	<20070521103755.51b954e1@freepuppy>	<20070521225806.bb18d589.mikeserv@bmts.com> <20070521213146.3e220a44@freepuppy>
+In-Reply-To: <20070521213146.3e220a44@freepuppy>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Stephen Hemminger wrote:
+> There maybe some hardware level interaction with SATA controller.
+> I saw no failures running off i386 kernel of PATA drive and quickly
+> see errors with SATA/AHCI and x86_64.
 
-The build dies in the header_check portion:
-/garz/repo/linux-2.6/usr/include/linux/smb_fs.h requires linux/jiffies.h, which does not exist in exported headers
-make[3]: *** [/garz/repo/linux-2.6/usr/include/linux/.check.smb_fs.h] Error 1
 
-The solution is to move the jiffies.h include inside __KERNEL__.
+I presume AHCI is the only other device in the system using PCI MSI, 
+when you see problems?
 
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+	Jeff
 
-diff --git a/include/linux/smb_fs.h b/include/linux/smb_fs.h
-index 6b51a48..d5212f0 100644
---- a/include/linux/smb_fs.h
-+++ b/include/linux/smb_fs.h
-@@ -9,7 +9,6 @@
- #ifndef _LINUX_SMB_FS_H
- #define _LINUX_SMB_FS_H
- 
--#include <linux/jiffies.h>
- #include <linux/smb.h>
- 
- /*
-@@ -26,6 +25,7 @@
- #include <linux/smb_fs_i.h>
- #include <linux/smb_fs_sb.h>
- 
-+#include <linux/jiffies.h>
- #include <linux/fs.h>
- #include <linux/pagemap.h>
- #include <linux/vmalloc.h>
+
