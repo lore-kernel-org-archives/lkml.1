@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbXEVXRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbXEVXTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760681AbXEVXRo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 19:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756470AbXEVXRg
+	id S1759576AbXEVXTR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 19:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756332AbXEVXTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 19:17:36 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:42439 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756655AbXEVXRf (ORCPT
+	Tue, 22 May 2007 19:19:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56707 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756111AbXEVXTE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 19:17:35 -0400
-Date: Wed, 23 May 2007 01:17:22 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tejun Heo <htejun@gmail.com>, Maneesh Soni <maneesh@in.ibm.com>,
-       stable@kernel.org
-Subject: Re: [stable] [PATCH] - fix oops in sysfs_readdir
-Message-ID: <20070522231722.GD2098@stusta.de>
-References: <4651E0C9.3080609@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4651E0C9.3080609@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 22 May 2007 19:19:04 -0400
+Date: Tue, 22 May 2007 16:16:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kratochvil <honza@jikos.cz>
+Cc: Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RESEND] PIE randomization
+Message-Id: <20070522161642.b71ddacb.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
+References: <alpine.LRH.0.98.0705111338230.22353@twin.jikos.cz>
+	<20070511125629.3df919cf.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
+	<20070511133651.63f8a14d.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz>
+	<Pine.LNX.4.64.0705161851120.25986@twin.jikos.cz>
+	<alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 01:11:21PM -0500, Eric Sandeen wrote:
-> This is a non-ida backport of Tejun's patch in -mm at:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc1/2.6.22-rc1-mm1/broken-out/gregkh-driver-sysfs-allocate-inode-number-using-ida.patch
-> for the 2.6.16 -stable tree - it follows the same scheme of using s_ino to safely
-> store & retrieve the inode number of sysfs entries for use in sysfs_readdir,
-> but uses a brain-dead-simple inode nr allocator rather than ida, which would
-> bring along a lot of newer, more complex code.
-> 
-> No, this doesn't guarantee uniqueness of sysfs inode numbers, but then
-> the code in -stable today doesn't either - and with this change, at least
-> it shouldn't oops.
-> 
-> Comments?
+On Thu, 17 May 2007 22:24:11 +0200 (CEST)
+Jan Kratochvil <honza@jikos.cz> wrote:
 
-First of all, thanks for any contributions to 2.6.16.
+> This patch is using mmap()'s randomization functionality in such a way 
+> that it maps the main executable of (specially compiled/linked -pie/-fpie) 
+> ET_DYN binaries onto a random address (in cases in which mmap() is allowed 
+> to perform a randomization).
 
-My biggest problem with this patch is:
-It's not yet fixed in Linus' tree - and if it isn't important enough for 
-being fixed in 2.6.22, it can't be important enough for 2.6.16.
+ia64:
 
-And no matter whether this might include adding ida to 2.6.16, I'd 
-prefer to apply something as near as possible to whatever gets
-into 2.6.22.
-
-> Thanks,
-> 
-> -Eric
->...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+arch/ia64/ia32/binfmt_elf32.c:265: error: conflicting types for 'elf32_map'
+arch/ia64/ia32/../../../fs/binfmt_elf.c:48: error: previous declaration of 'elf32_map' was here
+arch/ia64/ia32/binfmt_elf32.c:265: error: conflicting types for 'elf32_map'
+arch/ia64/ia32/../../../fs/binfmt_elf.c:48: error: previous declaration of 'elf32_map' was here
+arch/ia64/ia32/../../../fs/binfmt_elf.c:48: warning: 'elf32_map' declared `static' but never defined
+arch/ia64/ia32/binfmt_elf32.c:265: warning: 'elf32_map' defined but not used
