@@ -1,91 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765781AbXEVOQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965796AbXEVORR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765781AbXEVOQx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 10:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbXEVOQp
+	id S965796AbXEVORR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 10:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764504AbXEVOQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 10:16:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:54464 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756260AbXEVOQo (ORCPT
+	Tue, 22 May 2007 10:16:52 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:37557 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761361AbXEVOQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 10:16:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SOdcuUC+SufIM7wm33hPEbpvIQ5pw/yVA/0Lma0f9UsyIpZF3v5QegqsWgrnHxmn6BbFdOONgwJafEBe3CmN3FNqKMml7zAXoi6yzmFHOQtKHNtGFE/e/ZM4ZPEGLfj/Zu+pBz8PLYGu2QEsAlRGbmUbUsgvI/CL2vR+eIis9eQ=
-Message-ID: <a781481a0705220716l799ee2efm268deefc40993875@mail.gmail.com>
-Date: Tue, 22 May 2007 19:46:42 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: any value to "NORET_TYPE" macro?
-Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <a781481a0705220709s40b80208h47f1f2f7c00a684d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 22 May 2007 10:16:50 -0400
+Subject: Re: select(0, ..) is valid ?
+From: Steve Fox <drfickle@linux.vnet.ibm.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>, Hugh Dickins <hugh@veritas.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, sfr@canb.auug.org.au, ak@suse.de,
+       Andy Whitcroft <andyw@uk.ibm.com>,
+       Nishanth Aravamudan <nacc@us.ibm.com>
+In-Reply-To: <1179363553.16195.10.camel@dyn9047017100.beaverton.ibm.com>
+References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
+	 <20070515104453.f901e91f.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0705151927360.28895@blonde.wat.veritas.com>
+	 <20070516153703.GA26912@kryten>
+	 <1179363553.16195.10.camel@dyn9047017100.beaverton.ibm.com>
+Content-Type: text/plain
+Date: Tue, 22 May 2007 09:16:37 -0500
+Message-Id: <1179843397.3124.109.camel@drfickle.rchland.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
-	 <alpine.DEB.0.99.0705220950160.3308@sigma.j-a-k-j.com>
-	 <Pine.LNX.4.64.0705220959310.14408@localhost.localdomain>
-	 <a781481a0705220709s40b80208h47f1f2f7c00a684d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/22/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> On 5/22/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> > On Tue, 22 May 2007, John Anthony Kazos Jr. wrote:
-> >
-> > > >   given that:
-> > > >
-> > > > $ grep -r "define.*NORET_TYPE" *
-> > > > include/linux/ext4_fs.h:# define NORET_TYPE    /**/
-> > > > include/linux/linkage.h:#define NORET_TYPE    /**/
-> > > > include/linux/ext3_fs.h:# define NORET_TYPE    /**/
-> > > > $
-> > > >
-> > > > is there any obvious value to the 30 or so uses of that macro
-> > > > sprinkled throughout the tree?
-> > >
-> > > Since it evaluates to absolutely empty code during pre-processing,
-> > > there is no obvious value. The question is whether there is some odd
-> > > hackish non-obvious value, I'd expect. (I'd also expect that to be
-> > > another "no".)
-> > >
-> > > If something that evaluates to nothingness ("There was nothing
-> > > left...not even a hole!") actually does anything, then somebody in
-> > > the standards-compilers-users pipeline needs to be violently beaten
-> > > for stupidity.
-> >
-> >
-> > actually, one of the folks on the KJ list found this:
-> >
-> >   http://www.ussg.iu.edu/hypermail/linux/kernel/9605/1957.html
-> >
-> > which speaks thusly:
-> >
-> > ...
-> > -#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5)
-> > -# define NORET_TYPE __volatile__
-> > -# define ATTRIB_NORET /**/
-> > -# define NORET_AND /**/
-> > -#else
-> > # define NORET_TYPE /**/
-> > # define ATTRIB_NORET __attribute__((noreturn))
-> > # define NORET_AND noreturn,
-> > -#endif
-> > ...
-> >
-> >   so it looks like a thoroughly obsolete macro which can be tossed.
-> > i'll make the patch and test it.
->
-> AFAICT, NORET_TYPE must've been introduced to silence gcc _warnings_,
-> and not do actually do anything useful that affects functionality in any way.
-> So the way to "test" your patch would be to see if there is any increase /
-> decrease in the number of *warnings* blurted out by gcc during kernel build
-> (best would be to build with various gcc versions on various platforms :-)
+On Wed, 2007-05-16 at 17:59 -0700, Badari Pulavarty wrote:
 
-But of course, John is *bang right* that if /**/ makes gcc do (or not do)
-_anything at all_ (be it crying out a warning), then someone surely
-deserves to get his head bashed in ... :-)
+> Here it is ..
+> 
+> Should I do one for poll() also ?
+> 
+> Thanks,
+> Badari
+> 
+> Optimize select by a using stack space for small fd sets.
+> core_sys_select() already has this optimization. This is
+> for compat version. 
+> 
+> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> ---
+>  fs/compat.c |   17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6.22-rc1/fs/compat.c
+> ===================================================================
+> --- linux-2.6.22-rc1.orig/fs/compat.c	2007-05-12 18:45:56.000000000 -0700
+> +++ linux-2.6.22-rc1/fs/compat.c	2007-05-16 17:50:39.000000000 -0700
+> @@ -1544,9 +1544,10 @@ int compat_core_sys_select(int n, compat
+>  	compat_ulong_t __user *outp, compat_ulong_t __user *exp, s64 *timeout)
+>  {
+>  	fd_set_bits fds;
+> -	char *bits;
+> +	void *bits;
+>  	int size, max_fds, ret = -EINVAL;
+>  	struct fdtable *fdt;
+> +	long stack_fds[SELECT_STACK_ALLOC/sizeof(long)];
+> 
+>  	if (n < 0)
+>  		goto out_nofds;
+> @@ -1564,11 +1565,14 @@ int compat_core_sys_select(int n, compat
+>  	 * since we used fdset we need to allocate memory in units of
+>  	 * long-words.
+>  	 */
+> -	ret = -ENOMEM;
+>  	size = FDS_BYTES(n);
+> -	bits = kmalloc(6 * size, GFP_KERNEL);
+> -	if (!bits)
+> -		goto out_nofds;
+> +	bits = stack_fds;
+> +	if (size > sizeof(stack_fds) / 6) {
+> +		bits = kmalloc(6 * size, GFP_KERNEL);
+> +		ret = -ENOMEM;
+> +		if (!bits)
+> +			goto out_nofds;
+> +	}
+>  	fds.in      = (unsigned long *)  bits;
+>  	fds.out     = (unsigned long *) (bits +   size);
+>  	fds.ex      = (unsigned long *) (bits + 2*size);
+> @@ -1600,7 +1604,8 @@ int compat_core_sys_select(int n, compat
+>  	    compat_set_fd_set(n, exp, fds.res_ex))
+>  		ret = -EFAULT;
+>  out:
+> -	kfree(bits);
+> +	if (bits != stack_fds)
+> +		kfree(bits);
+>  out_nofds:
+>  	return ret;
+>  }
+
+Andy put this through a couple machines on test.kernel.org and elm3b6
+was fixed, however elm3b239 still had a boot error.
+
+BUG: at mm/slab.c:777 __find_general_cachep()
+
+Call Trace:
+ [<ffffffff802729c6>] __kmalloc+0xa6/0xe0
+ [<ffffffff8021d21b>] cache_k8_northbridges+0x9b/0x120
+ [<ffffffff80688af3>] gart_iommu_init+0x33/0x5b0
+ [<ffffffff802211a3>] __wake_up+0x43/0x70
+ [<ffffffff80453b90>] genl_rcv+0x0/0x70
+ [<ffffffff80452175>] netlink_kernel_create+0x155/0x170
+ [<ffffffff80684029>] pci_iommu_init+0x9/0x20
+ [<ffffffff8067e6f4>] kernel_init+0x154/0x330
+ [<ffffffff8020a8d8>] child_rip+0xa/0x12
+ [<ffffffff80348e10>] acpi_ds_init_one_object+0x0/0x7c
+ [<ffffffff8067e5a0>] kernel_init+0x0/0x330
+ [<ffffffff8020a8ce>] child_rip+0x0/0x12
+
+See the "2.6.22-rc2-git1 +1" row at http://test.kernel.org/ for full
+logs.
+
+-- 
+
+Steve Fox
+IBM Linux Technology Center
+
