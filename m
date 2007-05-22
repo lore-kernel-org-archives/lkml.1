@@ -1,84 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934160AbXEVK7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934112AbXEVLBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934160AbXEVK7E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 06:59:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbXEVK6x
+	id S934112AbXEVLBk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 07:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbXEVLBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 06:58:53 -0400
-Received: from holomorphy.com ([66.93.40.71]:50597 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756385AbXEVK6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 06:58:51 -0400
-Date: Tue, 22 May 2007 03:59:35 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-arch@vger.kernel.org
-Subject: Re: [rfc] increase struct page size?!
-Message-ID: <20070522105935.GR19966@holomorphy.com>
-References: <20070520052229.GA9372@wotan.suse.de> <20070520084647.GF19966@holomorphy.com> <20070520092552.GA7318@wotan.suse.de> <20070521080813.GQ31925@holomorphy.com> <20070521092742.GA19642@wotan.suse.de> <20070521224316.GC11166@waste.org> <20070522013951.GP19966@holomorphy.com> <20070522015703.GE27743@wotan.suse.de> <20070522050410.GQ19966@holomorphy.com> <20070522062452.GA29807@wotan.suse.de>
+	Tue, 22 May 2007 07:01:33 -0400
+Received: from web52608.mail.re2.yahoo.com ([206.190.48.211]:30364 "HELO
+	web52608.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757476AbXEVLBc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 07:01:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=mzvG6EosfGlf0cxLuj0wBFml3tdw8n720ubzxpmTi495TiH7DndfhqsPwwHiitmTIPKcVxQfuM9haZxo2kfXF5MV4FCbyCIgX5qwuqRp7HPIkgl75SyXJ2OZ4yQJ0PD3TL6zrswrAPUVk/XOnjE4Y3ChBGAuUu1zAeKi35xrc7k=;
+X-YMail-OSG: y9bxu1MVM1nYFTH3YRiyjzJZTRYd7Y2ci8xwdUEvFsG457mW60N3ZZv6JQ9EBEaaVZ_OJVWtrfHxvkBadu4yMuYvPkMs6Q8JmvkipfsBo166bOAT8YCwENAxtvhr
+Date: Tue, 22 May 2007 21:01:31 +1000 (EST)
+From: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Lameter <clameter@sgi.com>, Hugh Dickins <hugh@veritas.com>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070522092439.GA19895@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522062452.GA29807@wotan.suse.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <559665.2852.qm@web52608.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 21, 2007 at 10:04:10PM -0700, William Lee Irwin III wrote:
->> The size isn't the advantage being cited; I'd actually expect the net
->> result to be larger. It's the control over the layout of the metadata
->> for cache locality and even things like having enough flags, folding
->> buffer_head -like affairs into the per-page metadata for filesystems
->> and so reaping cache locality benefits even there (assuming it works
->> out in other respects), and so on.
->> Passing pages between subsystems doesn't seem very significant to me.
->> There isn't going to be much locality of reference, or even any
->> guarantee that the subsystem gets fed a cache hot page structure. The
->> subsystem being passed the page will have its own cache hot accounting
->> structures to stick the information about the memory into.
+--- Ingo Molnar <mingo@elte.hu> wrote:
+> * Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au> wrote:
+> > Yup, with CONFIG_SMP=n, I'm unable to reproduce the problem. It's 
+> > quite stable actually (having completed a dozen kernel compile 
+> > sessions so far).
 
-On Tue, May 22, 2007 at 08:24:53AM +0200, Nick Piggin wrote:
-> Well consider the page allocator and pagecache. The page allocator
-> uses page metadata rather than eg. a bitmap, and it uses page list
-> heads for the per-cpu allocator.
-> If we were to instead perhaps use external bitmaps and arrays to 
-> keep track of pages, then the pagecache would have to go and allocate
-> its own structures rather than reuse the cache hot page allocator
-> structures.
-> Buffer heads might be something that would work well, but we'd still
-> like to be able to deallocate them without freeing the whole pagecache
-> (because they tend to be associated with less frequent operations like
-> IO). But anyway, I don't know. I'm sure there would be cases where it
-> works better.
+[...]
 
-The page allocator maintains a number of bitmaps, but anyway. Each
-subsystem will basically have its own cache-hot structures. Instead
-of passing around metadata that's hot, each tries to keep its own
-"working set" of metadata hot. Basically yes, it will work better in
-some situations and the current metadata passing will work better in
-others. I'd expect the control over the layout to be more advantageous
-more often, especially since it arranges cache contiguity while pages
-are in use.
+> could you enable CONFIG_PROVE_LOCKING - does it spit out any warning 
+> into the syslog?
 
+Compiled slub with SMP & CONFIG_PROVE_LOCKING. No luck. It still hangs solid
+after the second spinlock lockup call trace.
 
-On Mon, May 21, 2007 at 10:04:10PM -0700, William Lee Irwin III wrote:
->> I'm not entirely sure what you're on about there, but it sounds
->> interesting.
+Here's the relevant sections of the kernel logs:
 
-On Tue, May 22, 2007 at 08:24:53AM +0200, Nick Piggin wrote:
-> Heh :) Well the lockless pagecache would become basically trivial if we
-> could RCU-free pagecache pages, however doing that is really awful for
-> a number of reasons. However if you had a system where the metadata is
-> decoupled, you could simply RCU-free the 'struct page' (while still
-> immediately freeing the page itself) which would make lockless pagecache
-> (and potentially similar things) equally trivial.
-> I assumed K42 might have been into that angle.
+...
+Freeing unused kernel memory: 228k freed
+BUG: spinlock bad magic on CPU#1, init/1
+ lock: ffff81011f5f1100, .magic: ffff8101, .owner: <none>/-1, .owner_cpu: -1
 
-That does sound convenient. I'll add that to the list of benefits.
+Call Trace:
+ [<ffffffff802f326a>] _raw_spin_lock+0x22/0xf6
+ [<ffffffff8026b2d5>] vma_adjust+0x21c/0x446
+ [<ffffffff8026b2d5>] vma_adjust+0x21c/0x446
+ [<ffffffff8026b9d4>] vma_merge+0x10c/0x195
+ [<ffffffff8026c757>] do_mmap_pgoff+0x3f5/0x794
+ [<ffffffff803fff0c>] _spin_unlock_irq+0x24/0x27
+ [<ffffffff8020f414>] sys_mmap+0xe5/0x110
+ [<ffffffff80209dde>] system_call+0x7e/0x83
+...
+PM: Adding info for No Bus:vcsa1
+BUG: spinlock lockup on CPU#1, hostname/369, ffff81011f5f1fc0
+
+Call Trace:
+ [<ffffffff802f3317>] _raw_spin_lock+0xcf/0xf6
+ [<ffffffff8026ec9c>] anon_vma_unlink+0x1c/0x68
+ [<ffffffff8026ec9c>] anon_vma_unlink+0x1c/0x68
+ [<ffffffff80269aa0>] free_pgtables+0x69/0xc4
+ [<ffffffff8026ad0e>] exit_mmap+0x91/0xeb
+ [<ffffffff80228cea>] mmput+0x2c/0x9f
+ [<ffffffff8022df72>] do_exit+0x22e/0x82e
+ [<ffffffff8022e5f4>] sys_exit_group+0x0/0xe
+ [<ffffffff80209dde>] system_call+0x7e/0x83
 
 
--- wli
+Surprisingly, with CONFIG_SMP=n, CONFIG_PROVE_LOCKING produces this with slub
+(then hangs solid):
+
+Freeing unused kernel memory: 188k freed
+BUG: spinlock lockup on CPU#0, init/1, ffff81011e9d3160
+
+Call Trace:
+ [<ffffffff802eca20>] _raw_spin_lock+0xca/0xe8
+ [<ffffffff80265d6d>] vma_adjust+0x218/0x442
+ [<ffffffff80265d6d>] vma_adjust+0x218/0x442
+ [<ffffffff8026646b>] vma_merge+0x10c/0x195
+ [<ffffffff802671d5>] do_mmap_pgoff+0x3f5/0x790
+ [<ffffffff803f6e84>] _spin_unlock_irq+0x24/0x27
+ [<ffffffff8020ead0>] sys_mmap+0xe5/0x110
+ [<ffffffff80209cce>] system_call+0x7e/0x83
+
+To recap:
+1. No problems with slub on CONFIG_SMP=n & CONFIG_PROVE_LOCKING=n
+2. Problem with slub on CONFIG_SMP=n & CONFIG_PROVE_LOCKING=y (perhaps a. some
+locking issue when slub is activated or b. something is wrong with 'prove
+locking' mechanism when slub is activated or c. something else I don't see) 
+3. Problem with slub on CONFIG_SMP=y (even without CONFIG_PROVE_LOCKING=y)
+
+Thanks
+
+
+
+      ___________________________________________________________________________________
+How would you spend $50,000 to create a more sustainable environment in Australia?  Go to Yahoo!7 Answers and share your idea.
+http://advision.webevents.yahoo.com/aunz/lifestyle/answers/y7ans-babp_reg.html
+
