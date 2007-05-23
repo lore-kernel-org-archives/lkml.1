@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762070AbXEWHvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbXEWH63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762070AbXEWHvR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 03:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbXEWHvI
+	id S1759518AbXEWH63 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 03:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbXEWH6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 03:51:08 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:17864 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755127AbXEWHvF (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 03:51:05 -0400
-Message-ID: <4653F264.1030807@de.ibm.com>
-Date: Wed, 23 May 2007 09:51:00 +0200
-From: Carsten Otte <cotte@de.ibm.com>
-Reply-To: carsteno@de.ibm.com
-Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH=2CVor?=
- =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen=2CGe?=
- =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher=2CSitz_der_?=
- =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen=2CRegistergericht=3A_Amts?=
- =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: richard.griffiths@windriver.com, Richard Griffiths <res07ml0@verizon.net>,
-       Linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-References: <1179871779.24163.11.camel@localhost.localdomain> <20070522154905.1d7e8a2e.akpm@linux-foundation.org>
-In-Reply-To: <20070522154905.1d7e8a2e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 23 May 2007 03:58:21 -0400
+Received: from hermes2.dur.ac.uk ([129.234.8.21]:49864 "EHLO hermes2.dur.ac.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754200AbXEWH6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 03:58:20 -0400
+Date: Wed, 23 May 2007 08:57:17 +0100
+From: Ash Milsted <thatistosayiseenem@gawab.com>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: ck@vds.kolivas.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: swap prefetch improvements
+Message-Id: <20070523085717.adbd992f.thatistosayiseenem@gawab.com>
+In-Reply-To: <200705230850.01844.kernel@kolivas.org>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<200705222037.54741.kernel@kolivas.org>
+	<20070522214222.8b197247.thatistosayiseenem@gawab.com>
+	<200705230850.01844.kernel@kolivas.org>
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-DurhamAcUk-MailScanner: Found to be clean, Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> But we'd expected and hoped that flash-based XIP would be able to use
-> the existing xip infrastructure, in mm/filemap_xip.c.  Not possible?
-Thanks for the heads up Andrew. Reading the cramfs patch, I've found a 
-lot of similarities between the current mainline xip stack and this 
-nice piece of work. I also observed interresting differences:
+On Wed, 23 May 2007 08:50:01 +1000
+Con Kolivas <kernel@kolivas.org> wrote:
 
-The current xip stack does use the block device abstraction added with 
-an extra direct memory access operation. The cramfs patch does not 
-abstract between the memory segment and the file system, it rather 
-uses an address as mount parameter.
-Both methods can coexist, and a file system that does not use the 
-block device abstraction may still provide get_xip_page address space 
-operation and benefit from the xip stack infrastructure. Each method 
-makes sense in the context of the corresponding file systems.
+> On Wednesday 23 May 2007 06:42, Ash Milsted wrote:
+> > Hi. I just did some video encoding on my desktop and I was noticing
+> > (for the first time in a while) that running apps had to hit swap quite
+> > a lot when I switched to them (the encoding was going at full blast for
+> > most of the day, and most of the time other running apps were
+> > idle). Now, a good half of my RAM appeared to be free during all this,
+> > so I was thinking at the time that it would be nice if swap prefetch
+> > could be tunably more aggressive. I guess it would be ideal in this
+> > case if it could kick in during tunably low disk-IO periods, even if
+> > the CPU is rather busy. I'm sure you've considered this, so I only butt
+> > in here to cast a vote for it. :)
+> 
+> In this case nicing the video encode should be enough to make it prefetch even 
+> during heavy cpu usage. It detects the total nice level rather than the cpu 
+> usage.
+> 
 
-The current xip stack relies on having struct page behind the memory 
-segment. This causes few impact on memory management, but occupies 
-some more memory. The cramfs patch chose to modify copy on write in 
-order to deal with vmas that don't have struct page behind.
-So far, Hugh and Linus have shown strong opposition against copy on 
-write with no struct page behind. If this implementation is acceptable 
-to the them, it seems preferable to me over wasting memory. The xip 
-stack should be modified to use this vma flag in that case.
+Cunning, but I guess the regular (less than 5 seconds apart)
+reads/writes during the encoding process would cause prefetching to
+hold off, no? I had used nice and ionice to reduce the encoder
+priority, which made desktop apps pretty responsive, except when they
+had to hit swap. If swap prefetch is using the idle io-priority I
+suppose it would hardly affect performance if it kicked in during such
+use, since it would operate in between the encoder reads anyway
+(assuming the encoder is at higher ioprio), right ?
 
-This implementation extends cramfs while the current xip stack extends 
-ext2. I would love to see a cramfs implementation based on 
-filemap_xip, choice is always a good thing. To me, it looks like this 
-work can be modified to use filemap_xip.
+> 
+> I plan to make it prefetch more aggressively by default soon and make it more 
+> tunable too.
+> 
 
-so long,
-Carsten
+'Sounds good!
