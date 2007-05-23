@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934662AbXEWPCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764851AbXEWPGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934662AbXEWPCj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 11:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757697AbXEWPCb
+	id S1764851AbXEWPGT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 11:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbXEWPGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 11:02:31 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:40449 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757125AbXEWPCa (ORCPT
+	Wed, 23 May 2007 11:06:06 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42171 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755863AbXEWPGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 11:02:30 -0400
-Date: Wed, 23 May 2007 08:00:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Patrick McHardy <kaber@trash.net>
-cc: Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: bad networking related lag in v2.6.22-rc2
-In-Reply-To: <4654269C.4040809@trash.net>
-Message-ID: <alpine.LFD.0.98.0705230752040.3890@woody.linux-foundation.org>
-References: <20070517174533.GA538@elte.hu> <200705221147.56571.kernel@prachanda.hub>
- <20070522062233.GA20002@elte.hu> <200705231110.44526.kernel@prachanda.hub>
- <20070523063052.GB26814@elte.hu> <46541DC4.4090501@trash.net>
- <20070523112559.GA24604@gondor.apana.org.au> <4654269C.4040809@trash.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 23 May 2007 11:06:05 -0400
+Date: Wed, 23 May 2007 16:06:02 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] file as directory
+Message-ID: <20070523150602.GZ4095@ftp.linux.org.uk>
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> <20070523102437.GS4095@ftp.linux.org.uk> <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu> <20070523113925.GT4095@ftp.linux.org.uk> <20070523121620.GU4095@ftp.linux.org.uk> <E1HqqTC-00023W-00@dorka.pomaz.szeredi.hu> <20070523135140.GW4095@ftp.linux.org.uk> <E1HqrtF-0002Fb-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HqrtF-0002Fb-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 23 May 2007, Patrick McHardy wrote:
+On Wed, May 23, 2007 at 04:32:37PM +0200, Miklos Szeredi wrote:
+> > Umm...  It is related to detached subtrees, but I'm not sure if it is what
+> > you are thinking about.
 > 
-> Yes, that looks better, thanks.
+> I was thinking of a similar one by Mike Waychison.  It had the problem
+> of requiring a spinlock for mntget/mntput.  It was also different in
+> that it did not gradually dissolve detached trees, but kept them as
+> whole blobs until the last ref went away.
+ 
+Here the spinlock is needed only when mnt_busy goes to 0, so presumably
+it won't be a serious problem on more or less common setups; however,
+it certainly would need serious profiling.
 
-There appear to be other obvious problems in the recent "cleanups" in this 
-area..
+> How will this work with copy_tree() and namespace duplication, which
+> currently walk the tree with only namespace_sem held?
 
-Look at
-
-	psched_tdiff_bounded(psched_time_t tv1, psched_time_t tv2, psched_time_t bound)
-	{
-		return min(tv1 - tv2, bound);
-	}
-
-and compare it to the previous code:
-
-	#define PSCHED_TDIFF_SAFE(tv1, tv2, bound) \
-		min_t(long long, (tv1) - (tv2), bound)
-
-and ponder how that "trivial cleanup" totally broke the thing. 
-
-Hint: "psched_time_t" is an "u64". What does that mean for
-
-	min(tv1 - tv2, bound);
-
-again, when "tv2" is larger than tv1. It _used_ to return a negative 
-value. Now it returns a positive "bound" upper bound, because "tv1-tv2" 
-will be used as a huge unsigned (and thus _positive_) integer. And was 
-that accidental, or done on purpose?
-
-Sounds accidental to me, since you then want to return a "psched_tdiff_t", 
-which is typedeffed to be "long".
-
-Doesn't sound very safe to me, especially since the commit message for 
-this is "[NET_SCHED]: turn PSCHED_TDIFF_SAFE into inline function", and 
-there's no indication that anybody realized that it changed semantics in 
-the process.
-
-Hmm? What _should_ that thing do?
-
-		Linus
+Easy - grab namespace_sem, grab vfsmount_lock, walk the subtree and bump
+mnt_busy on everything (by 1 + number of non-busy children).  Then drop
+vfsmount_lock and do as usual, dropping references in tree being copied
+as you go.  Nothing will get attached or detached due to namespace_sem,
+nothing will get evicted by anybody other than you since you've got all
+that stuff pinned down.  End of story...
