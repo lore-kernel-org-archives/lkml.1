@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbXEWRj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbXEWRoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757749AbXEWRj4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 13:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762088AbXEWRjr
+	id S1759498AbXEWRoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 13:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbXEWRnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 13:39:47 -0400
-Received: from cg-p07-fb.rzone.de ([81.169.146.215]:9207 "EHLO
-	cg-p07-fb.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756433AbXEWRjq (ORCPT
+	Wed, 23 May 2007 13:43:52 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34042 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755580AbXEWRnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 13:39:46 -0400
-X-Greylist: delayed 1959 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 13:39:46 EDT
-Date: Wed, 23 May 2007 19:07:03 +0200
-From: Nico Golde <nico@ngolde.de>
-To: linux-kernel@vger.kernel.org
-Subject: maximum count of thermal zones and fans in acpi?
-Message-ID: <20070523170702.GA9169@ngolde.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
-Content-Disposition: inline
-X-Mailer: netcat 1.10
-X-GPG: 0x73647cff
-X-RZG-AUTH: hvKiKtSHbeE0ghP2VIXOfz9FbKPIjAFDNRMtknfPuvqS60u3mcM1eRXO+wCdbA==
-X-RZG-CLASS-ID: mo00
+	Wed, 23 May 2007 13:43:52 -0400
+Date: Wed, 23 May 2007 10:43:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cpw@sgi.com (Cliff Wickman)
+Cc: linux-kernel@vger.kernel.org, Paul Jackson <pj@sgi.com>,
+       Christoph Lameter <christoph@lameter.com>,
+       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+Message-Id: <20070523104315.6b9089dc.akpm@linux-foundation.org>
+In-Reply-To: <4651FC58.mailxOWT1QTGD9@eag09.americas.sgi.com>
+References: <4651FC58.mailxOWT1QTGD9@eag09.americas.sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 21 May 2007 15:08:56 -0500 cpw@sgi.com (Cliff Wickman) wrote:
 
---3MwIy2ne0vdjdPXF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> (this is a third submission -- corrects a locking/blocking issue pointed
+>  out by Nathan Lynch)
+> 
+> When a cpu is disabled, move_task_off_dead_cpu() is called for tasks
+> that have been running on that cpu.
 
-Hi,
-I am currently implementing a general purpose shared library=20
-for acpi focused on all the tools giving acpi information=20
-like battery, thermal zones, fans, etc.
+So I still have these three patches in the pending queue but I was rather
+hoping that the scheduler, sched-domains and cpuset people could take a
+look at them, please.
 
-Since I was not able to find anything about it in the acpi=20
-specs[0] (of course I didn't read every single page though)
-and with a quick look into the kernel sources I wondered if=20
-there is a maximum count for thermal zones and fans in the=20
-acpi implementation of the kernel.
+They hit sched.c and cpuset.c mainly, and they might trash Ingo's CFS patch
+(I haven't checked).
 
-Every acpi module just calls proc_mkdir for example:
-       acpi_device_dir(device) =3D proc_mkdir(acpi_device_bid(device),
-                                            acpi_thermal_dir);
-
-struct proc_dir_entry *proc_mkdir_mode(const char *name, mode_t mode,
-                struct proc_dir_entry *parent)
-{
-        struct proc_dir_entry *ent;
-
-        ent =3D proc_create(&parent, name, S_IFDIR | mode, 2);
-        if (ent) {
-                ent->proc_fops =3D &proc_dir_operations;
-                ent->proc_iops =3D &proc_dir_inode_operations;
-
-                if (proc_register(parent, ent) < 0) {
-                        kfree(ent);
-                        ent =3D NULL;
-                }
-        }
-        return ent;
-}
-
-struct proc_dir_entry *proc_mkdir(const char *name,
-                struct proc_dir_entry *parent)
-{
-        return proc_mkdir_mode(name, S_IRUGO | S_IXUGO, parent);
-}
-
-
-So is there no check for any max item count here?
-
-I ask because I need to decide whether I want to allocate space for every
-acpi object or to use a fixed size array for them depending on the maximum
-item (where item is one device) count.
-
-[0]: http://www.acpi.info/spec.htm
-
-Kind regards
-Nico
-P.S. Please Cc me I am not subscribed
-
---=20
-Nico Golde - http://ngolde.de - nion@jabber.ccc.de - GPG: 0x73647CFF
-For security reasons, all text in this mail is double-rot13 encrypted.
-
---3MwIy2ne0vdjdPXF
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGVHS2HYflSXNkfP8RAptKAKCKBrnDsQL+XhV4Cc6XGSuHRi7+OwCghVRZ
-nXP1/hrLRO/dP2fGk1tju7E=
-=+cEW
------END PGP SIGNATURE-----
-
---3MwIy2ne0vdjdPXF--
