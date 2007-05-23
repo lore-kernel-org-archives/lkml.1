@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbXEWV5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbXEWV66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758693AbXEWV5W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbXEWV5P
+	id S1759075AbXEWV66 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 17:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756343AbXEWV6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:57:15 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:43679 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756245AbXEWV5P (ORCPT
+	Wed, 23 May 2007 17:58:51 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:42307
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756245AbXEWV6v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:57:15 -0400
-Date: Wed, 23 May 2007 14:54:43 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Robert Hancock <hancockr@shaw.ca>, Olivier Galibert <galibert@pobox.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
- resources
-In-Reply-To: <200705231403.24439.jbarnes@virtuousgeek.org>
-Message-ID: <alpine.LFD.0.98.0705231444200.3890@woody.linux-foundation.org>
-References: <4635510D.4060103@shaw.ca> <200705231349.56976.jbarnes@virtuousgeek.org>
- <alpine.LFD.0.98.0705231352450.3890@woody.linux-foundation.org>
- <200705231403.24439.jbarnes@virtuousgeek.org>
+	Wed, 23 May 2007 17:58:51 -0400
+Date: Wed, 23 May 2007 14:57:56 -0700
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [PATCH 0/7] lock contention tracking -v2
+Message-ID: <20070523215756.GA26450@gnuppy.monkey.org>
+References: <20070523072618.129001605@chello.nl> <20070523103311.GA13482@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070523103311.GA13482@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 23 May 2007, Jesse Barnes wrote:
-> > You told it to not forward memory. Why complain when it does as told?
+On Wed, May 23, 2007 at 12:33:11PM +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+...
+> > It also measures lock wait-time and hold-time in nanoseconds. The 
+> > minimum and maximum times are tracked, as well as a total (which 
+> > together with the number of event can give the avg).
+> > 
+> > All statistics are done per lock class, per write (exclusive state) 
+> > and per read (shared state).
+> > 
+> > The statistics are collected per-cpu, so that the collection overhead 
+> > is minimized via having no global cachemisses.
+...
+> really nice changes! The wait-time and hold-time changes should make it 
+> as capable as lockmeter and more: lockmeter only measured spinlocks, 
+> while your approach covers all lock types (spinlocks, rwlocks and 
+> mutexes).
 > 
-> Well, because that's not actually very useful functionality, and likely 
-> makes software that seems "obviously" correct wrt the PCI spec break.
+> The performance enhancements in -v2 should make it much more scalable 
+> than your first version was. (in fact i think it should be completely 
+> scalable as the statistics counters are all per-cpu, so there should be 
+> no cacheline bouncing at all from this)
 
-I agree that a chip that doesn't do it isn't broken either, but the fact 
-is, there is never any reason to disable MEM/IO on a host bridge. Doing so 
-is senseless - it can never be a valid operation. So I duspute the 
-"obviously correct" part. It's _not_ obviously correct at all.
+per cpu is pretty important since you can potentially hit that logic more
+often with your wait-time code. You don't want to effect the actual
+measurement with the measurement code. It's that uncertainty principal thing.
 
-To get back to the MMIO example: even if you were to never shut off RAM, 
-if you turn off just PCI MMIO on the northbridge, what is a mmconfig cycle 
-supposed to do? It's not going to _work_ if you disable MEM accesses.
+It is looking pretty good. :) You might like to pretty the output even more,
+but it's pretty usable as is.
 
-So again, the only sane situation is: don't do it then! You claim that 
-hardware shouldn't do it, but I don't think software is in any different 
-situation at all! If it's insane to do, then software shouldn't do it.
+bill
 
-It's just insane to turn off the MEM bit. There's simply no valid reason 
-to. And any PCI spec that says you should is *broken*, or written by 
-somebody who really only meant to talk about normal PCI devices, not 
-bridges.
-
-> Apparently Vista will move away from using type 1 config space accesses 
-> though, so if we keep using it, we'll probably run into some lame board 
-> that assumes you're using mmconfig at some point in the near future.  
-
-How are those boards going to set up mmconfig? The whole standard is 
-broken, since there is no way to set it up.
-
-Trust the firmware? What a piece of crap!
-
-		Linus
