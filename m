@@ -1,85 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbXEWEJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbXEWEMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757171AbXEWEJH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 00:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXEWEI5
+	id S1758322AbXEWEMH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 00:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXEWEL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 00:08:57 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:23933 "EHLO
-	asav05.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754397AbXEWEI4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 00:08:56 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AusRADhbU0ZKhRO4W2dsb2JhbACHQYhGHQ0FEQE
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] Input updates ofr 2.6.22-rc2
-Date: Wed, 23 May 2007 00:08:46 -0400
-User-Agent: KMail/1.9.3
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Wed, 23 May 2007 00:11:56 -0400
+Received: from holomorphy.com ([66.93.40.71]:57743 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754538AbXEWEL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 00:11:56 -0400
+Date: Tue, 22 May 2007 21:06:50 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: Bill Davidsen <davidsen@tmr.com>, Miguel Figueiredo <elmig@debianpt.org>,
+       Ray Lee <ray-lk@madrabbit.org>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Re: Sched - graphic smoothness under load - cfs-v13 sd-0.48
+Message-ID: <20070523040650.GS19966@holomorphy.com>
+References: <464F57DD.2000309@tmr.com> <46534C31.1060306@debianpt.org> <46538AB8.8030009@tmr.com> <200705241036.45179.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705230008.47803.dtor@insightbb.com>
+In-Reply-To: <200705241036.45179.kernel@kolivas.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wednesday 23 May 2007 10:28, Bill Davidsen wrote:
+>>> kernel    2.6.21-cfs-v13    2.6.21-ck2
+>>> a)    194464        254669
+>>> b)    54159        124
+>> Everyone seems to like ck2, this makes it look as if the video display
+>> would be really pretty unusable. While sd-0.48 does show an occasional
+>> video glitch when watching video under heavy load, it's annoying rather
+>> than unusable.
 
-Please consider pulling from:
+On Thu, May 24, 2007 at 10:36:44AM +1000, Con Kolivas wrote:
+> That's because the whole premise of your benchmark relies on a workload that 
+> yield()s itself to the eyeballs on most graphic card combinations when using 
+> glxgears. Your test remains a test of sched_yield in the presence of your 
+> workloads rather than anything else. If people like ck2 it's because in the 
+> real world with real workloads it is better, rather than on a yield() based 
+> benchmark. Repeatedly the reports are that 3d apps and games in normal usage 
+> under -ck are better than mainline and cfs.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-
-or
-        master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
-
-to receive updates for input subsystem. You will get bugfixes for ALPS
-touchpad, iforce force feedback support, ads7846 touchscreen and several
-small cleanups.
-
-Changelog:
-----------
-
-David Brownell (1):
-      Input: ads7846 - document that it handles tsc2046 too
-
-Dmitry Torokhov (3):
-      Input: adbhid - do not access input_dev->private directly
-      Input: ALPS - force stream mode
-      Input: ucb1x00-ts - remove commented out code
-
-Eric Piel (1):
-      Input: input-polldev - add module info
-
-Johann Deneux (2):
-      Input: iforce - fix force feedback not working
-      Input: iforce - minor clean-ups
-
-Peter Samuelson (1):
-      Input: logips2pp - add type 72 (PS/2 TrackMan Marble)
-
-Satoru Takeuchi (1):
-      Input: ucb1400_ts - use sched_setscheduler()
-
-Semih Hazar (1):
-      Input: ads7846 - SPI_CPHA mode bugfix
-
- drivers/input/joystick/iforce/iforce-main.c    |    4 +-
- drivers/input/joystick/iforce/iforce-packets.c |   10 +++-
- drivers/input/joystick/iforce/iforce-usb.c     |    5 +-
- drivers/input/misc/input-polldev.c             |    5 ++
- drivers/input/mouse/alps.c                     |   58 +++++++++++++-----------
- drivers/input/mouse/logips2pp.c                |    1 +
- drivers/input/touchscreen/Kconfig              |    8 ++--
- drivers/input/touchscreen/ads7846.c            |    3 +-
- drivers/input/touchscreen/ucb1400_ts.c         |    4 +-
- drivers/macintosh/adbhid.c                     |   16 +++---
- drivers/mfd/ucb1x00-ts.c                       |   11 +----
- 11 files changed, 66 insertions(+), 59 deletions(-)
+Maybe people should explicitly hack on sched_yield() for these things
+and do comparative benchmarking of sched_yield() implementations.
 
 
--- 
-Dmitry
+-- wli
