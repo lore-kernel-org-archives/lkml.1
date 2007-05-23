@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbXEWIym@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbXEWIz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761451AbXEWIym (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 04:54:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbXEWIyf
+	id S1763671AbXEWIz1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 04:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbXEWIzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 04:54:35 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:51008 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756925AbXEWIye (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 04:54:34 -0400
-Subject: Re: 2.6.22-rc1-mm1 - s390 vs. md
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       NeilBrown <neilb@suse.de>, linux-s390 <linux-s390@vger.kernel.org>
-In-Reply-To: <20070523104639.6bc0650e@gondolin.boeblingen.de.ibm.com>
-References: <0C7297FA1D2D244A9C7F6959C0BF1E5201E39968@azsmsx413.amr.corp.intel.com>
-	 <1179907539.17849.16.camel@localhost>
-	 <20070523104639.6bc0650e@gondolin.boeblingen.de.ibm.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 23 May 2007 10:55:03 +0200
-Message-Id: <1179910503.17849.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 23 May 2007 04:55:13 -0400
+Received: from [129.215.188.97] ([129.215.188.97]:42455 "EHLO just"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757484AbXEWIzM (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 04:55:12 -0400
+X-Greylist: delayed 1981 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 04:55:11 EDT
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: richard.griffiths@windriver.com
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Date: Wed, 23 May 2007 09:21:32 +0100
+User-Agent: KMail/1.9.6
+Cc: Linux-kernel@vger.kernel.org
+References: <1179871779.24163.11.camel@localhost.localdomain>
+In-Reply-To: <1179871779.24163.11.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705230921.32974.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-23 at 10:46 +0200, Cornelia Huck wrote:
-> Taking a quick look at the async_*.c stuff, the functions in question
-> basically seem to be of the form
-> 
-> check_if_we_can_do_it_async();
-> if (async_ok) {
->         /* do async stuff */
->         /* that's where the dma mapping creeps in */
-> } else {
->         /* do it sync */
->         /* seems fine for us */
-> }
+On Tuesday 22 May 2007 23:09:39 Richard Griffiths wrote:
+> Venerable cramfs fs Linear XIP patch originally from MontaVista, used in
+> the embedded Linux community for years, updated for 2.6.21. Tested on
+> several systems with NOR Flash. PXA270, TI OMAP2430, ARM Versatile and
+> Freescale iMX31ADS.
 
-Hmm, on what does the async_ok depend? Is that a runtime check that is
-done once or is it something more complicated like the availability of a
-dma slot? If it is a simple runtime check then there should be a
-operations structure that has indirect function pointers for the
-different async_memset_{sync,async}() functions. Instead of doing the
-async_ok check just call the function. That would save an if as well.
+> +#else /* CONFIG_CRAMFS_LINEAR */
+> +        /*
+> +         * The physical location of the cramfs image is specified as
+> +         * a mount parameter.  This parameter is mandatory for obvious
+
+You've used spaces here instead of tabs, probably worth replacing.
+
+> +/*
+> + * We hold the mm semaphore for reading and vma->vm_mm->page_table_lock
+> + */
+> +static inline void break_cow(struct vm_area_struct * vma, struct page * 
+new_page, unsigned long address,
+> +                pte_t *page_table)
+> +{
+> +        pte_t entry;
+
+Here again.
+
+> +                        /*
+> +                         * Handle COW of XIP memory.
+> +                         * Note that the source memory actually isn't a ram
+> +                         * page so no struct page is associated to the 
+source
+> +                         * pte.
+> +                         */
+
+This whole section too.
 
 -- 
-blue skies,
-  Martin.
+Cheers,
+Alistair.
 
-"Reality continues to ruin my life." - Calvin.
-
-
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
