@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934895AbXEWPP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933903AbXEWPS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934895AbXEWPP4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 11:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758993AbXEWPPr
+	id S933903AbXEWPS1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 11:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXEWPSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 11:15:47 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33971
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755634AbXEWPPq (ORCPT
+	Wed, 23 May 2007 11:18:18 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:34132 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756366AbXEWPSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 11:15:46 -0400
-From: Rob Landley <rob@landley.net>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Re: Cleaning up the Documentation directory.
-Date: Wed, 23 May 2007 11:15:36 -0400
-User-Agent: KMail/1.9.1
-Cc: Roland Dreier <rdreier@cisco.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-doc@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200705222225.39949.rob@landley.net> <200705230025.45007.rob@landley.net> <Pine.LNX.4.64.0705230922580.19474@anakin>
-In-Reply-To: <Pine.LNX.4.64.0705230922580.19474@anakin>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 23 May 2007 11:18:17 -0400
+Subject: Re: [PATCH] [scsi] Remove __GFP_DMA
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Aubrey Li <aubreylee@gmail.com>
+Cc: Christoph Lameter <clameter@sgi.com>, Bernhard Walle <bwalle@suse.de>,
+       linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <6d6a94c50705221941y63f4db7bj174a2265d9eaa61a@mail.gmail.com>
+References: <20070521151525.GA581@suse.de>
+	 <Pine.LNX.4.64.0705221443030.16285@schroedinger.engr.sgi.com>
+	 <6d6a94c50705221941y63f4db7bj174a2265d9eaa61a@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 10:18:14 -0500
+Message-Id: <1179933494.3700.16.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705231115.36845.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 May 2007 3:24 am, Geert Uytterhoeven wrote:
-> On Wed, 23 May 2007, Rob Landley wrote:
-> > On Tuesday 22 May 2007 10:38 pm, Roland Dreier wrote:
-> > >  > I could send a patch to do this, but moving files via patch is icky.  
-> > Would it 
-> > >  > be better to start a git tree and ask people to pull from it, or to 
-send 
-> > in 
-> > >  > script snippets like the above?
-> > > 
-> > > Actually a git patch would express that very nicely -- just pass -M to
-> > > git-format-patch and it should do the right thing.
-> > 
-> > Ok.
-> > 
-> > Signed-off-by: Rob Landley <rob@landley.net>
-> > 
-> > Move architecture documentation into "arch" and move multiport serio IO 
-cards 
-> > into serial.
-> > 
-> > --
-> > 
-> > Equivalent to:
-> >    cd Documentation
-> >    mkdir -p arch/amiga
-> >    mv zorro.txt arch/amiga
+On Wed, 2007-05-23 at 10:41 +0800, Aubrey Li wrote:
+> On 5/23/07, Christoph Lameter <clameter@sgi.com> wrote:
+> > On Mon, 21 May 2007, Bernhard Walle wrote:
+> >
+> > > [PATCH] [scsi] Remove __GFP_DMA
+> > >
+> > > After 821de3a27bf33f11ec878562577c586cd5f83c64, it's not necessary to alloate a
+> > > DMA buffer any more in sd.c.
+> > >
+> > > Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> >
+> > Great that avoids a DMA kmalloc slab. Any other GFP_DMAs left in the scsi
+> > layer?
+> >
+> > Acked-by: Christoph Lameter <clameter@sgi.com>
 > 
-> Amiga part Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> 
-> Probably you want to move Documentation/m68k/README.buddha there, too,
-> as it applies to Amiga (both m68k and PPC).
+> Yes, here is another patch
 
-I'll add that to the next batch.  Thanks.
+I'll defer to Mark on this one.  However, please remember that you can't
+just blindly remove GFP_DMA ... there are some cards which require it.
 
-Rob
+Aacraid is one example ... it has a set of cards that can only DMA to 31
+bits.  For them, the GFP_DMA is necessary:  The allocation in question
+is a scatterlist, which must be within the device DMA mask.
+
+James
+
+
