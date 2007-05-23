@@ -1,125 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbXEWSdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbXEWSj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761009AbXEWSdk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbXEWSdd
+	id S1759717AbXEWSj1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbXEWSjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:33:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50490 "EHLO mx2.mail.elte.hu"
+	Wed, 23 May 2007 14:39:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56182 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756173AbXEWSdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:33:32 -0400
-Date: Wed, 23 May 2007 20:32:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de, kernel@kolivas.org,
-       containers@lists.osdl.org, ckrm-tech@lists.sourceforge.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       pwil3058@bigpond.net.au, tingy@cs.umass.edu, tong.n.li@intel.com,
-       wli@holomorphy.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
-Message-ID: <20070523183252.GB6253@elte.hu>
-References: <20070523164859.GA6595@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070523164859.GA6595@in.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1756000AbXEWSjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 14:39:15 -0400
+Message-ID: <46548A30.9000801@redhat.com>
+Date: Wed, 23 May 2007 14:38:40 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
+Subject: Re: [BUG] local_softirq_pending storm
+References: <200705091942.22920.kernel@prachanda.hub> <200705191525.28400.kernel@prachanda.hub> <1179601868.12981.127.camel@chaos> <200705200253.44992.kernel@prachanda.hub> <1179697388.6570.26.camel@chaos> <6bffcb0e0705221203s1ba21ed3j641e91036859db7d@mail.gmail.com> <20070522201046.GA6113@elte.hu> <46547345.8000808@redhat.com>
+In-Reply-To: <46547345.8000808@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
-
-> Here's an attempt to extend CFS (v13) to be fair at a group level, 
-> rather than just at task level. The patch is in a very premature state 
-> (passes simple tests, smp load balance not supported yet) at this 
-> point. I am sending it out early to know if this is a good direction 
-> to proceed.
-
-cool patch! :-)
-
-> Salient points which needs discussion:
+Chuck Ebbert wrote:
 > 
-> 1. This patch reuses CFS core to achieve fairness at group level also.
-> 
->    To make this possible, CFS core has been abstracted to deal with 
->    generic schedulable "entities" (tasks, users etc).
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=240982
 
-yeah, i like this alot.
+Another; these started to appear after the below patch was merged:
 
-The "struct sched_entity" abstraction looks very clean, and that's the 
-main thing that matters: it allows for a design that will only cost us 
-performance if group scheduling is desired.
+> Index: linux/kernel/sched.c
+> > ===================================================================
+> > --- linux.orig/kernel/sched.c
+> > +++ linux/kernel/sched.c
+> > @@ -4212,9 +4212,7 @@ int __sched cond_resched_softirq(void)
+> >  	BUG_ON(!in_softirq());
+> >  
+> >  	if (need_resched() && system_state == SYSTEM_RUNNING) {
+> > -		raw_local_irq_disable();
+> > -		_local_bh_enable();
+> > -		raw_local_irq_enable();
+> > +		local_bh_enable();
+> >  		__cond_resched();
+> >  		local_bh_disable();
+> >  		return 1;
 
-If you could do a -v14 port and at least add minimal SMP support: i.e. 
-it shouldnt crash on SMP, but otherwise no extra load-balancing logic is 
-needed for the first cut - then i could try to pick all these core 
-changes up for -v15. (I'll let you know about any other thoughts/details 
-when i do the integration.)
+May 23 19:26:26 localhost kernel: BUG: warning at kernel/softirq.c:138/local_bh_enable() (Not tainted)
+May 23 19:26:26 localhost kernel:  [<c042b2ef>] local_bh_enable+0x45/0x92
+May 23 19:26:26 localhost kernel:  [<c06036b7>] cond_resched_softirq+0x2c/0x42
+May 23 19:26:26 localhost kernel:  [<c059d5d0>] release_sock+0x54/0xa3
+May 23 19:26:26 localhost kernel:  [<c04373af>] prepare_to_wait+0x24/0x3f
+May 23 19:26:26 localhost kernel:  [<c05e267f>] inet_stream_connect+0x116/0x1ff
+May 23 19:26:26 localhost kernel:  [<c0437265>] autoremove_wake_function+0x0/0x35
+May 23 19:26:26 localhost kernel:  [<c059c339>] sys_connect+0x82/0xad
+May 23 19:26:26 localhost kernel:  [<c059d58f>] release_sock+0x13/0xa3
+May 23 19:26:26 localhost kernel:  [<c0604ad5>] _spin_unlock_bh+0x5/0xd
+May 23 19:26:26 localhost kernel:  [<c059e714>] sock_setsockopt+0x4a8/0x4b2
+May 23 19:26:26 localhost kernel:  [<c059b6b6>] sock_attach_fd+0x70/0xd2
+May 23 19:26:26 localhost kernel:  [<c04774a0>] get_empty_filp+0xfc/0x170
+May 23 19:26:26 localhost kernel:  [<c059b54f>] sys_setsockopt+0x9b/0xa7
+May 23 19:26:26 localhost kernel:  [<c059cb83>] sys_socketcall+0xac/0x261
+May 23 19:26:26 localhost kernel:  [<c0404f70>] syscall_call+0x7/0xb
 
-> 2. The per-cpu rb-tree has been split to be per-group per-cpu.
-> 
->    schedule() now becomes two step on every cpu : pick a group first 
->    (from group rb-tree) and a task within that group next (from that 
->    group's task rb-tree)
-
-yeah. It might even become more steps if someone wants to have a 
-different, deeper hierarchy (at the price of performance). Containers 
-will for example certainly want to use one more level.
-
-> 3. Grouping mechanism - I have used 'uid' as the basis of grouping for
->    timebeing (since that grouping concept is already in mainline 
->    today). The patch can be adapted to a more generic process grouping 
->    mechanism (like http://lkml.org/lkml/2007/4/27/146) later.
-
-yeah, agreed.
-
-> Some results below, obtained on a 4way (with HT) Intel Xeon box. All 
-> number are reflective of single CPU performance (tests were forced to 
-> run on single cpu since load balance is not yet supported).
-> 
-> 
-> 			         uid "vatsa"	           uid "guest"
-> 		             (make -s -j4 bzImage)    (make -s -j20 bzImage)
-> 
-> 2.6.22-rc1		          772.02 sec		497.42 sec (real)
-> 2.6.22-rc1+cfs-v13 	          780.62 sec		478.35 sec (real)
-> 2.6.22-rc1+cfs-v13+this patch     776.36 sec		776.68 sec (real)
-> 
-> [ An exclusive cpuset containing only one CPU was created and the 
-> compilation jobs of both users were run simultaneously in this cpuset 
-> ]
-
-looks really promising!
-
-> I also disabled CONFIG_FAIR_USER_SCHED and compared the results with
-> cfs-v13:
-> 
-> 					uid "vatsa"
-> 					make -s -j4 bzImage
-> 
-> 2.6.22-rc1+cfs-v13			395.57 sec (real)
-> 2.6.22-rc1+cfs-v13+this_patch		388.54 sec (real)
-> 
-> There is no regression I can see (rather some improvement, which I 
-> can't understand atm). I will run more tests later to check this 
-> regression aspect.
-
-kernel builds dont really push scheduling micro-costs, rather try 
-something like 'hackbench.c' to measure that. (kernel builds are of 
-course one of our primary benchmarks.)
-
-> Request your comments on the future direction to proceed!
-
-full steam ahead please! =B-)
-
-	Ingo
