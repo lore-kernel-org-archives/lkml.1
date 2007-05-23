@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbXEWR6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbXEWSAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760018AbXEWR6w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 13:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756916AbXEWR6p
+	id S1759146AbXEWSAm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758654AbXEWSAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 13:58:45 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:58107 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756837AbXEWR6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 13:58:44 -0400
-Date: Wed, 23 May 2007 19:57:53 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Gergo Szakal <bastyaelvtars@gmail.com>
-cc: Matti Aarnio <matti.aarnio@zmailer.org>, linux-kernel@vger.kernel.org
-Subject: Re: Google are using linux kernel - what do you know about the
- source?
-In-Reply-To: <20070523200008.9349d615.bastyaelvtars@gmail.com>
-Message-ID: <Pine.LNX.4.61.0705231957110.31549@yvahk01.tjqt.qr>
-References: <20070523162344.e8847387.bastyaelvtars@gmail.com>
- <20070523165035.8e3db756.diegocg@gmail.com> <20070523165220.GA20047@mea-ext.zmailer.org>
- <20070523200008.9349d615.bastyaelvtars@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Wed, 23 May 2007 14:00:23 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34313 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758607AbXEWSAV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 14:00:21 -0400
+Date: Wed, 23 May 2007 11:00:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Renato Golin" <rengolin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: [PATCH] joydev.c automatic re-calibration
+Message-Id: <20070523110013.5ffc4a91.akpm@linux-foundation.org>
+In-Reply-To: <d9b9d95f0705221733l46de4262qd9c3f5047c53667@mail.gmail.com>
+References: <d9b9d95f0705221733l46de4262qd9c3f5047c53667@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 23 May 2007 01:33:14 +0100 "Renato Golin" <rengolin@gmail.com> wrote:
 
-On May 23 2007 20:00, Gergo Szakal wrote:
->
->> Please read the FAQ at  http://www.tux.org/lkml/
->> 
->> There you will notice that use of Linux KERNEL does not mean that
->> your must publish sources for your proprietary application, or to
->> make it easy for somebody to make a distribution competeting with
->> yours.
->
->Did I seem to be unaware of this? :-)
->
->In any case, here is the answer:
->
->http://code.google.com/mirror/gsa.html
+> This small patch adds the automatic recalibration feature without
+> spoiling previously calibrated devices. It's a fix for those joysticks
+> that report faulty range, specially Saitek Cyborg Evo Force.
+> 
+> File: drivers/input/joydev.c
+> Fix:
+>  - extracted code from joydev_connect to method
+> joydev_calculate_correction to be able to call it from both
+> joydev_event upon recalibration and joydev_connect during first
+> connection.
+>  - on joydev_connect check ranges and zero calibration if found out of range
+>  - on joydev_event, every time found out of range, update min/max and
+> recalculate the correction
 
-kernel-2.2.14 wtf :p
+A few patch protocol things:
 
+- Please always prepare patches in `patch -p1' form
 
-	Jan
--- 
+- Include a Signed-off-by: as per Documentation/SubmittingPatches,
+  section 11.
+
+- Avoid including two copies of the patch in the one email.  Inlined plain
+  text is preferred, ext/plain attachments are grudgingly accepted.
+
+I descrambled the patch, fixed a reject and queued it up in the -mm tree
+for Dmitry's consideration, thanks.
+
