@@ -1,88 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760789AbXEWArl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763315AbXEWAt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760789AbXEWArl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 20:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756985AbXEWArd
+	id S1763315AbXEWAt3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 20:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbXEWAtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 20:47:33 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:25520 "EHLO
+	Tue, 22 May 2007 20:49:22 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:26402 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756000AbXEWArd (ORCPT
+	with ESMTP id S1756985AbXEWAtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 20:47:33 -0400
+	Tue, 22 May 2007 20:49:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=NM4zTfDd4bPjML03WLwzmM6Tm0WwjnsM5IDLpQXkVZQbKRnKYYje8IaZ2mqUfBcCyF5BbDFugF2LaO5YWNtmyOmWMuSVj7sPJhqMH2EvmOourvCUCCGgO+pnloPsqIWppD5IZJOVFHk782afsnxPP7JzOzr47nXKfWNQQs9cLFw=
-Subject: Re: [PATCH 2/2] make fbcon unregister when unloaded
+        b=A1PwwAA8RFb2Skuqh0IDwmXvjFqi/VKNw3vcQLTfh7rQWiSB9giQSA3HK49s/m8bi8PmB0WxYVcvUCqeHd4Iv/wYn9n8R4iyBN89fm6/HU6n5sAck+HoV1G4QMeOg4PNgVvvmkVTz1psx1QXY8XZUCTC4WzVSxcbIvsiQQdzM6A=
+Subject: Re: [PATCH 1/2] allow console unregistration
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
        James Simmons <jsimmons@pentafluge.infradead.org>
-In-Reply-To: <200705221514.17041.jesse.barnes@intel.com>
+In-Reply-To: <200705221443.04859.jbarnes@virtuousgeek.org>
 References: <200705171423.46748.jesse.barnes@intel.com>
-	 <200705221444.52675.jbarnes@virtuousgeek.org>
-	 <20070522150504.b797213a.randy.dunlap@oracle.com>
-	 <200705221514.17041.jesse.barnes@intel.com>
+	 <200705171532.28799.jesse.barnes@intel.com>
+	 <1179444190.5092.4.camel@daplas>
+	 <200705221443.04859.jbarnes@virtuousgeek.org>
 Content-Type: text/plain
-Date: Wed, 23 May 2007 08:47:26 +0800
-Message-Id: <1179881246.4638.13.camel@daplas>
+Date: Wed, 23 May 2007 08:49:14 +0800
+Message-Id: <1179881354.4638.15.camel@daplas>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-22 at 15:14 -0700, Jesse Barnes wrote:
-> On Tuesday, May 22, 2007 3:05 pm Randy Dunlap wrote:
-> > On Tue, 22 May 2007 14:44:52 -0700 Jesse Barnes wrote:
-> > > When unloaded, the fbcon driver should unregister itself from the
-> > > VT subsystem using unbind_con_driver.  This patch makes it use the
-> > > newly exported function to do just that.
+On Tue, 2007-05-22 at 14:43 -0700, Jesse Barnes wrote:
+> On Thursday, May 17, 2007, Antonino A. Daplas wrote:
+> > On Thu, 2007-05-17 at 15:32 -0700, Jesse Barnes wrote:
+> > > Randy just informed me that the patch limits are bigger now, so here
+> > > are the actual patches.
 > > >
-> > > Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-> > >
-> > > diff -Napur -X /home/jbarnes/dontdiff --exclude=Makefile
-> > > linux-2.6.22-rc2/drivers/video/console/fbcon.c
-> > > linux-2.6.22-rc2-modesetting/drivers/video/console/fbcon.c ---
-> > > linux-2.6.22-rc2/drivers/video/console/fbcon.c	2007-05-18
-> > > 21:06:17.000000000 -0700 +++
-> > > linux-2.6.22-rc2-modesetting/drivers/video/console/fbcon.c	2007-05-
-> > >22 14:26:20.000000000 -0700 @@ -2937,6 +2937,21 @@ static int
-> > > fbcon_mode_deleted(struct fb_ return found;
-> > >  }
-> > >
-> > > +static int fbcon_fb_unbind(int idx)
-> > > +{
-> > > +	int i;
-> > > +
-> > > +        for (i = 0; i < MAX_NR_CONSOLES; i++) {
-> > > +                /* Assure we do not unbind other drivers */
-> > > +                if (idx == con2fb_map[i])
-> > > +                        /* can be optimize to minimize multiple
-> > > calls to +			   unbind_con_driver() */
+> > > This patch allows for proper console unregistration via the VT layer,
+> > > and updates the FB layer to use it.  This makes debugging new console
+> > > drivers much easier, since you can properly clean them up before
+> > > unloading. Antonio already checked it out (and suggested a tweak for
+> > > the fbcon side) so I think it's on its way already via the FB tree.
 > >
-> > 			/*
-> > 			 * can be optimized to minimize multiple calls
-> > 			 * to unbind_con_driver()
-> > 			 */
-> >
-> > > +                        unbind_con_driver(&fb_con, i, i, 0);
-> > > +        }
-> > > +
-> > > +	return 0;
-> > > +}
-> >
-> > Lots of whitespace mangling there (mostly spaces instead of tabs).
+> > Sorry, I was busy and got sidetracked so I wasn't able to work on this
+> > for 2 weeks.  Yes, this should work for now, at least for debugging
+> > purposes. I'll work on refining on fbcon side, hopefully for
+> > 2.6.22-2.6.23 time frame.
 > 
-> Oops, thanks for looking.  Somehow my emacs configuration broke and I 
-> don't see this as readily as I used to.  If Antonio is ok with the 
-> patch otherwise, I'll respin it with the cleanups.
+> Btw, here's an updated console unregister patchset with signoff in the
+> off chance you like it right away. :)
+> 
+> When rmmod'd, some drivers might like to unregister the console they have
+> registered (e.g. the fbcon driver), so export unbind_con_driver.  It
+> properly cleans up console references and takes care of switching to
+> one of the other registered drivers as needed.
+> 
 
-This should be a lot safer than the previous patch. This is fine as long
-as only a single driver is driving the console. For multiple drivers, it
-will need the change that I promised weeks ago :-). (And I will work on
-it soon).
+I'm working on something that will need these functions
+(unbind/bind_con_driver) to be exposed, so I'm fine with this.
 
 Tony
+
 
