@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbXEXBFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbXEXBMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760394AbXEXBFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 21:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756954AbXEXBFK
+	id S1759337AbXEXBMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 21:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbXEXBML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 21:05:10 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:48292 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756825AbXEXBFH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 21:05:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d6QdDW7oqJJugfa2tctRJV+YGiWCqrJkfwF/aUmhWDtCoOtNCSsbbBnlfkuSk/wCf39KkZK6DJU1A/gxYacxhjXJYoT4Uv51sVlwfihE2cpcq8QRdHSgrIuf4vJMYR4+YG63t+bjqSwQHu7Hd+bG3fbiuX9EX3mVsz9NSSRnAKE=
-Message-ID: <a8e1da0705231805j47fb7438k1a2f5926b20835f9@mail.gmail.com>
-Date: Thu, 24 May 2007 01:05:03 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Steven French" <sfrench@us.ibm.com>
-Subject: Re: 2.6.22-rc1-mm1 cifs_mount oops
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Kleikamp" <shaggy@us.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Shirish S Pargaonkar" <shirishp@us.ibm.com>
-In-Reply-To: <OF5C2BA51B.B63E317D-ON872572E4.00793F56-862572E4.007A3D2C@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070523091013.b1475211.akpm@linux-foundation.org>
-	 <OF5C2BA51B.B63E317D-ON872572E4.00793F56-862572E4.007A3D2C@us.ibm.com>
+	Wed, 23 May 2007 21:12:11 -0400
+Received: from critter.phunnypharm.org ([67.97.251.11]:1607 "EHLO critter"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756578AbXEXBML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 21:12:11 -0400
+X-Greylist: delayed 3555 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 21:12:10 EDT
+To: linux-kernel@vger.kernel.org
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       Maxim Krasnyansky <maxk@qualcomm.com>
+Message-Id: <cc9d2edaa0e2f0806a002fd04a930957780651b3.1179964369.git.bcollins@ubuntu.com>
+In-Reply-To: <98cd38b5.git.bcollins@ubuntu.com>
+References: <98cd38b5.git.bcollins@ubuntu.com>
+From: Ben Collins <bcollins@ubuntu.com>
+Date: Wed, 23 May 2007 18:21:25 -0400
+Subject: [PATCH 3/6] HCIUSB: Initialize the Broadcom USB Bluetooth device in Dell laptops.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+CC: Marcel Holtmann <marcel@holtmann.org>
+CC: Maxim Krasnyansky <maxk@qualcomm.com>
+Signed-off-by: Tim Gardner <tim.gardner@ubuntu.com>
+Signed-off-by: Phillip lougher <phillip@ubuntu.com>
+Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+---
+ drivers/bluetooth/hci_usb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I have one problem about this:  after the srvTcp->tsk is set to NULL
-(maybe the thread is  still there, isn't it?), is the kthread still
-needed to be stopped by calling kthread_stop()? If it is true, then
-the task_struct should be saved before send_sig like my patch:
+diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
+index b0238b4..d636142 100644
+--- a/drivers/bluetooth/hci_usb.c
++++ b/drivers/bluetooth/hci_usb.c
+@@ -131,7 +131,7 @@ static struct usb_device_id blacklist_ids[] = {
+ 	{ USB_DEVICE(0x03f0, 0x171d), .driver_info = HCI_WRONG_SCO_MTU },
+ 
+ 	/* Dell laptop with Broadcom chip */
+-	{ USB_DEVICE(0x413c, 0x8126), .driver_info = HCI_WRONG_SCO_MTU },
++	{ USB_DEVICE(0x413c, 0x8126), .driver_info = HCI_WRONG_SCO_MTU|HCI_RESET },
+ 
+ 	/* Microsoft Wireless Transceiver for Bluetooth 2.0 */
+ 	{ USB_DEVICE(0x045e, 0x009c), .driver_info = HCI_RESET },
+-- 
+1.5.1.4
 
-                        if (srvTcp->tsk) {
-+                               struct task_struct * tsk = srvTcp->tsk;
-                               send_sig(SIGKILL,srvTcp->tsk,1);
--                               kthread_stop(srvTcp->tsk);
-+                               kthread_stop(tsk);
-
-Regards
-dave
