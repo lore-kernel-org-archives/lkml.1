@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763010AbXEWUv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761060AbXEWUyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763010AbXEWUv2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 16:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbXEWUvT
+	id S1761060AbXEWUyS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 16:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbXEWUyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 16:51:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35237 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754388AbXEWUvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 16:51:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: 2.6.21-mm2: ACPI exception on resume
-Date: Wed, 23 May 2007 22:56:27 +0200
-User-Agent: KMail/1.9.5
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
-References: <20070519165738.GK11115@waste.org> <20070523171330.GB9987@khazad-dum.debian.net> <20070523174836.GB11115@waste.org>
-In-Reply-To: <20070523174836.GB11115@waste.org>
+	Wed, 23 May 2007 16:54:10 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:53922 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755509AbXEWUyJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 16:54:09 -0400
+Date: Wed, 23 May 2007 22:54:07 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] local_softirq_pending storm
+In-Reply-To: <20070521200428.GA9855@osiris.ibm.com>
+Message-ID: <Pine.LNX.4.64.0705232243230.2104@artax.karlin.mff.cuni.cz>
+References: <200705091942.22920.kernel@prachanda.hub> <200705171211.23350.kernel@prachanda.hub>
+ <1179493277.12981.69.camel@chaos> <200705191525.28400.kernel@prachanda.hub>
+ <1179601868.12981.127.camel@chaos> <20070520101800.GC9892@osiris.ibm.com>
+ <1179669141.21827.22.camel@chaos> <20070520183658.GA13262@osiris.ibm.com>
+ <20070520191800.GA14225@osiris.ibm.com> <1179689389.6570.1.camel@chaos>
+ <20070521200428.GA9855@osiris.ibm.com>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705232256.28366.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 23 May 2007 19:48, Matt Mackall wrote:
-> On Wed, May 23, 2007 at 02:13:30PM -0300, Henrique de Moraes Holschuh wrote:
-> > On Wed, 23 May 2007, Rafael J. Wysocki wrote:
-> > > While I agree with that, it would really be helpful if you tested the latest -rc
-> > > kernel and saw if the bug was present in there.
-> > > 
-> > > If the bug is not present in the latest -rc, it'll be possible to identify the
-> > > patch that causes it to appear in -mm and find the reason of the breakage.
-> > 
-> > And, once we know the reason, we will be able to find out how to best fix the
-> > problem.
-> > 
-> > So, do please test latest -rc, or bissect to the last known-good kernel. As
-> > I said, we need further data points to do anything.
-> 
-> This isn't conclusive as this bug is fairly hard to trigger, but it
-> looks like the culprit may have been this patch and not anything in
-> -mm or mainline. So the below patch doesn't help the problem it was
-> intended for (lid switch no longer wakes up S2R after a S2D cycle) and
-> appears to be implicated in making my EC unhappy.
+On Mon, 21 May 2007, Heiko Carstens wrote:
 
-Yes, this was just a debug patch.
+> On Sun, May 20, 2007 at 09:29:49PM +0200, Thomas Gleixner wrote:
+>> On Sun, 2007-05-20 at 21:18 +0200, Heiko Carstens wrote:
+>>>>> Hmm, that's a different problem than the 0x22 which shows up on
+>>>>> hyperthreading enabled P4 systems. Are you using plip ?
+>>>>
+>>>> No, after all it turned out that is caused by an IBM internal module.
+>>>> Just ignore me, sorry for the noise :)
+>>>
+>>> Just in case you're interested: I just looked into it and it turned
+>>> out that this module was calling netif_rx() from process context,
+>>> just like plip. Changing it to netif_rx_ni() fixes it.
+>>
+>> Thanks, that's a good pointer. You should have cc'ed Dave Miller and the
+>> guy who found this plip thingy. Care to resend ?
+>
+> No problem. Here we go, even though I doubt that netif_rx_ni() is what
+> people want for plip. Dunno...
 
-We broke quite a few systems by placing platform_finish() before
-device_resume() and I suspected your system could be one of them.
+netif_rx_ni calls softirq synchronously, am I right? That would probably 
+hurt plip. I can try it if someone will be interested in it, but I doubt 
+it is good solution for any network interfaces except tun.
 
-Apparently, that's not the case.
+BTW. does in_interrupt() have high cost on some high-performance 
+architectures? Would it be possible to just add if (!in_interrupt()) 
+wakeup_softirqd(); to netif_rx()?
 
-In 2.6.22-rc2 we also moved platform_prepare() to after device_suspend()
-and that's why I asked you to test this kernel.
-
-Greetings,
-Rafael
+Mikulas
