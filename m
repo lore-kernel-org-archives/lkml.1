@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765651AbXEWPBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934726AbXEWPBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765651AbXEWPBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 11:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXEWPBP
+	id S934726AbXEWPBj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 11:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933187AbXEWPBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 11:01:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49821 "EHLO mx1.redhat.com"
+	Wed, 23 May 2007 11:01:24 -0400
+Received: from holomorphy.com ([66.93.40.71]:53544 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756366AbXEWPBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 11:01:14 -0400
-Date: Wed, 23 May 2007 10:40:59 -0400 (EDT)
-From: Jason Baron <jbaron@redhat.com>
-X-X-Sender: jbaron@dhcp83-20.boston.redhat.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 3/7] lockdep: lock contention tracking
-In-Reply-To: <20070523095807.407148940@chello.nl>
-Message-ID: <Pine.LNX.4.64.0705231035270.22023@dhcp83-20.boston.redhat.com>
-References: <20070523072618.129001605@chello.nl> <20070523095807.407148940@chello.nl>
+	id S1765816AbXEWPBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 11:01:23 -0400
+Date: Wed, 23 May 2007 08:02:20 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+Message-ID: <20070523150220.GT19966@holomorphy.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 23, 2007 at 12:42:33AM -0700, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
+> - A new readahead patch series.  This needs serious review and performance
+>   testing please.
+> - Added Ingo's CFS CPU scheduler
+> - Xen dom-U support is now in the x86 tree.
 
-On Wed, 23 May 2007, Peter Zijlstra wrote:
+The build fails with the following error when CONFIG_X86_MCE is not set:
+arch/x86_64/kernel/built-in.o: In function `do_notify_resume':
+/mnt/g/mm-2.6.22-rc2/arch/x86_64/kernel/signal.c:478: undefined reference to `mce_notify_user'
+The following patch #ifdef's the offending call as a minimal fix.
 
-> Count lock contention events per lock class. Additionally track the first four
-> callsites that resulted in the contention.
-> 
+Signed-off-by: William Irwin <bill.irwin@oracle.com>
 
-I think that we need the total number of locking calls, not just the total 
-number of *contended* locking calls, in order to make the data 
-significant. Same for waittime. Yes, this pollutes the fastpath. In the 
-contention case, its one extra addition, and for the waittime, its a call 
-the sched_clock(). I don't think that's too much to pay for much more 
-meaningful data.
-
-thanks,
-
--Jason
+Index: mm-2.6.22-rc2/arch/x86_64/kernel/signal.c
+===================================================================
+--- mm-2.6.22-rc2.orig/arch/x86_64/kernel/signal.c	2007-05-23 07:41:49.741705813 -0700
++++ mm-2.6.22-rc2/arch/x86_64/kernel/signal.c	2007-05-23 07:44:35.339142673 -0700
+@@ -473,9 +473,11 @@
+ 		clear_thread_flag(TIF_SINGLESTEP);
+ 	}
+ 
++#ifdef CONFIG_X86_MCE
+ 	/* notify userspace of pending MCEs */
+ 	if (thread_info_flags & _TIF_MCE_NOTIFY)
+ 		mce_notify_user();
++#endif /* CONFIG_X86_MCE */
+ 
+ 	/* deal with pending signal delivery */
+ 	if (thread_info_flags & (_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK))
