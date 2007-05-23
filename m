@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764924AbXEWLzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764850AbXEWMBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764924AbXEWLzZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 07:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760028AbXEWLzS
+	id S1764850AbXEWMBf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 08:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759006AbXEWMB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 07:55:18 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4043 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759006AbXEWLzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 07:55:17 -0400
-Date: Wed, 23 May 2007 11:54:45 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: makalski <makalski@csolve.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel panic during hibernation
-Message-ID: <20070523115444.GA7444@ucw.cz>
-References: <46526CBA.9060803@csolve.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46526CBA.9060803@csolve.net>
-User-Agent: Mutt/1.5.9i
+	Wed, 23 May 2007 08:01:28 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:25547 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756441AbXEWMB1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 08:01:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=rDUtydf8ezhZG1HD285ER8v6BcEtPz376p6gvYAh5782guOPg3AHbWGzXQQJ4xfUIopw0fMbVdMfD/WK/xB3N2U6NCwHkuX0OH83eywrz2dXTZ8eEzAYSHHxhinkQGuzrFLv+tslVKiKko5cYfotJgy8mYW/JFiu+r74Wuhtu1s=
+Message-ID: <46542D05.8070206@googlemail.com>
+Date: Wed, 23 May 2007 14:01:09 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.22-rc2-mm1
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+In-Reply-To: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
+>   
 
-> I have kernel panic message when trying to put Dell 
-> Inspiron 6400 into hibernation.
-> 
-> The following is the message:
-> 
-> Process pm-hibernate (pid: 3168, threadinfo 
-> ffff810013dba000, task ffff810018d0e
-> 860)
-> Stack: 0000000000000000 0000000000000000 
-> 000001bc7e40f260 00000000000007ef
-> 00000000000fdff0 ffffffff800a74aa ffff810037e206f8 
-> ffffffff880777bc
-> 000000001ebf7000 000000000001ebf7 000000000001enf6 
-> 0000000000000000
-> Call Trace:
-> [<ffffffff800a74aa>] swsusp_write+0x2fa/0x440
-> [<ffffffff880777bc>] :scsi_mod:scsi_schedule_eh+0x45/0x55
-> [<ffffffff800a5817>] pm_suspend_disk+0x5b/0xce
-> [<ffffffff800a46ec>] enter_state+0x52/0x19b
-> [<ffffffff800a4898>] state_store+0x5e/0x79
-> [<ffffffff800fa3f7>] sysfs_write_file+0xb9/0xe8
-> [<ffffffff80016121>] vfs_write+0xce/0x174
-> [<ffffffff800169b2>] sys_write+0x45/0x6e
-> [<ffffffff8005b2c1>] tracesys+0xd1/0xdc
-> 
-> 
-> Code 0f ba 6d 00 00 19 c0 85 c0 74 08 48 89 ef e8 49 c0 
-> f7 ff 48
-> RIP  [<ffffffff800c3099>] rw_swap_page_sync+0x1c/0xc2
-> RSP <ffff810013dbbd68>
-> <0>Kernel panic - not syncing: Fatal exception
-> 
-> 
-> I am using "Linux localhost.localdomain 2.6.18-8.el5 #1 
-> SMP Thu Mar 15 19:46:53 EDT 2007 x86_64 x86_64 x86_64 
-> GNU/Linux", CentOs 5.
-> 
-> Could you please tell me if there is a fix for this 
-> problem already, I couldn't find anything yet.
+I get this on boot :
 
-Try vanilla 2.6.20.
-						Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+[ 0.333581] BUG: at include/linux/slub_def.h:83 kmalloc_index()
+[ 0.333587] [<c0104eb7>] show_trace_log_lvl+0x1a/0x2f
+[ 0.333601] [<c0105a76>] show_trace+0x12/0x14
+[ 0.333606] [<c0105a8e>] dump_stack+0x16/0x18
+[ 0.333611] [<c0170d1c>] get_slab+0x48/0x138
+[ 0.333621] [<c0170e8d>] __kmalloc+0x11/0x66
+[ 0.333626] [<c0283c66>] get_modalias+0x5e/0xee
+[ 0.333635] [<c0283d3f>] dmi_dev_uevent+0x2a/0x3f
+[ 0.333641] [<c0241a7b>] dev_uevent+0x1ad/0x1da
+[ 0.333650] [<c01d11fe>] kobject_uevent_env+0x200/0x3ff
+[ 0.333658] [<c01d1407>] kobject_uevent+0xa/0xf
+[ 0.333664] [<c02416fc>] device_add+0x283/0x440
+[ 0.333669] [<c02418cb>] device_register+0x12/0x15
+[ 0.333675] [<c0424558>] dmi_id_init+0x256/0x26c
+[ 0.333684] [<c0409516>] kernel_init+0x156/0x2c1
+[ 0.333692] [<c0104b33>] kernel_thread_helper+0x7/0x10
+[ 0.333698] =======================
+
+
+http://crazy.dev.frugalware.org/2.6.22-rc2-mm1/config-2.6.22-rc2-mm1
+http://crazy.dev.frugalware.org/2.6.22-rc2-mm1/dmesg
+
+Regards,
+
+Gabriel
