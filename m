@@ -1,96 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934720AbXEWREQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935548AbXEWREg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934720AbXEWREQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 13:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757736AbXEWRD6
+	id S935548AbXEWREg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 13:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760259AbXEWREG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 13:03:58 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:37681 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757101AbXEWRD5 (ORCPT
+	Wed, 23 May 2007 13:04:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52759 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759900AbXEWREE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 13:03:57 -0400
-Subject: Re: [patch 5/7] genhd: send async notification on media change
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com
-In-Reply-To: <20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
-References: <20070510072247.063476979@intel.com>
-	 <20070509163835.56ad28e0.kristen.c.accardi@intel.com>
-	 <20070522141211.fe00333f.akpm@linux-foundation.org>
-	 <20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
-Content-Type: text/plain
-Date: Wed, 23 May 2007 12:03:55 -0500
-Message-Id: <1179939835.5569.3.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 13:04:04 -0400
+Date: Wed, 23 May 2007 10:04:02 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+In-Reply-To: <20070523071103.GE4705@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0705231003460.19822@schroedinger.engr.sgi.com>
+References: <376320.95285.qm@web52612.mail.re2.yahoo.com>
+ <Pine.LNX.4.64.0705221524490.16904@schroedinger.engr.sgi.com>
+ <20070523071103.GE4705@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-23 at 09:31 -0700, Kristen Carlson Accardi wrote:
-> On Tue, 22 May 2007 14:12:11 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Wed, 9 May 2007 16:38:35 -0700
-> > Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
-> > 
-> > > Send an uevent to user space to indicate that a media change event has occurred.
-> > > 
-> > > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > > 
-> > > Index: 2.6-git/block/genhd.c
-> > > ===================================================================
-> > > --- 2.6-git.orig/block/genhd.c
-> > > +++ 2.6-git/block/genhd.c
-> > > @@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
-> > >  	.show	= diskstats_show
-> > >  };
-> > >  
-> > > +static void media_change_notify_thread(struct work_struct *work)
-> > > +{
-> > > +	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
-> > > +	char event[] = "MEDIA_CHANGE=1";
-> > > +	char *envp[] = { event, NULL };
-> > > +
-> > > +	/*
-> > > +	 * set enviroment vars to indicate which event this is for
-> > > +	 * so that user space will know to go check the media status.
-> > > +	 */
-> > > +	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
-> > > +	put_device(gd->driverfs_dev);
-> > > +}
-> > > +
-> > > +void genhd_media_change_notify(struct gendisk *disk)
-> > > +{
-> > > +	get_device(disk->driverfs_dev);
-> > > +	schedule_work(&disk->async_notify);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(genhd_media_change_notify);
-> > > +
-> > >  struct gendisk *alloc_disk(int minors)
-> > >  {
-> > >  	return alloc_disk_node(minors, -1);
-> > > @@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
-> > >  		kobj_set_kset_s(disk,block_subsys);
-> > >  		kobject_init(&disk->kobj);
-> > >  		rand_initialize_disk(disk);
-> > > +		INIT_WORK(&disk->async_notify,
-> > > +			media_change_notify_thread);
-> > >  	}
-> > >  	return disk;
-> > 
-> > Why does this do a schedule_work() rather than calling kobject_uevent_env()
-> > directly?
-> > 
-> 
-> Because it is called at Interrupt time.
+On Wed, 23 May 2007, Jens Axboe wrote:
 
-It better not be ... there's two GFP_KERNEL allocations just above this
-line in the file.
+> That works for me with the patch, .config attached.
 
-James
-
+Hmmmm... That means the .config sent initially here was bogus.
 
