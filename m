@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763516AbXEWOS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764549AbXEWOVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763516AbXEWOS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 10:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbXEWOSv
+	id S1764549AbXEWOVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 10:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbXEWOVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 10:18:51 -0400
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:30978 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755048AbXEWOSu (ORCPT
+	Wed, 23 May 2007 10:21:46 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:3779 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755214AbXEWOVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 10:18:50 -0400
-Date: Wed, 23 May 2007 09:14:07 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@localhost.localdomain
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: Simon Horman <horms@verge.net.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       ppc-dev dev ML <linuxppc-dev@ozlabs.org>
-Subject: Re: Kconfig warnings on latest GIT
-In-Reply-To: <1179928646.14317.6.camel@johannes.berg>
-Message-ID: <Pine.LNX.4.64.0705230913420.535@localhost.localdomain>
-References: <200705080004.14570.ismail@pardus.org.tr> 
- <20070508143127.38fafa3c.kim.phillips@freescale.com>  <4640D988.1040504@freescale.com>
- <20070510051042.GA16812@verge.net.au>  <1178811570.3806.18.camel@johannes.berg>
-  <20070511012216.GB10715@verge.net.au>  <1178883937.8896.11.camel@johannes.berg>
-  <20070514013230.GJ3588@verge.net.au>  <1179147311.2647.47.camel@johannes.berg>
-  <Pine.LNX.4.64.0705140923470.24559@gate.crashing.org> 
- <1179159951.2647.49.camel@johannes.berg>  <943F0161-121D-4697-AE69-78BD605A8033@kernel.crashing.org>
- <1179928646.14317.6.camel@johannes.berg>
+	Wed, 23 May 2007 10:21:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Bl7ZK8f1rX7gA+OREsuciNuX1IoIMf/QDAlwc5pJhT3bJizJhIYCF/OFiiruqmfUqA3YEzD/rRRymhXAJRjyb4fOrZ45dPTVByqRU2ktH4fT5BexXTV0GHF9rztP1LM7OqV/c7PJ2DKLPy5a5t/YJbO44FMLWJhpDUpErcYizFE=
+Message-ID: <4cefeab80705230721i492b5f1ehfa2d775344b1c04e@mail.gmail.com>
+Date: Wed, 23 May 2007 19:51:44 +0530
+From: "Nitin Gupta" <nitingupta910@gmail.com>
+To: "Michael-Luke Jones" <mlj28@cam.ac.uk>
+Subject: Re: [RFC] LZO de/compression support - take 3
+Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
+       linux-mm-cc@laptop.org
+In-Reply-To: <1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+	 <0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
+	 <4cefeab80705230439n6bbb1259le3c3b9704ce49b75@mail.gmail.com>
+	 <624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
+	 <4cefeab80705230703vdb3c414s250a61c4c2d70c51@mail.gmail.com>
+	 <1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007, Johannes Berg wrote:
-
-> On Wed, 2007-05-23 at 07:37 -0500, Kumar Gala wrote:
+On 5/23/07, Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
+> On 23 May 2007, at 15:03, Nitin Gupta wrote:
 >
-> > Was my patch ok, if so I'll push it up through my git tree to paul?
+> >> Perhaps a rename is in order:
+> >> lzo1x_decompress() => lzo1x_decompress_unsafe()
+> >> lzo1x_decompress_safe => lzo1x_decompress()
+> >
+> > Or perhaps make reiserfs use _safe() instead - I think Richard has
+> > already submitted patch for same.
 >
-> Yeah, looks fine to me, or will the ARCH=ppc folks then scream and want
-> that added to the Kconfig there as well?
+> If someone's already made this mistake once, then it'll happen again.
+> In-kernel memory corruption is no fun.
+>
+> Safe/Secure == Default
 
-I can't imagine they will since pmac is only supported in ARCH=powerpc.
+If I rename 'nonsafe' version as such then it will seem like its a
+'broken' implementation which is not the case. If somebody is upto
+including compression he must be having head to use the right
+decompress version depending on this scenario :-)
 
-- k
+- Nitin
+
+
+
+>
+> Michael-Luke
+>
+>
