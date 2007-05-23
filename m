@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbXEWQDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764435AbXEWQII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760472AbXEWQDb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756921AbXEWQDX
+	id S1764435AbXEWQII (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:08:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758471AbXEWQH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:03:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52796 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755773AbXEWQDW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:03:22 -0400
-Date: Wed, 23 May 2007 08:59:58 -0700
-From: Greg KH <greg@kroah.com>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIE
-Message-ID: <20070523155958.GA5282@kroah.com>
-References: <46543045.3030904@gmail.com>
+	Wed, 23 May 2007 12:07:57 -0400
+Received: from holomorphy.com ([66.93.40.71]:52557 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757389AbXEWQH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 12:07:56 -0400
+Date: Wed, 23 May 2007 09:08:52 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+Message-ID: <20070523160852.GV19966@holomorphy.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46543045.3030904@gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 04:15:01PM +0400, Manu Abraham wrote:
-> Hi,
-> 
-> Do the PCI Express chipsets also use the same PCI API ?
+On Wed, May 23, 2007 at 12:42:33AM -0700, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
+> - A new readahead patch series.  This needs serious review and performance
+>   testing please.
+> - Added Ingo's CFS CPU scheduler
+> - Xen dom-U support is now in the x86 tree.
 
-At the Linux kernel driver level, yes, they do.
+WARNING: arch/i386/mach-generic/built-in.o(.data+0xc4): Section mismatch: reference to .init.text: (between 'apic_bigsmp' and 'cpu.4905')
+This appears to be resolvable by removing all the __init and __initdata
+qualifiers from arch/i386/mach-generic/bigsmp.c
 
-> The device
-> specifications are thus for the device that i am looking at:
-> 
->  PCI Express interface
-> 
->     * Compliant to PCI Express Base Specification 1.0a
->     * The PCI Express circuit supports isochronous data traffic intended
-> for uninterrupted transfer of streaming data like video streaming
->           o x1 PCI Express endpoint (2.5 Gbit/s)
->           o Data and clock recovery from serial stream
->           o Low jitter and BER
->     * Type 0 configuration space header
->           o 64-bit addressing
->           o Single BAR; programmable address range of 17 bits, 18 bits,
-> 19 bits or 20 bits dependent on application requirements
->     * PCI Express capabilities
->           o 128 bytes write packet size and 64 bytes read packet size
->           o MSI support
->           o Software directed power management of four device power
-> states (D0 to D3)
->           o Active state power management of link states
->           o Vendor specific capability for VC1 support; after reset VC1
-> isochronous capability is disabled
-> 
-> I have been trying the said card with a normal PCI style driver, but
-> while booting the kernel (2.6.21.1) i do get a message like this (an
-> Intel DP965LT motherboard with BIOS version:
-> MQ96510J.86A.1612.2006.1227.1513)
-> Also accessing the interrupt registers causes a hard freeze, for which
-> only the RESET button seems to be of any help.
-> 
-> Uncompressing Linux .. Ok, booting the kernel.
-> BIOS bug, no explicit IRQ entries, using default mptable. (tell your hw
-> vendor)
-> PCI: Failed to allocate mem resource #6:20000@30000000 for 0000:01:00.0
-> 
-> Any ideas as to what could be wrong ?
+Signed-off-by: William Irwin <bill.irwin@oracle.com>
 
-What type of PCI device is this?  What driver is controlling it?  What
-is the output of 'lspci -v' at boot time?
-
-thanks,
-
-greg k-h
+Index: mm-2.6.22-rc2/arch/i386/mach-generic/bigsmp.c
+===================================================================
+--- mm-2.6.22-rc2.orig/arch/i386/mach-generic/bigsmp.c	2007-05-23 08:53:25.122485613 -0700
++++ mm-2.6.22-rc2/arch/i386/mach-generic/bigsmp.c	2007-05-23 09:06:21.998757269 -0700
+@@ -21,7 +21,7 @@
+ 
+ static int dmi_bigsmp; /* can be set by dmi scanners */
+ 
+-static __init int hp_ht_bigsmp(struct dmi_system_id *d)
++static int hp_ht_bigsmp(struct dmi_system_id *d)
+ {
+ #ifdef CONFIG_X86_GENERICARCH
+ 	printk(KERN_NOTICE "%s detected: force use of apic=bigsmp\n", d->ident);
+@@ -31,7 +31,7 @@
+ }
+ 
+ 
+-static struct dmi_system_id __initdata bigsmp_dmi_table[] = {
++static struct dmi_system_id bigsmp_dmi_table[] = {
+ 	{ hp_ht_bigsmp, "HP ProLiant DL760 G2", {
+ 		DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
+ 		DMI_MATCH(DMI_BIOS_VERSION, "P44-"),
+@@ -45,7 +45,7 @@
+ };
+ 
+ 
+-static int __init probe_bigsmp(void)
++static int probe_bigsmp(void)
+ { 
+ 	if (def_to_bigsmp)
+         	dmi_bigsmp = 1;
