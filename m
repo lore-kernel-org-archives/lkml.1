@@ -1,36 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbXEWTLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbXEWTPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763585AbXEWTLP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 15:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbXEWTLA
+	id S1755649AbXEWTPd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 15:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbXEWTPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 15:11:00 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54517
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755450AbXEWTLA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 15:11:00 -0400
-From: Rob Landley <rob@landley.net>
-To: linux-kernel@vger.kernel.org
-Subject: Status of CONFIG_FORCED_INLINING?
-Date: Wed, 23 May 2007 15:10:52 -0400
-User-Agent: KMail/1.9.1
-Cc: Arjan van de Ven <arjan@linux.intel.com>
+	Wed, 23 May 2007 15:15:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37901 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754956AbXEWTPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 15:15:24 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/4] AFS: Add TestSetPageError()
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 23 May 2007 20:15:19 +0100
+Message-ID: <20070523191518.24135.81257.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705231510.52932.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I notice that feature-removal-schedule.txt has CONFIG_FORCED_INLINING 
-scheduled to go away most of a year ago.  My question is what replaces it:
+Add a TestSetPageError() macro to the suite of page flag manipulators.  This
+can be used by AFS to prevent over-excision of rejected writes from the page
+cache.
 
-Does #define inline __always_inline become the new standard and uses of 
-__always_inline be removed, or should all instances of "inline" either be 
-removed or replaced with __always_inline?  (Or are there going to be two 
-keywords meaning exactly the same thing going forward?)
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Rob
+ include/linux/page-flags.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index ae2d79f..cc8d952 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -121,6 +121,7 @@
+ #define PageError(page)		test_bit(PG_error, &(page)->flags)
+ #define SetPageError(page)	set_bit(PG_error, &(page)->flags)
+ #define ClearPageError(page)	clear_bit(PG_error, &(page)->flags)
++#define TestSetPageError(page)	test_and_set_bit(PG_error, &(page)->flags)
+ 
+ #define PageReferenced(page)	test_bit(PG_referenced, &(page)->flags)
+ #define SetPageReferenced(page)	set_bit(PG_referenced, &(page)->flags)
+
