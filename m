@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbXEWPha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760870AbXEWPzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762069AbXEWPha (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 11:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbXEWPhV
+	id S1760870AbXEWPzJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 11:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbXEWPyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 11:37:21 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49989 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754564AbXEWPhT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 11:37:19 -0400
-Date: Wed, 23 May 2007 16:37:18 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [RFC PATCH] file as directory
-Message-ID: <20070523153718.GB4095@ftp.linux.org.uk>
-References: <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> <20070523102437.GS4095@ftp.linux.org.uk> <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu> <20070523113925.GT4095@ftp.linux.org.uk> <20070523121620.GU4095@ftp.linux.org.uk> <E1HqqTC-00023W-00@dorka.pomaz.szeredi.hu> <20070523135140.GW4095@ftp.linux.org.uk> <E1HqrtF-0002Fb-00@dorka.pomaz.szeredi.hu> <20070523150602.GZ4095@ftp.linux.org.uk> <E1Hqsij-000338-00@dorka.pomaz.szeredi.hu>
+	Wed, 23 May 2007 11:54:55 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35308 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755861AbXEWPyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 11:54:54 -0400
+Date: Wed, 23 May 2007 19:53:41 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: Review status (Re: [PATCH] LogFS take three)
+Message-ID: <20070523155339.GA17753@2ka.mipt.ru>
+References: <20070515151919.GA32510@lazybastard.org> <20070515152149.GB32059@lazybastard.org> <20070517160308.GA26643@2ka.mipt.ru> <20070517171017.GB15676@lazybastard.org> <20070520173049.GA20907@2ka.mipt.ru> <20070523125840.GC24738@lazybastard.org> <20070523150732.GA2456@2ka.mipt.ru> <20070523151402.GA25532@lazybastard.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <E1Hqsij-000338-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070523151402.GA25532@lazybastard.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 23 May 2007 19:53:56 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 05:25:49PM +0200, Miklos Szeredi wrote:
-> > > How will this work with copy_tree() and namespace duplication, which
-> > > currently walk the tree with only namespace_sem held?
+On Wed, May 23, 2007 at 05:14:04PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
+> > > I'm just a German.  Forgive me if I drink lesser beverages.
 > > 
-> > Easy - grab namespace_sem, grab vfsmount_lock, walk the subtree and bump
-> > mnt_busy on everything (by 1 + number of non-busy children).  Then drop
-> > vfsmount_lock and do as usual, dropping references in tree being copied
-> > as you go.  Nothing will get attached or detached due to namespace_sem,
-> > nothing will get evicted by anybody other than you since you've got all
-> > that stuff pinned down.  End of story...
+> > You should definitely change that.
 > 
-> Right.
-> 
-> Do you have some code?
-> 
-> Should I try to code something up?
+> Change being German?  Not a bad idea, actually.
 
-I hope to get some breathing space next week, then I'll get back to
-VFS work.  I'd rather do that one myself, since it'll be a long series
-of equivalent transformations - debugging such rewrite of refcounting
-done as a single patch is going to be hell.  And yes, refcounting rewrite
-is near the top of the list (another thing is wading through several
-threads from hell and reviewing unionfs ;-/)
+You cook up really tasty shnaps, in small quantities it is good for
+health in infinite volumes.
+
+> > Btw, what about this piece:
+> > 
+> > int logfs_erase_segment(struct super_block *sb, u32 index)
+> > {
+> > 	struct logfs_super *super = LOGFS_SUPER(sb);
+> > 
+> > 	super->s_gec++;
+> > 
+> > 	return mtderase(sb, index << super->s_segshift, super->s_segsize);
+> > }
+> > 
+> > index << super->s_segshift might overflow, mtderase expects loff_t
+> > there, since index can be arbitrary segment number, is it possible, that
+> > overflow really occurs?
+> 
+> Indeed it is.  You just earned your second beer^Wvodka.
+
+Actually this code looks less encrypted than ext2 for, which definitely
+a good sign from reviewer's point of view.
+
+> Jörn
+
+-- 
+	Evgeniy Polyakov
