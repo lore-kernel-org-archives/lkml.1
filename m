@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbXEWBGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763938AbXEWBHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761851AbXEWBGb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 21:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757300AbXEWBGW
+	id S1763938AbXEWBHf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 21:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXEWBH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 21:06:22 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:61565 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757273AbXEWBGV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 21:06:21 -0400
-Date: Tue, 22 May 2007 19:06:00 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
- resources
-In-reply-to: <200705221738.09571.jbarnes@virtuousgeek.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Olivier Galibert <galibert@pobox.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-Message-id: <46539378.6000508@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <4635510D.4060103@shaw.ca>
- <200705211322.18937.jbarnes@virtuousgeek.org> <46538B67.3080007@shaw.ca>
- <200705221738.09571.jbarnes@virtuousgeek.org>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 22 May 2007 21:07:28 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:59902 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757273AbXEWBH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 21:07:27 -0400
+Date: Wed, 23 May 2007 10:06:35 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Bryan Wu <bryan.wu@analog.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/32] Blackfin update for 2.6.22-rc2
+Message-ID: <20070523010635.GA28301@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mike Frysinger <vapier.adi@gmail.com>,
+	Robin Getz <rgetz@blackfin.uclinux.org>,
+	Bryan Wu <bryan.wu@analog.com>, torvalds@linux-foundation.org,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1179742180228-git-send-email-bryan.wu@analog.com> <200705211035.08380.rgetz@blackfin.uclinux.org> <20070521143730.GA18110@linux-sh.org> <8bd0f97a0705221728p1c4761bbi83e58245cfca48f9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0705221728p1c4761bbi83e58245cfca48f9@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Tuesday, May 22, 2007, Robert Hancock wrote:
->> Eww. I don't see where we disable the decode at all while we probe the
->> BARs on the device. That seems like a bad thing, especially with the way
->> we probe 64-bit BARs (do the low 32 bits first and then the high 32
->> bits). This means the base address effectively gets set to 0xfffffff0
->> momentarily, which might cause some issues.
+On Tue, May 22, 2007 at 08:28:28PM -0400, Mike Frysinger wrote:
+> On 5/21/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> >On Mon, May 21, 2007 at 10:35:08AM -0400, Robin Getz wrote:
+> >> On Mon 21 May 2007 06:09, Bryan Wu pondered:
+> >> > Lots of update for 2.6.22-rc2 and tested on STAMP537 board.
+> >> >
+> >>
+> >> One of the things I noticed when trying out 2.6.22-rc1, on blackfin was:
+> >>
+> >>  CALL    scripts/checksyscalls.sh
+> >[snip syscalls]
+> >>
+> >> since there is noMMU, are we better:
+> >>  - putting stubs (return ENOSYS - give runtime errors), or
+> >>  - just ignore the errors - and give compile errors? (Is there any way 
+> >to put
+> >> something into the syscall table, as not to get the warnings?)
+> >
+> >No, you'd be better of figuring out which ones you can support and which
+> >ones you have to -ENOSYS. CONFIG_MMU=n is not a "get out of syscalls
+> >free" card. Many of these have no dependency on CONFIG_MMU, anyways.
 > 
-> I'm a bit shocked that things work as well as they do without the 
-> disabling...
-> 
->> I'd try adding some code inside pci_setup_device (drivers/pci/probe.c)
->> to disable PCI_COMMAND_IO and PCI_COMMAND_MEMORY on the device when
->> probing devices with the standard header type and then restoring the
->> previous command bits afterwards, and see what effect that has. It'll be
->>   interesting if it does, since obviously it seems to work as it is with
->> non-MMCONFIG access methods. Maybe the base address being set like that
->> interferes with MMCONFIG access itself somehow?
-> 
-> I tried that, and it seems to get past probing the graphics device at 
-> least, but it hangs a bit later.  It could be that the enable/disable I 
-> added wasn't correct though, I didn't check to see which one I should 
-> disable in the command word, which may be a problem (just disabled them 
-> both every probe).  I'll try again with more precise enable/disable 
-> semantics.
+> when you say -ENOSYS, do you mean we need sys_foo() that simply does
+> return -ENOSYS or do we just let the default syscall code go "__NR_foo
+> is not registered, return -ENOSYS"
 
-There was a big discussion about this back in 2002, in which Linus 
-wasn't overly enthused about disabling the decode during probing due to 
-risk of causing problems with some devices:
+The checksyscalls.sh errors come from the fact you have missing
+definitions in asm-blackfin/unistd.h, however, you still have reserved
+slots for most of these syscalls (and explicit sys_ni_syscall wrapping in
+the syscall table), just no __NR_foo definition.
 
-http://lkml.org/lkml/2002/12/19/145
+It's also not clear which of these you are explicitly never going to
+support versus the ones that simply haven't been implemented yet (ie,
+kexec support, restartable system calls -- how do you even do
+ppoll/pselect6 without supporting these?, and so on).
 
-In this particular case (64-bit BAR) we might be able to avoid the 
-problem by changing the order in which we probe the two halves of the 
-address, i.e. change the top half to 0xffffffff before messing with the 
-bottom half and then change it back last. That way, we end up mapping it 
-way to the top of 64-bit address space, which hopefully is less likely 
-to conflict..
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+I would suggest simply defining the __NR_foo values based on the reserved
+slots that they already occupy in order to silence these warnings, at
+least that's a closer approximation of "we've actually looked at these
+syscalls" than "new or otherwise unintentionally unimplemented", which is
+what the script aims to help with.
