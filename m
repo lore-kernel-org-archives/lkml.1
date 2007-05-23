@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763156AbXEWKYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbXEWKZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763156AbXEWKYs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 06:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758168AbXEWKYj
+	id S1762297AbXEWKZF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 06:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763880AbXEWKYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 06:24:39 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59718 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757394AbXEWKYj (ORCPT
+	Wed, 23 May 2007 06:24:52 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:59800 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763501AbXEWKYu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 06:24:39 -0400
-Date: Wed, 23 May 2007 11:24:38 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	Wed, 23 May 2007 06:24:50 -0400
+To: viro@ftp.linux.org.uk
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        akpm@linux-foundation.org, torvalds@linux-foundation.org
+In-reply-to: <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Wed, 23 May 2007 12:09:19 +0200)
 Subject: Re: [RFC PATCH] file as directory
-Message-ID: <20070523102437.GS4095@ftp.linux.org.uk>
 References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.1i
+Message-Id: <E1Hqo0n-0001ho-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 23 May 2007 12:24:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 12:09:19PM +0200, Miklos Szeredi wrote:
-> Right.  After locking vfsmount_lock, mount_dironfile() should recheck
-> if there was a race and bail out.
+> > > + * This is tricky, because for namespace modification we must take the
+> > > + * namespace semaphore.  But mntput() is called from various places,
+> > > + * sometimes with namespace_sem held.  Fortunately in those places the
+> > > + * mount cannot yet have MNT_DIRONFILE, or at least that's what I
+> > > + * hope...
+> > > + *
+> > > + * The umounting is done in two stages, first the mount is removed
+> > > + * from the hashes.  This is done atomically wrt other mount lookups,
+> > > + * so it's not possible to acquire a new ref to this dead mount that
+> > > + * way.
+> > > + *
+> > > + * Then after having locked namespace_sem and relocked vfsmount_lock,
+> > > + * the mount is properly detached.
+> > > + */
+> > > +static void umount_dironfile(struct vfsmount *mnt)
+> > > +	__releases(vfsmount_lock)
+> > > +{
+> > > +	struct nameidata nd;
+> > 
+> > You've got to be kidding.  nameidata is *big*.  If anything, we want
+> > to make detach_mnt() take struct path * instead, but even that is
+> > lousy due to recursion.
+> > 
+> > I really don't like what's going on here.  The thing is, current code
+> > is based on assumption that presence in the mount tree => holding a
+> > reference.  We _might_ deal with that (there was an old plan to change
+> > refcounting logics for vfsmounts), but that sort of games with locks
+> > spells trouble.  What happens, for example, if namespace gets cloned
+> > before you grab namespace_sem?
+> 
+> It _should_ work.  The mount in the new namespace will be created
+> (with namespace_sem held, so we can't yet free this mount), and then
+> dropped, because there are no refs to it.
 
-Owww...  Not pretty, that...
- 
-> I don't think the filesystem ought to try _creating_ a vfsmount.  I
-> imagine, that the fs has already a kernel-internal mounted for this
-> kind of stuff, and it just supplies a dentry from that.  The vfsmount
-> isn't actually important, but it should be readily available, and it's
-> easier to clone from a vfsmount/dentry pair.
+BTW, I'm not saying I like this.  It's pretty ugly and fragile.  But
+it's damn convenient to get rid of these mounts from mntput().
 
-I don't get it.  What's the point of that exercise, then?  When do you
-create that kernel-internal mount?
+Is there a better alternative?
 
-> As I said, the superblock should be persistent, so we'll get a stable
-> st_dev for multiple mounts.
-
-OK, but then I guess I don't understand the intended use.
+Miklos
