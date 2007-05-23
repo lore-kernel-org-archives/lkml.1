@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbXEWMz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbXEWNCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760197AbXEWMz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 08:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbXEWMzw
+	id S1760377AbXEWNCa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 09:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbXEWNCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 08:55:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:50054 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754430AbXEWMzv (ORCPT
+	Wed, 23 May 2007 09:02:21 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:49501 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754430AbXEWNCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 08:55:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Ro9ZGfBNVwM/EUJrbZXFRZqKYIu9/A28B8USFmmgk4S5X1VIxpGN83RVdgZWHpXQbP+lbo9EZ7J6+7Vv/RG8e6u6SsO9UdeCQ73+8cUkAXT2HeT/lPjkj2tOIFrk1iVm6xS/v7yeIm1gyVg2DMmzLQBAHc2gptWDo0kEhO7USog=
-Message-ID: <a781481a0705230555j6fcf46eav43cc95f6d1a7ae6f@mail.gmail.com>
-Date: Wed, 23 May 2007 18:25:49 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: [PATCH] fix unchecked mutex_lock_interruptible (was Re: use mutex instead of semaphore in RocketPort driver)
-Cc: "Simon Arlott" <simon@fire.lp0.eu>,
-       "Matthias Kaehlcke" <matthias.kaehlcke@gmail.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Wed, 23 May 2007 09:02:20 -0400
+To: viro@ftp.linux.org.uk
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+In-reply-to: <20070523121620.GU4095@ftp.linux.org.uk> (message from Al Viro on
+	Wed, 23 May 2007 13:16:20 +0100)
+Subject: Re: [RFC PATCH] file as directory
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> <20070523102437.GS4095@ftp.linux.org.uk> <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu> <20070523113925.GT4095@ftp.linux.org.uk> <20070523121620.GU4095@ftp.linux.org.uk>
+Message-Id: <E1HqqTC-00023W-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 23 May 2007 15:01:38 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/23/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> Simon Arlott napsal(a):
-> > On 22/05/07 21:06, Matthias Kaehlcke wrote:
-> >> would the following resolve the problem?
-> >>
-> >> if(mutex_lock_interruptible(&info->write_mtx))         return
-> >> -ERESTARTSYS
-> >>
-> >> thanks for your comments
+> On Wed, May 23, 2007 at 12:39:25PM +0100, Al Viro wrote:
+> > Then I do not understand what this mechanism could be used for, other
+> > than an odd way to twist POSIX behaviour and see how much of the userland
+> > would survive that.  Certainly not useful for your "look into tarball
+> > as a tree", unless you seriously want to scan the entire damn fs for
+> > tarballs at mount time and set up a superblock for each.  And for per-file
+> > extended attributes/forks/whatever-you-call-that-abomination it also
+> > obviously doesn't help, since you lose them for directories.
 
-Hum. I remember suggesting the fix when this came few weeks back,
-somehow the older version seems to have made it into Linus' tree.
+Someone might think of a way to make those work with directories.
+Invisible directory entries, anyone?  </me ducks>
 
-> > No. At least one user of tty_operations/tty_driver's write function
-> > doesn't check the return value so it would never be retried, mutex_lock
-> > should be used instead.
+> > IOW, what uses do you have in mind?  Complete scenario, please...
+> 
+> Ah... After rereading the thread you've mentioned in the very beginning,
+> I think I understand what you are driving at.  However, in that case
+> 	* I really don't see why bother with returning vfsmount at all.
+> dentry alone is enough to create a new vfsmount, all in fs/namei.c.
+> 	* the lifetime rules look fscking scary.  You call that ->enter()
+> on nearly every damn lookup.  OK, so you'll recreate equivalent vfsmount,
+> but...  That's a lot of allocations/freeing.  Can we do some caching and
+> deal with it on memory pressure?
 
-Replacing mutex_lock_interruptible() with a mutex_lock() could be a
-change in behaviour visible to userspace. Best to continue to use
-_interruptible. Returning EINTR would be safe choice because if
-Simon's right that this isn't retried, we could end up breaking
-userspace that isn't quite ready to see ERESTARTSYS coming out of
-a write(2), but ...
+Hmm.
 
-> Who? There are some drivers that returns ERESTARTSYS from write function.
+> 	* invalidation on unlink is still an open problem.
+> 	* locking in final mntput() doesn't look nice; we probably need
+> a new refcounting scheme for vfsmounts to make that work.  I have a variant
+> that might work here (and make life much easier for expiry logics in
+> automount/shared trees, which is what it had been initially proposed for),
 
-Right, several others in drivers/char/ do return ERESTARTSYS. Hope
-somebody picks this up -- no email listed in MAINTAINERS for this.
+Which variant?  We had that "detached subtrees" thing, is that it?
 
----
+> but it still doesn't kill the need to deal with invalidation.  And
+> yes, NFS still needs it (and so do all network filesystems, really).
+> The question of caching is related to that.
 
-Check the return of mutex_lock_interruptible() in drivers/char/rocket.c
-and return ERESTARTSYS if we were interrupted.
+So what's so special about invalidation?  Why not just treat
+dir-on-file mounts the same as any other ref on the dentry?
 
-Signed-off-by: Satyam Sharma <satyam.sharma@gmail.com>
-
----
-
- drivers/char/rocket.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
----
-
-diff -ruNp a/drivers/char/rocket.c b/drivers/char/rocket.c
---- a/drivers/char/rocket.c	2007-05-20 04:11:54.000000000 +0530
-+++ b/drivers/char/rocket.c	2007-05-23 18:14:35.000000000 +0530
-@@ -1702,7 +1702,8 @@ static int rp_write(struct tty_struct *t
- 	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
- 		return 0;
-
--	mutex_lock_interruptible(&info->write_mtx);
-+	if (mutex_lock_interruptible(&info->write_mtx))
-+		return -ERESTARTSYS;
-
- #ifdef ROCKET_DEBUG_WRITE
- 	printk(KERN_INFO "rp_write %d chars...", count);
+Miklos
