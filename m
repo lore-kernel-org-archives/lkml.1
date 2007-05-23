@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934637AbXEWVK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbXEWVNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934637AbXEWVK0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761718AbXEWVKI
+	id S1761011AbXEWVNj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 17:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbXEWVNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:10:08 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:51408 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761011AbXEWVKG (ORCPT
+	Wed, 23 May 2007 17:13:31 -0400
+Received: from mga01.intel.com ([192.55.52.88]:30664 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756624AbXEWVNa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:10:06 -0400
-X-IronPort-AV: i="4.14,571,1170662400"; 
-   d="scan'208"; a="156770936:sNHT175942881"
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIE
-X-Message-Flag: Warning: May contain useful information
-References: <46543045.3030904@gmail.com> <20070523155958.GA5282@kroah.com>
-	<4654AB40.6060208@gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 23 May 2007 14:10:03 -0700
-In-Reply-To: <4654AB40.6060208@gmail.com> (Manu Abraham's message of "Thu, 24 May 2007 00:59:44 +0400")
-Message-ID: <adaejl79rh0.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Wed, 23 May 2007 17:13:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,571,1170662400"; 
+   d="scan'208";a="248989056"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 May 2007 21:10:04.0109 (UTC) FILETIME=[BB88BFD0:01C79D7E]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] Define new percpu interface for shared data -- version 3
+Date: Wed, 23 May 2007 14:13:24 -0700
+Message-ID: <79E93560F4A5FD42BB769DAAF8BEF62A01AA8E7C@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070523123153.c4f8c7e6.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] Define new percpu interface for shared data -- version 3
+Thread-Index: AcedcRJD1cY9XQLTQM2hrn2Fec6MpQABbo6Q
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ravikiran G Thirumalai" <kiran@scalex86.org>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, <clameter@sgi.com>,
+       <rmk@arm.linux.org.uk>, <linux-kernel@vger.kernel.org>,
+       <schwidefsky@de.ibm.com>, <heiko.carstens@de.ibm.com>
+X-OriginalArrivalTime: 23 May 2007 21:13:26.0034 (UTC) FILETIME=[33E40F20:01C79D7F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Uncompressing Linux .. Ok, booting the kernel.
->> BIOS bug, no explicit IRQ entries, using default mptable. (tell your hw vendor)
->> PCI: Failed to allocate mem resource #6:20000@30000000 for 0000:01:00.0
 
-This message is about device 01:00.0 as it says (your nvidia video
-card based on later lspci output).
+>> So what we have now is space wastage on some architectures, space
+savings on
+>> some, but with no measurable performance benefit due to the
+infrastructure
+>> itself.  Why not push the infrastructure when we really need it, as
+against
+>> pushing it now when we are not sure if it benefits?
+> 
 
- > The device is a new DTV bridge from NXP (SAA7162E) with a PCIe interface.
- > 
- > 06:00.0 Multimedia controller: Philips Semiconductors Unknown device
- > 7162 (rev 01)
- >         Subsystem: Twinhan Technology Co. Ltd Unknown device 0027
+>It makes sense from a theoretical POV and is pretty much a no-op in
+terms
+>of resource consumption.
 
-This is device 06:00.0, so it's not related to that earlier message at
-all.  You didn't say what problem you're having with your driver for
-this device... but all standard PCI stuff should work fine for PCIe
-devices -- the normal PCI driver stuff is all you should need for
-everything but exotic cases.
+>The problem with the wait-until-it-hurts approach is that by the time
+>someone hurts from this and we find out about it, they may well be
+using
+>some year-old enterprise kernel and it's too late to fix it for them.
 
- - R.
+Yes, in theory, sharing shared percpu data with local percpu data in one
+cache line can cause cache line contention between remote and local
+access.
+And this undesirable sharing does happen in current git.
+
+On x86, without the patch, runqueue shares cacheline with cpu_domains.
+c0633e80 d per_cpu__runqueues
+c06347e0 d per_cpu__cpu_domains
+
+Other architectures also have this undesired sharing. IA64 is an
+example.
+
+In future, this undesired sharing could happen with other data if we do 
+not have a methodology to prevent it.
+
+I just do not have data to show the performance hit for this sharing
+now.
+
+Thanks.
+
+-Fenghua
