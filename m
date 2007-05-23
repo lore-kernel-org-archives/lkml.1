@@ -1,118 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765089AbXEWQKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762695AbXEWQOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765089AbXEWQKb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXEWQKY
+	id S1762695AbXEWQOP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbXEWQOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:10:24 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:58489 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756921AbXEWQKX (ORCPT
+	Wed, 23 May 2007 12:14:01 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:33781 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756921AbXEWQOA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:10:23 -0400
-Date: Wed, 23 May 2007 09:10:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven French <sfrench@us.ibm.com>
-Cc: "young dave" <hidave.darkstar@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       David Kleikamp <shaggy@us.ibm.com>,
-       Shirish S Pargaonkar <shirishp@us.ibm.com>
-Subject: Re: 2.6.22-rc1-mm1 cifs_mount oops
-Message-Id: <20070523091013.b1475211.akpm@linux-foundation.org>
-In-Reply-To: <OF794FED81.D7F8CFC9-ON872572E4.004974FE-862572E4.004A1708@us.ibm.com>
-References: <a8e1da0705230137r1b2b06cbg7133141d75292e22@mail.gmail.com>
-	<OF794FED81.D7F8CFC9-ON872572E4.004974FE-862572E4.004A1708@us.ibm.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 May 2007 12:14:00 -0400
+Subject: Re: [PATCH -rt] ARM TLB flush fix: don't forget to re-enable
+	preemption
+From: Kevin Hilman <khilman@mvista.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Daniel Walker <dwalker@mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070523092232.GA9482@flint.arm.linux.org.uk>
+References: <20070522230128.891568116@mvista.com>
+	 <1179876320.15427.214.camel@imap.mvista.com>
+	 <1179877296.6122.74.camel@vence.hilman.org>
+	 <20070523092232.GA9482@flint.arm.linux.org.uk>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 23 May 2007 09:13:57 -0700
+Message-Id: <1179936837.7051.11.camel@vence.hilman.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 08:28:47 -0500 Steven French <sfrench@us.ibm.com> wrote:
-
-> Yes - this patch looks better.
-> 
-> I also am not sure whether the send_sig is still necessary to wake up a 
-> thread blocked in tcp recv_msg (only do a wake_up_process vs. doing a 
-> send_sig(SIGKILL) )
-> 
-> Unless someone knows for sure whether the send_sig is redundant, I would 
-> like to merge Shaggy's version of the patch
-> 
-> 
-> "young dave" <hidave.darkstar@gmail.com> wrote on 05/23/2007 03:37:04 AM:
-> 
-> > Hi,
-> > Sorry for the wrong patch in my last post.
+On Wed, 2007-05-23 at 10:22 +0100, Russell King wrote:
+> On Tue, May 22, 2007 at 04:41:36PM -0700, Kevin Hilman wrote:
+> > On Tue, 2007-05-22 at 16:25 -0700, Daniel Walker wrote:
+> > > On Tue, 2007-05-22 at 16:01 -0700, Kevin Hilman wrote:
+> > > > Add a preempt_enable() to flush_tlb_kernel_page() since -rt4 patch
+> > > > adds a preempt_disable but no preempt_enable().
+> > > > 
+> > > > Signed-off-by: Kevin Hilman <khilman@mvista.com>
+> > > > 
+> > > > 
+> > > > ---
+> > > >  include/asm-arm/tlbflush.h |    1 +
+> > > >  1 file changed, 1 insertion(+)
+> > > > 
+> > > > Index: linux-2.6.21/include/asm-arm/tlbflush.h
+> > > > ===================================================================
+> > > > --- linux-2.6.21.orig/include/asm-arm/tlbflush.h
+> > > > +++ linux-2.6.21/include/asm-arm/tlbflush.h
+> > > > @@ -378,6 +378,7 @@ static inline void local_flush_tlb_kerne
+> > > >  		asm("mcr p15, 0, %0, c8, c6, 1" : : "r" (kaddr) : "cc");
+> > > >  	if (tlb_flag(TLB_V6_I_PAGE))
+> > > >  		asm("mcr p15, 0, %0, c8, c5, 1" : : "r" (kaddr) : "cc");
+> > > 
+> > > Aren't these mcr operations atomic?
+> > > 
 > > 
-> > How about save the tsk then call kthread_stop like this:
-> > 
-> > diff -udr linux/fs/cifs/connect.c linux.new/fs/cifs/connect.c
-> > --- linux/fs/cifs/connect.c     2007-05-23 10:59:13.000000000 +0000
-> > +++ linux.new/fs/cifs/connect.c 2007-05-23 16:33:54.000000000 +0000
-> > @@ -2069,8 +2069,9 @@
-> >                         srvTcp->tcpStatus = CifsExiting;
-> >                         spin_unlock(&GlobalMid_Lock);
-> >                         if (srvTcp->tsk) {
-> > +                               struct task_struct * tsk = srvTcp->tsk;
-> >                                 send_sig(SIGKILL,srvTcp->tsk,1);
-> > -                               kthread_stop(srvTcp->tsk);
-> > +                               kthread_stop(tsk);
-> >                         }
-> >                 }
-> >                  /* If find_unc succeeded then rc == 0 so we can not end 
-> */
-> > 
-> > Regards
-> > dave
+> > Individually, yes.  But the point of the preempt_disable/enable is to
+> > make the whole sequence atomic.
 > 
-> Shaggy's suggested patch seems slightly better:
+> In which case shouldn't it be at the end of the function so it includes
+> the write buffer handling as well?
 > 
-> diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-> index 216fb62..b6e2158 100644
-> --- a/fs/cifs/connect.c
-> +++ b/fs/cifs/connect.c
-> @@ -2069,8 +2069,12 @@ cifs_mount(struct super_block *sb, struct 
-> cifs_sb_info *cifs_sb,
->                                                  srvTcp->tcpStatus = 
-> CifsExiting;
->  spin_unlock(&GlobalMid_Lock);
->                                                  if (srvTcp->tsk) {
-> +                                                                struct 
-> task_struct *tsk;
->  send_sig(SIGKILL,srvTcp->tsk,1);
-> - kthread_stop(srvTcp->tsk);
-> +                                                                /* 
-> srvTcp->tsk can be zeroed at any time */
-> +                                                                tsk = 
-> srvTcp->tsk;
-> +                                                                if (tsk)
-> +  kthread_stop(tsk);
->                                                  }
->                                  }
->                                   /* If find_unc succeeded then rc == 0 so 
-> we can not end */
+> However, I think I agree with Daniel on this one.  I don't see the point
+> of the preempt_disable() here.
 
-The wordwrapping made that extraordinarily hard to read.  Repairing...
+Note that my patch simply adds an enable to match the disable added by
+the -rt patch.  I'm not sure where the disable originally came from, but
+there are disable/enable pairs scattered throughout tlbflush.h in the
+-rt patch.
 
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -2069,8 +2069,12 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
-			srvTcp->tcpStatus = CifsExiting;
-			spin_unlock(&GlobalMid_Lock);
-			if (srvTcp->tsk) {
-				struct  task_struct *tsk;
-				send_sig(SIGKILL,srvTcp->tsk,1);
--				kthread_stop(srvTcp->tsk);
-+				/*  srvTcp->tsk can be zeroed at any time */
-+				tsk = srvTcp->tsk;
-+				if (tsk)
-+					kthread_stop(tsk);
-			}
-		}
-		/* If find_unc succeeded then rc == 0 so we can not end */
+If this one isn't necessary, then the others probably are not either.
+In most cases there are 2 mcr instructions inside the critical section.
+One for the dsb() and the other for the actual function.
+
+Russell, is there a reason any of these sections should be atomic?
+
+Kevin
 
 
-This can end up running kthread_stop() against an already-exited task.
+
 
