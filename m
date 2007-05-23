@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764851AbXEWPGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934495AbXEWPH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764851AbXEWPGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 11:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbXEWPGG
+	id S934495AbXEWPH5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 11:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbXEWPHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 11:06:06 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:42171 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755863AbXEWPGF (ORCPT
+	Wed, 23 May 2007 11:07:49 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:15466 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755863AbXEWPHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 11:06:05 -0400
-Date: Wed, 23 May 2007 16:06:02 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [RFC PATCH] file as directory
-Message-ID: <20070523150602.GZ4095@ftp.linux.org.uk>
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> <20070523102437.GS4095@ftp.linux.org.uk> <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu> <20070523113925.GT4095@ftp.linux.org.uk> <20070523121620.GU4095@ftp.linux.org.uk> <E1HqqTC-00023W-00@dorka.pomaz.szeredi.hu> <20070523135140.GW4095@ftp.linux.org.uk> <E1HqrtF-0002Fb-00@dorka.pomaz.szeredi.hu>
+	Wed, 23 May 2007 11:07:49 -0400
+Subject: Re: [PATCH 3/7] lockdep: lock contention tracking
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <Pine.LNX.4.64.0705231035270.22023@dhcp83-20.boston.redhat.com>
+References: <20070523072618.129001605@chello.nl>
+	 <20070523095807.407148940@chello.nl>
+	 <Pine.LNX.4.64.0705231035270.22023@dhcp83-20.boston.redhat.com>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 17:07:45 +0200
+Message-Id: <1179932865.7019.90.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HqrtF-0002Fb-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 04:32:37PM +0200, Miklos Szeredi wrote:
-> > Umm...  It is related to detached subtrees, but I'm not sure if it is what
-> > you are thinking about.
+On Wed, 2007-05-23 at 10:40 -0400, Jason Baron wrote:
+> On Wed, 23 May 2007, Peter Zijlstra wrote:
 > 
-> I was thinking of a similar one by Mike Waychison.  It had the problem
-> of requiring a spinlock for mntget/mntput.  It was also different in
-> that it did not gradually dissolve detached trees, but kept them as
-> whole blobs until the last ref went away.
- 
-Here the spinlock is needed only when mnt_busy goes to 0, so presumably
-it won't be a serious problem on more or less common setups; however,
-it certainly would need serious profiling.
+> > Count lock contention events per lock class. Additionally track the first four
+> > callsites that resulted in the contention.
+> > 
+> 
+> I think that we need the total number of locking calls, not just the total 
+> number of *contended* locking calls, in order to make the data 
+> significant. Same for waittime. Yes, this pollutes the fastpath. In the 
+> contention case, its one extra addition, and for the waittime, its a call 
+> the sched_clock(). I don't think that's too much to pay for much more 
+> meaningful data.
 
-> How will this work with copy_tree() and namespace duplication, which
-> currently walk the tree with only namespace_sem held?
+The holdtime statistics add these numbers.
 
-Easy - grab namespace_sem, grab vfsmount_lock, walk the subtree and bump
-mnt_busy on everything (by 1 + number of non-busy children).  Then drop
-vfsmount_lock and do as usual, dropping references in tree being copied
-as you go.  Nothing will get attached or detached due to namespace_sem,
-nothing will get evicted by anybody other than you since you've got all
-that stuff pinned down.  End of story...
