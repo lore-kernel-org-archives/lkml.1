@@ -1,144 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933827AbXEWQXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934459AbXEWQYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933827AbXEWQXn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbXEWQXg
+	id S934459AbXEWQYq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbXEWQYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:23:36 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49088 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755773AbXEWQXf (ORCPT
+	Wed, 23 May 2007 12:24:37 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:9500 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757071AbXEWQYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:23:35 -0400
-Date: Wed, 23 May 2007 17:27:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: rmk@arm.linux.org.uk, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ARM/ARM26: Enable arbitary speed tty ioctls and split
- input/output speed
-Message-ID: <20070523172739.1d3a918c@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 12:24:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=SK6+L/iuQFd1q6MHTH7lnaDy2bz/5QwB0DST78I84ie1rVbzVdwzyd36uRvK60ZU+fzfy0FrKDodOLDoJl894DvXFmTzjGwZUIAYhGr1N6GXcK0EcMZ/NK6bh3mze4LLt4tMhVviU4se+5IQ/1dfuuKiEiYwI+czaaTz1qDEs+o=
+Date: Wed, 23 May 2007 20:05:33 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] UDF: possible usage of uninitialized variables
+Message-ID: <20070523160533.GA12216@cvg>
+References: <20070522175223.GA8259@cvg> <20070522202938.GA30666@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070522202938.GA30666@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the ioctls and values needed for this to the ARM26/ARM32 ports. The
-actual code has been in the base kernel for a while and automatically
-turns on when a port sets the required defines.
+[Jan Kara - Tue, May 22, 2007 at 10:29:38PM +0200]
+| > A few variables could be used without being explicitly initialized.
+| > Fixed.
+| > 
+| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| > ---
+| > 
+| > 
+| >  balloc.c |    6 +++++-
+| >  super.c  |    5 ++++-
+| >  2 files changed, 9 insertions(+), 2 deletions(-)
+| > 
+| > 
+| > diff --git a/balloc.c b/balloc.c
+| > index 4cec910..be37393 100644
+| > --- a/balloc.c
+| > +++ b/balloc.c
+| > @@ -744,7 +744,11 @@ static int udf_table_new_block(struct super_block * sb,
+| >  	uint32_t spread = 0xFFFFFFFF, nspread = 0xFFFFFFFF;
+| >  	uint32_t newblock = 0, adsize;
+| >  	uint32_t elen, goal_elen = 0;
+| > -	kernel_lb_addr eloc, goal_eloc;
+| > +	kernel_lb_addr eloc;
+| > +	kernel_lb_addr goal_eloc = {
+| > +		.logicalBlockNum = 0,
+| > +		.partitionReferenceNum = 0,
+| > +	};
+| >  	struct extent_position epos, goal_epos;
+| >  	int8_t etype;
+|   As I read the code, I don't think it can happen goal_eloc is used
+| unitialized. Also please diff the tree completely, not just the udf
+| directory..
+| 
+| > diff --git a/super.c b/super.c
+| > index 9b8644a..068a99c 100644
+| > --- a/super.c
+| > +++ b/super.c
+| > @@ -1358,7 +1358,10 @@ udf_load_partition(struct super_block *sb, kernel_lb_addr *fileset)
+| >  			case UDF_VIRTUAL_MAP15:
+| >  			case UDF_VIRTUAL_MAP20:
+| >  			{
+| > -				kernel_lb_addr ino;
+| > +				kernel_lb_addr ino = {
+| > +					.logicalBlockNum = 0,
+| > +					.partitionReferenceNum = 0,
+| > +				};
+| >  
+| >  				if (!UDF_SB_LASTBLOCK(sb))
+| >  				{
+|   This one seems correct. Thanks for fixing this.
+| 
+| 								Honza
+| -- 
+| Jan Kara <jack@suse.cz>
+| SuSE CR Labs
+| 
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Jan, you know I've been messed up. The variables I've touched in my patch
+became initialized in any case.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-arm/ioctls.h linux-2.6.22-rc1-mm1/include/asm-arm/ioctls.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-arm/ioctls.h	2007-04-30 10:48:14.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-arm/ioctls.h	2007-05-23 16:19:48.010005480 +0100
-@@ -46,6 +46,10 @@
- #define TIOCSBRK	0x5427  /* BSD compatibility */
- #define TIOCCBRK	0x5428  /* BSD compatibility */
- #define TIOCGSID	0x5429  /* Return the session ID of FD */
-+#define TCGETS2		_IOR('T',0x2A, struct termios2)
-+#define TCSETS2		_IOW('T',0x2B, struct termios2)
-+#define TCSETSW2	_IOW('T',0x2C, struct termios2)
-+#define TCSETSF2	_IOW('T',0x2D, struct termios2)
- #define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
- #define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
- 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-arm/termbits.h linux-2.6.22-rc1-mm1/include/asm-arm/termbits.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-arm/termbits.h	2007-04-30 10:48:14.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-arm/termbits.h	2007-05-23 16:23:05.765942008 +0100
-@@ -128,6 +128,7 @@
- #define HUPCL	0002000
- #define CLOCAL	0004000
- #define CBAUDEX 0010000
-+#define    BOTHER 0010000
- #define    B57600 0010001
- #define   B115200 0010002
- #define   B230400 0010003
-@@ -143,10 +144,12 @@
- #define  B3000000 0010015
- #define  B3500000 0010016
- #define  B4000000 0010017
--#define CIBAUD	  002003600000	/* input baud rate (not used) */
-+#define CIBAUD	  002003600000		/* input baud rate */
- #define CMSPAR    010000000000		/* mark or space (stick) parity */
- #define CRTSCTS	  020000000000		/* flow control */
- 
-+#define IBSHIFT	   16
-+
- /* c_lflag bits */
- #define ISIG	0000001
- #define ICANON	0000002
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-arm/termios.h linux-2.6.22-rc1-mm1/include/asm-arm/termios.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-arm/termios.h	2007-04-30 11:00:07.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-arm/termios.h	2007-05-23 16:21:34.535811096 +0100
-@@ -82,8 +82,10 @@
- 	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
- })
- 
--#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
--#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios2))
-+#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios2))
-+#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
-+#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
- 
- #endif	/* __KERNEL__ */
- 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-arm26/ioctls.h linux-2.6.22-rc1-mm1/include/asm-arm26/ioctls.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-arm26/ioctls.h	2007-04-30 10:48:14.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-arm26/ioctls.h	2007-05-23 16:22:44.320202256 +0100
-@@ -47,6 +47,10 @@
- #define TIOCSBRK	0x5427  /* BSD compatibility */
- #define TIOCCBRK	0x5428  /* BSD compatibility */
- #define TIOCGSID	0x5429  /* Return the session ID of FD */
-+#define TCGETS2		_IOR('T',0x2A, struct termios2)
-+#define TCSETS2		_IOW('T',0x2B, struct termios2)
-+#define TCSETSW2	_IOW('T',0x2C, struct termios2)
-+#define TCSETSF2	_IOW('T',0x2D, struct termios2)
- #define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
- #define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
- 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-arm26/termbits.h linux-2.6.22-rc1-mm1/include/asm-arm26/termbits.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-arm26/termbits.h	2007-04-30 10:48:14.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-arm26/termbits.h	2007-05-23 16:22:25.575051952 +0100
-@@ -128,6 +128,7 @@
- #define HUPCL	0002000
- #define CLOCAL	0004000
- #define CBAUDEX 0010000
-+#define   BOTHER  0010000
- #define    B57600 0010001
- #define   B115200 0010002
- #define   B230400 0010003
-@@ -143,10 +144,12 @@
- #define  B3000000 0010015
- #define  B3500000 0010016
- #define  B4000000 0010017
--#define CIBAUD	  002003600000	/* input baud rate (not used) */
-+#define CIBAUD	  002003600000		/* input baud rate */
- #define CMSPAR    010000000000		/* mark or space (stick) parity */
- #define CRTSCTS	  020000000000		/* flow control */
- 
-+#define IBSHIFT	  16		/* Shift from CBAUD to CIBAUD */
-+
- /* c_lflag bits */
- #define ISIG	0000001
- #define ICANON	0000002
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-arm26/termios.h linux-2.6.22-rc1-mm1/include/asm-arm26/termios.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-arm26/termios.h	2007-04-30 11:00:07.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-arm26/termios.h	2007-05-23 16:21:22.457647256 +0100
-@@ -82,8 +82,10 @@
- 	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
- })
- 
--#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
--#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios2))
-+#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios2))
-+#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
-+#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
- 
- #endif	/* __KERNEL__ */
- 
+Andrew, just drop my patch (you're right and I was wrong ;).
+
+Thanks you both for comments.
+
+		Cyrill
+
