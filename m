@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762287AbXEWI7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762678AbXEWJEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762287AbXEWI7u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 04:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbXEWI7n
+	id S1762678AbXEWJEM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 05:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbXEWJD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 04:59:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60361 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756644AbXEWI7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 04:59:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Romano Giannetti <romano.giannetti@gmail.com>
-Subject: Re: 2.6.21.1 fails to suspend/resume  to disk  (sort of)
-Date: Wed, 23 May 2007 11:05:07 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-References: <1179905115.7043.25.camel@localhost>
-In-Reply-To: <1179905115.7043.25.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705231105.08408.rjw@sisk.pl>
+	Wed, 23 May 2007 05:03:57 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:39249 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756924AbXEWJD4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 05:03:56 -0400
+To: viro@ftp.linux.org.uk
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+In-reply-to: <20070523082918.GP4095@ftp.linux.org.uk> (message from Al Viro on
+	Wed, 23 May 2007 09:29:18 +0100)
+Subject: Re: [RFC PATCH] file as directory
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk> <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu> <20070523070306.GM4095@ftp.linux.org.uk> <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu> <20070523073658.GO4095@ftp.linux.org.uk> <E1HqlqT-0001KD-00@dorka.pomaz.szeredi.hu> <20070523082918.GP4095@ftp.linux.org.uk>
+Message-Id: <E1HqmkO-0001R4-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 23 May 2007 11:03:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Wednesday, 23 May 2007 09:25, Romano Giannetti wrote:
-> Hi, 
+> On Wed, May 23, 2007 at 10:05:21AM +0200, Miklos Szeredi wrote:
+> > > Er...  These mounts might not be propagated, but what about a bind
+> > > over another instance of such file in master tree?
+> > 
+> > So your question is, which mount takes priority on the lookup?  It
+> > probably should be the propagated real mount, rather than the
+> > dir-on-file one, shouldn't it?
 > 
-> I am trying to upgrade from my ubuntu kernel 2.6.17.3 to 2.6.21.1 and I
-> have quite a bunch of problems with suspend/resume, both to disk and to
-> ram. I have reported the s2ram problem in a separate message (search for
-> a follow-up to the thread with subject "[patch 00/69] -stable review".
-> http://lkml.org/lkml/2007/5/23/38
-
-Please see http://bugzilla.kernel.org/show_bug.cgi?id=8456
-That seems to resemble the symptoms you describe.
-
-> Now for the suspend to disk. With default setting (/sys/power/disk ==
-> platform) my laptop (vaio PGC-FX701) fails to poweroff; it stays with
-> backlight on, a white screen, and if I power it off manually afterward
-> it did not resume.
+> There might be dragons in that area...
+>  
+> > > > I think they should be the same superblock, same dentry.  What would
+> > > > be the advantage of doing otherwise?
+> > > 
+> > > Then you are going to have interesting time with locking in final mntput().
+> > 
+> > Final mntput of what?
 > 
-> By doing echo shutdown > /sys/power/disk the laptop *do* power off (it's
-> very slow, but I think that's related with the 60 secs delay commented
-> in the other post). Then it resume --- text console did resume ok ---
-> but the virtual console with X do not come back. I had to do a
-> ctrl-alt-backspace thing. 
+> When the last reference to your mount goes away.
+
+I still don't get it where the superblock comes in.  The locking is
+"interesting" in there, yes.  And I haven't completely convinced
+myself it's right, let alone something that won't easily be screwed up
+in the future.  So there's definitely room for thought there.
+
+But how does it matter if two different paths have the same sb or a
+different sb mounted over them?
+
+> > > BTW, what about having several links to the same file?  You have i_mutex
+> > > on the inode, so serialization of those is not a problem, but...
+> > 
+> > Sorry, I lost it...
 > 
-> Any hints? More data?
+> Say /foo/bar/a is such a file.
+> 
+> cd /foo/bar
+> ln a b
+> 
+> now do lookups on a/ and b/
+> 
+> What happens?
 
-Could you please test the 2.6.22-rc2 kernel?  Also, if it still doesn't work
-properly, could you apply the hibernation/suspend patchset available from
-http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc2/patches
-on top of it and see if that helps?
+The same dentry is mounted over each one.  The contents of the
+directory should only depend on the contents of the underlying inode.
+The path leading up to it is completely irrelevant.
 
-Rafael
+Miklos
