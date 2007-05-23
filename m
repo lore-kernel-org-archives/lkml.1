@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761060AbXEWUyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759708AbXEWU62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761060AbXEWUyS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 16:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbXEWUyK
+	id S1759708AbXEWU62 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 16:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXEWU6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 16:54:10 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:53922 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755509AbXEWUyJ (ORCPT
+	Wed, 23 May 2007 16:58:20 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34425 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754956AbXEWU6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 16:54:09 -0400
-Date: Wed, 23 May 2007 22:54:07 +0200 (CEST)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] local_softirq_pending storm
-In-Reply-To: <20070521200428.GA9855@osiris.ibm.com>
-Message-ID: <Pine.LNX.4.64.0705232243230.2104@artax.karlin.mff.cuni.cz>
-References: <200705091942.22920.kernel@prachanda.hub> <200705171211.23350.kernel@prachanda.hub>
- <1179493277.12981.69.camel@chaos> <200705191525.28400.kernel@prachanda.hub>
- <1179601868.12981.127.camel@chaos> <20070520101800.GC9892@osiris.ibm.com>
- <1179669141.21827.22.camel@chaos> <20070520183658.GA13262@osiris.ibm.com>
- <20070520191800.GA14225@osiris.ibm.com> <1179689389.6570.1.camel@chaos>
- <20070521200428.GA9855@osiris.ibm.com>
-X-Personality-Disorder: Schizoid
+	Wed, 23 May 2007 16:58:20 -0400
+Date: Wed, 23 May 2007 13:56:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Robert Hancock <hancockr@shaw.ca>, Olivier Galibert <galibert@pobox.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
+ resources
+In-Reply-To: <200705231349.56976.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.LFD.0.98.0705231352450.3890@woody.linux-foundation.org>
+References: <4635510D.4060103@shaw.ca> <200705231152.57796.jbarnes@virtuousgeek.org>
+ <alpine.LFD.0.98.0705231257050.3890@woody.linux-foundation.org>
+ <200705231349.56976.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 May 2007, Heiko Carstens wrote:
 
-> On Sun, May 20, 2007 at 09:29:49PM +0200, Thomas Gleixner wrote:
->> On Sun, 2007-05-20 at 21:18 +0200, Heiko Carstens wrote:
->>>>> Hmm, that's a different problem than the 0x22 which shows up on
->>>>> hyperthreading enabled P4 systems. Are you using plip ?
->>>>
->>>> No, after all it turned out that is caused by an IBM internal module.
->>>> Just ignore me, sorry for the noise :)
->>>
->>> Just in case you're interested: I just looked into it and it turned
->>> out that this module was calling netif_rx() from process context,
->>> just like plip. Changing it to netif_rx_ni() fixes it.
->>
->> Thanks, that's a good pointer. You should have cc'ed Dave Miller and the
->> guy who found this plip thingy. Care to resend ?
->
-> No problem. Here we go, even though I doubt that netif_rx_ni() is what
-> people want for plip. Dunno...
 
-netif_rx_ni calls softirq synchronously, am I right? That would probably 
-hurt plip. I can try it if someone will be interested in it, but I doubt 
-it is good solution for any network interfaces except tun.
+On Wed, 23 May 2007, Jesse Barnes wrote:
 
-BTW. does in_interrupt() have high cost on some high-performance 
-architectures? Would it be possible to just add if (!in_interrupt()) 
-wakeup_softirqd(); to netif_rx()?
+> On Wednesday, May 23, 2007 1:20 pm Linus Torvalds wrote:
+> > On Wed, 23 May 2007, Jesse Barnes wrote:
+> > > Fixed it (finally).  I don't think moving the 64 bit probing around
+> > > would make a difference, since we'd restore its original value
+> > > anyway before moving on to the 32 bit probe which is where I think
+> > > the problem is.
+> >
+> > Well, the thing is, I'm pretty sure there is at least one northbridge
+> > that stops memory accesses from the CPU when you turn off the MEM bit
+> > on it. Oops, you just killed the machine.
+> 
+> Wow, that sounds like a pretty lame host bridge.
 
-Mikulas
+Umm. Why? Think about it.
+
+You ASKED it to stop forwarding memory.
+
+So who is lamer: the chip that does what it is told, or the software that 
+tells it to do it?
+
+I'd vote for the software. Any programmer who expects the hardware to 
+"just do what I mean, not what I say" is not a programmer, but a dreamer. 
+
+You told it to not forward memory. Why complain when it does as told?
+
+> > Quite frankly, if we just didn't use mmconfig, the whole issue would
+> > go away. Isn't _that_ the much better solution?
+> 
+> Not for systems with PCIe...  and the platforms I've been having trouble 
+> with have PCIe slots, so I'd really like mmconfig to be used at least 
+> on machines with PCIe bridges.  For other machines, it probably doesn't 
+> matter much.  I don't know of any regular PCI devices offhand that 
+> really need extended config space.
+
+Ehh. Even for PCIe, why not use the normal accesses for the first 256 
+bytes? Problem solved.
+
+			Linus
