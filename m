@@ -1,70 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbXEWSj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761934AbXEWSli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759717AbXEWSj1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbXEWSjQ
+	id S1761934AbXEWSli (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbXEWSlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:39:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56182 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756000AbXEWSjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:39:15 -0400
-Message-ID: <46548A30.9000801@redhat.com>
-Date: Wed, 23 May 2007 14:38:40 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 23 May 2007 14:41:31 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49110 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755898AbXEWSla (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 14:41:30 -0400
+Date: Wed, 23 May 2007 14:41:29 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc2-mm1
+In-Reply-To: <20070523162125.GA321@tv-sign.ru>
+Message-ID: <Pine.LNX.4.44L0.0705231439530.3673-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>
-Subject: Re: [BUG] local_softirq_pending storm
-References: <200705091942.22920.kernel@prachanda.hub> <200705191525.28400.kernel@prachanda.hub> <1179601868.12981.127.camel@chaos> <200705200253.44992.kernel@prachanda.hub> <1179697388.6570.26.camel@chaos> <6bffcb0e0705221203s1ba21ed3j641e91036859db7d@mail.gmail.com> <20070522201046.GA6113@elte.hu> <46547345.8000808@redhat.com>
-In-Reply-To: <46547345.8000808@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
+On Wed, 23 May 2007, Oleg Nesterov wrote:
+
+> On 05/23, Alan Stern wrote:
+> >
+> > Okay, it's clear that the two threads are in deadlock.  It's not clear 
+> > how the deadlock arose to begin with -- apparently there was a remote 
+> > wakeup request for a root hub at the same time as a device below that 
+> > root hub was disconnected, which doesn't make much sense.
 > 
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=240982
+> Please note that this flush_workqueue() was not safe anyway. We are freezing
+> tasks, and ksuspend_usb_wq is freezeable. So, it could be frozen before
+> "khubd" task, and we have another deadlock.
 
-Another; these started to appear after the below patch was merged:
+Correct.  I was planning to replace the flush_workqueue() anyway for 
+that very reason; this is a good excuse to do it.
 
-> Index: linux/kernel/sched.c
-> > ===================================================================
-> > --- linux.orig/kernel/sched.c
-> > +++ linux/kernel/sched.c
-> > @@ -4212,9 +4212,7 @@ int __sched cond_resched_softirq(void)
-> >  	BUG_ON(!in_softirq());
-> >  
-> >  	if (need_resched() && system_state == SYSTEM_RUNNING) {
-> > -		raw_local_irq_disable();
-> > -		_local_bh_enable();
-> > -		raw_local_irq_enable();
-> > +		local_bh_enable();
-> >  		__cond_resched();
-> >  		local_bh_disable();
-> >  		return 1;
+> > Anyway, this looks like a good place to use cancel_work_sync().  The
+> 
+> Could you use cancel_rearming_delayed_work() ? (It should be renamed to
+> cancel_delayed_work_sync()).
 
-May 23 19:26:26 localhost kernel: BUG: warning at kernel/softirq.c:138/local_bh_enable() (Not tainted)
-May 23 19:26:26 localhost kernel:  [<c042b2ef>] local_bh_enable+0x45/0x92
-May 23 19:26:26 localhost kernel:  [<c06036b7>] cond_resched_softirq+0x2c/0x42
-May 23 19:26:26 localhost kernel:  [<c059d5d0>] release_sock+0x54/0xa3
-May 23 19:26:26 localhost kernel:  [<c04373af>] prepare_to_wait+0x24/0x3f
-May 23 19:26:26 localhost kernel:  [<c05e267f>] inet_stream_connect+0x116/0x1ff
-May 23 19:26:26 localhost kernel:  [<c0437265>] autoremove_wake_function+0x0/0x35
-May 23 19:26:26 localhost kernel:  [<c059c339>] sys_connect+0x82/0xad
-May 23 19:26:26 localhost kernel:  [<c059d58f>] release_sock+0x13/0xa3
-May 23 19:26:26 localhost kernel:  [<c0604ad5>] _spin_unlock_bh+0x5/0xd
-May 23 19:26:26 localhost kernel:  [<c059e714>] sock_setsockopt+0x4a8/0x4b2
-May 23 19:26:26 localhost kernel:  [<c059b6b6>] sock_attach_fd+0x70/0xd2
-May 23 19:26:26 localhost kernel:  [<c04774a0>] get_empty_filp+0xfc/0x170
-May 23 19:26:26 localhost kernel:  [<c059b54f>] sys_setsockopt+0x9b/0xa7
-May 23 19:26:26 localhost kernel:  [<c059cb83>] sys_socketcall+0xac/0x261
-May 23 19:26:26 localhost kernel:  [<c0404f70>] syscall_call+0x7/0xb
+Good idea.  Here's a revised patch.
+
+Alan Stern
+
+
+Index: usb-2.6/drivers/usb/core/hub.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/core/hub.c
++++ usb-2.6/drivers/usb/core/hub.c
+@@ -1228,6 +1228,30 @@ static void release_address(struct usb_d
+ 	}
+ }
+ 
++#ifdef	CONFIG_USB_SUSPEND
++
++static void usb_stop_pm(struct usb_device *udev)
++{
++	/* Synchronize with the ksuspend thread to prevent any more
++	 * autosuspend requests from being submitted, and decrement
++	 * the parent's count of unsuspended children.
++	 */
++	usb_pm_lock(udev);
++	if (udev->parent && !udev->discon_suspended)
++		usb_autosuspend_device(udev->parent);
++	usb_pm_unlock(udev);
++
++	/* Stop any autosuspend requests already submitted */
++	cancel_rearming_delayed_work(&udev->autosuspend);
++}
++
++#else
++
++static inline void usb_stop_pm(struct usb_device *udev)
++{ }
++
++#endif
++
+ /**
+  * usb_disconnect - disconnect a device (usbcore-internal)
+  * @pdev: pointer to device being disconnected
+@@ -1294,14 +1318,7 @@ void usb_disconnect(struct usb_device **
+ 	*pdev = NULL;
+ 	spin_unlock_irq(&device_state_lock);
+ 
+-	/* Synchronize with the ksuspend thread to prevent any more
+-	 * autosuspend requests from being submitted, and decrement
+-	 * the parent's count of unsuspended children.
+-	 */
+-	usb_pm_lock(udev);
+-	if (udev->parent && !udev->discon_suspended)
+-		usb_autosuspend_device(udev->parent);
+-	usb_pm_unlock(udev);
++	usb_stop_pm(udev);
+ 
+ 	put_device(&udev->dev);
+ }
+Index: usb-2.6/drivers/usb/core/usb.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/core/usb.c
++++ usb-2.6/drivers/usb/core/usb.c
+@@ -184,10 +184,6 @@ static void usb_release_dev(struct devic
+ 
+ 	udev = to_usb_device(dev);
+ 
+-#ifdef	CONFIG_USB_SUSPEND
+-	cancel_delayed_work(&udev->autosuspend);
+-	flush_workqueue(ksuspend_usb_wq);
+-#endif
+ 	usb_destroy_configuration(udev);
+ 	usb_put_hcd(bus_to_hcd(udev->bus));
+ 	kfree(udev->product);
+Index: usb-2.6/drivers/usb/core/hcd.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/core/hcd.c
++++ usb-2.6/drivers/usb/core/hcd.c
+@@ -1683,7 +1683,7 @@ void usb_remove_hcd(struct usb_hcd *hcd)
+ 	spin_unlock_irq (&hcd_root_hub_lock);
+ 
+ #ifdef CONFIG_PM
+-	flush_workqueue(ksuspend_usb_wq);
++	cancel_work_sync(&hcd->wakeup_work);
+ #endif
+ 
+ 	mutex_lock(&usb_bus_list_lock);
 
