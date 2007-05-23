@@ -1,41 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934785AbXEWToU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935530AbXEWTof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934785AbXEWToU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 15:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXEWToH
+	id S935530AbXEWTof (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 15:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760166AbXEWToN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 15:44:07 -0400
-Received: from mga09.intel.com ([134.134.136.24]:63894 "EHLO mga09.intel.com"
+	Wed, 23 May 2007 15:44:13 -0400
+Received: from mga01.intel.com ([192.55.52.88]:62215 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755459AbXEWToG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 15:44:06 -0400
+	id S1758072AbXEWToK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 15:44:10 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.14,571,1170662400"; 
-   d="scan'208";a="89840447"
-Message-ID: <46549937.1030306@linux.intel.com>
-Date: Wed, 23 May 2007 12:42:47 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Status of CONFIG_FORCED_INLINING?
-References: <200705231510.52932.rob@landley.net>
-In-Reply-To: <200705231510.52932.rob@landley.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+   d="scan'208";a="248959240"
+Date: Wed, 23 May 2007 12:40:43 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, htejun@gmail.com
+Subject: Re: [patch 5/7] genhd: send async notification on media change
+Message-Id: <20070523124043.dcbcb1bd.kristen.c.accardi@intel.com>
+In-Reply-To: <1179946311.5569.18.camel@mulgrave.il.steeleye.com>
+References: <20070510072247.063476979@intel.com>
+	<20070509163835.56ad28e0.kristen.c.accardi@intel.com>
+	<20070522141211.fe00333f.akpm@linux-foundation.org>
+	<20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
+	<1179939835.5569.3.camel@mulgrave.il.steeleye.com>
+	<20070523112643.955e1426.kristen.c.accardi@intel.com>
+	<1179946311.5569.18.camel@mulgrave.il.steeleye.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> I notice that feature-removal-schedule.txt has CONFIG_FORCED_INLINING 
-> scheduled to go away most of a year ago.  My question is what replaces it:
-> 
-> Does #define inline __always_inline become the new standard and uses of 
-> __always_inline be removed, or should all instances of "inline" either be 
-> removed or replaced with __always_inline?  (Or are there going to be two 
-> keywords meaning exactly the same thing going forward?)
+On Wed, 23 May 2007 13:51:51 -0500
+James Bottomley <James.Bottomley@SteelEye.com> wrote:
 
-it should be that we do not force gcc to inline on the "normal" inline 
-keyword, and we mark the cases that HAVE to be inlined for correctness 
-reasons as __always_inline.
+> On Wed, 2007-05-23 at 11:26 -0700, Kristen Carlson Accardi wrote:
+> > On Wed, 23 May 2007 12:03:55 -0500
+> > James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> > 
+> > > On Wed, 2007-05-23 at 09:31 -0700, Kristen Carlson Accardi wrote:
+> > > > On Tue, 22 May 2007 14:12:11 -0700
+> > > > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > 
+> > > > > On Wed, 9 May 2007 16:38:35 -0700
+> > > > > Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
+> > > > > 
+> > > > > > Send an uevent to user space to indicate that a media change event has occurred.
+> > > > > > 
+> > > > > > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > > > > > 
+> > > > > > Index: 2.6-git/block/genhd.c
+> > > > > > ===================================================================
+> > > > > > --- 2.6-git.orig/block/genhd.c
+> > > > > > +++ 2.6-git/block/genhd.c
+> > > > > > @@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
+> > > > > >  	.show	= diskstats_show
+> > > > > >  };
+> > > > > >  
+> > > > > > +static void media_change_notify_thread(struct work_struct *work)
+> > > > > > +{
+> > > > > > +	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
+> > > > > > +	char event[] = "MEDIA_CHANGE=1";
+> > > > > > +	char *envp[] = { event, NULL };
+> > > > > > +
+> > > > > > +	/*
+> > > > > > +	 * set enviroment vars to indicate which event this is for
+> > > > > > +	 * so that user space will know to go check the media status.
+> > > > > > +	 */
+> > > > > > +	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
+> > > > > > +	put_device(gd->driverfs_dev);
+> > > > > > +}
+> > > > > > +
+> > > > > > +void genhd_media_change_notify(struct gendisk *disk)
+> > > > > > +{
+> > > > > > +	get_device(disk->driverfs_dev);
+> > > > > > +	schedule_work(&disk->async_notify);
+> > > > > > +}
+> > > > > > +EXPORT_SYMBOL_GPL(genhd_media_change_notify);
+> > > > > > +
+> > > > > >  struct gendisk *alloc_disk(int minors)
+> > > > > >  {
+> > > > > >  	return alloc_disk_node(minors, -1);
+> > > > > > @@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
+> > > > > >  		kobj_set_kset_s(disk,block_subsys);
+> > > > > >  		kobject_init(&disk->kobj);
+> > > > > >  		rand_initialize_disk(disk);
+> > > > > > +		INIT_WORK(&disk->async_notify,
+> > > > > > +			media_change_notify_thread);
+> > > > > >  	}
+> > > > > >  	return disk;
+> > > > > 
+> > > > > Why does this do a schedule_work() rather than calling kobject_uevent_env()
+> > > > > directly?
+> > > > > 
+> > > > 
+> > > > Because it is called at Interrupt time.
+> > > 
+> > > It better not be ... there's two GFP_KERNEL allocations just above this
+> > > line in the file.
+> > > 
+> > > James
+> > > 
+> > 
+> > Where?  We are talking about the call to genhd_media_change_notify().
+> > the calling path is this:
+> > ahci_host_intr()->ata_scsi_media_change_notify()->genhd_media_change_notify().
+> > 
+> > I don't see the allocations - are they hidden somewhere?
+> 
+> Sorry, I thought you were saying alloc_disk_node() could be called from
+> interrupt context.
+> 
+> <gets back on ball>
+> 
+> If you just want to invoke guaranteed user context from a place in the
+> code which *may* be called from interrupt, then
+> execute_in_process_context() might be a better way of doing it ... at
+> least it avoids setting up a workqueue where none is needed.
+> 
+> James
+> 
+
+That is good to know - although in this particular case we are guaranteed
+to always be called from interrupt context since our uevent needs to be
+sent in response to an Interrupt received from the disk, so it wouldn't
+buy us anything.
+
+Kristen
