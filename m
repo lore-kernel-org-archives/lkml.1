@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760891AbXEWXGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbXEWXH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760891AbXEWXGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 19:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbXEWXGq
+	id S1761053AbXEWXH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 19:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148AbXEWXHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 19:06:46 -0400
-Received: from outbound-mail-16.bluehost.com ([69.89.20.231]:55300 "HELO
-	outbound-mail-16.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755148AbXEWXGq (ORCPT
+	Wed, 23 May 2007 19:07:15 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42791 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756797AbXEWXHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 19:06:46 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
-Date: Wed, 23 May 2007 16:06:31 -0700
-User-Agent: KMail/1.9.6
-Cc: Olivier Galibert <galibert@pobox.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <4635510D.4060103@shaw.ca> <200705231152.57796.jbarnes@virtuousgeek.org> <4654C869.8080804@shaw.ca>
-In-Reply-To: <4654C869.8080804@shaw.ca>
+	Wed, 23 May 2007 19:07:13 -0400
+Date: Wed, 23 May 2007 16:07:12 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: Define CONFIG_BOUNCE to avoid useless inclusion of bounce buffer
+ logic.
+In-Reply-To: <20070523225812.GE1976@flint.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0705231603470.23000@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705212100420.24947@schroedinger.engr.sgi.com>
+ <20070522133906.ae9c362a.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0705212225590.25388@schroedinger.engr.sgi.com>
+ <20070523140702.GA16972@flint.arm.linux.org.uk>
+ <Pine.LNX.4.64.0705231011000.19822@schroedinger.engr.sgi.com>
+ <20070523225812.GE1976@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705231606.31940.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 23, 2007 4:04 pm Robert Hancock wrote:
-> Jesse Barnes wrote:
-> > On Tuesday, May 22, 2007 6:06 pm Robert Hancock wrote:
-> >> There was a big discussion about this back in 2002, in which Linus
-> >> wasn't overly enthused about disabling the decode during probing
-> >> due to risk of causing problems with some devices:
-> >>
-> >> http://lkml.org/lkml/2002/12/19/145
-> >>
-> >> In this particular case (64-bit BAR) we might be able to avoid the
-> >> problem by changing the order in which we probe the two halves of
-> >> the address, i.e. change the top half to 0xffffffff before messing
-> >> with the bottom half and then change it back last. That way, we
-> >> end up mapping it way to the top of 64-bit address space, which
-> >> hopefully is less likely to conflict..
-> >
-> > Fixed it (finally).  I don't think moving the 64 bit probing around
-> > would make a difference, since we'd restore its original value
-> > anyway before moving on to the 32 bit probe which is where I think
-> > the problem is.
->
-> You couldn't just reorder the code the way it is now, you'd have to
-> rearrange the way we do things for 64-bit BARs:
->
-> -write FFFFFFFF to high part of 64-bit address (we end up moving the
-> BAR to 0xFFFFFFFFC0000000 for example)
-> -If any bits stick, we know what the size is now (more than 4GB of
-> decode), so just change it back, we're done
-> -If not, we need to check the low part, so write FFFFFFFF to low part
-> of 64-bit address (BAR moves to 0xFFFFFFFFFFFFFFFF)
-> -Check which bits stick and calculate the address
-> -Change the low part of the address back (BAR moves to
-> 0xFFFFFFFFC000000) -Change the high part of the address back (BAR
-> moves to the original 0xC0000000 address)
->
-> This means that at no point do we map the BAR anywhere near the top
-> of 32-bit memory, so we should avoid this issue in this particular
-> case. I don't think this strategy is too likely to break anything,
-> surely less likely than disabling command bits. Jesse, you might want
-> to try hacking up something like this and see what happens.
+On Wed, 23 May 2007, Russell King wrote:
 
-Ah yeah, that would probably work in this particular case, but doesn't 
-seem very general.  I think just using type 1 accesses for non-extended 
-config space is a bit more solid.
+> > GFP_DMA allocations are an exception and that exception can be removed 
+> > from the core VM by not defining ZONE_DMA. You cannot switch off the 
+> > NORMAL zone.
+> 
+> I'd like to be able to switch off the normal and highmem zones and leave
+> just the DMA zone behind.  The normal and highmem zones are just a waste
+> of space on ARM.
 
-Jesse
+If you do not have exceptional memory requirements then you do not need a 
+DMA zone. The core code allows you to switch off ZONE_DMA but not 
+ZONE_NORMAL. For a description of the roles of the zones see 
+include/linux/mmzone.h
+
+> > Nope. The DMA zone is for crappy DMA devices that can only use a portion 
+> > of memory.
+> 
+> I'm sorry, we're going to have to agree to disagree then.
+> 
+> As for your assertion that it's "crappy DMA devices" there are modern
+> PCI based platforms being produced by Marvell (which were designed by
+> Intel) which can only DMA from 64MB of memory, inspite of the PCI
+> device having full PCI busmastering capabilities.
+
+Ok sorry for the word choice.
+
+> At the end of the day, it is _far_ simpler from an architectural point
+> of view for memory to live in the DMA zone and disable the normal and
+> highmem zones than it is to selectively populate the normal zone
+> depending on whether device X is configured, and then also have to hack
+> around various drivers which decide they want to use __GFP_DMA because
+> of some antequated x86ism which doesn't apply on non-x86.
+
+If you switch off CONFIG_ZONE_DMA then __GFP_DMA becomes a no op. So no 
+problem. Many of us want to rid the kernel of __GFP_DMA. Please join the 
+club and nuke the useless ZONE_DMA on your platforms.
+
+
