@@ -1,133 +1,399 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935530AbXEWTof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbXEWT4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935530AbXEWTof (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 15:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760166AbXEWToN
+	id S1760248AbXEWT4u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 15:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbXEWT4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 15:44:13 -0400
-Received: from mga01.intel.com ([192.55.52.88]:62215 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758072AbXEWToK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 15:44:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,571,1170662400"; 
-   d="scan'208";a="248959240"
-Date: Wed, 23 May 2007 12:40:43 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 5/7] genhd: send async notification on media change
-Message-Id: <20070523124043.dcbcb1bd.kristen.c.accardi@intel.com>
-In-Reply-To: <1179946311.5569.18.camel@mulgrave.il.steeleye.com>
-References: <20070510072247.063476979@intel.com>
-	<20070509163835.56ad28e0.kristen.c.accardi@intel.com>
-	<20070522141211.fe00333f.akpm@linux-foundation.org>
-	<20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
-	<1179939835.5569.3.camel@mulgrave.il.steeleye.com>
-	<20070523112643.955e1426.kristen.c.accardi@intel.com>
-	<1179946311.5569.18.camel@mulgrave.il.steeleye.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Wed, 23 May 2007 15:56:41 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33712 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754956AbXEWT4k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 15:56:40 -0400
+Date: Wed, 23 May 2007 20:56:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>, akpm@osdl.org,
+       rmk@arm.linux.kernel.org, spyro@f2s.com, <starvik@axis.com>,
+       <ysato@users.sourceforge.jp>, "Luck, Tony" <tony.luck@intel.com>,
+       <takata@linux-m32r.org>, chris@zankel.net, <uclinux-v850@lsi.nec.co.jp>,
+       kyle@parisc-linux.org, linux-mips@linux-mips.org
+Subject: Re: [PATCH] m68k: Enable arbitary speed tty support
+Message-ID: <20070523205645.07b03581@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0705232117260.10610@anakin>
+References: <20070523174446.37abfa7a@the-village.bc.nu>
+	<Pine.LNX.4.64.0705232117260.10610@anakin>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 13:51:51 -0500
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
-
-> On Wed, 2007-05-23 at 11:26 -0700, Kristen Carlson Accardi wrote:
-> > On Wed, 23 May 2007 12:03:55 -0500
-> > James Bottomley <James.Bottomley@SteelEye.com> wrote:
-> > 
-> > > On Wed, 2007-05-23 at 09:31 -0700, Kristen Carlson Accardi wrote:
-> > > > On Tue, 22 May 2007 14:12:11 -0700
-> > > > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > 
-> > > > > On Wed, 9 May 2007 16:38:35 -0700
-> > > > > Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
-> > > > > 
-> > > > > > Send an uevent to user space to indicate that a media change event has occurred.
-> > > > > > 
-> > > > > > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > > > > > 
-> > > > > > Index: 2.6-git/block/genhd.c
-> > > > > > ===================================================================
-> > > > > > --- 2.6-git.orig/block/genhd.c
-> > > > > > +++ 2.6-git/block/genhd.c
-> > > > > > @@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
-> > > > > >  	.show	= diskstats_show
-> > > > > >  };
-> > > > > >  
-> > > > > > +static void media_change_notify_thread(struct work_struct *work)
-> > > > > > +{
-> > > > > > +	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
-> > > > > > +	char event[] = "MEDIA_CHANGE=1";
-> > > > > > +	char *envp[] = { event, NULL };
-> > > > > > +
-> > > > > > +	/*
-> > > > > > +	 * set enviroment vars to indicate which event this is for
-> > > > > > +	 * so that user space will know to go check the media status.
-> > > > > > +	 */
-> > > > > > +	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
-> > > > > > +	put_device(gd->driverfs_dev);
-> > > > > > +}
-> > > > > > +
-> > > > > > +void genhd_media_change_notify(struct gendisk *disk)
-> > > > > > +{
-> > > > > > +	get_device(disk->driverfs_dev);
-> > > > > > +	schedule_work(&disk->async_notify);
-> > > > > > +}
-> > > > > > +EXPORT_SYMBOL_GPL(genhd_media_change_notify);
-> > > > > > +
-> > > > > >  struct gendisk *alloc_disk(int minors)
-> > > > > >  {
-> > > > > >  	return alloc_disk_node(minors, -1);
-> > > > > > @@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
-> > > > > >  		kobj_set_kset_s(disk,block_subsys);
-> > > > > >  		kobject_init(&disk->kobj);
-> > > > > >  		rand_initialize_disk(disk);
-> > > > > > +		INIT_WORK(&disk->async_notify,
-> > > > > > +			media_change_notify_thread);
-> > > > > >  	}
-> > > > > >  	return disk;
-> > > > > 
-> > > > > Why does this do a schedule_work() rather than calling kobject_uevent_env()
-> > > > > directly?
-> > > > > 
-> > > > 
-> > > > Because it is called at Interrupt time.
-> > > 
-> > > It better not be ... there's two GFP_KERNEL allocations just above this
-> > > line in the file.
-> > > 
-> > > James
-> > > 
-> > 
-> > Where?  We are talking about the call to genhd_media_change_notify().
-> > the calling path is this:
-> > ahci_host_intr()->ata_scsi_media_change_notify()->genhd_media_change_notify().
-> > 
-> > I don't see the allocations - are they hidden somewhere?
+> > +#define TCSETS2		_IOW('T',0x2B, struct termios2)
+> > +#define TCSETSW2	_IOW('T',0x2C, struct termios2)
+> > +#define TCSETSF2	_IOW('T',0x2D, struct termios2)
 > 
-> Sorry, I thought you were saying alloc_disk_node() could be called from
-> interrupt context.
-> 
-> <gets back on ball>
-> 
-> If you just want to invoke guaranteed user context from a place in the
-> code which *may* be called from interrupt, then
-> execute_in_process_context() might be a better way of doing it ... at
-> least it avoids setting up a workqueue where none is needed.
-> 
-> James
+> Where is `struct termios2' defined? Right now it doesn't compile because
+> of that.
 > 
 
-That is good to know - although in this particular case we are guaranteed
-to always be called from interrupt context since our uevent needs to be
-sent in response to an Interrupt received from the disk, so it wouldn't
-buy us anything.
+Sorry, shortage of qualified gnomes: One of them forgot to post this diff first
 
-Kristen
+Add the termios2 structure ready for enabling on most platforms. One or two like
+Sparc are plain weird so have been left alone. Most can use the same structure as
+ktermios for termios2 (ie the newer ioctl uses the structure matching the current
+kernel structure)
+
+(cc'd various maintainers who get stuff)
+
+Signed-off-by: Alan Cox <alan@redhat.com>
+
+ddiff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-arm/termbits.h linux-2.6.22-rc1-mm1/include/asm-arm/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-arm/termbits.h	2007-04-30 10:48:14.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-arm/termbits.h	2007-05-23 20:23:25.000000000 +0100
+@@ -15,6 +15,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios_2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-arm26/termbits.h linux-2.6.22-rc1-mm1/include/asm-arm26/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-arm26/termbits.h	2007-04-30 10:48:14.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-arm26/termbits.h	2007-05-23 20:23:49.391177216 +0100
+@@ -15,7 +15,7 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
+-struct ktermios {
++struct termios2 {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+ 	tcflag_t c_cflag;		/* control mode flags */
+@@ -26,6 +26,16 @@
+ 	speed_t c_ospeed;		/* output speed */
+ };
+ 
++struct ktermios {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
+ 
+ /* c_cc characters */
+ #define VINTR 0
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-avr32/termbits.h linux-2.6.22-rc1-mm1/include/asm-avr32/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-avr32/termbits.h	2007-04-30 10:48:23.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-avr32/termbits.h	2007-05-23 20:24:26.447543792 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-blackfin/termbits.h linux-2.6.22-rc1-mm1/include/asm-blackfin/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-blackfin/termbits.h	2007-05-18 16:22:03.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-blackfin/termbits.h	2007-05-23 20:24:08.401287240 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];	/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;               /* input mode flags */
++	tcflag_t c_oflag;               /* output mode flags */
++	tcflag_t c_cflag;               /* control mode flags */
++	tcflag_t c_lflag;               /* local mode flags */
++	cc_t c_line;                    /* line discipline */
++	cc_t c_cc[NCCS];                /* control characters */
++	speed_t c_ispeed;               /* input speed */
++	speed_t c_ospeed;               /* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;               /* input mode flags */
+ 	tcflag_t c_oflag;               /* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-cris/termbits.h linux-2.6.22-rc1-mm1/include/asm-cris/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-cris/termbits.h	2007-04-30 10:48:14.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-cris/termbits.h	2007-05-23 20:25:05.976534472 +0100
+@@ -19,6 +19,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-frv/termbits.h linux-2.6.22-rc1-mm1/include/asm-frv/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-frv/termbits.h	2007-04-30 10:48:14.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-frv/termbits.h	2007-05-23 20:24:43.107011168 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-h8300/termbits.h linux-2.6.22-rc1-mm1/include/asm-h8300/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-h8300/termbits.h	2007-04-30 10:48:15.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-h8300/termbits.h	2007-05-23 20:25:24.482721104 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-ia64/termbits.h linux-2.6.22-rc1-mm1/include/asm-ia64/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-ia64/termbits.h	2007-04-30 10:48:16.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-ia64/termbits.h	2007-05-23 20:21:59.400898280 +0100
+@@ -26,6 +26,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-m32r/termbits.h linux-2.6.22-rc1-mm1/include/asm-m32r/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-m32r/termbits.h	2007-04-30 11:00:07.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-m32r/termbits.h	2007-05-23 20:25:49.042987376 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-m68k/termbits.h linux-2.6.22-rc1-mm1/include/asm-m68k/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-m68k/termbits.h	2007-04-30 10:48:17.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-m68k/termbits.h	2007-05-23 20:21:00.208896832 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-mips/termbits.h linux-2.6.22-rc1-mm1/include/asm-mips/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-mips/termbits.h	2007-04-30 10:48:18.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-mips/termbits.h	2007-05-23 20:26:11.453580448 +0100
+@@ -30,6 +30,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-parisc/termbits.h linux-2.6.22-rc1-mm1/include/asm-parisc/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-parisc/termbits.h	2007-04-30 10:48:18.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-parisc/termbits.h	2007-05-23 20:23:07.292577176 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-s390/termbits.h linux-2.6.22-rc1-mm1/include/asm-s390/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-s390/termbits.h	2007-04-30 10:48:19.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-s390/termbits.h	2007-05-23 20:26:30.484687280 +0100
+@@ -25,6 +25,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-sh/termbits.h linux-2.6.22-rc1-mm1/include/asm-sh/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-sh/termbits.h	2007-04-30 10:48:19.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-sh/termbits.h	2007-05-23 20:26:48.510946872 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-v850/termbits.h linux-2.6.22-rc1-mm1/include/asm-v850/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-v850/termbits.h	2007-04-30 10:48:19.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-v850/termbits.h	2007-05-23 20:27:13.174197488 +0100
+@@ -17,6 +17,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-xtensa/termbits.h linux-2.6.22-rc1-mm1/include/asm-xtensa/termbits.h
+--- linux.vanilla-2.6.22-rc1-mm1/include/asm-xtensa/termbits.h	2007-04-30 10:48:19.000000000 +0100
++++ linux-2.6.22-rc1-mm1/include/asm-xtensa/termbits.h	2007-05-23 20:27:28.654844072 +0100
+@@ -30,6 +30,17 @@
+ 	cc_t c_cc[NCCS];		/* control characters */
+ };
+ 
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_line;			/* line discipline */
++	cc_t c_cc[NCCS];		/* control characters */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ struct ktermios {
+ 	tcflag_t c_iflag;		/* input mode flags */
+ 	tcflag_t c_oflag;		/* output mode flags */
