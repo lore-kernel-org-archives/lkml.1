@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934911AbXEWQbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935281AbXEWQbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934911AbXEWQbA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbXEWQaw
+	id S935281AbXEWQbg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759403AbXEWQbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:30:52 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49171 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757101AbXEWQav (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:30:51 -0400
-Date: Wed, 23 May 2007 17:35:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ysato@users.sourceforge.jp, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] h8300: Enable arbitary speed tty port setup
-Message-ID: <20070523173517.6432cbb0@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 12:31:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48236 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758032AbXEWQbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 12:31:24 -0400
+Date: Wed, 23 May 2007 12:11:15 -0400 (EDT)
+From: Jason Baron <jbaron@redhat.com>
+X-X-Sender: jbaron@dhcp83-20.boston.redhat.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 3/7] lockdep: lock contention tracking
+In-Reply-To: <1179932865.7019.90.camel@twins>
+Message-ID: <Pine.LNX.4.64.0705231159310.22023@dhcp83-20.boston.redhat.com>
+References: <20070523072618.129001605@chello.nl>  <20070523095807.407148940@chello.nl>
+  <Pine.LNX.4.64.0705231035270.22023@dhcp83-20.boston.redhat.com>
+ <1179932865.7019.90.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the needed constants and defines to activate the new tty code on this
-platform
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+On Wed, 23 May 2007, Peter Zijlstra wrote:
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-h8300/ioctls.h linux-2.6.22-rc1-mm1/include/asm-h8300/ioctls.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-h8300/ioctls.h	2007-04-30 10:48:15.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-h8300/ioctls.h	2007-05-23 16:32:31.437946792 +0100
-@@ -47,6 +47,10 @@
- #define TIOCSBRK	0x5427  /* BSD compatibility */
- #define TIOCCBRK	0x5428  /* BSD compatibility */
- #define TIOCGSID	0x5429  /* Return the session ID of FD */
-+#define TCGETS2		_IOR('T',0x2A, struct termios2)
-+#define TCSETS2		_IOW('T',0x2B, struct termios2)
-+#define TCSETSW2	_IOW('T',0x2C, struct termios2)
-+#define TCSETSF2	_IOW('T',0x2D, struct termios2)
- #define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
- #define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
- 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-h8300/termbits.h linux-2.6.22-rc1-mm1/include/asm-h8300/termbits.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-h8300/termbits.h	2007-04-30 10:48:15.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-h8300/termbits.h	2007-05-23 16:32:14.463527296 +0100
-@@ -130,6 +130,7 @@
- #define HUPCL	0002000
- #define CLOCAL	0004000
- #define CBAUDEX 0010000
-+#define    BOTHER 0010000
- #define    B57600 0010001
- #define   B115200 0010002
- #define   B230400 0010003
-@@ -145,10 +146,12 @@
- #define  B3000000 0010015
- #define  B3500000 0010016
- #define  B4000000 0010017
--#define CIBAUD	  002003600000	/* input baud rate (not used) */
-+#define CIBAUD	  002003600000		/* input baud rate */
- #define CMSPAR	  010000000000		/* mark or space (stick) parity */
- #define CRTSCTS	  020000000000		/* flow control */
- 
-+#define IBSHIFT	  16			/* shift from CBAUD to CIBAUD */
-+
- /* c_lflag bits */
- #define ISIG	0000001
- #define ICANON	0000002
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-h8300/termios.h linux-2.6.22-rc1-mm1/include/asm-h8300/termios.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-h8300/termios.h	2007-04-30 11:00:07.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-h8300/termios.h	2007-05-23 16:32:21.409471352 +0100
-@@ -82,8 +82,10 @@
- 	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
- })
- 
--#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
--#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios2))
-+#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios2))
-+#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
-+#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
- 
- #endif	/* __KERNEL__ */
- 
+> On Wed, 2007-05-23 at 10:40 -0400, Jason Baron wrote:
+> > On Wed, 23 May 2007, Peter Zijlstra wrote:
+> > 
+> > > Count lock contention events per lock class. Additionally track the first four
+> > > callsites that resulted in the contention.
+> > > 
+> > 
+> > I think that we need the total number of locking calls, not just the total 
+> > number of *contended* locking calls, in order to make the data 
+> > significant. Same for waittime. Yes, this pollutes the fastpath. In the 
+> > contention case, its one extra addition, and for the waittime, its a call 
+> > the sched_clock(). I don't think that's too much to pay for much more 
+> > meaningful data.
+> 
+> The holdtime statistics add these numbers.
+> 
+
+ok, i see what you are saying...however, the 'waittime' statistic as 
+implemented, is only recorded when we don't get the lock immediately. 
+Thus, it's really measuring the waittime when there is lock contention. I 
+understand that in the non-contended case we are only talking a a few 
+cycles, but the fact that the non-contended case is not counted as another 
+waittime of even zero length (so no measurement is required), might skew 
+the stats a bit. For examples, if there was a lock that was almost never 
+contended but one time happened to be contended for a long time, its 
+average wait time would look really high.
+
+thanks,
+
+-Jason 
