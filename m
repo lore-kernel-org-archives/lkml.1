@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935689AbXEWRNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935692AbXEWRPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935689AbXEWRNv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 13:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbXEWRNg
+	id S935692AbXEWRPO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 13:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759019AbXEWRPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 13:13:36 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:34390 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760259AbXEWRNe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 13:13:34 -0400
-X-Sasl-enc: ye9i0qGmwdCtJaelevsN9BYyk0PcVqfTqrI2Y+tFD8i/ 1179940413
-Date: Wed, 23 May 2007 14:13:30 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: 2.6.21-mm2: ACPI exception on resume
-Message-ID: <20070523171330.GB9987@khazad-dum.debian.net>
-References: <20070519165738.GK11115@waste.org> <20070523001943.GA3743@khazad-dum.debian.net> <20070523014825.GX11115@waste.org> <200705231057.48320.rjw@sisk.pl>
-MIME-Version: 1.0
+	Wed, 23 May 2007 13:15:01 -0400
+Received: from mail.screens.ru ([213.234.233.54]:56432 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758459AbXEWRPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 13:15:00 -0400
+Date: Wed, 23 May 2007 20:21:25 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc2-mm1
+Message-ID: <20070523162125.GA321@tv-sign.ru>
+References: <20070523085424.2aa27c57.akpm@linux-foundation.org> <Pine.LNX.4.44L0.0705231249570.3673-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705231057.48320.rjw@sisk.pl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.44L0.0705231249570.3673-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007, Rafael J. Wysocki wrote:
-> While I agree with that, it would really be helpful if you tested the latest -rc
-> kernel and saw if the bug was present in there.
-> 
-> If the bug is not present in the latest -rc, it'll be possible to identify the
-> patch that causes it to appear in -mm and find the reason of the breakage.
+On 05/23, Alan Stern wrote:
+>
+> Okay, it's clear that the two threads are in deadlock.  It's not clear 
+> how the deadlock arose to begin with -- apparently there was a remote 
+> wakeup request for a root hub at the same time as a device below that 
+> root hub was disconnected, which doesn't make much sense.
 
-And, once we know the reason, we will be able to find out how to best fix the
-problem.
+Please note that this flush_workqueue() was not safe anyway. We are freezing
+tasks, and ksuspend_usb_wq is freezeable. So, it could be frozen before
+"khubd" task, and we have another deadlock.
 
-So, do please test latest -rc, or bissect to the last known-good kernel. As
-I said, we need further data points to do anything.
+> Anyway, this looks like a good place to use cancel_work_sync().  The
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Could you use cancel_rearming_delayed_work() ? (It should be renamed to
+cancel_delayed_work_sync()).
+
+Oleg.
+
