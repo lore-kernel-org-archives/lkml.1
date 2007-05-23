@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762588AbXEVXxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbXEWAAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762588AbXEVXxc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 19:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757073AbXEVXxZ
+	id S1760746AbXEWAAf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 20:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbXEWAA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 19:53:25 -0400
-Received: from mail.suse.de ([195.135.220.2]:34351 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756903AbXEVXxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 19:53:25 -0400
-Subject: patch usb-hub.c-loops-forever-on-resume-from-ram-due-to-bluetooth.patch added to gregkh-2.6 tree
-To: lkml@rtr.ca, akpm@osdl.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       mlord@pobox.com
-From: <gregkh@suse.de>
-Date: Tue, 22 May 2007 16:53:14 -0700
-In-Reply-To: <4648F532.4030809@rtr.ca>
-Message-Id: <20070522235315.9D981E17202@imap.suse.de>
+	Tue, 22 May 2007 20:00:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49397 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757518AbXEWAAZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 20:00:25 -0400
+Date: Tue, 22 May 2007 17:00:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mike Houston <mikeserv@bmts.com>
+cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+In-Reply-To: <20070522181444.ad932718.mikeserv@bmts.com>
+Message-ID: <alpine.LFD.0.98.0705221653010.3890@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+ <20070520170506.814a38d9.mikeserv@bmts.com> <20070521084549.61a1aa71@freepuppy>
+ <20070521131055.0017404f.mikeserv@bmts.com> <20070521103755.51b954e1@freepuppy>
+ <20070521225806.bb18d589.mikeserv@bmts.com> <20070521213146.3e220a44@freepuppy>
+ <20070522181444.ad932718.mikeserv@bmts.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is a note to let you know that I've just added the patch titled
 
-     Subject: USB: hub.c loops forever on resume from ram due to bluetooth
+On Tue, 22 May 2007, Mike Houston wrote:
+> 
+> In this case I actually had the kernel crash. First time for me ever
+> having a kernel oops! System locked up with keyboard LED's blinking.
+> 
+> Not sure if anyone wants to see all of it (maybe some screwy
+> userland stuff involved), so I won't include that mess in the
+> message. It's here:
+> http://www.mikeserv.org/files/kernelcrash.txt
 
-to my gregkh-2.6 tree.  Its filename is
+I think you have major memory corruption. That first oops disassembles to
 
-     usb-hub.c-loops-forever-on-resume-from-ram-due-to-bluetooth.patch
+		mov    0x10(%eax),%esi
+		mov    $0xfffffdfd,%eax
+		test   %esi,%esi
+		je     after_call
+		mov    %edx,%ecx
+		mov    %edi,%eax
+		mov    %ebx,%edx
+		call   *%esi
+	after_call:
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+which is (from net/ipv4/af_inet.c, inet_ioctl()):
 
+                default:
+                        if (sk->sk_prot->ioctl)
+                                err = sk->sk_prot->ioctl(sk, cmd, arg);
+                        else
+                                err = -ENOIOCTLCMD;
+                        break;
 
->From lkml@rtr.ca Mon May 14 16:48:14 2007
-From: Mark Lord <lkml@rtr.ca>
-Date: Mon, 14 May 2007 19:48:02 -0400
-Subject: USB: hub.c loops forever on resume from ram due to bluetooth
-To: Greg KH <gregkh@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>, marcel@holtmann.org
-Message-ID: <4648F532.4030809@rtr.ca>
+and the load off "sk->sk_prot->ioctl" oopses, because "sk->sk_prot" is 
+corrupt and contains 0x8e3cad42, which is not a valid kernel pointer.
 
+The other oops is even worse. 
 
-Okay, found it.  The root cause here was a missing CONFIG_USB_SUSPEND=y,
-which means the hci_usb device never got marked as USB_STATE_SUSPENDED,
-which then caused the loop to go on forever.
+I also think it meshes with
 
-The system works fine now with CONFIG_USB_SUSPEND=y in the .config.
+	sky2 eth0: descriptor error q=0x280 get=285 [800042375e2e5e] put=285
 
-Here's the patch to prevent future lockups for this or other causes.
-I no longer need it, but it does still seem a good idea.
+and I suspect your memory got corrupted by sky2 reading the wrong 
+descriptors, and overwriting kernel memory.
 
-Signed-off-by: Mark Lord <mlord@pobox.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+So it's almost certainly some DMA problem. Now, _why_ you have DMA 
+problems, I have no idea. But can you try:
+ - disable CONFIG_PREEMPT
+ - disable CONFIG_HIGHMEM if you have it on
+ - just in general see if you can disable any kernel config options that 
+   might be unnecessary.
+to see if it changes the situation at all..
 
----
- drivers/usb/core/hub.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -403,9 +403,10 @@ static void hub_tt_kevent (struct work_s
- 	struct usb_hub		*hub =
- 		container_of(work, struct usb_hub, tt.kevent);
- 	unsigned long		flags;
-+	int			limit = 100;
- 
- 	spin_lock_irqsave (&hub->tt.lock, flags);
--	while (!list_empty (&hub->tt.clear_list)) {
-+	while (--limit && !list_empty (&hub->tt.clear_list)) {
- 		struct list_head	*temp;
- 		struct usb_tt_clear	*clear;
- 		struct usb_device	*hdev = hub->hdev;
-
-
-Patches currently in gregkh-2.6 which might be from lkml@rtr.ca are
-
-usb/usb-hub.c-loops-forever-on-resume-from-ram-due-to-bluetooth.patch
+		Linus
