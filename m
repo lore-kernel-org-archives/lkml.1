@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764690AbXEWLGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763213AbXEWLPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764690AbXEWLGn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 07:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758892AbXEWLGe
+	id S1763213AbXEWLPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 07:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759381AbXEWLPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 07:06:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56080 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758730AbXEWLGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 07:06:33 -0400
-Date: Wed, 23 May 2007 13:05:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: bad networking related lag in v2.6.22-rc2
-Message-ID: <20070523110556.GA8653@elte.hu>
-References: <20070517174533.GA538@elte.hu> <200705221147.56571.kernel@prachanda.hub> <20070522062233.GA20002@elte.hu> <200705231110.44526.kernel@prachanda.hub> <20070523063052.GB26814@elte.hu> <46541DC4.4090501@trash.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46541DC4.4090501@trash.net>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 23 May 2007 07:15:44 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58303 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759241AbXEWLPo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 07:15:44 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46542248.3090507@s5r6.in-berlin.de>
+Date: Wed, 23 May 2007 13:15:20 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Subject: Re: [GIT PULL] ieee1394 fixes post 2.6.22-rc2
+References: <tkrat.1171a59b9de88f9c@s5r6.in-berlin.de> <tkrat.5299b7dd67007e8c@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.5299b7dd67007e8c@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I wrote on 2007-05-19:
+> Linus, please pull from the for-linus branch at
+> 
+>     git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+> 
+> to receive the following IEEE 1394 subsystem updates:
+> 
+>   - fix regression in 2.6.22-rc1:
+>     raw1394 asynchronous transmit was broken
+> 
+>   - fix old bug in raw1394:
+>     32bit compat code for 64bit kernels was broken and incomplete
+> 
+>   - fix old eth1394 bug:
+>     packets were frequently dropped in transmit path
+>     (This fixes only the most common type of failure, tlabel exhaustion.)
+> 
+>   - trivial sbp2 fix
 
-* Patrick McHardy <kaber@trash.net> wrote:
+Linus,
 
-> How is this trace to be understood? Is it simply a call trace in 
-> execution-order? [...]
+if you didn't pull already, please don't.  Rather wait for my next batch
+of -rc fixes.  At the moment it looks as if I should postpone raw1394's
+32bit compat fixes (or call them feature addition) until after the
+release of 2.6.22 to ensure we get them right.
 
-yeah. There's a help section at the top of the trace which explains the 
-other fields too:
-
-                 _------=> CPU#
-                / _-----=> irqs-off
-               | / _----=> need-resched
-               || / _---=> hardirq/softirq
-               ||| / _--=> preempt-depth
-               |||| /
-               |||||     delay
-   cmd     pid ||||| time  |   caller
-      \   /    |||||   \   |   /
- privoxy-12926 1.Ns1    0us : ktime_get_ts (ktime_get)
-
-the function name in braces is the parent function. So in this case the 
-trace entry means we called ktime_get_ts() from ktime_get().
-
-	Ingo
+Thanks,
+-- 
+Stefan Richter
+-=====-=-=== -=-= =-===
+http://arcgraph.de/sr/
