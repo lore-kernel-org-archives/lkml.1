@@ -1,110 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765855AbXEWSIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934266AbXEWSIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765855AbXEWSIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762618AbXEWSH5
+	id S934266AbXEWSIm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758853AbXEWSIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:07:57 -0400
+	Wed, 23 May 2007 14:08:30 -0400
 Received: from ug-out-1314.google.com ([66.249.92.174]:29828 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760032AbXEWSH4 (ORCPT
+	with ESMTP id S1762006AbXEWSI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:07:56 -0400
+	Wed, 23 May 2007 14:08:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=DCow5k9tDu0vcq7z8ww4qKdn6EqEg1RfApSS34AJxOVD6YJ1R1w3emMtXPQ/fJvnt1g6xu8QU32art9vmzvFHeZbiEBMIjWqyjc6eAA0VOQPfxVj57YenYFO+dUiel+aRb7W1drFczw6FMbwtljgfeY/W7pFaaX9G1KWlgATbF4=
-Subject: [RFC 4/5] inode reservation v0.1 (benchmark result)
+        b=C5myasVFhhya/GHF59MaxAZropV1cUvBgYQahzEsMF+qJMV28MXFSgKSbAfOeUSqNxLt28g2w77DXPNJy3hjxNNZ4kaPNBtnnZ7t8aobeRydwUxbgi7ZWb81k1NNp0RzxfTB1dcRqOx0gz4MOCvjON9MLKSbckDzi1UjdfC3k6I=
+Subject: [RFC 5/5] inode reservation v0.1 (next step working)
 From: coly <colyli@gmail.com>
 To: linux-ext4 <linux-ext4@vger.kernel.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 24 May 2007 02:08:17 +0800
-Message-Id: <1179943697.4179.55.camel@coly-t43.site>
+Date: Thu, 24 May 2007 02:08:52 +0800
+Message-Id: <1179943732.4179.56.camel@coly-t43.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current patch avoids inodes from different directories mixed together in
-the inode table. Therefore the benchmakr emulate a situation that mixes
-inodes of different sub-directories together. and record the time on
-removing them all.
+>From the benchmark and the experimental inores patch on ext4, it can be
+found that inode reservation on ext4 is a good idea to be tried. 
 
-In the first part, reserving 16 inodes for each new created directory.
-Therefore 14 files can only use 1 reserved block for each directory in
-inode table, obviously, the result of benchmark is the best case :-)
+One of the original idea of inode reservation is NOT modifying on-disk
+format. Current magic inode can make it, but use a magic inodes list to
+link each reserved inode block together is not a good idea. Indeed, this
+is a performance killer.
 
-Enviornment:
-1) create 9890 directory, create files in each directory alternatively
-2) kernel version 2.6.20-mm, the ext4 subdir-inode-reservation is
-patched based on 2.6.20-mm
-3) 14 files in each subdirectory. 9890 sub directories in
-mount_point/mailbox/
-4) mount with option data=writeback
-5) each operation followed by a reboot
-6) EXT4_INIT_RESERVE_INODES = 16
+1, Therefor, group descriptor has to be modified to add a new member ---
+this new member records the lastest reserved inode in inode table of
+each block group.
 
-===================== data=writeback ================================
-remove directories and files by rm -rf:
-* ext3
-read 16m56.979s
-user 0m0.156s
-sys 0m21.449s
+2, Use rest room in magic inode (sizeof(ext4_inode) -
+sizeof(ext4_magic_inode)) to record other reserved inode blocks. This
+method can reduce number of magic inodes, which can minimize I/O for
+magic inodes.
 
-* ext4org
-real 18m38.809s
-user 0m0.636s
-sys 0m37.422s
+3, Use magic inode cache. Most of the magic inode accessings are reading
+(not writing), therefore, caching can help to reduce most of the read
+I/O for magic inode.
 
-* ext4inores
-real 7m57.437s
-user 0m0.452s
-sys 0m34.698s
+4, Modify mke2fs to support new on-disk layout for inode reservation.
 
 
-===================== data=ordered ================================
-remove directories and files by rm -rf:
-* ext3
-real 17m23.435s
-user 0m0.140s
-sys 0m21.709s
-
-* ext4org
-real 17m39.515s
-user 0m0.120s
-sys 0.22.097s
-
-* ext4inores
-real 7m41.365s
-user 0m0.196s
-sys 0m24.210s
-
-===================== data=journal ================================
-remove directories and files by rm -rf:
-* ext3
-real 12m50.545s
-user 0m0.152s
-sys 0m22.725s
-
-* ext4org
-real 13m43.910s
-user 0m0.196s
-sys 0m23.161s
-
-* ext4inores
-real 7m49.915s
-user 0m0.168s
-sys 0m23.633s
-
-
-Due to the bad design of magic inode and the on-disk layout of magic
-inode. When 30 files created alternatively in each directory, no
-performance advantage exists. When 50 files created alternatively in
-each directory, the patched ext4 will use double time on removing all
-the files and directories.
-
-Therefore, in the next version a new on-disk layout will be used.
+Coly
 
