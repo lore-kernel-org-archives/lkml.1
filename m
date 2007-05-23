@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbXEWAU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbXEWAVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759749AbXEWAU3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 20:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966035AbXEWAT5
+	id S1762865AbXEWAVV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 20:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbXEWAVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 20:19:57 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43027 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965941AbXEWATy (ORCPT
+	Tue, 22 May 2007 20:21:06 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:52732 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757669AbXEWAVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 20:19:54 -0400
-X-Sasl-enc: FUQCEU1XXSFau9gu4JmVeMBR0qNfv5L62Y8lPMb0saFG 1179879592
-Date: Tue, 22 May 2007 21:19:43 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: 2.6.21-mm2: ACPI exception on resume
-Message-ID: <20070523001943.GA3743@khazad-dum.debian.net>
-References: <20070519165738.GK11115@waste.org> <20070519204504.GA24704@khazad-dum.debian.net> <20070519223843.GN11115@waste.org> <20070520035259.GA13224@khazad-dum.debian.net> <20070521222339.GF11115@waste.org> <20070521230349.GA645@khazad-dum.debian.net> <20070522224515.GW11115@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070522224515.GW11115@waste.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 22 May 2007 20:21:05 -0400
+Date: Tue, 22 May 2007 17:26:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH 1/3] kernel-doc: add tools doc in Makefile
+Message-Id: <20070522172609.c1cc3ddd.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007, Matt Mackall wrote:
-> On Mon, May 21, 2007 at 08:03:49PM -0300, Henrique de Moraes Holschuh wrote:
-> > On Mon, 21 May 2007, Matt Mackall wrote:
-> > > BIOS Information
-> > >         Vendor: IBM
-> > >         Version: 1RETDHWW (3.13 )
-> > >         Release Date: 10/29/2004
-> > > 
-> > > No sign of any EC version in the output.
-> > 
-> > This is a buggy, ancient version of the BIOS, which probably means you have
-> > an old and slightly buggy EC firmware.  I recommend you to upgrade to BIOS
-> > 3.21 and EC 3.04.  See http://thinkwiki.org/wiki/BIOS_Upgrade for more
-> > details.
-> 
-> Really, I'd much prefer my kernel not regress instead. Updating
-> firmware is just introducing more potential instability and ignoring
-> the problem.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-We can't very much know if the kernel is really buggy, then.  I'd say we
-need a report from someone with another thinkpad that uses the 1R BIOS that
-has an up-to-date BIOS, to know for sure.  Since that includes the T41 and
-T42, chances are others would have spoken up about it already if it affected
-the more recent versions of the 1R BIOS.
+Add kernel-doc tools info in Makefile.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/DocBook/Makefile |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+--- linux-2.6.22-rc2-git2.orig/Documentation/DocBook/Makefile
++++ linux-2.6.22-rc2-git2/Documentation/DocBook/Makefile
+@@ -15,11 +15,11 @@ DOCBOOKS := wanbook.xml z8530book.xml mc
+ 
+ ###
+ # The build process is as follows (targets):
+-#              (xmldocs)
+-# file.tmpl --> file.xml +--> file.ps   (psdocs)
+-#                        +--> file.pdf  (pdfdocs)
+-#                        +--> DIR=file  (htmldocs)
+-#                        +--> man/      (mandocs)
++#              (xmldocs) [by docproc]
++# file.tmpl --> file.xml +--> file.ps   (psdocs)   [by db2ps or xmlto]
++#                        +--> file.pdf  (pdfdocs)  [by db2pdf or xmlto]
++#                        +--> DIR=file  (htmldocs) [by xmlto]
++#                        +--> man/      (mandocs)  [by xmlto]
+ 
+ 
+ # for PDF and PS output you can choose between xmlto and docbook-utils tools
