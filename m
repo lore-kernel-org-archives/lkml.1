@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbXEWTGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762618AbXEWTKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760824AbXEWTGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 15:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXEWTG3
+	id S1762618AbXEWTKM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 15:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbXEWTKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 15:06:29 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33768 "EHLO mx2.suse.de"
+	Wed, 23 May 2007 15:10:00 -0400
+Received: from mga03.intel.com ([143.182.124.21]:36310 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754956AbXEWTG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 15:06:27 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-Date: Wed, 23 May 2007 21:06:28 +0200
-User-Agent: KMail/1.9.5
-Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, Tony Jones <tonyj@suse.de>
-References: <20070412090809.917795000@suse.de> <20070412090836.207973000@suse.de> <20070412101236.GD4095@ftp.linux.org.uk>
-In-Reply-To: <20070412101236.GD4095@ftp.linux.org.uk>
+	id S1755450AbXEWTKA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 15:10:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,571,1170662400"; 
+   d="scan'208";a="231352001"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 3563
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705232106.28260.agruen@suse.de>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] Define new percpu interface for shared data -- version 3
+Date: Wed, 23 May 2007 12:09:56 -0700
+Message-ID: <79E93560F4A5FD42BB769DAAF8BEF62A01AA8CF8@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070523185748.GA4072@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] Define new percpu interface for shared data -- version 3
+Thread-Index: AcedbDnX+z8wlnV3RbeUWIFyt3JPBgAAKo4A
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "Ravikiran G Thirumalai" <kiran@scalex86.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, <clameter@sgi.com>,
+       <rmk@arm.linux.org.uk>, <linux-kernel@vger.kernel.org>,
+       <schwidefsky@de.ibm.com>, <heiko.carstens@de.ibm.com>
+X-OriginalArrivalTime: 23 May 2007 19:09:57.0145 (UTC) FILETIME=[F3D95090:01C79D6D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 April 2007 12:12, Al Viro wrote:
-> On Thu, Apr 12, 2007 at 02:08:10AM -0700, jjohansen@suse.de wrote:
-> > This is needed for computing pathnames in the AppArmor LSM.
->
-> Which is an argument against said LSM in current form.
 
-The fundamental model of AppArmor is to perform access checks based on the 
-location of a file in the filesystem namespace, i.e., the pathname, and this 
-can only be done with both the dentry and vfsmount. My understanding was that 
-there was agreement at the last kernel summit that pathname based approaches 
-should be allowed.
+>Has there been any measurable benefit yet due to tail padding?
 
-> > -	error = security_inode_create(dir, dentry, mode);
-> > +	error = security_inode_create(dir, dentry, nd ? nd->mnt : NULL, mode);
->
-> is a clear sign that interface is wrong.
+We don't have data that tail padding actually helps. It all
+depends on what data the linker lays out in the cachelines.
 
-No. There are callers of vfs_create() that use a NULL nameidata, and that's 
-what causes the problem here. Struct nameidata is pretty big, and so we don't 
-want to allocate temporary nameidata objects all over the place. So to me the 
-above NULL check seems the lesser evil.
+As of now we just want to create the infrastructure (so that
+more and more people who need it, can use it).
 
-One way to deal with the nameidata size problem is to split it up into one 
-part for the real path lookups, and a much smaller part that only contains 
-the dentry, vfsmount, and intent flags. This would allow to pass around the 
-smaller nameidata much more consistently.
+>It would also be interesting to check the wastage/savings on another
+large
+>cache architecture like S390 (which has a 256 byte cache line)
 
-John has posted patches for that on May 14; subject [RFD Patch 0/4]. Feedback 
-appreciated.
+S390 folks or others might help get the data. I don't have other
+machines
+on hand.
 
-In several places, the NULL nameidata is wrong because we can't check the 
-vfsmount flags or intent. Not having this information is causing problems for 
-nfs too for example -- it's not an AppArmor specific problem.
+Thanks.
 
-> Leaving aside the general idiocy of "we prohibit to do something with file
-> if mounted here, but if there's another mountpoint, well, we just miss", an
-> API of that kind is just plain wrong.  Either you can live without seeing
-> vfsmount in that method (in which case you shouldn't pass it at all), or you
-> have a hole.
-
-This is backwards from what AppArmor does. The policy defines which paths may 
-be accessed; all paths not explicitly listed are denied. If files are mounted 
-at multiple locations, then the policy may allow access to some locations but 
-not to others. That's not a hole.
-
-In fact this is not much different from traditional permissions on parent 
-directories: even if the same files are mounted at several locations, parent 
-directory permissions may allow accessing only some of those locations.
-
-Thanks,
-Andreas
+-Fenghua
