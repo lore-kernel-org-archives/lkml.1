@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760015AbXEWS5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbXEWTCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760015AbXEWS5e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbXEWS50
+	id S1759373AbXEWTCT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 15:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbXEWTCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:57:26 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:57050 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755619AbXEWS50 (ORCPT
+	Wed, 23 May 2007 15:02:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33251 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366AbXEWTCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:57:26 -0400
-Date: Wed, 23 May 2007 11:57:48 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, clameter@sgi.com,
-       rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Subject: Re: [PATCH 1/2] Define new percpu interface for shared data -- version 3
-Message-ID: <20070523185748.GA4072@localhost.localdomain>
-References: <20070523104946.f279241c.akpm@linux-foundation.org> <79E93560F4A5FD42BB769DAAF8BEF62A01AA8C77@scsmsx411.amr.corp.intel.com>
+	Wed, 23 May 2007 15:02:12 -0400
+Subject: Re: [PATCH] headercheck: add dependency check and improve speed
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20070523184502.GD23425@uranus.ravnborg.org>
+References: <20070523181140.GA23425@uranus.ravnborg.org>
+	 <20070523184502.GD23425@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 15:02:19 -0400
+Message-Id: <1179946939.8303.23.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <79E93560F4A5FD42BB769DAAF8BEF62A01AA8C77@scsmsx411.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.1i
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 11:26:53AM -0700, Yu, Fenghua wrote:
-> > elements are cacheline aligned. And as such, this differentiates the
-> local
-> > only data and remotely accessed data cleanly.
-> 
-> >OK, but could we please have a concise description of the impact
-> >of these changes on kernel memory footprint?  Increase or decrease?
-> >And by approximately how much?
-> 
-> Depending on how linker places percpu data, the patches could
-> increase or decrease percpu section size. Data from 2.6.21-rc7-mm2:
-> 
-> On x86 SMP, the section size is increased from 0x7768 to 0x790c.
-> 1.3% increase.
-> 
-> On X86-64 SMP, the size is decreased from 0x72d0 to 0x6540.
-> 11.8% decrease.
-> 
-> On X86-64 VSMP, the size is increased from 0x72d0 to 0x8340.
-> 14.3% increase.
-> 
-> On IA64 SMP, the size is decreased from 0x8370 to 0x7fc0.
-> 2.8% decrease.
+$ make headers_check
+$ sed -i /auxvec.h/d include/asm/Kbuild 
+$ make headers_check
+$ sed -i /auxvec.h/d include/asm-generic/Kbuild.asm
+$ make headers_check
 
-Has there been any measurable benefit yet due to tail padding?
-It would also be interesting to check the wastage/savings on another large
-cache architecture like S390 (which has a 256 byte cache line)
+Why doesn't it recheck <linux/auxvec.h> and fail?
 
-Thanks,
-Kiran
+-- 
+dwmw2
+
