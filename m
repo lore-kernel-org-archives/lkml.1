@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbXEWUIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764838AbXEWUKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761504AbXEWUIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 16:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbXEWUIl
+	id S1764838AbXEWUKx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 16:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbXEWUKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 16:08:41 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36693 "EHLO mail.dvmed.net"
+	Wed, 23 May 2007 16:10:46 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:54112 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755849AbXEWUIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 16:08:40 -0400
-Message-ID: <46549F45.4040403@garzik.org>
-Date: Wed, 23 May 2007 16:08:37 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Chris Malton <chrism@cjsoftuk.dyndns.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Fwd: Re: Google are using linux kernel - what do you know about
- the source?]
-References: <4654729C.70404@cjsoftuk.dyndns.org>	<4654969F.9060904@garzik.org> <20070523210249.3e965257@the-village.bc.nu>
-In-Reply-To: <20070523210249.3e965257@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S1751366AbXEWUKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 16:10:46 -0400
+Date: Wed, 23 May 2007 22:11:43 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] headercheck: add dependency check and improve speed
+Message-ID: <20070523201143.GA24481@uranus.ravnborg.org>
+References: <20070523181140.GA23425@uranus.ravnborg.org> <20070523184502.GD23425@uranus.ravnborg.org> <1179946939.8303.23.camel@shinybook.infradead.org> <20070523193434.GA23924@uranus.ravnborg.org> <1179949225.8303.27.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179949225.8303.27.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Google does not distribute their software, so they do not have to make 
->> their modifications public.
+On Wed, May 23, 2007 at 03:40:25PM -0400, David Woodhouse wrote:
+> On Wed, 2007-05-23 at 21:34 +0200, Sam Ravnborg wrote:
+> > On Wed, May 23, 2007 at 03:02:19PM -0400, David Woodhouse wrote:
+> > > $ make headers_check
+> > > $ sed -i /auxvec.h/d include/asm/Kbuild 
+> > > $ make headers_check
+> > > $ sed -i /auxvec.h/d include/asm-generic/Kbuild.asm
+> > > $ make headers_check
+> > > 
+> > > Why doesn't it recheck <linux/auxvec.h> and fail?
+> > 
+> > Because asm/auxvec.h gets pulled by asm-generic/Kbuild.asm
 > 
-> They do for the kernel - they produce an "appliance".
+> Not after the 4th command in the above sequence, it doesn't.
+Missed that.
+This fixes it.
 
-Ah, I stand corrected.
+	Sam
 
-
->> WRT the Linux kernel, Google is essentially a closed source company.
-> 
-> They've quietly fed little bits back now and then but not made a big song
-> and dance about it. Hopefully with Andrew there and the like more will
-> occur.
-
-Strange that the NIC and SATA driver bits never seem to be among those 
-"little bits"...  Along with filesystem and other modifications 
-discussed in the press, or observable net stack behavior when connecting 
-to their computers over the 'net.
-
-So, emphasis on "little", I guess.
-
-	Jeff
-
-
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 6d74b54..7fa28b8 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -51,7 +51,7 @@ ifeq ($(obj)$(ALTARCH),include/asm-$(ARCH)$(BIASMDIR))
+ endif
+ 
+ # file generated during checktime listing depfiles and incfiles
+-depsfile  := $(INSTALL_HDR_PATH)/$(_dst)/.check.cmd
++depsfile  := $(INSTALL_HDR_PATH)/$(_dst)/.check.d
+ checkfile := $(INSTALL_HDR_PATH)/$(_dst)/check
+ 
+ 
+@@ -135,15 +135,16 @@ echo "\# endif" ;							\
+ echo "\#endif /* $$STUBDEF */" ;					\
+ ) > $@
+ 
+-.PHONY: __headersinst __headerscheck
++PHONY += __headersinst __headerscheck
+ 
+ ifdef HDRCHECK
+ __headerscheck: $(subdir-y) $(checkfile)
+ 	$(Q):
+ 
+-.PHONY: FORCE
++PHONY += FORCE
++targets += $(checkfile)
+ $(checkfile): FORCE
+-	$(if $?, $(call cmd,check))
++	$(call if_changed,check)
+ 	$(Q)touch $(checkfile)
+ 
+ # Include autogenerated file listing depfiles and incfiles
+@@ -151,6 +152,15 @@ ifneq ($(wildcard $(depsfile)),)
+   include $(depsfile)
+ endif
+ 
++targets := $(wildcard $(sort $(targets)))
++cmd_files := $(wildcard $(foreach f,$(targets),$(dir $(f)).$(notdir $(f)).cmd))
++
++ifneq ($(cmd_files),)
++  include $(cmd_files)
++endif
++
++
++
+ $(checkfile) : $(depfiles)
+ # dummy rule - cannot be made
+ $(depfiles) : ;
+@@ -195,7 +205,8 @@ altarch-dir: $(subdir-y) $(header-y) $(unifdef-y) $(objhdr-y)
+ 	$(Q)$(MAKE) $(hdrinst)=include/asm dst=include/asm$(BIASMDIR)
+ 
+ # Recursion
+-.PHONY: $(subdir-y)
++PHONY += $(subdir-y)
+ $(subdir-y):
+ 	$(Q)$(MAKE) $(hdrinst)=$(obj)/$@ dst=$(_dst)/$@ rel=../$(rel)
+ 
++.PHONY: $(PHONY)
