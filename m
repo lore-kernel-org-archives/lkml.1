@@ -1,90 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935388AbXEWQe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765928AbXEWQfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935388AbXEWQe5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbXEWQep
+	id S1765928AbXEWQfa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbXEWQfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:34:45 -0400
-Received: from mga09.intel.com ([134.134.136.24]:63868 "EHLO mga09.intel.com"
+	Wed, 23 May 2007 12:35:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:49511 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756921AbXEWQen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:34:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,570,1170662400"; 
-   d="scan'208";a="89768885"
-Date: Wed, 23 May 2007 09:31:19 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 5/7] genhd: send async notification on media change
-Message-Id: <20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
-In-Reply-To: <20070522141211.fe00333f.akpm@linux-foundation.org>
-References: <20070510072247.063476979@intel.com>
-	<20070509163835.56ad28e0.kristen.c.accardi@intel.com>
-	<20070522141211.fe00333f.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1760207AbXEWQfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 12:35:09 -0400
+Message-ID: <46546D37.5030106@goop.org>
+Date: Wed, 23 May 2007 17:35:03 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Bernd Petrovitsch <bernd@firmix.at>
+CC: Nitin Gupta <nitingupta910@gmail.com>, Andrey Panin <pazke@donpac.ru>,
+       linux-kernel@vger.kernel.org, Richard Purdie <richard@openedhand.com>
+Subject: Re: [RFC] LZO1X de/compression support
+References: <4cefeab80705180258g516a6f92w15a49e666dd62b66@mail.gmail.com>	 <20070518111107.GA27003@pazke.donpac.ru>	 <4cefeab80705220208w2200b2f1x1d7a8c7e0c01dfb9@mail.gmail.com> <1179869082.3649.6.camel@gimli.at.home>
+In-Reply-To: <1179869082.3649.6.camel@gimli.at.home>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 14:12:11 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Bernd Petrovitsch wrote:
+> The "register" keyword is and was always from start *at most* a hint to
+> the C compiler to use a register for that variable (similar to "inline"
+> BTW).
+> So every C compiler is allowed to simply ignore the "register" for any
+> reason - be it "not implemented" or "the compiler knows better".
+> Trivial reason: Think of a function with 100 register variables.
+>   
 
-> On Wed, 9 May 2007 16:38:35 -0700
-> Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
-> 
-> > Send an uevent to user space to indicate that a media change event has occurred.
-> > 
-> > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > 
-> > Index: 2.6-git/block/genhd.c
-> > ===================================================================
-> > --- 2.6-git.orig/block/genhd.c
-> > +++ 2.6-git/block/genhd.c
-> > @@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
-> >  	.show	= diskstats_show
-> >  };
-> >  
-> > +static void media_change_notify_thread(struct work_struct *work)
-> > +{
-> > +	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
-> > +	char event[] = "MEDIA_CHANGE=1";
-> > +	char *envp[] = { event, NULL };
-> > +
-> > +	/*
-> > +	 * set enviroment vars to indicate which event this is for
-> > +	 * so that user space will know to go check the media status.
-> > +	 */
-> > +	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
-> > +	put_device(gd->driverfs_dev);
-> > +}
-> > +
-> > +void genhd_media_change_notify(struct gendisk *disk)
-> > +{
-> > +	get_device(disk->driverfs_dev);
-> > +	schedule_work(&disk->async_notify);
-> > +}
-> > +EXPORT_SYMBOL_GPL(genhd_media_change_notify);
-> > +
-> >  struct gendisk *alloc_disk(int minors)
-> >  {
-> >  	return alloc_disk_node(minors, -1);
-> > @@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
-> >  		kobj_set_kset_s(disk,block_subsys);
-> >  		kobject_init(&disk->kobj);
-> >  		rand_initialize_disk(disk);
-> > +		INIT_WORK(&disk->async_notify,
-> > +			media_change_notify_thread);
-> >  	}
-> >  	return disk;
-> 
-> Why does this do a schedule_work() rather than calling kobject_uevent_env()
-> directly?
-> 
+The only useful semantic for "register" these days is that its illegal
+to take the address of one.  So it might be useful if you want to make
+sure you have no aliases of a particular variable.
 
-Because it is called at Interrupt time.
-
-Kristen
+    J
