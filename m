@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbXEWJ6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763494AbXEWJ6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760231AbXEWJ6F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 05:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbXEWJ5z
+	id S1763494AbXEWJ6g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 05:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758263AbXEWJ60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 05:57:55 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:52581 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755631AbXEWJ5x (ORCPT
+	Wed, 23 May 2007 05:58:26 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39667 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757444AbXEWJ6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 05:57:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=E0VkC7bJDabgGLYHkTGoyBJkmTde3Trw3NVBiAMetg9QMDb3ZwW3b2HXnO3/0o7uetykeqop0ygRHVWaXfK68Mv5I6kdy7ZWn0nt7nI4RwGucdzlsliLrjkKN7cn+yynK7k+fVnbWzLC4puZbKIMTVsIDmwpPDn9OM76RISfFA0=
-Subject: Re: 2.6.21.1 fails to suspend/resume  to disk  (sort of)
-From: Romano Giannetti <romano.giannetti@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <200705231105.08408.rjw@sisk.pl>
-References: <1179905115.7043.25.camel@localhost>
-	 <200705231105.08408.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 23 May 2007 11:57:42 +0200
-Message-Id: <1179914262.7043.56.camel@localhost>
+	Wed, 23 May 2007 05:58:25 -0400
+Date: Wed, 23 May 2007 10:58:24 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] file as directory
+Message-ID: <20070523095824.GR4095@ftp.linux.org.uk>
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk> <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu> <20070523070306.GM4095@ftp.linux.org.uk> <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu> <20070523073658.GO4095@ftp.linux.org.uk> <E1HqlqT-0001KD-00@dorka.pomaz.szeredi.hu> <20070523082918.GP4095@ftp.linux.org.uk> <E1HqmkO-0001R4-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HqmkO-0001R4-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-23 at 11:05 +0200, Rafael J. Wysocki wrote:
-> Hi,
+On Wed, May 23, 2007 at 11:03:08AM +0200, Miklos Szeredi wrote:
+> I still don't get it where the superblock comes in.  The locking is
+> "interesting" in there, yes.  And I haven't completely convinced
+> myself it's right, let alone something that won't easily be screwed up
+> in the future.  So there's definitely room for thought there.
 > 
-> On Wednesday, 23 May 2007 09:25, Romano Giannetti wrote:
-> > http://lkml.org/lkml/2007/5/23/38
-> 
-> Please see http://bugzilla.kernel.org/show_bug.cgi?id=8456
-> That seems to resemble the symptoms you describe.
-> 
+> But how does it matter if two different paths have the same sb or a
+> different sb mounted over them?
+ 
+Because then you get a slew of fun issues with dropping the final reference
+to vfsmount vs. lookup on another place.  What hold do you have on that
+superblock and when do you switch from "oh, called ->enter() on the same
+inode again, return vfsmount over the same superblock" to "need to
+initialize that damn superblock, all mounts are gone"?
 
-No, I don't think. The delay I observe is on resume (suspend is very
-fast). Moreover, I have no SATA. It seems that my problem came from
-pcmcia.
+> The same dentry is mounted over each one.  The contents of the
+> directory should only depend on the contents of the underlying inode.
+> The path leading up to it is completely irrelevant.
 
-> > Now for the suspend to disk. With default setting (/sys/power/disk ==
-> > platform) my laptop (vaio PGC-FX701) fails to poweroff; it stays with
-> > backlight on, a white screen, and if I power it off manually afterward
-> > it did not resume.
-> > 
-> > By doing echo shutdown > /sys/power/disk the laptop *do* power off (it's
-> > very slow, but I think that's related with the 60 secs delay commented
-> > in the other post). Then it resume --- text console did resume ok ---
-> > but the virtual console with X do not come back. I had to do a
-> > ctrl-alt-backspace thing. 
-> > 
-> > Any hints? More data?
-> 
-> Could you please test the 2.6.22-rc2 kernel?  Also, if it still doesn't work
-> properly, could you apply the hibernation/suspend patchset available from
-> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc2/patches
-> on top of it and see if that helps?
-> 
-
-Uf, I will try to find the time. I am on my way to try to compile
-2.6.21.2 now. Problem is that a kernel compile "the ubuntu way" last
-hours here. If there is an expert on make-kpkg here, I could use some
-advise. I'd prefer to test patches over a 2.6.21 stable release, to
-avoid mixing symptoms from an experimental -rc...
-
-Romano
-
-
-
+So what kind of exclusion do you have for ->enter()?  None?
