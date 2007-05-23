@@ -1,117 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765474AbXEXAq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759095AbXEXBEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765474AbXEXAq4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763696AbXEXAmF
+	id S1759095AbXEXBEN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 21:04:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbXEXBD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:42:05 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:17325 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761856AbXEXAl7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:41:59 -0400
-Message-ID: <4654DF53.2020000@mvista.com>
-Date: Wed, 23 May 2007 17:41:55 -0700
-From: Kevin Hilman <khilman@mvista.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       rmk@arm.linux.org.uk
-Subject: Re: [PATCH -rt] ARM TLB flush fix: don't forget to re-enable	preemption
-References: <20070522230128.891568116@mvista.com> <1179891586.12708.135.camel@chaos>
-In-Reply-To: <1179891586.12708.135.camel@chaos>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 21:03:59 -0400
+Received: from critter.phunnypharm.org ([67.97.251.11]:2376 "EHLO critter"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755212AbXEXBD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 21:03:59 -0400
+To: linux-kernel@vger.kernel.org
+Message-Id: <b31c080.git.bcollins@ubuntu.com>
+In-Reply-To: <98cd38b5.git.bcollins@ubuntu.com>
+From: Ben Collins <bcollins@ubuntu.com>
+Date: Wed, 23 May 2007 17:59:10 -0400
+Subject: [PATCH 1/6] i386/x86_64: Allow disabling the putstr's from compressed boot wrapper
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Tue, 2007-05-22 at 16:01 -0700, Kevin Hilman wrote:
->> Add a preempt_enable() to flush_tlb_kernel_page() since -rt4 patch
->> adds a preempt_disable but no preempt_enable().
->>
->> Signed-off-by: Kevin Hilman <khilman@mvista.com>
-> 
-> Good catch. Applied.
+Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+---
+ arch/i386/Kconfig.debug            |    6 ++++++
+ arch/i386/boot/compressed/misc.c   |    8 +++++---
+ arch/x86_64/Kconfig.debug          |    6 ++++++
+ arch/x86_64/boot/compressed/misc.c |    8 +++++---
+ 4 files changed, 22 insertions(+), 6 deletions(-)
 
-Thomas could you apply this instead?
-
-After discussions w/RMK and validation of my own on OMAP2 (ARMv6), it
-seems that these disable/enable sections aren't necessary.
-
-Signed-off-by: Kevin Hilman <khilman@mvista.com>
-
-reverted:
---- linux-2.6.21/include/asm-arm/tlbflush.h
-+++ linux-2.6.21.orig/include/asm-arm/tlbflush.h
-@@ -246,7 +246,6 @@
- 	const int zero = 0;
- 	const unsigned int __tlb_flag = __cpu_tlb_flags;
-
--	preempt_disable();
- 	if (tlb_flag(TLB_WB))
- 		dsb();
-
-@@ -258,7 +257,6 @@
- 		asm("mcr p15, 0, %0, c8, c6, 0" : : "r" (zero) : "cc");
- 	if (tlb_flag(TLB_V4_I_FULL | TLB_V6_I_FULL))
- 		asm("mcr p15, 0, %0, c8, c5, 0" : : "r" (zero) : "cc");
--	preempt_enable();
-
- 	if (tlb_flag(TLB_V6_I_FULL | TLB_V6_D_FULL |
- 		     TLB_V6_I_PAGE | TLB_V6_D_PAGE |
-@@ -276,7 +274,6 @@
- 	const int asid = ASID(mm);
- 	const unsigned int __tlb_flag = __cpu_tlb_flags;
-
--	preempt_disable();
- 	if (tlb_flag(TLB_WB))
- 		dsb();
-
-@@ -297,7 +294,6 @@
- 		asm("mcr p15, 0, %0, c8, c6, 2" : : "r" (asid) : "cc");
- 	if (tlb_flag(TLB_V6_I_ASID))
- 		asm("mcr p15, 0, %0, c8, c5, 2" : : "r" (asid) : "cc");
--	preempt_enable();
-
- 	if (tlb_flag(TLB_V6_I_FULL | TLB_V6_D_FULL |
- 		     TLB_V6_I_PAGE | TLB_V6_D_PAGE |
-@@ -314,7 +310,6 @@
- 	const int zero = 0;
- 	const unsigned int __tlb_flag = __cpu_tlb_flags;
-
--	preempt_disable();
- 	uaddr = (uaddr & PAGE_MASK) | ASID(vma->vm_mm);
-
- 	if (tlb_flag(TLB_WB))
-@@ -339,7 +334,6 @@
- 		asm("mcr p15, 0, %0, c8, c6, 1" : : "r" (uaddr) : "cc");
- 	if (tlb_flag(TLB_V6_I_PAGE))
- 		asm("mcr p15, 0, %0, c8, c5, 1" : : "r" (uaddr) : "cc");
--	preempt_enable();
-
- 	if (tlb_flag(TLB_V6_I_FULL | TLB_V6_D_FULL |
- 		     TLB_V6_I_PAGE | TLB_V6_D_PAGE |
-@@ -355,7 +349,6 @@
- 	const int zero = 0;
- 	const unsigned int __tlb_flag = __cpu_tlb_flags;
-
--	preempt_disable();
- 	kaddr &= PAGE_MASK;
-
- 	if (tlb_flag(TLB_WB))
-@@ -406,13 +399,11 @@
+diff --git a/arch/i386/Kconfig.debug b/arch/i386/Kconfig.debug
+index b31c080..eb26441 100644
+--- a/arch/i386/Kconfig.debug
++++ b/arch/i386/Kconfig.debug
+@@ -19,6 +19,12 @@ config EARLY_PRINTK
+ 	  with klogd/syslogd or the X server. You should normally N here,
+ 	  unless you want to debug such a crash.
+ 
++config WRAPPER_PRINT
++	bool "Boot wrapper print" if EMBEDDED
++	default y
++	help
++	  Enable informational output from the bootwrapper (bzImage and zImage).
++
+ config DEBUG_STACKOVERFLOW
+ 	bool "Check for stack overflows"
+ 	depends on DEBUG_KERNEL
+diff --git a/arch/i386/boot/compressed/misc.c b/arch/i386/boot/compressed/misc.c
+index b28505c..cc630d5 100644
+--- a/arch/i386/boot/compressed/misc.c
++++ b/arch/i386/boot/compressed/misc.c
+@@ -184,8 +184,6 @@ static void free(void *where);
+ static void *memset(void *s, int c, unsigned n);
+ static void *memcpy(void *dest, const void *src, unsigned n);
+ 
+-static void putstr(const char *);
+-
+ static unsigned long free_mem_ptr;
+ static unsigned long free_mem_end_ptr;
+ 
+@@ -232,7 +230,8 @@ static void gzip_release(void **ptr)
  {
- 	const unsigned int __tlb_flag = __cpu_tlb_flags;
-
--	preempt_disable();
- 	if (tlb_flag(TLB_DCLEAN))
- 		asm("mcr	p15, 0, %0, c7, c10, 1	@ flush_pmd"
- 			: : "r" (pmd) : "cc");
- 	if (tlb_flag(TLB_WB))
- 		dsb();
--	preempt_enable();
+ 	free_mem_ptr = (unsigned long) *ptr;
  }
+- 
++
++#ifdef CONFIG_WRAPPER_PRINT 
+ static void scroll(void)
+ {
+ 	int i;
+@@ -278,6 +277,9 @@ static void putstr(const char *s)
+ 	outb_p(15, vidport);
+ 	outb_p(0xff & (pos >> 1), vidport+1);
+ }
++#else
++#define putstr(__x) do{}while(0)
++#endif /* CONFIG_WRAPPER_PRINT */
+ 
+ static void* memset(void* s, int c, unsigned n)
+ {
+diff --git a/arch/x86_64/Kconfig.debug b/arch/x86_64/Kconfig.debug
+index 775d211..a1b87b8 100644
+--- a/arch/x86_64/Kconfig.debug
++++ b/arch/x86_64/Kconfig.debug
+@@ -6,6 +6,12 @@ config TRACE_IRQFLAGS_SUPPORT
+ 
+ source "lib/Kconfig.debug"
+ 
++config WRAPPER_PRINT
++	bool "Boot wrapper print" if EMBEDDED
++	default y
++	help
++	  Enable informational output from the bootwrapper (bzImage and zImage).
++
+ config DEBUG_RODATA
+        bool "Write protect kernel read-only data structures"
+        depends on DEBUG_KERNEL
+diff --git a/arch/x86_64/boot/compressed/misc.c b/arch/x86_64/boot/compressed/misc.c
+index f932b0e..43bb44c 100644
+--- a/arch/x86_64/boot/compressed/misc.c
++++ b/arch/x86_64/boot/compressed/misc.c
+@@ -184,8 +184,6 @@ static void free(void *where);
+ static void *memset(void *s, int c, unsigned n);
+ static void *memcpy(void *dest, const void *src, unsigned n);
+ 
+-static void putstr(const char *);
+-
+ static long free_mem_ptr;
+ static long free_mem_end_ptr;
+ 
+@@ -228,7 +226,8 @@ static void gzip_release(void **ptr)
+ {
+ 	free_mem_ptr = (long) *ptr;
+ }
+- 
++
++#ifdef CONFIG_WRAPPER_PRINT 
+ static void scroll(void)
+ {
+ 	int i;
+@@ -274,6 +273,9 @@ static void putstr(const char *s)
+ 	outb_p(15, vidport);
+ 	outb_p(0xff & (pos >> 1), vidport+1);
+ }
++#else
++#define putstr(__x) do{}while(0)
++#endif /* CONFIG_WRAPPER_PRINT */
+ 
+ static void* memset(void* s, int c, unsigned n)
+ {
+-- 
+1.5.1.4
 
- static inline void clean_pmd_entry(pmd_t *pmd)
