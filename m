@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762613AbXEWKyC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbXEWK7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762613AbXEWKyC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 06:54:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758660AbXEWKxy
+	id S1763500AbXEWK7U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 06:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758892AbXEWK7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 06:53:54 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:60194 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758439AbXEWKxx (ORCPT
+	Wed, 23 May 2007 06:59:08 -0400
+Received: from stinky.trash.net ([213.144.137.162]:39068 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758439AbXEWK7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 06:53:53 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
-       linux-mm-cc@laptop.org
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [RFC] LZO de/compression support - take 3
-Date: Wed, 23 May 2007 11:53:37 +0100
-To: Nitin Gupta <nitingupta910@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
+	Wed, 23 May 2007 06:59:06 -0400
+Message-ID: <46541DC4.4090501@trash.net>
+Date: Wed, 23 May 2007 12:56:04 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: bad networking related lag in v2.6.22-rc2
+References: <20070517174533.GA538@elte.hu> <200705221147.56571.kernel@prachanda.hub> <20070522062233.GA20002@elte.hu> <200705231110.44526.kernel@prachanda.hub> <20070523063052.GB26814@elte.hu>
+In-Reply-To: <20070523063052.GB26814@elte.hu>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------020605000307020501070300"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23 May 2007, at 09:27, Nitin Gupta wrote:
+This is a multi-part message in MIME format.
+--------------020605000307020501070300
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-> This contains LZO1X-1 compressor and LZO1X decompressor (safe and
-> standard version).
+Ingo Molnar wrote:
+> if you feel inclined to try the git-bisection then by all means please 
+> do it (it will certainly be helpful and educative), but it's optional: i 
+> dont think you should 'need' to go through extra debugging chores, my 
+> analysis based on the excellent trace you provided still holds and 
+> whoever modified htb_dequeue()'s logic recently ought to be able to 
+> figure that out (or send you a debug patch to further narrow the problem 
+> down).
+>
+> The trace shows a _clearly_ anomalous loop: for example there's 56396 
+> (!) calls to rb_first() in htb_dequeue() [without the kernel ever 
+> exiting that function]:
+> 
+>   earth4:~/s> grep rb_first trace-to-ingo.txt  | wc -l
+>   56396
 
-I understand that the 'safe' decompression code is 'somewhat slower'  
-and that decompressor performance is a key feature of this algorithm.  
-However, I am concerned about the safety implications of including  
-the 'unsafe' standard version in-kernel when likely uses include  
-compression of network data, memory objects and so-on, all of which  
-could in theory be maliciously modified.
 
-I'm no kernel or programming expert, so I may be off the mark with  
-this one. To me, at least, even if the answer is 'no, there isn't a  
-problem' that's still a valuable clarification :)
+How is this trace to be understood? Is it simply a call trace in
+execution-order? If thats the case than we are exiting htb_dequeue,
+each call to qdisc_watchdog_schedule happens at the very end of
+that function, which would imply a bug in __qdisc_run.
 
-Thanks,
+Looking at the recent changes to __qdisc_run, this indeed seems
+to be the case, when the qdisc is throttled and has packets queued
+we return a value != 0, causing __qdisc_run to loop until all
+packets have been sent, which may be a long time.
 
-Michael-Luke Jones
-[please cc me on replies as I am not subscribed to lkml]
+Anant, can you please verify by testing the attached patch? Thanks.
+
+--------------020605000307020501070300
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+index f28bb2d..f536060 100644
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -174,7 +174,7 @@ requeue:
+ 
+ out:
+ 	BUG_ON((int) q->q.qlen < 0);
+-	return q->q.qlen;
++	return skb ? q->q.qlen : 0;
+ }
+ 
+ void __qdisc_run(struct net_device *dev)
+
+--------------020605000307020501070300--
