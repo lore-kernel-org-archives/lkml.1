@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935136AbXEWQdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935388AbXEWQe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935136AbXEWQdv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbXEWQdo
+	id S935388AbXEWQe5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758032AbXEWQep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:33:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49174 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758032AbXEWQdn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:33:43 -0400
-Date: Wed, 23 May 2007 17:38:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: tony.luck@intel.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] ia64: Arbitary speed tty ioctl support
-Message-ID: <20070523173828.484c813f@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 23 May 2007 12:34:45 -0400
+Received: from mga09.intel.com ([134.134.136.24]:63868 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756921AbXEWQen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 12:34:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,570,1170662400"; 
+   d="scan'208";a="89768885"
+Date: Wed, 23 May 2007 09:31:19 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, htejun@gmail.com
+Subject: Re: [patch 5/7] genhd: send async notification on media change
+Message-Id: <20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
+In-Reply-To: <20070522141211.fe00333f.akpm@linux-foundation.org>
+References: <20070510072247.063476979@intel.com>
+	<20070509163835.56ad28e0.kristen.c.accardi@intel.com>
+	<20070522141211.fe00333f.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the needed constants and defines to activate this for the IA64
-platform.
+On Tue, 22 May 2007 14:12:11 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+> On Wed, 9 May 2007 16:38:35 -0700
+> Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
+> 
+> > Send an uevent to user space to indicate that a media change event has occurred.
+> > 
+> > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > 
+> > Index: 2.6-git/block/genhd.c
+> > ===================================================================
+> > --- 2.6-git.orig/block/genhd.c
+> > +++ 2.6-git/block/genhd.c
+> > @@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
+> >  	.show	= diskstats_show
+> >  };
+> >  
+> > +static void media_change_notify_thread(struct work_struct *work)
+> > +{
+> > +	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
+> > +	char event[] = "MEDIA_CHANGE=1";
+> > +	char *envp[] = { event, NULL };
+> > +
+> > +	/*
+> > +	 * set enviroment vars to indicate which event this is for
+> > +	 * so that user space will know to go check the media status.
+> > +	 */
+> > +	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
+> > +	put_device(gd->driverfs_dev);
+> > +}
+> > +
+> > +void genhd_media_change_notify(struct gendisk *disk)
+> > +{
+> > +	get_device(disk->driverfs_dev);
+> > +	schedule_work(&disk->async_notify);
+> > +}
+> > +EXPORT_SYMBOL_GPL(genhd_media_change_notify);
+> > +
+> >  struct gendisk *alloc_disk(int minors)
+> >  {
+> >  	return alloc_disk_node(minors, -1);
+> > @@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
+> >  		kobj_set_kset_s(disk,block_subsys);
+> >  		kobject_init(&disk->kobj);
+> >  		rand_initialize_disk(disk);
+> > +		INIT_WORK(&disk->async_notify,
+> > +			media_change_notify_thread);
+> >  	}
+> >  	return disk;
+> 
+> Why does this do a schedule_work() rather than calling kobject_uevent_env()
+> directly?
+> 
 
+Because it is called at Interrupt time.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-ia64/ioctls.h linux-2.6.22-rc1-mm1/include/asm-ia64/ioctls.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-ia64/ioctls.h	2007-04-30 10:48:16.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-ia64/ioctls.h	2007-05-23 16:40:00.942611696 +0100
-@@ -53,6 +53,10 @@
- #define TIOCSBRK	0x5427  /* BSD compatibility */
- #define TIOCCBRK	0x5428  /* BSD compatibility */
- #define TIOCGSID	0x5429  /* Return the session ID of FD */
-+#define TCGETS2		_IOR('T',0x2A, struct termios2)
-+#define TCSETS2		_IOW('T',0x2B, struct termios2)
-+#define TCSETSW2	_IOW('T',0x2C, struct termios2)
-+#define TCSETSF2	_IOW('T',0x2D, struct termios2)
- #define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
- #define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
- 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-ia64/termbits.h linux-2.6.22-rc1-mm1/include/asm-ia64/termbits.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-ia64/termbits.h	2007-04-30 10:48:16.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-ia64/termbits.h	2007-05-23 16:40:25.281911560 +0100
-@@ -138,6 +138,7 @@
- #define HUPCL	0002000
- #define CLOCAL	0004000
- #define CBAUDEX 0010000
-+#define    BOTHER 0010000
- #define    B57600 0010001
- #define   B115200 0010002
- #define   B230400 0010003
-@@ -153,10 +154,12 @@
- #define  B3000000 0010015
- #define  B3500000 0010016
- #define  B4000000 0010017
--#define CIBAUD	  002003600000	/* input baud rate (not used) */
-+#define CIBAUD	  002003600000		/* input baud rate */
- #define CMSPAR	  010000000000		/* mark or space (stick) parity */
- #define CRTSCTS	  020000000000		/* flow control */
- 
-+#define IBSHIFT	16		/* Shift from CBAUD to CIBAUD */
-+
- /* c_lflag bits */
- #define ISIG	0000001
- #define ICANON	0000002
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-ia64/termios.h linux-2.6.22-rc1-mm1/include/asm-ia64/termios.h
---- linux.vanilla-2.6.22-rc1-mm1/include/asm-ia64/termios.h	2007-04-30 11:00:07.000000000 +0100
-+++ linux-2.6.22-rc1-mm1/include/asm-ia64/termios.h	2007-05-23 16:39:52.016968600 +0100
-@@ -87,8 +87,10 @@
- 	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC);	\
- })
- 
--#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
--#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios2))
-+#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios2))
-+#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
-+#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
- 
- # endif /* __KERNEL__ */
- 
+Kristen
