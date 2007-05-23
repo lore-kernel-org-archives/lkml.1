@@ -1,333 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761687AbXEXAnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765022AbXEXAoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761687AbXEXAnq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761931AbXEXAhM
+	id S1765022AbXEXAoP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762135AbXEXAhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:37:12 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40256 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761631AbXEXAhA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:37:00 -0400
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 06/21] Unionfs: Added numerous comments
-Date: Wed, 23 May 2007 20:35:56 -0400
-Message-Id: <11799669723394-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
-In-Reply-To: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
-References: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
+	Wed, 23 May 2007 20:37:34 -0400
+Received: from critter.phunnypharm.org ([67.97.251.11]:3352 "EHLO critter"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761627AbXEXAhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 20:37:15 -0400
+X-Greylist: delayed 1460 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 20:37:15 EDT
+To: linux-kernel@vger.kernel.org
+Cc: Phil Dibowitz <phil@ipom.com>, Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net
+Message-Id: <317339ef5cb48f652b8eb33c3a1a44d8a2b31493.1179964369.git.bcollins@ubuntu.com>
+In-Reply-To: <98cd38b5.git.bcollins@ubuntu.com>
+References: <98cd38b5.git.bcollins@ubuntu.com>
+From: Ben Collins <bcollins@ubuntu.com>
+Date: Wed, 23 May 2007 18:39:24 -0400
+Subject: [PATCH 6/6] UNUSUAL_DEV: Sync up some reported devices from Ubuntu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Erez Zadok <ezk@cs.sunysb.edu>
+Various unusual dev entries accumulated from Ubuntu bug reports.
 
-Audited entire code for documentation.  Added comments at top of functions
-where it felt necessary (i.e., function's name and size don't make it clear
-what it may be doing precisely).  Reformatted some long comments.  Fixed a
-few comment typos and spelling errors.
-
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+CC: Phil Dibowitz <phil@ipom.com>
+CC: Alan Stern <stern@rowland.harvard.edu>
+CC: linux-usb-devel@lists.sourceforge.net
+Signed-off-by: Ben Collins <bcollins@ubuntu.com>
 ---
- fs/unionfs/commonfops.c |    7 ++++---
- fs/unionfs/copyup.c     |   22 ++++++++++++----------
- fs/unionfs/dentry.c     |    5 ++---
- fs/unionfs/file.c       |    1 +
- fs/unionfs/lookup.c     |    3 ++-
- fs/unionfs/main.c       |    8 +++++++-
- fs/unionfs/rename.c     |   13 +++++++++----
- fs/unionfs/subr.c       |   19 ++++++++++---------
- fs/unionfs/super.c      |   15 +++++++++------
- 9 files changed, 56 insertions(+), 37 deletions(-)
+ drivers/usb/storage/unusual_devs.h |   21 +++++++++++++++++++--
+ 1 files changed, 19 insertions(+), 2 deletions(-)
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index 666b3c7..a57471e 100644
---- a/fs/unionfs/commonfops.c
-+++ b/fs/unionfs/commonfops.c
-@@ -240,6 +240,7 @@ out:
- 	return err;
- }
+diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
+index d230ee7..8a24f1c 100644
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1179,8 +1179,8 @@ UNUSUAL_DEV( 0x0a17, 0x006, 0x0000, 0xffff,
+                 US_SC_DEVICE, US_PR_DEVICE, NULL,
+                 US_FL_FIX_INQUIRY ),
  
-+/* perform a delayed copyup of a read-write file on a read-only branch */
- static int do_delayed_copyup(struct file *file, struct dentry *dentry)
- {
- 	int bindex, bstart, bend, err = 0;
-@@ -312,9 +313,9 @@ int unionfs_file_revalidate(struct file *file, int willwrite)
+-/* These are virtual windows driver CDs, which the zd1211rw driver automatically
+- * converts into a WLAN devices. */
++/* These are virtual windows driver CDs, which the zd1211rw driver
++ * automatically converts into WLAN devices. */
+ UNUSUAL_DEV( 0x0ace, 0x2011, 0x0101, 0x0101,
+                 "ZyXEL",
+                 "G-220F USB-WLAN Install",
+@@ -1193,6 +1193,14 @@ UNUSUAL_DEV( 0x0ace, 0x20ff, 0x0101, 0x0101,
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_IGNORE_DEVICE ),
  
- 	/*
- 	 * There are two cases we are interested in.  The first is if the
--	 * generation is lower than the super-block.  The second is if someone
--	 * has copied up this file from underneath us, we also need to refresh
--	 * things.
-+	 * generation is lower than the super-block.  The second is if
-+	 * someone has copied up this file from underneath us, we also need
-+	 * to refresh things.
- 	 */
- 	if (!d_deleted(dentry) &&
- 	    (sbgen > fgen || dbstart(dentry) != fbstart(file))) {
-diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
-index 1495778..4924685 100644
---- a/fs/unionfs/copyup.c
-+++ b/fs/unionfs/copyup.c
-@@ -18,6 +18,12 @@
- 
- #include "union.h"
- 
-+/*
-+ * For detailed explanation of copyup see:
-+ * Documentation/filesystems/unionfs/concepts.txt
-+ */
++/* SanDisk that has a second LUN for a driver ISO, reported by
++ * Ben Collins <bcollins@ubuntu.com> */
++UNUSUAL_DEV( 0x0781, 0x5406, 0x0000, 0xffff,
++		"SanDisk",
++		"U3 Cruzer Micro driver ISO",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_SINGLE_LUN ),
 +
-+/* forward definitions */
- static int copyup_named_dentry(struct inode *dir, struct dentry *dentry,
- 			       int bstart, int new_bindex, const char *name,
- 			       int namelen, struct file **copyup_file,
-@@ -26,11 +32,6 @@ static struct dentry *create_parents_named(struct inode *dir,
- 					   struct dentry *dentry,
- 					   const char *name, int bindex);
+ #ifdef CONFIG_USB_STORAGE_ISD200
+ UNUSUAL_DEV(  0x0bf6, 0xa001, 0x0100, 0x0110,
+ 		"ATI",
+@@ -1271,6 +1279,15 @@ UNUSUAL_DEV( 0x0dd8, 0x1060, 0x0000, 0xffff,
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_INQUIRY ),
  
--/*
-- * For detailed explanation of copyup see:
-- * Documentation/filesystems/unionfs/concepts.txt
-- */
--
- #ifdef CONFIG_UNION_FS_XATTR
- /* copyup all extended attrs for a given dentry */
- static int copyup_xattrs(struct dentry *old_hidden_dentry,
-@@ -487,9 +488,9 @@ out:
- }
- 
- /*
-- * This function creates a copy of a file represented by 'file' which currently
-- * resides in branch 'bstart' to branch 'new_bindex.'  The copy will be named
-- * "name".
-+ * This function creates a copy of a file represented by 'file' which
-+ * currently resides in branch 'bstart' to branch 'new_bindex.'  The copy
-+ * will be named "name".
-  */
- int copyup_named_file(struct inode *dir, struct file *file, char *name,
- 		      int bstart, int new_bindex, loff_t len)
-@@ -509,8 +510,8 @@ int copyup_named_file(struct inode *dir, struct file *file, char *name,
- }
- 
- /*
-- * This function creates a copy of a file represented by 'file' which currently
-- * resides in branch 'bstart' to branch 'new_bindex'.
-+ * This function creates a copy of a file represented by 'file' which
-+ * currently resides in branch 'bstart' to branch 'new_bindex'.
-  */
- int copyup_file(struct inode *dir, struct file *file, int bstart,
- 		int new_bindex, loff_t len)
-@@ -539,6 +540,7 @@ struct dentry *create_parents(struct inode *dir, struct dentry *dentry,
- 	return create_parents_named(dir, dentry, dentry->d_name.name, bindex);
- }
- 
-+/* purge a dentry's lower-branch states (dput/mntput, etc.) */
- static void __cleanup_dentry(struct dentry * dentry, int bindex,
- 			     int old_bstart, int old_bend)
- {
-diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
-index 46a52f7..95cea3b 100644
---- a/fs/unionfs/dentry.c
-+++ b/fs/unionfs/dentry.c
-@@ -18,7 +18,6 @@
- 
- #include "union.h"
- 
--
- /*
-  * Revalidate a single dentry.
-  * Assume that dentry's info node is locked.
-@@ -61,8 +60,8 @@ static int __unionfs_d_revalidate_one(struct dentry *dentry,
- 	sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
- 	/*
- 	 * If we are working on an unconnected dentry, then there is no
--	 * revalidation to be done, because this file does not exist within the
--	 * namespace, and Unionfs operates on the namespace, not data.
-+	 * revalidation to be done, because this file does not exist within
-+	 * the namespace, and Unionfs operates on the namespace, not data.
- 	 */
- 	if (sbgen != dgen) {
- 		struct dentry *result;
-diff --git a/fs/unionfs/file.c b/fs/unionfs/file.c
-index 47ce5ce..57f2bdd 100644
---- a/fs/unionfs/file.c
-+++ b/fs/unionfs/file.c
-@@ -77,6 +77,7 @@ out:
- 	return err;
- }
- 
-+/* helper function to unionfs_write */
- static ssize_t __unionfs_write(struct file * file, const char __user * buf,
- 			       size_t count, loff_t * ppos)
- {
-diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
-index 6ea5aea..cf78c46 100644
---- a/fs/unionfs/lookup.c
-+++ b/fs/unionfs/lookup.c
-@@ -70,6 +70,7 @@ out:
- 	return err;
- }
- 
-+/* main (and complex) driver function for Unionfs's lookup */
- struct dentry *unionfs_lookup_backend(struct dentry *dentry,
- 				      struct nameidata *nd, int lookupmode)
- {
-@@ -406,7 +407,7 @@ out:
- 	return ERR_PTR(err);
- }
- 
--/* This is a utility function that fills in a unionfs dentry.*/
-+/* This is a utility function that fills in a unionfs dentry */
- int unionfs_partial_lookup(struct dentry *dentry)
- {
- 	struct dentry *tmp;
-diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
-index a72e844..84d3bf5 100644
---- a/fs/unionfs/main.c
-+++ b/fs/unionfs/main.c
-@@ -20,7 +20,12 @@
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- 
--/* sb we pass is unionfs's super_block */
-+/*
-+ * Connect a unionfs inode dentry/inode with several lower ones.  This is
-+ * the classic stackable file system "vnode interposition" action.
-+ *
-+ * @sb: unionfs's super_block
-+ */
- int unionfs_interpose(struct dentry *dentry, struct super_block *sb, int flag)
- {
- 	struct inode *hidden_inode;
-@@ -149,6 +154,7 @@ out:
- 	return err;
- }
- 
-+/* like interpose above, but for an already existing dentry */
- void unionfs_reinterpose(struct dentry *dentry)
- {
- 	struct dentry *hidden_dentry;
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index f71bba6..231866e 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -141,6 +141,11 @@ out:
- 	return err;
- }
- 
-+/*
-+ * Main rename code.  This is sufficienly complex, that it's documented in
-+ * Docmentation/filesystems/unionfs/rename.txt.  This routine calls
-+ * do_rename() above to perform some of the work.
-+ */
- static int do_unionfs_rename(struct inode *old_dir,
- 			     struct dentry *old_dentry,
- 			     struct inode *new_dir,
-@@ -358,10 +363,10 @@ static struct dentry *lookup_whiteout(struct dentry *dentry)
- }
- 
- /*
-- * We can't copyup a directory, because it may involve huge
-- * numbers of children, etc.  Doing that in the kernel would
-- * be bad, so instead we let the user-space recurse and ask us
-- * to copy up each file separately
-+ * We can't copyup a directory, because it may involve huge numbers of
-+ * children, etc.  Doing that in the kernel would be bad, so instead we
-+ * return EXDEV to the user-space utility that caused this, and let the
-+ * user-space recurse and ask us to copy up each file separately.
-  */
- static int may_rename_dir(struct dentry *dentry)
- {
-diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
-index fb769ba..d5689f5 100644
---- a/fs/unionfs/subr.c
-+++ b/fs/unionfs/subr.c
-@@ -49,10 +49,11 @@ int create_whiteout(struct dentry *dentry, int start)
- 
- 		if (!hidden_dentry) {
- 			/*
--			 * if hidden dentry is not present, create the entire
--			 * hidden dentry directory structure and go ahead.
--			 * Since we want to just create whiteout, we only want
--			 * the parent dentry, and hence get rid of this dentry.
-+			 * if hidden dentry is not present, create the
-+			 * entire hidden dentry directory structure and go
-+			 * ahead.  Since we want to just create whiteout, we
-+			 * only want the parent dentry, and hence get rid of
-+			 * this dentry.
- 			 */
- 			hidden_dentry = create_parents(dentry->d_inode,
- 						       dentry, bindex);
-@@ -70,8 +71,8 @@ int create_whiteout(struct dentry *dentry, int start)
- 			continue;
- 
- 		/*
--		 * The whiteout already exists. This used to be impossible, but
--		 * now is possible because of opaqueness.
-+		 * The whiteout already exists. This used to be impossible,
-+		 * but now is possible because of opaqueness.
- 		 */
- 		if (hidden_wh_dentry->d_inode) {
- 			dput(hidden_wh_dentry);
-@@ -92,7 +93,7 @@ int create_whiteout(struct dentry *dentry, int start)
- 			break;
- 	}
- 
--	/* set dbopaque  so that lookup will not proceed after this branch */
-+	/* set dbopaque so that lookup will not proceed after this branch */
- 	if (!err)
- 		set_dbopaque(dentry, bindex);
- 
-@@ -102,8 +103,8 @@ out:
- }
- 
- /*
-- * This is a helper function for rename, which ends up with hosed over dentries
-- * when it needs to revert.
-+ * This is a helper function for rename, which ends up with hosed over
-+ * dentries when it needs to revert.
-  */
- int unionfs_refresh_hidden_dentry(struct dentry *dentry, int bindex)
- {
-diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index 7813ea8..39939ba 100644
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -66,13 +66,15 @@ static void unionfs_put_inode(struct inode *inode)
- {
- 	/*
- 	 * This is really funky stuff:
-+	 *
- 	 * Basically, if i_count == 1, iput will then decrement it and this
--	 * inode will be destroyed.  It is currently holding a reference to the
--	 * hidden inode.  Therefore, it needs to release that reference by
--	 * calling iput on the hidden inode.  iput() _will_ do it for us (by
--	 * calling our clear_inode), but _only_ if i_nlink == 0.  The problem
--	 * is, NFS keeps i_nlink == 1 for silly_rename'd files.  So we must for
--	 * our i_nlink to 0 here to trick iput() into calling our clear_inode.
-+	 * inode will be destroyed.  It is currently holding a reference to
-+	 * the hidden inode.  Therefore, it needs to release that reference
-+	 * by calling iput on the hidden inode.  iput() _will_ do it for us
-+	 * (by calling our clear_inode), but _only_ if i_nlink == 0.  The
-+	 * problem is, NFS keeps i_nlink == 1 for silly_rename'd files.  So
-+	 * we must force our i_nlink to 0 here to trick iput() into calling
-+	 * our clear_inode.
- 	 */
- 
- 	if (atomic_read(&inode->i_count) == 1)
-@@ -842,6 +844,7 @@ int unionfs_init_inode_cache(void)
- 	return err;
- }
- 
-+/* unionfs inode cache destructor */
- void unionfs_destroy_inode_cache(void)
- {
- 	if (unionfs_inode_cachep)
++/* Reported by Edward Chapman <[EMAIL PROTECTED]>
++   Netac OnlyDisk Mini U2CV2 512MB USB 2.0 Flash Drive */
++UNUSUAL_DEV( 0x0dd8, 0xd202, 0x0000, 0x9999,
++		"Netac",
++		"USB Flash Disk",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_IGNORE_RESIDUE ),
++
++
+ /* Patch by Stephan Walter <stephan.walter@epfl.ch>
+  * I don't know why, but it works... */
+ UNUSUAL_DEV( 0x0dda, 0x0001, 0x0012, 0x0012,
 -- 
-1.5.2.rc1.165.gaf9b
+1.5.1.4
 
