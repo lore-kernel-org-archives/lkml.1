@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934311AbXEWUga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935243AbXEWUgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934311AbXEWUga (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 16:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbXEWUgX
+	id S935243AbXEWUgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 16:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759236AbXEWUg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 16:36:23 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:21816 "EHLO hobbit.corpit.ru"
+	Wed, 23 May 2007 16:36:26 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:20362 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755254AbXEWUgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 16:36:22 -0400
-Message-ID: <4654A559.1010206@msgid.tls.msk.ru>
-Date: Thu, 24 May 2007 00:34:33 +0400
+	id S1758225AbXEWUgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 16:36:25 -0400
+Message-ID: <4654A581.6010201@msgid.tls.msk.ru>
+Date: Thu, 24 May 2007 00:35:13 +0400
 From: Michael Tokarev <mjt@tls.msk.ru>
 Organization: Telecom Service, JSC
 User-Agent: Icedove 1.5.0.10 (X11/20070329)
