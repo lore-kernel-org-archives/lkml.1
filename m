@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbXEWV66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbXEWV7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759075AbXEWV66 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756343AbXEWV6v
+	id S1759377AbXEWV7n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 17:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXEWV7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:58:51 -0400
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:42307
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756245AbXEWV6v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:58:51 -0400
-Date: Wed, 23 May 2007 14:57:56 -0700
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: [PATCH 0/7] lock contention tracking -v2
-Message-ID: <20070523215756.GA26450@gnuppy.monkey.org>
-References: <20070523072618.129001605@chello.nl> <20070523103311.GA13482@elte.hu>
-MIME-Version: 1.0
+	Wed, 23 May 2007 17:59:35 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:35393 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756129AbXEWV7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 17:59:34 -0400
+Date: Wed, 23 May 2007 23:59:05 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Malton <chrism@cjsoftuk.dyndns.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Fwd: Re: Google are using linux kernel - what do you know about the source?]
+Message-ID: <20070523215905.GA18954@electric-eye.fr.zoreil.com>
+References: <4654729C.70404@cjsoftuk.dyndns.org> <4654969F.9060904@garzik.org> <20070523210249.3e965257@the-village.bc.nu> <46549F45.4040403@garzik.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070523103311.GA13482@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+In-Reply-To: <46549F45.4040403@garzik.org>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 12:33:11PM +0200, Ingo Molnar wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-...
-> > It also measures lock wait-time and hold-time in nanoseconds. The 
-> > minimum and maximum times are tracked, as well as a total (which 
-> > together with the number of event can give the avg).
-> > 
-> > All statistics are done per lock class, per write (exclusive state) 
-> > and per read (shared state).
-> > 
-> > The statistics are collected per-cpu, so that the collection overhead 
-> > is minimized via having no global cachemisses.
-...
-> really nice changes! The wait-time and hold-time changes should make it 
-> as capable as lockmeter and more: lockmeter only measured spinlocks, 
-> while your approach covers all lock types (spinlocks, rwlocks and 
-> mutexes).
+Jeff Garzik <jeff@garzik.org> :
+> Alan Cox wrote:
+[...]
+> >They've quietly fed little bits back now and then but not made a big song
+> >and dance about it. Hopefully with Andrew there and the like more will
+> >occur.
 > 
-> The performance enhancements in -v2 should make it much more scalable 
-> than your first version was. (in fact i think it should be completely 
-> scalable as the statistics counters are all per-cpu, so there should be 
-> no cacheline bouncing at all from this)
+> Strange that the NIC and SATA driver bits never seem to be among those 
+> "little bits"...  Along with filesystem and other modifications 
+> discussed in the press, or observable net stack behavior when connecting 
+> to their computers over the 'net.
+> 
+> So, emphasis on "little", I guess.
 
-per cpu is pretty important since you can potentially hit that logic more
-often with your wait-time code. You don't want to effect the actual
-measurement with the measurement code. It's that uncertainty principal thing.
+It is a strange way to ask more contribution from the @google.com people
+whose name appear in git log.
 
-It is looking pretty good. :) You might like to pretty the output even more,
-but it's pretty usable as is.
+:o(
 
-bill
-
+-- 
+Ueimor
