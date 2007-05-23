@@ -1,240 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934365AbXEWSLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbXEWSU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934365AbXEWSLO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758178AbXEWSKo
+	id S1758788AbXEWSU7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbXEWSUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:10:44 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:47494 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756516AbXEWSKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:10:43 -0400
-Date: Wed, 23 May 2007 20:11:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] headercheck: add dependency check and improve speed
-Message-ID: <20070523181140.GA23425@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 23 May 2007 14:20:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:55155 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755849AbXEWSUv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 14:20:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=imr5EU+OQYWTOyeffW2EXCS8lHDBmsl5Emw84PmEPbSlqbjn0IbHVIjTubW4a39uDHBV2iFXywjYz1n8NTxoU2JKMvvUuFxrTt+F0GuYQLMs6ZnVUjIPCmMvd9TWVi1MZTLCez5hSqrdo+echqDJyi896tbVnh7piGXQUZc/V/M=
+Message-ID: <d9b9d95f0705231120p1b3a2a8ey59ca01c7552f43f8@mail.gmail.com>
+Date: Wed, 23 May 2007 19:20:45 +0100
+From: "Renato Golin" <rengolin@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] joydev.c automatic re-calibration
+Cc: linux-kernel@vger.kernel.org, "Dmitry Torokhov" <dtor@mail.ru>
+In-Reply-To: <20070523110013.5ffc4a91.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+References: <d9b9d95f0705221733l46de4262qd9c3f5047c53667@mail.gmail.com>
+	 <20070523110013.5ffc4a91.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduced a perl based script to do the actual check of the headers.
-Modified Makfile.headerinst so all files in a dir is checked with
-one call to checkhdr.pl script.
+On 23/05/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> A few patch protocol things:
+>
+> - Please always prepare patches in `patch -p1' form
+>
+> - Include a Signed-off-by: as per Documentation/SubmittingPatches,
+>   section 11.
+>
+> - Avoid including two copies of the patch in the one email.  Inlined plain
+>   text is preferred, ext/plain attachments are grudgingly accepted.
+>
+> I descrambled the patch, fixed a reject and queued it up in the -mm tree
+> for Dmitry's consideration, thanks.
 
-The file check is used as marker when last run was executed.
-And the file .check.cmd contains a list of dependencies used
-by make to determine if a new check should be executed.
+Hi Andrew,
 
-The perl script was named check* to follow same naming
-as other check scripts.
+sorry for the confusion, I'm following up with Dimitri and Jiri and
+hopefully will have a patch following the protocol next time. ;)
 
-The speedup is > 10 seconds for a build with headercheck enabled.
+cheers,
+--renato
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-
-Linus complained that the header check part was too
-slow on his mac-mini.
-So as the well trained monkey^Whacker I am I went ahead
-and optimized it.
-
-The unidef and install part could be optimized too but that
-will be another time.
-
-David - I assume you will take it in your tree?
-
-	Sam
-
- b/lib/Kconfig.debug            |    1 
- b/scripts/Makefile.headersinst |   51 +++++++++++++++++++++------------------
- b/scripts/checkhdr.pl          |   53 +++++++++++++++++++++++++++++++++++++++++
- scripts/hdrcheck.sh            |   10 -------
- 4 files changed, 82 insertions(+), 33 deletions(-)
-
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index fbc5c62..596f973 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -70,6 +70,7 @@ config HEADERS_CHECK
- 	  relevant for userspace, say 'Y', and check the headers
- 	  exported to $(INSTALL_HDR_PATH) (usually 'usr/include' in
- 	  your build tree), to make sure they're suitable.
-+	  Note: Enabling this check requires perl to be installed
- 
- config DEBUG_KERNEL
- 	bool "Kernel debugging"
-diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-index 8cd6301..988e5ba 100644
---- a/scripts/Makefile.headersinst
-+++ b/scripts/Makefile.headersinst
-@@ -23,6 +23,15 @@ HDRSED  := sed 	-e "s/ inline / __inline__ /g" \
- 
- _dst := $(if $(dst),$(dst),$(obj))
- 
-+# file generated during checktime listing depfiles and incfiles
-+depsfile  := $(INSTALL_HDR_PATH)/$(_dst)/.check.cmd
-+checkfile := $(INSTALL_HDR_PATH)/$(_dst)/check
-+
-+# Include autogenerated file listing depfiles and incfiles
-+ifneq ($(wildcard $(depsfile)),)
-+  include $(depsfile)
-+endif
-+
- ifeq (,$(patsubst include/asm/%,,$(obj)/))
- # For producing the generated stuff in include/asm for biarch builds, include
- # both sets of Kbuild files; we'll generate anything which is mentioned in
-@@ -56,22 +65,18 @@ subdir-y	:= $(patsubst %/,%,$(filter %/, $(header-y)))
- header-y	:= $(filter-out %/, $(header-y))
- header-y	:= $(filter-out $(unifdef-y),$(header-y))
- 
--# stamp files for header checks
--check-y		:= $(patsubst %,.check.%,$(header-y) $(unifdef-y) $(objhdr-y))
-+# All files to check for this dir
-+check-y		:= $(header-y) $(unifdef-y) $(objhdr-y)
- 
- # Work out what needs to be removed
- oldheaders	:= $(patsubst $(INSTALL_HDR_PATH)/$(_dst)/%,%,$(wildcard $(INSTALL_HDR_PATH)/$(_dst)/*.h))
--unwanted	:= $(filter-out $(header-y) $(unifdef-y) $(objhdr-y),$(oldheaders))
--
--oldcheckstamps	:= $(patsubst $(INSTALL_HDR_PATH)/$(_dst)/%,%,$(wildcard $(INSTALL_HDR_PATH)/$(_dst)/.check.*.h))
--unwanted	+= $(filter-out $(check-y),$(oldcheckstamps))
-+unwanted	:= $(filter-out $(check-y),$(oldheaders))
- 
- # Prefix them all with full paths to $(INSTALL_HDR_PATH)
--header-y 	:= $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(header-y))
--unifdef-y 	:= $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(unifdef-y))
--objhdr-y 	:= $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(objhdr-y))
--check-y 	:= $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(check-y))
--
-+header-y   := $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(header-y))
-+unifdef-y  := $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(unifdef-y))
-+objhdr-y   := $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(objhdr-y))
-+check-y    := $(patsubst %,$(INSTALL_HDR_PATH)/$(_dst)/%,$(check-y))
- 
- ifdef ALTARCH
- ifeq ($(obj),include/asm-$(ARCH))
-@@ -96,9 +101,9 @@ quiet_cmd_unifdef	  = UNIFDEF $(patsubst $(INSTALL_HDR_PATH)/%,%,$@)
-       cmd_unifdef	  = $(UNIFDEF) $(patsubst $(INSTALL_HDR_PATH)/$(_dst)/%,$(srctree)/$(obj)/%,$@) \
- 				   | $(HDRSED) > $@ || :
- 
--quiet_cmd_check		  = CHECK   $(patsubst $(INSTALL_HDR_PATH)/$(_dst)/.check.%,$(_dst)/%,$@)
--      cmd_check		  = $(CONFIG_SHELL) $(srctree)/scripts/hdrcheck.sh \
--                              $(INSTALL_HDR_PATH)/include $(subst /.check.,/,$@) $@
-+quiet_cmd_check		  = CHECK   $(words $(check-y)) files in $(_dst)
-+      cmd_check		  = $(PERL) $(srctree)/scripts/checkhdr.pl \
-+                              $(INSTALL_HDR_PATH)/include $(depsfile) $(check-y)
- 
- quiet_cmd_remove	  = REMOVE  $(_dst)/$@
-       cmd_remove	  = rm -f $(INSTALL_HDR_PATH)/$(_dst)/$@
-@@ -137,17 +142,16 @@ echo "\#endif /* $$STUBDEF */" ;					\
- .PHONY: __headersinst __headerscheck
- 
- ifdef HDRCHECK
--__headerscheck: $(subdir-y) $(check-y)
--	@true
-+__headerscheck: $(subdir-y) $(checkfile)
-+	$(Q):
- 
--$(check-y) : $(INSTALL_HDR_PATH)/$(_dst)/.check.%.h : $(INSTALL_HDR_PATH)/$(_dst)/%.h 
--	$(call cmd,check)
-+.PHONY: FORCE
-+$(checkfile): $(depfiles) FORCE
-+	$(if $?, $(call cmd,check))
-+	$(Q)touch $(checkfile)
- 
--# Other dependencies for $(check-y)
--include /dev/null $(wildcard $(check-y))
--
--# ... but leave $(check-y) as .PHONY for now until those deps are actually correct.
--.PHONY: $(check-y)
-+# dummy rule - cannot be made
-+$(depfiles) : ;
- 
- else
- # Rules for installing headers
-@@ -192,3 +196,4 @@ altarch-dir: $(subdir-y) $(header-y) $(unifdef-y) $(objhdr-y)
- .PHONY: $(subdir-y)
- $(subdir-y):
- 	$(Q)$(MAKE) $(hdrinst)=$(obj)/$@ dst=$(_dst)/$@ rel=../$(rel)
-+
-diff --git a/scripts/checkhdr.pl b/scripts/checkhdr.pl
-new file mode 100644
-index 0000000..bad7dd7
---- /dev/null
-+++ b/scripts/checkhdr.pl
-@@ -0,0 +1,53 @@
-+#!/usr/bin/perl
-+#
-+# checkhdr.pl check that all files included by a file exists
-+#
-+# Usage: dir depfile [files...]
-+# dir:      dir to look for included files
-+# depfile:  file to write out which files was parsed and used by the parsed file
-+# files...: list of files to check
-+#
-+# The script reads the supplied file line by line and for each include statement
-+# it checks if the included file actually exists.
-+#
-+# Only include files located in asm* and linux* are checked. The rest are assumed
-+# to be system include files.
-+# The depfile has a list of unique filenames - make does not allow duplicates
-+
-+my ($dir, $depfile, @files) = @ARGV;
-+
-+my $includere = qr/^\s*#\s*include\s+<(.*)>/;
-+my $ret = 0;
-+my $lineno = 0;
-+my @depfiles;
-+
-+foreach $file (@files) {
-+	open(FILE, "< $file") or die "$file: $!\n";
-+	push(@depfiles, $file);
-+	$lineno = 0;
-+	while ($line = <FILE>) {
-+		$lineno++;
-+		if ($line =~ m/$includere/) {
-+			my $inc = $1;
-+			if ($inc =~ m/^asm/ || $inc =~ m/^linux/) {
-+				if (!(stat($dir . "/" . $inc))) {
-+					print STDERR "$file:$lineno: included file '$inc' is not exported\n";
-+					$ret = 1;
-+				}
-+				push(@depfiles, $dir . "/" . $inc);
-+			}
-+		}
-+	}
-+	close(FILE);
-+}
-+open(DEPFILE, "> $depfile") or die "$depfile: $!\n";
-+print DEPFILE "depfiles := \\\n";
-+
-+@dep_unique{@depfiles} = ();
-+@dep_unique_list = sort keys %dep_unique;
-+foreach $f (@dep_unique_list) {
-+	print DEPFILE "  $f \\\n";
-+}
-+print DEPFILE "\n";
-+close(DEPFILE);
-+exit($ret);
-diff --git a/scripts/hdrcheck.sh b/scripts/hdrcheck.sh
-deleted file mode 100755
-index 3159858..0000000
---- a/scripts/hdrcheck.sh
-+++ /dev/null
-@@ -1,10 +0,0 @@
--#!/bin/sh
--
--for FILE in `grep '^[ \t]*#[ \t]*include[ \t]*<' $2 | cut -f2 -d\< | cut -f1 -d\> | egrep ^linux\|^asm` ; do
--    if [ ! -r $1/$FILE ]; then
--	echo $2 requires $FILE, which does not exist in exported headers
--	exit 1
--    fi
--done
--# FIXME: List dependencies into $3
--touch $3
+Reclaim your digital rights, eliminate DRM, learn more at
+http://www.defectivebydesign.org/what_is_drm
