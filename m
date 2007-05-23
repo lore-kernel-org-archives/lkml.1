@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXEWMk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbXEWMvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbXEWMk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 08:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbXEWMkS
+	id S1758468AbXEWMvT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 08:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbXEWMvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 08:40:18 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59908 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754645AbXEWMkR (ORCPT
+	Wed, 23 May 2007 08:51:08 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42548 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754564AbXEWMvG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 08:40:17 -0400
-Date: Wed, 23 May 2007 13:40:13 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [RFC PATCH] file as directory
-Message-ID: <20070523124013.GV4095@ftp.linux.org.uk>
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk> <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu> <20070523070306.GM4095@ftp.linux.org.uk> <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu> <20070523073658.GO4095@ftp.linux.org.uk> <1179923682.6480.18.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
+	Wed, 23 May 2007 08:51:06 -0400
+X-Sasl-enc: YUrnHmKwWfE1yr1hOr3s3wOyj7hegHo5k+G1hzs6x+C2 1179924665
+Date: Wed, 23 May 2007 09:51:00 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: 2.6.21-mm2: ACPI exception on resume
+Message-ID: <20070523125100.GA826@khazad-dum.debian.net>
+References: <20070519204504.GA24704@khazad-dum.debian.net> <20070519223843.GN11115@waste.org> <20070520035259.GA13224@khazad-dum.debian.net> <20070521222339.GF11115@waste.org> <20070521230349.GA645@khazad-dum.debian.net> <20070522224515.GW11115@waste.org> <20070523001943.GA3743@khazad-dum.debian.net> <20070523014825.GX11115@waste.org> <20070523041958.GA15952@khazad-dum.debian.net> <2c0942db0705222141se133553re06370476d436b12@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1179923682.6480.18.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <2c0942db0705222141se133553re06370476d436b12@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 08:34:42AM -0400, Trond Myklebust wrote:
-> On Wed, 2007-05-23 at 08:36 +0100, Al Viro wrote:
-> > On Wed, May 23, 2007 at 09:19:17AM +0200, Miklos Szeredi wrote:
-> > > > Eh...  Arbitrary limitations are fun, aren't they?
-> > > 
-> > > But these mounts _are_ special.  There is really no point in moving or
-> > > pivoting them.
-> > 
-> > pivoting - probably true, moving... why not?
+On Tue, 22 May 2007, Ray Lee wrote:
+> On 5/22/07, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> >> I shouldn't have to upgrade my BIOS to work with a new kernel any more
+> >> than I should have to upgrade my browser.
+> >
+> >We don't agree there, as you are not talking about a stable kernel series.
 > 
-> Moving would be an implementation artefact that doesn't really
-> correspond to any useful operation on the filesyst
-> 
-> AFAIK, most filesystems that have implemented subfiles (excepting
-> Reiser4 of course) do not allow you to rename or move the subfile
-> directory or its contents from one parent file to another.
+> Ah, so you're planning on submitting these patches for 2.7 then? 2.6
+> is perpetually stable. Matt is quite correct; feel free to ask for
+> clarifications from Linus et al if you need guidance.
 
-If that's about xattr and nothing else, colour me thoroughly uninterested.
-If it might have other interesting uses, OTOH...
+2.6.x.y is stable.  2.6.x is not by any reasonably strict definition of
+stable.  Unless you can explain how the stuff that went in 2.6.21 could be
+added to a stable series kernel, do not even bother replying.
+
+And for the record, the patches are NOT mine, but since I am the one usually
+dealing directly with thinkpad firmware, I jumped in to help debug things as
+a thinkpad firmware was *probably* to blame.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
