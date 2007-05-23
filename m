@@ -1,369 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765469AbXEWOyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764204AbXEWO6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765469AbXEWOyP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 10:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757774AbXEWOx7
+	id S1764204AbXEWO6j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 10:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbXEWO6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 10:53:59 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:53810 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755634AbXEWOx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 10:53:58 -0400
-Message-ID: <4654557B.50603@linux.vnet.ibm.com>
-Date: Wed, 23 May 2007 20:23:47 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-mm@kvack.org
-CC: Balbir Singh <balbir@in.ibm.com>, Pavel Emelianov <xemul@sw.ru>,
-       Paul Menage <menage@google.com>, Kirill Korotaev <dev@sw.ru>,
-       devel@openvz.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
-       Aubrey Li <aubreylee@gmail.com>
-Subject: [RFC][PATCH 3/3] Containers: Pagecache accounting and control subsystem
- (v3)
-References: <46545459.2090804@linux.vnet.ibm.com>
-In-Reply-To: <46545459.2090804@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 May 2007 10:58:32 -0400
+Received: from smtp.osdl.org ([207.189.120.12]:39819 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756276AbXEWO6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 10:58:31 -0400
+Date: Wed, 23 May 2007 07:58:20 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mike Houston <mikeserv@bmts.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+Message-ID: <20070523075820.3d9fc3f8@freepuppy>
+In-Reply-To: <alpine.LFD.0.98.0705221817150.3890@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+	<20070520170506.814a38d9.mikeserv@bmts.com>
+	<20070521084549.61a1aa71@freepuppy>
+	<20070521131055.0017404f.mikeserv@bmts.com>
+	<20070521103755.51b954e1@freepuppy>
+	<20070521225806.bb18d589.mikeserv@bmts.com>
+	<20070521213146.3e220a44@freepuppy>
+	<20070522181444.ad932718.mikeserv@bmts.com>
+	<alpine.LFD.0.98.0705221653010.3890@woody.linux-foundation.org>
+	<46538AEE.4030700@linux-foundation.org>
+	<alpine.LFD.0.98.0705221817150.3890@woody.linux-foundation.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pagecache and RSS accounting Hooks
-----------------------------------
+On Tue, 22 May 2007 18:53:33 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-New calls have been added from swap_state.c and filemap.c to track pagecache
-and swapcache pages.
+> 
+> 
+> On Tue, 22 May 2007, Stephen Hemminger wrote:
+> > 
+> > It looks like the chip reads the wrong memory sometimes. The problem happens
+> > only on the on-board NIC's and only on this kind of motherboard.
+> 
+> Do you know if it happens for particular addresses? (Ie, can you tell what 
+> the physical address of the descriptor is for the errors?)
 
-All existing RSS hooks have been generalised for pagecache accounting as well.
+I'll look but there didn't seem to be an obvious pattern when I last looked.
 
-Most of these are function prototype changes.
 
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
- fs/exec.c       |    4 ++--
- mm/filemap.c    |   18 ++++++++++++++++++
- mm/fremap.c     |    4 ++--
- mm/memory.c     |   20 ++++++++++----------
- mm/migrate.c    |    4 ++--
- mm/rmap.c       |   12 ++++++------
- mm/swap_state.c |   16 ++++++++++++++++
- mm/swapfile.c   |    4 ++--
- 8 files changed, 58 insertions(+), 24 deletions(-)
+> 
+> > For testing, I have put code in to check that the receive data actually
+> > arrived before the IRQ, it triggered on my Gigabyte 925 motherboard. It
+> > appears that DMA access is messed up.
+> 
+> Yes, that certainly would also explain memory corruption. Either because 
+> writes went to the wrong address, or because writes went to the right 
+> address, but because an earlier IO descriptor read had gotten corrupted, 
+> the "right address" was in fact the wrong one ;)
+> 
+> The reason I ask whether you have some way of telling the pattern for the 
+> physical address is that one traditional cause of DMA errors is due to 
+> broken RAM remapping setup.
+> 
+> As an example of that - imagine that you have 1GB of RAM in the machine, 
+> and realize that the memory behind the 640kB -> 1MB area isn't accessible, 
+> because it's taken up by the legacy ISA region.
+> 
+> You have two possible outcomes: either (a) the memory is just "gone", and 
+> you lost it, or (b) there is some RAM remapping in the core chipset that 
+> makes the lost 384kB show up _above_ the 1GB mark instead.
+> 
+> The same "legacy ISA" hole situation happens for the "legacy PCI" hole, 
+> which is why if you have 4GB of RAM in the machine, usually you'll see 
+> 3GB at addresses 0-3GB (roughly), and then you'll see the rest at above 
+> the 4GB mark, in order to have a nice PCI hole in the 32-bit access range.
+> 
+> There's also the "legacy 286" hole at the 15-16MB mark (which nobody uses 
+> any more, but chipsets still inexplicably support), and the SMM remapping. 
+> 
+> Anyway, core chipsets generally do CPU memory accesses _differently_ from 
+> DMA accesses from the PCI bus (at a minimum, SMM is something that only 
+> the CPU can do), so I could see a situation where the remapping was set up 
+> correctly for the CPU (and perhaps for "core chipset" devices like the 
+> integrated southbridge), but devices that do DMA from the outside get 
+> screwed over.
+>
 
---- linux-2.6.20.orig/fs/exec.c
-+++ linux-2.6.20/fs/exec.c
-@@ -316,7 +316,7 @@ void install_arg_page(struct vm_area_str
- 	if (unlikely(anon_vma_prepare(vma)))
- 		goto out;
+This board doesn't have any onboard video so that helps. I am running
+with 2GB of memory.
 
--	if (container_rss_prepare(page, vma, &pcont))
-+	if (container_page_prepare(page, vma->vm_mm, &pcont, PAGE_TYPE_RSS))
- 		goto out;
+I can put a card with similar chip in an X1 slot, and there are no
+problems.  Same driver, but different bridges, and slightly different
+Marvell chip.
+ 
+> But it might not happen for all addresses. Non-remapped stuff might work 
+> well, so if there is some way of figuring out what the bad DMA address was 
+> for an erreneous access, that might offer some clues.
+> 
+> > This board has lots of "overclocker" friendly stuff; maybe the BIOS 
+> > never really sets up the PCI bridges and clocks properly.
+> 
+> It's hard to set up a normal PCI-PCI bridge subtly incorrectly. But 
+> special RAM timing or remapping stuff for the host bridge - sure.
+> 
+> > It doesn't seem like a software or driver problem. I have tried tweaking PCI
+> > registers but nothing worked in this case.
+> 
+> Yeah, the PCI registers that would affect things like this tend to be in 
+> the host bridge, not on the normal device.
+> 
+> That said, Intel doesn't generally do the really insane things. And a lot 
+> of the old remapping stuff is simply not done any more. For example, I 
+> doubt that the 925 chipset even supports remapping the 640k-1M range any 
+> more: 384kB just isn't worth it when people talk about gigs of RAM, the 
+> way it was when 16MB was considered a lot.
+> 
+> And looking quickly at the Intel 925X MCH (memory controller hub) 
+> registers, nothing jumps out as a good candidate for some obvious bug. 
+> 
+> 			Linus
 
- 	flush_dcache_page(page);
-@@ -338,7 +338,7 @@ void install_arg_page(struct vm_area_str
- 	return;
+Here is the PCI controller chain to the device:
 
- out_release:
--	container_rss_release(pcont);
-+	container_page_release(pcont, PAGE_TYPE_RSS);
- out:
- 	__free_page(page);
- 	force_sig(SIGKILL, current);
---- linux-2.6.20.orig/mm/filemap.c
-+++ linux-2.6.20/mm/filemap.c
-@@ -30,6 +30,7 @@
- #include <linux/security.h>
- #include <linux/syscalls.h>
- #include <linux/cpuset.h>
-+#include <linux/rss_container.h>
- #include "filemap.h"
- #include "internal.h"
+00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 1 (rev 02) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 32 bytes
+	Bus: primary=00, secondary=02, subordinate=02, sec-latency=0
+	I/O behind bridge: 00005000-00005fff
+	Memory behind bridge: fff00000-000fffff
+	Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [40] Express Root Port (Slot+) IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s, Port 1
+		Link: Latency L0s <1us, L1 <4us
+		Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x0
+		Slot: AtnBtn- PwrCtrl- MRL- AtnInd- PwrInd- HotPlug+ Surpise+
+		Slot: Number 16, PowerLimit 10.000000
+		Slot: Enabled AtnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq-
+		Slot: AttnInd Unknown, PwrInd Unknown, Power-
+		Root: Correctable- Non-Fatal- Fatal- PME-
+	Capabilities: [80] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
+		Address: fee0300c  Data: 4169
+	Capabilities: [90] Subsystem: Giga-byte Technology Unknown device 5001
+	Capabilities: [a0] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [100] Virtual Channel
+	Capabilities: [180] Unknown (5)
 
-@@ -117,6 +118,9 @@ void __remove_from_page_cache(struct pag
- 	struct address_space *mapping = page->mapping;
+00:1c.4 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 5 (rev 02) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 32 bytes
+	Bus: primary=00, secondary=05, subordinate=05, sec-latency=0
+	I/O behind bridge: 0000a000-0000afff
+	Memory behind bridge: f8000000-f9ffffff
+	Prefetchable memory behind bridge: 0000000080100000-00000000801fffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+	Capabilities: [40] Express Root Port (Slot+) IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: Errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s, Port 5
+		Link: Latency L0s <256ns, L1 <4us
+		Link: ASPM Disabled RCB 64 bytes CommClk+ ExtSynch-
+		Link: Speed 2.5Gb/s, Width x1
+		Slot: AtnBtn- PwrCtrl- MRL- AtnInd- PwrInd- HotPlug+ Surpise+
+		Slot: Number 20, PowerLimit 10.000000
+		Slot: Enabled AtnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq-
+		Slot: AttnInd Unknown, PwrInd Unknown, Power-
+		Root: Correctable- Non-Fatal- Fatal- PME-
+	Capabilities: [80] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
+		Address: fee0300c  Data: 4181
+	Capabilities: [90] Subsystem: Giga-byte Technology Unknown device 5001
+	Capabilities: [a0] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [100] Virtual Channel
+	Capabilities: [180] Unknown (5)
 
- 	radix_tree_delete(&mapping->page_tree, page->index);
-+	/* Uncharge before the mapping is gone */
-+	if (page_container(page))
-+		container_page_del(page_container(page), PAGE_TYPE_PAGECACHE);
- 	page->mapping = NULL;
- 	mapping->nrpages--;
- 	__dec_zone_page_state(page, NR_FILE_PAGES);
-@@ -438,6 +442,8 @@ int add_to_page_cache(struct page *page,
- 		pgoff_t offset, gfp_t gfp_mask)
- {
- 	int error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
-+	struct page_container *pc;
-+	struct mm_struct *mm;
+05:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev 14)
+	Subsystem: Giga-byte Technology Unknown device e000
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 14
+	Region 0: Memory at f9000000 (64-bit, non-prefetchable) [size=16K]
+	Region 2: I/O ports at a000 [size=256]
+	[virtual] Expansion ROM at 80100000 [disabled] [size=128K]
+	Capabilities: [48] Power Management version 3
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [50] Vital Product Data
+	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+	Capabilities: [e0] Express Legacy Endpoint IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: AtnBtn- AtnInd- PwrInd-
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+		Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 0
+		Link: Latency L0s <256ns, L1 unlimited
+		Link: ASPM Disabled RCB 128 bytes CommClk- ExtSynch-
+		Link: Speed 2.5Gb/s, Width x1
+	Capabilities: [100] Advanced Error Reporting
 
- 	if (error == 0) {
- 		write_lock_irq(&mapping->tree_lock);
-@@ -451,6 +457,18 @@ int add_to_page_cache(struct page *page,
- 			__inc_zone_page_state(page, NR_FILE_PAGES);
- 		}
- 		write_unlock_irq(&mapping->tree_lock);
-+		/* Unlock before charge, because we may reclaim this inline */
-+		if(!error) {
-+			if (current->mm)
-+				mm = current->mm;
-+			else
-+				mm = &init_mm;
-+			if (!container_page_prepare(page, mm, &pc, PAGE_TYPE_PAGECACHE))
-+				container_page_add(pc, PAGE_TYPE_PAGECACHE);
-+			else
-+				BUG();
-+		}
-+
- 		radix_tree_preload_end();
- 	}
- 	return error;
---- linux-2.6.20.orig/mm/fremap.c
-+++ linux-2.6.20/mm/fremap.c
-@@ -61,7 +61,7 @@ int install_page(struct mm_struct *mm, s
- 	spinlock_t *ptl;
- 	struct page_container *pcont;
 
--	if (container_rss_prepare(page, vma, &pcont))
-+	if (container_page_prepare(page, vma->vm_mm, &pcont, PAGE_TYPE_RSS))
- 		goto out_release;
-
- 	pte = get_locked_pte(mm, addr, &ptl);
-@@ -95,7 +95,7 @@ unlock:
- 	pte_unmap_unlock(pte, ptl);
- out:
- 	if (err != 0)
--		container_rss_release(pcont);
-+		container_page_release(pcont, PAGE_TYPE_RSS);
- out_release:
- 	return err;
- }
---- linux-2.6.20.orig/mm/memory.c
-+++ linux-2.6.20/mm/memory.c
-@@ -1583,7 +1583,7 @@ gotten:
- 		cow_user_page(new_page, old_page, address, vma);
- 	}
-
--	if (container_rss_prepare(new_page, vma, &pcont))
-+	if (container_page_prepare(new_page, vma->vm_mm, &pcont, PAGE_TYPE_RSS))
- 		goto oom;
-
- 	/*
-@@ -1619,7 +1619,7 @@ gotten:
- 		new_page = old_page;
- 		ret |= VM_FAULT_WRITE;
- 	} else
--		container_rss_release(pcont);
-+		container_page_release(pcont, PAGE_TYPE_RSS);
-
- 	if (new_page)
- 		page_cache_release(new_page);
-@@ -2029,7 +2029,7 @@ static int do_swap_page(struct mm_struct
- 		count_vm_event(PGMAJFAULT);
- 	}
-
--	if (container_rss_prepare(page, vma, &pcont)) {
-+	if (container_page_prepare(page, vma->vm_mm, &pcont, PAGE_TYPE_RSS)) {
- 		ret = VM_FAULT_OOM;
- 		goto out;
- 	}
-@@ -2047,7 +2047,7 @@ static int do_swap_page(struct mm_struct
-
- 	if (unlikely(!PageUptodate(page))) {
- 		ret = VM_FAULT_SIGBUS;
--		container_rss_release(pcont);
-+		container_page_release(pcont, PAGE_TYPE_RSS);
- 		goto out_nomap;
- 	}
-
-@@ -2084,7 +2084,7 @@ unlock:
- out:
- 	return ret;
- out_nomap:
--	container_rss_release(pcont);
-+	container_page_release(pcont, PAGE_TYPE_RSS);
- 	pte_unmap_unlock(page_table, ptl);
- 	unlock_page(page);
- 	page_cache_release(page);
-@@ -2115,7 +2115,7 @@ static int do_anonymous_page(struct mm_s
- 		if (!page)
- 			goto oom;
-
--		if (container_rss_prepare(page, vma, &pcont))
-+		if (container_page_prepare(page, vma->vm_mm, &pcont, PAGE_TYPE_RSS))
- 			goto oom_release;
-
- 		entry = mk_pte(page, vma->vm_page_prot);
-@@ -2151,7 +2151,7 @@ unlock:
- 	pte_unmap_unlock(page_table, ptl);
- 	return VM_FAULT_MINOR;
- release_container:
--	container_rss_release(pcont);
-+	container_page_release(pcont, PAGE_TYPE_RSS);
- release:
- 	page_cache_release(page);
- 	goto unlock;
-@@ -2245,7 +2245,7 @@ retry:
- 		}
- 	}
-
--	if (container_rss_prepare(new_page, vma, &pcont))
-+	if (container_page_prepare(new_page, vma->vm_mm, &pcont, PAGE_TYPE_RSS))
- 		goto oom;
-
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
-@@ -2256,7 +2256,7 @@ retry:
- 	 */
- 	if (mapping && unlikely(sequence != mapping->truncate_count)) {
- 		pte_unmap_unlock(page_table, ptl);
--		container_rss_release(pcont);
-+		container_page_release(pcont, PAGE_TYPE_RSS);
- 		page_cache_release(new_page);
- 		cond_resched();
- 		sequence = mapping->truncate_count;
-@@ -2295,7 +2295,7 @@ retry:
- 		}
- 	} else {
- 		/* One of our sibling threads was faster, back out. */
--		container_rss_release(pcont);
-+		container_page_release(pcont, PAGE_TYPE_RSS);
- 		page_cache_release(new_page);
- 		goto unlock;
- 	}
---- linux-2.6.20.orig/mm/migrate.c
-+++ linux-2.6.20/mm/migrate.c
-@@ -159,7 +159,7 @@ static void remove_migration_pte(struct
-  		return;
-  	}
-
--	if (container_rss_prepare(new, vma, &pcont)) {
-+	if (container_page_prepare(new, vma->vm_mm, &pcont, PAGE_TYPE_RSS)) {
- 		pte_unmap(ptep);
- 		return;
- 	}
-@@ -194,7 +194,7 @@ static void remove_migration_pte(struct
-
- out:
- 	pte_unmap_unlock(ptep, ptl);
--	container_rss_release(pcont);
-+	container_page_release(pcont, PAGE_TYPE_RSS);
- }
-
- /*
---- linux-2.6.20.orig/mm/rmap.c
-+++ linux-2.6.20/mm/rmap.c
-@@ -551,10 +551,10 @@ void page_add_anon_rmap(struct page *pag
- 	struct page_container *pcont)
- {
- 	if (atomic_inc_and_test(&page->_mapcount)) {
--		container_rss_add(pcont);
-+		container_page_add(pcont, PAGE_TYPE_RSS|PAGE_SUBTYPE_ANON);
- 		__page_set_anon_rmap(page, vma, address);
- 	} else
--		container_rss_release(pcont);
-+		container_page_release(pcont, PAGE_TYPE_RSS|PAGE_SUBTYPE_ANON);
- 	/* else checking page index and mapping is racy */
- }
-
-@@ -573,7 +573,7 @@ void page_add_new_anon_rmap(struct page
- 	struct page_container *pcont)
- {
- 	atomic_set(&page->_mapcount, 0); /* elevate count by 1 (starts at -1) */
--	container_rss_add(pcont);
-+	container_page_add(pcont, PAGE_TYPE_RSS|PAGE_SUBTYPE_ANON);
- 	__page_set_anon_rmap(page, vma, address);
- }
-
-@@ -588,10 +588,10 @@ void page_add_file_rmap(struct page *pag
- {
- 	if (atomic_inc_and_test(&page->_mapcount)) {
- 		if (pcont)
--			container_rss_add(pcont);
-+			container_page_add(pcont, PAGE_TYPE_RSS|PAGE_SUBTYPE_FILE);
- 		__inc_zone_page_state(page, NR_FILE_MAPPED);
- 	} else if (pcont)
--		container_rss_release(pcont);
-+		container_page_release(pcont, PAGE_TYPE_RSS|PAGE_SUBTYPE_FILE);
- }
-
- /**
-@@ -621,7 +621,7 @@ void page_remove_rmap(struct page *page,
- 		}
-
- 		if (pcont)
--			container_rss_del(pcont);
-+			container_page_del(pcont, PAGE_TYPE_RSS);
- 		/*
- 		 * It would be tidy to reset the PageAnon mapping here,
- 		 * but that might overwrite a racing page_add_anon_rmap
---- linux-2.6.20.orig/mm/swap_state.c
-+++ linux-2.6.20/mm/swap_state.c
-@@ -16,6 +16,7 @@
- #include <linux/backing-dev.h>
- #include <linux/pagevec.h>
- #include <linux/migrate.h>
-+#include <linux/rss_container.h>
-
- #include <asm/pgtable.h>
-
-@@ -73,6 +74,8 @@ static int __add_to_swap_cache(struct pa
- 			       gfp_t gfp_mask)
- {
- 	int error;
-+	struct page_container *pc;
-+	struct mm_struct *mm;
-
- 	BUG_ON(PageSwapCache(page));
- 	BUG_ON(PagePrivate(page));
-@@ -91,6 +94,17 @@ static int __add_to_swap_cache(struct pa
- 		}
- 		write_unlock_irq(&swapper_space.tree_lock);
- 		radix_tree_preload_end();
-+		/* Unlock before charge, because we may reclaim this inline */
-+		if(!error) {
-+			if (current->mm)
-+				mm = current->mm;
-+			else
-+				mm = &init_mm;
-+			if (!container_page_prepare(page, mm, &pc, PAGE_TYPE_PAGECACHE))
-+				container_page_add(pc, PAGE_TYPE_PAGECACHE);
-+			else
-+				BUG();
-+		}
- 	}
- 	return error;
- }
-@@ -129,6 +143,8 @@ void __delete_from_swap_cache(struct pag
- 	BUG_ON(PagePrivate(page));
-
- 	radix_tree_delete(&swapper_space.page_tree, page_private(page));
-+	if (page_container(page))
-+		container_page_del(page_container(page), PAGE_TYPE_PAGECACHE);
- 	set_page_private(page, 0);
- 	ClearPageSwapCache(page);
- 	total_swapcache_pages--;
---- linux-2.6.20.orig/mm/swapfile.c
-+++ linux-2.6.20/mm/swapfile.c
-@@ -535,7 +535,7 @@ static int unuse_pte_range(struct vm_are
- 	int found = 0;
- 	struct page_container *pcont;
-
--	if (container_rss_prepare(page, vma, &pcont))
-+	if (container_page_prepare(page, vma->vm_mm, &pcont, PAGE_TYPE_RSS))
- 		return 0;
-
- 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
-@@ -552,7 +552,7 @@ static int unuse_pte_range(struct vm_are
- 	} while (pte++, addr += PAGE_SIZE, addr != end);
- 	pte_unmap_unlock(pte - 1, ptl);
- 	if (!found)
--		container_rss_release(pcont);
-+		container_page_release(pcont, PAGE_TYPE_RSS);
- 	return found;
- }
-
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
