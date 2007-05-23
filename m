@@ -1,111 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbXEWSa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbXEWSdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760825AbXEWSa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758266AbXEWSaL
+	id S1761009AbXEWSdk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbXEWSdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:30:11 -0400
-Received: from mga02.intel.com ([134.134.136.20]:52036 "EHLO mga02.intel.com"
+	Wed, 23 May 2007 14:33:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50490 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756431AbXEWSaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:30:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,570,1170662400"; 
-   d="scan'208";a="246518646"
-Date: Wed, 23 May 2007 11:26:43 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 5/7] genhd: send async notification on media change
-Message-Id: <20070523112643.955e1426.kristen.c.accardi@intel.com>
-In-Reply-To: <1179939835.5569.3.camel@mulgrave.il.steeleye.com>
-References: <20070510072247.063476979@intel.com>
-	<20070509163835.56ad28e0.kristen.c.accardi@intel.com>
-	<20070522141211.fe00333f.akpm@linux-foundation.org>
-	<20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
-	<1179939835.5569.3.camel@mulgrave.il.steeleye.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	id S1756173AbXEWSdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 14:33:32 -0400
+Date: Wed, 23 May 2007 20:32:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de, kernel@kolivas.org,
+       containers@lists.osdl.org, ckrm-tech@lists.sourceforge.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       pwil3058@bigpond.net.au, tingy@cs.umass.edu, tong.n.li@intel.com,
+       wli@holomorphy.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
+Message-ID: <20070523183252.GB6253@elte.hu>
+References: <20070523164859.GA6595@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070523164859.GA6595@in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 12:03:55 -0500
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
 
-> On Wed, 2007-05-23 at 09:31 -0700, Kristen Carlson Accardi wrote:
-> > On Tue, 22 May 2007 14:12:11 -0700
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Wed, 9 May 2007 16:38:35 -0700
-> > > Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
-> > > 
-> > > > Send an uevent to user space to indicate that a media change event has occurred.
-> > > > 
-> > > > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > > > 
-> > > > Index: 2.6-git/block/genhd.c
-> > > > ===================================================================
-> > > > --- 2.6-git.orig/block/genhd.c
-> > > > +++ 2.6-git/block/genhd.c
-> > > > @@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
-> > > >  	.show	= diskstats_show
-> > > >  };
-> > > >  
-> > > > +static void media_change_notify_thread(struct work_struct *work)
-> > > > +{
-> > > > +	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
-> > > > +	char event[] = "MEDIA_CHANGE=1";
-> > > > +	char *envp[] = { event, NULL };
-> > > > +
-> > > > +	/*
-> > > > +	 * set enviroment vars to indicate which event this is for
-> > > > +	 * so that user space will know to go check the media status.
-> > > > +	 */
-> > > > +	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
-> > > > +	put_device(gd->driverfs_dev);
-> > > > +}
-> > > > +
-> > > > +void genhd_media_change_notify(struct gendisk *disk)
-> > > > +{
-> > > > +	get_device(disk->driverfs_dev);
-> > > > +	schedule_work(&disk->async_notify);
-> > > > +}
-> > > > +EXPORT_SYMBOL_GPL(genhd_media_change_notify);
-> > > > +
-> > > >  struct gendisk *alloc_disk(int minors)
-> > > >  {
-> > > >  	return alloc_disk_node(minors, -1);
-> > > > @@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
-> > > >  		kobj_set_kset_s(disk,block_subsys);
-> > > >  		kobject_init(&disk->kobj);
-> > > >  		rand_initialize_disk(disk);
-> > > > +		INIT_WORK(&disk->async_notify,
-> > > > +			media_change_notify_thread);
-> > > >  	}
-> > > >  	return disk;
-> > > 
-> > > Why does this do a schedule_work() rather than calling kobject_uevent_env()
-> > > directly?
-> > > 
-> > 
-> > Because it is called at Interrupt time.
+* Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+
+> Here's an attempt to extend CFS (v13) to be fair at a group level, 
+> rather than just at task level. The patch is in a very premature state 
+> (passes simple tests, smp load balance not supported yet) at this 
+> point. I am sending it out early to know if this is a good direction 
+> to proceed.
+
+cool patch! :-)
+
+> Salient points which needs discussion:
 > 
-> It better not be ... there's two GFP_KERNEL allocations just above this
-> line in the file.
+> 1. This patch reuses CFS core to achieve fairness at group level also.
 > 
-> James
+>    To make this possible, CFS core has been abstracted to deal with 
+>    generic schedulable "entities" (tasks, users etc).
+
+yeah, i like this alot.
+
+The "struct sched_entity" abstraction looks very clean, and that's the 
+main thing that matters: it allows for a design that will only cost us 
+performance if group scheduling is desired.
+
+If you could do a -v14 port and at least add minimal SMP support: i.e. 
+it shouldnt crash on SMP, but otherwise no extra load-balancing logic is 
+needed for the first cut - then i could try to pick all these core 
+changes up for -v15. (I'll let you know about any other thoughts/details 
+when i do the integration.)
+
+> 2. The per-cpu rb-tree has been split to be per-group per-cpu.
 > 
+>    schedule() now becomes two step on every cpu : pick a group first 
+>    (from group rb-tree) and a task within that group next (from that 
+>    group's task rb-tree)
 
-Where?  We are talking about the call to genhd_media_change_notify().
-the calling path is this:
-ahci_host_intr()->ata_scsi_media_change_notify()->genhd_media_change_notify().
+yeah. It might even become more steps if someone wants to have a 
+different, deeper hierarchy (at the price of performance). Containers 
+will for example certainly want to use one more level.
 
-I don't see the allocations - are they hidden somewhere?
+> 3. Grouping mechanism - I have used 'uid' as the basis of grouping for
+>    timebeing (since that grouping concept is already in mainline 
+>    today). The patch can be adapted to a more generic process grouping 
+>    mechanism (like http://lkml.org/lkml/2007/4/27/146) later.
 
-thanks,
-Kristen
- 
+yeah, agreed.
+
+> Some results below, obtained on a 4way (with HT) Intel Xeon box. All 
+> number are reflective of single CPU performance (tests were forced to 
+> run on single cpu since load balance is not yet supported).
+> 
+> 
+> 			         uid "vatsa"	           uid "guest"
+> 		             (make -s -j4 bzImage)    (make -s -j20 bzImage)
+> 
+> 2.6.22-rc1		          772.02 sec		497.42 sec (real)
+> 2.6.22-rc1+cfs-v13 	          780.62 sec		478.35 sec (real)
+> 2.6.22-rc1+cfs-v13+this patch     776.36 sec		776.68 sec (real)
+> 
+> [ An exclusive cpuset containing only one CPU was created and the 
+> compilation jobs of both users were run simultaneously in this cpuset 
+> ]
+
+looks really promising!
+
+> I also disabled CONFIG_FAIR_USER_SCHED and compared the results with
+> cfs-v13:
+> 
+> 					uid "vatsa"
+> 					make -s -j4 bzImage
+> 
+> 2.6.22-rc1+cfs-v13			395.57 sec (real)
+> 2.6.22-rc1+cfs-v13+this_patch		388.54 sec (real)
+> 
+> There is no regression I can see (rather some improvement, which I 
+> can't understand atm). I will run more tests later to check this 
+> regression aspect.
+
+kernel builds dont really push scheduling micro-costs, rather try 
+something like 'hackbench.c' to measure that. (kernel builds are of 
+course one of our primary benchmarks.)
+
+> Request your comments on the future direction to proceed!
+
+full steam ahead please! =B-)
+
+	Ingo
