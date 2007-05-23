@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbXEWWzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbXEWW5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760130AbXEWWzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 18:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbXEWWzb
+	id S1760620AbXEWW5M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 18:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbXEWW46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 18:55:31 -0400
-Received: from outbound-mail-32.bluehost.com ([69.89.18.152]:58792 "HELO
-	outbound-mail-32.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755898AbXEWWza (ORCPT
+	Wed, 23 May 2007 18:56:58 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42464 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755981AbXEWW46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 18:55:30 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
-Date: Wed, 23 May 2007 15:55:07 -0700
-User-Agent: KMail/1.9.6
-Cc: Olivier Galibert <galibert@pobox.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-References: <4635510D.4060103@shaw.ca> <20070523222443.GA39776@dspnet.fr.eu.org> <alpine.LFD.0.98.0705231536510.3890@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705231536510.3890@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 18:56:58 -0400
+Date: Wed, 23 May 2007 17:56:57 -0500
+From: Cliff Wickman <cpw@sgi.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+Message-ID: <20070523225657.GA26115@sgi.com>
+References: <20070523212902.GA235@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705231555.07683.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20070523212902.GA235@tv-sign.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 23, 2007 3:48 pm Linus Torvalds wrote:
-> On Thu, 24 May 2007, Olivier Galibert wrote:
-> > Isn't that a mac-intel instant killer?  AFAIK they don't have
-> > type1, period.
->
-> mac-intel are totally standard Intel chipsets. They have all of
-> conf1/conf2/mmconfig afaik.
->
-> I just happily booted my mac-mini with "pci=nommconf", nothing bad
-> happened, and the kernel says
->
-> 	PCI: Using configuration type 1
->
-> and I don't think you even _can_ disable conf1 type accesses: they
-> are deep in the Intel chipsets.
 
-After I sent my last message I realized the same thing... though I 
-occasionally hear people talk about removing it (I seriously doubt that 
-will ever happen).  I don't even think there's a way to disable type 1 
-config access on Intel chipsets...
+On Thu, May 24, 2007 at 01:29:02AM +0400, Oleg Nesterov wrote:
+> Cliff Wickman wrote:
+> >
+> > In order to do this, move_task_off_dead_cpu() must make a call to
+> > cpuset_cpus_allowed(), which may block.
+> >
+> > move_task_off_dead_cpu() has been within a critical region when called
+> > from migrate_live_tasks().  So this patch also changes migrate_live_tasks()
+> > to enable interrupts before calling move_task_off_dead_cpu().
+> > Since the tasklist_lock is dropped, the list scan must be restarted from
+> > the top.
+> >
+> > [... snip ...]
+> >
+> > - * NOTE: interrupts should be disabled by the caller
+> > + * NOTE: interrupts are not disabled by the caller
+> >   */
+> >  static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+> >  {
+> > @@ -5008,6 +5008,17 @@ restart:
+> >  	if (dest_cpu == NR_CPUS)
+> >  		dest_cpu = any_online_cpu(p->cpus_allowed);
+> >
+> > +	/* try to stay on the same cpuset */
+> > +	if (dest_cpu == NR_CPUS) {
+> > +		/*
+> > +		 * Call to cpuset_cpus_allowed may sleep, so we depend
+> > +		 * on move_task_off_dead_cpu() being called in a non-critical
+> > +		 * region.
+> > +		 */
+> > +		p->cpus_allowed = cpuset_cpus_allowed(p);
+> > +		dest_cpu = any_online_cpu(p->cpus_allowed);
+> > +	}
+> 
+> I know nothing about cpuset.c, a _very_ naive question.
 
-So the last patch is ok then, as long as we can find mmconfig space in 
-the first place, but that's a separate problem for another set of 
-patches (ones that seem to be working fairly well now btw).
+Paul Jackson is the cpuset guru.
+ 
+> Do we really need task_lock() (used by cpuset_cpus_allowed) here ?
 
-Jesse
+According to Paul's comment in kernel/cpuset.c
+ * It is ok to first take manage_sem, then nest callback_sem.  We also
+ * require taking task_lock() when dereferencing a tasks cpuset pointer.
+So I'm afraid it is not safe to call guarantee_online_cpus(tsk->cpuset, &mask);
+without it.  Could the task not be exiting?
 
+> If not, probably we can make this simpler. CPU_DEAD takes cpuset_lock(),
+> move_task_off_dead_cpu() uses guarantee_online_cpus() which doesn't sleep,
+> so we don't need other changes.
+> 
+> Possible?
+> 
+> If not, this patch should also change migrate_dead(), it still calls
+> move_task_off_dead_cpu() with irqs disabled, no?
+
+Right, the lock is released but I indeed didn't reenable irqs.
+How would you suggest doing that?  The irq state was saved in local
+variable "flags" back in migration_call().
+
+> 
+> Oleg.
+
+-- 
+Cliff Wickman
+Silicon Graphics, Inc.
+cpw@sgi.com
+(651) 683-3824
