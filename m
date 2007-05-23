@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764815AbXEWKPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765469AbXEWKSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764815AbXEWKPX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 06:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbXEWKPL
+	id S1765469AbXEWKSc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 06:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758439AbXEWKSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 06:15:11 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:58395 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756828AbXEWKPK (ORCPT
+	Wed, 23 May 2007 06:18:25 -0400
+Received: from web52611.mail.re2.yahoo.com ([206.190.48.214]:29109 "HELO
+	web52611.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758223AbXEWKSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 06:15:10 -0400
-To: viro@ftp.linux.org.uk
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-reply-to: <20070523095824.GR4095@ftp.linux.org.uk> (message from Al Viro on
-	Wed, 23 May 2007 10:58:24 +0100)
-Subject: Re: [RFC PATCH] file as directory
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk> <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu> <20070523070306.GM4095@ftp.linux.org.uk> <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu> <20070523073658.GO4095@ftp.linux.org.uk> <E1HqlqT-0001KD-00@dorka.pomaz.szeredi.hu> <20070523082918.GP4095@ftp.linux.org.uk> <E1HqmkO-0001R4-00@dorka.pomaz.szeredi.hu> <20070523095824.GR4095@ftp.linux.org.uk>
-Message-Id: <E1HqnrQ-0001eH-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 23 May 2007 12:14:28 +0200
+	Wed, 23 May 2007 06:18:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=6NK63xihzgAeaHZX2WDYGu84842uMuywVI2s2r/sSft94nLscExe72wqSTo68lXJVpH29zYaZxyn72KJ7vKTDbbxyGJWgzLfZ0nJHJ8TFQTD1IhewQz2k+O2pJ5LmbjSypNQIhVc5xRSTvEAeTyVCsb/gmZ2ta6h/KCyv38/OlY=;
+X-YMail-OSG: _RXArGAVM1lcUzPjJHhGs8lzqffqzt67iV2RTKcbCLFU1KLYhIw2tOqmLWL8wRhf0A--
+Date: Wed, 23 May 2007 20:18:23 +1000 (EST)
+From: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705221524490.16904@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <294534.72400.qm@web52611.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, May 23, 2007 at 11:03:08AM +0200, Miklos Szeredi wrote:
-> > I still don't get it where the superblock comes in.  The locking is
-> > "interesting" in there, yes.  And I haven't completely convinced
-> > myself it's right, let alone something that won't easily be screwed up
-> > in the future.  So there's definitely room for thought there.
-> > 
-> > But how does it matter if two different paths have the same sb or a
-> > different sb mounted over them?
->  
-> Because then you get a slew of fun issues with dropping the final reference
-> to vfsmount vs. lookup on another place.  What hold do you have on that
-> superblock and when do you switch from "oh, called ->enter() on the same
-> inode again, return vfsmount over the same superblock" to "need to
-> initialize that damn superblock, all mounts are gone"?
+--- Christoph Lameter <clameter@sgi.com> wrote:
+> On Wed, 23 May 2007, Srihari Vijayaraghavan wrote:
+[...]
+> Yup. compile with
 > 
-> > The same dentry is mounted over each one.  The contents of the
-> > directory should only depend on the contents of the underlying inode.
-> > The path leading up to it is completely irrelevant.
+> CONFIG_NUMA
 > 
-> So what kind of exclusion do you have for ->enter()?  None?
+> CONFIG_LOCKDEP
 > 
+> CONFIG_DEBUG_LOCK_ALLOCS
 
-So really these issues, are about how do we get hold of the superblock
-to mount.
+(All the tests in this email was conducted on top of your patch)
 
-I think that should be a filesystem internal problem, and I suspect
-the easiest solution is to just have a permanent meta superblock for
-these dir-on-file mounts.
+Yup done that. The resulting kernel (without CONFIG_SLUB_DEBUG=y) is quite
+stable; passed a few iterations of kernel compile tests successfully.
 
-Miklos
+> and then try to boot without slub_debug.
+
+I guess you mean with CONFIG_SLUB_CONFIG=y? If so, I built another kernel with
+CONFIG_SLUB_DEBUG=y (plus all of the above) & tested it. It panics by default,
+but with slub_nomerge it works just fine (tested under moderate load).
+
+(the panic message produced by CONFIG_SLUB_DEBUG=y was the exact same call
+trace as my very first email in this email thread with slightly different
+address on a couple of functions, but rest remains the same)
+
+I'm personally very happy that slub works stably without slub debug options,
+because that's what I'd run in a production env. Thanks to your patch, slub is
+quite stable without the slub debug for me :-)). But it'd to nice to have a
+working slub debug for test env., as you'd undoubtedly be aware of, of course
+:-). Just my humble opinion.
+
+> If that fails then boot with slub_nomerge
+
+Yup, I had to use slub_nomerge; without that CONFIG_SLUB_DEBUG=y kernel
+panics. (I haven't tested the UP case though. I did try nosmp & maxcpus=1, but
+they had no effect on the panic. Do you want me to test UP case for
+CONFIG_SLUB_DEBUG=y without slub_nomerge?)
+
+Thanks
+
+
+
+      ___________________________________________________________________________________
+How would you spend $50,000 to create a more sustainable environment in Australia?  Go to Yahoo!7 Answers and share your idea.
+http://advision.webevents.yahoo.com/aunz/lifestyle/answers/y7ans-babp_reg.html
+
