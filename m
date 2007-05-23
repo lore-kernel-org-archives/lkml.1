@@ -1,99 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761256AbXEWUos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbXEWUq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761256AbXEWUos (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 16:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbXEWUol
+	id S1759379AbXEWUq4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 16:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbXEWUqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 16:44:41 -0400
-Received: from mail.tmr.com ([64.65.253.246]:45255 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754388AbXEWUok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 16:44:40 -0400
-Message-ID: <4654A7F8.1040505@tmr.com>
-Date: Wed, 23 May 2007 16:45:44 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Wed, 23 May 2007 16:46:48 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:38703 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755509AbXEWUqr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 16:46:47 -0400
+Date: Wed, 23 May 2007 13:45:05 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Robert Hancock <hancockr@shaw.ca>,
+       Olivier Galibert <galibert@pobox.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
+ resources
+In-Reply-To: <20070523213810.00d498c9@the-village.bc.nu>
+Message-ID: <alpine.LFD.0.98.0705231344060.3890@woody.linux-foundation.org>
+References: <4635510D.4060103@shaw.ca> <200705221738.09571.jbarnes@virtuousgeek.org>
+ <46539378.6000508@shaw.ca> <200705231152.57796.jbarnes@virtuousgeek.org>
+ <alpine.LFD.0.98.0705231257050.3890@woody.linux-foundation.org>
+ <20070523213810.00d498c9@the-village.bc.nu>
 MIME-Version: 1.0
-To: Miguel Figueiredo <elmig@debianpt.org>
-CC: Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>,
-       Con Kolivas <kernel@kolivas.org>
-Subject: Re: Sched - graphic smoothness under load - cfs-v13 sd-0.48
-References: <464F57DD.2000309@tmr.com> <4650774F.9040208@debianpt.org> <2c0942db0705200944r19a37bd8pd7c220903084e4d3@mail.gmail.com> <46507E1D.6030002@debianpt.org> <46532E8A.4030900@tmr.com> <46534C31.1060306@debianpt.org> <46538AB8.8030009@tmr.com> <46543D3A.9030805@tmr.com> <46548806.4010601@debianpt.org>
-In-Reply-To: <46548806.4010601@debianpt.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miguel Figueiredo wrote:
-> Bill Davidsen wrote:
->> I was unable to reproduce the numbers Miguel generated, comments 
->> below. The -ck2 patch seems to run nicely, although the memory 
->> repopulation from swap would be most useful on system which have a 
->> lot of memory pressure.
->>
->> I spent a few hours running the -ck2 patch, and I didn't see any 
->> numbers like yours. What I did see is going up with my previous 
->> results as http://www.tmr.com/~davidsen/sched_smooth_04.html. While 
->> there were still some minor pauses in glxgears with my test, 
->> performance was very similar to the sd-0.48 results. And I did try 
->> watching video with high load, without problems. Only when I run a 
->> lot of other screen-changing processes can I see pauses in the display.
->>> Your subjective impressions would be helpful, and you may find that 
->>> the package in the www.tmr.com/~public/source is slightly easier to 
->>> use and gives more stable results. The documentation suggests the 
->>> way to take samples (the way I did it) but if you feel more or 
->>> longer samples would help it is tunable.
->>>
->>> I added Con to the cc list, he may have comments or suggestions 
->>> (against the current versions, please). Or he may feel that video 
->>> combined with other heavy screen updating is unrealistic or not his 
->>> chosen load. I'm told the load is similar to games which use threads 
->>> and do lots of independent action, if that's a reference.
->>>
->> I'll include the -ck2 patch in my testing on other hardware.
->>
+
+
+On Wed, 23 May 2007, Alan Cox wrote:
 >
-> Hi Bill,
->
->  the numbers i posted before are repeatable on that machine.
->
-The numbers you posted in <46534C31.1060306@debianpt.org> are not the 
-same... From my inbox I grab some very non-matching values:
-=====
-Here's the funny part...
+> > Well, the thing is, I'm pretty sure there is at least one northbridge that 
+> > stops memory accesses from the CPU when you turn off the MEM bit on it. 
+> > Oops, you just killed the machine.
+> 
+> CS5520. But it doesn't have 64bit or PCI Express.
 
-Lets call:
+That patch does it for _all_ PCI probing. So it would turn any machine 
+using that northbridge into a brick.
 
-a) to "random number of processes run while glxgears is running", 
-gl_fairloops file
-
-b) to "generated frames while running a burst of processes" aka "massive 
-and uknown amount of operations in one process", gl_gears file
-
-kernel    2.6.21-cfs-v13    2.6.21-ck2
-a)    194464        254669       
-b)    54159        124
-=====
-
-The numbers in your glitch1.html file show a close correlation for cfs 
-and -ck2, well within what I would expect. The stddev for the loops is 
-larger for -cf2, but not out of line with what I see, and nothing like 
-the numbers you originally sent me (which may have been testing 
-something else, or from an old version before I made improvements, or 
-???). In any case thanks for testing.
-
->
-> I did run, again, glitch1 on my laptop (T2500 CoreDuo, also Nvidia) 
-> please check: http://www.debianpt.org/~elmig/pool/kernel/20070523/
->
->
-Thanks, those data seem as expected.
-
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+		Linus
