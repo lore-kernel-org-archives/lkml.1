@@ -1,61 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbXEWSsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762077AbXEWSwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759172AbXEWSsg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbXEWSs3
+	id S1762077AbXEWSwK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbXEWSvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:48:29 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:20152 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754956AbXEWSs2 (ORCPT
+	Wed, 23 May 2007 14:51:55 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:34482 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755042AbXEWSvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:48:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MDtCYoxYFezDA/Vmvh4wqMfTpf/uxQwx9LjCu9XWYOdFp0KQt79LSmuIJmRHMROTxOamrq3+qTSPk+JFyPYce7umTgrKtZRUKlhSr3Cq5K3qEETwyu57cRQNrtYT0Y829RJ6j379eEYI++SJd10C4JvahqimWmX+EFA7E+7ctcQ=
-Message-ID: <75b57c110705231148t630ad7f8n6b9be46075c66cbf@mail.gmail.com>
-Date: Wed, 23 May 2007 14:48:27 -0400
-From: "Gerb Stralko" <gerb.stralko@gmail.com>
-To: rmk+lkml@arm.linux.org.uk
-Subject: Re: [PATCH] ARM/ARM26 Cleanup, using ARRAY_SIZE
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070523181034.GC1976@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 23 May 2007 14:51:53 -0400
+Subject: Re: [patch 5/7] genhd: send async notification on media change
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, htejun@gmail.com
+In-Reply-To: <20070523112643.955e1426.kristen.c.accardi@intel.com>
+References: <20070510072247.063476979@intel.com>
+	 <20070509163835.56ad28e0.kristen.c.accardi@intel.com>
+	 <20070522141211.fe00333f.akpm@linux-foundation.org>
+	 <20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
+	 <1179939835.5569.3.camel@mulgrave.il.steeleye.com>
+	 <20070523112643.955e1426.kristen.c.accardi@intel.com>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 13:51:51 -0500
+Message-Id: <1179946311.5569.18.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <75b57c110705231027l4d0aeca5u778cb907dbd7c814@mail.gmail.com>
-	 <20070523181034.GC1976@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/23/07, Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> On Wed, May 23, 2007 at 01:27:11PM -0400, Gerb Stralko wrote:
-> > Use the kernel wide ARRAY_SIZE when determining the array size of a struct.
-> >
-> > Signed-off-by: Jerry Stralko <gerb.stralko@gmail.com>
->
-> Whitespace damanged patch, probably due to using format=flowed in your
-> mailer.  Please get a proper mail client. 8)
+On Wed, 2007-05-23 at 11:26 -0700, Kristen Carlson Accardi wrote:
+> On Wed, 23 May 2007 12:03:55 -0500
+> James Bottomley <James.Bottomley@SteelEye.com> wrote:
+> 
+> > On Wed, 2007-05-23 at 09:31 -0700, Kristen Carlson Accardi wrote:
+> > > On Tue, 22 May 2007 14:12:11 -0700
+> > > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > On Wed, 9 May 2007 16:38:35 -0700
+> > > > Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
+> > > > 
+> > > > > Send an uevent to user space to indicate that a media change event has occurred.
+> > > > > 
+> > > > > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > > > > 
+> > > > > Index: 2.6-git/block/genhd.c
+> > > > > ===================================================================
+> > > > > --- 2.6-git.orig/block/genhd.c
+> > > > > +++ 2.6-git/block/genhd.c
+> > > > > @@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
+> > > > >  	.show	= diskstats_show
+> > > > >  };
+> > > > >  
+> > > > > +static void media_change_notify_thread(struct work_struct *work)
+> > > > > +{
+> > > > > +	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
+> > > > > +	char event[] = "MEDIA_CHANGE=1";
+> > > > > +	char *envp[] = { event, NULL };
+> > > > > +
+> > > > > +	/*
+> > > > > +	 * set enviroment vars to indicate which event this is for
+> > > > > +	 * so that user space will know to go check the media status.
+> > > > > +	 */
+> > > > > +	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
+> > > > > +	put_device(gd->driverfs_dev);
+> > > > > +}
+> > > > > +
+> > > > > +void genhd_media_change_notify(struct gendisk *disk)
+> > > > > +{
+> > > > > +	get_device(disk->driverfs_dev);
+> > > > > +	schedule_work(&disk->async_notify);
+> > > > > +}
+> > > > > +EXPORT_SYMBOL_GPL(genhd_media_change_notify);
+> > > > > +
+> > > > >  struct gendisk *alloc_disk(int minors)
+> > > > >  {
+> > > > >  	return alloc_disk_node(minors, -1);
+> > > > > @@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
+> > > > >  		kobj_set_kset_s(disk,block_subsys);
+> > > > >  		kobject_init(&disk->kobj);
+> > > > >  		rand_initialize_disk(disk);
+> > > > > +		INIT_WORK(&disk->async_notify,
+> > > > > +			media_change_notify_thread);
+> > > > >  	}
+> > > > >  	return disk;
+> > > > 
+> > > > Why does this do a schedule_work() rather than calling kobject_uevent_env()
+> > > > directly?
+> > > > 
+> > > 
+> > > Because it is called at Interrupt time.
+> > 
+> > It better not be ... there's two GFP_KERNEL allocations just above this
+> > line in the file.
+> > 
+> > James
+> > 
+> 
+> Where?  We are talking about the call to genhd_media_change_notify().
+> the calling path is this:
+> ahci_host_intr()->ata_scsi_media_change_notify()->genhd_media_change_notify().
+> 
+> I don't see the allocations - are they hidden somewhere?
 
-Sorry about that one.  I didn't realize my mailer was being stupid.
-I'll see if I can fix _or_  get a new mailer, and maybe send out a
-better patch :)
+Sorry, I thought you were saying alloc_disk_node() could be called from
+interrupt context.
 
-> Also, please note that ARM and ARM26 are two separate architectures
-> maintained by two separate people.  Please don't confuse them and
-> merge patches - it's about the same level of evilness as labelling
-> PPC and i386 as one architecture and expecting PPC folk to take the
-> lot.
+<gets back on ball>
 
-Ok, sorry about that, I don't want to cause you any more confusion or
-frustration.  I'm a newbie in this area and just wanted to help out
-and learn.  Thanks for being polite about it...instead of chewing my
-head off - your a good man.
+If you just want to invoke guaranteed user context from a place in the
+code which *may* be called from interrupt, then
+execute_in_process_context() might be a better way of doing it ... at
+least it avoids setting up a workqueue where none is needed.
 
-> --
-> Russell King
->  Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
->  maintainer of:
->
+James
+
+
