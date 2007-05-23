@@ -1,134 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764985AbXEWQBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934102AbXEWQCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764985AbXEWQBX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbXEWQBR
+	id S934102AbXEWQCH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:02:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbXEWQB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:01:17 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:35615 "EHLO
+	Wed, 23 May 2007 12:01:56 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:49693 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755773AbXEWQBQ (ORCPT
+	by vger.kernel.org with ESMTP id S1755861AbXEWQBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:01:16 -0400
-Date: Wed, 23 May 2007 09:01:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bernhard Walle <bwalle@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Vivek Goyal <vgoyal@in.ibm.com>
-Subject: Re: [PATCH] Fix crash with irqpoll due to the IRQF_IRQPOLL flag
-In-Reply-To: <20070522083756.GB18498@suse.de>
-Message-ID: <alpine.LFD.0.98.0705230836370.3890@woody.linux-foundation.org>
-References: <20070426093620.GB2626@in.ibm.com> <20070426082405.67a0fdd2.akpm@linux-foundation.org>
- <20070430084833.GA16173@in.ibm.com> <20070502221932.GA488@suse.de>
- <20070508171841.GA29733@in.ibm.com> <20070514140513.GD29616@suse.de>
- <20070522083756.GB18498@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 23 May 2007 12:01:55 -0400
+Date: Wed, 23 May 2007 09:01:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.22-rc2-mm1
+Message-Id: <20070523090146.43ce5d15.akpm@linux-foundation.org>
+In-Reply-To: <46542D05.8070206@googlemail.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+	<46542D05.8070206@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 23 May 2007 14:01:09 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
 
-
-On Tue, 22 May 2007, Bernhard Walle wrote:
->
-> o System crashes if booted with irqpoll command line option.
+> Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
+> >   
 > 
-> o Problem happens because Inside note_interrupt() we are accessing
->   desc->action->flag without taking the desc->lock. While accessing it
->   somebody goes ahead and unregisters the irq handler hence desc->action
->   is NULL. By the time note_interrupt() checks it, it crashes.
+> I get this on boot :
+> 
+> [ 0.333581] BUG: at include/linux/slub_def.h:83 kmalloc_index()
+> [ 0.333587] [<c0104eb7>] show_trace_log_lvl+0x1a/0x2f
+> [ 0.333601] [<c0105a76>] show_trace+0x12/0x14
+> [ 0.333606] [<c0105a8e>] dump_stack+0x16/0x18
+> [ 0.333611] [<c0170d1c>] get_slab+0x48/0x138
+> [ 0.333621] [<c0170e8d>] __kmalloc+0x11/0x66
+> [ 0.333626] [<c0283c66>] get_modalias+0x5e/0xee
+> [ 0.333635] [<c0283d3f>] dmi_dev_uevent+0x2a/0x3f
+> [ 0.333641] [<c0241a7b>] dev_uevent+0x1ad/0x1da
+> [ 0.333650] [<c01d11fe>] kobject_uevent_env+0x200/0x3ff
+> [ 0.333658] [<c01d1407>] kobject_uevent+0xa/0xf
+> [ 0.333664] [<c02416fc>] device_add+0x283/0x440
+> [ 0.333669] [<c02418cb>] device_register+0x12/0x15
+> [ 0.333675] [<c0424558>] dmi_id_init+0x256/0x26c
+> [ 0.333684] [<c0409516>] kernel_init+0x156/0x2c1
+> [ 0.333692] [<c0104b33>] kernel_thread_helper+0x7/0x10
+> [ 0.333698] =======================
+> 
+> 
+> http://crazy.dev.frugalware.org/2.6.22-rc2-mm1/config-2.6.22-rc2-mm1
+> http://crazy.dev.frugalware.org/2.6.22-rc2-mm1/dmesg
+> 
 
-I absolutely _detest_ patches that make already complex and unreadable 
-code even more so. Especially conditionals. Please don't do that.
-
-If you need a variable for a conditional, make it be an implicit one from 
-an inline function, and aim for making it readable.
-
-So how about instead writing it out as a nice self-explanatory inline 
-function? I can almost guarantee that this generates no worse code, and it 
-also makes it easy to explain things like "we don't bother with the lock, 
-because we don't care enough".
-
-Untested, but I think the point of the patch is obvious. Anybody want to 
-test it, send it back to me, and fix the bug while making the code more 
-readable?
-
-I think we should instate a hard new rule:
-
- - if a bugfix doesn't make the code more readable, it's not a bugfix at 
-   all.
-
-There was a reason for the bug in the first place, and that reason is 
-likely that the code was hard to think about. So making it even _harder_ 
-to think about isn't really fixing the deeper problem!
-
-		Linus
-
----
- kernel/irq/spurious.c |   46 +++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 37 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-index b0d81aa..bd9e272 100644
---- a/kernel/irq/spurious.c
-+++ b/kernel/irq/spurious.c
-@@ -135,6 +135,39 @@ report_bad_irq(unsigned int irq, struct irq_desc *desc, irqreturn_t action_ret)
- 	}
- }
- 
-+static inline int try_misrouted_irq(unsigned int irq, struct irq_desc *desc, irqreturn_t action_ret)
-+{
-+	struct irqaction *action;
-+
-+	if (!irqfixup)
-+		return 0;
-+
-+	/* We didn't actually handle the IRQ - see if it was misrouted? */
-+	if (action_ret == IRQ_NONE)
-+		return 1;
-+
-+	/*
-+	 * But for 'irqfixup == 2' we also do it for handled interrupts if
-+	 * they are marked as IRQF_IRQPOLL (or for irq zero, which is the
-+	 * traditional PC timer interrupt.. Legacy)
-+	 */
-+	if (irqfixup < 2)
-+		return 0;
-+
-+	if (!irq)
-+		return 1;
-+
-+	/*
-+	 * Since we don't get the descriptor lock, "action" can
-+	 * change under us.  We don't really care, but we don't
-+	 * want to follow a NULL pointer. So tell the compiler to
-+	 * just load it once by using a barrier.
-+	 */
-+	action = desc->action;
-+	barrier();
-+	return action && (action->flags & IRQF_IRQPOLL);
-+}
-+
- void note_interrupt(unsigned int irq, struct irq_desc *desc,
- 		    irqreturn_t action_ret)
- {
-@@ -144,15 +177,10 @@ void note_interrupt(unsigned int irq, struct irq_desc *desc,
- 			report_bad_irq(irq, desc, action_ret);
- 	}
- 
--	if (unlikely(irqfixup)) {
--		/* Don't punish working computers */
--		if ((irqfixup == 2 && ((irq == 0) ||
--				(desc->action->flags & IRQF_IRQPOLL))) ||
--				action_ret == IRQ_NONE) {
--			int ok = misrouted_irq(irq);
--			if (action_ret == IRQ_NONE)
--				desc->irqs_unhandled -= ok;
--		}
-+	if (unlikely(try_misrouted_irq(irq, desc, action_ret))) {
-+		int ok = misrouted_irq(irq);
-+		if (action_ret == IRQ_NONE)
-+			desc->irqs_unhandled -= ok;
- 	}
- 
- 	desc->irq_count++;
+yup, thanks.  David Airlie has said he'll look into this soon.  It is
+a harmless warning.
