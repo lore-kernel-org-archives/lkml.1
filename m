@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbXEWEMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbXEWEUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758322AbXEWEMH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 00:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXEWEL4
+	id S1758101AbXEWEUU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 00:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbXEWEUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 00:11:56 -0400
-Received: from holomorphy.com ([66.93.40.71]:57743 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754538AbXEWEL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 00:11:56 -0400
-Date: Tue, 22 May 2007 21:06:50 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Bill Davidsen <davidsen@tmr.com>, Miguel Figueiredo <elmig@debianpt.org>,
-       Ray Lee <ray-lk@madrabbit.org>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: Sched - graphic smoothness under load - cfs-v13 sd-0.48
-Message-ID: <20070523040650.GS19966@holomorphy.com>
-References: <464F57DD.2000309@tmr.com> <46534C31.1060306@debianpt.org> <46538AB8.8030009@tmr.com> <200705241036.45179.kernel@kolivas.org>
+	Wed, 23 May 2007 00:20:07 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43387 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754888AbXEWEUF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 00:20:05 -0400
+X-Sasl-enc: IZ1yoEQOokmi6x2bKX41aMnZuuO6oEHNObMrguyYjzOP 1179894003
+Date: Wed, 23 May 2007 01:19:58 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: 2.6.21-mm2: ACPI exception on resume
+Message-ID: <20070523041958.GA15952@khazad-dum.debian.net>
+References: <20070519165738.GK11115@waste.org> <20070519204504.GA24704@khazad-dum.debian.net> <20070519223843.GN11115@waste.org> <20070520035259.GA13224@khazad-dum.debian.net> <20070521222339.GF11115@waste.org> <20070521230349.GA645@khazad-dum.debian.net> <20070522224515.GW11115@waste.org> <20070523001943.GA3743@khazad-dum.debian.net> <20070523014825.GX11115@waste.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705241036.45179.kernel@kolivas.org>
-Organization: The Domain of Holomorphy
+In-Reply-To: <20070523014825.GX11115@waste.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 May 2007 10:28, Bill Davidsen wrote:
->>> kernel    2.6.21-cfs-v13    2.6.21-ck2
->>> a)    194464        254669
->>> b)    54159        124
->> Everyone seems to like ck2, this makes it look as if the video display
->> would be really pretty unusable. While sd-0.48 does show an occasional
->> video glitch when watching video under heavy load, it's annoying rather
->> than unusable.
+On Tue, 22 May 2007, Matt Mackall wrote:
+> Whether the 'bug' is in the firmware or the kernel, it is the kernel
+> that has regressed. Suspend worked fine for 2+ years before this.
 
-On Thu, May 24, 2007 at 10:36:44AM +1000, Con Kolivas wrote:
-> That's because the whole premise of your benchmark relies on a workload that 
-> yield()s itself to the eyeballs on most graphic card combinations when using 
-> glxgears. Your test remains a test of sched_yield in the presence of your 
-> workloads rather than anything else. If people like ck2 it's because in the 
-> real world with real workloads it is better, rather than on a yield() based 
-> benchmark. Repeatedly the reports are that 3d apps and games in normal usage 
-> under -ck are better than mainline and cfs.
+That means something, but not that much.  The kernel could have been doing
+broken things for two years in ACPI that happened to not trigger a bug in
+someone's firmware, for example.  And when the kernel was fixed (to, e.g.,
+do it right by the spec or unbreak other firmwares that did it by the spec)
+and that triggered the bug.
 
-Maybe people should explicitly hack on sched_yield() for these things
-and do comparative benchmarking of sched_yield() implementations.
+We really need to find the cause of the regression to know.
 
+> Breaking working systems, either software or hardware, is a bad idea.
 
--- wli
+We shouldn't do it for frivoulous reasons, of course.
+
+> I shouldn't have to upgrade my BIOS to work with a new kernel any more
+> than I should have to upgrade my browser.
+
+We don't agree there, as you are not talking about a stable kernel series.
+
+And btw, unless you hunt down someone that also has the bug and uses an
+up-to-date BIOS (or something else to give an extra data point that discards
+a possible firmware bug in your version of the BIOS), or bissect to pinpoint
+what caused the regression, this thread will go nowhere.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
