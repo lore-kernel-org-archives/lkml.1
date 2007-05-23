@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761892AbXEWGeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760441AbXEWGgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761892AbXEWGeK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 02:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbXEWGd5
+	id S1760441AbXEWGgx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 02:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbXEWGgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 02:33:57 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:40252 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756670AbXEWGd5 (ORCPT
+	Wed, 23 May 2007 02:36:45 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52952 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754630AbXEWGgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 02:33:57 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4653DFF1.5070807@s5r6.in-berlin.de>
-Date: Wed, 23 May 2007 08:32:17 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Dan Dennedy <dan@dennedy.org>, Pieter Palmers <pieterp@joow.be>
-CC: Arnd Bergmann <arnd@arndb.de>, Petr Vandrovec <petr@vandrovec.name>,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix/add raw1394 CONFIG_COMPAT code
-References: <20070507021447.GA22197@vana.vc.cvut.cz> <200705201703.37561.arnd@arndb.de> <46506912.9020904@s5r6.in-berlin.de> <200705222154.24787.dan@dennedy.org>
-In-Reply-To: <200705222154.24787.dan@dennedy.org>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 02:36:44 -0400
+To: viro@ftp.linux.org.uk
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+In-reply-to: <20070522221045.GH4095@ftp.linux.org.uk> (message from Al Viro on
+	Tue, 22 May 2007 23:10:46 +0100)
+Subject: Re: [RFC PATCH] file as directory
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk>
+Message-Id: <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 23 May 2007 08:36:04 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Dennedy wrote:
-> On Sunday 20 May 2007 08:28, Stefan Richter wrote:
->> maybe we should change
-...
->> struct raw1394_cycle_timer {
-[to consist of two u64 to get same alignment on all architectures]
-...
->> before a libraw1394 with get-cycle-timer support is released.
->> Shall I prepare according patches for raw1394 and libraw1394?
+> > When a non-directory object is accessed without a trailing slash, then
+> > path resolution returns the object itself as usual.
+> > 
+> > If a non-directory object is accessed with a trailing slash, then the
+> > filesystem may opt to let the file be accessed as a directory.  In
+> > this case "something" (as supplied by the filesystem) is mounted on
+> > top of the non-directory object.
+> > 
+> > This mount will have special properties:
+> > 
+> >  - If there's no trailing slash is after the file name, the mount
+> >    won't be followed, even if the path resolution would otherwise
+> >    follow mounts.
+> > 
+> >  - The mount only stays there while it is referenced by some external
+> >    object, like a pwd or an open file.  When it is no longer
+> >    referenced, it is automatically unmounted.
+> > 
+> >  - Unlike "real" mounts, this won't block unlink(2) or rename(2) on
+> >    the underlying object.
 > 
-> This seems like a good idea, and I have forwarded it to the ffado (formerly 
-> freebob) developers, specifically Pieter Palmers--the submitter of 
-> raw1394_read_cycle_timer--to get his feedback.
+> Interesting...  How do you deal with mount propagation and things like
+> mount --move?
 
-I'll post the patches tonight to see how it will look like.  Even though
-I already posted the kernel-only patch which adjusts
-raw1394_iso_packets32 per architecture, the 2x u64 variant may overall
-be nicer:  a) it eliminates the need for raw1394_cycle_timer32,  b) the
-get-cycle-timer ABI still has to be duplicated in Juju, and Juju so far
-did not require different struct types for 32bit compatibility ioctls.
--- 
-Stefan Richter
--=====-=-=== -=-= =-===
-http://arcgraph.de/sr/
+Moving (or doing other mount operations on) an ancestor shouldn't be a
+problem.  Moving this mount itself is not allowed, and neither is
+doing bind or pivot_root.  Maybe bind could be allowed...
+
+When doing recursive bind on ancestor, these mounts are skipped.
+
+> As for unlink...  How do you deal with having that thing
+> mounted, mounting something _under_ it (so that vfsmount would be kept
+> busy) and then unlinking that sucker?
+
+Yeah, that's a good point.  Current patch doesn't deal with that.
+Simplest solution could be to disallow submounting these.  Don't think
+it makes much sense anyway.
+
+> I'll look through the patch tonight; it sounds interesting, assuming that
+> we don't run into serious crap with locking and <shudder> revalidation
+> logics.
+
+Revalidation shouln't be a problem.  We'll just end up with an
+unhashed dentry with a mount over it, which will be detached when the
+vfsmount ref is dropped.
+
+Miklos
