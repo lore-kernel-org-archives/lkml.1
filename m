@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbXEWElm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbXEWEyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758528AbXEWElm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 00:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbXEWEld
+	id S1757390AbXEWEyk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 00:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbXEWEyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 00:41:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:45949 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754888AbXEWElc (ORCPT
+	Wed, 23 May 2007 00:54:31 -0400
+Received: from sccrmhc14.comcast.net ([204.127.200.84]:52662 "EHLO
+	sccrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755522AbXEWEya (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 00:41:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CdlSZWiNATb6BTATMt7jKrIYm+AwimdWTPOUy0FkwfXsGAipcqpYZ1CKrp8xrTjE4H+6TqAGuFt68K7IWKFkrXxJ5UtqUW450nLF0ZFSxdwvrPjZ1rb2GZ6zlsbTMWHs9YLvtbFGQ8slWUzyJBxE/Y46MMIapBzB3iJNVY1mI0c=
-Message-ID: <2c0942db0705222141se133553re06370476d436b12@mail.gmail.com>
-Date: Tue, 22 May 2007 21:41:30 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-Subject: Re: 2.6.21-mm2: ACPI exception on resume
-Cc: "Matt Mackall" <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20070523041958.GA15952@khazad-dum.debian.net>
+	Wed, 23 May 2007 00:54:30 -0400
+From: Dan Dennedy <dan@dennedy.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] Fix/add raw1394 CONFIG_COMPAT code
+Date: Tue, 22 May 2007 21:54:24 -0700
+User-Agent: KMail/1.9.5
+Cc: Arnd Bergmann <arnd@arndb.de>, Petr Vandrovec <petr@vandrovec.name>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20070507021447.GA22197@vana.vc.cvut.cz> <200705201703.37561.arnd@arndb.de> <46506912.9020904@s5r6.in-berlin.de>
+In-Reply-To: <46506912.9020904@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070519165738.GK11115@waste.org>
-	 <20070519204504.GA24704@khazad-dum.debian.net>
-	 <20070519223843.GN11115@waste.org>
-	 <20070520035259.GA13224@khazad-dum.debian.net>
-	 <20070521222339.GF11115@waste.org>
-	 <20070521230349.GA645@khazad-dum.debian.net>
-	 <20070522224515.GW11115@waste.org>
-	 <20070523001943.GA3743@khazad-dum.debian.net>
-	 <20070523014825.GX11115@waste.org>
-	 <20070523041958.GA15952@khazad-dum.debian.net>
-X-Google-Sender-Auth: 619cb07f90e965fd
+Message-Id: <200705222154.24787.dan@dennedy.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/22/07, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
-> > I shouldn't have to upgrade my BIOS to work with a new kernel any more
-> > than I should have to upgrade my browser.
->
-> We don't agree there, as you are not talking about a stable kernel series.
+On Sunday 20 May 2007 08:28, Stefan Richter wrote:
+> Arnd Bergmann wrote:
+> > On Sunday 20 May 2007, Stefan Richter wrote:
+> >>> Note that this data structure only needs conversion on x86_64 and ia64, 
+but
+> >>> not on powerpc and other 64 bit architectures that align __u64 also in
+> >>> 32 bit mode.
+> >> Is this conversion just unnecessary or actually harmful on ppc64 and 
+others?
+> > 
+> > With the current patch, the compat_ioctl function does not handle the 
+ppc32
+> > version of the structure at all, so it's broken there, it would at least
+> > need a 
+> > 
+> > 	case RAW1394_IOC_GET_CYCLE_TIMER:
+> > 		err = raw1394_ioctl(NULL, file, cmd, arg);
+> > 		break;
+> 
+> Dan,
+> 
+> maybe we should change
+> 
+> /* argument to RAW1394_IOC_GET_CYCLE_TIMER ioctl */
+> struct raw1394_cycle_timer {
+> 	/* contents of Isochronous Cycle Timer register,
+> 	   as in OHCI 1.1 clause 5.13 (also with non-OHCI hosts) */
+> 	__u32 cycle_timer;
+> 
+> 	/* local time in microseconds since Epoch,
+> 	   simultaneously read with cycle timer */
+> 	__u64 local_time;
+> };
+> 
+> to
+> 
+> /* argument to RAW1394_IOC_GET_CYCLE_TIMER ioctl */
+> struct raw1394_cycle_timer {
+> 	/*
+> 	 * least significant 32 bits are contents of Isochronous Cycle
+> 	 * Timer register, as in OHCI 1.1 clause 5.13 (also with
+> 	 * non-OHCI hosts)
+> 	 */
+> 	__u64 cycle_timer;
+> 
+> 	/*
+> 	 * local time in microseconds since Epoch,
+> 	 * simultaneously read with cycle timer
+> 	 */
+> 	__u64 local_time;
+> };
+> 
+> before a libraw1394 with get-cycle-timer support is released.
+> Shall I prepare according patches for raw1394 and libraw1394?
 
-Ah, so you're planning on submitting these patches for 2.7 then? 2.6
-is perpetually stable. Matt is quite correct; feel free to ask for
-clarifications from Linus et al if you need guidance.
+This seems like a good idea, and I have forwarded it to the ffado (formerly 
+freebob) developers, specifically Pieter Palmers--the submitter of 
+raw1394_read_cycle_timer--to get his feedback.
