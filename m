@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbXEWV7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbXEWWBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759377AbXEWV7n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXEWV7f
+	id S1757903AbXEWWBg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 18:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbXEWWB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:59:35 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:35393 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756129AbXEWV7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:59:34 -0400
-Date: Wed, 23 May 2007 23:59:05 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Malton <chrism@cjsoftuk.dyndns.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Fwd: Re: Google are using linux kernel - what do you know about the source?]
-Message-ID: <20070523215905.GA18954@electric-eye.fr.zoreil.com>
-References: <4654729C.70404@cjsoftuk.dyndns.org> <4654969F.9060904@garzik.org> <20070523210249.3e965257@the-village.bc.nu> <46549F45.4040403@garzik.org>
+	Wed, 23 May 2007 18:01:29 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:42435 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755293AbXEWWB2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 18:01:28 -0400
+Date: Wed, 23 May 2007 15:01:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+Message-Id: <20070523150122.f9946f37.akpm@linux-foundation.org>
+In-Reply-To: <4654AC94.6080601@googlemail.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+	<46540DB2.5000605@googlemail.com>
+	<Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
+	<4654AC94.6080601@googlemail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46549F45.4040403@garzik.org>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> :
-> Alan Cox wrote:
-[...]
-> >They've quietly fed little bits back now and then but not made a big song
-> >and dance about it. Hopefully with Andrew there and the like more will
-> >occur.
+On Wed, 23 May 2007 23:05:24 +0200
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+
+> Christoph Lameter napisa__(a):
+> > On Wed, 23 May 2007, Michal Piotrowski wrote:
+> > 
+> >> Christoph, this looks like a bug in SLUB.
+> > 
+> > Please boot with slub_debug to find the bad code that overwrites a slab 
+> > object after it was freed.
+> > 
+> > 
 > 
-> Strange that the NIC and SATA driver bits never seem to be among those 
-> "little bits"...  Along with filesystem and other modifications 
-> discussed in the press, or observable net stack behavior when connecting 
-> to their computers over the 'net.
-> 
-> So, emphasis on "little", I guess.
+> [   19.096577] Real Time Clock Driver v1.12ac
+> [   21.650315] *** SLUB kmalloc-8: Redzone Active@0xc90f6d20 slab 0xc528c530
+> [   21.657365]     offset=3360 flags=0x400000c3 inuse=61 freelist=0xc90f6d58
+> [   21.664349]   Bytes b4 0xc90f6d10:  00 00 00 00 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a ........ZZZZZZZZ
+> [   21.674305]     Object 0xc90f6d20:  31 30 31 39 2e 30 30 35                         1019.005        
+> [   21.684259]    Redzone 0xc90f6d28:  00 cc cc cc                                     .______            
+> [   21.694265] FreePointer 0xc90f6d2c -> 0xc90f6d58
+> [   21.699061] Last alloc: get_modalias+0x61/0xf5 jiffies_ago=53 cpu=1 pid=554
+> [   21.706362]     Filler 0xc90f6d50:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
 
-It is a strange way to ask more contribution from the @google.com people
-whose name appear in git log.
+argh, I never 100% understood the slab gobbledygook, and now we have slub
+gobbledygook.  I _hope_ what that's saying is that the 00 at 0xc90f6d28
+wasn't supposed to be there.
 
-:o(
+Obvious bug:
 
--- 
-Ueimor
+--- a/drivers/firmware/dmi-id.c~a
++++ a/drivers/firmware/dmi-id.c
+@@ -94,7 +94,7 @@ static ssize_t get_modalias(char *buffer
+ 		if (!c)
+ 			continue;
+ 
+-		t = kmalloc(strlen(c), GFP_KERNEL);
++		t = kmalloc(strlen(c) + 1, GFP_KERNEL);
+ 		if (!t)
+ 			break;
+ 		ascii_filter(t, c);
+_
+
+
+> Here is another one
+
+Same deal.
+
