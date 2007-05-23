@@ -1,89 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933470AbXEWKFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765412AbXEWKJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933470AbXEWKFg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 06:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762340AbXEWKDP
+	id S1765412AbXEWKJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 06:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758657AbXEWKJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 06:03:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55996 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758851AbXEWKDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 06:03:14 -0400
-Message-Id: <20070523095807.212984885@chello.nl>
-References: <20070523072618.129001605@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Wed, 23 May 2007 11:57:17 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 1/7] fix raw_spinlock_t vs lockdep
-Content-Disposition: inline; filename=raw_spinlock_fix.patch
+	Wed, 23 May 2007 06:09:48 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:3973 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756828AbXEWKJr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 06:09:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kyFkUgyVHIqBS8QL2Z9vz8LEuR1grgiT37Fd01I0WnniAnZSFDFbmT5sL1W8K2GteP4RGNJHrrsx1pSJYv5TY+OTJKBzmGiyZVeHpHUXvfgkKLk7dy74q/T0WXUCahe2tYEkcpWX+Xc7+r80REk6zEvIJSfMBy3B+EbwUxujR1E=
+Message-ID: <d9b9d95f0705230309j339d2c46j52f9d8bd1c4f19ee@mail.gmail.com>
+Date: Wed, 23 May 2007 11:09:46 +0100
+From: "Renato Golin" <rengolin@gmail.com>
+To: "Jiri Kosina" <jikos@jikos.cz>
+Subject: Re: [PATCH] joydev.c automatic re-calibration
+Cc: linux-kernel@vger.kernel.org,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+In-Reply-To: <d9b9d95f0705230301qa78344chdefef5a3513b3e70@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d9b9d95f0705221733l46de4262qd9c3f5047c53667@mail.gmail.com>
+	 <Pine.LNX.4.64.0705231130540.27422@twin.jikos.cz>
+	 <d9b9d95f0705230301qa78344chdefef5a3513b3e70@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-raw_spinlock_t should not use lockdep (and doesn't) since lockdep itself relies
-on it.
+This small patch adds the automatic recalibration feature without
+spoiling previously calibrated devices. It's a fix for those joysticks
+that report faulty range, specially Saitek Cyborg Evo Force.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/spinlock_types.h    |    4 ++--
- include/linux/spinlock_types_up.h |    9 +--------
- 2 files changed, 3 insertions(+), 10 deletions(-)
+File: drivers/input/joydev.c
+Fix:
+ - extracted code from joydev_connect to method
+joydev_calculate_correction to be able to call it from both
+joydev_event upon recalibration and joydev_connect during first
+connection.
+ - on joydev_connect check ranges and zero calibration if found out of range
+ - on joydev_event, every time found out of range, update min/max and
+recalculate the correction
 
-Index: linux-2.6/include/linux/spinlock_types_up.h
-===================================================================
---- linux-2.6.orig/include/linux/spinlock_types_up.h	2007-02-20 13:22:26.000000000 +0100
-+++ linux-2.6/include/linux/spinlock_types_up.h	2007-05-21 14:42:55.000000000 +0200
-@@ -12,14 +12,10 @@
-  * Released under the General Public License (GPL).
-  */
- 
--#if defined(CONFIG_DEBUG_SPINLOCK) || \
--	defined(CONFIG_DEBUG_LOCK_ALLOC)
-+#ifdef CONFIG_DEBUG_SPINLOCK
- 
- typedef struct {
- 	volatile unsigned int slock;
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--	struct lockdep_map dep_map;
--#endif
- } raw_spinlock_t;
- 
- #define __RAW_SPIN_LOCK_UNLOCKED { 1 }
-@@ -34,9 +30,6 @@ typedef struct { } raw_spinlock_t;
- 
- typedef struct {
- 	/* no debug version on UP */
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--	struct lockdep_map dep_map;
--#endif
- } raw_rwlock_t;
- 
- #define __RAW_RW_LOCK_UNLOCKED { }
-Index: linux-2.6/include/linux/spinlock_types.h
-===================================================================
---- linux-2.6.orig/include/linux/spinlock_types.h	2007-05-21 14:43:19.000000000 +0200
-+++ linux-2.6/include/linux/spinlock_types.h	2007-05-21 14:43:31.000000000 +0200
-@@ -9,14 +9,14 @@
-  * Released under the General Public License (GPL).
-  */
- 
--#include <linux/lockdep.h>
--
- #if defined(CONFIG_SMP)
- # include <asm/spinlock_types.h>
- #else
- # include <linux/spinlock_types_up.h>
- #endif
- 
-+#include <linux/lockdep.h>
+PS: adding Signed-off-by line (is that it?)
+
+Signed-off-by: Renato Golin <rengolin@gmail.com>
+$ diff -u joydev.c.original joydev.c
+--- joydev.c.original   2007-05-22 22:23:43.000000000 +0100
++++ joydev.c    2007-05-23 01:24:04.000000000 +0100
+@@ -53,6 +53,8 @@
+       __u8 absmap[ABS_MAX + 1];
+       __u8 abspam[ABS_MAX + 1];
+       __s16 abs[ABS_MAX + 1];
++       __s16 absmin[ABS_MAX + 1];
++       __s16 absmax[ABS_MAX + 1];
+ };
+
+ struct joydev_list {
+@@ -67,6 +69,19 @@
+
+ static struct joydev *joydev_table[JOYDEV_MINORS];
+
++static void joydev_calculate_correction(int min, int max, int axis,
+struct joydev *joydev)
++{
++       int t, j = joydev->abspam[axis];
++       int flat = joydev->handle.dev->absflat[j];
 +
- typedef struct {
- 	raw_spinlock_t raw_lock;
- #if defined(CONFIG_PREEMPT) && defined(CONFIG_SMP)
++       joydev->corr[axis].coef[0] = (max + min) / 2 - flat;
++       joydev->corr[axis].coef[1] = (max + min) / 2 + flat;
++       if (!(t = ((max - min) / 2 - 2 * flat)))
++               return;
++       joydev->corr[axis].coef[2] = (1 << 29) / t;
++       joydev->corr[axis].coef[3] = (1 << 29) / t;
++}
++
+ static int joydev_correct(int value, struct js_corr *corr)
+ {
+       switch (corr->type) {
+@@ -103,6 +118,14 @@
+               case EV_ABS:
+                       event.type = JS_EVENT_AXIS;
+                       event.number = joydev->absmap[code];
++                       /* recalibration if needed */
++                       if (value < joydev->absmin[code]) {
++                               joydev->absmin[code] = value;
++                               joydev_calculate_correction(value,
+joydev->absmax[code], code, joydev);
++                       } else if (value > joydev->absmax[code]) {
++                               joydev->absmax[code] = value;
++
+joydev_calculate_correction(joydev->absmin[code], value, code,
+joydev);
++                       }
+                       event.value = joydev_correct(value,
+joydev->corr + event.number);
+                       if (event.value == joydev->abs[event.number])
+                               return;
+@@ -470,7 +493,7 @@
+ {
+       struct joydev *joydev;
+       struct class_device *cdev;
+-       int i, j, t, minor;
++       int i, j, minor;
 
--- 
+       for (minor = 0; minor < JOYDEV_MINORS && joydev_table[minor]; minor++);
+       if (minor == JOYDEV_MINORS) {
+@@ -515,19 +538,21 @@
 
+       for (i = 0; i < joydev->nabs; i++) {
+               j = joydev->abspam[i];
+-               if (dev->absmax[j] == dev->absmin[j]) {
++               joydev->absmin[i] = dev->absmin[j];
++               joydev->absmax[i] = dev->absmax[j];
++               if (joydev->absmax[i] == joydev->absmin[i]) {
+                       joydev->corr[i].type = JS_CORR_NONE;
+                       joydev->abs[i] = dev->abs[j];
+                       continue;
+               }
+               joydev->corr[i].type = JS_CORR_BROKEN;
+               joydev->corr[i].prec = dev->absfuzz[j];
+-               joydev->corr[i].coef[0] = (dev->absmax[j] +
+dev->absmin[j]) / 2 - dev->absflat[j];
+-               joydev->corr[i].coef[1] = (dev->absmax[j] +
+dev->absmin[j]) / 2 + dev->absflat[j];
+-               if (!(t = ((dev->absmax[j] - dev->absmin[j]) / 2 - 2 *
+dev->absflat[j])))
+-                       continue;
+-               joydev->corr[i].coef[2] = (1 << 29) / t;
+-               joydev->corr[i].coef[3] = (1 << 29) / t;
++
++               if (dev->abs[j] > joydev->absmax[i] || dev->abs[j] <
+joydev->absmin[i]) {
++                       printk("Joydev: Bad axis range, recalibrating
+automatically\n");
++                       joydev_calculate_correction(0, 0, i, joydev);
++               } else
++                       joydev_calculate_correction(joydev->absmin[i],
+joydev->absmax[i], i, joydev);
+
+               joydev->abs[i] = joydev_correct(dev->abs[j], joydev->corr + i);
+       }
