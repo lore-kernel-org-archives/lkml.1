@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935270AbXEWPTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933903AbXEWPZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935270AbXEWPTg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 11:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760918AbXEWPSt
+	id S933903AbXEWPZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 11:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbXEWPZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 11:18:49 -0400
-Received: from lazybastard.de ([212.112.238.170]:36855 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935072AbXEWPSr (ORCPT
+	Wed, 23 May 2007 11:25:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:29227 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755168AbXEWPZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 11:18:47 -0400
-Date: Wed, 23 May 2007 17:14:04 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       Albert Cahalan <acahalan@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>
-Subject: Re: Review status (Re: [PATCH] LogFS take three)
-Message-ID: <20070523151402.GA25532@lazybastard.org>
-References: <20070515151919.GA32510@lazybastard.org> <20070515152149.GB32059@lazybastard.org> <20070517160308.GA26643@2ka.mipt.ru> <20070517171017.GB15676@lazybastard.org> <20070520173049.GA20907@2ka.mipt.ru> <20070523125840.GC24738@lazybastard.org> <20070523150732.GA2456@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 23 May 2007 11:25:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AkIqMg50o+SmbrsGG+Ttc1zIOYFqvW073isd+pjoIwX67EEDxsSM1ibFOfuQ2qR8zIcde2+BdaN9M2WLBCh6g5ryxTAbMOEOHu6BWGHnvYhV+1JU0gVDtl2L3ohsr+9g5ao/Kxg080Hyi3m70y9aZ6YeJH8IAUgvlkdwTYLYync=
+Message-ID: <d9b9d95f0705230825y24496ba3i4340d69ad78028cd@mail.gmail.com>
+Date: Wed, 23 May 2007 16:25:14 +0100
+From: "Renato Golin" <rengolin@gmail.com>
+To: "Jiri Kosina" <jikos@jikos.cz>
+Subject: Re: [PATCH] joydev.c automatic re-calibration
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705231644520.27422@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070523150732.GA2456@2ka.mipt.ru>
-User-Agent: Mutt/1.5.9i
+References: <d9b9d95f0705221733l46de4262qd9c3f5047c53667@mail.gmail.com>
+	 <Pine.LNX.4.64.0705231130540.27422@twin.jikos.cz>
+	 <d120d5000705230737s40d92df7m91a7b574e3a9c0d1@mail.gmail.com>
+	 <Pine.LNX.4.64.0705231644520.27422@twin.jikos.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 19:07:32 +0400, Evgeniy Polyakov wrote:
-> On Wed, May 23, 2007 at 02:58:41PM +0200, Jörn Engel (joern@lazybastard.org) wrote:
-> > On Sun, 20 May 2007 21:30:52 +0400, Evgeniy Polyakov wrote:
-> 
-> And what if it is 33 bits? Or it is not allowed?
+On 23/05/07, Jiri Kosina <jikos@jikos.cz> wrote:
+> I have asked Renato to provide HID debugging output a few days ago - see
+> http://lkml.org/lkml/2007/5/21/201 - but that was without reply.
 
-Not allowed.  Both number and size of segments may never exceed 32bit.
+Sorry, didn't get the email.
 
-> > > segsize is long, but should be u64 I think.
-> > 
-> > It could be s32 as well.
-> 
-> It is a matter of definition - if segment size is allowed to be more
-> than 32 bits, then below transformation is not correct, otherwise
-> segment size should not use additional 32bits on 64bit platform, since
-> it is long.
 
-I guess I could save 4 Bytes there.
+> Renato, do you think you could try this, so that we can understand better
+> if we can't put a HID quirk to normalize the values on HID-level somehow?
 
-> > I'm just a German.  Forgive me if I drink lesser beverages.
-> 
-> You should definitely change that.
+Good idea. I've put some debugging (but posted in the wrong list)
+about the values my joystick is reporting. Will turn on HID debugging
+and post the results.
 
-Change being German?  Not a bad idea, actually.
+cheers,
+--renato
 
-> Btw, what about this piece:
-> 
-> int logfs_erase_segment(struct super_block *sb, u32 index)
-> {
-> 	struct logfs_super *super = LOGFS_SUPER(sb);
-> 
-> 	super->s_gec++;
-> 
-> 	return mtderase(sb, index << super->s_segshift, super->s_segsize);
-> }
-> 
-> index << super->s_segshift might overflow, mtderase expects loff_t
-> there, since index can be arbitrary segment number, is it possible, that
-> overflow really occurs?
-
-Indeed it is.  You just earned your second beer^Wvodka.
-
-Jörn
-
--- 
-The wise man seeks everything in himself; the ignorant man tries to get
-everything from somebody else.
--- unknown
+Reclaim your digital rights, eliminate DRM, learn more at
+http://www.defectivebydesign.org/what_is_drm
