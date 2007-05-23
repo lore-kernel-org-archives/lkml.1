@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbXEWFpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbXEWFp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760079AbXEWFpF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 01:45:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbXEWFo4
+	id S1761009AbXEWFp6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 01:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbXEWFpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 01:44:56 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:50462 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755120AbXEWFoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 01:44:55 -0400
-Message-ID: <4653D4D5.5030504@drzeus.cx>
-Date: Wed, 23 May 2007 07:44:53 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 23 May 2007 01:45:50 -0400
+Received: from d0618442.dreamhost.com ([208.97.132.66]:46511 "EHLO
+	spaceymail-a3.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756592AbXEWFpu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 01:45:50 -0400
+From: Anant Nitya <kernel@prachanda.info>
+Organization: Prachanda Hub
+To: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v13
+Date: Wed, 23 May 2007 11:15:25 +0530
+User-Agent: KMail/1.9.6
+Cc: Bill Davidsen <davidsen@tmr.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20070517174533.GA538@elte.hu> <200705180317.06014.kernel@prachanda.hub> <46536963.8040503@tmr.com>
+In-Reply-To: <46536963.8040503@tmr.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Kristian H?gsberg" <krh@bitplanet.net>
-Subject: Re: Race free attributes in sysfs
-References: <46502A8B.70803@drzeus.cx> <3ae72650705211050p6b6cefbdya70dd4e0a27e2d1b@mail.gmail.com> <4651E866.5010304@drzeus.cx> <1179775695.3320.82.camel@lov.localdomain> <46530F02.7010802@drzeus.cx> <20070523042418.GB27329@kroah.com>
-In-Reply-To: <20070523042418.GB27329@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705231115.27123.kernel@prachanda.hub>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> If you can come up with a wrapper that will work, please let me know and
-> I'll be glad to add it.  Right now, it's pretty darn simple to do this
-> (look at the USB and PCI core code for examples if you need it.)
+On Wednesday 23 May 2007 03:36:27 Bill Davidsen wrote:
+> Anant Nitya wrote:
+> > On Thursday 17 May 2007 23:15:33 Ingo Molnar wrote:
+> >> i'm pleased to announce release -v13 of the CFS scheduler patchset.
+> >>
+> >> The CFS patch against v2.6.22-rc1, v2.6.21.1 or v2.6.20.10 can be
+> >> downloaded from the usual place:
+> >>
+> >>      http://people.redhat.com/mingo/cfs-scheduler/
+> >>
+> >> -v13 is a fixes-only release. It fixes a smaller accounting bug, so if
+> >> you saw small lags during desktop use under certain workloads then
+> >> please re-check that workload under -v13 too. It also tweaks SMP
+> >> load-balancing a bit. (Note: the load-balancing artifact reported by
+> >> Peter Williams is not a CFS-specific problem and he reproduced it in
+> >> v2.6.21 too. Nevertheless -v13 should be less prone to such artifacts.)
+> >>
+> >> I know about no open CFS regression at the moment, so please re-test
+> >> -v13 and if you still see any problem please re-report it. Thanks!
+> >>
+> >> Changes since -v12:
+> >>
+> >>  - small tweak: made the "fork flow" of reniced tasks zero-sum
+> >>
+> >>  - debugging update: /proc/<PID>/sched is now seqfile based and echoing
+> >>    0 to it clears the maximum-tracking counters.
+> >>
+> >>  - more debugging counters
+> >>
+> >>  - small rounding fix to make the statistical average of rounding errors
+> >>    zero
+> >>
+> >>  - scale both the runtime limit and the granularity on SMP too, and make
+> >>    it dependent on HZ
+> >>
+> >>  - misc cleanups
+> >>
+> >> As usual, any sort of feedback, bugreport, fix and suggestion is more
+> >> than welcome,
+> >>
+> >> 	Ingo
+> >> -
+> >
+> > Hi
+> > Been testing this version of CFS from last an hour or so and still facing
+> > same lag problems while browsing sites with heavy JS and or flash usage.
+> > Mouse movement is pathetic and audio starts to skip. I haven't face this
+> > behavior with CFS till v11.
 >
->   
+> 'm not seeing this, do have a site or two as examples?
 
-I guess we have different views on "simple" :)
+Please disregard the above post, lag problem I am experiencing got introduced 
+in 2.6.22-rcX and is network QoS specific and its not related to CFS.
 
-I had a look at the usb code, which is why I think the current method is
-a bit indirect. Right now I instead copied the function that adds the
-device attributes given in the bus_type structure. Couldn't that be used
-in a more general manner to get device attribute groups?
+Regards
+Ananitya
 
-> Anyway, groups are what you want and need, please use them and then you
-> don't have to worry about triggering an event later after you have
-> created your files on your own.
->   
-
-I take it I can supply an array of groups somewhere?
 
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
-
+Out of many thousands, one may endeavor for perfection, and of
+those who have achieved perfection, hardly one knows Me in truth.
+				-- Gita Sutra Of Mysticism
