@@ -1,56 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763114AbXEWOrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXEWOtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763114AbXEWOrU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 10:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbXEWOrG
+	id S1760187AbXEWOtU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 10:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbXEWOtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 10:47:06 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:52957 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760681AbXEWOrG (ORCPT
+	Wed, 23 May 2007 10:49:13 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:52955 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755168AbXEWOtM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 10:47:06 -0400
-Date: Wed, 23 May 2007 10:47:04 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@ucw.cz>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc2-mm1
-In-Reply-To: <200705231122.30756.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0705231045370.3673-100000@iolanthe.rowland.org>
+	Wed, 23 May 2007 10:49:12 -0400
+Message-ID: <46545459.2090804@linux.vnet.ibm.com>
+Date: Wed, 23 May 2007 20:18:57 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>, linux-mm@kvack.org
+CC: Balbir Singh <balbir@in.ibm.com>, Pavel Emelianov <xemul@sw.ru>,
+       Paul Menage <menage@google.com>, Kirill Korotaev <dev@sw.ru>,
+       devel@openvz.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
+       Aubrey Li <aubreylee@gmail.com>
+Subject: [RFC][PATCH 0/3] Containers: Pagecache accounting and control subsystem
+ (v3)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007, Rafael J. Wysocki wrote:
+Containers: Pagecache accounting and control subsystem (v3)
+-----------------------------------------------------------
 
-> On Wednesday, 23 May 2007 09:48, Andrew Morton wrote:
-> > On Wed, 23 May 2007 00:42:33 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
-> > 
-> > This is intermittently getting resume-from-RAM failures.  It is not
-> > sufficiently repeatable to be able to bisect.
-> > 
-> > [ 1381.119362] PM: Preparing system for mem sleep
-> > [ 2331.798452] Stopping tasks ... 
-> > [ 2351.760431] Stopping kernel threads timed out after 20 seconds (2 tasks refusing to freeze):
-> > [ 2351.762385]  ksuspend_usbd
-> > [ 2351.764374]  khubd
-> > [ 2351.766338] Restarting tasks ... done.
-> 
-> Hmm, that seems to be related to usb-fix-suspend-to-ram.patch (probably one of
-> the threads is waiting for a completion by some other thread that has been
-> frozen already).
+This patch extends the RSS controller to account and reclaim pagecache
+and swapcache pages.  This is a prototype to demonstrate that the existing
+container infrastructure is useful to build different VM controller.
 
-Is it possible to get an Alt-SysRq-T stack trace during those 20 
-seconds?  Knowing what those threads are waiting for would be a big 
-help.
+This patch is based on RSS Controller V2 by Pavel and Balbir.  This patch
+depends on
+1. Paul Menage's Containers (V8): Generic Process Containers
+http://lkml.org/lkml/2007/4/6/297
+2. Pavel Emelianov's RSS controller based on process containers (v2)
+http://lkml.org/lkml/2007/4/9/78
+3. Balbir's fixes for RSS controller as mentioned in
+http://lkml.org/lkml/2007/5/17/232
 
-Alan Stern
+This is very much work-in-progress, you can certainly expect hangs/crash if
+both pagecache and rss limits are set and the container is stressed.
+
+Comments, suggestions and criticisms are welcome.
+
+Thanks,
+Vaidy
+
+Features:
+--------
+* No new subsystem is added. The RSS controller subsystem is extended
+  since most of the code can be shared between pagecache control and
+  RSS control.
+* The accounting number include pages in swap cache and filesystem
+  buffer pages apart from pagecache, basically everything under
+  NR_FILE_PAGES is counted as pagecache.
+* Limits on pagecache can be set by echo -n 100000 > pagecache_limit on
+  the /container file system.  The unit is in pages or 4 kilobytes
+* If the pagecache utilisation limit is exceeded, the container reclaim
+  code is invoked to recover pages from the container.
+
+Advantages:
+-----------
+* Minimal code changes to RSS controller to include pagecache pages
+
+Limitations:
+-----------
+* All limitation of RSS controller v2 applies to this code as well
+* Page reclaim needs to be reworked to select correct pages when the
+  respective limits are exceeded
+* Concurrent and recursive triggering of reclaimer code is a mess leading
+  to deadlocks.  Reclaimer needs to be serialised and reworked to
+  do the right job and also improve performance
+
+Usage:
+------
+* Add all dependent patches before including this patch
+* No new config settings apart from enabling CONFIG_RSS_CONTAINER
+* Boot new kernel
+* Mount container filesystem
+	mount -t container none /container
+	cd /container
+* Create new container
+	mkdir mybox
+	cd /container/mybox
+* Add current shell to container
+	echo $$ > tasks
+* There are two files pagecache_usage and pagecache_limit
+* In order to set limit, echo value in pages (4KB) to pagecache_limit
+	echo -n 100000 > pagecache_limit
+	#This would set 409MB limit on pagecache usage
+* Trash the system from current shell using scp/cp/dd/tar etc
+* Watch pagecache_usage and /proc/meminfo to verify behavior
+
+Tests:
+------
+* Simple dd/cat/cp test on pagecache limit
+* rss_limit was tested with simple test application that would malloc
+  predefined size of memory and touch them to allocate pages.
+
+ToDo:
+----
+* Optimise the reclaim.  Currently isolate_container_pages does not distinguish
+  between whether pagecache limit is hit or rss limit is hit
+* Prevent concurrent reclaim and recursive reclaim when both limits are set.
+
+Patch Series:
+-------------
+pagecache-controller-v3-setup.patch
+pagecache-controller-v3-acct.patch
+pagecache-controller-v3-acct-hooks.patch
+
 
