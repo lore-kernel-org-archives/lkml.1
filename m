@@ -1,303 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbXEWIrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763511AbXEWIrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762132AbXEWIrV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 04:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759114AbXEWIrL
+	id S1763511AbXEWIrz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 04:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbXEWIrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 04:47:11 -0400
-Received: from styx.suse.cz ([82.119.242.94]:40718 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756912AbXEWIrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 04:47:09 -0400
-Date: Wed, 23 May 2007 10:50:24 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kratochvil <honza@jikos.cz>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RESEND] PIE randomization
-In-Reply-To: <20070522161642.b71ddacb.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705231044540.22906@jikos.suse.cz>
-References: <alpine.LRH.0.98.0705111338230.22353@twin.jikos.cz>
- <20070511125629.3df919cf.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
- <20070511133651.63f8a14d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz>
- <Pine.LNX.4.64.0705161851120.25986@twin.jikos.cz>
- <alpine.LRH.0.98.0705172221440.22353@twin.jikos.cz>
- <20070522161642.b71ddacb.akpm@linux-foundation.org>
+	Wed, 23 May 2007 04:47:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36301 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757277AbXEWIro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 04:47:44 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Fcc: ~/Mail/utrace
+Cc: Prasanna S Panchamukhi <prasanna@in.ibm.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] hwbkpt: Hardware breakpoints (was Kwatch)
+In-Reply-To: Alan Stern's message of  Wednesday, 16 May 2007 15:03:20 -0400 <Pine.LNX.4.44L0.0705151150320.3192-100000@iolanthe.rowland.org>
+Emacs: an inspiring example of form following function... to Hell.
+Message-Id: <20070523084710.997A11F8511@magilla.localdomain>
+Date: Wed, 23 May 2007 01:47:10 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007, Andrew Morton wrote:
+> > This does not happen in reality.  Breakpoints can only be set by the
+> > debugger, not by the program itself.  The debugger should always eat the trap.
+> 
+> Hmmm.  I put in a little extra code to account for the possibility that
+> a program might want to set hardware breakpoints in itself.  Should
+> this be removed?
 
-> > This patch is using mmap()'s randomization functionality in such a way 
-> > that it maps the main executable of (specially compiled/linked 
-> > -pie/-fpie) ET_DYN binaries onto a random address (in cases in which 
-> > mmap() is allowed to perform a randomization).
-> ia64:
-> arch/ia64/ia32/binfmt_elf32.c:265: error: conflicting types for 'elf32_map'
-> arch/ia64/ia32/../../../fs/binfmt_elf.c:48: error: previous declaration of 'elf32_map' was here
-> arch/ia64/ia32/binfmt_elf32.c:265: error: conflicting types for 'elf32_map'
-> arch/ia64/ia32/../../../fs/binfmt_elf.c:48: error: previous declaration of 'elf32_map' was here
-> arch/ia64/ia32/../../../fs/binfmt_elf.c:48: warning: 'elf32_map' declared `static' but never defined
-> arch/ia64/ia32/binfmt_elf32.c:265: warning: 'elf32_map' defined but not used
+Do you just mean a register_hw_breakpoint call made on current?  That
+certainly ought to work.  That's still "the debugger", i.e. in utracespeak
+the tracing engine.  My point was that there will never be a facility
+intended for a program to use hw_breakpoint to generate a signal that gets
+delivered to a handler in the vanilla way.  There's always some "outside"
+agent who asked for the breakpoint and who is responsible for responding to
+the traps it causes, never the program itself so as it would make sense for
+it to actually see the signal in the end.
 
-The fix to this is trivial - just fix the prototype in ia32 compat version 
-of ia64 code. Updated patch is below.
+> > I guess my main objection to having .type and .len is the false implied
+> > documentation of their presence and names, leading to people thinking they
+> > can look at those values.  In fact, they are machine-specific and
+> > implementation-specific bits of no intrinsic use to anyone else.
+> 
+> The fact that they are machine-specific and implementation-specific 
+> doesn't necessarily make them of no use.  See the driver below.
+
+The code in bp_show is exactly the kind of wrong I want to prevent.  When I
+say they are machine-specific and implementation-specific, I mean there is
+no specified part of the interface to which you can presume they correspond
+directly.  The powerpc implementation will not have any field that is set
+to HW_BREAKPOINT_LEN_8 and may well have none set to the type macros
+either.  If you want to have some machine-specific macros or inlines to
+yield the HW_BREAKPOINT_* values for a struct hw_breakpoint, then fine.
+
+> Allow me to rephrase: When a debug exception occurs, the real DR6 value
+> should be copied to vdr6, except that kprobes should adjust DR_STEP and
+> hw_breakpoint should adjust the DR_TRAPn bits appropriately.  There's
+> some question about what value the debug exception handler should write
+> back to DR6, if anything.  
+
+Agreed.
+
+> As for what users expect of the low four bits, you are definitely 
+> wrong.  My tests with gdb show that it relies on the CPU to clear those 
+> bits whenever a data breakpoint is hit; it doesn't clear them itself 
+> and it doesn't work properly if the kernel keeps virtualized versions 
+> of them set.  That's on a Pentium 4 and on an AMD Duron.
+
+Ok.  We were both going on what the manual said and I was assuming that
+some chip had actually behaved that way and thus that's what users expect.
+
+> 	Values written back to DR6 were retained in the register until 
+> 	the next debug exception occurred.
+
+Ok.  This behavior is invisible anyway.
+
+> 	When the exception handler read DR6, the 0xffff0ff0 bits were
+> 	set every time.  The 0x00001000 bit was never set, even if it
+> 	had been turned on before the exception occurred.
+
+Ok.  That is not really surprising.
+
+> 	No matter what values were stored in the low four bits
+> 	beforehand, when the exception occurred DR6 had only the
+> 	bit for the debug register which was triggered.
+
+Ok.  This makes the users' expectations make sense.  Maybe we can get the
+Intel and AMD people to change the manual not to be misleading about this
+(it says something terse about "never clears" and without more details I
+read it as "never clears any bit, ever").  
+
+What about DR_STEP?  i.e., if DR_STEP was set from a single-step and then
+there was a DR_TRAPn debug exception, is DR_STEP still set?  If DR_TRAPn
+was set and then you single-step, is DR_TRAPn cleared?
+
+> 	If the handler wrote back any of BS, BT, or BD to DR6, then
+> 	the system misbehaved.  I don't know exactly what happened,
+> 	but my shell process ended and the debug handler got called
+> 	over and over again (as if stuck in a loop) for several
+> 	seconds.
+
+Yowza.  That is really surprising.
+
+> In light of these results, the best approach appears to be either to 
+> leave DR6 alone or to set it to 0.
+
+Agreed.  I suspect clearing it to zero is the right thing (given what the
+hardware manuals say), even if it appears that DR_STEP and DR_TRAPn do
+reset each other on the chips we have on hand.
+
+> Below is a patch containing a driver meant for testing kernel hardware 
+> breakpoints.  Instructions are in the comments at the top.  You can 
+> build the driver by typing "make M=bptest" at the top level.
+
+Thanks.
+
+> The patch also adjust the Alt-SysRq-P handler to print out the debug 
+> register values along with all the other stuff.
+
+I think you should post that little patch (and equivalent for x86_64) by
+itself.  There's no reason that shouldn't go right in.
+
+> I took a look at seqlock.h.  It turns out not to be a good match for my 
+> requirements; the header file specifically says that it won't work with 
+> data that contains pointers.
+
+There is no black magic about that, it's just saying that seqlock/seqcount
+does not do any implicit synchronization with your data structure
+management.  If the pointers in question are protected by RCU, there is no
+problem (if your read_seqcount_retry loop is inside rcu_read_lock).  Since
+the caller supplies the pointers, not requiring them to be freed by RCU
+would be simplest for callers.  So what seems natural to me is to have a
+simple unsigned long kdr[4] array that's updated by register/unregister
+calls (while they hold the mutex to exclude each other).
+
+> The "switching"/"restart" stuff doesn't need memory barriers because
+> all the communication is between two routines on the same CPU.  Nor are 
+> memory barriers needed in the rest of the code for the kernel 
+> breakpoint updates; the IPI mechanism already provides its own.
+
+Ok.  I thought we were talking about using seqlock to safely read from a
+single global data set that's updated in place.  I can't really see why
+anything but bp_task actually needs to be per-cpu.
+
+> A memory barrier is necessary to avoid chaos if another CPU should
+> happen to update the kernel breakpoint settings at the same time.  If
+> you can suggest a way around it, please do.
+
+The natural thing to me would be to just use the same seqcount-based update
+style from a global kdr[4] here.
+
+> 	Take care of the DR7 calculations;
+
+Call it a generic "make it go after setting each debug register".
+For most other machines this will be a no-op.
+
+> 	Do address limit verification (see whether a pointer
+> 	lies in user space or kernel space).
+
+This is probably always < TASK_SIZE_OF (or TASK_SIZE #ifndef),
+but it is probably right to make it an arch macro.
+
+> 	Dumping the debug registers while creating an aout-type
+> 	core image;
+
+Ha.  Probably noone else has that arcane bit of compatibility to do, in fact.
+
+> 	All the legacy ptrace stuff;
+
+Right.  There is nothing in common about this except for needing something
+(so maybe an arch-defined struct inside the struct thread_hw_breakpoint).
+
+> Does all that sound about right?  
+
+It does.
+
+> How should this be arranged so that it can build okay on all platforms,
+> even ones where the low-level support code hasn't been written?  Maybe 
+> an arch-dependent CONFIG_HW_BREAKPOINT option?
+
+I am no authority on kconfig, so seek other advice.  
+
+What kprobes does is a separate "config KPROBES" in each arch/foo/Kconfig.
+This means that the details and help text must be given separately for each
+one.  This is a bug or a feature, depending on whether you dislike
+repeating the same help text in several places and having it drift and not
+stay uniformly maintained, or you want to include different arch-specific
+details in the text.
+
+The other option I see is one central:
+
+config HW_BREAKPOINT
+	depends on X86 || X86_64 || ...
+	...
+
+AIUI, with this, arch/foo/Kconfig can still have just the lines:
+
+config HW_BREAKPOINT
+	depends on !FOOBAR
+
+when the FOOBAR submodel of the foo arch does not have the hardware
+support, or for whatever reason an arch adds more constraints to the
+generically-defined config option.
+
+The latter one is what I would do, but I might get corrected if I did.
 
 
+Thanks,
+Roland
 
-From: Jan Kratochvil <honza@jikos.cz>
 
-This patch is using mmap()'s randomization functionality in such a way 
-that it maps the main executable of (specially compiled/linked -pie/-fpie) 
-ET_DYN binaries onto a random address (in cases in which mmap() is allowed 
-to perform a randomization).
-
-Origin of this patch is in exec-shield
-(http://people.redhat.com/mingo/exec-shield/)
-
-Signed-off-by: Jan Kratochvil <honza@jikos.cz>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Jakub Jelinek <jakub@redhat.com>
-
---- 
-
- arch/ia64/ia32/binfmt_elf32.c |    2 +-
- fs/binfmt_elf.c               |  109 ++++++++++++++++++++++++++++++++---------
- 2 files changed, 87 insertions(+), 24 deletions(-)
-
-diff --git a/arch/ia64/ia32/binfmt_elf32.c b/arch/ia64/ia32/binfmt_elf32.c
-index c05bda6..6f4d3d0 100644
---- a/arch/ia64/ia32/binfmt_elf32.c
-+++ b/arch/ia64/ia32/binfmt_elf32.c
-@@ -261,7 +261,7 @@ elf32_set_personality (void)
- }
- 
- static unsigned long
--elf32_map (struct file *filep, unsigned long addr, struct elf_phdr *eppnt, int prot, int type)
-+elf32_map (struct file *filep, unsigned long addr, struct elf_phdr *eppnt, int prot, int type, unsigned long unused)
- {
- 	unsigned long pgoff = (eppnt->p_vaddr) & ~IA32_PAGE_MASK;
- 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index fa8ea33..abcac6a 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -45,7 +45,7 @@
- 
- static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs);
- static int load_elf_library(struct file *);
--static unsigned long elf_map (struct file *, unsigned long, struct elf_phdr *, int, int);
-+static unsigned long elf_map (struct file *, unsigned long, struct elf_phdr *, int, int, unsigned long);
- 
- /*
-  * If we don't support core dumping, then supply a NULL so we
-@@ -80,7 +80,7 @@ static struct linux_binfmt elf_format =
- 		.hasvdso	= 1
- };
- 
--#define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
-+#define BAD_ADDR(x) ((unsigned long)(x) >= PAGE_MASK)
- 
- static int set_brk(unsigned long start, unsigned long end)
- {
-@@ -285,33 +285,70 @@ create_elf_tables(struct linux_binprm *b
- #ifndef elf_map
- 
- static unsigned long elf_map(struct file *filep, unsigned long addr,
--		struct elf_phdr *eppnt, int prot, int type)
-+		struct elf_phdr *eppnt, int prot, int type,
-+		unsigned long total_size)
- {
- 	unsigned long map_addr;
--	unsigned long pageoffset = ELF_PAGEOFFSET(eppnt->p_vaddr);
-+	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
-+	unsigned long off = eppnt->p_offset - ELF_PAGEOFFSET(eppnt->p_vaddr);
-+	addr = ELF_PAGESTART(addr);
-+	size = ELF_PAGEALIGN(size);
- 
--	down_write(&current->mm->mmap_sem);
- 	/* mmap() will return -EINVAL if given a zero size, but a
- 	 * segment with zero filesize is perfectly valid */
--	if (eppnt->p_filesz + pageoffset)
--		map_addr = do_mmap(filep, ELF_PAGESTART(addr),
--				   eppnt->p_filesz + pageoffset, prot, type,
--				   eppnt->p_offset - pageoffset);
--	else
--		map_addr = ELF_PAGESTART(addr);
-+	if (!size)
-+		return addr;
-+
-+	down_write(&current->mm->mmap_sem);
-+	/*
-+	* total_size is the size of the ELF (interpreter) image.
-+	* The _first_ mmap needs to know the full size, otherwise
-+	* randomization might put this image into an overlapping
-+	* position with the ELF binary image. (since size < total_size)
-+	* So we first map the 'big' image - and unmap the remainder at
-+	* the end. (which unmap is needed for ELF images with holes.)
-+	*/
-+	if (total_size) {
-+		total_size = ELF_PAGEALIGN(total_size);
-+		map_addr = do_mmap(filep, addr, total_size, prot, type, off);
-+		if (!BAD_ADDR(map_addr))
-+			do_munmap(current->mm, map_addr+size, total_size-size);
-+	} else
-+		map_addr = do_mmap(filep, addr, size, prot, type, off);
-+
- 	up_write(&current->mm->mmap_sem);
- 	return(map_addr);
- }
- 
- #endif /* !elf_map */
- 
-+static unsigned long total_mapping_size(struct elf_phdr *cmds, int nr)
-+{
-+	int i, first_idx = -1, last_idx = -1;
-+
-+	for (i = 0; i < nr; i++) {
-+		if (cmds[i].p_type == PT_LOAD) {
-+			last_idx = i;
-+			if (first_idx == -1)
-+				first_idx = i;
-+		}
-+	}
-+	if (first_idx == -1)
-+		return 0;
-+
-+	return cmds[last_idx].p_vaddr + cmds[last_idx].p_memsz -
-+				ELF_PAGESTART(cmds[first_idx].p_vaddr);
-+}
-+
-+
- /* This is much more generalized than the library routine read function,
-    so we keep this separate.  Technically the library read function
-    is only provided so that we can read a.out libraries that have
-    an ELF header */
- 
- static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
--		struct file *interpreter, unsigned long *interp_load_addr)
-+		struct file *interpreter, unsigned long *interp_map_addr,
-+		unsigned long no_base)
- {
- 	struct elf_phdr *elf_phdata;
- 	struct elf_phdr *eppnt;
-@@ -319,6 +356,7 @@ static unsigned long load_elf_interp(str
- 	int load_addr_set = 0;
- 	unsigned long last_bss = 0, elf_bss = 0;
- 	unsigned long error = ~0UL;
-+	unsigned long total_size;
- 	int retval, i, size;
- 
- 	/* First of all, some simple consistency checks */
-@@ -357,6 +395,12 @@ static unsigned long load_elf_interp(str
- 		goto out_close;
- 	}
- 
-+	total_size = total_mapping_size(elf_phdata, interp_elf_ex->e_phnum);
-+	if (!total_size) {
-+		error = -EINVAL;
-+		goto out_close;
-+	}
-+
- 	eppnt = elf_phdata;
- 	for (i = 0; i < interp_elf_ex->e_phnum; i++, eppnt++) {
- 		if (eppnt->p_type == PT_LOAD) {
-@@ -374,9 +418,14 @@ static unsigned long load_elf_interp(str
- 			vaddr = eppnt->p_vaddr;
- 			if (interp_elf_ex->e_type == ET_EXEC || load_addr_set)
- 				elf_type |= MAP_FIXED;
-+			else if (no_base && interp_elf_ex->e_type == ET_DYN)
-+				load_addr = -vaddr;
- 
- 			map_addr = elf_map(interpreter, load_addr + vaddr,
--					   eppnt, elf_prot, elf_type);
-+					   eppnt, elf_prot, elf_type, total_size);
-+			total_size = 0;
-+			if (!*interp_map_addr)
-+				*interp_map_addr = map_addr;
- 			error = map_addr;
- 			if (BAD_ADDR(map_addr))
- 				goto out_close;
-@@ -442,8 +491,7 @@ static unsigned long load_elf_interp(str
- 			goto out_close;
- 	}
- 
--	*interp_load_addr = load_addr;
--	error = ((unsigned long)interp_elf_ex->e_entry) + load_addr;
-+	error = load_addr;
- 
- out_close:
- 	kfree(elf_phdata);
-@@ -540,7 +588,8 @@ static int load_elf_binary(struct linux_
- 	int elf_exec_fileno;
- 	int retval, i;
- 	unsigned int size;
--	unsigned long elf_entry, interp_load_addr = 0;
-+	unsigned long elf_entry;
-+	unsigned long interp_load_addr = 0;
- 	unsigned long start_code, end_code, start_data, end_data;
- 	unsigned long reloc_func_desc = 0;
- 	char passed_fileno[6];
-@@ -808,9 +857,7 @@ static int load_elf_binary(struct linux_
- 	current->mm->start_stack = bprm->p;
- 
- 	/* Now we do a little grungy work by mmaping the ELF image into
--	   the correct location in memory.  At this point, we assume that
--	   the image should be loaded at fixed address, not at a variable
--	   address. */
-+	   the correct location in memory. */
- 	for(i = 0, elf_ppnt = elf_phdata;
- 	    i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
- 		int elf_prot = 0, elf_flags;
-@@ -864,11 +911,15 @@ static int load_elf_binary(struct linux_
- 			 * default mmap base, as well as whatever program they
- 			 * might try to exec.  This is because the brk will
- 			 * follow the loader, and is not movable.  */
-+#ifdef CONFIG_X86
-+			load_bias = 0;
-+#else
- 			load_bias = ELF_PAGESTART(ELF_ET_DYN_BASE - vaddr);
-+#endif
- 		}
- 
- 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
--				elf_prot, elf_flags);
-+				elf_prot, elf_flags,0);
- 		if (BAD_ADDR(error)) {
- 			send_sig(SIGKILL, current, 0);
- 			retval = IS_ERR((void *)error) ?
-@@ -944,13 +995,25 @@ static int load_elf_binary(struct linux_
- 	}
- 
- 	if (elf_interpreter) {
--		if (interpreter_type == INTERPRETER_AOUT)
-+		if (interpreter_type == INTERPRETER_AOUT) {
- 			elf_entry = load_aout_interp(&loc->interp_ex,
- 						     interpreter);
--		else
-+		} else {
-+			unsigned long interp_map_addr;	/* unused */
-+
- 			elf_entry = load_elf_interp(&loc->interp_elf_ex,
- 						    interpreter,
--						    &interp_load_addr);
-+						    &interp_map_addr,
-+						    load_bias);
-+			if (!BAD_ADDR(elf_entry)) {
-+				/*
-+				 * load_elf_interp() returns relocation
-+				 * adjustment
-+				 */
-+				interp_load_addr = elf_entry;
-+				elf_entry += loc->interp_elf_ex.e_entry;
-+			}
-+		}
- 		if (BAD_ADDR(elf_entry)) {
- 			force_sig(SIGSEGV, current);
- 			retval = IS_ERR((void *)elf_entry) ?
