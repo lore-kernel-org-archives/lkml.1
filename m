@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762652AbXEWKlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762613AbXEWKyC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762652AbXEWKlc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 06:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbXEWKlW
+	id S1762613AbXEWKyC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 06:54:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758660AbXEWKxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 06:41:22 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:60960 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758191AbXEWKlW (ORCPT
+	Wed, 23 May 2007 06:53:54 -0400
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:60194 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758439AbXEWKxx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 06:41:22 -0400
-To: viro@ftp.linux.org.uk
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-reply-to: <20070523102437.GS4095@ftp.linux.org.uk> (message from Al Viro on
-	Wed, 23 May 2007 11:24:38 +0100)
-Subject: Re: [RFC PATCH] file as directory
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> <20070523102437.GS4095@ftp.linux.org.uk>
-Message-Id: <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 23 May 2007 12:40:35 +0200
+	Wed, 23 May 2007 06:53:53 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
+Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
+       linux-mm-cc@laptop.org
+Content-Transfer-Encoding: 7bit
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: Re: [RFC] LZO de/compression support - take 3
+Date: Wed, 23 May 2007 11:53:37 +0100
+To: Nitin Gupta <nitingupta910@gmail.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Right.  After locking vfsmount_lock, mount_dironfile() should recheck
-> > if there was a race and bail out.
-> 
-> Owww...  Not pretty, that...
+On 23 May 2007, at 09:27, Nitin Gupta wrote:
 
-If the cost of ->enter() is low, then it shouln't really be a problem.
-We can't use ->i_mutex for locking, and introducing a new lock for
-this doesn't sound right either.
+> This contains LZO1X-1 compressor and LZO1X decompressor (safe and
+> standard version).
 
-> > I don't think the filesystem ought to try _creating_ a vfsmount.  I
-> > imagine, that the fs has already a kernel-internal mounted for this
-> > kind of stuff, and it just supplies a dentry from that.  The vfsmount
-> > isn't actually important, but it should be readily available, and it's
-> > easier to clone from a vfsmount/dentry pair.
-> 
-> I don't get it.  What's the point of that exercise, then?  When do you
-> create that kernel-internal mount?
+I understand that the 'safe' decompression code is 'somewhat slower'  
+and that decompressor performance is a key feature of this algorithm.  
+However, I am concerned about the safety implications of including  
+the 'unsafe' standard version in-kernel when likely uses include  
+compression of network data, memory objects and so-on, all of which  
+could in theory be maliciously modified.
 
-When the real superblock is created.  It could even be the _same_
-super block as the real one.  There'd be just the problem of anchoring
-the dir-on-file dentries somewhere...
+I'm no kernel or programming expert, so I may be off the mark with  
+this one. To me, at least, even if the answer is 'no, there isn't a  
+problem' that's still a valuable clarification :)
 
-Or with fuse the dir-on-file mount can just come from any mounted
-filesystem, again possibly the same one as the parent.  I do actually
-test with this.  The userspace filesystem supplies a file descriptor,
-from which the struct path is extracted and returned from ->enter().
+Thanks,
 
-Miklos
+Michael-Luke Jones
+[please cc me on replies as I am not subscribed to lkml]
