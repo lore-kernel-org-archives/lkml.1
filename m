@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934726AbXEWPBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934662AbXEWPCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934726AbXEWPBj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 11:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933187AbXEWPBY
+	id S934662AbXEWPCj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 11:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757697AbXEWPCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 11:01:24 -0400
-Received: from holomorphy.com ([66.93.40.71]:53544 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765816AbXEWPBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 11:01:23 -0400
-Date: Wed, 23 May 2007 08:02:20 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1
-Message-ID: <20070523150220.GT19966@holomorphy.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+	Wed, 23 May 2007 11:02:31 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:40449 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757125AbXEWPCa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 11:02:30 -0400
+Date: Wed, 23 May 2007 08:00:38 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Patrick McHardy <kaber@trash.net>
+cc: Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@elte.hu>,
+       Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: bad networking related lag in v2.6.22-rc2
+In-Reply-To: <4654269C.4040809@trash.net>
+Message-ID: <alpine.LFD.0.98.0705230752040.3890@woody.linux-foundation.org>
+References: <20070517174533.GA538@elte.hu> <200705221147.56571.kernel@prachanda.hub>
+ <20070522062233.GA20002@elte.hu> <200705231110.44526.kernel@prachanda.hub>
+ <20070523063052.GB26814@elte.hu> <46541DC4.4090501@trash.net>
+ <20070523112559.GA24604@gondor.apana.org.au> <4654269C.4040809@trash.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 12:42:33AM -0700, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
-> - A new readahead patch series.  This needs serious review and performance
->   testing please.
-> - Added Ingo's CFS CPU scheduler
-> - Xen dom-U support is now in the x86 tree.
 
-The build fails with the following error when CONFIG_X86_MCE is not set:
-arch/x86_64/kernel/built-in.o: In function `do_notify_resume':
-/mnt/g/mm-2.6.22-rc2/arch/x86_64/kernel/signal.c:478: undefined reference to `mce_notify_user'
-The following patch #ifdef's the offending call as a minimal fix.
 
-Signed-off-by: William Irwin <bill.irwin@oracle.com>
+On Wed, 23 May 2007, Patrick McHardy wrote:
+> 
+> Yes, that looks better, thanks.
 
-Index: mm-2.6.22-rc2/arch/x86_64/kernel/signal.c
-===================================================================
---- mm-2.6.22-rc2.orig/arch/x86_64/kernel/signal.c	2007-05-23 07:41:49.741705813 -0700
-+++ mm-2.6.22-rc2/arch/x86_64/kernel/signal.c	2007-05-23 07:44:35.339142673 -0700
-@@ -473,9 +473,11 @@
- 		clear_thread_flag(TIF_SINGLESTEP);
- 	}
- 
-+#ifdef CONFIG_X86_MCE
- 	/* notify userspace of pending MCEs */
- 	if (thread_info_flags & _TIF_MCE_NOTIFY)
- 		mce_notify_user();
-+#endif /* CONFIG_X86_MCE */
- 
- 	/* deal with pending signal delivery */
- 	if (thread_info_flags & (_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK))
+There appear to be other obvious problems in the recent "cleanups" in this 
+area..
+
+Look at
+
+	psched_tdiff_bounded(psched_time_t tv1, psched_time_t tv2, psched_time_t bound)
+	{
+		return min(tv1 - tv2, bound);
+	}
+
+and compare it to the previous code:
+
+	#define PSCHED_TDIFF_SAFE(tv1, tv2, bound) \
+		min_t(long long, (tv1) - (tv2), bound)
+
+and ponder how that "trivial cleanup" totally broke the thing. 
+
+Hint: "psched_time_t" is an "u64". What does that mean for
+
+	min(tv1 - tv2, bound);
+
+again, when "tv2" is larger than tv1. It _used_ to return a negative 
+value. Now it returns a positive "bound" upper bound, because "tv1-tv2" 
+will be used as a huge unsigned (and thus _positive_) integer. And was 
+that accidental, or done on purpose?
+
+Sounds accidental to me, since you then want to return a "psched_tdiff_t", 
+which is typedeffed to be "long".
+
+Doesn't sound very safe to me, especially since the commit message for 
+this is "[NET_SCHED]: turn PSCHED_TDIFF_SAFE into inline function", and 
+there's no indication that anybody realized that it changed semantics in 
+the process.
+
+Hmm? What _should_ that thing do?
+
+		Linus
