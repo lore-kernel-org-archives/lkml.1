@@ -1,117 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbXEWFkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbXEWFlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758043AbXEWFkP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 01:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756236AbXEWFkE
+	id S1759453AbXEWFlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 01:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbXEWFlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 01:40:04 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:50464 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756235AbXEWFkC (ORCPT
+	Wed, 23 May 2007 01:41:15 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:18790 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756275AbXEWFlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 01:40:02 -0400
-Date: Wed, 23 May 2007 07:39:59 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [RFC PATCH] /sys/block -> /sys/class/block  (Fedora 3 & 4
- testers wanted)
-Message-ID: <20070523073959.0f5cb104@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070523003255.GA3675@kroah.com>
-References: <20070521235353.GA6242@kroah.com>
-	<20070522102501.72f40828@gondolin.boeblingen.de.ibm.com>
-	<20070522182812.79b53880@gondolin.boeblingen.de.ibm.com>
-	<20070523003255.GA3675@kroah.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 May 2007 01:41:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RvEVFdvmRqJj72HIqaonJBVkCdrxG6899YudDSJcEVW/ILb8P72PAFJqjIJsIle4nqOoVqhuuDk6/Z9FykGxRZ11da6kZMsbqNRZypzds0CF1htKIqJKw8pxtr9FJnjvNymJYjbE9WtEh3PYbEIaxforcwL7Jb5CnRRgiF5hX6o=
+Message-ID: <6d4bc9fc0705222241y5627d992g84aa720abb9d8cdd@mail.gmail.com>
+Date: Wed, 23 May 2007 07:41:13 +0200
+From: "Maarten Maathuis" <madman2003@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [realtime kernel 2.6.21-rt2 and up] Extremely slow bootup for x86_64
+Cc: "Frank Sorenson" <frank@tuxrocks.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1179763474.12708.7.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6d4bc9fc0705200525m1b72aaaevf8a1d090038bb7dc@mail.gmail.com>
+	 <1179669982.21827.25.camel@chaos> <46512778.2050205@tuxrocks.com>
+	 <1179725216.6570.32.camel@chaos> <4651B6A7.1060901@tuxrocks.com>
+	 <1179763474.12708.7.camel@chaos>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 17:32:55 -0700,
-Greg KH <greg@kroah.com> wrote:
+2.6.21-rt6 is working normally as far as i can see.
 
-> On Tue, May 22, 2007 at 06:28:12PM +0200, Cornelia Huck wrote:
-> > On Tue, 22 May 2007 10:25:01 +0200,
-> > Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> > 
-> > > I tried this on one of our internal drivers, which is based on FC 3 (or
-> > > 4, can look this up). With s390 defconfig, it is unable to open the
-> > > root device /dev/dasda1 (which is unsurprising, considering udev (063)
-> > > decided to create /dev/dasda(1) as a character node instead of a block
-> > > node).
-> > 
-> > Just to be clear, it's fsck that complains:
-> > 
-> > Checking filesystems  
-> > Checking all file systems.  
-> > [/sbin/fsck.ext3 (1) -- /] fsck.ext3 -a /dev/dasda1   
-> > fsck.ext3: No such device or address while trying to open /dev/dasda1   
-> > Possibly non-existent or swap device?  
-> > [FAILED]   
-> > 
-> > (so that is after udev has been started and obviously dasda1 could be
-> > accessed)
-> 
-> But /dev/dasda1 isn't present?  Or why would fsck be complaining here?
+Maarten.
 
-See above. /dev/dasda1 exists, but strangely as a character device,
-which makes fsck unhappy.
-
-> 
-> > > When I look at the system, /sys/block/ and /sys/class/block/ look sane
-> > > at first glance (working on a 3270 console is usally PITA...)
-> > > 
-> > > Even more surprisingly, the system comes up fine (once I added ptmx to
-> > > makedev.d/) with CONFIG_SYSFS_DEPRECATED not set. /sys/block/
-> > > and /sys/class/block/ look just like expected. (Unfortunately, our
-> > > lsdasd tool breaks with this...)
-> > > 
-> > > I'll see if I can find out more.
-> > 
-> > I currently have the inkling that
-> > 
-> > lrwxrwxrwx  1 root root    0 May 22 15:59 block:dasda1-> ../../../class/block/dasda1
-> > 
-> > in /sys/block/dasda/ is the culprit.
-> 
-> Why?
-
-See the paragraph just below, but it's more like a hunch currently.
-
-> 
-> > In all other versions I've tried (without CONFIG_SYSFS_DEPRECATED, and
-> > on an older kernel with and without CONFIG_SYSFS_DEPRECATED), it's
-> > always dasda1.
-> 
-> That's just a back symlink, the real device should still be there.
-
-It is, but somehow udev seems confused.
-
-> 
-> Oh, and yes, you will probably have to have CONFIG_SYSFS_DEPRECATED
-> enabaled to have a chance for these to work on Fedora 4 or 3.
-
-Hmpf. That's just the problem :)
-
-- enable CONFIG_SYSFS_DEPRECATED: fails as described
-- disable CONFIG_SYSFS_DEPRECATED: works
-
-If one of the two was to fail, I'd rather expect it the other way
-around...
-
-> 
-> > I can continue investigating tomorrow, unless someone has a good idea :)
-> 
-> I don't, but any information you can find out would be greatly
-> appreciated, especially as it seems like it is working, but something is
-> still a little bit wrong.
-
-It's not really according to my definition of "working" :) But yes,
-I'll see what I can do.
+On 5/21/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Mon, 2007-05-21 at 10:11 -0500, Frank Sorenson wrote:
+> > -----BEGIN PGP SIGNED MESSAGE-----
+> > Hash: SHA1
+> >
+> > Thomas Gleixner wrote:
+> > > On Mon, 2007-05-21 at 00:00 -0500, Frank Sorenson wrote:
+> > >
+> > >> I see the slow bootup as well, even with 2.6.22-rc2-hrt1.  It takes at
+> > >> least 5 times as long to boot, for X to start, to login, etc.
+> > >
+> > > Can you provide me your .config and a boot log (please enable
+> > > CONFIG_PRINTK_TIME and add "apic=verbose" to the kernel command line).
+> > >
+> > > Can you also try with "hpet=disable" ?
+> >
+> > All attached.  With "hpet=disable", it's still slow (clocksource becomes
+> > acpi_pm).
+>
+> > [   23.159166] Bluetooth: HCI device and connection manager initialized
+> > [   23.159170] Bluetooth: HCI socket layer initialized
+> > [   23.159179] BUG: at mm/slab.c:777 __find_general_cachep()
+> > [   23.159181]
+> > [   23.159182] Call Trace:
+> > [   23.159190]  [<ffffffff81097a67>] __kmalloc+0xa7/0xe0
+> > [   23.159195]  [<ffffffff810238dd>] cache_k8_northbridges+0x9d/0x120
+> > [   23.159200]  [<ffffffff814ddce3>] gart_iommu_init+0x33/0x5b0
+> > [   23.159205]  [<ffffffff811d4027>] class_register+0x177/0x180
+> > [   23.159210]  [<ffffffff814d8379>] pci_iommu_init+0x9/0x20
+> > [   23.159214]  [<ffffffff814cf6cc>] kernel_init+0x14c/0x320
+> > [   23.159218]  [<ffffffff8100b1b8>] child_rip+0xa/0x12
+> > [   23.159223]  [<ffffffff81184150>] acpi_ds_init_one_object+0x0/0x7c
+> > [   23.159227]  [<ffffffff814cf580>] kernel_init+0x0/0x320
+> > [   23.159230]  [<ffffffff8100b1ae>] child_rip+0x0/0x12
+>
+> Hmm, other than this gem there is nothing obvious in the boot log. Does
+> the box boot normal with 2.6.22-rc2 ?
+>
+> Where does the slowness start ? Right from the beginning or later in the
+> boot process ?
+>
+>         tglx
+>
+>
+>
