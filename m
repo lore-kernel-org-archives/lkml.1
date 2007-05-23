@@ -1,62 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764905AbXEWOvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXEWOvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764905AbXEWOvK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 10:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758595AbXEWOur
+	id S932478AbXEWOvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 10:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764711AbXEWOvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 10:50:47 -0400
-Received: from mba.ocn.ne.jp ([122.1.175.29]:54726 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758151AbXEWOup convert rfc822-to-8bit (ORCPT
+	Wed, 23 May 2007 10:51:08 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:53323 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764589AbXEWOvH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 10:50:45 -0400
-Date: Wed, 23 May 2007 23:51:03 +0900 (JST)
-Message-Id: <20070523.235103.128617660.anemo@mba.ocn.ne.jp>
-To: mika.penttila@kolumbus.fi
-Cc: torvalds@linux-foundation.org, ben.collins@ubuntu.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       sam@ravnborg.org, dwmw2@infradead.org, adobriyan@gmail.com
-Subject: Re: [RFC] Crash on modpost, addend_386_rel()
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <465302A9.8080701@kolumbus.fi>
-References: <20070522.142929.05161433.nemoto@toshiba-tops.co.jp>
-	<20070522.182739.48825006.nemoto@toshiba-tops.co.jp>
-	<465302A9.8080701@kolumbus.fi>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 23 May 2007 10:51:07 -0400
+Message-ID: <465454CE.2020703@linux.vnet.ibm.com>
+Date: Wed, 23 May 2007 20:20:54 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>, linux-mm@kvack.org
+CC: Balbir Singh <balbir@in.ibm.com>, Pavel Emelianov <xemul@sw.ru>,
+       Paul Menage <menage@google.com>, Kirill Korotaev <dev@sw.ru>,
+       devel@openvz.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Herbert Poetzl <herbert@13thfloor.at>, Roy Huang <royhuang9@gmail.com>,
+       Aubrey Li <aubreylee@gmail.com>
+Subject: [RFC][PATCH 1/3] Containers: Pagecache accounting and control subsystem
+ (v3)
+References: <46545459.2090804@linux.vnet.ibm.com>
+In-Reply-To: <46545459.2090804@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 17:48:09 +0300, Mika_Penttilä <mika.penttila@kolumbus.fi> wrote:
-> I can't see how this use of r_attend is going to work. find_elf_symbol
-> compares relsym->st_value to Elf_Rela->r_attend. I think it doesn't work
-> for RELA archs and even with this patch for REL.
+Pagecache controller setup
+--------------------------
 
-It seems works fine with RELA archs, at least mips64.
+This patch basically adds user interface files in container fs
+similar to the rss control files.
 
-For example, set_up_list3s is correctly reported.
+pagecache_usage, pagecache_limit and pagecache_failcnt are added
+to each container.  All units are 'pages' as in rss controller.
 
-WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x26358) and 'cache_reap'
+pagecache usage is all file backed pages used by the container
+which includes swapcache as well.
 
-Here is excerpt from readelf output.  Addend value 0x21d8 matches
-st_value of its target symbol.
+Separate res_counter for pagecache has been added.
 
-$ mips64-linux-readelf -sr ../build-sb1250/mm/built-in.o
-Relocation section '.rela.text' at offset 0x33fe0 contains 5100 entries:
-  Offset          Info           Type           Sym. Value    Sym. Name + Addend
-...
-000000026358  000400000004 R_MIPS_26         0000000000000000 .init.text + 21d8
-                    Type2: R_MIPS_NONE
-                    Type3: R_MIPS_NONE
-...
-Symbol table '.symtab' contains 1652 entries:
-   Num:    Value          Size Type    Bind   Vis      Ndx Name
-...
-   746: 00000000000021d8   148 FUNC    LOCAL  DEFAULT    4 set_up_list3s
-
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
-Atsushi Nemoto
+ mm/rss_container.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+--- linux-2.6.20.orig/mm/rss_container.c
++++ linux-2.6.20/mm/rss_container.c
+@@ -16,6 +16,7 @@
+
+ struct rss_container {
+ 	struct res_counter res;
++	struct res_counter pagecache_res;
+ 	struct list_head inactive_list;
+ 	struct list_head active_list;
+ 	atomic_t rss_reclaimed;
+@@ -266,6 +267,7 @@ static int rss_create(struct container_s
+ 		return -ENOMEM;
+
+ 	res_counter_init(&rss->res);
++	res_counter_init(&rss->pagecache_res);
+ 	INIT_LIST_HEAD(&rss->inactive_list);
+ 	INIT_LIST_HEAD(&rss->active_list);
+ 	rss_container_attach(rss, cont);
+@@ -308,6 +310,21 @@ static ssize_t rss_read_reclaimed(struct
+ 			ppos, buf, s - buf);
+ }
+
++static ssize_t pagecache_read(struct container *cont, struct cftype *cft,
++		struct file *file, char __user *userbuf,
++		size_t nbytes, loff_t *ppos)
++{
++	return res_counter_read(&rss_from_cont(cont)->pagecache_res,
++			cft->private, userbuf, nbytes, ppos);
++}
++
++static ssize_t pagecache_write(struct container *cont, struct cftype *cft,
++		struct file *file, const char __user *userbuf,
++		size_t nbytes, loff_t *ppos)
++{
++	return res_counter_write(&rss_from_cont(cont)->pagecache_res,
++			cft->private, userbuf, nbytes, ppos);
++}
+
+ static struct cftype rss_usage = {
+ 	.name = "rss_usage",
+@@ -333,6 +350,25 @@ static struct cftype rss_reclaimed = {
+ 	.read = rss_read_reclaimed,
+ };
+
++static struct cftype pagecache_usage = {
++	.name = "pagecache_usage",
++	.private = RES_USAGE,
++	.read = pagecache_read,
++};
++
++static struct cftype pagecache_limit = {
++	.name = "pagecache_limit",
++	.private = RES_LIMIT,
++	.read = pagecache_read,
++	.write = pagecache_write,
++};
++
++static struct cftype pagecache_failcnt = {
++	.name = "pagecache_failcnt",
++	.private = RES_FAILCNT,
++	.read = pagecache_read,
++};
++
+ static int rss_populate(struct container_subsys *ss,
+ 		struct container *cont)
+ {
+@@ -346,6 +382,12 @@ static int rss_populate(struct container
+ 		return rc;
+ 	if ((rc = container_add_file(cont, &rss_reclaimed)) < 0)
+ 		return rc;
++	if ((rc = container_add_file(cont, &pagecache_usage)) < 0)
++		return rc;
++	if ((rc = container_add_file(cont, &pagecache_failcnt)) < 0)
++		return rc;
++	if ((rc = container_add_file(cont, &pagecache_limit)) < 0)
++		return rc;
+
+ 	return 0;
+ }
