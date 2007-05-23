@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbXEWH1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbXEWHdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760674AbXEWH1A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 03:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbXEWH0w
+	id S1757992AbXEWHdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 03:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXEWHdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 03:26:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37379 "EHLO mx3.mail.elte.hu"
+	Wed, 23 May 2007 03:33:09 -0400
+Received: from main.gmane.org ([80.91.229.2]:40083 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754548AbXEWH0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 03:26:52 -0400
-Date: Wed, 23 May 2007 09:26:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] muptiple bugs in PI futexes
-Message-ID: <20070523072609.GC6859@elte.hu>
-References: <20070507144351.GA12302@ms2.inr.ac.ru>
+	id S1754200AbXEWHdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 03:33:08 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthieu CASTET <castet.matthieu@free.fr>
+Subject: Re: Enabling power states for Core 2 Duo
+Date: Wed, 23 May 2007 07:32:46 +0000 (UTC)
+Message-ID: <loom.20070523T092925-88@post.gmane.org>
+References: <4652FD77.6090709@shaw.ca> <BAY20-F21042242E1DE82AF8A4EE7F9360@phx.gbl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070507144351.GA12302@ms2.inr.ac.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 62.210.107.40 (Mozilla/5.0 (X11; U; Linux i686; fr; rv:1.8.1.3) Gecko/20070310 Iceweasel/2.0.0.3 (Debian-2.0.0.3-2))
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+Paa Paa <paapaa125 <at> hotmail.com> writes:
 
-* Alexey Kuznetsov <kuznet@ms2.inr.ac.ru> wrote:
 
-> Hello!
 > 
-> 1. New entries can be added to tsk->pi_state_list after task completed
->    exit_pi_state_list(). The result is memory leakage and deadlocks.
+> But are you saying that with most desktop mobos one doesn't usually have the 
+> different power states available at all? So basically the only means to 
+> conserve power is to scale the frequency?
 > 
-> 2. handle_mm_fault() is called under spinlock. The result is obvious.
-> 
-> 3. State machine is broken. Kernel thinks it owns futex after
->    it released all the locks. Ergo, it corrupts futex. The result is that
->    two processes think they took a futex.
-> 
-> All the bugs are trivially reproduced when running glibc's tst-robustpi7
-> test long enough.
-> 
-> The patch is not quite good (RFC!), because:
-> 
-> 1. There is one case, when I did not figure out how to handle
->    page fault correctly. I would do it releasing taken rtmutex
->    and hb->lock and retrying futex from the very beginning.
->    It is quite ugly. Probably, state machine can be fixed somehow.
-> 
-> 2. Before this patch I had one unexplained oops inside rtmutex
->    in plist_del. I did _not_ fix this, but it does not want to reproduce.
->    Probably, more strong locking did some race window too narrow.
+Even frequency is very limited on core 2 duo. Because of the hight fbs, you can
+scale only to 1.60 GHz  or  1.87 GHz for E6300
 
-thanks for the fixes - they look all good and we'll check it in -rt. 
-We'll try to find a solution for the remaining problem too. Could your
-#2 crash be explained via any of the bugs you fixed? (i.e. memory
-corruption?) I'd exclude genuine rtmutex.c breakage for now because 
-that's the basis of all locking in -rt - but maybe the futex interfacing 
-upsets something ...
 
-	Ingo
+Matthieu
+
