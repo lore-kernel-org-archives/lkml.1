@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbXEWNCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761950AbXEWNDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760377AbXEWNCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 09:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbXEWNCV
+	id S1761950AbXEWNDY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 09:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbXEWNDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 09:02:21 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:49501 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754430AbXEWNCU (ORCPT
+	Wed, 23 May 2007 09:03:15 -0400
+Received: from lazybastard.de ([212.112.238.170]:41511 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755043AbXEWNDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 09:02:20 -0400
-To: viro@ftp.linux.org.uk
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-reply-to: <20070523121620.GU4095@ftp.linux.org.uk> (message from Al Viro on
-	Wed, 23 May 2007 13:16:20 +0100)
-Subject: Re: [RFC PATCH] file as directory
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> <20070523102437.GS4095@ftp.linux.org.uk> <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu> <20070523113925.GT4095@ftp.linux.org.uk> <20070523121620.GU4095@ftp.linux.org.uk>
-Message-Id: <E1HqqTC-00023W-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 23 May 2007 15:01:38 +0200
+	Wed, 23 May 2007 09:03:13 -0400
+Date: Wed, 23 May 2007 14:58:41 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: Review status (Re: [PATCH] LogFS take three)
+Message-ID: <20070523125840.GC24738@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <20070515152149.GB32059@lazybastard.org> <20070517160308.GA26643@2ka.mipt.ru> <20070517171017.GB15676@lazybastard.org> <20070520173049.GA20907@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070520173049.GA20907@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, May 23, 2007 at 12:39:25PM +0100, Al Viro wrote:
-> > Then I do not understand what this mechanism could be used for, other
-> > than an odd way to twist POSIX behaviour and see how much of the userland
-> > would survive that.  Certainly not useful for your "look into tarball
-> > as a tree", unless you seriously want to scan the entire damn fs for
-> > tarballs at mount time and set up a superblock for each.  And for per-file
-> > extended attributes/forks/whatever-you-call-that-abomination it also
-> > obviously doesn't help, since you lose them for directories.
-
-Someone might think of a way to make those work with directories.
-Invisible directory entries, anyone?  </me ducks>
-
-> > IOW, what uses do you have in mind?  Complete scenario, please...
+On Sun, 20 May 2007 21:30:52 +0400, Evgeniy Polyakov wrote:
 > 
-> Ah... After rereading the thread you've mentioned in the very beginning,
-> I think I understand what you are driving at.  However, in that case
-> 	* I really don't see why bother with returning vfsmount at all.
-> dentry alone is enough to create a new vfsmount, all in fs/namei.c.
-> 	* the lifetime rules look fscking scary.  You call that ->enter()
-> on nearly every damn lookup.  OK, so you'll recreate equivalent vfsmount,
-> but...  That's a lot of allocations/freeing.  Can we do some caching and
-> deal with it on memory pressure?
+> In that case segment size must be more than 32 bits, or below
+> transformation will not be correct?
 
-Hmm.
+Must it?  If segment size is just 20bit then the filesystem may only be
+52bit.  Or 51bit when using signed values.
 
-> 	* invalidation on unlink is still an open problem.
-> 	* locking in final mntput() doesn't look nice; we probably need
-> a new refcounting scheme for vfsmounts to make that work.  I have a variant
-> that might work here (and make life much easier for expiry logics in
-> automount/shared trees, which is what it had been initially proposed for),
+> segsize is long, but should be u64 I think.
 
-Which variant?  We had that "detached subtrees" thing, is that it?
+It could be s32 as well.
 
-> but it still doesn't kill the need to deal with invalidation.  And
-> yes, NFS still needs it (and so do all network filesystems, really).
-> The question of caching is related to that.
+> static void fixup_from_wbuf(struct super_block *sb, struct logfs_area
+> 	*area, void *read, u64 ofs, size_t readlen)
+> 
+> u32 read_start = ofs & (super->s_segsize - 1);
+> u32 read_end = read_start + readlen;
+> 
+> And this can overflow, since readlen is size_t.
 
-So what's so special about invalidation?  Why not just treat
-dir-on-file mounts the same as any other ref on the dentry?
+Theoretically yes.  Practically readlen is bounded to sb->blocksize plus
+one header.  I'll start worrying about that when blocksize approaches
+32bit limit.
 
-Miklos
+> > If anyone can find similar bugs, the bounty is a beer or non-alcoholic
+> > beverage of choice. :)
+> 
+> Stop kiling your kidneys, your health and promote such antisocial style
+> of life, start drinking vodka instead.
+
+I'm just a German.  Forgive me if I drink lesser beverages.
+
+Jörn
+
+-- 
+Eighty percent of success is showing up.
+-- Woody Allen
