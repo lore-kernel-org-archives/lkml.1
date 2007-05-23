@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933947AbXEWT6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbXEWUAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933947AbXEWT6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 15:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbXEWT6E
+	id S1763606AbXEWUAl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 16:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbXEWUAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 15:58:04 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33718 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757484AbXEWT6B (ORCPT
+	Wed, 23 May 2007 16:00:34 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:60924 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755849AbXEWUAd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 15:58:01 -0400
-Date: Wed, 23 May 2007 21:02:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Chris Malton <chrism@cjsoftuk.dyndns.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Fwd: Re: Google are using linux kernel - what do you know
- about the source?]
-Message-ID: <20070523210249.3e965257@the-village.bc.nu>
-In-Reply-To: <4654969F.9060904@garzik.org>
-References: <4654729C.70404@cjsoftuk.dyndns.org>
-	<4654969F.9060904@garzik.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 May 2007 16:00:33 -0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+To: mingo@elte.hu, tglx@linutronix.de
+Subject: [PATCH 2.6.21-rt7] PowerPC: kill cpu_khz reference
+Date: Wed, 23 May 2007 23:02:00 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705240002.00698.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Google does not distribute their software, so they do not have to make 
-> their modifications public.
+Remove forgotten reference to 'cpu_khz' which have been removed for PowerPC in
+2.6.21-rt7...
 
-They do for the kernel - they produce an "appliance".
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-> WRT the Linux kernel, Google is essentially a closed source company.
+---
+The irony here is that it was me who sent a patch to add that line. :-)
 
-They've quietly fed little bits back now and then but not made a big song
-and dance about it. Hopefully with Andrew there and the like more will
-occur.
+Index: linux-2.6/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/time.c
++++ linux-2.6/arch/powerpc/kernel/time.c
+@@ -816,7 +816,6 @@ void __init time_init(void)
+ 	tb_ticks_per_jiffy = ppc_tb_freq / HZ;
+ 	tb_ticks_per_sec = ppc_tb_freq;
+ 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
+-	cpu_khz  = ppc_tb_freq / 1000;
+ 	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
+ 	calc_cputime_factors();
+ 
 
-Application level yes they are highly proprietary and will no doubt stay
-that way until someone figures out to do open distributed search 8)
-
-Alan
