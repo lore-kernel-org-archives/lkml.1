@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbXEWMvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbXEWMz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758468AbXEWMvT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 08:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbXEWMvI
+	id S1760197AbXEWMz7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 08:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbXEWMzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 08:51:08 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42548 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754564AbXEWMvG (ORCPT
+	Wed, 23 May 2007 08:55:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:50054 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754430AbXEWMzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 08:51:06 -0400
-X-Sasl-enc: YUrnHmKwWfE1yr1hOr3s3wOyj7hegHo5k+G1hzs6x+C2 1179924665
-Date: Wed, 23 May 2007 09:51:00 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: 2.6.21-mm2: ACPI exception on resume
-Message-ID: <20070523125100.GA826@khazad-dum.debian.net>
-References: <20070519204504.GA24704@khazad-dum.debian.net> <20070519223843.GN11115@waste.org> <20070520035259.GA13224@khazad-dum.debian.net> <20070521222339.GF11115@waste.org> <20070521230349.GA645@khazad-dum.debian.net> <20070522224515.GW11115@waste.org> <20070523001943.GA3743@khazad-dum.debian.net> <20070523014825.GX11115@waste.org> <20070523041958.GA15952@khazad-dum.debian.net> <2c0942db0705222141se133553re06370476d436b12@mail.gmail.com>
+	Wed, 23 May 2007 08:55:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Ro9ZGfBNVwM/EUJrbZXFRZqKYIu9/A28B8USFmmgk4S5X1VIxpGN83RVdgZWHpXQbP+lbo9EZ7J6+7Vv/RG8e6u6SsO9UdeCQ73+8cUkAXT2HeT/lPjkj2tOIFrk1iVm6xS/v7yeIm1gyVg2DMmzLQBAHc2gptWDo0kEhO7USog=
+Message-ID: <a781481a0705230555j6fcf46eav43cc95f6d1a7ae6f@mail.gmail.com>
+Date: Wed, 23 May 2007 18:25:49 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: [PATCH] fix unchecked mutex_lock_interruptible (was Re: use mutex instead of semaphore in RocketPort driver)
+Cc: "Simon Arlott" <simon@fire.lp0.eu>,
+       "Matthias Kaehlcke" <matthias.kaehlcke@gmail.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <2c0942db0705222141se133553re06370476d436b12@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007, Ray Lee wrote:
-> On 5/22/07, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
-> >> I shouldn't have to upgrade my BIOS to work with a new kernel any more
-> >> than I should have to upgrade my browser.
-> >
-> >We don't agree there, as you are not talking about a stable kernel series.
-> 
-> Ah, so you're planning on submitting these patches for 2.7 then? 2.6
-> is perpetually stable. Matt is quite correct; feel free to ask for
-> clarifications from Linus et al if you need guidance.
+On 5/23/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> Simon Arlott napsal(a):
+> > On 22/05/07 21:06, Matthias Kaehlcke wrote:
+> >> would the following resolve the problem?
+> >>
+> >> if(mutex_lock_interruptible(&info->write_mtx))         return
+> >> -ERESTARTSYS
+> >>
+> >> thanks for your comments
 
-2.6.x.y is stable.  2.6.x is not by any reasonably strict definition of
-stable.  Unless you can explain how the stuff that went in 2.6.21 could be
-added to a stable series kernel, do not even bother replying.
+Hum. I remember suggesting the fix when this came few weeks back,
+somehow the older version seems to have made it into Linus' tree.
 
-And for the record, the patches are NOT mine, but since I am the one usually
-dealing directly with thinkpad firmware, I jumped in to help debug things as
-a thinkpad firmware was *probably* to blame.
+> > No. At least one user of tty_operations/tty_driver's write function
+> > doesn't check the return value so it would never be retried, mutex_lock
+> > should be used instead.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Replacing mutex_lock_interruptible() with a mutex_lock() could be a
+change in behaviour visible to userspace. Best to continue to use
+_interruptible. Returning EINTR would be safe choice because if
+Simon's right that this isn't retried, we could end up breaking
+userspace that isn't quite ready to see ERESTARTSYS coming out of
+a write(2), but ...
+
+> Who? There are some drivers that returns ERESTARTSYS from write function.
+
+Right, several others in drivers/char/ do return ERESTARTSYS. Hope
+somebody picks this up -- no email listed in MAINTAINERS for this.
+
+---
+
+Check the return of mutex_lock_interruptible() in drivers/char/rocket.c
+and return ERESTARTSYS if we were interrupted.
+
+Signed-off-by: Satyam Sharma <satyam.sharma@gmail.com>
+
+---
+
+ drivers/char/rocket.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+---
+
+diff -ruNp a/drivers/char/rocket.c b/drivers/char/rocket.c
+--- a/drivers/char/rocket.c	2007-05-20 04:11:54.000000000 +0530
++++ b/drivers/char/rocket.c	2007-05-23 18:14:35.000000000 +0530
+@@ -1702,7 +1702,8 @@ static int rp_write(struct tty_struct *t
+ 	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+ 		return 0;
+
+-	mutex_lock_interruptible(&info->write_mtx);
++	if (mutex_lock_interruptible(&info->write_mtx))
++		return -ERESTARTSYS;
+
+ #ifdef ROCKET_DEBUG_WRITE
+ 	printk(KERN_INFO "rp_write %d chars...", count);
