@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758558AbXEWX2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbXEWXaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758558AbXEWX2S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 19:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbXEWX2J
+	id S1759501AbXEWXaO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 19:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756792AbXEWXaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 19:28:09 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:39547 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755709AbXEWX2I (ORCPT
+	Wed, 23 May 2007 19:30:00 -0400
+Received: from web90311.mail.mud.yahoo.com ([216.252.100.148]:23089 "HELO
+	web90311.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756748AbXEWXaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 19:28:08 -0400
-Date: Wed, 23 May 2007 16:27:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zan Lynx <zlynx@acm.org>
-Cc: linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
-       Dmitry Torokhov <dtor@mail.ru>, linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.22-rc2-mm1
-Message-Id: <20070523162751.16980a45.akpm@linux-foundation.org>
-In-Reply-To: <1179962229.8575.4.camel@localhost>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-	<1179962229.8575.4.camel@localhost>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Wed, 23 May 2007 19:30:00 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=UjpJxk8Q00TWe5rD/kZrWrIJDBr7rzprMR2ljjLjCE0YMrtDbtuXTyFw+7mwyf5twUrM1Mco2akknncw1Huiscg9djsPDPO4HfhGL88bu0hyClzuCmxMsLI7q1UAd1jqNr5iMea/vZyQ3dIl2oNcmslTPOOPUddmH4HxfWb4ssk=;
+X-YMail-OSG: NAybkzwVM1lsklVvMWca.D3Ix5br__fnywKNCKxbrOq8NrBmOEtpGtvOtBbG3oH18xGLUe3RtqdFGeJlbXE2B2Hw5Dhsr9WSyh9d
+Date: Wed, 23 May 2007 16:29:59 -0700 (PDT)
+From: Y Khan <ykhanportland@yahoo.com>
+Subject: Re: class_device_create() and the mode of the device file in /dev.
+To: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <3ae72650705222046o352ca76epbd5c36dea7706e70@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Message-ID: <358502.73138.qm@web90311.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 17:17:09 -0600
-Zan Lynx <zlynx@acm.org> wrote:
+> 
+> No, the kernel is not involved in specifying /dev
+> permissions. You
+> have to add a udev rule to assign a mode that isn't
+> the default.
+> 
 
-> On Wed, 2007-05-23 at 00:42 -0700, Andrew Morton wrote: 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
-> > 
-> > - A new readahead patch series.  This needs serious review and performance
-> >   testing please.
-> > 
-> > - Added Ingo's CFS CPU scheduler
-> > 
-> > - Xen dom-U support is now in the x86 tree.
-> 
-> I am having weird problems with USB keyboard and mouse.  The USB
-> keyboard will drop keystrokes, but not all of them.  The mouse seems to
-> move fine but drops clicks.  Could be that an occasional missed move
-> event isn't noticeable.  Nothing is logged when a key is dropped.
-> 
-> However, I did have some of this when it was first booting:
-> 
-> BUG: at drivers/hid/hid-core.c:778 implement()
-> 
-> Call Trace:
-> [<ffffffff880bb5ac>] :hid:hid_output_report+0x1dc/0x270
-> [<ffffffff880c651a>] :usbhid:hid_submit_ctrl+0x7a/0x260
-> [<ffffffff880c68ee>] :usbhid:usbhid_submit_report+0x11e/0x200
-> [<ffffffff880c9312>] :usbhid:hiddev_ioctl+0x3e2/0xae0
-> [<ffffffff8053523e>] do_page_fault+0x42e/0x880
-> [<ffffffff802b486d>] do_ioctl+0x7d/0xa0
-> [<ffffffff802b4ab1>] vfs_ioctl+0x221/0x2d0
-> [<ffffffff8025a711>] trace_hardirqs_on+0xc1/0x160
-> [<ffffffff802b4ba9>] sys_ioctl+0x49/0x80
-> [<ffffffff8020a16e>] system_call+0x7e/0x83
-> 
-> Here's the entire dmesg:
->
-> [ snippage ]
->
+Hmm...When I can create the device file automatically
+then I should also be able to specify the mode. udev
+can override this value from kernel if it has another
+value from the user. But not having this capability in
+the kernel kind of distributes the work (part 1 done
+in kernel while part 2 done in user space), which is
+not very friendly. Now I will have to distribute a
+udev conf file along with my driver.
 
-Thanks.  Let's add some cc's.
+I can make changes to udev/kernel for this if people
+think that this is also desired by others.
 
+-Y
+
+
+
+       
+____________________________________________________________________________________You snooze, you lose. Get messages ASAP with AutoCheck
+in the all-new Yahoo! Mail Beta.
+http://advision.webevents.yahoo.com/mailbeta/newmail_html.html
