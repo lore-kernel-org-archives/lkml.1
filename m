@@ -1,149 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763756AbXEWJvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760231AbXEWJ6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763756AbXEWJvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 05:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757975AbXEWJv3
+	id S1760231AbXEWJ6F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 05:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbXEWJ5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 05:51:29 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47253 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757530AbXEWJv2 (ORCPT
+	Wed, 23 May 2007 05:57:55 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:52581 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755631AbXEWJ5x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 05:51:28 -0400
-Date: Wed, 23 May 2007 10:51:27 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [RFC PATCH] file as directory
-Message-ID: <20070523095127.GQ4095@ftp.linux.org.uk>
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu>
+	Wed, 23 May 2007 05:57:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=E0VkC7bJDabgGLYHkTGoyBJkmTde3Trw3NVBiAMetg9QMDb3ZwW3b2HXnO3/0o7uetykeqop0ygRHVWaXfK68Mv5I6kdy7ZWn0nt7nI4RwGucdzlsliLrjkKN7cn+yynK7k+fVnbWzLC4puZbKIMTVsIDmwpPDn9OM76RISfFA0=
+Subject: Re: 2.6.21.1 fails to suspend/resume  to disk  (sort of)
+From: Romano Giannetti <romano.giannetti@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <200705231105.08408.rjw@sisk.pl>
+References: <1179905115.7043.25.camel@localhost>
+	 <200705231105.08408.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 11:57:42 +0200
+Message-Id: <1179914262.7043.56.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 08:48:49PM +0200, Miklos Szeredi wrote:
->   */
-> -static int __follow_mount(struct path *path)
-> +static int __follow_mount(struct path *path, bool enter)
->  {
->  	int res = 0;
->  	while (d_mountpoint(path->dentry)) {
-> -		struct vfsmount *mounted = lookup_mnt(path->mnt, path->dentry);
-> +		struct vfsmount *mounted =
-> +			lookup_mnt(path->mnt, path->dentry, enter);
-> +
->  		if (!mounted)
->  			break;
->  		dput(path->dentry);
-> @@ -689,27 +697,37 @@ static int __follow_mount(struct path *p
->  	return res;
->  }
->  
-> -static void follow_mount(struct vfsmount **mnt, struct dentry **dentry)
-> +/*
-> + * Follows mounts on the given nameidata.
-> + *
-> + * Only follows "directory on file" mounts if LOOKUP_ENTER is set.
-> + */
-> +void follow_mount(struct nameidata *nd)
+On Wed, 2007-05-23 at 11:05 +0200, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> On Wednesday, 23 May 2007 09:25, Romano Giannetti wrote:
+> > http://lkml.org/lkml/2007/5/23/38
+> 
+> Please see http://bugzilla.kernel.org/show_bug.cgi?id=8456
+> That seems to resemble the symptoms you describe.
+> 
 
-BTW, I'd split that (and matching updates in callers) into separate
-patch.
+No, I don't think. The delay I observe is on resume (suspend is very
+fast). Moreover, I have no SATA. It seems that my problem came from
+pcmcia.
 
->  {
-> -	while (d_mountpoint(*dentry)) {
-> -		struct vfsmount *mounted = lookup_mnt(*mnt, *dentry);
-> +	while (d_mountpoint(nd->dentry)) {
-> +		bool enter = nd->flags & LOOKUP_ENTER;
+> > Now for the suspend to disk. With default setting (/sys/power/disk ==
+> > platform) my laptop (vaio PGC-FX701) fails to poweroff; it stays with
+> > backlight on, a white screen, and if I power it off manually afterward
+> > it did not resume.
+> > 
+> > By doing echo shutdown > /sys/power/disk the laptop *do* power off (it's
+> > very slow, but I think that's related with the 60 secs delay commented
+> > in the other post). Then it resume --- text console did resume ok ---
+> > but the virtual console with X do not come back. I had to do a
+> > ctrl-alt-backspace thing. 
+> > 
+> > Any hints? More data?
+> 
+> Could you please test the 2.6.22-rc2 kernel?  Also, if it still doesn't work
+> properly, could you apply the hibernation/suspend patchset available from
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc2/patches
+> on top of it and see if that helps?
+> 
 
-int, surely?
+Uf, I will try to find the time. I am on my way to try to compile
+2.6.21.2 now. Problem is that a kernel compile "the ubuntu way" last
+hours here. If there is an expert on make-kpkg here, I could use some
+advise. I'd prefer to test patches over a 2.6.21 stable release, to
+avoid mixing symptoms from an experimental -rc...
 
-> + * This is called if the object has no ->lookup() defined, yet the
-> + * path contains a slash after the object name.
-> + *
-> + * If the filesystem defines an ->enter() method, this will be called,
-> + * and the filesystem shall fill the supplied struct path or return an
-> + * error.
-> + *
-> + * The returned path will be bind mounted on top of the object with
-> + * the MNT_DIRONFILE flag, and the nameidata will descend into the
-> + * mount.
-> + */
-> +static int enter_file(struct inode *inode, struct nameidata *nd)
-> +{
-> +	int err;
-> +	struct path newpath;
-> +
-> +	printk(KERN_DEBUG "%s/%d enter %s/\n", current->comm, current->pid,
-> +	       nd->dentry->d_name.name);
-> +	if (!inode->i_op->enter)
-> +		return -ENOTDIR;
-> +
-> +	newpath.mnt = NULL;
-> +	newpath.dentry = NULL;
-> +	err = inode->i_op->enter(nd, &newpath);
-> +	if (!err) {
-> +		err = mount_dironfile(nd, &newpath);
-> +		pathput(&newpath);
-> +	}
-> +	return err;
+Romano
 
-Ouch.  What guarantees that two lookups won't race right here?  You are
-not holding any locks at that point, AFAICS...
 
-BTW, why newpath?  What's wrong with simply returning a new vfsmount
-with right ->mnt_root/->mnt_sb (instead of creating it inside
-mount_dironfile())?  ERR_PTR() for error, struct vfsmount * for success...
 
-> @@ -301,8 +310,8 @@ static struct vfsmount *clone_mnt(struct
->  	mnt->mnt_mountpoint = mnt->mnt_root;
->  	mnt->mnt_parent = mnt;
->  
-> -	/* don't copy the MNT_USER flag */
-> -	mnt->mnt_flags &= ~MNT_USER;
-> +	/* don't copy some flags */
-> +	mnt->mnt_flags &= ~(MNT_USER | MNT_DIRONFILE);
->  	if (flag & CL_SETUSER)
->  		__set_mnt_user(mnt, owner);
-
-Hmm?  So you do copy them and strip your MNT_DIRONFILE from copies?
-
-> + * This is tricky, because for namespace modification we must take the
-> + * namespace semaphore.  But mntput() is called from various places,
-> + * sometimes with namespace_sem held.  Fortunately in those places the
-> + * mount cannot yet have MNT_DIRONFILE, or at least that's what I
-> + * hope...
-> + *
-> + * The umounting is done in two stages, first the mount is removed
-> + * from the hashes.  This is done atomically wrt other mount lookups,
-> + * so it's not possible to acquire a new ref to this dead mount that
-> + * way.
-> + *
-> + * Then after having locked namespace_sem and relocked vfsmount_lock,
-> + * the mount is properly detached.
-> + */
-> +static void umount_dironfile(struct vfsmount *mnt)
-> +	__releases(vfsmount_lock)
-> +{
-> +	struct nameidata nd;
-
-You've got to be kidding.  nameidata is *big*.  If anything, we want
-to make detach_mnt() take struct path * instead, but even that is
-lousy due to recursion.
-
-I really don't like what's going on here.  The thing is, current code
-is based on assumption that presence in the mount tree => holding a
-reference.  We _might_ deal with that (there was an old plan to change
-refcounting logics for vfsmounts), but that sort of games with locks
-spells trouble.  What happens, for example, if namespace gets cloned
-before you grab namespace_sem?
-
-There's another problem, BTW - a lot of stuff does stat + open + fstat +
-compare kind of sequence.  You'll end up mounting/umounting between stat
-and open, which opens you to race with somebody else.  Get a different
-st_dev, eat a nice unreproducible error from application...
