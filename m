@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935297AbXEWRXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765383AbXEWR02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935297AbXEWRXo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 13:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbXEWRXg
+	id S1765383AbXEWR02 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 13:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbXEWR0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 13:23:36 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:63722 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756240AbXEWRXg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 13:23:36 -0400
-Subject: Re: [PATCH 3/7] lockdep: lock contention tracking
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0705231159310.22023@dhcp83-20.boston.redhat.com>
-References: <20070523072618.129001605@chello.nl>
-	 <20070523095807.407148940@chello.nl>
-	 <Pine.LNX.4.64.0705231035270.22023@dhcp83-20.boston.redhat.com>
-	 <1179932865.7019.90.camel@twins>
-	 <Pine.LNX.4.64.0705231159310.22023@dhcp83-20.boston.redhat.com>
-Content-Type: text/plain
-Date: Wed, 23 May 2007 19:23:31 +0200
-Message-Id: <1179941011.7019.103.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 13:26:20 -0400
+Received: from holomorphy.com ([66.93.40.71]:42677 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757813AbXEWR0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 13:26:20 -0400
+Date: Wed, 23 May 2007 10:27:17 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+Message-ID: <20070523172717.GX19966@holomorphy.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-23 at 12:11 -0400, Jason Baron wrote:
-> On Wed, 23 May 2007, Peter Zijlstra wrote:
-> 
-> > On Wed, 2007-05-23 at 10:40 -0400, Jason Baron wrote:
-> > > On Wed, 23 May 2007, Peter Zijlstra wrote:
-> > > 
-> > > > Count lock contention events per lock class. Additionally track the first four
-> > > > callsites that resulted in the contention.
-> > > > 
-> > > 
-> > > I think that we need the total number of locking calls, not just the total 
-> > > number of *contended* locking calls, in order to make the data 
-> > > significant. Same for waittime. Yes, this pollutes the fastpath. In the 
-> > > contention case, its one extra addition, and for the waittime, its a call 
-> > > the sched_clock(). I don't think that's too much to pay for much more 
-> > > meaningful data.
-> > 
-> > The holdtime statistics add these numbers.
-> > 
-> 
-> ok, i see what you are saying...however, the 'waittime' statistic as 
-> implemented, is only recorded when we don't get the lock immediately. 
-> Thus, it's really measuring the waittime when there is lock contention. I 
-> understand that in the non-contended case we are only talking a a few 
-> cycles, but the fact that the non-contended case is not counted as another 
-> waittime of even zero length (so no measurement is required), might skew 
-> the stats a bit. For examples, if there was a lock that was almost never 
-> contended but one time happened to be contended for a long time, its 
-> average wait time would look really high.
+On Wed, May 23, 2007 at 12:42:33AM -0700, Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
+> - A new readahead patch series.  This needs serious review and performance
+>   testing please.
+> - Added Ingo's CFS CPU scheduler
+> - Xen dom-U support is now in the x86 tree.
 
-I'm not seeing how or why this is a problem. The number of contentions
-is reported on the same line, so it should be obvious.
+This patch silences the following warning:
+WARNING: drivers/built-in.o(.text+0x500fd): Section mismatch: reference to .init.data: (between 'pxm_to_node' and 'node_to_pxm')
+WARNING: drivers/built-in.o(.text+0x50112): Section mismatch: reference to .init.data: (between 'node_to_pxm' and 'acpi_get_pxm')
+pxm_to_node() and node_to_pxm() reference node_to_pxm_map[] and
+pxm_to_node_map[], which are __cpuinitdata. This patch marks pxm_to_node()
+and node_to_pxm() __cpuinit accordingly.
 
-Your definition of wait-time is also obtainable from the numbers, one
-would just divide waittime-total by acquisitions, instead of
-contentions.
+Signed-off-by: William Irwin <bill.irwin@oracle.com>
 
-
-
-
+Index: mm-2.6.22-rc2/drivers/acpi/numa.c
+===================================================================
+--- mm-2.6.22-rc2.orig/drivers/acpi/numa.c	2007-05-23 09:35:02.932827713 -0700
++++ mm-2.6.22-rc2/drivers/acpi/numa.c	2007-05-23 09:35:48.919448341 -0700
+@@ -43,14 +43,14 @@
+ static int __cpuinitdata node_to_pxm_map[MAX_NUMNODES]
+ 				= { [0 ... MAX_NUMNODES - 1] = PXM_INVAL };
+ 
+-int pxm_to_node(int pxm)
++int __cpuinit pxm_to_node(int pxm)
+ {
+ 	if (pxm < 0)
+ 		return NID_INVAL;
+ 	return pxm_to_node_map[pxm];
+ }
+ 
+-int node_to_pxm(int node)
++int __cpuinit node_to_pxm(int node)
+ {
+ 	if (node < 0)
+ 		return PXM_INVAL;
