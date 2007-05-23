@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbXEWHhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbXEWHiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760724AbXEWHhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 03:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbXEWHhA
+	id S1762012AbXEWHiy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 03:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbXEWHir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 03:37:00 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46407 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754548AbXEWHg7 (ORCPT
+	Wed, 23 May 2007 03:38:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:57408 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755174AbXEWHiq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 03:36:59 -0400
-Date: Wed, 23 May 2007 08:36:58 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [RFC PATCH] file as directory
-Message-ID: <20070523073658.GO4095@ftp.linux.org.uk>
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk> <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu> <20070523070306.GM4095@ftp.linux.org.uk> <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu>
+	Wed, 23 May 2007 03:38:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=EfNgCPTDl8YoXJyhG7z81FFwNVm3CCmwSsI+D20WiHBHywLhEMbnSQcdRS/c/TQOp4jtahFlYcLlSn88Teeo+/2qVUiKQEa6AAq5b3XRyM1PXHYy5zuDRXyx9l34YmSQ9te9DywDHCBKQdoDOS3pAwtkge/EIhtZQOZVay755X8=
+Subject: Re: [patch 00/69] -stable review
+From: Romano Giannetti <romano.giannetti@gmail.com>
+To: Paolo Ornati <ornati@fastwebnet.it>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20070523091903.0ba29bc1@localhost>
+References: <20070521191612.800400000@sous-sol.org>
+	 <4652070D.3090509@redhat.com>
+	 <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
+	 <20070521212522.GL3429@sequoia.sous-sol.org>
+	 <1179870110.16656.2.camel@localhost>
+	 <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
+	 <1179904140.7043.10.camel@localhost>  <20070523091903.0ba29bc1@localhost>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 09:38:35 +0200
+Message-Id: <1179905915.7043.28.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 09:19:17AM +0200, Miklos Szeredi wrote:
-> > Eh...  Arbitrary limitations are fun, aren't they?
+On Wed, 2007-05-23 at 09:19 +0200, Paolo Ornati wrote:
+> On Wed, 23 May 2007 09:09:00 +0200
+> Romano Giannetti <romano.giannetti@gmail.com> wrote:
 > 
-> But these mounts _are_ special.  There is really no point in moving or
-> pivoting them.
-
-pivoting - probably true, moving... why not?
- 
-> > What about MNT_SLAVE stuff being set up prior to that lookup?
+> > Will try to reboot with clocksource=acpi_pm, althoughI think that this
+> > is the one I'm using. 
 > 
-> These mounts are not propagated.  Or at least I hope so.  Propagation
-> stuff is a bit too complicated for my poor little brain.
+> you can see that with:
+> 
+> cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+> 
 
-Er...  These mounts might not be propagated, but what about a bind
-over another instance of such file in master tree?
- 
-> I think they should be the same superblock, same dentry.  What would
-> be the advantage of doing otherwise?
+Hmmm:
 
-Then you are going to have interesting time with locking in final mntput().
-BTW, what about having several links to the same file?  You have i_mutex
-on the inode, so serialization of those is not a problem, but...
- 
-> I think doing this recursively should be allowed.  "Releasing last ref
-> cleans up the mess" should work in that case.
+# cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+acpi_pm 
 
-Releasing the last reference will lead to cascade of umounts in that
-case...  IOW, need to be careful with locking.
+So I am using it. 
+
+Thanks
+
+
