@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763938AbXEWBHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762868AbXEWBPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763938AbXEWBHf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 21:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXEWBH2
+	id S1762868AbXEWBPf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 21:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbXEWBP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 21:07:28 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:59902 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757273AbXEWBH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 21:07:27 -0400
-Date: Wed, 23 May 2007 10:06:35 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Bryan Wu <bryan.wu@analog.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/32] Blackfin update for 2.6.22-rc2
-Message-ID: <20070523010635.GA28301@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Robin Getz <rgetz@blackfin.uclinux.org>,
-	Bryan Wu <bryan.wu@analog.com>, torvalds@linux-foundation.org,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1179742180228-git-send-email-bryan.wu@analog.com> <200705211035.08380.rgetz@blackfin.uclinux.org> <20070521143730.GA18110@linux-sh.org> <8bd0f97a0705221728p1c4761bbi83e58245cfca48f9@mail.gmail.com>
+	Tue, 22 May 2007 21:15:27 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:19412 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756841AbXEWBP1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 22 May 2007 21:15:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=spxGaH0bNi/idcG/kc17VwsN/UK0fcf1VDm9zQtCifMtVKL958VwSJUVKLC7ZLyrxYbsiXYqHynvl0oQh7umM2nThJDN7ptG1eykoREVDJoUQR2IOlkoFaaF5pcyquSaNovHpVdOipmJh6EpQuszrX8Mif2abCPJmoek45Y5ljM=
+Message-ID: <a8e1da0705221815v6d2292c2ra8098e5ce83b70cc@mail.gmail.com>
+Date: Wed, 23 May 2007 01:15:25 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: 2.6.22-rc1-mm1
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <465319C1.2080206@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0705221728p1c4761bbi83e58245cfca48f9@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
+	 <465124EA.1020801@zytor.com>
+	 <a8e1da0705202200u5976d14do7ec1469941bb2967@mail.gmail.com>
+	 <46512821.9010905@zytor.com>
+	 <a8e1da0705202239r31d03a5dyc2f0ce6a795e0124@mail.gmail.com>
+	 <465138CC.3060605@zytor.com>
+	 <a8e1da0705210141m4d9f0ccevde3060fefcc55537@mail.gmail.com>
+	 <4651CA63.9030903@zytor.com>
+	 <a8e1da0705211914rf323f90kb67482e47992b5d7@mail.gmail.com>
+	 <465319C1.2080206@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 08:28:28PM -0400, Mike Frysinger wrote:
-> On 5/21/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> >On Mon, May 21, 2007 at 10:35:08AM -0400, Robin Getz wrote:
-> >> On Mon 21 May 2007 06:09, Bryan Wu pondered:
-> >> > Lots of update for 2.6.22-rc2 and tested on STAMP537 board.
-> >> >
-> >>
-> >> One of the things I noticed when trying out 2.6.22-rc1, on blackfin was:
-> >>
-> >>  CALL    scripts/checksyscalls.sh
-> >[snip syscalls]
-> >>
-> >> since there is noMMU, are we better:
-> >>  - putting stubs (return ENOSYS - give runtime errors), or
-> >>  - just ignore the errors - and give compile errors? (Is there any way 
-> >to put
-> >> something into the syscall table, as not to get the warnings?)
-> >
-> >No, you'd be better of figuring out which ones you can support and which
-> >ones you have to -ENOSYS. CONFIG_MMU=n is not a "get out of syscalls
-> >free" card. Many of these have no dependency on CONFIG_MMU, anyways.
-> 
-> when you say -ENOSYS, do you mean we need sys_foo() that simply does
-> return -ENOSYS or do we just let the default syscall code go "__NR_foo
-> is not registered, return -ENOSYS"
+Hi,
+I have tried the patch, it works.
+could you explain it for me? thanks very much.
 
-The checksyscalls.sh errors come from the fact you have missing
-definitions in asm-blackfin/unistd.h, however, you still have reserved
-slots for most of these syscalls (and explicit sys_ni_syscall wrapping in
-the syscall table), just no __NR_foo definition.
+Regards
+dave
 
-It's also not clear which of these you are explicitly never going to
-support versus the ones that simply haven't been implemented yet (ie,
-kexec support, restartable system calls -- how do you even do
-ppoll/pselect6 without supporting these?, and so on).
-
-I would suggest simply defining the __NR_foo values based on the reserved
-slots that they already occupy in order to silence these warnings, at
-least that's a closer approximation of "we've actually looked at these
-syscalls" than "new or otherwise unintentionally unimplemented", which is
-what the script aims to help with.
+2007/5/22, H. Peter Anvin <hpa@zytor.com>:
+> Could you try the attached patch for me?
+>
+>         -hpa
+>
+> diff --git a/arch/i386/boot/edd.c b/arch/i386/boot/edd.c
+> index 84a0302..9697a56 100644
+> --- a/arch/i386/boot/edd.c
+> +++ b/arch/i386/boot/edd.c
+> @@ -47,8 +47,9 @@ static int read_sector(u8 devno, u64 lba, void *buf)
+>         si = (size_t)&dapa;
+>         dx = devno;
+>         asm("pushfl; stc; int $0x13; setc %%al; popfl"
+> -           : "+a" (ax), "+S" (si), "+d" (devno)
+> -           : : "ebx", "ecx", "edi");
+> +           : "+a" (ax), "+S" (si), "+d" (dx)
+> +           : "m" (dapa)
+> +           : "ebx", "ecx", "edi", "memory");
+>
+>         if (!(u8)ax)
+>                 return 0;       /* OK */
+> @@ -59,7 +60,7 @@ static int read_sector(u8 devno, u64 lba, void *buf)
+>         bx = (size_t)buf;
+>         asm("pushfl; stc; int $0x13; setc %%al; popfl"
+>             : "+a" (ax), "+c" (cx), "+d" (dx), "+b" (bx)
+> -           : : "esi", "edi");
+> +           : : "esi", "edi", "memory");
+>
+>         return -(u8)ax;         /* 0 or -1 */
+>  }
+>
+>
