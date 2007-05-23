@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbXEWHTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763693AbXEWHUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762690AbXEWHTk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 03:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbXEWHTc
+	id S1763693AbXEWHUT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 03:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760685AbXEWHUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 03:19:32 -0400
-Received: from aa013msr.fastwebnet.it ([85.18.95.73]:59631 "EHLO
-	aa013msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754649AbXEWHTb (ORCPT
+	Wed, 23 May 2007 03:20:00 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:35934 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760517AbXEWHT7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 03:19:31 -0400
-Date: Wed, 23 May 2007 09:19:03 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Romano Giannetti <romano.giannetti@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/69] -stable review
-Message-ID: <20070523091903.0ba29bc1@localhost>
-In-Reply-To: <1179904140.7043.10.camel@localhost>
-References: <20070521191612.800400000@sous-sol.org>
-	<4652070D.3090509@redhat.com>
-	<alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
-	<20070521212522.GL3429@sequoia.sous-sol.org>
-	<1179870110.16656.2.camel@localhost>
-	<alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
-	<1179904140.7043.10.camel@localhost>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 03:19:59 -0400
+To: viro@ftp.linux.org.uk
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+In-reply-to: <20070523070306.GM4095@ftp.linux.org.uk> (message from Al Viro on
+	Wed, 23 May 2007 08:03:06 +0100)
+Subject: Re: [RFC PATCH] file as directory
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk> <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu> <20070523070306.GM4095@ftp.linux.org.uk>
+Message-Id: <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 23 May 2007 09:19:17 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 09:09:00 +0200
-Romano Giannetti <romano.giannetti@gmail.com> wrote:
+> > > Interesting...  How do you deal with mount propagation and things like
+> > > mount --move?
+> > 
+> > Moving (or doing other mount operations on) an ancestor shouldn't be a
+> > problem.  Moving this mount itself is not allowed, and neither is
+> > doing bind or pivot_root.  Maybe bind could be allowed...
+> 
+> Eh...  Arbitrary limitations are fun, aren't they?
 
-> Will try to reboot with clocksource=acpi_pm, althoughI think that this
-> is the one I'm using. 
+But these mounts _are_ special.  There is really no point in moving or
+pivoting them.
 
-you can see that with:
+> > When doing recursive bind on ancestor, these mounts are skipped.
+> 
+> What about clone copying your namespace?
 
-cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+In that case they are cloned, but only those survive which have refs
+in the new namespace.
 
--- 
-	Paolo Ornati
-	Linux 2.6.22-rc2-gd2579053 on x86_64
+> What about MNT_SLAVE stuff being set up prior to that lookup?
+
+These mounts are not propagated.  Or at least I hope so.  Propagation
+stuff is a bit too complicated for my poor little brain.
+
+> More interesting question: should independent lookups of that sucker
+> on different paths end up with the same superblock (and vfsmount for
+> each) or should we get fully independent mount on each?  The latter
+> would be interesting wrt cache coherency...
+
+I think they should be the same superblock, same dentry.  What would
+be the advantage of doing otherwise?
+
+> > > As for unlink...  How do you deal with having that thing
+> > > mounted, mounting something _under_ it (so that vfsmount would be kept
+> > > busy) and then unlinking that sucker?
+> > 
+> > Yeah, that's a good point.  Current patch doesn't deal with that.
+> > Simplest solution could be to disallow submounting these.  Don't think
+> > it makes much sense anyway.
+> 
+> Arbitrary limitations... (and that's where revalidate horrors come in, BTW).
+> BTW^2: what if fs mounted that way will happen to have such node itself?
+
+I think doing this recursively should be allowed.  "Releasing last ref
+cleans up the mess" should work in that case.
+
+> I'm not saying that it's unfeasible or won't lead to interesting things,
+> but it really needs semantics done right...
+
+Agreed :)
+
+Miklos
