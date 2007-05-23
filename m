@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbXEWVv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758493AbXEWVyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbXEWVv0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbXEWVvR
+	id S1758493AbXEWVyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 17:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbXEWVyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:51:17 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:58688 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756014AbXEWVvQ (ORCPT
+	Wed, 23 May 2007 17:54:05 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50513 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755869AbXEWVyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:51:16 -0400
-Message-ID: <4654B73C.1030005@zytor.com>
-Date: Wed, 23 May 2007 14:50:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Christian Volkmann <haveaniceday@cv-sv.de>, Dave Jones <davej@redhat.com>,
+	Wed, 23 May 2007 17:54:01 -0400
+Date: Wed, 23 May 2007 16:53:56 -0500
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc1 does not boot on VIA C3_2 cause of X86_CMPXCHG64 II
-References: <464B9D2C.7040704@cv-sv.de> <200705190753.16570.ak@suse.de> <464EE2AA.3030607@cv-sv.de> <200705191354.06763.ak@suse.de>
-In-Reply-To: <200705191354.06763.ak@suse.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [BUG] 2.6.21.1: ide-pci is not finding ide controller.
+Message-ID: <20070523215356.GD5921@austin.ibm.com>
+References: <20070523201118.GZ5921@austin.ibm.com> <4654A375.4080807@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4654A375.4080807@ru.mvista.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>
->> your patch did not work. See the correction below. The mask should contain
->> 1<<1 instead of 1.
->> Model 10 is now also included.
+On Thu, May 24, 2007 at 12:26:29AM +0400, Sergei Shtylyov wrote:
+> Hello.
 > 
-> Ok thanks fixed.
+> Linas Vepstas wrote:
+> >I've got a rather old x86 box that I'm booting 2.6.21.1 on;
+> >this kernel is not finding an ide controller on it. 
 > 
+> >The motherboard has 4 ide controllers total; two olde-fashioned
+> >ones (PIIX4, using the original 40-pin IDE ribbon cable) and two 
+> 
+>    You should have said "channels". PIIX4 has only one IDE controller.
 
-For newsetup, did we agree to just go with model >= 6 or (model >= 6 &&
-model <= 10)?  Note that newsetup only does the MSR writes if the flags
-are missing, so my inclination is to leave out model <= 10.
+Right. I wrote "drive" in the first email, and then quickly
+changed that :-)
 
-	-hpa
+>    Actually, it was a bug that I've introduced into 
+>    drivers/ide/pci/hpt366.c -- the patch has been already merged into 
+> 2.6.22-rc1:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fdb0d72be4decaade6cedb5012ddd679a4817b5f
+
+
+OK, great, thanks!
+
+I'll give this a spin. If it works, I'll suggest backporting it to the
+stable branch 2.6.21.2. 
+
+--linas
+
