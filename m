@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764878AbXEWT5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933947AbXEWT6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764878AbXEWT5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 15:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbXEWT5N
+	id S933947AbXEWT6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 15:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbXEWT6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 15:57:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47737 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754956AbXEWT5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 15:57:12 -0400
-Date: Wed, 23 May 2007 21:57:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v14
-Message-ID: <20070523195701.GC20374@elte.hu>
-References: <20070523120616.GA23407@elte.hu> <loom.20070523T213730-656@post.gmane.org>
+	Wed, 23 May 2007 15:58:04 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33718 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757484AbXEWT6B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 15:58:01 -0400
+Date: Wed, 23 May 2007 21:02:49 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Chris Malton <chrism@cjsoftuk.dyndns.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Fwd: Re: Google are using linux kernel - what do you know
+ about the source?]
+Message-ID: <20070523210249.3e965257@the-village.bc.nu>
+In-Reply-To: <4654969F.9060904@garzik.org>
+References: <4654729C.70404@cjsoftuk.dyndns.org>
+	<4654969F.9060904@garzik.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <loom.20070523T213730-656@post.gmane.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Google does not distribute their software, so they do not have to make 
+> their modifications public.
 
-* Nicolas Mailhot <nicolas.mailhot@laposte.net> wrote:
+They do for the kernel - they produce an "appliance".
 
-> Ingo Molnar <mingo <at> elte.hu> writes:
-> 
-> Hi Ingo
-> 
-> > i'm pleased to announce release -v14 of the CFS scheduler patchset.
-> > 
-> > The CFS patch against v2.6.22-rc2, v2.6.21.1 or v2.6.20.10 can be 
-> > downloaded from the usual place:
-> > 
-> >       http://people.redhat.com/mingo/cfs-scheduler/
-> 
-> I get a forbidden access on 
-> http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-v2.6.22-rc2-mm1-v14.patch
+> WRT the Linux kernel, Google is essentially a closed source company.
 
-oops - fixed it.
+They've quietly fed little bits back now and then but not made a big song
+and dance about it. Hopefully with Andrew there and the like more will
+occur.
 
-	Ingo
+Application level yes they are highly proprietary and will no doubt stay
+that way until someone figures out to do open distributed search 8)
+
+Alan
