@@ -1,71 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764435AbXEWQII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765089AbXEWQKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764435AbXEWQII (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758471AbXEWQH5
+	id S1765089AbXEWQKb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXEWQKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:07:57 -0400
-Received: from holomorphy.com ([66.93.40.71]:52557 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757389AbXEWQH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:07:56 -0400
-Date: Wed, 23 May 2007 09:08:52 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1
-Message-ID: <20070523160852.GV19966@holomorphy.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 23 May 2007 12:10:24 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:58489 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756921AbXEWQKX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 12:10:23 -0400
+Date: Wed, 23 May 2007 09:10:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven French <sfrench@us.ibm.com>
+Cc: "young dave" <hidave.darkstar@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       David Kleikamp <shaggy@us.ibm.com>,
+       Shirish S Pargaonkar <shirishp@us.ibm.com>
+Subject: Re: 2.6.22-rc1-mm1 cifs_mount oops
+Message-Id: <20070523091013.b1475211.akpm@linux-foundation.org>
+In-Reply-To: <OF794FED81.D7F8CFC9-ON872572E4.004974FE-862572E4.004A1708@us.ibm.com>
+References: <a8e1da0705230137r1b2b06cbg7133141d75292e22@mail.gmail.com>
+	<OF794FED81.D7F8CFC9-ON872572E4.004974FE-862572E4.004A1708@us.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 12:42:33AM -0700, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
-> - A new readahead patch series.  This needs serious review and performance
->   testing please.
-> - Added Ingo's CFS CPU scheduler
-> - Xen dom-U support is now in the x86 tree.
+On Wed, 23 May 2007 08:28:47 -0500 Steven French <sfrench@us.ibm.com> wrote:
 
-WARNING: arch/i386/mach-generic/built-in.o(.data+0xc4): Section mismatch: reference to .init.text: (between 'apic_bigsmp' and 'cpu.4905')
-This appears to be resolvable by removing all the __init and __initdata
-qualifiers from arch/i386/mach-generic/bigsmp.c
+> Yes - this patch looks better.
+> 
+> I also am not sure whether the send_sig is still necessary to wake up a 
+> thread blocked in tcp recv_msg (only do a wake_up_process vs. doing a 
+> send_sig(SIGKILL) )
+> 
+> Unless someone knows for sure whether the send_sig is redundant, I would 
+> like to merge Shaggy's version of the patch
+> 
+> 
+> "young dave" <hidave.darkstar@gmail.com> wrote on 05/23/2007 03:37:04 AM:
+> 
+> > Hi,
+> > Sorry for the wrong patch in my last post.
+> > 
+> > How about save the tsk then call kthread_stop like this:
+> > 
+> > diff -udr linux/fs/cifs/connect.c linux.new/fs/cifs/connect.c
+> > --- linux/fs/cifs/connect.c     2007-05-23 10:59:13.000000000 +0000
+> > +++ linux.new/fs/cifs/connect.c 2007-05-23 16:33:54.000000000 +0000
+> > @@ -2069,8 +2069,9 @@
+> >                         srvTcp->tcpStatus = CifsExiting;
+> >                         spin_unlock(&GlobalMid_Lock);
+> >                         if (srvTcp->tsk) {
+> > +                               struct task_struct * tsk = srvTcp->tsk;
+> >                                 send_sig(SIGKILL,srvTcp->tsk,1);
+> > -                               kthread_stop(srvTcp->tsk);
+> > +                               kthread_stop(tsk);
+> >                         }
+> >                 }
+> >                  /* If find_unc succeeded then rc == 0 so we can not end 
+> */
+> > 
+> > Regards
+> > dave
+> 
+> Shaggy's suggested patch seems slightly better:
+> 
+> diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+> index 216fb62..b6e2158 100644
+> --- a/fs/cifs/connect.c
+> +++ b/fs/cifs/connect.c
+> @@ -2069,8 +2069,12 @@ cifs_mount(struct super_block *sb, struct 
+> cifs_sb_info *cifs_sb,
+>                                                  srvTcp->tcpStatus = 
+> CifsExiting;
+>  spin_unlock(&GlobalMid_Lock);
+>                                                  if (srvTcp->tsk) {
+> +                                                                struct 
+> task_struct *tsk;
+>  send_sig(SIGKILL,srvTcp->tsk,1);
+> - kthread_stop(srvTcp->tsk);
+> +                                                                /* 
+> srvTcp->tsk can be zeroed at any time */
+> +                                                                tsk = 
+> srvTcp->tsk;
+> +                                                                if (tsk)
+> +  kthread_stop(tsk);
+>                                                  }
+>                                  }
+>                                   /* If find_unc succeeded then rc == 0 so 
+> we can not end */
 
-Signed-off-by: William Irwin <bill.irwin@oracle.com>
+The wordwrapping made that extraordinarily hard to read.  Repairing...
 
-Index: mm-2.6.22-rc2/arch/i386/mach-generic/bigsmp.c
-===================================================================
---- mm-2.6.22-rc2.orig/arch/i386/mach-generic/bigsmp.c	2007-05-23 08:53:25.122485613 -0700
-+++ mm-2.6.22-rc2/arch/i386/mach-generic/bigsmp.c	2007-05-23 09:06:21.998757269 -0700
-@@ -21,7 +21,7 @@
- 
- static int dmi_bigsmp; /* can be set by dmi scanners */
- 
--static __init int hp_ht_bigsmp(struct dmi_system_id *d)
-+static int hp_ht_bigsmp(struct dmi_system_id *d)
- {
- #ifdef CONFIG_X86_GENERICARCH
- 	printk(KERN_NOTICE "%s detected: force use of apic=bigsmp\n", d->ident);
-@@ -31,7 +31,7 @@
- }
- 
- 
--static struct dmi_system_id __initdata bigsmp_dmi_table[] = {
-+static struct dmi_system_id bigsmp_dmi_table[] = {
- 	{ hp_ht_bigsmp, "HP ProLiant DL760 G2", {
- 		DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
- 		DMI_MATCH(DMI_BIOS_VERSION, "P44-"),
-@@ -45,7 +45,7 @@
- };
- 
- 
--static int __init probe_bigsmp(void)
-+static int probe_bigsmp(void)
- { 
- 	if (def_to_bigsmp)
-         	dmi_bigsmp = 1;
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -2069,8 +2069,12 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+			srvTcp->tcpStatus = CifsExiting;
+			spin_unlock(&GlobalMid_Lock);
+			if (srvTcp->tsk) {
+				struct  task_struct *tsk;
+				send_sig(SIGKILL,srvTcp->tsk,1);
+-				kthread_stop(srvTcp->tsk);
++				/*  srvTcp->tsk can be zeroed at any time */
++				tsk = srvTcp->tsk;
++				if (tsk)
++					kthread_stop(tsk);
+			}
+		}
+		/* If find_unc succeeded then rc == 0 so we can not end */
+
+
+This can end up running kthread_stop() against an already-exited task.
+
