@@ -1,74 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbXEWGn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbXEWGpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762012AbXEWGn0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 02:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXEWGnS
+	id S1762185AbXEWGpS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 02:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756800AbXEWGpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 02:43:18 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57742 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754630AbXEWGnR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 02:43:17 -0400
-Date: Tue, 22 May 2007 23:43:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Chinner <dgc@sgi.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: Re: BUG: sleeping function called from invalid context at
- kernel/fork.c:385
-Message-Id: <20070522234314.54081817.akpm@linux-foundation.org>
-In-Reply-To: <20070523063154.GR85884050@sgi.com>
-References: <20070523063154.GR85884050@sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 02:45:06 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:42311 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756617AbXEWGpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 02:45:04 -0400
+Date: Wed, 23 May 2007 15:44:08 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ata: pata_platform: Disable prereset logic.
+Message-ID: <20070523064408.GA29593@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 16:31:54 +1000 David Chinner <dgc@sgi.com> wrote:
+On a number of boards the current prereset logic seems to misbehave:
 
-> Saw this when running strace -f on a script on 2.6.21 on ia64:
-> 
-> BUG: sleeping function called from invalid context at kernel/fork.c:385
-> in_atomic():1, irqs_disabled():0
-> 
-> Call Trace:
->  [<a000000100014700>] show_stack+0x80/0xa0
->                                 sp=e00000306e6f7a00 bsp=e00000306e6f0ef8
->  [<a000000100014750>] dump_stack+0x30/0x60
->                                 sp=e00000306e6f7bd0 bsp=e00000306e6f0ee0
->  [<a0000001000acaf0>] __might_sleep+0x1f0/0x260
->                                 sp=e00000306e6f7bd0 bsp=e00000306e6f0eb8
->  [<a0000001000bd2e0>] mmput+0x20/0x220
->                                 sp=e00000306e6f7bd0 bsp=e00000306e6f0e90
->  [<a0000001000321e0>] sys_ptrace+0x460/0x1600
->                                 sp=e00000306e6f7bd0 bsp=e00000306e6f0d80
->  [<a00000010000bc40>] ia64_ret_from_syscall+0x0/0x20
->                                 sp=e00000306e6f7e30 bsp=e00000306e6f0d80
->  [<a000000000010620>] __kernel_syscall_via_break+0x0/0x20
->                                 sp=e00000306e6f8000 bsp=e00000306e6f0d80
-> BUG: sleeping function called from invalid context at kernel/fork.c:385
-> in_atomic():1, irqs_disabled():0
-> 
-> Call Trace:
->  [<a000000100014700>] show_stack+0x80/0xa0
->                                 sp=e00000306e6f7a00 bsp=e00000306e6f0ef8
->  [<a000000100014750>] dump_stack+0x30/0x60
->                                 sp=e00000306e6f7bd0 bsp=e00000306e6f0ee0
->  [<a0000001000acaf0>] __might_sleep+0x1f0/0x260
->                                 sp=e00000306e6f7bd0 bsp=e00000306e6f0eb8
->  [<a0000001000bd2e0>] mmput+0x20/0x220
->                                 sp=e00000306e6f7bd0 bsp=e00000306e6f0e90
->  [<a0000001000321e0>] sys_ptrace+0x460/0x1600
->                                 sp=e00000306e6f7bd0 bsp=e00000306e6f0d80
->  [<a00000010000bc40>] ia64_ret_from_syscall+0x0/0x20
->                                 sp=e00000306e6f7e30 bsp=e00000306e6f0d80
->  [<a000000000010620>] __kernel_syscall_via_break+0x0/0x20
->                                 sp=e00000306e6f8000 bsp=e00000306e6f0d80
-> 
-> I could reproduce it via 'strace -f sleep 1'
-> 
+scsi0 : pata_platform
+ata1: PATA max PIO0 cmd 0xb06001f0 ctl 0xb06003f6 bmdma 0x00000000 irq 0
+ata1: device not ready (errno=-19), forcing hardreset
+ata1: BUG: prereset() requested invalid reset type
 
-I'd say this is specific to ia64.   Someone would have spotted it on
-x86 by now.
+This triggers when there is no card inserted in the slot.
+
+Simply disabling the prereset gets rid of this, and doesn't seem to cause
+any problems for either PCMCIA or CF cards when they're actually present.
+
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
+--
+
+ drivers/ata/pata_platform.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
+index cbb7866..8a569c7 100644
+--- a/drivers/ata/pata_platform.c
++++ b/drivers/ata/pata_platform.c
+@@ -1,7 +1,7 @@
+ /*
+  * Generic platform device PATA driver
+  *
+- * Copyright (C) 2006  Paul Mundt
++ * Copyright (C) 2006 - 2007  Paul Mundt
+  *
+  * Based on pata_pcmcia:
+  *
+@@ -22,7 +22,7 @@
+ #include <linux/pata_platform.h>
+ 
+ #define DRV_NAME "pata_platform"
+-#define DRV_VERSION "1.0"
++#define DRV_VERSION "1.1"
+ 
+ static int pio_mask = 1;
+ 
+@@ -30,7 +30,8 @@ static int pio_mask = 1;
+  * Provide our own set_mode() as we don't want to change anything that has
+  * already been configured..
+  */
+-static int pata_platform_set_mode(struct ata_port *ap, struct ata_device **unused)
++static int pata_platform_set_mode(struct ata_port *ap,
++				  struct ata_device **unused)
+ {
+ 	int i;
+ 
+@@ -48,6 +49,12 @@ static int pata_platform_set_mode(struct ata_port *ap, struct ata_device **unuse
+ 	return 0;
+ }
+ 
++static void pata_platform_error_handler(struct ata_port *ap)
++{
++	ata_bmdma_drive_eh(ap, NULL, ata_std_softreset, NULL,
++			ata_std_postreset);
++}
++
+ static int ata_dummy_ret0(struct ata_port *ap)	{ return 0; }
+ 
+ static struct scsi_host_template pata_platform_sht = {
+@@ -80,7 +87,7 @@ static struct ata_port_operations pata_platform_port_ops = {
+ 
+ 	.freeze			= ata_bmdma_freeze,
+ 	.thaw			= ata_bmdma_thaw,
+-	.error_handler		= ata_bmdma_error_handler,
++	.error_handler		= pata_platform_error_handler,
+ 	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
+ 	.cable_detect		= ata_cable_unknown,
+ 
