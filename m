@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbXEWV3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbXEWV3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbXEWV3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbXEWV3E
+	id S1758549AbXEWV3n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 17:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757484AbXEWV3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:29:04 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:25400 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754963AbXEWV3B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:29:01 -0400
-X-IronPort-AV: i="4.14,571,1170662400"; 
-   d="scan'208"; a="153525027:sNHT40465215"
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Rob Landley <rob@landley.net>,
+	Wed, 23 May 2007 17:29:18 -0400
+Received: from mail.screens.ru ([213.234.233.54]:38000 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757384AbXEWV3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 17:29:16 -0400
+Date: Thu, 24 May 2007 01:29:02 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: cpw@sgi.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: Re: Status of CONFIG_FORCED_INLINING?
-X-Message-Flag: Warning: May contain useful information
-References: <200705231510.52932.rob@landley.net>
-	<46549937.1030306@linux.intel.com> <20070523212237.GH2098@stusta.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 23 May 2007 14:28:56 -0700
-In-Reply-To: <20070523212237.GH2098@stusta.de> (Adrian Bunk's message of "Wed, 23 May 2007 23:22:37 +0200")
-Message-ID: <ada7iqz9qlj.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
+Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+Message-ID: <20070523212902.GA235@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 May 2007 21:28:56.0303 (UTC) FILETIME=[5E5FD7F0:01C79D81]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > - every static function in a header file must be __always_inline
+Cliff Wickman wrote:
+>
+> In order to do this, move_task_off_dead_cpu() must make a call to
+> cpuset_cpus_allowed(), which may block.
+>
+> move_task_off_dead_cpu() has been within a critical region when called
+> from migrate_live_tasks().  So this patch also changes migrate_live_tasks()
+> to enable interrupts before calling move_task_off_dead_cpu().
+> Since the tasklist_lock is dropped, the list scan must be restarted from
+> the top.
+>
+> [... snip ...]
+>
+> - * NOTE: interrupts should be disabled by the caller
+> + * NOTE: interrupts are not disabled by the caller
+>   */
+>  static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+>  {
+> @@ -5008,6 +5008,17 @@ restart:
+>  	if (dest_cpu == NR_CPUS)
+>  		dest_cpu = any_online_cpu(p->cpus_allowed);
+>
+> +	/* try to stay on the same cpuset */
+> +	if (dest_cpu == NR_CPUS) {
+> +		/*
+> +		 * Call to cpuset_cpus_allowed may sleep, so we depend
+> +		 * on move_task_off_dead_cpu() being called in a non-critical
+> +		 * region.
+> +		 */
+> +		p->cpus_allowed = cpuset_cpus_allowed(p);
+> +		dest_cpu = any_online_cpu(p->cpus_allowed);
+> +	}
 
-Why?  Why does it matter whether a function is defined in a .h file or
-a .c file?  Can't the compiler decide better than we can whether
-something should be inlined or not?
+I know nothing about cpuset.c, a _very_ naive question.
 
-Your argument seems to imply that we should never use the inline
-keyword at all.
+Do we really need task_lock() (used by cpuset_cpus_allowed) here ?
 
- - R.
+If not, probably we can make this simpler. CPU_DEAD takes cpuset_lock(),
+move_task_off_dead_cpu() uses guarantee_online_cpus() which doesn't sleep,
+so we don't need other changes.
+
+Possible?
+
+If not, this patch should also change migrate_dead(), it still calls
+move_task_off_dead_cpu() with irqs disabled, no?
+
+Oleg.
+
