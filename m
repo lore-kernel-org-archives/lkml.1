@@ -1,63 +1,552 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbXEWE0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbXEWE0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbXEWE0G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 00:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbXEWEZr
+	id S1757958AbXEWE0c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 00:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760889AbXEWE0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 00:25:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55552 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756534AbXEWEZr (ORCPT
+	Wed, 23 May 2007 00:26:06 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:43388
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760824AbXEWE0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 00:25:47 -0400
-Date: Tue, 22 May 2007 21:25:29 -0700
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Pierre Ossman <drzeus-list@drzeus.cx>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kristian H?gsberg <krh@bitplanet.net>
-Subject: Re: Race free attributes in sysfs
-Message-ID: <20070523042529.GC27329@kroah.com>
-References: <46502A8B.70803@drzeus.cx> <3ae72650705211050p6b6cefbdya70dd4e0a27e2d1b@mail.gmail.com> <4651E866.5010304@drzeus.cx> <1179775695.3320.82.camel@lov.localdomain> <20070522103857.17bf1a3e@gondolin.boeblingen.de.ibm.com>
+	Wed, 23 May 2007 00:26:04 -0400
+From: Rob Landley <rob@landley.net>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: [PATCH] Re: Cleaning up the Documentation directory.
+Date: Wed, 23 May 2007 00:25:44 -0400
+User-Agent: KMail/1.9.1
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-doc@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200705222225.39949.rob@landley.net> <adaps4sb6x4.fsf@cisco.com>
+In-Reply-To: <adaps4sb6x4.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070522103857.17bf1a3e@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Message-Id: <200705230025.45007.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 10:38:57AM +0200, Cornelia Huck wrote:
-> On Mon, 21 May 2007 21:28:15 +0200,
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
+On Tuesday 22 May 2007 10:38 pm, Roland Dreier wrote:
+
 > 
-> > We could change the driver-core to suppress the creation of an attribute
-> > if the attribute's show() or store() method returns something like
-> > -ENOENT at registration time?
-> > The driver would pass _all_ possible attributes of the device at
-> > registration time, but the core would only create the attributes which
-> > are implemented for this particular device? Would that work for you?
-> > 
-> > There are already subsystems who need to do similar things internally
-> > (firewire), and it may be nice to add such functionality to the core.
+>  > I could send a patch to do this, but moving files via patch is icky.  
+Would it 
+>  > be better to start a git tree and ask people to pull from it, or to send 
+in 
+>  > script snippets like the above?
 > 
-> This sounds a bit hackish (overloading the meaning of the show() and
-> store() methods).
+> Actually a git patch would express that very nicely -- just pass -M to
+> git-format-patch and it should do the right thing.
 
-Firewire already does this today, it's actually really nice :)
+Ok.
 
-> > You can assign any number of attribute groups to the device. If they
-> > don't have a group name, they will all be created directly at the device
-> > level. Would that work for you?
-> 
-> What about generic "conditional attribute groups"? Add a check() method
-> which is called just before adding them, and only add them if check()
-> returned 0 (or doesn't exist)?
+Signed-off-by: Rob Landley <rob@landley.net>
 
-People want this on a per-attribute basis, if you did it on a group
-level, we would have a bunch of groups with only one attribute in it,
-which would be messy.
+Move architecture documentation into "arch" and move multiport serio IO cards 
+into serial.
 
-thanks,
+--
 
-greg k-h
+Equivalent to:
+   cd Documentation
+   mkdir -p arch/amiga
+   mv zorro.txt arch/amiga
+   mv arm cris blackfin parisc powerpc s390 x86_64 uml arch
+   mv sx.txt stallion.txt specialix.txt rocket.txt riscom8.txt \
+      computone.txt hayes-esp.txt moxa-smartio serial
+
+diff --git a/Documentation/zorro.txt b/Documentation/arch/amiga/zorro.txt
+similarity index 100%
+rename from Documentation/zorro.txt
+rename to Documentation/arch/amiga/zorro.txt
+diff --git a/Documentation/arm/00-INDEX b/Documentation/arch/arm/00-INDEX
+similarity index 100%
+rename from Documentation/arm/00-INDEX
+rename to Documentation/arch/arm/00-INDEX
+diff --git a/Documentation/arm/Booting b/Documentation/arch/arm/Booting
+similarity index 100%
+rename from Documentation/arm/Booting
+rename to Documentation/arch/arm/Booting
+diff --git a/Documentation/arm/IXP2000 b/Documentation/arch/arm/IXP2000
+similarity index 100%
+rename from Documentation/arm/IXP2000
+rename to Documentation/arch/arm/IXP2000
+diff --git a/Documentation/arm/IXP4xx b/Documentation/arch/arm/IXP4xx
+similarity index 100%
+rename from Documentation/arm/IXP4xx
+rename to Documentation/arch/arm/IXP4xx
+diff --git a/Documentation/arm/Interrupts b/Documentation/arch/arm/Interrupts
+similarity index 100%
+rename from Documentation/arm/Interrupts
+rename to Documentation/arch/arm/Interrupts
+diff --git a/Documentation/arm/Netwinder b/Documentation/arch/arm/Netwinder
+similarity index 100%
+rename from Documentation/arm/Netwinder
+rename to Documentation/arch/arm/Netwinder
+diff --git a/Documentation/arm/Porting b/Documentation/arch/arm/Porting
+similarity index 100%
+rename from Documentation/arm/Porting
+rename to Documentation/arch/arm/Porting
+diff --git a/Documentation/arm/README b/Documentation/arch/arm/README
+similarity index 100%
+rename from Documentation/arm/README
+rename to Documentation/arch/arm/README
+diff --git a/Documentation/arm/SA1100/ADSBitsy 
+b/Documentation/arch/arm/SA1100/ADSBitsy
+similarity index 100%
+rename from Documentation/arm/SA1100/ADSBitsy
+rename to Documentation/arch/arm/SA1100/ADSBitsy
+diff --git a/Documentation/arm/SA1100/Assabet 
+b/Documentation/arch/arm/SA1100/Assabet
+similarity index 100%
+rename from Documentation/arm/SA1100/Assabet
+rename to Documentation/arch/arm/SA1100/Assabet
+diff --git a/Documentation/arm/SA1100/Brutus 
+b/Documentation/arch/arm/SA1100/Brutus
+similarity index 100%
+rename from Documentation/arm/SA1100/Brutus
+rename to Documentation/arch/arm/SA1100/Brutus
+diff --git a/Documentation/arm/SA1100/CERF 
+b/Documentation/arch/arm/SA1100/CERF
+similarity index 100%
+rename from Documentation/arm/SA1100/CERF
+rename to Documentation/arch/arm/SA1100/CERF
+diff --git a/Documentation/arm/SA1100/FreeBird 
+b/Documentation/arch/arm/SA1100/FreeBird
+similarity index 100%
+rename from Documentation/arm/SA1100/FreeBird
+rename to Documentation/arch/arm/SA1100/FreeBird
+diff --git a/Documentation/arm/SA1100/GraphicsClient 
+b/Documentation/arch/arm/SA1100/GraphicsClient
+similarity index 100%
+rename from Documentation/arm/SA1100/GraphicsClient
+rename to Documentation/arch/arm/SA1100/GraphicsClient
+diff --git a/Documentation/arm/SA1100/GraphicsMaster 
+b/Documentation/arch/arm/SA1100/GraphicsMaster
+similarity index 100%
+rename from Documentation/arm/SA1100/GraphicsMaster
+rename to Documentation/arch/arm/SA1100/GraphicsMaster
+diff --git a/Documentation/arm/SA1100/HUW_WEBPANEL 
+b/Documentation/arch/arm/SA1100/HUW_WEBPANEL
+similarity index 100%
+rename from Documentation/arm/SA1100/HUW_WEBPANEL
+rename to Documentation/arch/arm/SA1100/HUW_WEBPANEL
+diff --git a/Documentation/arm/SA1100/Itsy 
+b/Documentation/arch/arm/SA1100/Itsy
+similarity index 100%
+rename from Documentation/arm/SA1100/Itsy
+rename to Documentation/arch/arm/SA1100/Itsy
+diff --git a/Documentation/arm/SA1100/LART 
+b/Documentation/arch/arm/SA1100/LART
+similarity index 100%
+rename from Documentation/arm/SA1100/LART
+rename to Documentation/arch/arm/SA1100/LART
+diff --git a/Documentation/arm/SA1100/PLEB 
+b/Documentation/arch/arm/SA1100/PLEB
+similarity index 100%
+rename from Documentation/arm/SA1100/PLEB
+rename to Documentation/arch/arm/SA1100/PLEB
+diff --git a/Documentation/arm/SA1100/Pangolin 
+b/Documentation/arch/arm/SA1100/Pangolin
+similarity index 100%
+rename from Documentation/arm/SA1100/Pangolin
+rename to Documentation/arch/arm/SA1100/Pangolin
+diff --git a/Documentation/arm/SA1100/Tifon 
+b/Documentation/arch/arm/SA1100/Tifon
+similarity index 100%
+rename from Documentation/arm/SA1100/Tifon
+rename to Documentation/arch/arm/SA1100/Tifon
+diff --git a/Documentation/arm/SA1100/Victor 
+b/Documentation/arch/arm/SA1100/Victor
+similarity index 100%
+rename from Documentation/arm/SA1100/Victor
+rename to Documentation/arch/arm/SA1100/Victor
+diff --git a/Documentation/arm/SA1100/Yopy 
+b/Documentation/arch/arm/SA1100/Yopy
+similarity index 100%
+rename from Documentation/arm/SA1100/Yopy
+rename to Documentation/arch/arm/SA1100/Yopy
+diff --git a/Documentation/arm/SA1100/empeg 
+b/Documentation/arch/arm/SA1100/empeg
+similarity index 100%
+rename from Documentation/arm/SA1100/empeg
+rename to Documentation/arch/arm/SA1100/empeg
+diff --git a/Documentation/arm/SA1100/nanoEngine 
+b/Documentation/arch/arm/SA1100/nanoEngine
+similarity index 100%
+rename from Documentation/arm/SA1100/nanoEngine
+rename to Documentation/arch/arm/SA1100/nanoEngine
+diff --git a/Documentation/arm/SA1100/serial_UART 
+b/Documentation/arch/arm/SA1100/serial_UART
+similarity index 100%
+rename from Documentation/arm/SA1100/serial_UART
+rename to Documentation/arch/arm/SA1100/serial_UART
+diff --git a/Documentation/arm/Samsung-S3C24XX/DMA.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/DMA.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/DMA.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/DMA.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/EB2410ITX.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/EB2410ITX.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/EB2410ITX.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/EB2410ITX.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/GPIO.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/GPIO.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/GPIO.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/GPIO.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/H1940.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/H1940.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/H1940.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/H1940.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/Overview.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/Overview.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/Overview.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/Overview.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/S3C2412.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/S3C2412.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/S3C2412.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/S3C2412.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/S3C2413.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/S3C2413.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/S3C2413.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/S3C2413.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/SMDK2440.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/SMDK2440.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/SMDK2440.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/SMDK2440.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/Suspend.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/Suspend.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/Suspend.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/Suspend.txt
+diff --git a/Documentation/arm/Samsung-S3C24XX/USB-Host.txt 
+b/Documentation/arch/arm/Samsung-S3C24XX/USB-Host.txt
+similarity index 100%
+rename from Documentation/arm/Samsung-S3C24XX/USB-Host.txt
+rename to Documentation/arch/arm/Samsung-S3C24XX/USB-Host.txt
+diff --git a/Documentation/arm/Setup b/Documentation/arch/arm/Setup
+similarity index 100%
+rename from Documentation/arm/Setup
+rename to Documentation/arch/arm/Setup
+diff --git a/Documentation/arm/Sharp-LH/ADC-LH7-Touchscreen 
+b/Documentation/arch/arm/Sharp-LH/ADC-LH7-Touchscreen
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/ADC-LH7-Touchscreen
+rename to Documentation/arch/arm/Sharp-LH/ADC-LH7-Touchscreen
+diff --git a/Documentation/arm/Sharp-LH/CompactFlash 
+b/Documentation/arch/arm/Sharp-LH/CompactFlash
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/CompactFlash
+rename to Documentation/arch/arm/Sharp-LH/CompactFlash
+diff --git a/Documentation/arm/Sharp-LH/IOBarrier 
+b/Documentation/arch/arm/Sharp-LH/IOBarrier
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/IOBarrier
+rename to Documentation/arch/arm/Sharp-LH/IOBarrier
+diff --git a/Documentation/arm/Sharp-LH/KEV7A400 
+b/Documentation/arch/arm/Sharp-LH/KEV7A400
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/KEV7A400
+rename to Documentation/arch/arm/Sharp-LH/KEV7A400
+diff --git a/Documentation/arm/Sharp-LH/LCDPanels 
+b/Documentation/arch/arm/Sharp-LH/LCDPanels
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/LCDPanels
+rename to Documentation/arch/arm/Sharp-LH/LCDPanels
+diff --git a/Documentation/arm/Sharp-LH/LPD7A400 
+b/Documentation/arch/arm/Sharp-LH/LPD7A400
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/LPD7A400
+rename to Documentation/arch/arm/Sharp-LH/LPD7A400
+diff --git a/Documentation/arm/Sharp-LH/LPD7A40X 
+b/Documentation/arch/arm/Sharp-LH/LPD7A40X
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/LPD7A40X
+rename to Documentation/arch/arm/Sharp-LH/LPD7A40X
+diff --git a/Documentation/arm/Sharp-LH/SDRAM 
+b/Documentation/arch/arm/Sharp-LH/SDRAM
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/SDRAM
+rename to Documentation/arch/arm/Sharp-LH/SDRAM
+diff --git a/Documentation/arm/Sharp-LH/VectoredInterruptController 
+b/Documentation/arch/arm/Sharp-LH/VectoredInterruptController
+similarity index 100%
+rename from Documentation/arm/Sharp-LH/VectoredInterruptController
+rename to Documentation/arch/arm/Sharp-LH/VectoredInterruptController
+diff --git a/Documentation/arm/VFP/release-notes.txt 
+b/Documentation/arch/arm/VFP/release-notes.txt
+similarity index 100%
+rename from Documentation/arm/VFP/release-notes.txt
+rename to Documentation/arch/arm/VFP/release-notes.txt
+diff --git a/Documentation/arm/empeg/README 
+b/Documentation/arch/arm/empeg/README
+similarity index 100%
+rename from Documentation/arm/empeg/README
+rename to Documentation/arch/arm/empeg/README
+diff --git a/Documentation/arm/empeg/ir.txt 
+b/Documentation/arch/arm/empeg/ir.txt
+similarity index 100%
+rename from Documentation/arm/empeg/ir.txt
+rename to Documentation/arch/arm/empeg/ir.txt
+diff --git a/Documentation/arm/empeg/mkdevs 
+b/Documentation/arch/arm/empeg/mkdevs
+similarity index 100%
+rename from Documentation/arm/empeg/mkdevs
+rename to Documentation/arch/arm/empeg/mkdevs
+diff --git a/Documentation/arm/mem_alignment 
+b/Documentation/arch/arm/mem_alignment
+similarity index 100%
+rename from Documentation/arm/mem_alignment
+rename to Documentation/arch/arm/mem_alignment
+diff --git a/Documentation/arm/memory.txt b/Documentation/arch/arm/memory.txt
+similarity index 100%
+rename from Documentation/arm/memory.txt
+rename to Documentation/arch/arm/memory.txt
+diff --git a/Documentation/arm/nwfpe/NOTES 
+b/Documentation/arch/arm/nwfpe/NOTES
+similarity index 100%
+rename from Documentation/arm/nwfpe/NOTES
+rename to Documentation/arch/arm/nwfpe/NOTES
+diff --git a/Documentation/arm/nwfpe/README 
+b/Documentation/arch/arm/nwfpe/README
+similarity index 100%
+rename from Documentation/arm/nwfpe/README
+rename to Documentation/arch/arm/nwfpe/README
+diff --git a/Documentation/arm/nwfpe/README.FPE 
+b/Documentation/arch/arm/nwfpe/README.FPE
+similarity index 100%
+rename from Documentation/arm/nwfpe/README.FPE
+rename to Documentation/arch/arm/nwfpe/README.FPE
+diff --git a/Documentation/arm/nwfpe/TODO b/Documentation/arch/arm/nwfpe/TODO
+similarity index 100%
+rename from Documentation/arm/nwfpe/TODO
+rename to Documentation/arch/arm/nwfpe/TODO
+diff --git a/Documentation/blackfin/00-INDEX 
+b/Documentation/arch/blackfin/00-INDEX
+similarity index 100%
+rename from Documentation/blackfin/00-INDEX
+rename to Documentation/arch/blackfin/00-INDEX
+diff --git a/Documentation/blackfin/Filesystems 
+b/Documentation/arch/blackfin/Filesystems
+similarity index 100%
+rename from Documentation/blackfin/Filesystems
+rename to Documentation/arch/blackfin/Filesystems
+diff --git a/Documentation/blackfin/cache-lock.txt 
+b/Documentation/arch/blackfin/cache-lock.txt
+similarity index 100%
+rename from Documentation/blackfin/cache-lock.txt
+rename to Documentation/arch/blackfin/cache-lock.txt
+diff --git a/Documentation/blackfin/cachefeatures.txt 
+b/Documentation/arch/blackfin/cachefeatures.txt
+similarity index 100%
+rename from Documentation/blackfin/cachefeatures.txt
+rename to Documentation/arch/blackfin/cachefeatures.txt
+diff --git a/Documentation/cris/README b/Documentation/arch/cris/README
+similarity index 100%
+rename from Documentation/cris/README
+rename to Documentation/arch/cris/README
+diff --git a/Documentation/parisc/00-INDEX 
+b/Documentation/arch/parisc/00-INDEX
+similarity index 100%
+rename from Documentation/parisc/00-INDEX
+rename to Documentation/arch/parisc/00-INDEX
+diff --git a/Documentation/parisc/debugging 
+b/Documentation/arch/parisc/debugging
+similarity index 100%
+rename from Documentation/parisc/debugging
+rename to Documentation/arch/parisc/debugging
+diff --git a/Documentation/parisc/registers 
+b/Documentation/arch/parisc/registers
+similarity index 100%
+rename from Documentation/parisc/registers
+rename to Documentation/arch/parisc/registers
+diff --git a/Documentation/powerpc/00-INDEX 
+b/Documentation/arch/powerpc/00-INDEX
+similarity index 100%
+rename from Documentation/powerpc/00-INDEX
+rename to Documentation/arch/powerpc/00-INDEX
+diff --git a/Documentation/powerpc/SBC8260_memory_mapping.txt 
+b/Documentation/arch/powerpc/SBC8260_memory_mapping.txt
+similarity index 100%
+rename from Documentation/powerpc/SBC8260_memory_mapping.txt
+rename to Documentation/arch/powerpc/SBC8260_memory_mapping.txt
+diff --git a/Documentation/powerpc/booting-without-of.txt 
+b/Documentation/arch/powerpc/booting-without-of.txt
+similarity index 100%
+rename from Documentation/powerpc/booting-without-of.txt
+rename to Documentation/arch/powerpc/booting-without-of.txt
+diff --git a/Documentation/powerpc/cpu_features.txt 
+b/Documentation/arch/powerpc/cpu_features.txt
+similarity index 100%
+rename from Documentation/powerpc/cpu_features.txt
+rename to Documentation/arch/powerpc/cpu_features.txt
+diff --git a/Documentation/powerpc/eeh-pci-error-recovery.txt 
+b/Documentation/arch/powerpc/eeh-pci-error-recovery.txt
+similarity index 100%
+rename from Documentation/powerpc/eeh-pci-error-recovery.txt
+rename to Documentation/arch/powerpc/eeh-pci-error-recovery.txt
+diff --git a/Documentation/powerpc/hvcs.txt 
+b/Documentation/arch/powerpc/hvcs.txt
+similarity index 100%
+rename from Documentation/powerpc/hvcs.txt
+rename to Documentation/arch/powerpc/hvcs.txt
+diff --git a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt 
+b/Documentation/arch/powerpc/mpc52xx-device-tree-bindings.txt
+similarity index 100%
+rename from Documentation/powerpc/mpc52xx-device-tree-bindings.txt
+rename to Documentation/arch/powerpc/mpc52xx-device-tree-bindings.txt
+diff --git a/Documentation/powerpc/mpc52xx.txt 
+b/Documentation/arch/powerpc/mpc52xx.txt
+similarity index 100%
+rename from Documentation/powerpc/mpc52xx.txt
+rename to Documentation/arch/powerpc/mpc52xx.txt
+diff --git a/Documentation/powerpc/ppc_htab.txt 
+b/Documentation/arch/powerpc/ppc_htab.txt
+similarity index 100%
+rename from Documentation/powerpc/ppc_htab.txt
+rename to Documentation/arch/powerpc/ppc_htab.txt
+diff --git a/Documentation/powerpc/smp.txt 
+b/Documentation/arch/powerpc/smp.txt
+similarity index 100%
+rename from Documentation/powerpc/smp.txt
+rename to Documentation/arch/powerpc/smp.txt
+diff --git a/Documentation/powerpc/sound.txt 
+b/Documentation/arch/powerpc/sound.txt
+similarity index 100%
+rename from Documentation/powerpc/sound.txt
+rename to Documentation/arch/powerpc/sound.txt
+diff --git a/Documentation/powerpc/zImage_layout.txt 
+b/Documentation/arch/powerpc/zImage_layout.txt
+similarity index 100%
+rename from Documentation/powerpc/zImage_layout.txt
+rename to Documentation/arch/powerpc/zImage_layout.txt
+diff --git a/Documentation/s390/3270.ChangeLog 
+b/Documentation/arch/s390/3270.ChangeLog
+similarity index 100%
+rename from Documentation/s390/3270.ChangeLog
+rename to Documentation/arch/s390/3270.ChangeLog
+diff --git a/Documentation/s390/3270.txt b/Documentation/arch/s390/3270.txt
+similarity index 100%
+rename from Documentation/s390/3270.txt
+rename to Documentation/arch/s390/3270.txt
+diff --git a/Documentation/s390/CommonIO b/Documentation/arch/s390/CommonIO
+similarity index 100%
+rename from Documentation/s390/CommonIO
+rename to Documentation/arch/s390/CommonIO
+diff --git a/Documentation/s390/DASD b/Documentation/arch/s390/DASD
+similarity index 100%
+rename from Documentation/s390/DASD
+rename to Documentation/arch/s390/DASD
+diff --git a/Documentation/s390/Debugging390.txt 
+b/Documentation/arch/s390/Debugging390.txt
+similarity index 100%
+rename from Documentation/s390/Debugging390.txt
+rename to Documentation/arch/s390/Debugging390.txt
+diff --git a/Documentation/s390/TAPE b/Documentation/arch/s390/TAPE
+similarity index 100%
+rename from Documentation/s390/TAPE
+rename to Documentation/arch/s390/TAPE
+diff --git a/Documentation/s390/cds.txt b/Documentation/arch/s390/cds.txt
+similarity index 100%
+rename from Documentation/s390/cds.txt
+rename to Documentation/arch/s390/cds.txt
+diff --git a/Documentation/s390/config3270.sh 
+b/Documentation/arch/s390/config3270.sh
+similarity index 100%
+rename from Documentation/s390/config3270.sh
+rename to Documentation/arch/s390/config3270.sh
+diff --git a/Documentation/s390/driver-model.txt 
+b/Documentation/arch/s390/driver-model.txt
+similarity index 100%
+rename from Documentation/s390/driver-model.txt
+rename to Documentation/arch/s390/driver-model.txt
+diff --git a/Documentation/s390/monreader.txt 
+b/Documentation/arch/s390/monreader.txt
+similarity index 100%
+rename from Documentation/s390/monreader.txt
+rename to Documentation/arch/s390/monreader.txt
+diff --git a/Documentation/s390/s390dbf.txt 
+b/Documentation/arch/s390/s390dbf.txt
+similarity index 100%
+rename from Documentation/s390/s390dbf.txt
+rename to Documentation/arch/s390/s390dbf.txt
+diff --git a/Documentation/s390/zfcpdump.txt 
+b/Documentation/arch/s390/zfcpdump.txt
+similarity index 100%
+rename from Documentation/s390/zfcpdump.txt
+rename to Documentation/arch/s390/zfcpdump.txt
+diff --git a/Documentation/uml/UserModeLinux-HOWTO.txt 
+b/Documentation/arch/uml/UserModeLinux-HOWTO.txt
+similarity index 100%
+rename from Documentation/uml/UserModeLinux-HOWTO.txt
+rename to Documentation/arch/uml/UserModeLinux-HOWTO.txt
+diff --git a/Documentation/x86_64/boot-options.txt 
+b/Documentation/arch/x86_64/boot-options.txt
+similarity index 100%
+rename from Documentation/x86_64/boot-options.txt
+rename to Documentation/arch/x86_64/boot-options.txt
+diff --git a/Documentation/x86_64/cpu-hotplug-spec 
+b/Documentation/arch/x86_64/cpu-hotplug-spec
+similarity index 100%
+rename from Documentation/x86_64/cpu-hotplug-spec
+rename to Documentation/arch/x86_64/cpu-hotplug-spec
+diff --git a/Documentation/x86_64/fake-numa-for-cpusets 
+b/Documentation/arch/x86_64/fake-numa-for-cpusets
+similarity index 100%
+rename from Documentation/x86_64/fake-numa-for-cpusets
+rename to Documentation/arch/x86_64/fake-numa-for-cpusets
+diff --git a/Documentation/x86_64/kernel-stacks 
+b/Documentation/arch/x86_64/kernel-stacks
+similarity index 100%
+rename from Documentation/x86_64/kernel-stacks
+rename to Documentation/arch/x86_64/kernel-stacks
+diff --git a/Documentation/x86_64/machinecheck 
+b/Documentation/arch/x86_64/machinecheck
+similarity index 100%
+rename from Documentation/x86_64/machinecheck
+rename to Documentation/arch/x86_64/machinecheck
+diff --git a/Documentation/x86_64/mm.txt b/Documentation/arch/x86_64/mm.txt
+similarity index 100%
+rename from Documentation/x86_64/mm.txt
+rename to Documentation/arch/x86_64/mm.txt
+diff --git a/Documentation/computone.txt b/Documentation/serial/computone.txt
+similarity index 100%
+rename from Documentation/computone.txt
+rename to Documentation/serial/computone.txt
+diff --git a/Documentation/hayes-esp.txt b/Documentation/serial/hayes-esp.txt
+similarity index 100%
+rename from Documentation/hayes-esp.txt
+rename to Documentation/serial/hayes-esp.txt
+diff --git a/Documentation/moxa-smartio b/Documentation/serial/moxa-smartio
+similarity index 100%
+rename from Documentation/moxa-smartio
+rename to Documentation/serial/moxa-smartio
+diff --git a/Documentation/riscom8.txt b/Documentation/serial/riscom8.txt
+similarity index 100%
+rename from Documentation/riscom8.txt
+rename to Documentation/serial/riscom8.txt
+diff --git a/Documentation/rocket.txt b/Documentation/serial/rocket.txt
+similarity index 100%
+rename from Documentation/rocket.txt
+rename to Documentation/serial/rocket.txt
+diff --git a/Documentation/specialix.txt b/Documentation/serial/specialix.txt
+similarity index 100%
+rename from Documentation/specialix.txt
+rename to Documentation/serial/specialix.txt
+diff --git a/Documentation/stallion.txt b/Documentation/serial/stallion.txt
+similarity index 100%
+rename from Documentation/stallion.txt
+rename to Documentation/serial/stallion.txt
+diff --git a/Documentation/sx.txt b/Documentation/serial/sx.txt
+similarity index 100%
+rename from Documentation/sx.txt
+rename to Documentation/serial/sx.txt
