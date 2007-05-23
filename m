@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbXEWKZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbXEWKdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762297AbXEWKZF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 06:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763880AbXEWKYw
+	id S1761977AbXEWKdf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 06:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbXEWKdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 06:24:52 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:59800 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763501AbXEWKYu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 06:24:50 -0400
-To: viro@ftp.linux.org.uk
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-reply-to: <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> (message from Miklos
-	Szeredi on Wed, 23 May 2007 12:09:19 +0200)
-Subject: Re: [RFC PATCH] file as directory
-References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu>
-Message-Id: <E1Hqo0n-0001ho-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 23 May 2007 12:24:09 +0200
+	Wed, 23 May 2007 06:33:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54113 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758263AbXEWKdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 06:33:24 -0400
+Date: Wed, 23 May 2007 12:33:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Bill Huey <billh@gnuppy.monkey.org>,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 0/7] lock contention tracking -v2
+Message-ID: <20070523103311.GA13482@elte.hu>
+References: <20070523072618.129001605@chello.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070523072618.129001605@chello.nl>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > + * This is tricky, because for namespace modification we must take the
-> > > + * namespace semaphore.  But mntput() is called from various places,
-> > > + * sometimes with namespace_sem held.  Fortunately in those places the
-> > > + * mount cannot yet have MNT_DIRONFILE, or at least that's what I
-> > > + * hope...
-> > > + *
-> > > + * The umounting is done in two stages, first the mount is removed
-> > > + * from the hashes.  This is done atomically wrt other mount lookups,
-> > > + * so it's not possible to acquire a new ref to this dead mount that
-> > > + * way.
-> > > + *
-> > > + * Then after having locked namespace_sem and relocked vfsmount_lock,
-> > > + * the mount is properly detached.
-> > > + */
-> > > +static void umount_dironfile(struct vfsmount *mnt)
-> > > +	__releases(vfsmount_lock)
-> > > +{
-> > > +	struct nameidata nd;
-> > 
-> > You've got to be kidding.  nameidata is *big*.  If anything, we want
-> > to make detach_mnt() take struct path * instead, but even that is
-> > lousy due to recursion.
-> > 
-> > I really don't like what's going on here.  The thing is, current code
-> > is based on assumption that presence in the mount tree => holding a
-> > reference.  We _might_ deal with that (there was an old plan to change
-> > refcounting logics for vfsmounts), but that sort of games with locks
-> > spells trouble.  What happens, for example, if namespace gets cloned
-> > before you grab namespace_sem?
+
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> Use the lockdep infrastructure to track lock contention and other lock 
+> statistics.
 > 
-> It _should_ work.  The mount in the new namespace will be created
-> (with namespace_sem held, so we can't yet free this mount), and then
-> dropped, because there are no refs to it.
+> It tracks lock contention events, and the first four unique call-sites 
+> that encountered contention.
+> 
+> It also measures lock wait-time and hold-time in nanoseconds. The 
+> minimum and maximum times are tracked, as well as a total (which 
+> together with the number of event can give the avg).
+> 
+> All statistics are done per lock class, per write (exclusive state) 
+> and per read (shared state).
+> 
+> The statistics are collected per-cpu, so that the collection overhead 
+> is minimized via having no global cachemisses.
+> 
+> This new lock statistics feature is independent of the lock dependency 
+> checking traditionally done by lockdep; it just shares the lock 
+> tracking code. It is also possible to enable both and runtime disabled 
+> either component - thereby avoiding the O(n^2) lock chain walks for 
+> instance.
 
-BTW, I'm not saying I like this.  It's pretty ugly and fragile.  But
-it's damn convenient to get rid of these mounts from mntput().
+really nice changes! The wait-time and hold-time changes should make it 
+as capable as lockmeter and more: lockmeter only measured spinlocks, 
+while your approach covers all lock types (spinlocks, rwlocks and 
+mutexes).
 
-Is there a better alternative?
+The performance enhancements in -v2 should make it much more scalable 
+than your first version was. (in fact i think it should be completely 
+scalable as the statistics counters are all per-cpu, so there should be 
+no cacheline bouncing at all from this)
 
-Miklos
+Also, you've detached it from CONFIG_PROVE_LOCKING so the 
+lock-dependency overhead should be gone too.
+
+Looks really good to me!
+
+ Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
