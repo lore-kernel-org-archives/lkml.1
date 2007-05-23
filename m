@@ -1,88 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764264AbXEWAVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbXEWAZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764264AbXEWAVv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 22 May 2007 20:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762334AbXEWAVS
+	id S1763500AbXEWAZg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 22 May 2007 20:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbXEWAZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 22 May 2007 20:21:18 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:37764 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762190AbXEWAVQ (ORCPT
+	Tue, 22 May 2007 20:25:27 -0400
+Received: from mga02.intel.com ([134.134.136.20]:36610 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757937AbXEWAZ0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 22 May 2007 20:21:16 -0400
-Date: Tue, 22 May 2007 17:26:24 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] kernel-doc: fix unnamed struct/union warning
-Message-Id: <20070522172624.e62b35be.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 22 May 2007 20:25:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,567,1170662400"; 
+   d="scan'208";a="246208620"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.22-rc1-mm1 - s390 vs. md
+Date: Tue, 22 May 2007 17:25:24 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5201E39968@azsmsx413.amr.corp.intel.com>
+In-Reply-To: <20070521092449.34a50f2e@gondolin.boeblingen.de.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.22-rc1-mm1 - s390 vs. md
+Thread-Index: AcebeSN/nnkYHvULSKKx95LFhHcs3ABUf1yg
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "NeilBrown" <neilb@suse.de>,
+       "Martin Schwidefsky" <schwidefsky@de.ibm.com>,
+       "linux-s390" <linux-s390@vger.kernel.org>
+X-OriginalArrivalTime: 23 May 2007 00:25:24.0843 (UTC) FILETIME=[DB3913B0:01C79CD0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> From: Cornelia Huck [mailto:cornelia.huck@de.ibm.com]
+> On Fri, 18 May 2007 09:30:09 -0700,
+> "Williams, Dan J" <dan.j.williams@intel.com> wrote:
+> 
+> > When CONFIG_DMA_ENGINE=n async_tx_find_channel takes the form:
+> > ... async_tx_find_channel( ... )
+> > {
+> > 	return NULL;
+> > }
+> >
+> > So in the S390 case the entire asynchronous path will be compiled
+away.
+> 
+> Unfortunately, do_async_xor() (and others) is not ifdef'ed and
+contains
+> dma_map_page(), which led to the compile failure...
 
-Fix kernel-doc warning:
-Warning(linux-2.6.22-rc2-git2/include/linux/skbuff.h:316): No description found for parameter '}'
+The approach I have taken is to add the missing definitions to
+include/asm-s390/dma-mapping.h [ a non-outlook-mangled version of the
+patch is pushed out in my rebased git tree ].  I was not able to fully
+compile-test this change as the three s390-cross-toolchains I tried each
+died early in the kernel build process.  The most common error was:
+"s390-unknown-linux-gnu-ld: unrecognised emulation mode: elf64_s390"
 
-which is caused by nested anonymous structs/unions ending with:
-  };
-};
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- scripts/kernel-doc |   14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
 
---- linux-2.6.22-rc2-git2.orig/scripts/kernel-doc
-+++ linux-2.6.22-rc2-git2/scripts/kernel-doc
-@@ -154,6 +154,7 @@ use strict;
+s390: add dma mapping api stub definitions for async_tx
+
+From: Dan Williams <dan.j.williams@intel.com>
+
+The asynchronous path in async_tx is meant to be compiled away on
+platforms
+like s390 with CONFIG_DMA_ENGINE=n.  However, it is difficult to compile
+something away if it does not compile in the first place.  This patch
+adds
+the missing dma api definitions as BUG() stubs.
+
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+
+ include/asm-s390/dma-mapping.h |   78
+++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 78 insertions(+), 0 deletions(-)
+
+diff --git a/include/asm-s390/dma-mapping.h
+b/include/asm-s390/dma-mapping.h
+index 3f8c12f..33a3c82 100644
+--- a/include/asm-s390/dma-mapping.h
++++ b/include/asm-s390/dma-mapping.h
+@@ -4,9 +4,87 @@
+  *  S390 version
+  *
+  *  This file exists so that #include <dma-mapping.h> doesn't break
+anything.
++ *  It also includes stub definitions of the API so common code like
+async_tx
++ *  can compile.
+  */
  
- my $errors = 0;
- my $warnings = 0;
-+my $anon_struct_union = 0;
+ #ifndef _ASM_DMA_MAPPING_H
+ #define _ASM_DMA_MAPPING_H
  
- # match expressions used to find embedded type information
- my $type_constant = '\%([-_\w]+)';
-@@ -1510,8 +1511,13 @@ sub push_parameter($$$) {
- 	my $param = shift;
- 	my $type = shift;
- 	my $file = shift;
--	my $anon = 0;
- 
-+	if (($anon_struct_union == 1) && ($type eq "") &&
-+	    ($param eq "}")) {
-+		return;		# ignore the ending }; from anon. struct/union
-+	}
++#include <linux/mm.h>
++#include <asm/scatterlist.h>
 +
-+	$anon_struct_union = 0;
- 	my $param_name = $param;
- 	$param_name =~ s/\[.*//;
- 
-@@ -1530,16 +1536,16 @@ sub push_parameter($$$) {
- 	# handle unnamed (anonymous) union or struct:
- 	{
- 		$type = $param;
--		$param = "{unnamed_" . $param. "}";
-+		$param = "{unnamed_" . $param . "}";
- 		$parameterdescs{$param} = "anonymous\n";
--		$anon = 1;
-+		$anon_struct_union = 1;
- 	}
- 
- 	# warn if parameter has no description
- 	# (but ignore ones starting with # as these are not parameters
- 	# but inline preprocessor statements);
- 	# also ignore unnamed structs/unions;
--	if (!$anon) {
-+	if (!$anon_struct_union) {
- 	if (!defined $parameterdescs{$param_name} && $param_name !~ /^#/) {
- 
- 	    $parameterdescs{$param_name} = $undescribed;
++static inline dma_addr_t
++dma_map_single(struct device *dev, void *cpu_addr, size_t size,
++	enum dma_data_direction dir)
++{
++	BUG();
++	return 0;
++}
++
++static inline dma_addr_t
++dma_map_page(struct device *dev, struct page *page,
++	     unsigned long offset, size_t size,
++	     enum dma_data_direction dir)
++{
++	BUG();
++	return 0;
++}
++
++static inline void
++dma_unmap_single(struct device *dev, dma_addr_t handle, size_t size,
++	enum dma_data_direction dir)
++{
++	BUG();
++}
++
++static inline void
++dma_unmap_page(struct device *dev, dma_addr_t handle, size_t size,
++	       enum dma_data_direction dir)
++{
++	BUG();
++}
++
++static inline int
++dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
++	enum dma_data_direction dir)
++{
++	BUG();
++	return 0;
++}
++
++static inline void
++dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
++	     enum dma_data_direction dir)
++{
++	BUG();
++}
++
++static inline void
++dma_sync_single_for_cpu(struct device *dev, dma_addr_t handle, size_t
+size,
++			enum dma_data_direction dir)
++{
++	BUG();
++}
++
++static inline void
++dma_sync_single_for_device(struct device *dev, dma_addr_t handle,
+size_t size,
++			   enum dma_data_direction dir)
++{
++	BUG();
++}
++
++static inline void
++dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int
+nents,
++		    enum dma_data_direction dir)
++{
++	BUG();
++}
++
++static inline void
++dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int
+nents,
++		       enum dma_data_direction dir)
++{
++	BUG();
++}
+ #endif /* _ASM_DMA_MAPPING_H */
