@@ -1,39 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758971AbXEWQRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbXEWQRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758971AbXEWQRU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764457AbXEWQQ7
+	id S1760479AbXEWQRh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934155AbXEWQRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:16:59 -0400
-Received: from ns2.suse.de ([195.135.220.15]:50787 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764190AbXEWQQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:16:57 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [AppArmor 38/45] AppArmor: Module and LSM hooks
-Date: Wed, 23 May 2007 18:16:45 +0200
-User-Agent: KMail/1.9.5
-Cc: jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20070514110607.549397248@suse.de> <20070514110621.316630438@suse.de> <20070515091443.GD6816@ucw.cz>
-In-Reply-To: <20070515091443.GD6816@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 23 May 2007 12:17:05 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:36778 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933827AbXEWQRD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 12:17:03 -0400
+Subject: Re: [PATCH] [scsi] Remove __GFP_DMA
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Aubrey Li <aubreylee@gmail.com>, Christoph Lameter <clameter@sgi.com>,
+       Bernhard Walle <bwalle@suse.de>, linux-scsi@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705231153360.7749@localhost.localdomain>
+References: <20070521151525.GA581@suse.de>
+	 <Pine.LNX.4.64.0705221443030.16285@schroedinger.engr.sgi.com>
+	 <6d6a94c50705221941y63f4db7bj174a2265d9eaa61a@mail.gmail.com>
+	 <1179933494.3700.16.camel@mulgrave.il.steeleye.com>
+	 <Pine.LNX.4.64.0705231153360.7749@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 11:17:01 -0500
+Message-Id: <1179937021.3700.34.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705231816.46197.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 May 2007 11:14, Pavel Machek wrote:
-> Why is this configurable? 
+On Wed, 2007-05-23 at 11:55 -0400, Robert P. J. Day wrote:
+> On Wed, 23 May 2007, James Bottomley wrote:
+> 
+> > I'll defer to Mark on this one.  However, please remember that you
+> > can't just blindly remove GFP_DMA ... there are some cards which
+> > require it.
+> >
+> > Aacraid is one example ... it has a set of cards that can only DMA
+> > to 31 bits.  For them, the GFP_DMA is necessary:  The allocation in
+> > question is a scatterlist, which must be within the device DMA mask.
+> 
+> a question i asked a while back, and still haven't seen an answer for
+> -- given this in include/linux/gfp.h:
+> 
+>   #define GFP_DMA         __GFP_DMA
+> 
+> is there a qualitative difference between these two macros?  is there
+> *supposed* to be?  if there isn't, one would think that just one
+> variation would be sufficient.
 
-The maximum length of a pathname is an arbitrary limit: we don't want to 
-allocate arbitrary amounts of of kernel memory for pathnames so we introduce 
-this limit and set it to a reasonable value. In the unlikely case that 
-someone uses insanely long pathnames, this limit can be increased.
+__GFP_ are the raw GFP flags ... the GFP_ are combinations of the flags
+with predefined meanings.  There's no convention that you have to use
+one form or the other when making combinations of the allocation flags.
+Historically that's lead to things like
 
-Andreas
+GFP_ATOMIC | __GFP_DMA (indicating additional DMA zone to the usual
+atomic flags)
+
+and
+
+GFP_ATOMIC | GFP_DMA (indicating same thing, but with the defined flags)
+
+You can argue that GFP_DMA has a pretty bogus GFP meaning and should
+never appear on its own, which, to my mind makes the former usage
+preferable.  However, GFP_DMA has been in linux since pretty much the
+dawn of ISA drivers, so I think it's conventionally well understood.
+
+James
+
+
+James
+
+
