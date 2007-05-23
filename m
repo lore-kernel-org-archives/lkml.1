@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764549AbXEWOVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764599AbXEWOYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764549AbXEWOVx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 10:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbXEWOVq
+	id S1764599AbXEWOYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 10:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbXEWOYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 10:21:46 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:3779 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755214AbXEWOVp (ORCPT
+	Wed, 23 May 2007 10:24:30 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:58355 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755343AbXEWOYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 10:21:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Bl7ZK8f1rX7gA+OREsuciNuX1IoIMf/QDAlwc5pJhT3bJizJhIYCF/OFiiruqmfUqA3YEzD/rRRymhXAJRjyb4fOrZ45dPTVByqRU2ktH4fT5BexXTV0GHF9rztP1LM7OqV/c7PJ2DKLPy5a5t/YJbO44FMLWJhpDUpErcYizFE=
-Message-ID: <4cefeab80705230721i492b5f1ehfa2d775344b1c04e@mail.gmail.com>
-Date: Wed, 23 May 2007 19:51:44 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Michael-Luke Jones" <mlj28@cam.ac.uk>
-Subject: Re: [RFC] LZO de/compression support - take 3
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
-       linux-mm-cc@laptop.org
-In-Reply-To: <1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-	 <0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
-	 <4cefeab80705230439n6bbb1259le3c3b9704ce49b75@mail.gmail.com>
-	 <624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
-	 <4cefeab80705230703vdb3c414s250a61c4c2d70c51@mail.gmail.com>
-	 <1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
+	Wed, 23 May 2007 10:24:30 -0400
+Subject: Re: Kconfig warnings on latest GIT
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Simon Horman <horms@verge.net.au>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       ppc-dev dev ML <linuxppc-dev@ozlabs.org>
+In-Reply-To: <Pine.LNX.4.64.0705230913420.535@localhost.localdomain>
+References: <200705080004.14570.ismail@pardus.org.tr>
+	 <20070508143127.38fafa3c.kim.phillips@freescale.com>
+	 <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au>
+	 <1178811570.3806.18.camel@johannes.berg>
+	 <20070511012216.GB10715@verge.net.au>
+	 <1178883937.8896.11.camel@johannes.berg>
+	 <20070514013230.GJ3588@verge.net.au>
+	 <1179147311.2647.47.camel@johannes.berg>
+	 <Pine.LNX.4.64.0705140923470.24559@gate.crashing.org>
+	 <1179159951.2647.49.camel@johannes.berg>
+	 <943F0161-121D-4697-AE69-78BD605A8033@kernel.crashing.org>
+	 <1179928646.14317.6.camel@johannes.berg>
+	 <Pine.LNX.4.64.0705230913420.535@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-S7zF+zkaPY6pUIFCHChx"
+Date: Wed, 23 May 2007 16:26:05 +0200
+Message-Id: <1179930365.14317.14.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/23/07, Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
-> On 23 May 2007, at 15:03, Nitin Gupta wrote:
->
-> >> Perhaps a rename is in order:
-> >> lzo1x_decompress() => lzo1x_decompress_unsafe()
-> >> lzo1x_decompress_safe => lzo1x_decompress()
+
+--=-S7zF+zkaPY6pUIFCHChx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2007-05-23 at 09:14 -0500, Kumar Gala wrote:
+> On Wed, 23 May 2007, Johannes Berg wrote:
+>=20
+> > On Wed, 2007-05-23 at 07:37 -0500, Kumar Gala wrote:
 > >
-> > Or perhaps make reiserfs use _safe() instead - I think Richard has
-> > already submitted patch for same.
->
-> If someone's already made this mistake once, then it'll happen again.
-> In-kernel memory corruption is no fun.
->
-> Safe/Secure == Default
+> > > Was my patch ok, if so I'll push it up through my git tree to paul?
+> >
+> > Yeah, looks fine to me, or will the ARCH=3Dppc folks then scream and wa=
+nt
+> > that added to the Kconfig there as well?
+>=20
+> I can't imagine they will since pmac is only supported in ARCH=3Dpowerpc.
 
-If I rename 'nonsafe' version as such then it will seem like its a
-'broken' implementation which is not the case. If somebody is upto
-including compression he must be having head to use the right
-decompress version depending on this scenario :-)
+Oh right, that was the point of not mentioning
+SYS_SUPPORTS_APM_EMULATION any more in the drivers/macintosh/Kconfig
 
-- Nitin
+johannes
 
+--=-S7zF+zkaPY6pUIFCHChx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
->
-> Michael-Luke
->
->
+iD8DBQBGVE79/ETPhpq3jKURAsoLAKCNDt2BvRicYLq+ZjM9YrU4hReDggCfcwwS
+qDd9/PWsdM2kp9MLcElVhaA=
+=k3Py
+-----END PGP SIGNATURE-----
+
+--=-S7zF+zkaPY6pUIFCHChx--
+
