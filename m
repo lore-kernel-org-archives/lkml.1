@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766013AbXEWM35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbXEWMfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766013AbXEWM35 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 08:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbXEWM3u
+	id S1757071AbXEWMfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 08:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXEWMeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 08:29:50 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:55803 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755961AbXEWM3t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 08:29:49 -0400
-Message-ID: <46543163.1020607@aitel.hist.no>
-Date: Wed, 23 May 2007 14:19:47 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, dri-devel@lists.sourceforge.net,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       James Simmons <jsimmons@pentafluge.infradead.org>,
-       Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-References: <200705171423.46748.jesse.barnes@intel.com>	 <1179792587.32247.769.camel@localhost.localdomain>	 <200705220839.04773.jbarnes@virtuousgeek.org> <1179876398.32247.885.camel@localhost.localdomain>
-In-Reply-To: <1179876398.32247.885.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 23 May 2007 08:34:50 -0400
+Received: from pat.uio.no ([129.240.10.15]:56268 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754335AbXEWMet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 08:34:49 -0400
+Subject: Re: [RFC PATCH] file as directory
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20070523073658.GO4095@ftp.linux.org.uk>
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu>
+	 <20070522221045.GH4095@ftp.linux.org.uk>
+	 <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu>
+	 <20070523070306.GM4095@ftp.linux.org.uk>
+	 <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu>
+	 <20070523073658.GO4095@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 08:34:42 -0400
+Message-Id: <1179923682.6480.18.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.120)
+X-UiO-Scanned: 71BF551EA51959C4410FCC6DF789E34B960ADBA8
+X-UiO-Ratelimit-Test: Ratelimit
+X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1291 total 1905561 max/h 8345 blacklist 0 greylist 0 ratelimit 1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2007-05-22 at 08:39 -0700, Jesse Barnes wrote:
->   
->> The current code does its best to figure out what modes are available and 
->> tries to pick a good one for each display.  It sounds like you're mainly 
->> concerned with the actual mode picking, not the mode and output detection 
->> and enumeration?  If so, that's a pretty easy change to make.  But if 
->> you're also worried about the kernel building mode lists, then we'll have 
->> bigger changes to make...
->>     
->
-> I'm worried that the EDID we get from the monitor is bogus and needs to
-> be overriden.
->   
-How often do that happen?
+On Wed, 2007-05-23 at 08:36 +0100, Al Viro wrote:
+> On Wed, May 23, 2007 at 09:19:17AM +0200, Miklos Szeredi wrote:
+> > > Eh...  Arbitrary limitations are fun, aren't they?
+> > 
+> > But these mounts _are_ special.  There is really no point in moving or
+> > pivoting them.
+> 
+> pivoting - probably true, moving... why not?
 
-There is the alternate solution of assuming that EDID is correct,
-and provide an override when it isn't. So anyone with a good monitor
-get a nice display by default.  Those with a defective lying monitor
-may have to add a "resolution=640x480" parameter to their
-kernel command line to get out of the black screen modus.
-This shifts the bother to those with a bad monitor, who then are
-free to get pissed off at their monitor vendor . . .
+Moving would be an implementation artefact that doesn't really
+correspond to any useful operation on the filesyst
 
-Helge Hafting
+AFAIK, most filesystems that have implemented subfiles (excepting
+Reiser4 of course) do not allow you to rename or move the subfile
+directory or its contents from one parent file to another.
+
+Trond
+
