@@ -1,56 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759501AbXEWXaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbXEWXcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759501AbXEWXaO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 19:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756792AbXEWXaA
+	id S1760237AbXEWXcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 19:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283AbXEWXby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 19:30:00 -0400
-Received: from web90311.mail.mud.yahoo.com ([216.252.100.148]:23089 "HELO
-	web90311.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756748AbXEWXaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 19:30:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=UjpJxk8Q00TWe5rD/kZrWrIJDBr7rzprMR2ljjLjCE0YMrtDbtuXTyFw+7mwyf5twUrM1Mco2akknncw1Huiscg9djsPDPO4HfhGL88bu0hyClzuCmxMsLI7q1UAd1jqNr5iMea/vZyQ3dIl2oNcmslTPOOPUddmH4HxfWb4ssk=;
-X-YMail-OSG: NAybkzwVM1lsklVvMWca.D3Ix5br__fnywKNCKxbrOq8NrBmOEtpGtvOtBbG3oH18xGLUe3RtqdFGeJlbXE2B2Hw5Dhsr9WSyh9d
-Date: Wed, 23 May 2007 16:29:59 -0700 (PDT)
-From: Y Khan <ykhanportland@yahoo.com>
-Subject: Re: class_device_create() and the mode of the device file in /dev.
-To: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <3ae72650705222046o352ca76epbd5c36dea7706e70@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <358502.73138.qm@web90311.mail.mud.yahoo.com>
+	Wed, 23 May 2007 19:31:54 -0400
+Received: from mail.screens.ru ([213.234.233.54]:40810 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757103AbXEWXbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 19:31:53 -0400
+Date: Thu, 24 May 2007 03:32:01 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+Message-ID: <20070523233201.GA384@tv-sign.ru>
+References: <20070523212902.GA235@tv-sign.ru> <20070523225657.GA26115@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070523225657.GA26115@sgi.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 05/23, Cliff Wickman wrote:
 > 
-> No, the kernel is not involved in specifying /dev
-> permissions. You
-> have to add a udev rule to assign a mode that isn't
-> the default.
+> On Thu, May 24, 2007 at 01:29:02AM +0400, Oleg Nesterov wrote:
+> > Cliff Wickman wrote:
+> > >
+> > > - * NOTE: interrupts should be disabled by the caller
+> > > + * NOTE: interrupts are not disabled by the caller
+> > >   */
+> > >  static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+> > >  {
+> > > @@ -5008,6 +5008,17 @@ restart:
+> > >  	if (dest_cpu == NR_CPUS)
+> > >  		dest_cpu = any_online_cpu(p->cpus_allowed);
+> > >
+> > > +	/* try to stay on the same cpuset */
+> > > +	if (dest_cpu == NR_CPUS) {
+> > > +		/*
+> > > +		 * Call to cpuset_cpus_allowed may sleep, so we depend
+> > > +		 * on move_task_off_dead_cpu() being called in a non-critical
+> > > +		 * region.
+> > > +		 */
+> > > +		p->cpus_allowed = cpuset_cpus_allowed(p);
+> > > +		dest_cpu = any_online_cpu(p->cpus_allowed);
+> > > +	}
+> > 
+> > I know nothing about cpuset.c, a _very_ naive question.
 > 
+> Paul Jackson is the cpuset guru.
 
-Hmm...When I can create the device file automatically
-then I should also be able to specify the mode. udev
-can override this value from kernel if it has another
-value from the user. But not having this capability in
-the kernel kind of distributes the work (part 1 done
-in kernel while part 2 done in user space), which is
-not very friendly. Now I will have to distribute a
-udev conf file along with my driver.
+Hopefully Paul can help us...
 
-I can make changes to udev/kernel for this if people
-think that this is also desired by others.
+> > Do we really need task_lock() (used by cpuset_cpus_allowed) here ?
+> 
+> According to Paul's comment in kernel/cpuset.c
+>  * It is ok to first take manage_sem, then nest callback_sem.  We also
+>  * require taking task_lock() when dereferencing a tasks cpuset pointer.
+> So I'm afraid it is not safe to call guarantee_online_cpus(tsk->cpuset, &mask);
+> without it.  Could the task not be exiting?
 
--Y
+But how task_lock() can help? cpuset_exit() doesn't take it, it changes ->cpuset
+lockless. However, it sets ->cpuset = &top_cpuset, and the comment says:
 
+	* Don't even think about derefencing 'cs' after the cpuset use count
+	* goes to zero, except inside a critical section guarded by manage_mutex
+	* or callback_mutex.
+	     ^^^^^^^^^^^^^^
+So, perhaps cpuset_lock() should be enough.
 
+(That said, looking at cpuset_exit() I can't understand why callback_mutex is
+ enough. If it is not, cpuset_cpus_allowed() is not safe either).
 
-       
-____________________________________________________________________________________You snooze, you lose. Get messages ASAP with AutoCheck
-in the all-new Yahoo! Mail Beta.
-http://advision.webevents.yahoo.com/mailbeta/newmail_html.html
+> > If not, probably we can make this simpler. CPU_DEAD takes cpuset_lock(),
+> > move_task_off_dead_cpu() uses guarantee_online_cpus() which doesn't sleep,
+> > so we don't need other changes.
+> > 
+> > Possible?
+> > 
+> > If not, this patch should also change migrate_dead(), it still calls
+> > move_task_off_dead_cpu() with irqs disabled, no?
+> 
+> Right, the lock is released but I indeed didn't reenable irqs.
+> How would you suggest doing that?  The irq state was saved in local
+> variable "flags" back in migration_call().
+
+migration_call(CPU_DEAD) is called with irqs enabled.
+
+Oleg.
+
