@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbXEWLg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763537AbXEWLjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762190AbXEWLg7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 07:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757295AbXEWLgu
+	id S1763537AbXEWLjf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 07:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759272AbXEWLj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 07:36:50 -0400
-Received: from stinky.trash.net ([213.144.137.162]:39738 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756260AbXEWLgt (ORCPT
+	Wed, 23 May 2007 07:39:27 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57505 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758938AbXEWLj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 07:36:49 -0400
-Message-ID: <4654269C.4040809@trash.net>
-Date: Wed, 23 May 2007 13:33:48 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Ingo Molnar <mingo@elte.hu>, Anant Nitya <kernel@prachanda.info>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: bad networking related lag in v2.6.22-rc2
-References: <20070517174533.GA538@elte.hu> <200705221147.56571.kernel@prachanda.hub> <20070522062233.GA20002@elte.hu> <200705231110.44526.kernel@prachanda.hub> <20070523063052.GB26814@elte.hu> <46541DC4.4090501@trash.net> <20070523112559.GA24604@gondor.apana.org.au>
-In-Reply-To: <20070523112559.GA24604@gondor.apana.org.au>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 07:39:26 -0400
+Date: Wed, 23 May 2007 12:39:25 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] file as directory
+Message-ID: <20070523113925.GT4095@ftp.linux.org.uk>
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> <20070523102437.GS4095@ftp.linux.org.uk> <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Wed, May 23, 2007 at 12:56:04PM +0200, Patrick McHardy wrote:
+> When the real superblock is created.  It could even be the _same_
+> super block as the real one.  There'd be just the problem of anchoring
+> the dir-on-file dentries somewhere...
 > 
->>Looking at the recent changes to __qdisc_run, this indeed seems
->>to be the case, when the qdisc is throttled and has packets queued
->>we return a value != 0, causing __qdisc_run to loop until all
->>packets have been sent, which may be a long time.
-> 
-> 
-> Good catch! I was obviously half awake at the time :)
-> 
-> We could also fix it this way:
+> Or with fuse the dir-on-file mount can just come from any mounted
+> filesystem, again possibly the same one as the parent.  I do actually
+> test with this.  The userspace filesystem supplies a file descriptor,
+> from which the struct path is extracted and returned from ->enter().
 
+Then I do not understand what this mechanism could be used for, other
+than an odd way to twist POSIX behaviour and see how much of the userland
+would survive that.  Certainly not useful for your "look into tarball
+as a tree", unless you seriously want to scan the entire damn fs for
+tarballs at mount time and set up a superblock for each.  And for per-file
+extended attributes/forks/whatever-you-call-that-abomination it also
+obviously doesn't help, since you lose them for directories.
 
-Yes, that looks better, thanks.
+IOW, what uses do you have in mind?  Complete scenario, please...
