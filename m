@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbXEWSDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764935AbXEWSFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763549AbXEWSDP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbXEWSC7
+	id S1764935AbXEWSFN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbXEWSFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:02:59 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:43835 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757698AbXEWSC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:02:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=bEbRhne5YkMy+zG9VYTLWx85Gofxf3mArZjzlSS+Xbnk1FMFwdD3PciT9Q9nPtoCSkPxD6+yJa20L22tS59BGI5zZdRafK9N5ZKGsIkFuK6734v5RfDKwS1G9k6f9egZuN6jcgunJEoutR7wH+C746aQ5gEz+lcifG0RrRQ24ic=
-Subject: [RFC 1/5] inode reservation v0.1
-From: coly <colyli@gmail.com>
-To: linux-ext4 <linux-ext4@vger.kernel.org>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 24 May 2007 02:03:24 +0800
-Message-Id: <1179943404.4179.52.camel@coly-t43.site>
+	Wed, 23 May 2007 14:05:00 -0400
+Received: from smtp.osdl.org ([207.189.120.12]:42578 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756912AbXEWSE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 14:04:59 -0400
+Date: Wed, 23 May 2007 11:04:48 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mike Houston <mikeserv@bmts.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+Message-ID: <20070523110448.3974948d@freepuppy>
+In-Reply-To: <alpine.LFD.0.98.0705231044160.3890@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+	<20070520170506.814a38d9.mikeserv@bmts.com>
+	<20070521084549.61a1aa71@freepuppy>
+	<20070521131055.0017404f.mikeserv@bmts.com>
+	<20070521103755.51b954e1@freepuppy>
+	<20070521225806.bb18d589.mikeserv@bmts.com>
+	<20070521213146.3e220a44@freepuppy>
+	<20070522181444.ad932718.mikeserv@bmts.com>
+	<alpine.LFD.0.98.0705221653010.3890@woody.linux-foundation.org>
+	<20070523133909.a3ec171a.mikeserv@bmts.com>
+	<alpine.LFD.0.98.0705231044160.3890@woody.linux-foundation.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is only experimental, just have a try whether the
-subdirectory inode reservation idea works. Now the answer is it works,
-and I am working on an improved version for this patch.
+On Wed, 23 May 2007 10:46:05 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-The basic idea of subdirecctory inode reservation is to avoid
-unnecessary redundant meta data writing and hard disk seeking. Detailed
-idea can be found here:http://lkml.org/lkml/2007/3/26/180
+> 
+> 
+> On Wed, 23 May 2007, Mike Houston wrote:
+> > 
+> > I still happen to have a Windows Vista install kicking around, so to
+> > make sure we're not flogging a dead horse I booted that and let it
+> > set up the yukon2 chip and I tested it. (more to make sure that
+> > eeprom update didn't break it). I used it for a bit and successfully
+> > transferred some large files from box running Samba. MS must be using
+> > some specific workaround or something.
+> 
+> I think there is some lspci-like thing for windows too. 
+> 
+> Can you do the equivalent of "lspci -vvxxx" on that box under both Linux 
+> and Windows? _If_ it's some PCI config space thing (which is not at all 
+> guaranteed - it could be about setup in random MMIO ranges) it might give 
+> us some clues.
+> 
+> 		Linus
 
-This email has another 4 extra parts:
-1) ext4 kernel patch
-2) e2fsprogs patch
-3) current benchmark
-4) next step working
+lspci will work in windows, it is probably part of cygwin.
 
-The reason to release this unstable patch is:
-* I want others to know I am working on it.
-* The result of benchmark indecates that this work maybe is valuable.
-* Hope others can give me feedback at very basic phase of this patch.
-
-I should thank Adreas Dilger, who firstly introduces this idea to me.
-Also I should thank other friends in #linuxfs at irc.oftc.org, great
-helps to me.
-
-In the next several months, I will try best to write a usable patch :-)
-
-
-Coly
-
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
