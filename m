@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758493AbXEWVyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbXEWV5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758493AbXEWVyR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbXEWVyF
+	id S1758693AbXEWV5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 17:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbXEWV5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:54:05 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:50513 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755869AbXEWVyB (ORCPT
+	Wed, 23 May 2007 17:57:15 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:43679 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756245AbXEWV5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:54:01 -0400
-Date: Wed, 23 May 2007 16:53:56 -0500
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.21.1: ide-pci is not finding ide controller.
-Message-ID: <20070523215356.GD5921@austin.ibm.com>
-References: <20070523201118.GZ5921@austin.ibm.com> <4654A375.4080807@ru.mvista.com>
+	Wed, 23 May 2007 17:57:15 -0400
+Date: Wed, 23 May 2007 14:54:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Robert Hancock <hancockr@shaw.ca>, Olivier Galibert <galibert@pobox.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
+ resources
+In-Reply-To: <200705231403.24439.jbarnes@virtuousgeek.org>
+Message-ID: <alpine.LFD.0.98.0705231444200.3890@woody.linux-foundation.org>
+References: <4635510D.4060103@shaw.ca> <200705231349.56976.jbarnes@virtuousgeek.org>
+ <alpine.LFD.0.98.0705231352450.3890@woody.linux-foundation.org>
+ <200705231403.24439.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4654A375.4080807@ru.mvista.com>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 12:26:29AM +0400, Sergei Shtylyov wrote:
-> Hello.
+
+
+On Wed, 23 May 2007, Jesse Barnes wrote:
+> > You told it to not forward memory. Why complain when it does as told?
 > 
-> Linas Vepstas wrote:
-> >I've got a rather old x86 box that I'm booting 2.6.21.1 on;
-> >this kernel is not finding an ide controller on it. 
-> 
-> >The motherboard has 4 ide controllers total; two olde-fashioned
-> >ones (PIIX4, using the original 40-pin IDE ribbon cable) and two 
-> 
->    You should have said "channels". PIIX4 has only one IDE controller.
+> Well, because that's not actually very useful functionality, and likely 
+> makes software that seems "obviously" correct wrt the PCI spec break.
 
-Right. I wrote "drive" in the first email, and then quickly
-changed that :-)
+I agree that a chip that doesn't do it isn't broken either, but the fact 
+is, there is never any reason to disable MEM/IO on a host bridge. Doing so 
+is senseless - it can never be a valid operation. So I duspute the 
+"obviously correct" part. It's _not_ obviously correct at all.
 
->    Actually, it was a bug that I've introduced into 
->    drivers/ide/pci/hpt366.c -- the patch has been already merged into 
-> 2.6.22-rc1:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fdb0d72be4decaade6cedb5012ddd679a4817b5f
+To get back to the MMIO example: even if you were to never shut off RAM, 
+if you turn off just PCI MMIO on the northbridge, what is a mmconfig cycle 
+supposed to do? It's not going to _work_ if you disable MEM accesses.
 
+So again, the only sane situation is: don't do it then! You claim that 
+hardware shouldn't do it, but I don't think software is in any different 
+situation at all! If it's insane to do, then software shouldn't do it.
 
-OK, great, thanks!
+It's just insane to turn off the MEM bit. There's simply no valid reason 
+to. And any PCI spec that says you should is *broken*, or written by 
+somebody who really only meant to talk about normal PCI devices, not 
+bridges.
 
-I'll give this a spin. If it works, I'll suggest backporting it to the
-stable branch 2.6.21.2. 
+> Apparently Vista will move away from using type 1 config space accesses 
+> though, so if we keep using it, we'll probably run into some lame board 
+> that assumes you're using mmconfig at some point in the near future.  
 
---linas
+How are those boards going to set up mmconfig? The whole standard is 
+broken, since there is no way to set it up.
 
+Trust the firmware? What a piece of crap!
+
+		Linus
