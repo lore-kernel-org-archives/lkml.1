@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbXEWMiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXEWMk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758072AbXEWMiz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 08:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbXEWMis
+	id S1759427AbXEWMk2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 08:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbXEWMkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 08:38:48 -0400
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:28907 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755057AbXEWMir (ORCPT
+	Wed, 23 May 2007 08:40:18 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59908 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754645AbXEWMkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 08:38:47 -0400
-In-Reply-To: <1179159951.2647.49.camel@johannes.berg>
-References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au> <1178811570.3806.18.camel@johannes.berg> <20070511012216.GB10715@verge.net.au> <1178883937.8896.11.camel@johannes.berg> <20070514013230.GJ3588@verge.net.au> <1179147311.2647.47.camel@johannes.berg> <Pine.LNX.4.64.0705140923470.24559@gate.crashing.org> <1179159951.2647.49.camel@johannes.berg>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-X-Gpgmail-State: !signed
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <943F0161-121D-4697-AE69-78BD605A8033@kernel.crashing.org>
-Cc: Simon Horman <horms@verge.net.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       ppc-dev dev ML <linuxppc-dev@ozlabs.org>
-Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Kconfig warnings on latest GIT
-Date: Wed, 23 May 2007 07:37:04 -0500
-To: Johannes Berg <johannes@sipsolutions.net>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 23 May 2007 08:40:17 -0400
+Date: Wed, 23 May 2007 13:40:13 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] file as directory
+Message-ID: <20070523124013.GV4095@ftp.linux.org.uk>
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk> <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu> <20070523070306.GM4095@ftp.linux.org.uk> <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu> <20070523073658.GO4095@ftp.linux.org.uk> <1179923682.6480.18.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179923682.6480.18.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 23, 2007 at 08:34:42AM -0400, Trond Myklebust wrote:
+> On Wed, 2007-05-23 at 08:36 +0100, Al Viro wrote:
+> > On Wed, May 23, 2007 at 09:19:17AM +0200, Miklos Szeredi wrote:
+> > > > Eh...  Arbitrary limitations are fun, aren't they?
+> > > 
+> > > But these mounts _are_ special.  There is really no point in moving or
+> > > pivoting them.
+> > 
+> > pivoting - probably true, moving... why not?
+> 
+> Moving would be an implementation artefact that doesn't really
+> correspond to any useful operation on the filesyst
+> 
+> AFAIK, most filesystems that have implemented subfiles (excepting
+> Reiser4 of course) do not allow you to rename or move the subfile
+> directory or its contents from one parent file to another.
 
-On May 14, 2007, at 11:25 AM, Johannes Berg wrote:
-
-> On Mon, 2007-05-14 at 09:24 -0500, Kumar Gala wrote:
->
->> this was my fix which looks pretty much the same.
->
-> [...]
->
-> Great, thanks.
->
-> johannes
-
-Was my patch ok, if so I'll push it up through my git tree to paul?
-
-- k
+If that's about xattr and nothing else, colour me thoroughly uninterested.
+If it might have other interesting uses, OTOH...
