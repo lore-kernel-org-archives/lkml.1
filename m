@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763671AbXEWIz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762287AbXEWI7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763671AbXEWIz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 04:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbXEWIzN
+	id S1762287AbXEWI7u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 04:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbXEWI7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 04:55:13 -0400
-Received: from [129.215.188.97] ([129.215.188.97]:42455 "EHLO just"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757484AbXEWIzM (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 04:55:12 -0400
-X-Greylist: delayed 1981 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 04:55:11 EDT
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: richard.griffiths@windriver.com
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-Date: Wed, 23 May 2007 09:21:32 +0100
-User-Agent: KMail/1.9.6
-Cc: Linux-kernel@vger.kernel.org
-References: <1179871779.24163.11.camel@localhost.localdomain>
-In-Reply-To: <1179871779.24163.11.camel@localhost.localdomain>
+	Wed, 23 May 2007 04:59:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60361 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756644AbXEWI7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 04:59:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Romano Giannetti <romano.giannetti@gmail.com>
+Subject: Re: 2.6.21.1 fails to suspend/resume  to disk  (sort of)
+Date: Wed, 23 May 2007 11:05:07 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <1179905115.7043.25.camel@localhost>
+In-Reply-To: <1179905115.7043.25.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705230921.32974.s0348365@sms.ed.ac.uk>
+Message-Id: <200705231105.08408.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 22 May 2007 23:09:39 Richard Griffiths wrote:
-> Venerable cramfs fs Linear XIP patch originally from MontaVista, used in
-> the embedded Linux community for years, updated for 2.6.21. Tested on
-> several systems with NOR Flash. PXA270, TI OMAP2430, ARM Versatile and
-> Freescale iMX31ADS.
+Hi,
 
-> +#else /* CONFIG_CRAMFS_LINEAR */
-> +        /*
-> +         * The physical location of the cramfs image is specified as
-> +         * a mount parameter.  This parameter is mandatory for obvious
+On Wednesday, 23 May 2007 09:25, Romano Giannetti wrote:
+> Hi, 
+> 
+> I am trying to upgrade from my ubuntu kernel 2.6.17.3 to 2.6.21.1 and I
+> have quite a bunch of problems with suspend/resume, both to disk and to
+> ram. I have reported the s2ram problem in a separate message (search for
+> a follow-up to the thread with subject "[patch 00/69] -stable review".
+> http://lkml.org/lkml/2007/5/23/38
 
-You've used spaces here instead of tabs, probably worth replacing.
+Please see http://bugzilla.kernel.org/show_bug.cgi?id=8456
+That seems to resemble the symptoms you describe.
 
-> +/*
-> + * We hold the mm semaphore for reading and vma->vm_mm->page_table_lock
-> + */
-> +static inline void break_cow(struct vm_area_struct * vma, struct page * 
-new_page, unsigned long address,
-> +                pte_t *page_table)
-> +{
-> +        pte_t entry;
+> Now for the suspend to disk. With default setting (/sys/power/disk ==
+> platform) my laptop (vaio PGC-FX701) fails to poweroff; it stays with
+> backlight on, a white screen, and if I power it off manually afterward
+> it did not resume.
+> 
+> By doing echo shutdown > /sys/power/disk the laptop *do* power off (it's
+> very slow, but I think that's related with the 60 secs delay commented
+> in the other post). Then it resume --- text console did resume ok ---
+> but the virtual console with X do not come back. I had to do a
+> ctrl-alt-backspace thing. 
+> 
+> Any hints? More data?
 
-Here again.
+Could you please test the 2.6.22-rc2 kernel?  Also, if it still doesn't work
+properly, could you apply the hibernation/suspend patchset available from
+http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.22-rc2/patches
+on top of it and see if that helps?
 
-> +                        /*
-> +                         * Handle COW of XIP memory.
-> +                         * Note that the source memory actually isn't a ram
-> +                         * page so no struct page is associated to the 
-source
-> +                         * pte.
-> +                         */
-
-This whole section too.
-
--- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+Rafael
