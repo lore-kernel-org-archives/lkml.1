@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762648AbXEWIF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759199AbXEWIGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762648AbXEWIF2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 04:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbXEWIFN
+	id S1759199AbXEWIGU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 04:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbXEWIGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 04:05:13 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:43560 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754723AbXEWIFL (ORCPT
+	Wed, 23 May 2007 04:06:06 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:44957 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755885AbXEWIGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 04:05:11 -0400
-Subject: RE: 2.6.22-rc1-mm1 - s390 vs. md
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: "Williams, Dan J" <dan.j.williams@intel.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       NeilBrown <neilb@suse.de>, linux-s390 <linux-s390@vger.kernel.org>
-In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5201E39968@azsmsx413.amr.corp.intel.com>
-References: <0C7297FA1D2D244A9C7F6959C0BF1E5201E39968@azsmsx413.amr.corp.intel.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 23 May 2007 10:05:39 +0200
-Message-Id: <1179907539.17849.16.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 04:06:04 -0400
+To: viro@ftp.linux.org.uk
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+In-reply-to: <20070523073658.GO4095@ftp.linux.org.uk> (message from Al Viro on
+	Wed, 23 May 2007 08:36:58 +0100)
+Subject: Re: [RFC PATCH] file as directory
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070522221045.GH4095@ftp.linux.org.uk> <E1HqkS4-00017K-00@dorka.pomaz.szeredi.hu> <20070523070306.GM4095@ftp.linux.org.uk> <E1Hql7t-0001EQ-00@dorka.pomaz.szeredi.hu> <20070523073658.GO4095@ftp.linux.org.uk>
+Message-Id: <E1HqlqT-0001KD-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 23 May 2007 10:05:21 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-22 at 17:25 -0700, Williams, Dan J wrote:
-> The approach I have taken is to add the missing definitions to
-> include/asm-s390/dma-mapping.h [ a non-outlook-mangled version of the
-> patch is pushed out in my rebased git tree ].  I was not able to fully
-> compile-test this change as the three s390-cross-toolchains I tried
-> each
+> > > Eh...  Arbitrary limitations are fun, aren't they?
+> > 
+> > But these mounts _are_ special.  There is really no point in moving or
+> > pivoting them.
+> 
+> pivoting - probably true, moving... why not?
 
-We are trying to get rid of dma-mapping.h, see the last change to the
-file with commit 411f0f3edc141a582190d3605cadd1d993abb6df. I don't think
-we should reintroduce dma related definition but split the async_tx in a
-way that allows to compile it on an architecture with CONFIG_NO_DMA=y
-(yes I know that is harder that to just add the dma stubs).
-You've said that there is a software implementation if there is no dma
-engine present. This software implementation should be independent of
-dma-mapping.h. Without having looked at the code, isn't it possible to
-isolate that software implementation into its own C file? That would be
-the only one that gets compiled for s390.
+I don't see any use for that.  But indeed, it should not be too hard
+to do.
 
--- 
-blue skies,
-  Martin.
+> > > What about MNT_SLAVE stuff being set up prior to that lookup?
+> > 
+> > These mounts are not propagated.  Or at least I hope so.  Propagation
+> > stuff is a bit too complicated for my poor little brain.
+> 
+> Er...  These mounts might not be propagated, but what about a bind
+> over another instance of such file in master tree?
 
-"Reality continues to ruin my life." - Calvin.
+So your question is, which mount takes priority on the lookup?  It
+probably should be the propagated real mount, rather than the
+dir-on-file one, shouldn't it?
 
+> > I think they should be the same superblock, same dentry.  What would
+> > be the advantage of doing otherwise?
+> 
+> Then you are going to have interesting time with locking in final mntput().
 
+Final mntput of what?
+
+> BTW, what about having several links to the same file?  You have i_mutex
+> on the inode, so serialization of those is not a problem, but...
+
+Sorry, I lost it...
+
+> > I think doing this recursively should be allowed.  "Releasing last ref
+> > cleans up the mess" should work in that case.
+> 
+> Releasing the last reference will lead to cascade of umounts in that
+> case...  IOW, need to be careful with locking.
+
+I think it's done right: detach_mnt() with namespace_sem and
+vfsmount_lock, then release locks, and path_release(&old_nd).
+
+If the recursion is extremely deep we could have stack overflow
+problems though, aargh...
+
+Miklos
