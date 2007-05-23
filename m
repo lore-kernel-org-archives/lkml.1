@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764738AbXEWTSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXEWTTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764738AbXEWTSs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 15:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762603AbXEWTSg
+	id S965407AbXEWTTl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 15:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXEWTTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 15:18:36 -0400
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:55407 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761993AbXEWTSf (ORCPT
+	Wed, 23 May 2007 15:19:32 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:58452 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbXEWTTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 15:18:35 -0400
-Date: Wed, 23 May 2007 21:18:33 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] m68k: Enable arbitary speed tty support
-In-Reply-To: <20070523174446.37abfa7a@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0705232117260.10610@anakin>
-References: <20070523174446.37abfa7a@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 23 May 2007 15:19:31 -0400
+Date: Wed, 23 May 2007 12:20:05 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: "Yu, Fenghua" <fenghua.yu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, clameter@sgi.com,
+       rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
+Subject: Re: [PATCH 1/2] Define new percpu interface for shared data -- version 3
+Message-ID: <20070523192005.GB4072@localhost.localdomain>
+References: <20070523185748.GA4072@localhost.localdomain> <79E93560F4A5FD42BB769DAAF8BEF62A01AA8CF8@scsmsx411.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <79E93560F4A5FD42BB769DAAF8BEF62A01AA8CF8@scsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007, Alan Cox wrote:
-> Add the needed constants and defines to activate the existing code. 
+On Wed, May 23, 2007 at 12:09:56PM -0700, Yu, Fenghua wrote:
 > 
-> Signed-off-by: Alan Cox <alan@redhat.com>
+> >Has there been any measurable benefit yet due to tail padding?
 > 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc1-mm1/include/asm-m68k/ioctls.h linux-2.6.22-rc1-mm1/include/asm-m68k/ioctls.h
-> --- linux.vanilla-2.6.22-rc1-mm1/include/asm-m68k/ioctls.h	2007-04-30 10:48:17.000000000 +0100
-> +++ linux-2.6.22-rc1-mm1/include/asm-m68k/ioctls.h	2007-05-23 16:35:06.212417496 +0100
-> @@ -46,6 +46,10 @@
->  #define TIOCSBRK	0x5427  /* BSD compatibility */
->  #define TIOCCBRK	0x5428  /* BSD compatibility */
->  #define TIOCGSID	0x5429  /* Return the session ID of FD */
-> +#define TCGETS2		_IOR('T',0x2A, struct termios2)
-> +#define TCSETS2		_IOW('T',0x2B, struct termios2)
-> +#define TCSETSW2	_IOW('T',0x2C, struct termios2)
-> +#define TCSETSF2	_IOW('T',0x2D, struct termios2)
+> We don't have data that tail padding actually helps. It all
+> depends on what data the linker lays out in the cachelines.
+> 
+> As of now we just want to create the infrastructure (so that
+> more and more people who need it, can use it).
 
-Where is `struct termios2' defined? Right now it doesn't compile because
-of that.
+So what we have now is space wastage on some architectures, space savings on
+some, but with no measurable performance benefit due to the infrastructure
+itself.  Why not push the infrastructure when we really need it, as against
+pushing it now when we are not sure if it benefits?
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+Kiran 
