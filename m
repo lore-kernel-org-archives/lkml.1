@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765884AbXEWODr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933815AbXEWOH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765884AbXEWODr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 10:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbXEWODk
+	id S933815AbXEWOH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 10:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbXEWOHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 10:03:40 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:46175 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756360AbXEWODj (ORCPT
+	Wed, 23 May 2007 10:07:16 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3865 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756397AbXEWOHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 10:03:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SMQ5ntfT++ASOT9rh1AZRWzfTfaOpxxWkBCEFaR/4aD90lNsaX8mkDyClNc84nj4CemPgZWPzd4NMp61R3Lk69ttrzFD1XJa3T7AJ4mpWl82aCYD6TFlQjAsL8CxBroBDrO9vuWWiRJm9MBNfKrsdQYDHr7YvruCfQ6I2uhOp/k=
-Message-ID: <4cefeab80705230703vdb3c414s250a61c4c2d70c51@mail.gmail.com>
-Date: Wed, 23 May 2007 19:33:36 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Michael-Luke Jones" <mlj28@cam.ac.uk>
-Subject: Re: [RFC] LZO de/compression support - take 3
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
-       linux-mm-cc@laptop.org
-In-Reply-To: <624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 10:07:14 -0400
+Date: Wed, 23 May 2007 15:07:02 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: Define CONFIG_BOUNCE to avoid useless inclusion of bounce buffer logic.
+Message-ID: <20070523140702.GA16972@flint.arm.linux.org.uk>
+Mail-Followup-To: Christoph Lameter <clameter@sgi.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	jens.axboe@oracle.com
+References: <Pine.LNX.4.64.0705212100420.24947@schroedinger.engr.sgi.com> <20070522133906.ae9c362a.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0705212225590.25388@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-	 <0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
-	 <4cefeab80705230439n6bbb1259le3c3b9704ce49b75@mail.gmail.com>
-	 <624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
+In-Reply-To: <Pine.LNX.4.64.0705212225590.25388@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/23/07, Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
->
-> Fair enough. However, this rather important issue is pretty much
-> undocumented (source code comments don't count)
+On Mon, May 21, 2007 at 10:27:16PM -0700, Christoph Lameter wrote:
+> On Tue, 22 May 2007, KAMEZAWA Hiroyuki wrote:
+> 
+> > > +config BOUNCE
+> > > +	def_bool y
+> > > +	depends on BLOCK && MMU && (ZONE_DMA || HIGHMEM)
+> > > +
+> > 
+> > AFAIK, ppc has only ZONE_DMA and it never needs bounce.
+> > Is this ok ?
+> 
+> That is wrong. ppc should have ZONE_NORMAL and no ZONE_DMA.
+> Otherwise you cannot switch off ZONE_DMA and you cannot switch off 
+> bounce. ZONE_DMA is a zone for exceptional allocs. If you do not have 
+> those then you only have normal allocs -> ZONE_NORMAL.
 
-If header file for public interface (<linux/lzo1x.h> documents about
-'unsafe' vs. 'safe' then it should be enough.
+That sounds very wrong to me.  Since about 1995 ARM has always placed
+all DMA-able memory in the DMA zone, and none in the normal zone.
 
-> and Reiser4 is
-> already using the lzo1x_decompress() function rather than the
-> seemingly more appropriate lzo1x_decompress_safe() function...
->
-> http://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-
-> rc2/2.6.22-rc2-mm1/broken-out/reiser4-use-lzo-library-functions.patch
->
-> Perhaps a rename is in order:
-> lzo1x_decompress() => lzo1x_decompress_unsafe()
-> lzo1x_decompress_safe => lzo1x_decompress()
->
+The reason for doing this is that normal allocations fall back to DMA
+allocations when the normal zone becomes full/empty.  However, DMA
+allocations can never be satisfied by allocations from the normal zone.
 
-Or perhaps make reiserfs use _safe() instead - I think Richard has
-already submitted patch for same.
+Moreover, special casing the "doesn't use __GFP_DMA allocations on this
+machine so places all memory in ZONE_NORMAL" is just too complicated -
+I've no idea which of the 100+ ARM machine support currently merged
+into the Linux kernel uses __GFP_DMA allocations and which don't.
 
-- Nitin
+The DMA zone is for memory allocations _for_ _DMA_.  If all your memory
+is DMA-able then it belongs in the DMA zone.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
