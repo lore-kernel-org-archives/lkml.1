@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbXEWVUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbXEWVW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbXEWVUw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXEWVUp
+	id S1757231AbXEWVW5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 17:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXEWVWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:20:45 -0400
-Received: from outbound-mail-54.bluehost.com ([69.89.20.34]:36477 "HELO
-	outbound-mail-54.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754726AbXEWVUo (ORCPT
+	Wed, 23 May 2007 17:22:50 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43476 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754726AbXEWVWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:20:44 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
-Date: Wed, 23 May 2007 14:20:23 -0700
-User-Agent: KMail/1.9.6
-Cc: Robert Hancock <hancockr@shaw.ca>, Olivier Galibert <galibert@pobox.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-References: <4635510D.4060103@shaw.ca> <200705231349.56976.jbarnes@virtuousgeek.org> <alpine.LFD.0.98.0705231352450.3890@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705231352450.3890@woody.linux-foundation.org>
+	Wed, 23 May 2007 17:22:50 -0400
+Date: Wed, 23 May 2007 23:22:37 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org
+Subject: Re: Status of CONFIG_FORCED_INLINING?
+Message-ID: <20070523212237.GH2098@stusta.de>
+References: <200705231510.52932.rob@landley.net> <46549937.1030306@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200705231420.26622.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <46549937.1030306@linux.intel.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 23, 2007 1:56 pm Linus Torvalds wrote:
-> > Not for systems with PCIe...  and the platforms I've been having
-> > trouble with have PCIe slots, so I'd really like mmconfig to be
-> > used at least on machines with PCIe bridges.  For other machines,
-> > it probably doesn't matter much.  I don't know of any regular PCI
-> > devices offhand that really need extended config space.
+On Wed, May 23, 2007 at 12:42:47PM -0700, Arjan van de Ven wrote:
+> Rob Landley wrote:
+>> I notice that feature-removal-schedule.txt has CONFIG_FORCED_INLINING 
+>> scheduled to go away most of a year ago.  My question is what replaces it:
+>> Does #define inline __always_inline become the new standard and uses of 
+>> __always_inline be removed, or should all instances of "inline" either be 
+>> removed or replaced with __always_inline?  (Or are there going to be two 
+>> keywords meaning exactly the same thing going forward?)
 >
-> Ehh. Even for PCIe, why not use the normal accesses for the first 256
-> bytes? Problem solved.
+> it should be that we do not force gcc to inline on the "normal" inline 
+> keyword, and we mark the cases that HAVE to be inlined for correctness 
+> reasons as __always_inline.
 
-Ok, this patch also works.  We still need to enable mmconfig space for 
-PCIe and extended config space, but we can continue to use type 1 
-accesses for legacy PCI config space cycles to avoid decode trouble 
-with mmconfig based BAR sizing.
+What about performance reasons?
+We habe "inline" code in header files that heavily relies on being 
+nearly completely optimized away after being inlined.
+Especially with -Os it could even sound logical for a compiler to never 
+inline a non-forced "inline"'d three line function with 2 callers.
 
-Assuming Robert's and my patches to enable mmconfig space go in, we'd 
-want a similar patch to the i386 mmconfig code.
+And we need only two different inline levels (__always_inline and
+"let the compiler decide"), not three (__always_inline, inline and
+"let the compiler decide").
 
-Jesse
+The rules are simple:
+- every static function in a header file must be __always_inline
+- no function in a C file should be marked as __always_inline/inline
+- in extreme rare cases there might be exceptions from the latter
 
-diff --git a/arch/x86_64/pci/mmconfig.c b/arch/x86_64/pci/mmconfig.c
-index 65d8273..5052f80 100644
---- a/arch/x86_64/pci/mmconfig.c
-+++ b/arch/x86_64/pci/mmconfig.c
-@@ -61,7 +61,7 @@ static int pci_mmcfg_read(unsigned int seg, unsigned 
-int bus,
- 	}
- 
- 	addr = pci_dev_base(seg, bus, devfn);
--	if (!addr)
-+	if (!addr || reg < 256) /* Use type 1 for non-extended access */
- 		return pci_conf1_read(seg,bus,devfn,reg,len,value);
- 
- 	switch (len) {
-@@ -89,7 +89,7 @@ static int pci_mmcfg_write(unsigned int seg, unsigned 
-int bus,
- 		return -EINVAL;
- 
- 	addr = pci_dev_base(seg, bus, devfn);
--	if (!addr)
-+	if (!addr || reg < 256) /* Use type 1 for non-extended access */
- 		return pci_conf1_write(seg,bus,devfn,reg,len,value);
- 
- 	switch (len) {
+Your suggestion is possible, but please also send a patch that turns 
+every "inline" in header files into __always_inline...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
