@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762695AbXEWQOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764534AbXEWQQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762695AbXEWQOP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 12:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbXEWQOB
+	id S1764534AbXEWQQu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 12:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757071AbXEWQQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 12:14:01 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:33781 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756921AbXEWQOA (ORCPT
+	Wed, 23 May 2007 12:16:43 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:33150 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756921AbXEWQQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 12:14:00 -0400
-Subject: Re: [PATCH -rt] ARM TLB flush fix: don't forget to re-enable
-	preemption
-From: Kevin Hilman <khilman@mvista.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Daniel Walker <dwalker@mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070523092232.GA9482@flint.arm.linux.org.uk>
-References: <20070522230128.891568116@mvista.com>
-	 <1179876320.15427.214.camel@imap.mvista.com>
-	 <1179877296.6122.74.camel@vence.hilman.org>
-	 <20070523092232.GA9482@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 23 May 2007 09:13:57 -0700
-Message-Id: <1179936837.7051.11.camel@vence.hilman.org>
+	Wed, 23 May 2007 12:16:42 -0400
+Date: Wed, 23 May 2007 09:16:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Nitin Gupta" <nitingupta910@gmail.com>
+Cc: "Michael-Luke Jones" <mlj28@cam.ac.uk>, linux-kernel@vger.kernel.org,
+       "Richard Purdie" <richard@openedhand.com>, linux-mm-cc@laptop.org
+Subject: Re: [RFC] LZO de/compression support - take 3
+Message-Id: <20070523091601.f8c6b833.akpm@linux-foundation.org>
+In-Reply-To: <4cefeab80705230721i492b5f1ehfa2d775344b1c04e@mail.gmail.com>
+References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+	<0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
+	<4cefeab80705230439n6bbb1259le3c3b9704ce49b75@mail.gmail.com>
+	<624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
+	<4cefeab80705230703vdb3c414s250a61c4c2d70c51@mail.gmail.com>
+	<1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
+	<4cefeab80705230721i492b5f1ehfa2d775344b1c04e@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-23 at 10:22 +0100, Russell King wrote:
-> On Tue, May 22, 2007 at 04:41:36PM -0700, Kevin Hilman wrote:
-> > On Tue, 2007-05-22 at 16:25 -0700, Daniel Walker wrote:
-> > > On Tue, 2007-05-22 at 16:01 -0700, Kevin Hilman wrote:
-> > > > Add a preempt_enable() to flush_tlb_kernel_page() since -rt4 patch
-> > > > adds a preempt_disable but no preempt_enable().
-> > > > 
-> > > > Signed-off-by: Kevin Hilman <khilman@mvista.com>
-> > > > 
-> > > > 
-> > > > ---
-> > > >  include/asm-arm/tlbflush.h |    1 +
-> > > >  1 file changed, 1 insertion(+)
-> > > > 
-> > > > Index: linux-2.6.21/include/asm-arm/tlbflush.h
-> > > > ===================================================================
-> > > > --- linux-2.6.21.orig/include/asm-arm/tlbflush.h
-> > > > +++ linux-2.6.21/include/asm-arm/tlbflush.h
-> > > > @@ -378,6 +378,7 @@ static inline void local_flush_tlb_kerne
-> > > >  		asm("mcr p15, 0, %0, c8, c6, 1" : : "r" (kaddr) : "cc");
-> > > >  	if (tlb_flag(TLB_V6_I_PAGE))
-> > > >  		asm("mcr p15, 0, %0, c8, c5, 1" : : "r" (kaddr) : "cc");
-> > > 
-> > > Aren't these mcr operations atomic?
-> > > 
-> > 
-> > Individually, yes.  But the point of the preempt_disable/enable is to
-> > make the whole sequence atomic.
+On Wed, 23 May 2007 19:51:44 +0530 "Nitin Gupta" <nitingupta910@gmail.com> wrote:
+
+> On 5/23/07, Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
+> > On 23 May 2007, at 15:03, Nitin Gupta wrote:
+> >
+> > >> Perhaps a rename is in order:
+> > >> lzo1x_decompress() => lzo1x_decompress_unsafe()
+> > >> lzo1x_decompress_safe => lzo1x_decompress()
+> > >
+> > > Or perhaps make reiserfs use _safe() instead - I think Richard has
+> > > already submitted patch for same.
+> >
+> > If someone's already made this mistake once, then it'll happen again.
+> > In-kernel memory corruption is no fun.
+> >
+> > Safe/Secure == Default
 > 
-> In which case shouldn't it be at the end of the function so it includes
-> the write buffer handling as well?
+> If I rename 'nonsafe' version as such then it will seem like its a
+> 'broken' implementation which is not the case. If somebody is upto
+> including compression he must be having head to use the right
+> decompress version depending on this scenario :-)
 > 
-> However, I think I agree with Daniel on this one.  I don't see the point
-> of the preempt_disable() here.
 
-Note that my patch simply adds an enable to match the disable added by
-the -rt patch.  I'm not sure where the disable originally came from, but
-there are disable/enable pairs scattered throughout tlbflush.h in the
--rt patch.
+<wakes up>
 
-If this one isn't necessary, then the others probably are not either.
-In most cases there are 2 mcr instructions inside the critical section.
-One for the dsb() and the other for the actual function.
+What's "unsafe" here?  If you fed it bad data, the decompressor will
+scribble on memory or crash the kernel or hang up?
 
-Russell, is there a reason any of these sections should be atomic?
+If so, it was quite inappropriate that a filesystem be using the unsafe
+version.
 
-Kevin
-
-
-
+I'd agree with the proposed renaming.  In fact I'd suggest that the unsafe
+APIs just be removed - it's hard to imagine a situation in which they're OK
+to be used in the kernel.
 
