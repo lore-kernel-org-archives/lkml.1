@@ -1,110 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761728AbXEWRja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbXEWRj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761728AbXEWRja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 13:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbXEWRjW
+	id S1757749AbXEWRj4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 13:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762088AbXEWRjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 13:39:22 -0400
-Received: from paris.bmts.com ([216.183.128.227]:34057 "EHLO paris.bmts.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756240AbXEWRjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 13:39:21 -0400
-Date: Wed, 23 May 2007 13:39:09 -0400
-From: Mike Houston <mikeserv@bmts.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22-rc2
-Message-Id: <20070523133909.a3ec171a.mikeserv@bmts.com>
-In-Reply-To: <alpine.LFD.0.98.0705221653010.3890@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
-	<20070520170506.814a38d9.mikeserv@bmts.com>
-	<20070521084549.61a1aa71@freepuppy>
-	<20070521131055.0017404f.mikeserv@bmts.com>
-	<20070521103755.51b954e1@freepuppy>
-	<20070521225806.bb18d589.mikeserv@bmts.com>
-	<20070521213146.3e220a44@freepuppy>
-	<20070522181444.ad932718.mikeserv@bmts.com>
-	<alpine.LFD.0.98.0705221653010.3890@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
-X-brucetelecom.com-MailScanner: Found to be clean
-X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
+	Wed, 23 May 2007 13:39:47 -0400
+Received: from cg-p07-fb.rzone.de ([81.169.146.215]:9207 "EHLO
+	cg-p07-fb.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756433AbXEWRjq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 13:39:46 -0400
+X-Greylist: delayed 1959 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 13:39:46 EDT
+Date: Wed, 23 May 2007 19:07:03 +0200
+From: Nico Golde <nico@ngolde.de>
+To: linux-kernel@vger.kernel.org
+Subject: maximum count of thermal zones and fans in acpi?
+Message-ID: <20070523170702.GA9169@ngolde.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
+Content-Disposition: inline
+X-Mailer: netcat 1.10
+X-GPG: 0x73647cff
+X-RZG-AUTH: hvKiKtSHbeE0ghP2VIXOfz9FbKPIjAFDNRMtknfPuvqS60u3mcM1eRXO+wCdbA==
+X-RZG-CLASS-ID: mo00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 17:00:18 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> and the load off "sk->sk_prot->ioctl" oopses, because "sk->sk_prot"
-> is corrupt and contains 0x8e3cad42, which is not a valid kernel
-> pointer.
-> 
-> The other oops is even worse. 
-> 
-> I also think it meshes with
-> 
-> 	sky2 eth0: descriptor error q=0x280 get=285
-> [800042375e2e5e] put=285
-> 
-> and I suspect your memory got corrupted by sky2 reading the wrong 
-> descriptors, and overwriting kernel memory.
-> 
-> So it's almost certainly some DMA problem. Now, _why_ you have DMA 
-> problems, I have no idea. But can you try:
->  - disable CONFIG_PREEMPT
->  - disable CONFIG_HIGHMEM if you have it on
->  - just in general see if you can disable any kernel config options
-> that might be unnecessary.
-> to see if it changes the situation at all..
+--3MwIy2ne0vdjdPXF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for looking at this. After further posts in the discussion I
-wasn't sure if you still wanted me to try this, but I thought it
-might be useful to see if (particularly) highmem support might change
-the behaviour, or the messages in any way that might lead to a clue.
-There was no change to the behaviour.
+Hi,
+I am currently implementing a general purpose shared library=20
+for acpi focused on all the tools giving acpi information=20
+like battery, thermal zones, fans, etc.
 
-I have a Core 2 duo, and 2 Gb of RAM, but I built a uniprocessor
-kernel (with apic), without highmem support, with no PREEMPT and
-without other unnecessary stuff. If by chance I got it working, my
-plan was to enable things one at a time.
+Since I was not able to find anything about it in the acpi=20
+specs[0] (of course I didn't read every single page though)
+and with a quick look into the kernel sources I wondered if=20
+there is a maximum count for thermal zones and fans in the=20
+acpi implementation of the kernel.
 
-I won't get that oops on this setup though (never have, anyways...
-it was just the PCLinux install on that other hard disk which has
-now been returned to use elsewhere), but the messages on trying to
-transfer data are the same:
+Every acpi module just calls proc_mkdir for example:
+       acpi_device_dir(device) =3D proc_mkdir(acpi_device_bid(device),
+                                            acpi_thermal_dir);
 
-First try (instant failure on trying to ssh):
+struct proc_dir_entry *proc_mkdir_mode(const char *name, mode_t mode,
+                struct proc_dir_entry *parent)
+{
+        struct proc_dir_entry *ent;
 
-May 23 12:51:14 cramit kernel: sky2 eth0: enabling interface
-May 23 12:51:14 cramit kernel: sky2 eth0: ram buffer 0K
-May 23 12:51:16 cramit kernel: sky2 eth0: Link is up at 100 Mbps,
-full duplex, flow control both May 23 12:51:34 cramit kernel: sky2
-0000:04:00.0: error interrupt status=0x1 May 23 12:51:34 cramit
-kernel: sky2 eth0: descriptor error q=0x280 get=7 [0] put=7
+        ent =3D proc_create(&parent, name, S_IFDIR | mode, 2);
+        if (ent) {
+                ent->proc_fops =3D &proc_dir_operations;
+                ent->proc_iops =3D &proc_dir_inode_operations;
 
-Second try after cold boot (failure on trying to transfer file):
+                if (proc_register(parent, ent) < 0) {
+                        kfree(ent);
+                        ent =3D NULL;
+                }
+        }
+        return ent;
+}
 
-May 23 12:52:59 cramit kernel: sky2 eth0: enabling interface
-May 23 12:52:59 cramit kernel: sky2 eth0: ram buffer 0K
-May 23 12:53:01 cramit kernel: sky2 eth0: Link is up at 100 Mbps,
-full duplex, flow control both
-May 23 12:55:40 cramit kernel: sky2
-0000:04:00.0: error interrupt status=0x80000000
-May 23 12:55:40 cramit kernel: sky2 eth0: hw error interrupt status
-0x8
-May 23 12:55:40 cramit kernel: sky2 eth0: MAC parity error
+struct proc_dir_entry *proc_mkdir(const char *name,
+                struct proc_dir_entry *parent)
+{
+        return proc_mkdir_mode(name, S_IRUGO | S_IXUGO, parent);
+}
 
-This is exactly the behaviour I've been seeing.
 
-I still happen to have a Windows Vista install kicking around, so to
-make sure we're not flogging a dead horse I booted that and let it
-set up the yukon2 chip and I tested it. (more to make sure that
-eeprom update didn't break it). I used it for a bit and successfully
-transferred some large files from box running Samba. MS must be using
-some specific workaround or something.
+So is there no check for any max item count here?
 
-Mike Houston
+I ask because I need to decide whether I want to allocate space for every
+acpi object or to use a fixed size array for them depending on the maximum
+item (where item is one device) count.
+
+[0]: http://www.acpi.info/spec.htm
+
+Kind regards
+Nico
+P.S. Please Cc me I am not subscribed
+
+--=20
+Nico Golde - http://ngolde.de - nion@jabber.ccc.de - GPG: 0x73647CFF
+For security reasons, all text in this mail is double-rot13 encrypted.
+
+--3MwIy2ne0vdjdPXF
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGVHS2HYflSXNkfP8RAptKAKCKBrnDsQL+XhV4Cc6XGSuHRi7+OwCghVRZ
+nXP1/hrLRO/dP2fGk1tju7E=
+=+cEW
+-----END PGP SIGNATURE-----
+
+--3MwIy2ne0vdjdPXF--
