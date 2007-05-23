@@ -1,92 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbXEWWHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbXEWWLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758810AbXEWWHB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 18:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbXEWWGx
+	id S1758644AbXEWWLx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 18:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbXEWWLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 18:06:53 -0400
-Received: from outbound-mail-75.bluehost.com ([69.89.20.10]:35291 "HELO
-	outbound-mail-75.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755195AbXEWWGx (ORCPT
+	Wed, 23 May 2007 18:11:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:12803 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756361AbXEWWLp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 18:06:53 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
-Date: Wed, 23 May 2007 15:06:33 -0700
-User-Agent: KMail/1.9.6
-Cc: Robert Hancock <hancockr@shaw.ca>, Olivier Galibert <galibert@pobox.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-References: <4635510D.4060103@shaw.ca> <200705231403.24439.jbarnes@virtuousgeek.org> <alpine.LFD.0.98.0705231444200.3890@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705231444200.3890@woody.linux-foundation.org>
+	Wed, 23 May 2007 18:11:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=I17/PkTu2KFD2IH7s4xKy48N5thrwVr/PIaSNaFrQ6y1iK3CpmHiPyZF+FnG5DoCfRi7Rpakzdc5NmK2vZTGG6d33GeQZcC0/U3DZqDC6C8uLShkStOfoJF7vWexvM6oP3HCKsCgJNPNvqGm1tzfo2zk9w4whc/DtBsYCUY9aCk=
+Message-ID: <4654BC10.2000808@gmail.com>
+Date: Thu, 24 May 2007 02:11:28 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Roland Dreier <rdreier@cisco.com>
+CC: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCIE
+References: <46543045.3030904@gmail.com> <20070523155958.GA5282@kroah.com>	<4654AB40.6060208@gmail.com> <adaejl79rh0.fsf@cisco.com>
+In-Reply-To: <adaejl79rh0.fsf@cisco.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705231506.36229.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 23, 2007 2:54 pm Linus Torvalds wrote:
-> On Wed, 23 May 2007, Jesse Barnes wrote:
-> > > You told it to not forward memory. Why complain when it does as
-> > > told?
-> >
-> > Well, because that's not actually very useful functionality, and
-> > likely makes software that seems "obviously" correct wrt the PCI
-> > spec break.
->
-> I agree that a chip that doesn't do it isn't broken either, but the
-> fact is, there is never any reason to disable MEM/IO on a host
-> bridge. Doing so is senseless - it can never be a valid operation. So
-> I duspute the "obviously correct" part. It's _not_ obviously correct
-> at all.
->
-> To get back to the MMIO example: even if you were to never shut off
-> RAM, if you turn off just PCI MMIO on the northbridge, what is a
-> mmconfig cycle supposed to do? It's not going to _work_ if you
-> disable MEM accesses.
->
-> So again, the only sane situation is: don't do it then! You claim
-> that hardware shouldn't do it, but I don't think software is in any
-> different situation at all! If it's insane to do, then software
-> shouldn't do it.
->
-> It's just insane to turn off the MEM bit. There's simply no valid
-> reason to. And any PCI spec that says you should is *broken*, or
-> written by somebody who really only meant to talk about normal PCI
-> devices, not bridges.
+Roland Dreier wrote:
+>>> Uncompressing Linux .. Ok, booting the kernel.
+>>> BIOS bug, no explicit IRQ entries, using default mptable. (tell your hw vendor)
+>>> PCI: Failed to allocate mem resource #6:20000@30000000 for 0000:01:00.0
+> 
+> This message is about device 01:00.0 as it says (your nvidia video
+> card based on later lspci output).
+> 
+>  > The device is a new DTV bridge from NXP (SAA7162E) with a PCIe interface.
+>  > 
+>  > 06:00.0 Multimedia controller: Philips Semiconductors Unknown device
+>  > 7162 (rev 01)
+>  >         Subsystem: Twinhan Technology Co. Ltd Unknown device 0027
+> 
+> This is device 06:00.0, so it's not related to that earlier message at
+> all.  You didn't say what problem you're having with your driver for
+> this device... 
 
-Well theoretically for just sizing BARs, turning off the MEM bit should 
-be fine, since your next accesses should only be to config space until 
-the MEM bit is reenabled.  But if RAM accesses really are disabled, 
-then you'd better be sure all the code you need is already in cache, or 
-you'll get into trouble.
 
-So yeah, I guess special handling for host bridges is needed, but that 
-doesn't seem like a big deal.
+If i uncomment the saa716x_read or write, what i get is a solid freeze
+on module load. If i leave it commented out, the module loads fine.
 
-> > Apparently Vista will move away from using type 1 config space
-> > accesses though, so if we keep using it, we'll probably run into
-> > some lame board that assumes you're using mmconfig at some point in
-> > the near future.
->
-> How are those boards going to set up mmconfig? The whole standard is
-> broken, since there is no way to set it up.
->
-> Trust the firmware? What a piece of crap!
+static irqreturn_t saa716x_pcie_irq(int irq, void *dev_id)
+{
+	struct saa716x *saa716x;
+	u32 stat, mask;
 
-What do you mean?  You set it up the normal way, by poking at config 
-space to see what's there, then size the BARs (disabling mem and I/O 
-accesses in PCI_COMMAND shouldn't affect config space cycles afaik).  
-You just have to be careful to disable decoding for I/O and memory 
-regions, especially if your mmconfig space overlaps with what the 
-devices end up with in their BARs.  Which is why my initial patch works 
-ok (because fortunately the Intel host bridges hard code the mem decode 
-bit to 1 too).
+	if (unlikely((saa716x = (struct saa716x *) dev_id) == NULL)) {
+		printk(KERN_ERR "%s: Aeie NULL ptr\n", __func__);
+		return IRQ_NONE;
+	}
+//	stat = saa716x_read(0x500);
+	dprintk(verbose, SAA716x_DEBUG, 0, "=== Interrupts[%04x] [", stat);
 
-Jesse
+	dprintk(verbose, SAA716x_DEBUG, 0, "] ==\n");
 
+	return IRQ_HANDLED;
+}
+
+int saa716x_pcie_init(struct saa716x *saa716x)
+{
+	struct pci_dev *pdev = saa716x->pdev;
+	int err = 0;
+	u8 latency, revision;
+
+	printk(KERN_INFO "%s: found a %s device\n", __func__,
+saa716x->hwconfig->model_name);
+	pci_set_drvdata(pdev, saa716x);
+
+	if ((err = pci_enable_device(pdev)) != 0) {
+		printk(KERN_ERR "%s ERROR: pci enable failed (%i)\n", __func__, err);
+		goto fail0;
+	}
+	if (request_mem_region(pci_resource_start(pdev, 0),
+			       pci_resource_len(pdev, 0), DRIVER_NAME) == NULL) {
+
+		printk(KERN_ERR "%s ERROR: mem region request failed\n", __func__);
+		err = -ENOMEM;
+		goto fail1;
+	}
+
+	saa716x->mmio = ioremap(pci_resource_start(pdev, 0), 0x1000); // FIXME:
+check this size
+
+	if ((err = request_irq(pdev->irq, saa716x_pcie_irq, IRQF_SHARED |
+IRQF_DISABLED,
+			       DRIVER_NAME, (void *) saa716x)) != 0) {
+		printk(KERN_ERR "%s ERROR: irq request failed (%i)\n", err, __func__);
+		goto fail2;
+	}
+	pci_set_master(pdev);
+	pci_read_config_byte(pdev, PCI_LATENCY_TIMER, &latency);
+	pci_read_config_byte(pdev, PCI_CLASS_REVISION, &revision);
+
+	dprintk(verbose, SAA716x_ERROR, 0, "     SAA7160/1/2 Rev %d [%04x:%04x], ",
+		revision,
+		saa716x->pdev->subsystem_vendor, saa716x->pdev->subsystem_device);
+
+	dprintk(verbose, SAA716x_ERROR, 0,
+		"irq: %d, latency: %d\n     memory: 0x%04x, mmio: 0x%p\n",
+		saa716x->pdev->irq, latency, pci_resource_start(pdev, 0), saa716x->mmio);
+
+	saa716x->verbose = verbose;
+//	init_waitqueue_head(&saa716x->i2c_queue);
+	/* Disable all interrupts here */
+//	saa716x_write(0, 0x500);
+	return 0;
+
+fail2:
+	iounmap(saa716x->mmio);
+	release_mem_region(pci_resource_start(saa716x->pdev, 0),
+			   pci_resource_len(saa716x->pdev, 0));
+fail1:
+	pci_disable_device(pdev);
+fail0:
+	pci_set_drvdata(pdev, NULL);
+	return err;
+}
+EXPORT_SYMBOL_GPL(saa716x_pcie_init);
+
+
+
+> but all standard PCI stuff should work fine for PCIe
+> devices -- the normal PCI driver stuff is all you should need for
+> everything but exotic cases.
+
+That part is then fine. Does MSI require any special tinkering ?
+
+
+Thanks,
+Manu
