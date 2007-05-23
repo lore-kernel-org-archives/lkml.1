@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbXEWIhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbXEWIqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756965AbXEWIhj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 04:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763023AbXEWIhX
+	id S1759348AbXEWIqw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 04:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbXEWIqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 04:37:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:12127 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762888AbXEWIhV (ORCPT
+	Wed, 23 May 2007 04:46:43 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:6887 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756738AbXEWIqm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 04:37:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=J9g9Z+y8n4Dt/SMJ37huvD9ocJcSZZF8iqC1038okLL9yo+bs6e3FHzPxtOBLqJKXbVcCwr4CvO5Fdws/OzmxuMME1MxjQQvvh8+BozSiv3XyyFX8X2ukELjBZXOtD1E435BAS6VIxOUgJ6uDnLh7wPkinwLNeDl5XSQLhOMUt4=
-Message-ID: <a781481a0705230137v4c8ba82fx263212a2958b55b9@mail.gmail.com>
-Date: Wed, 23 May 2007 14:07:19 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Krzysztof Halasa" <khc@pm.waw.pl>
-Subject: Re: any value to "NORET_TYPE" macro?
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>, "Adrian Bunk" <bunk@stusta.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <m37ir0iodl.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 23 May 2007 04:46:42 -0400
+Date: Wed, 23 May 2007 10:46:39 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: schwidefsky@de.ibm.com
+Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       NeilBrown <neilb@suse.de>, linux-s390 <linux-s390@vger.kernel.org>
+Subject: Re: 2.6.22-rc1-mm1 - s390 vs. md
+Message-ID: <20070523104639.6bc0650e@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1179907539.17849.16.camel@localhost>
+References: <0C7297FA1D2D244A9C7F6959C0BF1E5201E39968@azsmsx413.amr.corp.intel.com>
+	<1179907539.17849.16.camel@localhost>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
-	 <20070522135927.GA2098@stusta.de>
-	 <Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
-	 <20070522161951.GC2098@stusta.de> <m3ejl8k6e3.fsf@maximus.localdomain>
-	 <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain>
-	 <m37ir0iodl.fsf@maximus.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/23/07, Krzysztof Halasa <khc@pm.waw.pl> wrote:
-> "Robert P. J. Day" <rpjday@mindspring.com> writes:
->
-> > that may be but, as i suggested earlier, that would get into guessing
-> > what those developers were thinking, and i just didn't want to go
-> > there.
->
-> No guessing, I just checked it (though a second check wouldn't do
-> any harm).
->
-> > the simple version of the patch is now in andrew's tree, and i'll
-> > worry about the harder stuff next time.
->
-> The "next time" would be much harder as there would be no key for
-> searching for these functions.
+On Wed, 23 May 2007 10:05:39 +0200,
+Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
 
-Krzysztof's absolutely right ... we don't want to lose the NORET_TYPE
-annotations on all these functions before we switch them to
-ATTRIB_NORET. And yes, _all_ of these NORET_TYPE's do want
-to be ATTRIB_NORET (except for those that are double-annotated,
-for those we can just get rid of the NORET_TYPE macro).
+> We are trying to get rid of dma-mapping.h, see the last change to the
+> file with commit 411f0f3edc141a582190d3605cadd1d993abb6df. I don't think
+> we should reintroduce dma related definition but split the async_tx in a
+> way that allows to compile it on an architecture with CONFIG_NO_DMA=y
+> (yes I know that is harder that to just add the dma stubs).
+> You've said that there is a software implementation if there is no dma
+> engine present. This software implementation should be independent of
+> dma-mapping.h. Without having looked at the code, isn't it possible to
+> isolate that software implementation into its own C file? That would be
+> the only one that gets compiled for s390.
+
+Taking a quick look at the async_*.c stuff, the functions in question
+basically seem to be of the form
+
+check_if_we_can_do_it_async();
+if (async_ok) {
+	/* do async stuff */
+	/* that's where the dma mapping creeps in */
+} else {
+	/* do it sync */
+	/* seems fine for us */
+}
+
+So you should be able to factor out (say) async_memset_{sync,async}()
+and put it into async_memset_{sync,async}.c. async_memset() would then
+be
+
+async_memset()
+{
+#if CONFIG_HAS_DMA
+	if (check_if_we_can_do_at_async())
+		async_memset_async();
+#endif
+	return async_memset_sync();
+}
+
+Kconfig could then do
+
+config ASYNC_MEMSET
+	default m
+	tristate "async_memset support"
+	select ASYNC_MEMSET_ASYNC if HAS_DMA
+
+config ASYNC_MEMSET_ASYNC
+	depends on HAS_DMA
+	tristate "async_memset async via dma support"
+
+Thoughts?
