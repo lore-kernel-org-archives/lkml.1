@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbXEWMPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765881AbXEWMQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933327AbXEWMPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 08:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761679AbXEWMPd
+	id S1765881AbXEWMQf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 08:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbXEWMQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 08:15:33 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:62454 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760379AbXEWMPa (ORCPT
+	Wed, 23 May 2007 08:16:22 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53601 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760207AbXEWMQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 08:15:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=XImDc8DMrthTshVIM1DaZZmY0ZMdjuFSkjetonIEc2A1YZhXBLctONmcLeC8HEbjM+K5mwNrtsGvkMDn4TZkscQcaBksIDPlqWFCKzyxP3oe5flcpRbFcurYnyZY4JBWG3qyoiWU+Htifjmx4rLwxNYXc4J8vD01/vcdU24TyO4=
-Message-ID: <46543045.3030904@gmail.com>
-Date: Wed, 23 May 2007 16:15:01 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: linux-pci@atrey.karlin.mff.cuni.cz
-CC: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: PCIE
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 08:16:21 -0400
+Date: Wed, 23 May 2007 13:16:20 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] file as directory
+Message-ID: <20070523121620.GU4095@ftp.linux.org.uk>
+References: <E1HqZPd-0008Dh-00@dorka.pomaz.szeredi.hu> <20070523095127.GQ4095@ftp.linux.org.uk> <E1HqnmR-0001dI-00@dorka.pomaz.szeredi.hu> <20070523102437.GS4095@ftp.linux.org.uk> <E1HqoGh-0001kd-00@dorka.pomaz.szeredi.hu> <20070523113925.GT4095@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070523113925.GT4095@ftp.linux.org.uk>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, May 23, 2007 at 12:39:25PM +0100, Al Viro wrote:
+> Then I do not understand what this mechanism could be used for, other
+> than an odd way to twist POSIX behaviour and see how much of the userland
+> would survive that.  Certainly not useful for your "look into tarball
+> as a tree", unless you seriously want to scan the entire damn fs for
+> tarballs at mount time and set up a superblock for each.  And for per-file
+> extended attributes/forks/whatever-you-call-that-abomination it also
+> obviously doesn't help, since you lose them for directories.
+> 
+> IOW, what uses do you have in mind?  Complete scenario, please...
 
-Do the PCI Express chipsets also use the same PCI API ? The device
-specifications are thus for the device that i am looking at:
-
- PCI Express interface
-
-    * Compliant to PCI Express Base Specification 1.0a
-    * The PCI Express circuit supports isochronous data traffic intended
-for uninterrupted transfer of streaming data like video streaming
-          o x1 PCI Express endpoint (2.5 Gbit/s)
-          o Data and clock recovery from serial stream
-          o Low jitter and BER
-    * Type 0 configuration space header
-          o 64-bit addressing
-          o Single BAR; programmable address range of 17 bits, 18 bits,
-19 bits or 20 bits dependent on application requirements
-    * PCI Express capabilities
-          o 128 bytes write packet size and 64 bytes read packet size
-          o MSI support
-          o Software directed power management of four device power
-states (D0 to D3)
-          o Active state power management of link states
-          o Vendor specific capability for VC1 support; after reset VC1
-isochronous capability is disabled
-
-I have been trying the said card with a normal PCI style driver, but
-while booting the kernel (2.6.21.1) i do get a message like this (an
-Intel DP965LT motherboard with BIOS version:
-MQ96510J.86A.1612.2006.1227.1513)
-Also accessing the interrupt registers causes a hard freeze, for which
-only the RESET button seems to be of any help.
-
-Uncompressing Linux .. Ok, booting the kernel.
-BIOS bug, no explicit IRQ entries, using default mptable. (tell your hw
-vendor)
-PCI: Failed to allocate mem resource #6:20000@30000000 for 0000:01:00.0
-
-Any ideas as to what could be wrong ?
-
-Thanks,
-Manu
+Ah... After rereading the thread you've mentioned in the very beginning,
+I think I understand what you are driving at.  However, in that case
+	* I really don't see why bother with returning vfsmount at all.
+dentry alone is enough to create a new vfsmount, all in fs/namei.c.
+	* the lifetime rules look fscking scary.  You call that ->enter()
+on nearly every damn lookup.  OK, so you'll recreate equivalent vfsmount,
+but...  That's a lot of allocations/freeing.  Can we do some caching and
+deal with it on memory pressure?
+	* invalidation on unlink is still an open problem.
+	* locking in final mntput() doesn't look nice; we probably need
+a new refcounting scheme for vfsmounts to make that work.  I have a variant
+that might work here (and make life much easier for expiry logics in
+automount/shared trees, which is what it had been initially proposed for),
+but it still doesn't kill the need to deal with invalidation.  And yes,
+NFS still needs it (and so do all network filesystems, really).  The question
+of caching is related to that.
