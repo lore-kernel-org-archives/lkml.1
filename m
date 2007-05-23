@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764401AbXEWUDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbXEWUIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764401AbXEWUDS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 16:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbXEWUDK
+	id S1761504AbXEWUIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 16:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbXEWUIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 16:03:10 -0400
-Received: from mx.laposte.net ([81.255.54.16]:30665 "EHLO mx.laposte.net"
+	Wed, 23 May 2007 16:08:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36693 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757015AbXEWUDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 16:03:09 -0400
-Subject: Re: [patch] CFS scheduler, -v14
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070523195701.GC20374@elte.hu>
-References: <20070523120616.GA23407@elte.hu>
-	 <loom.20070523T213730-656@post.gmane.org>  <20070523195701.GC20374@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-kcQGuXfZKaD3YyyzDt9S"
-Organization: Adresse perso
-Date: Wed, 23 May 2007 22:02:59 +0200
-Message-Id: <1179950579.3985.9.camel@rousalka.dyndns.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.2 (2.11.2-1.fc8) 
+	id S1755849AbXEWUIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 16:08:40 -0400
+Message-ID: <46549F45.4040403@garzik.org>
+Date: Wed, 23 May 2007 16:08:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Chris Malton <chrism@cjsoftuk.dyndns.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Fwd: Re: Google are using linux kernel - what do you know about
+ the source?]
+References: <4654729C.70404@cjsoftuk.dyndns.org>	<4654969F.9060904@garzik.org> <20070523210249.3e965257@the-village.bc.nu>
+In-Reply-To: <20070523210249.3e965257@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+>> Google does not distribute their software, so they do not have to make 
+>> their modifications public.
+> 
+> They do for the kernel - they produce an "appliance".
 
---=-kcQGuXfZKaD3YyyzDt9S
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Ah, I stand corrected.
 
-Le mercredi 23 mai 2007 =C3=A0 21:57 +0200, Ingo Molnar a =C3=A9crit :
-> * Nicolas Mailhot <nicolas.mailhot@laposte.net> wrote:
->=20
-> > Ingo Molnar <mingo <at> elte.hu> writes:
-> >=20
-> > Hi Ingo
-> >=20
-> > > i'm pleased to announce release -v14 of the CFS scheduler patchset.
-> > >=20
-> > > The CFS patch against v2.6.22-rc2, v2.6.21.1 or v2.6.20.10 can be=20
-> > > downloaded from the usual place:
-> > >=20
-> > >       http://people.redhat.com/mingo/cfs-scheduler/
-> >=20
-> > I get a forbidden access on=20
-> > http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-v2.6.22-rc2-mm1-=
-v14.patch
->=20
-> oops - fixed it.
 
-Works now, thanks!
+>> WRT the Linux kernel, Google is essentially a closed source company.
+> 
+> They've quietly fed little bits back now and then but not made a big song
+> and dance about it. Hopefully with Andrew there and the like more will
+> occur.
 
---=20
-Nicolas Mailhot
+Strange that the NIC and SATA driver bits never seem to be among those 
+"little bits"...  Along with filesystem and other modifications 
+discussed in the press, or observable net stack behavior when connecting 
+to their computers over the 'net.
 
---=-kcQGuXfZKaD3YyyzDt9S
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+So, emphasis on "little", I guess.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+	Jeff
 
-iEYEABECAAYFAkZUnfIACgkQI2bVKDsp8g3gRQCeL6d0m5U7e8nk01+iwFojZxP1
-H1kAoMKPHE85GebVg50HAdJa1th4vDRc
-=NVvB
------END PGP SIGNATURE-----
 
---=-kcQGuXfZKaD3YyyzDt9S--
