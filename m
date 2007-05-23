@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934346AbXEWN5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934093AbXEWN6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934346AbXEWN5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 09:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757562AbXEWN5G
+	id S934093AbXEWN6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 09:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbXEWN6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 09:57:06 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:60544
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757348AbXEWN5E (ORCPT
+	Wed, 23 May 2007 09:58:05 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60832 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756706AbXEWN6C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 09:57:04 -0400
-Date: Wed, 23 May 2007 15:59:11 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Simon Arlott <simon@fire.lp0.eu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fix unchecked mutex_lock_interruptible (was Re: use mutex instead of semaphore in RocketPort driver)
-Message-ID: <20070523135911.GC31790@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Satyam Sharma <satyam.sharma@gmail.com>,
-	Jiri Slaby <jirislaby@gmail.com>, Simon Arlott <simon@fire.lp0.eu>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <a781481a0705230555j6fcf46eav43cc95f6d1a7ae6f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a781481a0705230555j6fcf46eav43cc95f6d1a7ae6f@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 23 May 2007 09:58:02 -0400
+Date: Wed, 23 May 2007 15:02:29 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>, Robert de Rooy <robert.de.rooy@gmail.com>,
+       linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+       linux-pcmcia@lists.infradead.org
+Subject: Re: libata and legacy ide pcmcia failure
+Message-ID: <20070523150229.00a0c3c4@the-village.bc.nu>
+In-Reply-To: <46520B36.90409@garzik.org>
+References: <464A0321.3080201@gmail.com>
+	<464C1575.8070005@gmail.com>
+	<464CB7C9.2080807@gmail.com>
+	<46503192.1040300@gmail.com>
+	<4650B9E3.7070409@gmail.com>
+	<46518798.2020808@gmail.com>
+	<4651B66E.6030505@gmail.com>
+	<4651B834.3060702@gmail.com>
+	<4651C4A1.6000101@gmail.com>
+	<4651C74B.7020108@gmail.com>
+	<46520B36.90409@garzik.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Wed, May 23, 2007 at 06:25:49PM +0530 Satyam Sharma ha dit:
-
-> On 5/23/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> >Simon Arlott napsal(a):
-> >> On 22/05/07 21:06, Matthias Kaehlcke wrote:
-> >>> would the following resolve the problem?
-> >>>
-> >>> if(mutex_lock_interruptible(&info->write_mtx))         return
-> >>> -ERESTARTSYS
-> >>>
-> >>> thanks for your comments
+> >   http://thread.gmane.org/gmane.linux.kernel/530099
+> > 
+> > It seems we're losing interrupts from the CFA device.  Any ideas?
 > 
-> Hum. I remember suggesting the fix when this came few weeks back,
-> somehow the older version seems to have made it into Linus' tree.
+> Alan probably knows more, but ISTR some CFA PCMCIA devices that needed 
+> polling...
 
-i also remembered your suggestion but thought it was a similar case in
-another driver. i think it's my fault that the older version made it
-into the Linus tree cause i sent the patch in a new thread instead of
-responding to the initial post :(
- 
-> >> No. At least one user of tty_operations/tty_driver's write function
-> >> doesn't check the return value so it would never be retried, mutex_lock
-> >> should be used instead.
-> 
-> Replacing mutex_lock_interruptible() with a mutex_lock() could be a
-> change in behaviour visible to userspace. Best to continue to use
-> _interruptible. Returning EINTR would be safe choice because if
-> Simon's right that this isn't retried, we could end up breaking
-> userspace that isn't quite ready to see ERESTARTSYS coming out of
-> a write(2), but ...
-
-thanks for your fix!
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-       The yellow ships hung in the air just like bricks dont do
-                 (The Hitch-Hiker's Guide to the Galaxy)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Not that I know of. Not devices anyway - there are embedded boxes with no
+IRQ configuration for the CF slot but we've never supported those (indeed
+there are even people who bitbang ATA on GPIO pins...)
