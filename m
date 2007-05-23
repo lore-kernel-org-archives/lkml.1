@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbXEWGcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761892AbXEWGeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761539AbXEWGcP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 02:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbXEWGcA
+	id S1761892AbXEWGeK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 02:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbXEWGd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 02:32:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49728 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756285AbXEWGb7 (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 02:31:59 -0400
-Date: Wed, 23 May 2007 16:31:54 +1000
-From: David Chinner <dgc@sgi.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Message-ID: <20070523063154.GR85884050@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Wed, 23 May 2007 02:33:57 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40252 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756670AbXEWGd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 02:33:57 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4653DFF1.5070807@s5r6.in-berlin.de>
+Date: Wed, 23 May 2007 08:32:17 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Dan Dennedy <dan@dennedy.org>, Pieter Palmers <pieterp@joow.be>
+CC: Arnd Bergmann <arnd@arndb.de>, Petr Vandrovec <petr@vandrovec.name>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix/add raw1394 CONFIG_COMPAT code
+References: <20070507021447.GA22197@vana.vc.cvut.cz> <200705201703.37561.arnd@arndb.de> <46506912.9020904@s5r6.in-berlin.de> <200705222154.24787.dan@dennedy.org>
+In-Reply-To: <200705222154.24787.dan@dennedy.org>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Saw this when running strace -f on a script on 2.6.21 on ia64:
+Dan Dennedy wrote:
+> On Sunday 20 May 2007 08:28, Stefan Richter wrote:
+>> maybe we should change
+...
+>> struct raw1394_cycle_timer {
+[to consist of two u64 to get same alignment on all architectures]
+...
+>> before a libraw1394 with get-cycle-timer support is released.
+>> Shall I prepare according patches for raw1394 and libraw1394?
+> 
+> This seems like a good idea, and I have forwarded it to the ffado (formerly 
+> freebob) developers, specifically Pieter Palmers--the submitter of 
+> raw1394_read_cycle_timer--to get his feedback.
 
-BUG: sleeping function called from invalid context at kernel/fork.c:385
-in_atomic():1, irqs_disabled():0
-
-Call Trace:
- [<a000000100014700>] show_stack+0x80/0xa0
-                                sp=e00000306e6f7a00 bsp=e00000306e6f0ef8
- [<a000000100014750>] dump_stack+0x30/0x60
-                                sp=e00000306e6f7bd0 bsp=e00000306e6f0ee0
- [<a0000001000acaf0>] __might_sleep+0x1f0/0x260
-                                sp=e00000306e6f7bd0 bsp=e00000306e6f0eb8
- [<a0000001000bd2e0>] mmput+0x20/0x220
-                                sp=e00000306e6f7bd0 bsp=e00000306e6f0e90
- [<a0000001000321e0>] sys_ptrace+0x460/0x1600
-                                sp=e00000306e6f7bd0 bsp=e00000306e6f0d80
- [<a00000010000bc40>] ia64_ret_from_syscall+0x0/0x20
-                                sp=e00000306e6f7e30 bsp=e00000306e6f0d80
- [<a000000000010620>] __kernel_syscall_via_break+0x0/0x20
-                                sp=e00000306e6f8000 bsp=e00000306e6f0d80
-BUG: sleeping function called from invalid context at kernel/fork.c:385
-in_atomic():1, irqs_disabled():0
-
-Call Trace:
- [<a000000100014700>] show_stack+0x80/0xa0
-                                sp=e00000306e6f7a00 bsp=e00000306e6f0ef8
- [<a000000100014750>] dump_stack+0x30/0x60
-                                sp=e00000306e6f7bd0 bsp=e00000306e6f0ee0
- [<a0000001000acaf0>] __might_sleep+0x1f0/0x260
-                                sp=e00000306e6f7bd0 bsp=e00000306e6f0eb8
- [<a0000001000bd2e0>] mmput+0x20/0x220
-                                sp=e00000306e6f7bd0 bsp=e00000306e6f0e90
- [<a0000001000321e0>] sys_ptrace+0x460/0x1600
-                                sp=e00000306e6f7bd0 bsp=e00000306e6f0d80
- [<a00000010000bc40>] ia64_ret_from_syscall+0x0/0x20
-                                sp=e00000306e6f7e30 bsp=e00000306e6f0d80
- [<a000000000010620>] __kernel_syscall_via_break+0x0/0x20
-                                sp=e00000306e6f8000 bsp=e00000306e6f0d80
-
-I could reproduce it via 'strace -f sleep 1'
-
-Cheers,
-
-Dave.
+I'll post the patches tonight to see how it will look like.  Even though
+I already posted the kernel-only patch which adjusts
+raw1394_iso_packets32 per architecture, the 2x u64 variant may overall
+be nicer:  a) it eliminates the need for raw1394_cycle_timer32,  b) the
+get-cycle-timer ABI still has to be duplicated in Juju, and Juju so far
+did not require different struct types for 32bit compatibility ioctls.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Stefan Richter
+-=====-=-=== -=-= =-===
+http://arcgraph.de/sr/
