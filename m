@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763606AbXEWUAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764401AbXEWUDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763606AbXEWUAl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 16:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbXEWUAe
+	id S1764401AbXEWUDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 16:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbXEWUDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 16:00:34 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:60924 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755849AbXEWUAd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 16:00:33 -0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-To: mingo@elte.hu, tglx@linutronix.de
-Subject: [PATCH 2.6.21-rt7] PowerPC: kill cpu_khz reference
-Date: Wed, 23 May 2007 23:02:00 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705240002.00698.sshtylyov@ru.mvista.com>
+	Wed, 23 May 2007 16:03:10 -0400
+Received: from mx.laposte.net ([81.255.54.16]:30665 "EHLO mx.laposte.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757015AbXEWUDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 16:03:09 -0400
+Subject: Re: [patch] CFS scheduler, -v14
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070523195701.GC20374@elte.hu>
+References: <20070523120616.GA23407@elte.hu>
+	 <loom.20070523T213730-656@post.gmane.org>  <20070523195701.GC20374@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-kcQGuXfZKaD3YyyzDt9S"
+Organization: Adresse perso
+Date: Wed, 23 May 2007 22:02:59 +0200
+Message-Id: <1179950579.3985.9.camel@rousalka.dyndns.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.2 (2.11.2-1.fc8) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove forgotten reference to 'cpu_khz' which have been removed for PowerPC in
-2.6.21-rt7...
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+--=-kcQGuXfZKaD3YyyzDt9S
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
----
-The irony here is that it was me who sent a patch to add that line. :-)
+Le mercredi 23 mai 2007 =C3=A0 21:57 +0200, Ingo Molnar a =C3=A9crit :
+> * Nicolas Mailhot <nicolas.mailhot@laposte.net> wrote:
+>=20
+> > Ingo Molnar <mingo <at> elte.hu> writes:
+> >=20
+> > Hi Ingo
+> >=20
+> > > i'm pleased to announce release -v14 of the CFS scheduler patchset.
+> > >=20
+> > > The CFS patch against v2.6.22-rc2, v2.6.21.1 or v2.6.20.10 can be=20
+> > > downloaded from the usual place:
+> > >=20
+> > >       http://people.redhat.com/mingo/cfs-scheduler/
+> >=20
+> > I get a forbidden access on=20
+> > http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-v2.6.22-rc2-mm1-=
+v14.patch
+>=20
+> oops - fixed it.
 
-Index: linux-2.6/arch/powerpc/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/time.c
-+++ linux-2.6/arch/powerpc/kernel/time.c
-@@ -816,7 +816,6 @@ void __init time_init(void)
- 	tb_ticks_per_jiffy = ppc_tb_freq / HZ;
- 	tb_ticks_per_sec = ppc_tb_freq;
- 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
--	cpu_khz  = ppc_tb_freq / 1000;
- 	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
- 	calc_cputime_factors();
- 
+Works now, thanks!
 
+--=20
+Nicolas Mailhot
+
+--=-kcQGuXfZKaD3YyyzDt9S
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iEYEABECAAYFAkZUnfIACgkQI2bVKDsp8g3gRQCeL6d0m5U7e8nk01+iwFojZxP1
+H1kAoMKPHE85GebVg50HAdJa1th4vDRc
+=NVvB
+-----END PGP SIGNATURE-----
+
+--=-kcQGuXfZKaD3YyyzDt9S--
