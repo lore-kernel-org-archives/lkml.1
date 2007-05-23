@@ -1,101 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935374AbXEWRBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934720AbXEWREQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935374AbXEWRBm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 13:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758169AbXEWRBb
+	id S934720AbXEWREQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 13:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757736AbXEWRD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 13:01:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56540 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758115AbXEWRBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 13:01:30 -0400
-Message-ID: <46547345.8000808@redhat.com>
-Date: Wed, 23 May 2007 13:00:53 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [BUG] local_softirq_pending storm
-References: <200705091942.22920.kernel@prachanda.hub> <200705191525.28400.kernel@prachanda.hub> <1179601868.12981.127.camel@chaos> <200705200253.44992.kernel@prachanda.hub> <1179697388.6570.26.camel@chaos> <6bffcb0e0705221203s1ba21ed3j641e91036859db7d@mail.gmail.com> <20070522201046.GA6113@elte.hu>
-In-Reply-To: <20070522201046.GA6113@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 23 May 2007 13:03:58 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:37681 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757101AbXEWRD5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 13:03:57 -0400
+Subject: Re: [patch 5/7] genhd: send async notification on media change
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, htejun@gmail.com
+In-Reply-To: <20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
+References: <20070510072247.063476979@intel.com>
+	 <20070509163835.56ad28e0.kristen.c.accardi@intel.com>
+	 <20070522141211.fe00333f.akpm@linux-foundation.org>
+	 <20070523093119.e3a58fcc.kristen.c.accardi@intel.com>
+Content-Type: text/plain
+Date: Wed, 23 May 2007 12:03:55 -0500
+Message-Id: <1179939835.5569.3.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+On Wed, 2007-05-23 at 09:31 -0700, Kristen Carlson Accardi wrote:
+> On Tue, 22 May 2007 14:12:11 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
->> Bad news - I hit a bug in 2.6.22-rc2-hrt3. Bug symptoms:
->> - X hangs (keyboard, mouse, sound etc.)
->> - only Magic SysRq works
+> > On Wed, 9 May 2007 16:38:35 -0700
+> > Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
+> > 
+> > > Send an uevent to user space to indicate that a media change event has occurred.
+> > > 
+> > > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > > 
+> > > Index: 2.6-git/block/genhd.c
+> > > ===================================================================
+> > > --- 2.6-git.orig/block/genhd.c
+> > > +++ 2.6-git/block/genhd.c
+> > > @@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
+> > >  	.show	= diskstats_show
+> > >  };
+> > >  
+> > > +static void media_change_notify_thread(struct work_struct *work)
+> > > +{
+> > > +	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
+> > > +	char event[] = "MEDIA_CHANGE=1";
+> > > +	char *envp[] = { event, NULL };
+> > > +
+> > > +	/*
+> > > +	 * set enviroment vars to indicate which event this is for
+> > > +	 * so that user space will know to go check the media status.
+> > > +	 */
+> > > +	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
+> > > +	put_device(gd->driverfs_dev);
+> > > +}
+> > > +
+> > > +void genhd_media_change_notify(struct gendisk *disk)
+> > > +{
+> > > +	get_device(disk->driverfs_dev);
+> > > +	schedule_work(&disk->async_notify);
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(genhd_media_change_notify);
+> > > +
+> > >  struct gendisk *alloc_disk(int minors)
+> > >  {
+> > >  	return alloc_disk_node(minors, -1);
+> > > @@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
+> > >  		kobj_set_kset_s(disk,block_subsys);
+> > >  		kobject_init(&disk->kobj);
+> > >  		rand_initialize_disk(disk);
+> > > +		INIT_WORK(&disk->async_notify,
+> > > +			media_change_notify_thread);
+> > >  	}
+> > >  	return disk;
+> > 
+> > Why does this do a schedule_work() rather than calling kobject_uevent_env()
+> > directly?
+> > 
 > 
-> please try the patch below! I think we have nailed this bug.
-> 
-> 	Ingo
-> 
-> Index: linux/kernel/sched.c
-> ===================================================================
-> --- linux.orig/kernel/sched.c
-> +++ linux/kernel/sched.c
-> @@ -4212,9 +4212,7 @@ int __sched cond_resched_softirq(void)
->  	BUG_ON(!in_softirq());
->  
->  	if (need_resched() && system_state == SYSTEM_RUNNING) {
-> -		raw_local_irq_disable();
-> -		_local_bh_enable();
-> -		raw_local_irq_enable();
-> +		local_bh_enable();
->  		__cond_resched();
->  		local_bh_disable();
->  		return 1;
+> Because it is called at Interrupt time.
 
-We may have a problem with that:
+It better not be ... there's two GFP_KERNEL allocations just above this
+line in the file.
 
- BUG: warning at kernel/softirq.c:138/local_bh_enable() (Not tainted)
-  [<c042b2ef>] local_bh_enable+0x45/0x92
-  [<c06036b7>] cond_resched_softirq+0x2c/0x42
-  [<c059d5d0>] release_sock+0x54/0xa3
-  [<c05c9428>] tcp_sendmsg+0x91b/0xa0c
-  [<c05e1bb9>] inet_sendmsg+0x3b/0x45
-  [<c059af34>] sock_aio_write+0xf9/0x105
-  [<c0476035>] do_sync_write+0xc7/0x10a
-  [<c0437265>] autoremove_wake_function+0x0/0x35
-  [<c047688e>] vfs_write+0xbc/0x154
-  [<c0476e8c>] sys_write+0x41/0x67
-  [<c0404f70>] syscall_call+0x7/0xb
-
-That's:
-        WARN_ON_ONCE(irqs_disabled());
+James
 
 
-And another, tainted but probably valid:
-
-BUG: warning at kernel/softirq.c:138/local_bh_enable() (Tainted: P      )
- [<c042b2ef>] local_bh_enable+0x45/0x92
- [<c06036b7>] cond_resched_softirq+0x2c/0x42
- [<c059d5d0>] release_sock+0x54/0xa3
- [<c05c9428>] tcp_sendmsg+0x91b/0xa0c
- [<c04e8b30>] copy_to_user+0x3c/0x50
- [<c05a1b71>] memcpy_toiovec+0x27/0x4a
- [<c059d58f>] release_sock+0x13/0xa3
- [<c0604ad5>] _spin_unlock_bh+0x5/0xd
- [<c05e1bb9>] inet_sendmsg+0x3b/0x45
- [<c059af34>] sock_aio_write+0xf9/0x105
- [<c0475f31>] do_sync_readv_writev+0xc1/0xfe
- [<c0437265>] autoremove_wake_function+0x0/0x35
- [<c04e88e0>] copy_from_user+0x3a/0x66
- [<c0475dec>] rw_copy_check_uvector+0x5c/0xb0
- [<c047667a>] do_readv_writev+0xbc/0x187
- [<c059ae3b>] sock_aio_write+0x0/0x105
- [<c0476782>] vfs_writev+0x3d/0x48
- [<c0476bee>] sys_writev+0x41/0x95
- [<c0404f70>] syscall_call+0x7/0xb
-
-
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=240982
