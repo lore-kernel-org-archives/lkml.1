@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935692AbXEWRPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763986AbXEWRPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935692AbXEWRPO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 13:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759019AbXEWRPB
+	id S1763986AbXEWRPh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 13:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935612AbXEWRPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 13:15:01 -0400
-Received: from mail.screens.ru ([213.234.233.54]:56432 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758459AbXEWRPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 13:15:00 -0400
-Date: Wed, 23 May 2007 20:21:25 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc2-mm1
-Message-ID: <20070523162125.GA321@tv-sign.ru>
-References: <20070523085424.2aa27c57.akpm@linux-foundation.org> <Pine.LNX.4.44L0.0705231249570.3673-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0705231249570.3673-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.11
+	Wed, 23 May 2007 13:15:15 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53310 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935476AbXEWRPM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 13:15:12 -0400
+Date: Wed, 23 May 2007 10:15:10 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: Define CONFIG_BOUNCE to avoid useless inclusion of bounce buffer
+ logic.
+In-Reply-To: <20070523140702.GA16972@flint.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0705231011000.19822@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705212100420.24947@schroedinger.engr.sgi.com>
+ <20070522133906.ae9c362a.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0705212225590.25388@schroedinger.engr.sgi.com>
+ <20070523140702.GA16972@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/23, Alan Stern wrote:
->
-> Okay, it's clear that the two threads are in deadlock.  It's not clear 
-> how the deadlock arose to begin with -- apparently there was a remote 
-> wakeup request for a root hub at the same time as a device below that 
-> root hub was disconnected, which doesn't make much sense.
+On Wed, 23 May 2007, Russell King wrote:
 
-Please note that this flush_workqueue() was not safe anyway. We are freezing
-tasks, and ksuspend_usb_wq is freezeable. So, it could be frozen before
-"khubd" task, and we have another deadlock.
+> > That is wrong. ppc should have ZONE_NORMAL and no ZONE_DMA.
+> > Otherwise you cannot switch off ZONE_DMA and you cannot switch off 
+> > bounce. ZONE_DMA is a zone for exceptional allocs. If you do not have 
+> > those then you only have normal allocs -> ZONE_NORMAL.
+> 
+> That sounds very wrong to me.  Since about 1995 ARM has always placed
+> all DMA-able memory in the DMA zone, and none in the normal zone.
+> 
+> The reason for doing this is that normal allocations fall back to DMA
+> allocations when the normal zone becomes full/empty.  However, DMA
+> allocations can never be satisfied by allocations from the normal zone.
 
-> Anyway, this looks like a good place to use cancel_work_sync().  The
+Usually DMA is done via ZONE_NORMAL allocations. GFP_DMA allocs and 
+ZONE_DMA are for devices that cannot performa DMA to all of memory.
 
-Could you use cancel_rearming_delayed_work() ? (It should be renamed to
-cancel_delayed_work_sync()).
+There is no need to fall back if you do not have such devices. So no need 
+for ZONE_DMA.
 
-Oleg.
+> Moreover, special casing the "doesn't use __GFP_DMA allocations on this
+> machine so places all memory in ZONE_NORMAL" is just too complicated -
+> I've no idea which of the 100+ ARM machine support currently merged
+> into the Linux kernel uses __GFP_DMA allocations and which don't.
+
+GFP_DMA allocations are an exception and that exception can be removed 
+from the core VM by not defining ZONE_DMA. You cannot switch off the 
+NORMAL zone.
+
+> The DMA zone is for memory allocations _for_ _DMA_.  If all your memory
+> is DMA-able then it belongs in the DMA zone.
+
+Nope. The DMA zone is for crappy DMA devices that can only use a portion 
+of memory.
 
