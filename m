@@ -1,37 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbXEWM0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764528AbXEWM3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932192AbXEWM0x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 08:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760160AbXEWM0q
+	id S1764528AbXEWM3W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 08:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXEWM3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 08:26:46 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:34204 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760123AbXEWM0p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 08:26:45 -0400
-Date: Wed, 23 May 2007 08:20:03 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Current utrace breaks UML
-Message-ID: <20070523122003.GB4365@c2.user-mode-linux.org>
-References: <20070522213831.GB10293@c2.user-mode-linux.org> <20070523064611.3BD151F8510@magilla.localdomain>
+	Wed, 23 May 2007 08:29:15 -0400
+Received: from rwcrmhc15.comcast.net ([216.148.227.155]:34273 "EHLO
+	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756559AbXEWM3O (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 08:29:14 -0400
+Subject: [PATCH 2.6.21-rt7] rtc_fix_missing_ENDIF
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: LKML <Linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: The Big Corporation
+Date: Wed, 23 May 2007 05:29:12 -0700
+Message-Id: <1179923352.25500.302.camel@sx.thebigcorporation.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070523064611.3BD151F8510@magilla.localdomain>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 22, 2007 at 11:46:11PM -0700, Roland McGrath wrote:
-> (It also works for free on other arch's if you want to #define the
-> constants there.)
 
-(Forgot to mention...) sweet
+A change between rt6 and rt7 dropped a #endif in rtc.c.
 
-		Jeff
+Compile fails on imbalanced pre-processor directives.
 
--- 
-Work email - jdike at linux dot intel dot com
+I think that this is correct for Sparc and MIPS, and it definitely
+eliminates complaints about PCI_IRQ_NONE definitions for x86.
+
+signed-off-by: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+
+
+Index: linux-2.6.21/drivers/char/rtc.c
+===================================================================
+--- linux-2.6.21.orig/drivers/char/rtc.c
++++ linux-2.6.21/drivers/char/rtc.c
+@@ -93,13 +93,14 @@
+ #include <asm/isa.h>
+ #endif
+ 
++static unsigned long rtc_port;
++static int rtc_irq = PCI_IRQ_NONE;
++#endif
++
+ #ifdef CONFIG_MIPS
+ # include <asm/time.h>
+ #endif
+ 
+-static unsigned long rtc_port;
+-static int rtc_irq = PCI_IRQ_NONE;
+-
+ #ifdef CONFIG_RTC_HISTOGRAM
+ 
+ static cycles_t last_interrupt_time;
+
