@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764190AbXEWSBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbXEWSDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764190AbXEWSBP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762088AbXEWSA5
+	id S1763549AbXEWSDP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbXEWSC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:00:57 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:17188 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758387AbXEWSAz (ORCPT
+	Wed, 23 May 2007 14:02:59 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:43835 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757698AbXEWSC6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:00:55 -0400
+	Wed, 23 May 2007 14:02:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lTC52agOT04xeDNcpuj6hRVdA0DK6xOqzk1paha7uGv0rbLwZ5ru4nYQ0RyFPDSY4NZ+/FZ4ChX073SFfuF8VlnvdzF2jPOXn5MEwb6LYnPgSC8UQq5x3USoubssgYmuLWj838UYOwF08GB1WIR/5Cg/HnGOZPHCX4iAQqEQzaM=
-Message-ID: <a781481a0705231100q333a589at6c025eb1292019cd@mail.gmail.com>
-Date: Wed, 23 May 2007 23:30:50 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Folkert van Heusden" <folkert@vanheusden.com>
-Subject: Re: signals logged / [RFC] log out-of-virtual-memory events
-Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
-       "Andrea Righi" <righiandr@users.sourceforge.net>,
-       "Andi Kleen" <ak@suse.de>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       "Eric Dumazet" <dada1@cosmosbay.com>, "Rik van Riel" <riel@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-In-Reply-To: <20070521124734.GB14802@vanheusden.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=bEbRhne5YkMy+zG9VYTLWx85Gofxf3mArZjzlSS+Xbnk1FMFwdD3PciT9Q9nPtoCSkPxD6+yJa20L22tS59BGI5zZdRafK9N5ZKGsIkFuK6734v5RfDKwS1G9k6f9egZuN6jcgunJEoutR7wH+C746aQ5gEz+lcifG0RrRQ24ic=
+Subject: [RFC 1/5] inode reservation v0.1
+From: coly <colyli@gmail.com>
+To: linux-ext4 <linux-ext4@vger.kernel.org>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Thu, 24 May 2007 02:03:24 +0800
+Message-Id: <1179943404.4179.52.camel@coly-t43.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <464C9D82.60105@redhat.com>
-	 <Pine.LNX.4.61.0705202235430.13923@yvahk01.tjqt.qr>
-	 <20070520205500.GJ22452@vanheusden.com>
-	 <200705202314.57758.ak@suse.de>
-	 <46517817.1080208@users.sourceforge.net>
-	 <20070521110406.GA14802@vanheusden.com>
-	 <Pine.LNX.4.61.0705211420100.4452@yvahk01.tjqt.qr>
-	 <20070521124734.GB14802@vanheusden.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/07, Folkert van Heusden <folkert@vanheusden.com> wrote:
-> > >What about the following enhancement: I check with sig_fatal if it would
-> > >kill the process and only then emit a message. So when an application
-> > >takes care itself of handling it nothing is printed.
-> > >+    /* emit some logging for unhandled signals
-> > >+     */
-> > >+    if (sig_fatal(t, sig))
-> > Not unhandled_signal()?
->
-> Can we already use that one in send_signal? As the signal needs to be
-> send first I think before we know if it was handled or not? sig_fatal
-> checks if the handler is set to default - which is it is not taken care
-> of.
->
-> > >+    {
-> > if (sig_fatal(t, sig)) {
-> > >+            printk(KERN_WARNING "Sig %d send to %d owned by %d.%d (%s)\n",
-> > s/send/sent/;
-> > >+            sig, t -> pid, t -> uid, t -> gid, t -> comm);
-> > t->pid, t->uid, t->gid, t->comm);
->
->
-> Description:
-> This patch adds code to the signal-sender making it log a message when
-> an unhandled fatal signal will be delivered.
+This patch is only experimental, just have a try whether the
+subdirectory inode reservation idea works. Now the answer is it works,
+and I am working on an improved version for this patch.
 
-Gargh ... why does this want to be in the *kernel*'s logs? In any case, can
-you please make this KERN_INFO (or lower) instead of KERN_WARNING.
+The basic idea of subdirecctory inode reservation is to avoid
+unnecessary redundant meta data writing and hard disk seeking. Detailed
+idea can be found here:http://lkml.org/lkml/2007/3/26/180
+
+This email has another 4 extra parts:
+1) ext4 kernel patch
+2) e2fsprogs patch
+3) current benchmark
+4) next step working
+
+The reason to release this unstable patch is:
+* I want others to know I am working on it.
+* The result of benchmark indecates that this work maybe is valuable.
+* Hope others can give me feedback at very basic phase of this patch.
+
+I should thank Adreas Dilger, who firstly introduces this idea to me.
+Also I should thank other friends in #linuxfs at irc.oftc.org, great
+helps to me.
+
+In the next several months, I will try best to write a usable patch :-)
+
+
+Coly
+
