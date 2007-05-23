@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbXEWV3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbXEWVbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbXEWV3b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 17:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbXEWV3I
+	id S1757779AbXEWVbI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 17:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbXEWVay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 17:29:08 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54255 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756042AbXEWV3G (ORCPT
+	Wed, 23 May 2007 17:30:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32881
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754072AbXEWVax (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 17:29:06 -0400
-Date: Wed, 23 May 2007 22:30:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>, akpm@osdl.org,
-       rmk@arm.linux.kernel.org, spyro@f2s.com, starvik@axis.com,
-       ysato@users.sourceforge.jp, "Luck, Tony" <tony.luck@intel.com>,
-       takata@linux-m32r.org, chris@zankel.net, uclinux-v850@lsi.nec.co.jp,
-       kyle@parisc-linux.org, linux-mips@linux-mips.org
-Subject: Re: [PATCH] m68k: Enable arbitary speed tty support
-Message-ID: <20070523223008.32f65e0a@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0705232233360.10610@anakin>
-References: <20070523174446.37abfa7a@the-village.bc.nu>
-	<Pine.LNX.4.64.0705232117260.10610@anakin>
-	<20070523205645.07b03581@the-village.bc.nu>
-	<Pine.LNX.4.64.0705232233360.10610@anakin>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 23 May 2007 17:30:53 -0400
+Date: Wed, 23 May 2007 14:30:56 -0700 (PDT)
+Message-Id: <20070523.143056.115914753.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: herbert@gondor.apana.org.au, kaber@trash.net, kernel@prachanda.info,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, netdev@vger.kernel.org
+Subject: Re: bad networking related lag in v2.6.22-rc2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070523114021.GA21880@elte.hu>
+References: <46541DC4.4090501@trash.net>
+	<20070523112559.GA24604@gondor.apana.org.au>
+	<20070523114021.GA21880@elte.hu>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why not `#define termios2 ktermios' (or vice versa) on platforms where
-> they are the same?
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 23 May 2007 13:40:21 +0200
 
-Because #define is a bit of a loose cannon when it comes to substitutions
-and I didn't want nasty suprises. Also because ktermios may change in
-future and I don't want to have to liase with 4 million port maintainers
-when it does. The whole point of ktermios was to isolate the kernel and
-user space views.
+> 
+> * Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> 
+> > [NET_SCHED]: Fix qdisc_restart return value when dequeue is empty
+> > 
+> > My previous patch that changed the return value of qdisc_restart 
+> > incorrectly made the case where dequeue returns empty continue 
+> > processing packets.
+> > 
+> > This patch is based on diagnosis and fix by Patrick McHardy.
+> > 
+> > Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> 
+> also:
+> 
+>   Reported-and-debugged-by: Anant Nitya <kernel@prachanda.info>
 
-Alan
+Applied, thanks everyone.
