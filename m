@@ -1,56 +1,1804 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934266AbXEWSIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762329AbXEWSJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934266AbXEWSIm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 14:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758853AbXEWSIa
+	id S1762329AbXEWSJX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 14:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758654AbXEWSJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 14:08:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:29828 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762006AbXEWSI1 (ORCPT
+	Wed, 23 May 2007 14:09:03 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42365 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758343AbXEWSI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 14:08:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=C5myasVFhhya/GHF59MaxAZropV1cUvBgYQahzEsMF+qJMV28MXFSgKSbAfOeUSqNxLt28g2w77DXPNJy3hjxNNZ4kaPNBtnnZ7t8aobeRydwUxbgi7ZWb81k1NNp0RzxfTB1dcRqOx0gz4MOCvjON9MLKSbckDzi1UjdfC3k6I=
-Subject: [RFC 5/5] inode reservation v0.1 (next step working)
-From: coly <colyli@gmail.com>
-To: linux-ext4 <linux-ext4@vger.kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 24 May 2007 02:08:52 +0800
-Message-Id: <1179943732.4179.56.camel@coly-t43.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 14:08:59 -0400
+Date: Wed, 23 May 2007 11:08:42 -0700
+From: Greg KH <greg@kroah.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [RFC PATCH] /sys/block -> /sys/class/block  (Fedora 3 & 4
+	testers wanted)
+Message-ID: <20070523180842.GA11999@kroah.com>
+References: <20070521235353.GA6242@kroah.com> <20070522102501.72f40828@gondolin.boeblingen.de.ibm.com> <20070522182812.79b53880@gondolin.boeblingen.de.ibm.com> <20070523003255.GA3675@kroah.com> <20070523073959.0f5cb104@gondolin.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070523073959.0f5cb104@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From the benchmark and the experimental inores patch on ext4, it can be
-found that inode reservation on ext4 is a good idea to be tried. 
+On Wed, May 23, 2007 at 07:39:59AM +0200, Cornelia Huck wrote:
+> On Tue, 22 May 2007 17:32:55 -0700,
+> Greg KH <greg@kroah.com> wrote:
+> 
+> > On Tue, May 22, 2007 at 06:28:12PM +0200, Cornelia Huck wrote:
+> > > On Tue, 22 May 2007 10:25:01 +0200,
+> > > Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+> > > 
+> > > > I tried this on one of our internal drivers, which is based on FC 3 (or
+> > > > 4, can look this up). With s390 defconfig, it is unable to open the
+> > > > root device /dev/dasda1 (which is unsurprising, considering udev (063)
+> > > > decided to create /dev/dasda(1) as a character node instead of a block
+> > > > node).
+> > > 
+> > > Just to be clear, it's fsck that complains:
+> > > 
+> > > Checking filesystems  
+> > > Checking all file systems.  
+> > > [/sbin/fsck.ext3 (1) -- /] fsck.ext3 -a /dev/dasda1   
+> > > fsck.ext3: No such device or address while trying to open /dev/dasda1   
+> > > Possibly non-existent or swap device?  
+> > > [FAILED]   
+> > > 
+> > > (so that is after udev has been started and obviously dasda1 could be
+> > > accessed)
+> > 
+> > But /dev/dasda1 isn't present?  Or why would fsck be complaining here?
+> 
+> See above. /dev/dasda1 exists, but strangely as a character device,
+> which makes fsck unhappy.
+> 
+> > 
+> > > > When I look at the system, /sys/block/ and /sys/class/block/ look sane
+> > > > at first glance (working on a 3270 console is usally PITA...)
+> > > > 
+> > > > Even more surprisingly, the system comes up fine (once I added ptmx to
+> > > > makedev.d/) with CONFIG_SYSFS_DEPRECATED not set. /sys/block/
+> > > > and /sys/class/block/ look just like expected. (Unfortunately, our
+> > > > lsdasd tool breaks with this...)
+> > > > 
+> > > > I'll see if I can find out more.
+> > > 
+> > > I currently have the inkling that
+> > > 
+> > > lrwxrwxrwx  1 root root    0 May 22 15:59 block:dasda1-> ../../../class/block/dasda1
+> > > 
+> > > in /sys/block/dasda/ is the culprit.
+> > 
+> > Why?
+> 
+> See the paragraph just below, but it's more like a hunch currently.
+> 
+> > 
+> > > In all other versions I've tried (without CONFIG_SYSFS_DEPRECATED, and
+> > > on an older kernel with and without CONFIG_SYSFS_DEPRECATED), it's
+> > > always dasda1.
+> > 
+> > That's just a back symlink, the real device should still be there.
+> 
+> It is, but somehow udev seems confused.
+> 
+> > 
+> > Oh, and yes, you will probably have to have CONFIG_SYSFS_DEPRECATED
+> > enabaled to have a chance for these to work on Fedora 4 or 3.
+> 
+> Hmpf. That's just the problem :)
+> 
+> - enable CONFIG_SYSFS_DEPRECATED: fails as described
+> - disable CONFIG_SYSFS_DEPRECATED: works
+> 
+> If one of the two was to fail, I'd rather expect it the other way
+> around...
 
-One of the original idea of inode reservation is NOT modifying on-disk
-format. Current magic inode can make it, but use a magic inodes list to
-link each reserved inode block together is not a good idea. Indeed, this
-is a performance killer.
+Ok, yeah, that is wierd.
 
-1, Therefor, group descriptor has to be modified to add a new member ---
-this new member records the lastest reserved inode in inode table of
-each block group.
+Kay found the problem (he's traveling right now) and here's his updated
+version of the patch which should work for everyone involved.
 
-2, Use rest room in magic inode (sizeof(ext4_inode) -
-sizeof(ext4_magic_inode)) to record other reserved inode blocks. This
-method can reduce number of magic inodes, which can minimize I/O for
-magic inodes.
+Please let me know if this causes any problems or not.
 
-3, Use magic inode cache. Most of the magic inode accessings are reading
-(not writing), therefore, caching can help to reduce most of the read
-I/O for magic inode.
+thanks,
 
-4, Modify mke2fs to support new on-disk layout for inode reservation.
+greg k-h
 
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Driver core: convert block from raw kobjects to core devices
 
-Coly
+This moves the block devices to /sys/class/block. It will create a
+flat list of all block devices, with the disks and partitions in one
+directory. For compatibility /sys/block is created and contains symlinks
+to the disks.
 
+  /sys/class/block
+  |-- sda -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda
+  |-- sda1 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda1
+  |-- sda10 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda10
+  |-- sda5 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda5
+  |-- sda6 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda6
+  |-- sda7 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda7
+  |-- sda8 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda8
+  |-- sda9 -> ../../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda/sda9
+  `-- sr0 -> ../../devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0
+
+  /sys/block/
+  |-- sda -> ../devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/block/sda
+  `-- sr0 -> ../devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0
+
+Signed-off-by: Kay Sievers <kay.sievers@novell.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ block/genhd.c              |  413 ++++++++++++++++++---------------------------
+ block/ll_rw_blk.c          |    4 
+ drivers/base/core.c        |   16 +
+ drivers/block/aoe/aoeblk.c |   51 ++---
+ drivers/block/nbd.c        |   15 -
+ drivers/ide/ide-probe.c    |    2 
+ drivers/md/dm.c            |    2 
+ drivers/md/md.c            |    8 
+ fs/block_dev.c             |    8 
+ fs/partitions/check.c      |  304 +++++++++++----------------------
+ include/linux/genhd.h      |   23 +-
+ init/do_mounts.c           |  108 -----------
+ 12 files changed, 359 insertions(+), 595 deletions(-)
+
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -17,8 +17,12 @@
+ #include <linux/buffer_head.h>
+ #include <linux/mutex.h>
+ 
+-struct kset block_subsys;
+-static DEFINE_MUTEX(block_subsys_lock);
++extern struct class block_class;
++extern struct device_type disk_type;
++extern struct device_type part_type;
++
++static DEFINE_MUTEX(block_class_lock);
++struct kobject block_depr;
+ 
+ /*
+  * Can be deleted altogether. Later.
+@@ -37,19 +41,17 @@ static inline int major_to_index(int maj
+ }
+ 
+ #ifdef CONFIG_PROC_FS
+-
+ void blkdev_show(struct seq_file *f, off_t offset)
+ {
+ 	struct blk_major_name *dp;
+ 
+ 	if (offset < BLKDEV_MAJOR_HASH_SIZE) {
+-		mutex_lock(&block_subsys_lock);
++		mutex_lock(&block_class_lock);
+ 		for (dp = major_names[offset]; dp; dp = dp->next)
+ 			seq_printf(f, "%3d %s\n", dp->major, dp->name);
+-		mutex_unlock(&block_subsys_lock);
++		mutex_unlock(&block_class_lock);
+ 	}
+ }
+-
+ #endif /* CONFIG_PROC_FS */
+ 
+ int register_blkdev(unsigned int major, const char *name)
+@@ -57,7 +59,7 @@ int register_blkdev(unsigned int major, 
+ 	struct blk_major_name **n, *p;
+ 	int index, ret = 0;
+ 
+-	mutex_lock(&block_subsys_lock);
++	mutex_lock(&block_class_lock);
+ 
+ 	/* temporary */
+ 	if (major == 0) {
+@@ -102,7 +104,7 @@ int register_blkdev(unsigned int major, 
+ 		kfree(p);
+ 	}
+ out:
+-	mutex_unlock(&block_subsys_lock);
++	mutex_unlock(&block_class_lock);
+ 	return ret;
+ }
+ 
+@@ -116,7 +118,7 @@ int unregister_blkdev(unsigned int major
+ 	int index = major_to_index(major);
+ 	int ret = 0;
+ 
+-	mutex_lock(&block_subsys_lock);
++	mutex_lock(&block_class_lock);
+ 	for (n = &major_names[index]; *n; n = &(*n)->next)
+ 		if ((*n)->major == major)
+ 			break;
+@@ -126,7 +128,7 @@ int unregister_blkdev(unsigned int major
+ 		p = *n;
+ 		*n = p->next;
+ 	}
+-	mutex_unlock(&block_subsys_lock);
++	mutex_unlock(&block_class_lock);
+ 	kfree(p);
+ 
+ 	return ret;
+@@ -141,29 +143,30 @@ static struct kobj_map *bdev_map;
+  * range must be nonzero
+  * The hash chain is sorted on range, so that subranges can override.
+  */
+-void blk_register_region(dev_t dev, unsigned long range, struct module *module,
++void blk_register_region(dev_t devt, unsigned long range, struct module *module,
+ 			 struct kobject *(*probe)(dev_t, int *, void *),
+ 			 int (*lock)(dev_t, void *), void *data)
+ {
+-	kobj_map(bdev_map, dev, range, module, probe, lock, data);
++	kobj_map(bdev_map, devt, range, module, probe, lock, data);
+ }
+ 
+ EXPORT_SYMBOL(blk_register_region);
+ 
+-void blk_unregister_region(dev_t dev, unsigned long range)
++void blk_unregister_region(dev_t devt, unsigned long range)
+ {
+-	kobj_unmap(bdev_map, dev, range);
++	kobj_unmap(bdev_map, devt, range);
+ }
+ 
+ EXPORT_SYMBOL(blk_unregister_region);
+ 
+-static struct kobject *exact_match(dev_t dev, int *part, void *data)
++static struct kobject *exact_match(dev_t devt, int *part, void *data)
+ {
+ 	struct gendisk *p = data;
+-	return &p->kobj;
++
++	return &p->dev.kobj;
+ }
+ 
+-static int exact_lock(dev_t dev, void *data)
++static int exact_lock(dev_t devt, void *data)
+ {
+ 	struct gendisk *p = data;
+ 
+@@ -198,8 +201,6 @@ void unlink_gendisk(struct gendisk *disk
+ 			      disk->minors);
+ }
+ 
+-#define to_disk(obj) container_of(obj,struct gendisk,kobj)
+-
+ /**
+  * get_gendisk - get partitioning information for a given device
+  * @dev: device to get partitioning information for
+@@ -207,10 +208,12 @@ void unlink_gendisk(struct gendisk *disk
+  * This function gets the structure containing partitioning
+  * information for the given device @dev.
+  */
+-struct gendisk *get_gendisk(dev_t dev, int *part)
++struct gendisk *get_gendisk(dev_t devt, int *part)
+ {
+-	struct kobject *kobj = kobj_lookup(bdev_map, dev, part);
+-	return  kobj ? to_disk(kobj) : NULL;
++	struct kobject *kobj = kobj_lookup(bdev_map, devt, part);
++	struct device *dev = kobj_to_dev(kobj);
++
++	return  kobj ? dev_to_disk(dev) : NULL;
+ }
+ 
+ /*
+@@ -220,13 +223,18 @@ struct gendisk *get_gendisk(dev_t dev, i
+  */
+ void __init printk_all_partitions(void)
+ {
+-	int n;
++	struct device *dev;
+ 	struct gendisk *sgp;
++	char buf[BDEVNAME_SIZE];
++	int n;
+ 
+-	mutex_lock(&block_subsys_lock);
++	mutex_lock(&block_class_lock);
+ 	/* For each block device... */
+-	list_for_each_entry(sgp, &block_subsys.list, kobj.entry) {
+-		char buf[BDEVNAME_SIZE];
++	list_for_each_entry(dev, &block_class.devices, node) {
++		if (dev->type != &disk_type)
++			continue;
++		sgp = dev_to_disk(dev);
++
+ 		/*
+ 		 * Don't show empty devices or things that have been surpressed
+ 		 */
+@@ -261,36 +269,44 @@ void __init printk_all_partitions(void)
+ 				disk_name(sgp, n + 1, buf));
+ 		} /* partition subloop */
+ 	} /* Block device loop */
+-
+-	mutex_unlock(&block_subsys_lock);
+-	return;
++	mutex_unlock(&block_class_lock);
+ }
+ 
+ #ifdef CONFIG_PROC_FS
+ /* iterator */
+ static void *part_start(struct seq_file *part, loff_t *pos)
+ {
+-	struct list_head *p;
+-	loff_t l = *pos;
++	loff_t k = *pos;
++	struct device *dev;
+ 
+-	mutex_lock(&block_subsys_lock);
+-	list_for_each(p, &block_subsys.list)
+-		if (!l--)
+-			return list_entry(p, struct gendisk, kobj.entry);
++	mutex_lock(&block_class_lock);
++	list_for_each_entry(dev, &block_class.devices, node) {
++		if (dev->type != &disk_type)
++			continue;
++		if (!k--)
++			return dev_to_disk(dev);
++	}
+ 	return NULL;
+ }
+ 
+ static void *part_next(struct seq_file *part, void *v, loff_t *pos)
+ {
+-	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
++	struct gendisk *gp = v;
++	struct device *dev;
++
+ 	++*pos;
+-	return p==&block_subsys.list ? NULL :
+-		list_entry(p, struct gendisk, kobj.entry);
++	list_for_each_entry(dev, &gp->dev.node, node) {
++		if (&dev->node == &block_class.devices)
++			return NULL;
++		if (dev->type == &disk_type)
++			return dev_to_disk(dev);
++	}
++	return NULL;
+ }
+ 
+ static void part_stop(struct seq_file *part, void *v)
+ {
+-	mutex_unlock(&block_subsys_lock);
++	mutex_unlock(&block_class_lock);
+ }
+ 
+ static int show_partition(struct seq_file *part, void *v)
+@@ -299,7 +315,7 @@ static int show_partition(struct seq_fil
+ 	int n;
+ 	char buf[BDEVNAME_SIZE];
+ 
+-	if (&sgp->kobj.entry == block_subsys.list.next)
++	if (&sgp->dev.node == block_class.devices.next)
+ 		seq_puts(part, "major minor  #blocks  name\n\n");
+ 
+ 	/* Don't show non-partitionable removeable devices or empty devices */
+@@ -339,97 +355,63 @@ struct seq_operations partitions_op = {
+ 
+ extern int blk_dev_init(void);
+ 
+-static struct kobject *base_probe(dev_t dev, int *part, void *data)
++static struct kobject *base_probe(dev_t devt, int *part, void *data)
+ {
+-	if (request_module("block-major-%d-%d", MAJOR(dev), MINOR(dev)) > 0)
++	if (request_module("block-major-%d-%d", MAJOR(devt), MINOR(devt)) > 0)
+ 		/* Make old-style 2.4 aliases work */
+-		request_module("block-major-%d", MAJOR(dev));
++		request_module("block-major-%d", MAJOR(devt));
+ 	return NULL;
+ }
+ 
+ static int __init genhd_device_init(void)
+ {
+-	int err;
+-
+-	bdev_map = kobj_map_init(base_probe, &block_subsys_lock);
++	class_register(&block_class);
++	bdev_map = kobj_map_init(base_probe, &block_class_lock);
+ 	blk_dev_init();
+-	err = subsystem_register(&block_subsys);
+-	if (err < 0)
+-		printk(KERN_WARNING "%s: subsystem_register error: %d\n",
+-			__FUNCTION__, err);
+-	return err;
++
++	/* create top-level block dir */
++	kobject_init(&block_depr);
++	kobject_set_name(&block_depr, "block");
++	kobject_add(&block_depr);
++	return 0;
+ }
+ 
+ subsys_initcall(genhd_device_init);
+ 
+-
+-
+-/*
+- * kobject & sysfs bindings for block devices
+- */
+-static ssize_t disk_attr_show(struct kobject *kobj, struct attribute *attr,
+-			      char *page)
++static ssize_t disk_range_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
+ {
+-	struct gendisk *disk = to_disk(kobj);
+-	struct disk_attribute *disk_attr =
+-		container_of(attr,struct disk_attribute,attr);
+-	ssize_t ret = -EIO;
++	struct gendisk *disk = dev_to_disk(dev);
+ 
+-	if (disk_attr->show)
+-		ret = disk_attr->show(disk,page);
+-	return ret;
++	return sprintf(buf, "%d\n", disk->minors);
+ }
+ 
+-static ssize_t disk_attr_store(struct kobject * kobj, struct attribute * attr,
+-			       const char *page, size_t count)
++static ssize_t disk_removable_show(struct device *dev,
++				   struct device_attribute *attr, char *buf)
+ {
+-	struct gendisk *disk = to_disk(kobj);
+-	struct disk_attribute *disk_attr =
+-		container_of(attr,struct disk_attribute,attr);
+-	ssize_t ret = 0;
++	struct gendisk *disk = dev_to_disk(dev);
+ 
+-	if (disk_attr->store)
+-		ret = disk_attr->store(disk, page, count);
+-	return ret;
++	return sprintf(buf, "%d\n",
++		       (disk->flags & GENHD_FL_REMOVABLE ? 1 : 0));
+ }
+ 
+-static struct sysfs_ops disk_sysfs_ops = {
+-	.show	= &disk_attr_show,
+-	.store	= &disk_attr_store,
+-};
+-
+-static ssize_t disk_uevent_store(struct gendisk * disk,
+-				 const char *buf, size_t count)
+-{
+-	kobject_uevent(&disk->kobj, KOBJ_ADD);
+-	return count;
+-}
+-static ssize_t disk_dev_read(struct gendisk * disk, char *page)
+-{
+-	dev_t base = MKDEV(disk->major, disk->first_minor); 
+-	return print_dev_t(page, base);
+-}
+-static ssize_t disk_range_read(struct gendisk * disk, char *page)
++static ssize_t disk_size_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(page, "%d\n", disk->minors);
+-}
+-static ssize_t disk_removable_read(struct gendisk * disk, char *page)
+-{
+-	return sprintf(page, "%d\n",
+-		       (disk->flags & GENHD_FL_REMOVABLE ? 1 : 0));
++	struct gendisk *disk = dev_to_disk(dev);
+ 
+-}
+-static ssize_t disk_size_read(struct gendisk * disk, char *page)
+-{
+-	return sprintf(page, "%llu\n", (unsigned long long)get_capacity(disk));
++	return sprintf(buf, "%llu\n", (unsigned long long)get_capacity(disk));
+ }
+ 
+-static ssize_t disk_stats_read(struct gendisk * disk, char *page)
++static ssize_t disk_stat_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
+ {
++	struct gendisk *disk = dev_to_disk(dev);
++
+ 	preempt_disable();
+ 	disk_round_stats(disk);
+ 	preempt_enable();
+-	return sprintf(page,
++	return sprintf(buf,
+ 		"%8lu %8lu %8llu %8u "
+ 		"%8lu %8lu %8llu %8u "
+ 		"%8u %8u %8u"
+@@ -446,36 +428,21 @@ static ssize_t disk_stats_read(struct ge
+ 		jiffies_to_msecs(disk_stat_read(disk, io_ticks)),
+ 		jiffies_to_msecs(disk_stat_read(disk, time_in_queue)));
+ }
+-static struct disk_attribute disk_attr_uevent = {
+-	.attr = {.name = "uevent", .mode = S_IWUSR },
+-	.store	= disk_uevent_store
+-};
+-static struct disk_attribute disk_attr_dev = {
+-	.attr = {.name = "dev", .mode = S_IRUGO },
+-	.show	= disk_dev_read
+-};
+-static struct disk_attribute disk_attr_range = {
+-	.attr = {.name = "range", .mode = S_IRUGO },
+-	.show	= disk_range_read
+-};
+-static struct disk_attribute disk_attr_removable = {
+-	.attr = {.name = "removable", .mode = S_IRUGO },
+-	.show	= disk_removable_read
+-};
+-static struct disk_attribute disk_attr_size = {
+-	.attr = {.name = "size", .mode = S_IRUGO },
+-	.show	= disk_size_read
+-};
+-static struct disk_attribute disk_attr_stat = {
+-	.attr = {.name = "stat", .mode = S_IRUGO },
+-	.show	= disk_stats_read
+-};
+ 
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
++static ssize_t disk_fail_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	struct gendisk *disk = dev_to_disk(dev);
++
++	return sprintf(buf, "%d\n", disk->flags & GENHD_FL_FAIL ? 1 : 0);
++}
+ 
+-static ssize_t disk_fail_store(struct gendisk * disk,
++static ssize_t disk_fail_store(struct device *dev,
++			       struct device_attribute *attr,
+ 			       const char *buf, size_t count)
+ {
++	struct gendisk *disk = dev_to_disk(dev);
+ 	int i;
+ 
+ 	if (count > 0 && sscanf(buf, "%d", &i) > 0) {
+@@ -487,154 +454,99 @@ static ssize_t disk_fail_store(struct ge
+ 
+ 	return count;
+ }
+-static ssize_t disk_fail_read(struct gendisk * disk, char *page)
+-{
+-	return sprintf(page, "%d\n", disk->flags & GENHD_FL_FAIL ? 1 : 0);
+-}
+-static struct disk_attribute disk_attr_fail = {
+-	.attr = {.name = "make-it-fail", .mode = S_IRUGO | S_IWUSR },
+-	.store	= disk_fail_store,
+-	.show	= disk_fail_read
+-};
+ 
+ #endif
+ 
+-static struct attribute * default_attrs[] = {
+-	&disk_attr_uevent.attr,
+-	&disk_attr_dev.attr,
+-	&disk_attr_range.attr,
+-	&disk_attr_removable.attr,
+-	&disk_attr_size.attr,
+-	&disk_attr_stat.attr,
++static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
++static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
++static DEVICE_ATTR(size, S_IRUGO, disk_size_show, NULL);
++static DEVICE_ATTR(stat, S_IRUGO, disk_stat_show, NULL);
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+-	&disk_attr_fail.attr,
++static device_attribute dev_attr_fail =
++	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, disk_fail_show, disk_fail_store);
+ #endif
+-	NULL,
++
++static struct attribute *disk_attrs[] = {
++	&dev_attr_range.attr,
++	&dev_attr_removable.attr,
++	&dev_attr_size.attr,
++	&dev_attr_stat.attr,
++#ifdef CONFIG_FAIL_MAKE_REQUEST
++	&dev_attr_fail.attr,
++#endif
++	NULL
++};
++
++static struct attribute_group disk_attr_group = {
++	.attrs = disk_attrs,
++};
++
++static struct attribute_group *disk_attr_groups[] = {
++	&disk_attr_group,
++	NULL
+ };
+ 
+-static void disk_release(struct kobject * kobj)
++static void disk_release(struct device *dev)
+ {
+-	struct gendisk *disk = to_disk(kobj);
++	struct gendisk *disk = dev_to_disk(dev);
++
+ 	kfree(disk->random);
+ 	kfree(disk->part);
+ 	free_disk_stats(disk);
+ 	kfree(disk);
+ }
+ 
+-static struct kobj_type ktype_block = {
+-	.release	= disk_release,
+-	.sysfs_ops	= &disk_sysfs_ops,
+-	.default_attrs	= default_attrs,
++struct class block_class = {
++	.name		= "block",
+ };
+ 
+-extern struct kobj_type ktype_part;
+-
+-static int block_uevent_filter(struct kset *kset, struct kobject *kobj)
+-{
+-	struct kobj_type *ktype = get_ktype(kobj);
+-
+-	return ((ktype == &ktype_block) || (ktype == &ktype_part));
+-}
+-
+-static int block_uevent(struct kset *kset, struct kobject *kobj, char **envp,
+-			 int num_envp, char *buffer, int buffer_size)
+-{
+-	struct kobj_type *ktype = get_ktype(kobj);
+-	struct device *physdev;
+-	struct gendisk *disk;
+-	struct hd_struct *part;
+-	int length = 0;
+-	int i = 0;
+-
+-	if (ktype == &ktype_block) {
+-		disk = container_of(kobj, struct gendisk, kobj);
+-		add_uevent_var(envp, num_envp, &i, buffer, buffer_size,
+-			       &length, "MINOR=%u", disk->first_minor);
+-	} else if (ktype == &ktype_part) {
+-		disk = container_of(kobj->parent, struct gendisk, kobj);
+-		part = container_of(kobj, struct hd_struct, kobj);
+-		add_uevent_var(envp, num_envp, &i, buffer, buffer_size,
+-			       &length, "MINOR=%u",
+-			       disk->first_minor + part->partno);
+-	} else
+-		return 0;
+-
+-	add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &length,
+-		       "MAJOR=%u", disk->major);
+-
+-	/* add physical device, backing this device  */
+-	physdev = disk->driverfs_dev;
+-	if (physdev) {
+-		char *path = kobject_get_path(&physdev->kobj, GFP_KERNEL);
+-
+-		add_uevent_var(envp, num_envp, &i, buffer, buffer_size,
+-			       &length, "PHYSDEVPATH=%s", path);
+-		kfree(path);
+-
+-		if (physdev->bus)
+-			add_uevent_var(envp, num_envp, &i,
+-				       buffer, buffer_size, &length,
+-				       "PHYSDEVBUS=%s",
+-				       physdev->bus->name);
+-
+-		if (physdev->driver)
+-			add_uevent_var(envp, num_envp, &i,
+-				       buffer, buffer_size, &length,
+-				       "PHYSDEVDRIVER=%s",
+-				       physdev->driver->name);
+-	}
+-
+-	/* terminate, set to next free slot, shrink available space */
+-	envp[i] = NULL;
+-	envp = &envp[i];
+-	num_envp -= i;
+-	buffer = &buffer[length];
+-	buffer_size -= length;
+-
+-	return 0;
+-}
+-
+-static struct kset_uevent_ops block_uevent_ops = {
+-	.filter		= block_uevent_filter,
+-	.uevent		= block_uevent,
++struct device_type disk_type = {
++	.name		= "disk",
++	.groups		= disk_attr_groups,
++	.release	= disk_release,
+ };
+ 
+-decl_subsys(block, &ktype_block, &block_uevent_ops);
+-
+ /*
+  * aggregate disk stat collector.  Uses the same stats that the sysfs
+  * entries do, above, but makes them available through one seq_file.
+- * Watching a few disks may be efficient through sysfs, but watching
+- * all of them will be more efficient through this interface.
+  *
+  * The output looks suspiciously like /proc/partitions with a bunch of
+  * extra fields.
+  */
+ 
+-/* iterator */
+ static void *diskstats_start(struct seq_file *part, loff_t *pos)
+ {
+ 	loff_t k = *pos;
+-	struct list_head *p;
++	struct device *dev;
+ 
+-	mutex_lock(&block_subsys_lock);
+-	list_for_each(p, &block_subsys.list)
++	mutex_lock(&block_class_lock);
++	list_for_each_entry(dev, &block_class.devices, node) {
++		if (dev->type != &disk_type)
++			continue;
+ 		if (!k--)
+-			return list_entry(p, struct gendisk, kobj.entry);
++			return dev_to_disk(dev);
++	}
+ 	return NULL;
+ }
+ 
+ static void *diskstats_next(struct seq_file *part, void *v, loff_t *pos)
+ {
+-	struct list_head *p = ((struct gendisk *)v)->kobj.entry.next;
++	struct gendisk *gp = v;
++	struct device *dev;
++
+ 	++*pos;
+-	return p==&block_subsys.list ? NULL :
+-		list_entry(p, struct gendisk, kobj.entry);
++	list_for_each_entry(dev, &gp->dev.node, node) {
++		if (&dev->node == &block_class.devices)
++			return NULL;
++		if (dev->type == &disk_type)
++			return dev_to_disk(dev);
++	}
++	return NULL;
+ }
+ 
+ static void diskstats_stop(struct seq_file *part, void *v)
+ {
+-	mutex_unlock(&block_subsys_lock);
++	mutex_unlock(&block_class_lock);
+ }
+ 
+ static int diskstats_show(struct seq_file *s, void *v)
+@@ -644,7 +556,7 @@ static int diskstats_show(struct seq_fil
+ 	int n = 0;
+ 
+ 	/*
+-	if (&sgp->kobj.entry == block_subsys.kset.list.next)
++	if (&gp->dev.kobj.entry == block_class.devices.next)
+ 		seq_puts(s,	"major minor name"
+ 				"     rio rmerge rsect ruse wio wmerge "
+ 				"wsect wuse running use aveq"
+@@ -688,6 +600,25 @@ struct seq_operations diskstats_op = {
+ 	.show	= diskstats_show
+ };
+ 
++dev_t blk_lookup_devt(const char *name)
++{
++	struct device *dev;
++	dev_t devt = MKDEV(0, 0);
++
++	mutex_lock(&block_class_lock);
++	list_for_each_entry(dev, &block_class.devices, node) {
++		if (strcmp(dev->bus_id, name) == 0) {
++			devt = dev->devt;
++			break;
++		}
++	}
++	mutex_unlock(&block_class_lock);
++
++	return devt;
++}
++
++EXPORT_SYMBOL(blk_lookup_devt);
++
+ struct gendisk *alloc_disk(int minors)
+ {
+ 	return alloc_disk_node(minors, -1);
+@@ -714,9 +645,11 @@ struct gendisk *alloc_disk_node(int mino
+ 			memset(disk->part, 0, size);
+ 		}
+ 		disk->minors = minors;
+-		kobj_set_kset_s(disk,block_subsys);
+-		kobject_init(&disk->kobj);
+ 		rand_initialize_disk(disk);
++
++		device_initialize(&disk->dev);
++		disk->dev.class = &block_class;
++		disk->dev.type = &disk_type;
+ 	}
+ 	return disk;
+ }
+@@ -734,7 +667,7 @@ struct kobject *get_disk(struct gendisk 
+ 	owner = disk->fops->owner;
+ 	if (owner && !try_module_get(owner))
+ 		return NULL;
+-	kobj = kobject_get(&disk->kobj);
++	kobj = kobject_get(&disk->dev.kobj);
+ 	if (kobj == NULL) {
+ 		module_put(owner);
+ 		return NULL;
+@@ -748,7 +681,7 @@ EXPORT_SYMBOL(get_disk);
+ void put_disk(struct gendisk *disk)
+ {
+ 	if (disk)
+-		kobject_put(&disk->kobj);
++		kobject_put(&disk->dev.kobj);
+ }
+ 
+ EXPORT_SYMBOL(put_disk);
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -4076,7 +4076,7 @@ int blk_register_queue(struct gendisk *d
+ 	if (!q || !q->request_fn)
+ 		return -ENXIO;
+ 
+-	q->kobj.parent = kobject_get(&disk->kobj);
++	q->kobj.parent = kobject_get(&disk->dev.kobj);
+ 
+ 	ret = kobject_add(&q->kobj);
+ 	if (ret < 0)
+@@ -4103,6 +4103,6 @@ void blk_unregister_queue(struct gendisk
+ 
+ 		kobject_uevent(&q->kobj, KOBJ_REMOVE);
+ 		kobject_del(&q->kobj);
+-		kobject_put(&disk->kobj);
++		kobject_put(&disk->dev.kobj);
+ 	}
+ }
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -567,12 +567,20 @@ void device_initialize(struct device *de
+ }
+ 
+ #ifdef CONFIG_SYSFS_DEPRECATED
++extern struct kobject block_depr;
++extern struct device_type disk_type;
++extern struct device_type part_type;
++
+ static struct kobject * get_device_parent(struct device *dev,
+ 					  struct device *parent)
+ {
+ 	/* Set the parent to the class, not the parent device */
+ 	/* this keeps sysfs from having a symlink to make old udevs happy */
+-	if (dev->class)
++	if (dev->type == &part_type)
++		return &dev->parent->kobj;
++	else if (dev->type == &disk_type)
++		return &block_depr;
++	else if (dev->class)
+ 		return &dev->class->subsys.kobj;
+ 	else if (parent)
+ 		return &parent->kobj;
+@@ -705,7 +713,7 @@ int device_add(struct device *dev)
+ 		if (dev->kobj.parent != &dev->class->subsys.kobj)
+ 			sysfs_create_link(&dev->class->subsys.kobj,
+ 					  &dev->kobj, dev->bus_id);
+-		if (parent) {
++		if (parent && parent->bus) {
+ 			sysfs_create_link(&dev->kobj, &dev->parent->kobj,
+ 							"device");
+ #ifdef CONFIG_SYSFS_DEPRECATED
+@@ -762,7 +770,7 @@ int device_add(struct device *dev)
+ 		if (dev->kobj.parent != &dev->class->subsys.kobj)
+ 			sysfs_remove_link(&dev->class->subsys.kobj,
+ 					  dev->bus_id);
+-		if (parent) {
++		if (parent && parent->bus) {
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 			char *class_name = make_class_name(dev->class->name,
+ 							   &dev->kobj);
+@@ -861,7 +869,7 @@ void device_del(struct device * dev)
+ 		if (dev->kobj.parent != &dev->class->subsys.kobj)
+ 			sysfs_remove_link(&dev->class->subsys.kobj,
+ 					  dev->bus_id);
+-		if (parent) {
++		if (parent && parent->bus) {
+ #ifdef CONFIG_SYSFS_DEPRECATED
+ 			char *class_name = make_class_name(dev->class->name,
+ 							   &dev->kobj);
+--- a/drivers/block/aoe/aoeblk.c
++++ b/drivers/block/aoe/aoeblk.c
+@@ -14,8 +14,10 @@
+ 
+ static struct kmem_cache *buf_pool_cache;
+ 
+-static ssize_t aoedisk_show_state(struct gendisk * disk, char *page)
++static ssize_t aoedisk_show_state(struct device *dev,
++				  struct device_attribute *attr, char *page)
+ {
++	struct gendisk *disk = dev_to_disk(dev);
+ 	struct aoedev *d = disk->private_data;
+ 
+ 	return snprintf(page, PAGE_SIZE,
+@@ -25,50 +27,47 @@ static ssize_t aoedisk_show_state(struct
+ 			(d->nopen && !(d->flags & DEVFL_UP)) ? ",closewait" : "");
+ 	/* I'd rather see nopen exported so we can ditch closewait */
+ }
+-static ssize_t aoedisk_show_mac(struct gendisk * disk, char *page)
++static ssize_t aoedisk_show_mac(struct device *dev,
++				struct device_attribute *attr, char *page)
+ {
++	struct gendisk *disk = dev_to_disk(dev);
+ 	struct aoedev *d = disk->private_data;
+ 
+ 	return snprintf(page, PAGE_SIZE, "%012llx\n",
+ 			(unsigned long long)mac_addr(d->addr));
+ }
+-static ssize_t aoedisk_show_netif(struct gendisk * disk, char *page)
++static ssize_t aoedisk_show_netif(struct device *dev,
++				  struct device_attribute *attr, char *page)
+ {
++	struct gendisk *disk = dev_to_disk(dev);
+ 	struct aoedev *d = disk->private_data;
+ 
+ 	return snprintf(page, PAGE_SIZE, "%s\n", d->ifp->name);
+ }
+ /* firmware version */
+-static ssize_t aoedisk_show_fwver(struct gendisk * disk, char *page)
++static ssize_t aoedisk_show_fwver(struct device *dev,
++				  struct device_attribute *attr, char *page)
+ {
++	struct gendisk *disk = dev_to_disk(dev);
+ 	struct aoedev *d = disk->private_data;
+ 
+ 	return snprintf(page, PAGE_SIZE, "0x%04x\n", (unsigned int) d->fw_ver);
+ }
+ 
+-static struct disk_attribute disk_attr_state = {
+-	.attr = {.name = "state", .mode = S_IRUGO },
+-	.show = aoedisk_show_state
+-};
+-static struct disk_attribute disk_attr_mac = {
+-	.attr = {.name = "mac", .mode = S_IRUGO },
+-	.show = aoedisk_show_mac
+-};
+-static struct disk_attribute disk_attr_netif = {
+-	.attr = {.name = "netif", .mode = S_IRUGO },
+-	.show = aoedisk_show_netif
+-};
+-static struct disk_attribute disk_attr_fwver = {
+-	.attr = {.name = "firmware-version", .mode = S_IRUGO },
+-	.show = aoedisk_show_fwver
++static DEVICE_ATTR(state, S_IRUGO, aoedisk_show_state, NULL);
++static DEVICE_ATTR(mac, S_IRUGO, aoedisk_show_mac, NULL);
++static DEVICE_ATTR(netif, S_IRUGO, aoedisk_show_netif, NULL);
++static struct device_attribute dev_attr_firmware_version = {
++	.attr = { .name = "firmware-version", .mode = S_IRUGO, .owner = THIS_MODULE },
++	.show = aoedisk_show_fwver,
+ };
+ 
+ static struct attribute *aoe_attrs[] = {
+-	&disk_attr_state.attr,
+-	&disk_attr_mac.attr,
+-	&disk_attr_netif.attr,
+-	&disk_attr_fwver.attr,
+-	NULL
++	&dev_attr_state.attr,
++	&dev_attr_mac.attr,
++	&dev_attr_netif.attr,
++	&dev_attr_firmware_version.attr,
++	NULL,
+ };
+ 
+ static const struct attribute_group attr_group = {
+@@ -78,12 +77,12 @@ static const struct attribute_group attr
+ static int
+ aoedisk_add_sysfs(struct aoedev *d)
+ {
+-	return sysfs_create_group(&d->gd->kobj, &attr_group);
++	return sysfs_create_group(&d->gd->dev.kobj, &attr_group);
+ }
+ void
+ aoedisk_rm_sysfs(struct aoedev *d)
+ {
+-	sysfs_remove_group(&d->gd->kobj, &attr_group);
++	sysfs_remove_group(&d->gd->dev.kobj, &attr_group);
+ }
+ 
+ static int
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -355,14 +355,17 @@ harderror:
+ 	return NULL;
+ }
+ 
+-static ssize_t pid_show(struct gendisk *disk, char *page)
++static ssize_t pid_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(page, "%ld\n",
++	struct gendisk *disk = dev_to_disk(dev);
++
++	return sprintf(buf, "%ld\n",
+ 		(long) ((struct nbd_device *)disk->private_data)->pid);
+ }
+ 
+-static struct disk_attribute pid_attr = {
+-	.attr = { .name = "pid", .mode = S_IRUGO },
++static struct device_attribute pid_attr = {
++	.attr = { .name = "pid", .mode = S_IRUGO, .owner = THIS_MODULE },
+ 	.show = pid_show,
+ };
+ 
+@@ -374,7 +377,7 @@ static int nbd_do_it(struct nbd_device *
+ 	BUG_ON(lo->magic != LO_MAGIC);
+ 
+ 	lo->pid = current->pid;
+-	ret = sysfs_create_file(&lo->disk->kobj, &pid_attr.attr);
++	ret = sysfs_create_file(&lo->disk->dev.kobj, &pid_attr.attr);
+ 	if (ret) {
+ 		printk(KERN_ERR "nbd: sysfs_create_file failed!");
+ 		return ret;
+@@ -383,7 +386,7 @@ static int nbd_do_it(struct nbd_device *
+ 	while ((req = nbd_read_stat(lo)) != NULL)
+ 		nbd_end_request(req);
+ 
+-	sysfs_remove_file(&lo->disk->kobj, &pid_attr.attr);
++	sysfs_remove_file(&lo->disk->dev.kobj, &pid_attr.attr);
+ 	return 0;
+ }
+ 
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1213,7 +1213,7 @@ static struct kobject *exact_match(dev_t
+ {
+ 	struct gendisk *p = data;
+ 	*part &= (1 << PARTN_BITS) - 1;
+-	return &p->kobj;
++	return &p->dev.kobj;
+ }
+ 
+ static int exact_lock(dev_t dev, void *data)
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -1492,7 +1492,7 @@ int dm_resume(struct mapped_device *md)
+ 
+ 	dm_table_unplug_all(map);
+ 
+-	kobject_uevent(&md->disk->kobj, KOBJ_CHANGE);
++	kobject_uevent(&md->disk->dev.kobj, KOBJ_CHANGE);
+ 
+ 	r = 0;
+ 
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -1400,9 +1400,9 @@ static int bind_rdev_to_array(mdk_rdev_t
+ 		goto fail;
+ 
+ 	if (rdev->bdev->bd_part)
+-		ko = &rdev->bdev->bd_part->kobj;
++		ko = &rdev->bdev->bd_part->dev.kobj;
+ 	else
+-		ko = &rdev->bdev->bd_disk->kobj;
++		ko = &rdev->bdev->bd_disk->dev.kobj;
+ 	if ((err = sysfs_create_link(&rdev->kobj, ko, "block"))) {
+ 		kobject_del(&rdev->kobj);
+ 		goto fail;
+@@ -3075,7 +3075,7 @@ static struct kobject *md_probe(dev_t de
+ 	add_disk(disk);
+ 	mddev->gendisk = disk;
+ 	mutex_unlock(&disks_mutex);
+-	mddev->kobj.parent = &disk->kobj;
++	mddev->kobj.parent = &disk->dev.kobj;
+ 	mddev->kobj.k_name = NULL;
+ 	snprintf(mddev->kobj.name, KOBJ_NAME_LEN, "%s", "md");
+ 	mddev->kobj.ktype = &md_ktype;
+@@ -3333,7 +3333,7 @@ static int do_md_run(mddev_t * mddev)
+ 
+ 	mddev->changed = 1;
+ 	md_new_event(mddev);
+-	kobject_uevent(&mddev->gendisk->kobj, KOBJ_CHANGE);
++	kobject_uevent(&mddev->gendisk->dev.kobj, KOBJ_CHANGE);
+ 	return 0;
+ }
+ 
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -728,9 +728,9 @@ EXPORT_SYMBOL(bd_release);
+ static struct kobject *bdev_get_kobj(struct block_device *bdev)
+ {
+ 	if (bdev->bd_contains != bdev)
+-		return kobject_get(&bdev->bd_part->kobj);
++		return kobject_get(&bdev->bd_part->dev.kobj);
+ 	else
+-		return kobject_get(&bdev->bd_disk->kobj);
++		return kobject_get(&bdev->bd_disk->dev.kobj);
+ }
+ 
+ static struct kobject *bdev_get_holder(struct block_device *bdev)
+@@ -1163,7 +1163,7 @@ static int do_open(struct block_device *
+ 				ret = -ENXIO;
+ 				goto out_first;
+ 			}
+-			kobject_get(&p->kobj);
++			kobject_get(&p->dev.kobj);
+ 			bdev->bd_part = p;
+ 			bd_set_size(bdev, (loff_t) p->nr_sects << 9);
+ 		}
+@@ -1286,7 +1286,7 @@ static int __blkdev_put(struct block_dev
+ 		module_put(owner);
+ 
+ 		if (bdev->bd_contains != bdev) {
+-			kobject_put(&bdev->bd_part->kobj);
++			kobject_put(&bdev->bd_part->dev.kobj);
+ 			bdev->bd_part = NULL;
+ 		}
+ 		bdev->bd_disk = NULL;
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -36,6 +36,9 @@
+ #include "karma.h"
+ #include "sysv68.h"
+ 
++extern struct kobject block_depr;
++extern struct class block_class;
++
+ #ifdef CONFIG_BLK_DEV_MD
+ extern void md_autodetect_dev(dev_t dev);
+ #endif
+@@ -195,96 +198,45 @@ check_partition(struct gendisk *hd, stru
+ 	return ERR_PTR(res);
+ }
+ 
+-/*
+- * sysfs bindings for partitions
+- */
+-
+-struct part_attribute {
+-	struct attribute attr;
+-	ssize_t (*show)(struct hd_struct *,char *);
+-	ssize_t (*store)(struct hd_struct *,const char *, size_t);
+-};
+-
+-static ssize_t 
+-part_attr_show(struct kobject * kobj, struct attribute * attr, char * page)
++static ssize_t part_start_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
+ {
+-	struct hd_struct * p = container_of(kobj,struct hd_struct,kobj);
+-	struct part_attribute * part_attr = container_of(attr,struct part_attribute,attr);
+-	ssize_t ret = 0;
+-	if (part_attr->show)
+-		ret = part_attr->show(p, page);
+-	return ret;
+-}
+-static ssize_t
+-part_attr_store(struct kobject * kobj, struct attribute * attr,
+-		const char *page, size_t count)
+-{
+-	struct hd_struct * p = container_of(kobj,struct hd_struct,kobj);
+-	struct part_attribute * part_attr = container_of(attr,struct part_attribute,attr);
+-	ssize_t ret = 0;
+-
+-	if (part_attr->store)
+-		ret = part_attr->store(p, page, count);
+-	return ret;
+-}
+-
+-static struct sysfs_ops part_sysfs_ops = {
+-	.show	=	part_attr_show,
+-	.store	=	part_attr_store,
+-};
++	struct hd_struct *p = dev_to_part(dev);
+ 
+-static ssize_t part_uevent_store(struct hd_struct * p,
+-				 const char *page, size_t count)
+-{
+-	kobject_uevent(&p->kobj, KOBJ_ADD);
+-	return count;
++	return sprintf(buf, "%llu\n",(unsigned long long)p->start_sect);
+ }
+-static ssize_t part_dev_read(struct hd_struct * p, char *page)
+-{
+-	struct gendisk *disk = container_of(p->kobj.parent,struct gendisk,kobj);
+-	dev_t dev = MKDEV(disk->major, disk->first_minor + p->partno); 
+-	return print_dev_t(page, dev);
+-}
+-static ssize_t part_start_read(struct hd_struct * p, char *page)
+-{
+-	return sprintf(page, "%llu\n",(unsigned long long)p->start_sect);
+-}
+-static ssize_t part_size_read(struct hd_struct * p, char *page)
++
++static ssize_t part_size_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(page, "%llu\n",(unsigned long long)p->nr_sects);
++	struct hd_struct *p = dev_to_part(dev);
++	return sprintf(buf, "%llu\n",(unsigned long long)p->nr_sects);
+ }
+-static ssize_t part_stat_read(struct hd_struct * p, char *page)
++
++static ssize_t part_stat_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(page, "%8u %8llu %8u %8llu\n",
++	struct hd_struct *p = dev_to_part(dev);
++
++	return sprintf(buf, "%8u %8llu %8u %8llu\n",
+ 		       p->ios[0], (unsigned long long)p->sectors[0],
+ 		       p->ios[1], (unsigned long long)p->sectors[1]);
+ }
+-static struct part_attribute part_attr_uevent = {
+-	.attr = {.name = "uevent", .mode = S_IWUSR },
+-	.store	= part_uevent_store
+-};
+-static struct part_attribute part_attr_dev = {
+-	.attr = {.name = "dev", .mode = S_IRUGO },
+-	.show	= part_dev_read
+-};
+-static struct part_attribute part_attr_start = {
+-	.attr = {.name = "start", .mode = S_IRUGO },
+-	.show	= part_start_read
+-};
+-static struct part_attribute part_attr_size = {
+-	.attr = {.name = "size", .mode = S_IRUGO },
+-	.show	= part_size_read
+-};
+-static struct part_attribute part_attr_stat = {
+-	.attr = {.name = "stat", .mode = S_IRUGO },
+-	.show	= part_stat_read
+-};
+ 
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
++static ssize_t part_fail_show(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	struct hd_struct *p = dev_to_part(dev);
++
++	return sprintf(buf, "%d\n", p->make_it_fail);
++}
+ 
+-static ssize_t part_fail_store(struct hd_struct * p,
++static ssize_t part_fail_store(struct device *dev,
++			       struct device_attribute *attr,
+ 			       const char *buf, size_t count)
+ {
++	struct hd_struct *p = dev_to_part(dev);
+ 	int i;
+ 
+ 	if (count > 0 && sscanf(buf, "%d", &i) > 0)
+@@ -292,49 +244,52 @@ static ssize_t part_fail_store(struct hd
+ 
+ 	return count;
+ }
+-static ssize_t part_fail_read(struct hd_struct * p, char *page)
+-{
+-	return sprintf(page, "%d\n", p->make_it_fail);
+-}
+-static struct part_attribute part_attr_fail = {
+-	.attr = {.name = "make-it-fail", .mode = S_IRUGO | S_IWUSR },
+-	.store	= part_fail_store,
+-	.show	= part_fail_read
+-};
++#endif
+ 
++static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
++static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
++static DEVICE_ATTR(stat, S_IRUGO, part_stat_show, NULL);
++#ifdef CONFIG_FAIL_MAKE_REQUEST
++static struct part_attribute dev_attr_fail =
++	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, part_fail_store, part_fail_read);
+ #endif
+ 
+-static struct attribute * default_attrs[] = {
+-	&part_attr_uevent.attr,
+-	&part_attr_dev.attr,
+-	&part_attr_start.attr,
+-	&part_attr_size.attr,
+-	&part_attr_stat.attr,
++static struct attribute *part_attrs[] = {
++	&dev_attr_start.attr,
++	&dev_attr_size.attr,
++	&dev_attr_stat.attr,
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+-	&part_attr_fail.attr,
++	&dev_attr_fail,
+ #endif
+ 	NULL,
+ };
+ 
+-extern struct kset block_subsys;
++static struct attribute_group part_attr_group = {
++	.attrs = part_attrs,
++};
++
++static struct attribute_group *part_attr_groups[] = {
++	&part_attr_group,
++	NULL
++};
+ 
+-static void part_release(struct kobject *kobj)
++static void part_release(struct device *dev)
+ {
+-	struct hd_struct * p = container_of(kobj,struct hd_struct,kobj);
++	struct hd_struct *p = dev_to_part(dev);
+ 	kfree(p);
+ }
+ 
+-struct kobj_type ktype_part = {
++struct device_type part_type = {
++	.name		= "partition",
++	.groups		= part_attr_groups,
+ 	.release	= part_release,
+-	.default_attrs	= default_attrs,
+-	.sysfs_ops	= &part_sysfs_ops,
+ };
+ 
+ static inline void partition_sysfs_add_subdir(struct hd_struct *p)
+ {
+ 	struct kobject *k;
+ 
+-	k = kobject_get(&p->kobj);
++	k = kobject_get(&p->dev.kobj);
+ 	p->holder_dir = kobject_add_dir(k, "holders");
+ 	kobject_put(k);
+ }
+@@ -343,7 +298,7 @@ static inline void disk_sysfs_add_subdir
+ {
+ 	struct kobject *k;
+ 
+-	k = kobject_get(&disk->kobj);
++	k = kobject_get(&disk->dev.kobj);
+ 	disk->holder_dir = kobject_add_dir(k, "holders");
+ 	disk->slave_dir = kobject_add_dir(k, "slaves");
+ 	kobject_put(k);
+@@ -352,6 +307,7 @@ static inline void disk_sysfs_add_subdir
+ void delete_partition(struct gendisk *disk, int part)
+ {
+ 	struct hd_struct *p = disk->part[part-1];
++
+ 	if (!p)
+ 		return;
+ 	if (!p->nr_sects)
+@@ -361,16 +317,15 @@ void delete_partition(struct gendisk *di
+ 	p->nr_sects = 0;
+ 	p->ios[0] = p->ios[1] = 0;
+ 	p->sectors[0] = p->sectors[1] = 0;
+-	sysfs_remove_link(&p->kobj, "subsystem");
+ 	kobject_unregister(p->holder_dir);
+-	kobject_uevent(&p->kobj, KOBJ_REMOVE);
+-	kobject_del(&p->kobj);
+-	kobject_put(&p->kobj);
++	device_del(&p->dev);
++	put_device(&p->dev);
+ }
+ 
+ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
+ {
+ 	struct hd_struct *p;
++	int err;
+ 
+ 	p = kmalloc(sizeof(*p), GFP_KERNEL);
+ 	if (!p)
+@@ -382,90 +337,48 @@ void add_partition(struct gendisk *disk,
+ 	p->partno = part;
+ 	p->policy = disk->policy;
+ 
+-	if (isdigit(disk->kobj.name[strlen(disk->kobj.name)-1]))
+-		snprintf(p->kobj.name,KOBJ_NAME_LEN,"%sp%d",disk->kobj.name,part);
++	if (isdigit(disk->dev.bus_id[strlen(disk->dev.bus_id)-1]))
++		snprintf(p->dev.bus_id, BUS_ID_SIZE,
++			 "%sp%d", disk->dev.bus_id, part);
+ 	else
+-		snprintf(p->kobj.name,KOBJ_NAME_LEN,"%s%d",disk->kobj.name,part);
+-	p->kobj.parent = &disk->kobj;
+-	p->kobj.ktype = &ktype_part;
+-	kobject_init(&p->kobj);
+-	kobject_add(&p->kobj);
+-	if (!disk->part_uevent_suppress)
+-		kobject_uevent(&p->kobj, KOBJ_ADD);
+-	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
++		snprintf(p->dev.bus_id, BUS_ID_SIZE,
++			 "%s%d", disk->dev.bus_id, part);
++
++	device_initialize(&p->dev);
++	p->dev.devt = MKDEV(disk->major, disk->first_minor + part);
++	p->dev.class = &block_class;
++	p->dev.type = &part_type;
++	p->dev.parent = &disk->dev;
++	disk->part[part-1] = p;
++
++	/* delay uevent until 'holders' subdir is created */
++	p->dev.uevent_suppress = 1;
++	device_add(&p->dev);
++	partition_sysfs_add_subdir(p);
++	p->dev.uevent_suppress = 0;
+ 	if (flags & ADDPART_FLAG_WHOLEDISK) {
+ 		static struct attribute addpartattr = {
+ 			.name = "whole_disk",
+ 			.mode = S_IRUSR | S_IRGRP | S_IROTH,
+ 		};
+ 
+-		sysfs_create_file(&p->kobj, &addpartattr);
++		err = sysfs_create_file(&p->dev.kobj, &addpartattr);
+ 	}
+-	partition_sysfs_add_subdir(p);
+-	disk->part[part-1] = p;
+-}
+-
+-static char *make_block_name(struct gendisk *disk)
+-{
+-	char *name;
+-	static char *block_str = "block:";
+-	int size;
+-	char *s;
+ 
+-	size = strlen(block_str) + strlen(disk->disk_name) + 1;
+-	name = kmalloc(size, GFP_KERNEL);
+-	if (!name)
+-		return NULL;
+-	strcpy(name, block_str);
+-	strcat(name, disk->disk_name);
+-	/* ewww... some of these buggers have / in name... */
+-	s = strchr(name, '/');
+-	if (s)
+-		*s = '!';
+-	return name;
++	/* suppress uevent if the disk supresses it */
++	if (!disk->dev.uevent_suppress)
++		kobject_uevent(&p->dev.kobj, KOBJ_ADD);
+ }
+ 
+ static int disk_sysfs_symlinks(struct gendisk *disk)
+ {
+-	struct device *target = get_device(disk->driverfs_dev);
+-	int err;
+-	char *disk_name = NULL;
++	int err = 0;
++	struct device *target = get_device(disk->dev.parent);
+ 
+-	if (target) {
+-		disk_name = make_block_name(disk);
+-		if (!disk_name) {
+-			err = -ENOMEM;
+-			goto err_out;
+-		}
+-
+-		err = sysfs_create_link(&disk->kobj, &target->kobj, "device");
+-		if (err)
+-			goto err_out_disk_name;
+-
+-		err = sysfs_create_link(&target->kobj, &disk->kobj, disk_name);
+-		if (err)
+-			goto err_out_dev_link;
+-	}
+-
+-	err = sysfs_create_link(&disk->kobj, &block_subsys.kobj,
+-				"subsystem");
+-	if (err)
+-		goto err_out_disk_name_lnk;
+-
+-	kfree(disk_name);
+-
+-	return 0;
+-
+-err_out_disk_name_lnk:
+-	if (target) {
+-		sysfs_remove_link(&target->kobj, disk_name);
+-err_out_dev_link:
+-		sysfs_remove_link(&disk->kobj, "device");
+-err_out_disk_name:
+-		kfree(disk_name);
+-err_out:
++	err = sysfs_create_link(&block_depr, &disk->dev.kobj,
++				disk->dev.kobj.name);
++	if (err && target)
+ 		put_device(target);
+-	}
+ 	return err;
+ }
+ 
+@@ -478,18 +391,27 @@ void register_disk(struct gendisk *disk)
+ 	struct hd_struct *p;
+ 	int err;
+ 
+-	strlcpy(disk->kobj.name,disk->disk_name,KOBJ_NAME_LEN);
+-	/* ewww... some of these buggers have / in name... */
+-	s = strchr(disk->kobj.name, '/');
++	disk->dev.parent = disk->driverfs_dev;
++	disk->dev.devt = MKDEV(disk->major, disk->first_minor);
++
++	strlcpy(disk->dev.bus_id, disk->disk_name, KOBJ_NAME_LEN);
++	/* ewww... some of these buggers have / in the name... */
++	s = strchr(disk->dev.bus_id, '/');
+ 	if (s)
+ 		*s = '!';
+-	if ((err = kobject_add(&disk->kobj)))
++
++	/* delay uevents, until we scanned partition table */
++	disk->dev.uevent_suppress = 1;
++
++	if (device_add(&disk->dev))
+ 		return;
++#ifndef CONFIG_SYSFS_DEPRECATED
+ 	err = disk_sysfs_symlinks(disk);
+ 	if (err) {
+-		kobject_del(&disk->kobj);
++		device_del(&disk->dev);
+ 		return;
+ 	}
++#endif
+  	disk_sysfs_add_subdirs(disk);
+ 
+ 	/* No minors to use for partitions */
+@@ -504,25 +426,23 @@ void register_disk(struct gendisk *disk)
+ 	if (!bdev)
+ 		goto exit;
+ 
+-	/* scan partition table, but suppress uevents */
+ 	bdev->bd_invalidated = 1;
+-	disk->part_uevent_suppress = 1;
+ 	err = blkdev_get(bdev, FMODE_READ, 0);
+-	disk->part_uevent_suppress = 0;
+ 	if (err < 0)
+ 		goto exit;
+ 	blkdev_put(bdev);
+ 
+ exit:
+-	/* announce disk after possible partitions are already created */
+-	kobject_uevent(&disk->kobj, KOBJ_ADD);
++	/* announce disk after possible partitions are created */
++	disk->dev.uevent_suppress = 0;
++	kobject_uevent(&disk->dev.kobj, KOBJ_ADD);
+ 
+ 	/* announce possible partitions */
+ 	for (i = 1; i < disk->minors; i++) {
+ 		p = disk->part[i-1];
+ 		if (!p || !p->nr_sects)
+ 			continue;
+-		kobject_uevent(&p->kobj, KOBJ_ADD);
++		kobject_uevent(&p->dev.kobj, KOBJ_ADD);
+ 	}
+ }
+ 
+@@ -601,19 +521,15 @@ void del_gendisk(struct gendisk *disk)
+ 	disk_stat_set_all(disk, 0);
+ 	disk->stamp = 0;
+ 
+-	kobject_uevent(&disk->kobj, KOBJ_REMOVE);
+ 	kobject_unregister(disk->holder_dir);
+ 	kobject_unregister(disk->slave_dir);
+ 	if (disk->driverfs_dev) {
+-		char *disk_name = make_block_name(disk);
+-		sysfs_remove_link(&disk->kobj, "device");
+-		if (disk_name) {
+-			sysfs_remove_link(&disk->driverfs_dev->kobj, disk_name);
+-			kfree(disk_name);
+-		}
+-		put_device(disk->driverfs_dev);
++		put_device(disk->dev.parent);
++		disk->dev.parent = NULL;
+ 		disk->driverfs_dev = NULL;
+ 	}
+-	sysfs_remove_link(&disk->kobj, "subsystem");
+-	kobject_del(&disk->kobj);
++#ifndef CONFIG_SYSFS_DEPRECATED
++	sysfs_remove_link(&block_depr, disk->dev.bus_id);
++#endif
++	device_del(&disk->dev);
+ }
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -13,6 +13,10 @@
+ 
+ #ifdef CONFIG_BLOCK
+ 
++#define kobj_to_dev(kobj) container_of(kobj, struct device, kobj)
++#define dev_to_disk(device) container_of(device, struct gendisk, dev)
++#define dev_to_part(device) container_of(device, struct hd_struct, dev)
++
+ enum {
+ /* These three have identical behaviour; use the second one if DOS FDISK gets
+    confused about extended/logical partitions starting past cylinder 1023. */
+@@ -83,7 +87,7 @@ struct partition {
+ struct hd_struct {
+ 	sector_t start_sect;
+ 	sector_t nr_sects;
+-	struct kobject kobj;
++	struct device dev;
+ 	struct kobject *holder_dir;
+ 	unsigned ios[2], sectors[2];	/* READs and WRITEs */
+ 	int policy, partno;
+@@ -115,15 +119,14 @@ struct gendisk {
+                                          * disks that can't be partitioned. */
+ 	char disk_name[32];		/* name of major driver */
+ 	struct hd_struct **part;	/* [indexed by minor] */
+-	int part_uevent_suppress;
+ 	struct block_device_operations *fops;
+ 	struct request_queue *queue;
+ 	void *private_data;
+ 	sector_t capacity;
+ 
+ 	int flags;
+-	struct device *driverfs_dev;
+-	struct kobject kobj;
++	struct device *driverfs_dev;  // FIXME: remove
++	struct device dev;
+ 	struct kobject *holder_dir;
+ 	struct kobject *slave_dir;
+ 
+@@ -140,13 +143,6 @@ struct gendisk {
+ #endif
+ };
+ 
+-/* Structure for sysfs attributes on block devices */
+-struct disk_attribute {
+-	struct attribute attr;
+-	ssize_t (*show)(struct gendisk *, char *);
+-	ssize_t (*store)(struct gendisk *, const char *, size_t);
+-};
+-
+ /* 
+  * Macros to operate on percpu disk statistics:
+  *
+@@ -408,7 +404,8 @@ struct unixware_disklabel {
+ #define ADDPART_FLAG_RAID	1
+ #define ADDPART_FLAG_WHOLEDISK	2
+ 
+-char *disk_name (struct gendisk *hd, int part, char *buf);
++extern dev_t blk_lookup_devt(const char *name);
++extern char *disk_name (struct gendisk *hd, int part, char *buf);
+ 
+ extern int rescan_partitions(struct gendisk *disk, struct block_device *bdev);
+ extern void add_partition(struct gendisk *, int, sector_t, sector_t, int);
+@@ -420,7 +417,7 @@ extern struct gendisk *alloc_disk(int mi
+ extern struct kobject *get_disk(struct gendisk *disk);
+ extern void put_disk(struct gendisk *disk);
+ 
+-extern void blk_register_region(dev_t dev, unsigned long range,
++extern void blk_register_region(dev_t devt, unsigned long range,
+ 			struct module *module,
+ 			struct kobject *(*probe)(dev_t, int *, void *),
+ 			int (*lock)(dev_t, void *),
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -54,69 +54,6 @@ static int __init readwrite(char *str)
+ __setup("ro", readonly);
+ __setup("rw", readwrite);
+ 
+-static dev_t try_name(char *name, int part)
+-{
+-	char path[64];
+-	char buf[32];
+-	int range;
+-	dev_t res;
+-	char *s;
+-	int len;
+-	int fd;
+-	unsigned int maj, min;
+-
+-	/* read device number from .../dev */
+-
+-	sprintf(path, "/sys/block/%s/dev", name);
+-	fd = sys_open(path, 0, 0);
+-	if (fd < 0)
+-		goto fail;
+-	len = sys_read(fd, buf, 32);
+-	sys_close(fd);
+-	if (len <= 0 || len == 32 || buf[len - 1] != '\n')
+-		goto fail;
+-	buf[len - 1] = '\0';
+-	if (sscanf(buf, "%u:%u", &maj, &min) == 2) {
+-		/*
+-		 * Try the %u:%u format -- see print_dev_t()
+-		 */
+-		res = MKDEV(maj, min);
+-		if (maj != MAJOR(res) || min != MINOR(res))
+-			goto fail;
+-	} else {
+-		/*
+-		 * Nope.  Try old-style "0321"
+-		 */
+-		res = new_decode_dev(simple_strtoul(buf, &s, 16));
+-		if (*s)
+-			goto fail;
+-	}
+-
+-	/* if it's there and we are not looking for a partition - that's it */
+-	if (!part)
+-		return res;
+-
+-	/* otherwise read range from .../range */
+-	sprintf(path, "/sys/block/%s/range", name);
+-	fd = sys_open(path, 0, 0);
+-	if (fd < 0)
+-		goto fail;
+-	len = sys_read(fd, buf, 32);
+-	sys_close(fd);
+-	if (len <= 0 || len == 32 || buf[len - 1] != '\n')
+-		goto fail;
+-	buf[len - 1] = '\0';
+-	range = simple_strtoul(buf, &s, 10);
+-	if (*s)
+-		goto fail;
+-
+-	/* if partition is within range - we got it */
+-	if (part < range)
+-		return res + part;
+-fail:
+-	return 0;
+-}
+-
+ /*
+  *	Convert a name into device number.  We accept the following variants:
+  *
+@@ -128,12 +65,10 @@ fail:
+  *	5) /dev/<disk_name>p<decimal> - same as the above, that form is
+  *	   used when disk name of partitioned disk ends on a digit.
+  *
+- *	If name doesn't have fall into the categories above, we return 0.
+- *	Sysfs is used to check if something is a disk name - it has
+- *	all known disks under bus/block/devices.  If the disk name
+- *	contains slashes, name of sysfs node has them replaced with
+- *	bangs.  try_name() does the actual checks, assuming that sysfs
+- *	is mounted on rootfs /sys.
++ *	If name doesn't have fall into the categories above, we return (0,0).
++ *	block_class is used to check if something is a disk name. If the disk
++ *	name contains slashes, the device name has them replaced with
++ *	bangs.
+  */
+ 
+ dev_t name_to_dev_t(char *name)
+@@ -141,13 +76,6 @@ dev_t name_to_dev_t(char *name)
+ 	char s[32];
+ 	char *p;
+ 	dev_t res = 0;
+-	int part;
+-
+-#ifdef CONFIG_SYSFS
+-	int mkdir_err = sys_mkdir("/sys", 0700);
+-	if (sys_mount("sysfs", "/sys", "sysfs", 0, NULL) < 0)
+-		goto out;
+-#endif
+ 
+ 	if (strncmp(name, "/dev/", 5) != 0) {
+ 		unsigned maj, min;
+@@ -163,6 +91,7 @@ dev_t name_to_dev_t(char *name)
+ 		}
+ 		goto done;
+ 	}
++
+ 	name += 5;
+ 	res = Root_NFS;
+ 	if (strcmp(name, "nfs") == 0)
+@@ -177,35 +106,14 @@ dev_t name_to_dev_t(char *name)
+ 	for (p = s; *p; p++)
+ 		if (*p == '/')
+ 			*p = '!';
+-	res = try_name(s, 0);
+-	if (res)
+-		goto done;
+-
+-	while (p > s && isdigit(p[-1]))
+-		p--;
+-	if (p == s || !*p || *p == '0')
+-		goto fail;
+-	part = simple_strtoul(p, NULL, 10);
+-	*p = '\0';
+-	res = try_name(s, part);
++	res = blk_lookup_devt(s);
+ 	if (res)
+ 		goto done;
+ 
+-	if (p < s + 2 || !isdigit(p[-2]) || p[-1] != 'p')
+-		goto fail;
+-	p[-1] = '\0';
+-	res = try_name(s, part);
++fail:
++	return 0;
+ done:
+-#ifdef CONFIG_SYSFS
+-	sys_umount("/sys", 0);
+-out:
+-	if (!mkdir_err)
+-		sys_rmdir("/sys");
+-#endif
+ 	return res;
+-fail:
+-	res = 0;
+-	goto done;
+ }
+ 
+ static int __init root_dev_setup(char *line)
