@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbXEWHQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbXEWHTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761237AbXEWHQy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 03:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbXEWHQo
+	id S1762690AbXEWHTk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 03:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbXEWHTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 03:16:44 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:7331 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759085AbXEWHQn (ORCPT
+	Wed, 23 May 2007 03:19:32 -0400
+Received: from aa013msr.fastwebnet.it ([85.18.95.73]:59631 "EHLO
+	aa013msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754649AbXEWHTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 03:16:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CIX2gbQWvS6uG0Z+4U95xvuTbCpIEqGFkKninq73jcoutmOgUupFszGm+70oH6GwouGsR6BweiNffLHGTztz15IeoQei1G6Y/FtAfn48TYkIkJ2fWezxyfh7v3Y6pWqJHn91qJljFACsbs/0OvSpzMGvDGI7Fh9Vs9jilhXPmIM=
-Message-ID: <a8e1da0705230016t163f7296v2dbff1de958264a@mail.gmail.com>
-Date: Wed, 23 May 2007 07:16:42 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.22-rc1-mm1 cifs_mount oops
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Steven French" <sfrench@us.ibm.com>
-In-Reply-To: <20070522202133.552d1a94.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 23 May 2007 03:19:31 -0400
+Date: Wed, 23 May 2007 09:19:03 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: Romano Giannetti <romano.giannetti@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/69] -stable review
+Message-ID: <20070523091903.0ba29bc1@localhost>
+In-Reply-To: <1179904140.7043.10.camel@localhost>
+References: <20070521191612.800400000@sous-sol.org>
+	<4652070D.3090509@redhat.com>
+	<alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
+	<20070521212522.GL3429@sequoia.sous-sol.org>
+	<1179870110.16656.2.camel@localhost>
+	<alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
+	<1179904140.7043.10.camel@localhost>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0705221750y6f4fb251m53f3efab1f017f4@mail.gmail.com>
-	 <20070522192231.6d1a94df.akpm@linux-foundation.org>
-	 <a8e1da0705221959i7b01deb7vdd641ef0ed31e63e@mail.gmail.com>
-	 <20070522202133.552d1a94.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 23 May 2007 09:09:00 +0200
+Romano Giannetti <romano.giannetti@gmail.com> wrote:
 
-> Yeah, that's racy: once we've sent the signal, the kernel thread can write
-> NULL to srvTcp->tsk at any time.
+> Will try to reboot with clocksource=acpi_pm, althoughI think that this
+> is the one I'm using. 
 
-Yes, here is another patch :
+you can see that with:
 
-diff -ur linux/fs/cifs/connect.c linux.new/fs/cifs/connect.c
---- linux/fs/cifs/connect.c     2007-05-23 10:59:13.000000000 +0000
-+++ linux.new/fs/cifs/connect.c 2007-05-23 15:16:11.000000000 +0000
-@@ -650,6 +650,7 @@
+cat /sys/devices/system/clocksource/clocksource0/current_clocksource
 
-        spin_lock(&GlobalMid_Lock);
-        server->tcpStatus = CifsExiting;
-+       kthread_stop(server->tsk);
-        server->tsk = NULL;
-        /* check if we have blocked requests that need to free */
-        /* Note that cifs_max_pending is normally 50, but
-@@ -2070,7 +2071,6 @@
-                        spin_unlock(&GlobalMid_Lock);
-                        if (srvTcp->tsk) {
-                                send_sig(SIGKILL,srvTcp->tsk,1);
--                               kthread_stop(srvTcp->tsk);
-                        }
-                }
-                 /* If find_unc succeeded then rc == 0 so we can not end */
-
-Regards
-dave
+-- 
+	Paolo Ornati
+	Linux 2.6.22-rc2-gd2579053 on x86_64
