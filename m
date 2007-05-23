@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763213AbXEWLPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbXEWL1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763213AbXEWLPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 07:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759381AbXEWLPo
+	id S1761524AbXEWL1a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 07:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbXEWL1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 07:15:44 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:58303 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759241AbXEWLPo (ORCPT
+	Wed, 23 May 2007 07:27:20 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3464 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755885AbXEWL1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 07:15:44 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46542248.3090507@s5r6.in-berlin.de>
-Date: Wed, 23 May 2007 13:15:20 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Subject: Re: [GIT PULL] ieee1394 fixes post 2.6.22-rc2
-References: <tkrat.1171a59b9de88f9c@s5r6.in-berlin.de> <tkrat.5299b7dd67007e8c@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.5299b7dd67007e8c@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 07:27:20 -0400
+Date: Wed, 23 May 2007 21:25:59 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Anant Nitya <kernel@prachanda.info>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: bad networking related lag in v2.6.22-rc2
+Message-ID: <20070523112559.GA24604@gondor.apana.org.au>
+References: <20070517174533.GA538@elte.hu> <200705221147.56571.kernel@prachanda.hub> <20070522062233.GA20002@elte.hu> <200705231110.44526.kernel@prachanda.hub> <20070523063052.GB26814@elte.hu> <46541DC4.4090501@trash.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46541DC4.4090501@trash.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote on 2007-05-19:
-> Linus, please pull from the for-linus branch at
+On Wed, May 23, 2007 at 12:56:04PM +0200, Patrick McHardy wrote:
 > 
->     git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-> 
-> to receive the following IEEE 1394 subsystem updates:
-> 
->   - fix regression in 2.6.22-rc1:
->     raw1394 asynchronous transmit was broken
-> 
->   - fix old bug in raw1394:
->     32bit compat code for 64bit kernels was broken and incomplete
-> 
->   - fix old eth1394 bug:
->     packets were frequently dropped in transmit path
->     (This fixes only the most common type of failure, tlabel exhaustion.)
-> 
->   - trivial sbp2 fix
+> Looking at the recent changes to __qdisc_run, this indeed seems
+> to be the case, when the qdisc is throttled and has packets queued
+> we return a value != 0, causing __qdisc_run to loop until all
+> packets have been sent, which may be a long time.
 
-Linus,
+Good catch! I was obviously half awake at the time :)
 
-if you didn't pull already, please don't.  Rather wait for my next batch
-of -rc fixes.  At the moment it looks as if I should postpone raw1394's
-32bit compat fixes (or call them feature addition) until after the
-release of 2.6.22 to ensure we get them right.
+We could also fix it this way:
+
+[NET_SCHED]: Fix qdisc_restart return value when dequeue is empty
+
+My previous patch that changed the return value of qdisc_restart
+incorrectly made the case where dequeue returns empty continue
+processing packets.
+
+This patch is based on diagnosis and fix by Patrick McHardy.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
 Thanks,
 -- 
-Stefan Richter
--=====-=-=== -=-= =-===
-http://arcgraph.de/sr/
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+index f28bb2d..cbefe22 100644
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -169,8 +169,8 @@ requeue:
+ 		else
+ 			q->ops->requeue(skb, q);
+ 		netif_schedule(dev);
+-		return 0;
+ 	}
++	return 0;
+ 
+ out:
+ 	BUG_ON((int) q->q.qlen < 0);
