@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751457AbXEXQkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751476AbXEXQpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751457AbXEXQkr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 12:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbXEXQkj
+	id S1751476AbXEXQpZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 12:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbXEXQpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 12:40:39 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58830 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750724AbXEXQki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 12:40:38 -0400
-Date: Thu, 24 May 2007 09:40:38 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1
-In-Reply-To: <20070524073131.GA17501@elte.hu>
-Message-ID: <Pine.LNX.4.64.0705240938070.27844@schroedinger.engr.sgi.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
- <46540DB2.5000605@googlemail.com> <Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
- <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
- <20070523153730.e0e9e91d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
- <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
- <20070524073131.GA17501@elte.hu>
+	Thu, 24 May 2007 12:45:14 -0400
+Received: from [216.16.235.2] ([216.16.235.2]:47359 "EHLO rubicon.netdirect.ca"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbXEXQpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 12:45:13 -0400
+X-Originating-Ip: 99.246.112.70
+Date: Thu, 24 May 2007 12:43:07 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Satyam Sharma <satyam.sharma@gmail.com>
+cc: Krzysztof Halasa <khc@pm.waw.pl>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: any value to "NORET_TYPE" macro?
+In-Reply-To: <a781481a0705230646x9a0255ak4254d05ba5442cad@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705241239560.10926@localhost.localdomain>
+References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain> 
+ <20070522135927.GA2098@stusta.de>  <Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
+  <20070522161951.GC2098@stusta.de> <m3ejl8k6e3.fsf@maximus.localdomain> 
+ <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain> 
+ <m37ir0iodl.fsf@maximus.localdomain>  <a781481a0705230137v4c8ba82fx263212a2958b55b9@mail.gmail.com>
+  <Pine.LNX.4.64.0705230908180.4309@localhost.localdomain>
+ <a781481a0705230646x9a0255ak4254d05ba5442cad@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007, Ingo Molnar wrote:
+On Wed, 23 May 2007, Satyam Sharma wrote:
 
-> 
-> when constructing debug output it's a good idea to make it as 
-> 'context-free' as possible. I.e. instead of saying 'Filler' and 
-> explaining it somewhere in Documentation/*, just say:
-> 
->   Expected memory values at 0xc90f6d50:  5a 5a 5a 5a 5a 5a 5a 5a
->   ... but found the following values:    12 34 56 78 90 12 34 56
+> Actually there's another thing :-) The __attribute__((xxx)) must go
+> with the function _declarations_ (and not the
+> implementations/definitions).
 
-Meaning just print the corrupted values? Otherwise the text will take up 
-a lot of real estate and will make it impossible to view the actual object 
-contents.
+that's not true, AFAICT.  the pattern seems to be that, in the case of
+declarations, attributes go at the end, as in:
 
-I think I can skip the filler etc if its not corrupted. Maybe that will 
-help?
+arch/sparc/boot/btfixupprep.c:void fatal(void) __attribute__((noreturn));
 
+while in actual definitions, they typically go after the return type,
+as in arch/arm/kernel/traps.c:
+
+void __attribute__((noreturn)) __bug(const char *file, int line)
+{
+        printk(KERN_CRIT"kernel BUG at %s:%d!\n", file, line);
+        *(int *)0 = 0;
+
+        /* Avoid "noreturn function does return" */
+        for (;;);
+}
+
+  is that the standard that most people use?  if it is, i can use that
+standard for the cleanup.
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
