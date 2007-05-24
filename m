@@ -1,48 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751795AbXEXQeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751125AbXEXQh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751795AbXEXQeQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 12:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbXEXQeE
+	id S1751125AbXEXQh0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 12:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750721AbXEXQhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 12:34:04 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:54879 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750707AbXEXQeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 12:34:01 -0400
-Date: Thu, 24 May 2007 18:33:00 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] add "notime" boot option
-In-Reply-To: <4655BC2D.2070701@oracle.com>
-Message-ID: <Pine.LNX.4.61.0705241832500.31549@yvahk01.tjqt.qr>
-References: <20070522120938.db67f1e9.randy.dunlap@oracle.com>
- <Pine.LNX.4.61.0705241812450.31549@yvahk01.tjqt.qr> <4655BC2D.2070701@oracle.com>
+	Thu, 24 May 2007 12:37:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59895 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750710AbXEXQhP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 12:37:15 -0400
+Date: Thu, 24 May 2007 09:37:14 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: young dave <hidave.darkstar@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc2-mm1 SLUB oops
+In-Reply-To: <a8e1da0705240111l790ee29emdd872cf6c56a5e37@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705240936360.27844@schroedinger.engr.sgi.com>
+References: <a8e1da0705240111l790ee29emdd872cf6c56a5e37@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 May 2007, young dave wrote:
 
-On May 24 2007 09:24, Randy Dunlap wrote:
->> 
->> Wonderful, now we have _three_ options to control time...
->> 
->> time=<bool>
->> printk.time=<bool>
->> notime=<bool>
->
-> Currently the middle one is "printk.printk_time".
-> And the first and last are just "time" and "notime", without a bool value.
->
-> And as I wrote later, I'd be happy to remove #s 1 and 3 and use only the
-> middle one, renaming the param so that it _is_ printk.time.
+> When I exec aumix from console, the kernel oops seems in modprobe
+> process, and after a while , system hanged.
 
-You get my (+) vote for that.
-
-
-
-	Jan
--- 
+Reboot with slub_debug as a kernel parameter please.
