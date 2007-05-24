@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbXEXWNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751065AbXEXWOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756125AbXEXWNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbXEXWNp
+	id S1751065AbXEXWOO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbXEXWNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:13:45 -0400
-Received: from mga02.intel.com ([134.134.136.20]:17680 "EHLO mga02.intel.com"
+	Thu, 24 May 2007 18:13:49 -0400
+Received: from ns1.suse.de ([195.135.220.2]:60458 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbXEXWNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:13:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,575,1170662400"; 
-   d="scan'208";a="247023087"
-Message-ID: <46560E04.2090500@intel.com>
-Date: Thu, 24 May 2007 15:13:24 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	id S1752840AbXEXWNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:13:48 -0400
+Date: Thu, 24 May 2007 15:04:17 -0700
+From: Greg KH <gregkh@suse.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net,
+       "art@usfltd.com" <art@usfltd.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>, Robert Fitzsimons <robfitz@273k.net>
+Subject: Re: [3/3] 2.6.22-rc2: known regressions v2
+Message-ID: <20070524220417.GA23561@suse.de>
+References: <46558708.2040803@googlemail.com> <46559B5B.4060508@googlemail.com>
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, linux-acpi@vger.kernel.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu> <20070524220816.GC23214@khazad-dum.debian.net>
-In-Reply-To: <20070524220816.GC23214@khazad-dum.debian.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 May 2007 22:13:43.0030 (UTC) FILETIME=[CA339960:01C79E50]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46559B5B.4060508@googlemail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> On Thu, 24 May 2007, Miklos Szeredi wrote:
->> Tried nmi_watchdog=1, but then the machine locks up hard shortly after
->> boot.
+On Thu, May 24, 2007 at 04:04:11PM +0200, Michal Piotrowski wrote:
+> Hi all,
 > 
-> NMIs in some thinkpads are bad trouble, they lock up the blasted IBM/Lenovo
-> SMBIOS if they happen to hit it while it is servicing a SMI, and thinkpads
-> do SMIs like crazy.
+> Here is a list of some known regressions in 2.6.22-rc2.
+> 
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+> 
+> 
+> 
+> USB
+> 
+> Subject    : usb hotplug/udev cannot correctly register usb/scanners
+> References : http://lkml.org/lkml/2007/5/15/205
+> Submitter  : art@usfltd.com <art@usfltd.com>
+> Status     : Unknown
 
-there's also a L1 ASPM issue with the e1000 chipset in the way (for T60/X60 
-only). Make sure you are using 2.6.21 or newer. See netdev archives for more on 
-that.
+I'm still working to track this down.  As scanners are in userspace, I
+really suspect a bad udev rule here...
 
-Auke
+thanks,
+
+greg k-h
