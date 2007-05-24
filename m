@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbXEXIr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbXEXIvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbXEXIr4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 04:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbXEXIrs
+	id S1758013AbXEXIvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 04:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbXEXIvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 04:47:48 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:58537 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755052AbXEXIrr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 04:47:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KhhVyscU3/bkiCAVE4YYrnSB93cWR1PhM39ZRFtXB8+d3fyu8V09q8kFoycIzEIFuzOpO8/FO6WHD2UjOaOvvPnyg6uHNe6IcODyIl5gxCbRuttM4Ux0JL16b+kOUCDRr6t84U7QBRHVWSjvSQNuirdH3D/zyiDl0BktDsLmuF0=
-Message-ID: <ba1ee50c0705240147t3d2ebf43w8cb0335bc7c239e4@mail.gmail.com>
-Date: Thu, 24 May 2007 03:47:45 -0500
-From: "Daniel Newby" <daniel.a.newby@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: how to allow board writers to customize driver behavior (watchdog here)
-In-Reply-To: <20070524052312.GA2447@linux-sh.org>
+	Thu, 24 May 2007 04:51:06 -0400
+Received: from as2.cineca.com ([130.186.84.242]:35920 "EHLO as2.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755112AbXEXIvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 04:51:05 -0400
+Message-ID: <465551DC.4060603@users.sourceforge.net>
+From: Andrea Righi <righiandr@users.sourceforge.net>
+Reply-To: righiandr@users.sourceforge.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070326 Thunderbird/2.0.0.0 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org,
+       Rik van Riel <riel@redhat.com>, linux-mm@kvack.org
+Subject: Re: [PATCH 1/2] limit print_fatal_signal() rate
+References: <E1Hp5PV-0001Bn-00@calista.eckenfels.net> <464ED258.2010903@users.sourceforge.net> <20070520203123.5cde3224.akpm@linux-foundation.org> <20070524075835.GC21138@elte.hu>
+In-Reply-To: <20070524075835.GC21138@elte.hu>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=77CEF397;
+	url=keyserver.veridis.com
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8bd0f97a0705232121j32fcff72hd04b04e37507450e@mail.gmail.com>
-	 <20070524052312.GA2447@linux-sh.org>
+Date: Thu, 24 May 2007 10:50:49 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/24/07, Paul Mundt <lethal@linux-sh.org> wrote:
->  It sounds like your constraining your driver based on terminology.
-> Watchdogs on most embedded platforms support either a 'reset' mode or
-> otherwise act as periodic timers, trying to push both of these
-> functionalities in to a watchdog driver is rather pointless.
-> CONFIG_WATCHDOG implies 'reset' mode by definition.
+Ingo Molnar wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+>> Well OK.  But vdso-print-fatal-signals.patch is designated 
+>> not-for-mainline anyway.
+> 
+> btw., why? It's very, very useful to distro, early-boot-userspace and 
+> glibc development. The only add-on change should be to not print SIGKILL 
+> events. Otherwise it's very much a keeper. Hm?
+> 
 
-I agree for a product in the hands of a customer:  let the watchdog
-pull your bacon out of the fire.
+Actually it seems that SIGKILLs are not printed. In get_signal_to_deliver() we have:
 
-But what about debugging?  Suppose your embedded computer with custom
-drivers locks up solid every few hundred hours.  It would be nice if
-the watchdog gave a stack dump instead erasing the evidence.  How about
-having "action=reset" and "action=debug"?
+[snip]
+@@ -1843,6 +1879,8 @@ relock:
+ 		 * Anything else is fatal, maybe with a core dump.
+ 		 */
+ 		current->flags |= PF_SIGNALED;
++		if ((signr != SIGKILL) && print_fatal_signals)
++			print_fatal_signal(regs, signr);
+ 		if (sig_kernel_coredump(signr)) {
+ 			/*
+ 			 * If it was able to dump core, this kills all
+[snip]
 
-    -- Daniel
+-Andrea
