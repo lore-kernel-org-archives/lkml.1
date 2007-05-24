@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbXEXMHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbXEXMK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759057AbXEXMHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 08:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbXEXMHT
+	id S1758196AbXEXMK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 08:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbXEXMKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 08:07:19 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:26859 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755994AbXEXMHS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 08:07:18 -0400
-Date: Thu, 24 May 2007 14:05:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: pbadari@gmail.com, linux-kernel@vger.kernel.org, bhalevy@panasas.com,
-       akpm@linux-foundation.org, michaelc@cs.wisc.edu
-Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
-Message-ID: <20070524120554.GU5722@kernel.dk>
-References: <20070521063554.GF14746@kernel.dk> <1179872108.29302.55.camel@dyn9047017100.beaverton.ibm.com> <20070524093441.GP5722@kernel.dk> <20070524184334P.fujita.tomonori@lab.ntt.co.jp> <20070524100024.GR5722@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070524100024.GR5722@kernel.dk>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 24 May 2007 08:10:19 -0400
+Received: from il.qumranet.com ([82.166.9.18]:36436 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755767AbXEXMKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 08:10:18 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, shaohua.li@intel.com,
+       lhcs-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>
+Subject: [PATCH 2/7] HOTPLUG: Adapt cpuset hotplug callback to CPU_DYING
+Date: Thu, 24 May 2007 15:10:10 +0300
+Message-Id: <11800086153720-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <1180008615579-git-send-email-avi@qumranet.com>
+References: <1180008615579-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24 2007, Jens Axboe wrote:
-> > http://git.kernel.org/?p=linux/kernel/git/tomo/linux-2.6-bidi.git;a=commitdiff;h=fb2747a9f2465ac4a1ea9e3533b92510fbcaae0c
-> 
-> Neat, will take a look! I should be able to just reuse that.
+CPU_DYING is called in atomic context, so don't try to take any locks.
 
-BTW, when do you plan on pushing the SCSI sg update? I'd love for it to
-be soon, so I can just rebase the sglist branch on that and get rid of
-the SCSI stuff in there.
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ kernel/cpuset.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index f57854b..d4ab1c6 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -2138,6 +2138,9 @@ static void common_cpu_mem_hotplug_unplug(void)
+ static int cpuset_handle_cpuhp(struct notifier_block *nb,
+ 				unsigned long phase, void *cpu)
+ {
++	if (phase == CPU_DYING)
++		return NOTIFY_DONE;
++
+ 	common_cpu_mem_hotplug_unplug();
+ 	return 0;
+ }
 -- 
-Jens Axboe
+1.5.0.6
 
