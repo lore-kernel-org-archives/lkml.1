@@ -1,86 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbXEXVDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbXEXVFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbXEXVDt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbXEXVDl
+	id S1753769AbXEXVFN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbXEXVFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:03:41 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:36963 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751004AbXEXVDk (ORCPT
+	Thu, 24 May 2007 17:05:00 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:46600 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbXEXVE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:03:40 -0400
-Date: Thu, 24 May 2007 14:01:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Romano Giannetti <romano.giannetti@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk
-Subject: Re: Long delay in resume from RAM (Was Re: [patch 00/69]
- -stablereview)
-Message-Id: <20070524140154.c8e93d69.akpm@linux-foundation.org>
-In-Reply-To: <1180037649.15241.6.camel@localhost>
-References: <20070521191612.800400000@sous-sol.org>
-	<4652070D.3090509@redhat.com>
-	<alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
-	<20070521212522.GL3429@sequoia.sous-sol.org>
-	<1179870110.16656.2.camel@localhost>
-	<alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
-	<1180008394.15600.26.camel@localhost>
-	<1180019201.15600.57.camel@localhost>
-	<alpine.LFD.0.98.0705240815530.26602@woody.linux-foundation.org>
-	<1180037649.15241.6.camel@localhost>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 24 May 2007 17:04:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:disposition-notification-to:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:openpgp:content-type:content-transfer-encoding;
+        b=fsOLWofvV+qynC5mpFb5+OEHCg4BaxPEv9dWt0M5GA4tjKTAv1Aq7sNghNq9/K6tHohlRGWjvzpl7eRjdaqkK+H7UkUzt5d+kTd+EStn6zji5lwX7SRwFDzkM6C2x9pAavoVKD9iLWkjhSuNP742UVg/1DZgMnJMibXiAMm5ESI=
+Message-ID: <4655FDEA.30209@gmail.com>
+Date: Thu, 24 May 2007 16:04:42 -0500
+From: Fabio A Correa <facorread@gmail.com>
+Organization: Universidad Nacional
+User-Agent: Thunderbird 2.0.0.0 (X11/20070429)
+MIME-Version: 1.0
+To: Damien Wyart <damien.wyart@free.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2 and libata/shutdown
+References: <20070524102122.GA8652@localhost.localdomain>
+In-Reply-To: <20070524102122.GA8652@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+OpenPGP: url=http://facorread.150m.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007 22:14:08 +0200
-Romano Giannetti <romano.giannetti@gmail.com> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> Compiling now. I had lost a lot of time because at first try it stopped
-> in ntfs:
+Hello Damien, people...
+
+Damien Wyart wrote:
+> Hello,
 > 
->   CC [M]  fs/ntfs/super.o
-> fs/ntfs/super.c: In function ___init_ntfs_fs___:
-> fs/ntfs/super.c:3152: error: expected ___)___ before ___NTFS_VERSION___
-> fs/ntfs/super.c: At top level:
-> fs/ntfs/super.c:3262: error: expected ___,___ or ___;___ before ___NTFS_VERSION___
-> make[2]: *** [fs/ntfs/super.o] Error 1
-> make[1]: *** [fs/ntfs] Error 2
-> make: *** [fs] Error 2
->   
-> I suppose because NTFS_VERSION were defined as EXTRA_CFLAGS too in the Makefile, 
+> After trying 2.6.22-rc2, I noticed the warning message from libata about
+> upgrading shutdown(8). First, I have two SATA disks, and get the warning for
+> only one of them. Second, I double-checked the source of shutdown for my
+> distro (Debian unstable), and do not see anything related to issueing
+> STANDBYNOW.
 
-ntfs is being naughty.
+The warning is pretty important, and you can check it at
 
---- a/fs/ntfs/Makefile~a
-+++ a/fs/ntfs/Makefile
-@@ -6,7 +6,7 @@ ntfs-objs := aops.o attrib.o collate.o c
- 	     index.o inode.o mft.o mst.o namei.o runlist.o super.o sysctl.o \
- 	     unistr.o upcase.o
- 
--EXTRA_CFLAGS = -DNTFS_VERSION=\"2.1.28\"
-+EXTRA_CFLAGS += -DNTFS_VERSION=\"2.1.28\"
- 
- ifeq ($(CONFIG_NTFS_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
-_
+http://linux-ata.org/shutdown.html
 
+I have been checking the sysvinit sources and I cannot see the portions on scanning SCSI or SATA
+disks. I only see the IDE scanning and standby-related code at src/hddown.c. Does anybody know
+how in the world are the SATA disks put to sleep in userspace?
 
-akpm:/usr/src/linux-2.6.22-rc2> grep -r EXTRA_CFLAGS . | fgrep '+=' | wc -l 
-131
-akpm:/usr/src/linux-2.6.22-rc2> grep -r EXTRA_CFLAGS . | fgrep -v '+=' | wc -l 
-55
+- --
+Fabio A. Correa D.
 
-hm, lots of Makefiles commit the same sin.  Sam, is this as busted as
-I think it is?
+Physics Dept, Universidad Nacional, Bogota, Colombia
+facorread@gmail.com
+ffaaccdd@yahoo.co.uk         facorread@unal.edu.co
+My webpage and OpenPGP key at http://facorread.150m.com
+facorread@alexandria.cc is not working anymore!!!
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGVf2HYOZCB4zf2uQRAhwIAKDJz/81ZaEIoN3ehWGBooKiiKkaogCcCj/i
+d+8GAY5x/yV1La3U5vx0zbk=
+=+aJc
+-----END PGP SIGNATURE-----
