@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763646AbXEXFYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763148AbXEXF3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763646AbXEXFYs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 01:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762146AbXEXFYg
+	id S1763148AbXEXF3G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 01:29:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758517AbXEXF2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 01:24:36 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:32699 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757945AbXEXFYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 01:24:35 -0400
-Message-ID: <46552142.4090801@sw.ru>
-Date: Thu, 24 May 2007 09:23:14 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>,
-       "David S. Miller" <davem@davemloft.net>
-CC: netdev@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [PATCH netdev] "wrong timeout value" in sk_wait_data() v2
-References: <465512EB.4000808@sw.ru> <46551635.30809@cosmosbay.com>
-In-Reply-To: <46551635.30809@cosmosbay.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 01:28:54 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:42384 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758447AbXEXF2x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 01:28:53 -0400
+Date: Wed, 23 May 2007 23:28:50 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] [scsi] Remove __GFP_DMA
+In-reply-to: <fa.txrEcCPLxIukzeVBv7UG39WubcI@ifi.uio.no>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Aubrey Li <aubreylee@gmail.com>, Christoph Lameter <clameter@sgi.com>,
+       Bernhard Walle <bwalle@suse.de>, linux-scsi@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Message-id: <46552292.3090207@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.6bUV4KR+za7HW4tT2WBlccqvoq0@ifi.uio.no>
+ <fa.NYl60pD1cwd1ESdKNCPaOwSz1WA@ifi.uio.no>
+ <fa.hW9tQQfgwmXj0gAKQoWXOxVzpvk@ifi.uio.no>
+ <fa.xLFpJ54sTvGq6YIol2Ew31Rrq2s@ifi.uio.no>
+ <fa.JZsPKKyEKOAfxp6reMY5ZwSNjQU@ifi.uio.no>
+ <fa.txrEcCPLxIukzeVBv7UG39WubcI@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sys_setsockopt() do not check properly timeout values for
-SO_RCVTIMEO/SO_SNDTIMEO, for example it's possible to set negative timeout
-values. POSIX do not defines behaviour for sys_setsockopt in case negative
-timeouts, but requires that setsockopt() shall fail with -EDOM if the send and
-receive timeout values are too big to fit into the timeout fields in the socket
-structure.
-In current implementation negative timeout can lead to error messages like
-"schedule_timeout: wrong timeout value".
+Alan Cox wrote:
+> On Wed, 23 May 2007 15:17:08 -0400
+> "Salyzyn, Mark" <mark_salyzyn@adaptec.com> wrote:
+> 
+>> The 31 bit limit for some of these cards is a problem, we currently only
+>> do __GFP_DMA for bounce buffer sg elements allocated for user supplied
+>> references in ioctls.
+>>
+>> I figure we should be using pci_alloc_consistent calls for these
+>> allocations to more accurately acquire memory within the 31 bit limit if
+>> necessary, we could switch to these to remove the need for the __GFP_DMA
+>> flag in the aacraid driver?
+> 
+> That didn't used to work right on the AMD boards when I tried it last as
+> we ended up with a buffer that was mapped by the IOMMU for some reason
+> and that was not below 2GB.
 
-Proposed patch:
-- checks tv_usec and returns -EDOM if it is wrong
-- do not allows to set negative timeout values (sets 0 instead) and outputs
-ratelimited information message about such attempts.
+The physical address you mean? If that is still happening then it needs 
+to get fixed. The allocation should not succeed if it can't provide 
+memory that's inside the DMA mask for the device..
 
-Signed-Off-By:	Vasily Averin <vvs@sw.ru>
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 22183c2..7e51d3a 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -206,7 +206,19 @@ static int sock_set_timeout(long *timeo_p, char __user
-*optval, int optlen)
- 		return -EINVAL;
- 	if (copy_from_user(&tv, optval, sizeof(tv)))
- 		return -EFAULT;
--
-+	if (tv.tv_usec < 0 || tv.tv_usec >= USEC_PER_SEC)
-+		return -EDOM;
-+
-+	if (tv.tv_sec < 0) {
-+		static int warned = 0;
-+		*timeo_p = 0;
-+		if (warned < 10 && net_ratelimit())
-+			warned++;
-+			printk(KERN_INFO "sock_set_timeout: `%s' (pid %d) "
-+			       "tries to set negative timeout\n",
-+			        current->comm, current->pid);
-+		return 0;
-+	}
- 	*timeo_p = MAX_SCHEDULE_TIMEOUT;
- 	if (tv.tv_sec == 0 && tv.tv_usec == 0)
- 		return 0;
