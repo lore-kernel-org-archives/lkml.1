@@ -1,109 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbXEXTix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbXEXTtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752559AbXEXTix (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 15:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXEXTiq
+	id S1751999AbXEXTtm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 15:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXEXTtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 15:38:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42137 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750794AbXEXTio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 15:38:44 -0400
-Date: Thu, 24 May 2007 21:37:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
-       linux-pcmcia@lists.infradead.org,
-       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
-       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
-       linux1394-devel@lists.sourceforge.net,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kristian =?iso-8859-1?Q?H=F8gsberg?= <krh@bitplanet.net>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
-       Andrey Borzenkov <arvidjaar@mail.ru>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
-Message-ID: <20070524193740.GA6787@elte.hu>
-References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com> <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>
-Mime-Version: 1.0
+	Thu, 24 May 2007 15:49:35 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41822 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750811AbXEXTte (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 15:49:34 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
+       linux-kernel@vger.kernel.org, tom.l.nguyen@intel.com,
+       iss_storagedev@hp.com, jens.axboe@oracle.com,
+       Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: msi_free_irqs #2
+References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+	<20070524102702.bca37396.akpm@linux-foundation.org>
+Date: Thu, 24 May 2007 13:42:58 -0600
+In-Reply-To: <20070524102702.bca37396.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 24 May 2007 10:27:02 -0700")
+Message-ID: <m1r6p6dn3x.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Thu, 24 May 2007 11:07:56 -0500
+> "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+>
+>> So I guess I found the answer to my own question. msi_free_irqs was apparently
+> added
+>> in 2.6.22-something. I don't find it in 2.6.21.2 or anywhere else. So somebody
+> broke a
+>> couple of things.
+>> The most noticable is cciss hangs after turning on interrupts. The reason for
+> that is
+>> the kernel now looks at my array of MSI-X vectors in reverse order. We have 4
+> ways of
+>> generating an interrupt on Smart Array hw. They are:
+>> 
+>> #       define DOORBELL_INT     0
+>> #       define PERF_MODE_INT    1
+>> #       define SIMPLE_MODE_INT  2
+>> #       define MEMQ_MODE_INT    3
+>> 
+>> For INTx these four lines are OR'ed together and run to one interrupt
+> pin. MSI-X
+>> breaks this hardware OR'ing so we must register either all 4 or at the least
+> the
+>> correct interrupt. When I first submitted the MSI/X support I was registering
+> all 4.
+>> Someone changed that to only register a single MSI-X vector. That worked fine
+> until
+>> 2.6.22-something. 
+>> Now it appears that the kernel is looking at the array in reverse order. IOW,
+> I must
+>> register PERF_MODE_INT in order for cciss to work. That's messed up. Anybody
+> want to
+>> `fess up to making these changes? :)
+>> I'll keep working this, but I'm going to undo someones change when I figure
+> out where
+>> it's broke.
+>> 
+>
+> I'd guess that you're referring to Michael's changes.  If you can identify
+> the offending code in a less vague fashion, more confident answers can
+> be given ;)
+>
+> I canot find any sign of anyone altering the IRQ handling in cciss.c after
+> your initial MSI-support merge.  But that's perhaps isn't what you meant.
+> it's all rather foggy.  Please either quote file-n-line, or grab a copy
+> of git-blame.
 
-> > Looks like this is in DRM code:
-> > 
-> > BUG: at include/linux/slub_def.h:88 kmalloc_index()
-> 
-> I'm going to change that "BUG:" to "WARNING:".
-> 
-> I know some people disagreed with it (ie Ingo), but I think that's 
-> total and utter bullshit.
-> 
-> It's a warning. Right now that "BUG:" message makes people all scared 
-> about something that is not fatal at all, just a note that something 
-> hasn't been converted, but is expected to work absolutely fine.
-> 
-> Calling it a bug is idiotic.
+Or perhaps git-bisect to find the offending patch.
 
-i very much agree that this kmalloc_index() one shouldnt be called a 
-"BUG: ", but if you look at the majority of WARN_ON() instances they are 
-checks for clear, serious kernel bugs. Very often we use WARN_ON() not 
-to signal that it's just a harmless warning, but because we do not want 
-to bring the system down via a BUG_ON(). The API is misnamed for sure, 
-but still, the purpose and current practice is clear: to signal kernel 
-bugs.
+I don't recall seeing anything that looked to bad but there was a fair
+amount of change needed to get the last bit of portability into the msi
+code, so it is possible something slipped through.
 
-To quantify this a bit more objectively i just did a "grep WARN_ON 
-kernel/*.c" and randomly picked 10 out of the 113 WARN_ON()'s:
+Possibly someone changed the default enable or disable state?
 
- kernel/cpu.c:			WARN_ON(1);
- kernel/exit.c:	WARN_ON(atomic_read(&tsk->fs_excl));
- kernel/fork.c:	WARN_ON(!(tsk->exit_state & (EXIT_DEAD | EXIT_ZOMBIE)));
- kernel/futex.c:	WARN_ON(!pi_state);
- kernel/hrtimer.c:		WARN_ON_ONCE(timer->cb_mode ==  HRTIMER_CB_IRQSAFE_NO_SOFTIRQ);
- kernel/lockdep.c:		WARN_ON(1);
- kernel/mutex-debug.c:	DEBUG_LOCKS_WARN_ON(list_empty(&waiter->list));
- kernel/rtmutex.c:	WARN_ON(rt_mutex_is_locked(lock));
- kernel/sched.c:	if (DEBUG_LOCKS_WARN_ON((preempt_count() < 0)))
- kernel/softirq.c:       WARN_ON_ONCE(in_irq());
+....
 
-and reviewed each instance, each and every one of these warnings is a 
-serious kernel bug that i would not 'warn' about, but what i'd like to 
-see reported ASAP. [ In fact i added 5 of these WARN_ON()s :-/ ] But 
-maybe that's just me?
+Which reminds me.  Now that we have a reasonable list, we really need
+to reduce pci_enable_msix:
 
-now regarding the naming of this API, i'd very much agree to do this 
-rename:
+- int pci_enable_msix(struct pci_dev* dev, struct msix_entry *entries, int nvec);
++ int pci_enable_msix(struct pci_dev* dev, int nvec);
 
-   WARN_ON  =>  BUG_ON
-   BUG_ON   =>  CRASH_ON
+And just have drivers that use more the one irq walk the list off of pci_dev
+of all of the msi irqs.  I did a little review a while ago and only
+0-(nvec -1) are allocated and the are always in order in entries so it
+shouldn't be to bad to generate a patch for that case, and not having
+to worry about out of order or holes in the irq allocator would be
+good.
 
-and make WARN_ON() print a "WARNING: ".
-
-and i signalled this in the original discussion too a few months ago 
-when i opposed the watering-down of the WARN_ON printk.
-
-OTOH i dont feel that strongly about all this :-)
-
-	Ingo
+Eric
