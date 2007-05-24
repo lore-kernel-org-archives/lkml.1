@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897AbXEXPId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbXEXPK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751897AbXEXPId (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 11:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbXEXPIW
+	id S1751838AbXEXPK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 11:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbXEXPKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 11:08:22 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:59077 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751782AbXEXPIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 11:08:20 -0400
-Date: Thu, 24 May 2007 16:11:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Uwe Bugla <uwe.bugla@gmx.de>, Ken Chen <kenchen@google.com>,
-       xfs-masters@oss.sgi.com, Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Chinner <dgc@sgi.com>,
-       Andrea Righi <righiandr@users.sourceforge.net>,
-       Christoph Lameter <clameter@sgi.com>, linux-ide@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Francis Russell <francisrussell@btopenworld.com>,
-       Alan Cox <alan@redhat.com>, Andi Kleen <ak@suse.de>, discuss@x86-64.org,
-       Ben Collins <ben.collins@ubuntu.com>
-Subject: Re: 2.6.22-rc2: known regressions with patches
-Message-ID: <20070524161116.047c55e9@the-village.bc.nu>
-In-Reply-To: <46559B62.5040903@googlemail.com>
-References: <46559B62.5040903@googlemail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 24 May 2007 11:10:20 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:56535
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbXEXPKS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 11:10:18 -0400
+Subject: Re: [PATCH 1/1] Char: n_hdlc, allow RESTARTSYS retval of tty write
+From: Paul Fulghum <paulkf@microgate.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <23207103161692929650@wsc.cz>
+References: <23207103161692929650@wsc.cz>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 10:10:14 -0500
+Message-Id: <1180019414.12854.0.camel@x2.microgate.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject    : pata_via appears to incorrectly detects 40-pin cable
-> References : http://lkml.org/lkml/2007/5/17/273
->              http://bugzilla.kernel.org/show_bug.cgi?id=8142
-> Submitter  : Francis Russell <francisrussell@btopenworld.com>
-> Status     : Not really a regression. Alan seems to have a general fix.
->              (Tejun Heo)
+On Thu, 2007-05-24 at 14:28 +0200, Jiri Slaby wrote:
+> n_hdlc, allow RESTARTSYS retval of tty write
+> 
+> Cc: Paul Fulghum <paulkf@microgate.com>
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
 
-The laptop one has been resolved, tested and fired at Andrew.
+Acked-by: Paul Fulghum <paulkf@microgate.com>
+ 
+--
+Paul Fulghum
+Microgate Systems, Ltd
 
-Note btw that the bugzilla and email refer to two differing bugs. The
-SATA one (bugzilla ref) has gone to Jeff and is a different fix.
-
-Alan
