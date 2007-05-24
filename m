@@ -1,63 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751451AbXEXPBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbXEXPER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751451AbXEXPBu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 11:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbXEXPBn
+	id S1751551AbXEXPER (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 11:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXEXPEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 11:01:43 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:45747 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750776AbXEXPBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 11:01:42 -0400
-Date: Thu, 24 May 2007 16:05:59 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: [PATCH] $ARCH: Enable arbitary speed tty ioctls and split
- input/output speed
-Message-ID: <20070524160559.54c2c639@the-village.bc.nu>
-In-Reply-To: <1180014338.8303.95.camel@shinybook.infradead.org>
-References: <20070523172739.1d3a918c@the-village.bc.nu>
-	<1180012135.8303.89.camel@shinybook.infradead.org>
-	<20070524144109.7bd0f4d0@the-village.bc.nu>
-	<1180014338.8303.95.camel@shinybook.infradead.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 24 May 2007 11:04:11 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34521 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750696AbXEXPEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 11:04:09 -0400
+Date: Thu, 24 May 2007 10:04:04 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/1] eCryptfs: Move ecryptfs docs into Documentation/filesystems/
+Message-ID: <20070524150404.GA3646@us.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <1179970820209-git-send-email-jsipek@cs.sunysb.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179970820209-git-send-email-jsipek@cs.sunysb.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007 09:45:37 -0400
-David Woodhouse <dwmw2@infradead.org> wrote:
+On Wed, May 23, 2007 at 09:40:20PM -0400, Josef 'Jeff' Sipek wrote:
+> Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 
-> On Thu, 2007-05-24 at 14:41 +0100, Alan Cox wrote:
-> > Most people copied the x86 behaviour which makes it easy to transplant.
-> > Some are just smoking something (see ioctls.h for sh-64 and weep), others
-> > have slightly odd behaviour for historical compatibility reasons (Sparc)
+Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
+
+> ---
+>  Documentation/ecryptfs.txt             |   77 --------------------------------
+>  Documentation/filesystems/ecryptfs.txt |   77 ++++++++++++++++++++++++++++++++
+>  2 files changed, 77 insertions(+), 77 deletions(-)
+>  delete mode 100644 Documentation/ecryptfs.txt
+>  create mode 100644 Documentation/filesystems/ecryptfs.txt
 > 
-> Likewise, I assume the lack of IBSHIFT on PowerPC is because of AIX?
-
-I assume nobody ever got around to it. CIBAUD is in the PowerPC System V
-API supplement for example and is supported by other Power OS's.
-
-> > When PPC wants to do arbitary baud rate it needs to resolve both of the
-> > definitions together. IBSHIFT is simply the shift you apply to the baud
-> > bits to get the input baud bits.
-> 
-> Why bother introducing new IBSHIFT stuff when it can be declared
-> obsolete already -- if you want different input and output baud rates,
-> just set BOTHER and have different values c_ispeed and c_ospeed.
-
-BOTHER is for the output speed. BOTHER << IBSHIFT is for the input speed
-if it different to the default (and you need B0 << IBSHIFT to know if an
-input speed is being specifically set in the first place).
-
-CIBAUD and IBSHIFT come from standards documents so it appears to make
-sense at some level to support those standards. As everyone else in the
-Power world supports it I don't see why Linux should be different.
-
-Alan
+> diff --git a/Documentation/ecryptfs.txt b/Documentation/ecryptfs.txt
+> deleted file mode 100644
+> index 01d8a08..0000000
+> --- a/Documentation/ecryptfs.txt
+> +++ /dev/null
+> @@ -1,77 +0,0 @@
+> -eCryptfs: A stacked cryptographic filesystem for Linux
+> -
+> -eCryptfs is free software. Please see the file COPYING for details.
+> -For documentation, please see the files in the doc/ subdirectory.  For
+> -building and installation instructions please see the INSTALL file.
+> -
+> -Maintainer: Phillip Hellewell
+> -Lead developer: Michael A. Halcrow <mhalcrow@us.ibm.com>
+> -Developers: Michael C. Thompson
+> -            Kent Yoder
+> -Web Site: http://ecryptfs.sf.net
+> -
+> -This software is currently undergoing development. Make sure to
+> -maintain a backup copy of any data you write into eCryptfs.
+> -
+> -eCryptfs requires the userspace tools downloadable from the
+> -SourceForge site:
+> -
+> -http://sourceforge.net/projects/ecryptfs/
+> -
+> -Userspace requirements include:
+> - - David Howells' userspace keyring headers and libraries (version
+> -   1.0 or higher), obtainable from
+> -   http://people.redhat.com/~dhowells/keyutils/
+> - - Libgcrypt
+> -
+> -
+> -NOTES
+> -
+> -In the beta/experimental releases of eCryptfs, when you upgrade
+> -eCryptfs, you should copy the files to an unencrypted location and
+> -then copy the files back into the new eCryptfs mount to migrate the
+> -files.
+> -
+> -
+> -MOUNT-WIDE PASSPHRASE
+> -
+> -Create a new directory into which eCryptfs will write its encrypted
+> -files (i.e., /root/crypt).  Then, create the mount point directory
+> -(i.e., /mnt/crypt).  Now it's time to mount eCryptfs:
+> -
+> -mount -t ecryptfs /root/crypt /mnt/crypt
+> -
+> -You should be prompted for a passphrase and a salt (the salt may be
+> -blank).
+> -
+> -Try writing a new file:
+> -
+> -echo "Hello, World" > /mnt/crypt/hello.txt
+> -
+> -The operation will complete.  Notice that there is a new file in
+> -/root/crypt that is at least 12288 bytes in size (depending on your
+> -host page size).  This is the encrypted underlying file for what you
+> -just wrote.  To test reading, from start to finish, you need to clear
+> -the user session keyring:
+> -
+> -keyctl clear @u
+> -
+> -Then umount /mnt/crypt and mount again per the instructions given
+> -above.
+> -
+> -cat /mnt/crypt/hello.txt
+> -
+> -
+> -NOTES
+> -
+> -eCryptfs version 0.1 should only be mounted on (1) empty directories
+> -or (2) directories containing files only created by eCryptfs. If you
+> -mount a directory that has pre-existing files not created by eCryptfs,
+> -then behavior is undefined. Do not run eCryptfs in higher verbosity
+> -levels unless you are doing so for the sole purpose of debugging or
+> -development, since secret values will be written out to the system log
+> -in that case.
+> -
+> -
+> -Mike Halcrow
+> -mhalcrow@us.ibm.com
+> diff --git a/Documentation/filesystems/ecryptfs.txt b/Documentation/filesystems/ecryptfs.txt
+> new file mode 100644
+> index 0000000..01d8a08
+> --- /dev/null
+> +++ b/Documentation/filesystems/ecryptfs.txt
+> @@ -0,0 +1,77 @@
+> +eCryptfs: A stacked cryptographic filesystem for Linux
+> +
+> +eCryptfs is free software. Please see the file COPYING for details.
+> +For documentation, please see the files in the doc/ subdirectory.  For
+> +building and installation instructions please see the INSTALL file.
+> +
+> +Maintainer: Phillip Hellewell
+> +Lead developer: Michael A. Halcrow <mhalcrow@us.ibm.com>
+> +Developers: Michael C. Thompson
+> +            Kent Yoder
+> +Web Site: http://ecryptfs.sf.net
+> +
+> +This software is currently undergoing development. Make sure to
+> +maintain a backup copy of any data you write into eCryptfs.
+> +
+> +eCryptfs requires the userspace tools downloadable from the
+> +SourceForge site:
+> +
+> +http://sourceforge.net/projects/ecryptfs/
+> +
+> +Userspace requirements include:
+> + - David Howells' userspace keyring headers and libraries (version
+> +   1.0 or higher), obtainable from
+> +   http://people.redhat.com/~dhowells/keyutils/
+> + - Libgcrypt
+> +
+> +
+> +NOTES
+> +
+> +In the beta/experimental releases of eCryptfs, when you upgrade
+> +eCryptfs, you should copy the files to an unencrypted location and
+> +then copy the files back into the new eCryptfs mount to migrate the
+> +files.
+> +
+> +
+> +MOUNT-WIDE PASSPHRASE
+> +
+> +Create a new directory into which eCryptfs will write its encrypted
+> +files (i.e., /root/crypt).  Then, create the mount point directory
+> +(i.e., /mnt/crypt).  Now it's time to mount eCryptfs:
+> +
+> +mount -t ecryptfs /root/crypt /mnt/crypt
+> +
+> +You should be prompted for a passphrase and a salt (the salt may be
+> +blank).
+> +
+> +Try writing a new file:
+> +
+> +echo "Hello, World" > /mnt/crypt/hello.txt
+> +
+> +The operation will complete.  Notice that there is a new file in
+> +/root/crypt that is at least 12288 bytes in size (depending on your
+> +host page size).  This is the encrypted underlying file for what you
+> +just wrote.  To test reading, from start to finish, you need to clear
+> +the user session keyring:
+> +
+> +keyctl clear @u
+> +
+> +Then umount /mnt/crypt and mount again per the instructions given
+> +above.
+> +
+> +cat /mnt/crypt/hello.txt
+> +
+> +
+> +NOTES
+> +
+> +eCryptfs version 0.1 should only be mounted on (1) empty directories
+> +or (2) directories containing files only created by eCryptfs. If you
+> +mount a directory that has pre-existing files not created by eCryptfs,
+> +then behavior is undefined. Do not run eCryptfs in higher verbosity
+> +levels unless you are doing so for the sole purpose of debugging or
+> +development, since secret values will be written out to the system log
+> +in that case.
+> +
+> +
+> +Mike Halcrow
+> +mhalcrow@us.ibm.com
