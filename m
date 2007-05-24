@@ -1,144 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbXEXMz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbXEXNI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759453AbXEXMz0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 08:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756718AbXEXMzS
+	id S1758131AbXEXNI5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 09:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbXEXNIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 08:55:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43010 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756472AbXEXMzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 08:55:16 -0400
-Date: Thu, 24 May 2007 14:54:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070524125453.GA7554@elte.hu>
-References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu>
+	Thu, 24 May 2007 09:08:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38759 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755588AbXEXNIs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 09:08:48 -0400
+Subject: Re: [PATCH] $ARCH: Enable arbitary speed tty ioctls and split
+	input/output speed
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
+In-Reply-To: <20070523172739.1d3a918c@the-village.bc.nu>
+References: <20070523172739.1d3a918c@the-village.bc.nu>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 09:08:55 -0400
+Message-Id: <1180012135.8303.89.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="HlL+5n6rz5pIUxbD"
-Content-Disposition: inline
-In-Reply-To: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Is my mailbox (or brain) failing me, or did you just send out these
+patches for every architecture _except_ PowerPC? :)
 
---HlL+5n6rz5pIUxbD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Presumably this is because of the mess in tty_termios_encode_baud_rate
+when we fix its bogus assumptions about IBSHIFT always being defined?
+There has to be a cleaner way to do that than this, but it shows the
+problem...
 
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index fd471cb..f5f4568 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -215,6 +215,11 @@ speed_t tty_termios_input_baud_rate(struct ktermios *termios)
+ 	}
+ 	return baud_table[cbaud];
+ #else
++#ifdef BOTHER
++	/* Magic token for arbitary speed via c_ispeed/c_ospeed */
++	if ((termios->c_cflag & CBAUD) == BOTHER)
++		return termios->c_ispeed;
++#endif
+ 	return tty_termios_baud_rate(termios);
+ #endif
+ }
+@@ -252,16 +257,27 @@ void tty_termios_encode_baud_rate(struct ktermios *termios, speed_t ibaud, speed
+ 	termios->c_ispeed = ibaud;
+ 	termios->c_ospeed = obaud;
+ 
++#ifndef IBSHIFT
++	/* If the only way to express differing input and output baud rates
++	   is to use BOTHER, then that's what we have to do... */
++	if (ibaud != obaud) {
++		termios->c_cflag |= BOTHER;
++		return;
++	}
++#endif
++
+ 	/* If the user asked for a precise weird speed give a precise weird
+ 	   answer. If they asked for a Bfoo speed they many have problems
+ 	   digesting non-exact replies so fuzz a bit */
+ 
+ 	if ((termios->c_cflag & CBAUD) == BOTHER)
+ 		oclose = 0;
++#ifdef IBSHIFT
+ 	if (((termios->c_cflag >> IBSHIFT) & CBAUD) == BOTHER)
+ 		iclose = 0;
+ 	if ((termios->c_cflag >> IBSHIFT) & CBAUD)
+ 		ibinput = 1;	/* An input speed was specified */
++#endif
+ 
+ 	termios->c_cflag &= ~CBAUD;
+ 
+@@ -270,20 +286,24 @@ void tty_termios_encode_baud_rate(struct ktermios *termios, speed_t ibaud, speed
+ 			termios->c_cflag |= baud_bits[i];
+ 			ofound = i;
+ 		}
++#ifdef IBSHIFT
+ 		if (ibaud - iclose >= baud_table[i] && ibaud + iclose <= baud_table[i]) {
+ 			/* For the case input == output don't set IBAUD bits if the user didn't do so */
+ 			if (ofound != i || ibinput)
+ 				termios->c_cflag |= (baud_bits[i] << IBSHIFT);
+ 			ifound = i;
+ 		}
+-	}
+-	while(++i < n_baud_table);
++#endif
++	} while(++i < n_baud_table);
++
+ 	if (ofound == -1)
+ 		termios->c_cflag |= BOTHER;
++#ifdef IBSHIFT
+ 	/* Set exact input bits only if the input and output differ or the
+ 	   user already did */
+ 	if (ifound == -1 && (ibaud != obaud  || ibinput))
+ 		termios->c_cflag |= (BOTHER << IBSHIFT);
++#endif
+ }
+ 
+ EXPORT_SYMBOL_GPL(tty_termios_encode_baud_rate);
+diff --git a/include/asm-powerpc/ioctls.h b/include/asm-powerpc/ioctls.h
+index 279a622..b6dfe7f 100644
+--- a/include/asm-powerpc/ioctls.h
++++ b/include/asm-powerpc/ioctls.h
+@@ -31,6 +31,11 @@
+ #define TCXONC		_IO('t', 30)
+ #define TCFLSH		_IO('t', 31)
+ 
++#define TCGETS2		_IOR('t', 32, struct termios2)
++#define TCSETS2		_IOW('t', 33, struct termios2)
++#define TCSETSW2	_IOW('t', 34, struct termios2)
++#define TCSETSF2	_IOW('t', 35, struct termios2)
++
+ #define TIOCSWINSZ	_IOW('t', 103, struct winsize)
+ #define TIOCGWINSZ	_IOR('t', 104, struct winsize)
+ #define	TIOCSTART	_IO('t', 110)		/* start output, like ^Q */
+diff --git a/include/asm-powerpc/termbits.h b/include/asm-powerpc/termbits.h
+index 5e79198..c39877f 100644
+--- a/include/asm-powerpc/termbits.h
++++ b/include/asm-powerpc/termbits.h
+@@ -43,6 +43,19 @@ struct ktermios {
+ 	speed_t c_ospeed;		/* output speed */
+ };
+ 
++/* Yay. A third identical definition of the same structure. */
++
++struct termios2 {
++	tcflag_t c_iflag;		/* input mode flags */
++	tcflag_t c_oflag;		/* output mode flags */
++	tcflag_t c_cflag;		/* control mode flags */
++	tcflag_t c_lflag;		/* local mode flags */
++	cc_t c_cc[NCCS];		/* control characters */
++	cc_t c_line;			/* line discipline (== c_cc[19]) */
++	speed_t c_ispeed;		/* input speed */
++	speed_t c_ospeed;		/* output speed */
++};
++
+ /* c_cc characters */
+ #define VINTR 	         0
+ #define VQUIT 	         1
+@@ -152,6 +165,7 @@ struct ktermios {
+ #define B3000000  00034
+ #define B3500000  00035
+ #define B4000000  00036
++#define   BOTHER  00037
+ 
+ #define CSIZE	00001400
+ #define   CS5	00000000
+diff --git a/include/asm-powerpc/termios.h b/include/asm-powerpc/termios.h
+index 2c14fea..2841fb1 100644
+--- a/include/asm-powerpc/termios.h
++++ b/include/asm-powerpc/termios.h
+@@ -80,6 +80,9 @@ struct termio {
+ 
+ #include <asm-generic/termios.h>
+ 
++#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
++#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
++
+ #endif	/* __KERNEL__ */
+ 
+ #endif	/* _ASM_POWERPC_TERMIOS_H */
 
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
+-- 
+dwmw2
 
-> On some strange workload involving strace and fuse I get ocasional 
-> long periods (10-100s) of total unresponsiveness, not even SysRq-* 
-> working.  Then the machine continues as normal.  Nothing in dmesg, 
-> absolutely no indication about what is happening.
-
-> Any ideas?  Possibly something ACPI related?
-
-how reproducable are these lockups - could you possibly trace it? If yes 
-then please apply:
-
-  http://www.tglx.de/private/tglx/ht-debug/tracer.diff
-
-and run the attached trace-it-1sec.c thing in a loop:
-
-  echo 1 > /proc/sys/kernel/mcount_enabled
-
-  while true; do
-     ./trace-it-1sec > trace-`date`.txt
-  done
-
-and wait for the lockup. Once it happens, please upload the trace*.txt 
-file that contains the lockup, i guess we'll be able to tell you more 
-about the nature of the lockup. (Perhaps increase the sleep(1) to 
-sleep(5) to capture longer periods and to increase the odds that you 
-catch the lockup while the utility is tracing.)
-
-	Ingo
-
---HlL+5n6rz5pIUxbD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="trace-it-1sec.c"
-
-
-/*
- * Copyright (C) 2005, Ingo Molnar <mingo@redhat.com>
- *
- * user-triggered tracing.
- *
- * The -rt kernel has a built-in kernel tracer, which will trace
- * all kernel function calls (and a couple of special events as well),
- * by using a build-time gcc feature that instruments all kernel
- * functions.
- * 
- * The tracer is highly automated for a number of latency tracing purposes,
- * but it can also be switched into 'user-triggered' mode, which is a
- * half-automatic tracing mode where userspace apps start and stop the
- * tracer. This file shows a dumb example how to turn user-triggered
- * tracing on, and how to start/stop tracing. Note that if you do
- * multiple start/stop sequences, the kernel will do a maximum search
- * over their latencies, and will keep the trace of the largest latency
- * in /proc/latency_trace. The maximums are also reported to the kernel
- * log. (but can also be read from /proc/sys/kernel/preempt_max_latency)
- *
- * For the tracer to be activated, turn on CONFIG_WAKEUP_TIMING and
- * CONFIG_LATENCY_TRACE in the .config, rebuild the kernel and boot
- * into it. Note that the tracer can have significant runtime overhead,
- * so you dont want to use it for performance testing :)
- */
-
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <linux/unistd.h>
-
-int main (int argc, char **argv)
-{
-	int ret;
-
-	if (getuid() != 0) {
-		fprintf(stderr, "needs to run as root.\n");
-		exit(1);
-	}
-	ret = system("cat /proc/sys/kernel/mcount_enabled >/dev/null 2>/dev/null");
-	if (ret) {
-		fprintf(stderr, "CONFIG_LATENCY_TRACING not enabled?\n");
-		exit(1);
-	}
-	system("echo 1 > /proc/sys/kernel/trace_enabled");
-//	system("echo 0 > /proc/sys/kernel/trace_freerunning");
-	system("echo 0 > /proc/sys/kernel/trace_print_at_crash");
-	system("echo 1 > /proc/sys/kernel/trace_user_triggered");
-	system("echo 0 > /proc/sys/kernel/trace_verbose");
-	system("echo 0 > /proc/sys/kernel/preempt_max_latency");
-	system("echo 0 > /proc/sys/kernel/preempt_thresh");
-	system("[ -e /proc/sys/kernel/wakeup_timing ] && echo 1 > /proc/sys/kernel/wakeup_timing");
-//	system("echo 1 > /proc/sys/kernel/mcount_enabled");
-
-	prctl(0, 1); // start tracing
-	sleep(1);
-	prctl(0, 0); // stop tracing
-
-	system("cat /proc/latency_trace");
-
-	return 0;
-}
-
-
-
---HlL+5n6rz5pIUxbD--
