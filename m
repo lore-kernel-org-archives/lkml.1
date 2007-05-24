@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbXEXKxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbXEXKyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758685AbXEXKxR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 06:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbXEXKxD
+	id S1759057AbXEXKyT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 06:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXEXKyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 06:53:03 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:36403 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755855AbXEXKxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 06:53:01 -0400
-Date: Thu, 24 May 2007 11:55:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: 2.6.22-rc1-mm1: IDE compile error
-Message-ID: <20070524115549.01c0e1ca@the-village.bc.nu>
-In-Reply-To: <200705240145.38055.bzolnier@gmail.com>
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
-	<20070516185552.GA4086@stusta.de>
-	<200705240145.38055.bzolnier@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 24 May 2007 06:54:11 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4967 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755897AbXEXKyK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 06:54:10 -0400
+Date: Thu, 24 May 2007 20:54:03 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: rmmod e1000 hangs (Was Re: 2.6.22-rc2-mm1)
+Message-ID: <20070524105403.GA9285@gondor.apana.org.au>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <46556AA6.7040503@goop.org> <20070524104713.GA9174@gondor.apana.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070524104713.GA9174@gondor.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > hd.c:(.init.text+0x44a7d): undefined reference to `drive_info'
-> > hd.c:(.init.text+0x44a89): undefined reference to `drive_info'
-> > hd.c:(.init.text+0x44a95): undefined reference to `drive_info'
-> > hd.c:(.init.text+0x44aa1): undefined reference to `drive_info'
-> > hd.c:(.init.text+0x44aad): undefined reference to `drive_info'
-> > drivers/built-in.o:hd.c:(.init.text+0x44ab9): more undefined references to `drive_info' follow
-> > make[1]: *** [.tmp_vmlinux1] Error 1
+On Thu, May 24, 2007 at 08:47:13PM +1000, Herbert Xu wrote:
+> On Thu, May 24, 2007 at 11:36:22AM +0100, Jeremy Fitzhardinge wrote:
 > > 
-> > <--  snip  -->
+> > I got a hang while rmmodding e1000.  sysrq-t shows:
 > > 
-> > Considering the fact that we have two more recent drivers with the same 
-> > functionality, it might be an option to simply remove this driver...
+> > rmmod         D 003FFAFC  6616 15923  15911 (NOTLB)
+> >        e9341e44 00000092 82318c15 003ffafc e9341e2c 00000000 e9341e14 823187a1 
+> >        003ffafc 00000000 c0123862 d3dbab80 d3dbad1c c2c08a40 77a67d01 000001ca 
+> >        00000292 e9341e24 c03799cd e9341e54 c0540840 e9341e44 00223389 000000ff 
+> > Call Trace:
+> >  [<c03777b1>] schedule_timeout+0x70/0x8e
+> >  [<c03777e4>] schedule_timeout_uninterruptible+0x15/0x17
+> >  [<c0133d04>] msleep+0x10/0x16
+> >  [<c030d5e0>] dev_close+0x39/0x6b
 > 
-> Care to send a patch?
+> Looks like we're spinning on __LINK_STATE_RX_SCHED.  This means that
+> someone called netif_poll_disable() without re-enabling it again.
+> Perhaps e1000_io_error_detected? Auke?
 
-hd.c can drive MFM and RLL disks and drivers/ide cannot. Although it
-really wants burying further down the config tree the ability to read MFM
-and RLL disks when recovering ancient data is useful and people do
-actually use this driver now and then rescuing stuff like twenty year old
-datasets.
+I think the dual meaning of __LINK_STATE_RX_SCHED is seriously broken.
+In dev_close we are waiting for any outstanding poll to terminate but
+the same bit can either mean an outstanding poll or that poll has
+been disabled.
 
-It thus needs fixing not removing.
+It's a surprise that it has taken so many years for someone to report
+a bug on it.  I'll try to get this fixed up, probably by adding a bit.
 
-
-Alan
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
