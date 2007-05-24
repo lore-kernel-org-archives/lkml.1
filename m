@@ -1,205 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbXEXPER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751616AbXEXPGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751551AbXEXPER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 11:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbXEXPEL
+	id S1751616AbXEXPGw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 11:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXEXPGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 11:04:11 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34521 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbXEXPEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 11:04:09 -0400
-Date: Thu, 24 May 2007 10:04:04 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/1] eCryptfs: Move ecryptfs docs into Documentation/filesystems/
-Message-ID: <20070524150404.GA3646@us.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <1179970820209-git-send-email-jsipek@cs.sunysb.edu>
+	Thu, 24 May 2007 11:06:45 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:58719 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbXEXPGn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 11:06:43 -0400
+Subject: Long delay in resume from RAM (Was Re: [patch 00/69] -stablereview)
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <1180008394.15600.26.camel@localhost>
+References: <20070521191612.800400000@sous-sol.org> 
+	<4652070D.3090509@redhat.com> 
+	<alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org> 
+	<20070521212522.GL3429@sequoia.sous-sol.org> 
+	<1179870110.16656.2.camel@localhost> 
+	<alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> 
+	<1180008394.15600.26.camel@localhost>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Thu, 24 May 2007 17:06:41 +0200
+Message-Id: <1180019201.15600.57.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179970820209-git-send-email-jsipek@cs.sunysb.edu>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 09:40:20PM -0400, Josef 'Jeff' Sipek wrote:
-> Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+(Changing subject to something more informative. You are lost,
+original thread is at http://lkml.org/lkml/2007/5/23/38 )
 
-Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
+On Thu, 2007-05-24 at 14:06 +0200, Romano Giannetti wrote:
+> On Tue, 2007-05-22 at 15:07 -0700, Linus Torvalds wrote:
+> >
+> > On Tue, 22 May 2007, Romano Giannetti wrote:
+> > >
+>
+> > It's not known, no, and yeah, that's scary (and 60 seconds is long enough
+> > that most people would have grown bored and pushed the power button for
+> > five seconds, having considered the resume a failure).
+> >
+> > > [    1.617972] pcmcia: registering new device pcmcia1.0
+> > > [   61.612517] PM: Writing back config space on device 0000:00:[...]
+> > >
 
-> ---
->  Documentation/ecryptfs.txt             |   77 --------------------------------
->  Documentation/filesystems/ecryptfs.txt |   77 ++++++++++++++++++++++++++++++++
->  2 files changed, 77 insertions(+), 77 deletions(-)
->  delete mode 100644 Documentation/ecryptfs.txt
->  create mode 100644 Documentation/filesystems/ecryptfs.txt
-> 
-> diff --git a/Documentation/ecryptfs.txt b/Documentation/ecryptfs.txt
-> deleted file mode 100644
-> index 01d8a08..0000000
-> --- a/Documentation/ecryptfs.txt
-> +++ /dev/null
-> @@ -1,77 +0,0 @@
-> -eCryptfs: A stacked cryptographic filesystem for Linux
-> -
-> -eCryptfs is free software. Please see the file COPYING for details.
-> -For documentation, please see the files in the doc/ subdirectory.  For
-> -building and installation instructions please see the INSTALL file.
-> -
-> -Maintainer: Phillip Hellewell
-> -Lead developer: Michael A. Halcrow <mhalcrow@us.ibm.com>
-> -Developers: Michael C. Thompson
-> -            Kent Yoder
-> -Web Site: http://ecryptfs.sf.net
-> -
-> -This software is currently undergoing development. Make sure to
-> -maintain a backup copy of any data you write into eCryptfs.
-> -
-> -eCryptfs requires the userspace tools downloadable from the
-> -SourceForge site:
-> -
-> -http://sourceforge.net/projects/ecryptfs/
-> -
-> -Userspace requirements include:
-> - - David Howells' userspace keyring headers and libraries (version
-> -   1.0 or higher), obtainable from
-> -   http://people.redhat.com/~dhowells/keyutils/
-> - - Libgcrypt
-> -
-> -
-> -NOTES
-> -
-> -In the beta/experimental releases of eCryptfs, when you upgrade
-> -eCryptfs, you should copy the files to an unencrypted location and
-> -then copy the files back into the new eCryptfs mount to migrate the
-> -files.
-> -
-> -
-> -MOUNT-WIDE PASSPHRASE
-> -
-> -Create a new directory into which eCryptfs will write its encrypted
-> -files (i.e., /root/crypt).  Then, create the mount point directory
-> -(i.e., /mnt/crypt).  Now it's time to mount eCryptfs:
-> -
-> -mount -t ecryptfs /root/crypt /mnt/crypt
-> -
-> -You should be prompted for a passphrase and a salt (the salt may be
-> -blank).
-> -
-> -Try writing a new file:
-> -
-> -echo "Hello, World" > /mnt/crypt/hello.txt
-> -
-> -The operation will complete.  Notice that there is a new file in
-> -/root/crypt that is at least 12288 bytes in size (depending on your
-> -host page size).  This is the encrypted underlying file for what you
-> -just wrote.  To test reading, from start to finish, you need to clear
-> -the user session keyring:
-> -
-> -keyctl clear @u
-> -
-> -Then umount /mnt/crypt and mount again per the instructions given
-> -above.
-> -
-> -cat /mnt/crypt/hello.txt
-> -
-> -
-> -NOTES
-> -
-> -eCryptfs version 0.1 should only be mounted on (1) empty directories
-> -or (2) directories containing files only created by eCryptfs. If you
-> -mount a directory that has pre-existing files not created by eCryptfs,
-> -then behavior is undefined. Do not run eCryptfs in higher verbosity
-> -levels unless you are doing so for the sole purpose of debugging or
-> -development, since secret values will be written out to the system log
-> -in that case.
-> -
-> -
-> -Mike Halcrow
-> -mhalcrow@us.ibm.com
-> diff --git a/Documentation/filesystems/ecryptfs.txt b/Documentation/filesystems/ecryptfs.txt
-> new file mode 100644
-> index 0000000..01d8a08
-> --- /dev/null
-> +++ b/Documentation/filesystems/ecryptfs.txt
-> @@ -0,0 +1,77 @@
-> +eCryptfs: A stacked cryptographic filesystem for Linux
-> +
-> +eCryptfs is free software. Please see the file COPYING for details.
-> +For documentation, please see the files in the doc/ subdirectory.  For
-> +building and installation instructions please see the INSTALL file.
-> +
-> +Maintainer: Phillip Hellewell
-> +Lead developer: Michael A. Halcrow <mhalcrow@us.ibm.com>
-> +Developers: Michael C. Thompson
-> +            Kent Yoder
-> +Web Site: http://ecryptfs.sf.net
-> +
-> +This software is currently undergoing development. Make sure to
-> +maintain a backup copy of any data you write into eCryptfs.
-> +
-> +eCryptfs requires the userspace tools downloadable from the
-> +SourceForge site:
-> +
-> +http://sourceforge.net/projects/ecryptfs/
-> +
-> +Userspace requirements include:
-> + - David Howells' userspace keyring headers and libraries (version
-> +   1.0 or higher), obtainable from
-> +   http://people.redhat.com/~dhowells/keyutils/
-> + - Libgcrypt
-> +
-> +
-> +NOTES
-> +
-> +In the beta/experimental releases of eCryptfs, when you upgrade
-> +eCryptfs, you should copy the files to an unencrypted location and
-> +then copy the files back into the new eCryptfs mount to migrate the
-> +files.
-> +
-> +
-> +MOUNT-WIDE PASSPHRASE
-> +
-> +Create a new directory into which eCryptfs will write its encrypted
-> +files (i.e., /root/crypt).  Then, create the mount point directory
-> +(i.e., /mnt/crypt).  Now it's time to mount eCryptfs:
-> +
-> +mount -t ecryptfs /root/crypt /mnt/crypt
-> +
-> +You should be prompted for a passphrase and a salt (the salt may be
-> +blank).
-> +
-> +Try writing a new file:
-> +
-> +echo "Hello, World" > /mnt/crypt/hello.txt
-> +
-> +The operation will complete.  Notice that there is a new file in
-> +/root/crypt that is at least 12288 bytes in size (depending on your
-> +host page size).  This is the encrypted underlying file for what you
-> +just wrote.  To test reading, from start to finish, you need to clear
-> +the user session keyring:
-> +
-> +keyctl clear @u
-> +
-> +Then umount /mnt/crypt and mount again per the instructions given
-> +above.
-> +
-> +cat /mnt/crypt/hello.txt
-> +
-> +
-> +NOTES
-> +
-> +eCryptfs version 0.1 should only be mounted on (1) empty directories
-> +or (2) directories containing files only created by eCryptfs. If you
-> +mount a directory that has pre-existing files not created by eCryptfs,
-> +then behavior is undefined. Do not run eCryptfs in higher verbosity
-> +levels unless you are doing so for the sole purpose of debugging or
-> +development, since secret values will be written out to the system log
-> +in that case.
-> +
-> +
-> +Mike Halcrow
-> +mhalcrow@us.ibm.com
+More data. I compiled 2.6.21.2 + the patch "Fix ACPI suspend / device
+suspend ordering problem  (52ade9b3b97fd3bea42842a056fe0786c28d0555)
+
+and I discovered that if I do not put the 3Com 3CXEM556B card into the
+pcmcia slot, the suspend/resume (and the snapshot/restore) works ok,
+without delay at all. It continues to work even with a cardbus wifi in
+the slot, so my conclusions are that the probable culprit is restricted
+to:
+
+      *  a race when loading the .cis file from userspace
+      * the serial_cs or 3c589_cs driver (only when the device is in;
+        they are loaded still now and all is working ok)
+
+...what now?
+	Romano
+
+
+
+
+
+--
+Romano Giannetti --- romano.giannetti@gmail.com
+Sorry for the following disclaimer, it's attached by our otugoing server
+and I cannot shut it up.
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+
