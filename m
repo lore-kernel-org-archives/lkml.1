@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbXEXW0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbXEXW1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570AbXEXW0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbXEXW00
+	id S1755264AbXEXW1B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbXEXW0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:26:26 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55017 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbXEXW0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:26:25 -0400
-Date: Thu, 24 May 2007 15:25:41 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.21.3
-Message-ID: <20070524222541.GW3429@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Thu, 24 May 2007 18:26:51 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:47815 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099AbXEXW0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:26:50 -0400
+Subject: Re: [RFC] [-mm] Remove 'unsafe' LZO decompressor
+From: Richard Purdie <richard@openedhand.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, lkml <linux-kernel@vger.kernel.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Nitin Gupta <nitingupta910@gmail.com>,
+       "Markus F.X.J. Oberhumer" <markus@oberhumer.com>
+In-Reply-To: <20070524115055.6be93924.akpm@linux-foundation.org>
+References: <1412F214-FA89-4088-B3A2-DEE03C324FB6@cam.ac.uk>
+	 <20070524115055.6be93924.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 23:26:12 +0100
+Message-Id: <1180045572.12821.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.21.3 kernel.
-This release has a single security fix in it for the geode-aes driver.
-Users with this driver are definitely recommended to upgrade, without
-the fix there is risk of leaking confidential data.
+On Thu, 2007-05-24 at 11:50 -0700, Andrew Morton wrote:
+> On Thu, 24 May 2007 18:15:17 +0100
+> Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
+> 		
+> > Attached is a patch which may be desirable for -mm. It applies  
+> > directly to 2.6.22-rc2-mm1.
+> > 
+> > The patch removes the 'unsafe' LZO decompression function, lowering  
+> > the size of the minilzo.c file by nearly 500 out of an original 1727  
+> > lines. It also removes references to the 'unsafe' decompression  
+> > function in the public LZO header and the EXPORT_SYMBOL_GPL declaration.
+[...]
+> > Comments / disagreement all welcome :)
+> 
+> This is obviously a highly desirable thing to do for a number of reasons. 
+> But have we quantified the performance difference?
 
-798cc279: GEODE-AES: Allow in-place operations [CVE-2007-2451]
+Ok, I've done some tests: 
 
-I'll also be replying to this message with a copy of the patch between
-2.6.21.2 and 2.6.21.3
+1. Comparing the safe and unsafe functions
 
-The updated 2.6.21.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.21.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.21.y.git;a=summary
+For my minilzo kernel patch, the safe version showed a 7.2% performance
+hit. For Nitin's patch, it showed a 3.2% performance hit (but see
+below).
 
-thanks,
--chris
+Could be a lot worse and I don't object to the removal of the unsafe
+version.
 
---------
+2. Comparing Nitin's code with my minilzo based kernel patch.
 
- Makefile                   |    2 +-
- drivers/crypto/geode-aes.c |   12 +++++++++---
- drivers/crypto/geode-aes.h |    3 +--
- 3 files changed, 11 insertions(+), 6 deletions(-)
+My kernel patch is about 2.25 times faster at decompression (16725Kb/ms
+vs 7399Kb/ms) and fractionally faster at compression (1434kb/ms vs
+1490kb/ms). As things stand the performance of Nitin's patch is
+therefore unacceptable as that is a significant decompression
+performance loss.
 
-Summary of changes from v2.6.21.2 to v2.6.21.3
-============================================
+These tests are on 32 bit Intel and in userspace but I've found them to
+be a pretty good indicator of what happens in the real world and on
+other architectures. 
+For simplicity I made these tests with some existing code I had around
+but its licence is such I can't share it, much to my frustration.
 
-Chris Wright (1):
-      Linux 2.6.21.3
+Cheers,
 
-Jordan Crouse (1):
-      GEODE-AES: Allow in-place operations [CVE-2007-2451]
+Richard
+
