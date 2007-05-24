@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbXFANVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbXFANVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbXFANVa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jun 2007 09:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbXFANVT
+	id S1760068AbXFANVn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 09:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbXFANVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jun 2007 09:21:19 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4806 "EHLO spitz.ucw.cz"
+	Fri, 1 Jun 2007 09:21:21 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4805 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754663AbXFANVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753128AbXFANVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 1 Jun 2007 09:21:19 -0400
-Date: Thu, 24 May 2007 14:47:27 +0000
+Date: Thu, 24 May 2007 14:40:28 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: David Wagner <daw-usenet@taverner.cs.berkeley.edu>
-Cc: linux-kernel@vger.kernel.org
+To: Crispin Cowan <crispin@novell.com>
+Cc: Valdis.Kletnieks@vt.edu, Kyle Moffett <mrmacman_g4@mac.com>,
+       Toshiharu Harada <haradats@gmail.com>, James Morris <jmorris@namei.org>,
+       casey@schaufler-ca.com, Andreas Gruenbacher <agruen@suse.de>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
 Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-Message-ID: <20070524144726.GB3920@ucw.cz>
-References: <653438.15244.qm@web36612.mail.mud.yahoo.com> <20070529144518.GD5840@ucw.cz> <Pine.LNX.4.64.0705291622430.31474@asgard.lang.hm> <20070529233041.GC24200@elf.ucw.cz> <f3il25$pcp$1@taverner.cs.berkeley.edu>
+Message-ID: <20070524144028.GA3920@ucw.cz>
+References: <B4A3C582-68F9-4077-B058-03B79A5577EB@mac.com> <Line.LNX.4.64.0705261442000.23020@d.namei> <9d732d950705261608j4bc72cd4s4378df9848101c84@mail.gmail.com> <EC769668-ED57-4D6D-80B2-1BFD039E113C@mac.com> <9d732d950705270025p1bedae23ne137f024eb78886f@mail.gmail.com> <4F828E03-DA6B-484E-A8F2-885D1BC6F23E@mac.com> <9d732d950705280341x78575d85kaf95b0e2884723f3@mail.gmail.com> <69A10107-78FE-4F11-AF52-9B8F648AFC0A@mac.com> <8219.1180473430@turing-police.cc.vt.edu> <465D111C.6060500@novell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f3il25$pcp$1@taverner.cs.berkeley.edu>
+In-Reply-To: <465D111C.6060500@novell.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-(Please do not drop me from cc list when replying).
-
-> > no, this won't help you much against local users, [...]
+> >> Average users are not supposed to be writing security policy.  To be  
+> >> honest, even average-level system administrators should not be  
+> >> writing security policy.
+> That explains so much! "SELinux: you're too dumb to use it, so just keep
+> your hands in your pockets." :-)
 > 
-> Pavel Machek  wrote:
-> >Hmm, I guess I'd love "it is useless on multiuser boxes" to become
-> >standard part of AA advertising.
-> 
-> That's not quite what david@ said.  As I understand it, AppArmor is not
-> focused on preventing attacks by local users against other local users;
-> that's not the main problem it is trying to solve.  Rather, it's primary
-> purpose is to deal with attacks by remote bad guys against your network
-> servers.  That is a laudable goal.
+> AppArmor was designed to allow your average sys admin to write a
+> security policy. It makes different design choices than SELinux to
+> achieve that goal. As a result, AppArmor is an utter failure when
+> compared to SELinux's goals, and SELinux in turn is an utter failure
+> when compared to AppArmor's goals.
 
-It is also not going to prevent local users attacking network servers.
-Local users can ln arbitrary files, and then play tricks with network
-servers.
+I'd not be that sure. SELinux can read AA config files, with some
+performance problems and bad problems with new files.
 
-> This means that AppArmor could still be useful on multiuser boxes,
-> even if that utility is limited to defending (some) network daemons
-> against remote attack (or, more precisely, reducing the damage done by
-> a successful remote attack against a network daemon).
-
-
-Yes, if there's significantly more remote bad guys than local bad
-guys, and if remote bad guys can't just get some local user first, AA
-still has some value.
+I bet solving the 'new files' problem is not going to take 20% of AA's
+size...
 							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
