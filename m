@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752104AbXEXR5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751028AbXEXR5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752104AbXEXR5Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 13:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbXEXR5R
+	id S1751028AbXEXR5u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 13:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbXEXR5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 13:57:17 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:44631 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750747AbXEXR5R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 13:57:17 -0400
-Date: Thu, 24 May 2007 19:57:10 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Rob Landley <rob@landley.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Status of CONFIG_FORCED_INLINING?
-Message-ID: <20070524175710.GD4470@stusta.de>
-References: <200705231510.52932.rob@landley.net> <46549937.1030306@linux.intel.com> <20070523212237.GH2098@stusta.de> <ada7iqz9qlj.fsf@cisco.com> <20070524171019.GA4470@stusta.de> <ada3b1m87pa.fsf@cisco.com>
+	Thu, 24 May 2007 13:57:42 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3446 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750771AbXEXR5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 13:57:41 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Jonathan Brassow <jbrassow@redhat.com>
+Subject: [PATCH] add missing braces in dm driver debug code
+Date: Thu, 24 May 2007 19:57:39 +0200
+User-Agent: KMail/1.9.5
+Cc: Alasdair G Kergon <agk@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <ada3b1m87pa.fsf@cisco.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200705241957.39667.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 10:14:41AM -0700, Roland Dreier wrote:
->  > A function only belongs into a header file if we always want it inlined, 
->  > otherwise it belongs into a C file.
-> 
-> Again, why?  Why don't we trust the compiler to decide if a function
-> should be inlined or not, even if the definition happens to be in a .h
-> file?
-> 
-> It seems like a perfectly valid optimization for the compiler to only
-> emit code once for a function and then call it where it is used, even
-> if that function happens to be defined in a .h file.
+Hello,
 
-The compiler will always inline it when it's called once from a C file, 
-and it might not inline it there when it's called more than once from 
-another C file. So in the end, we have it not only out-of-line but also 
-inlined in several places.
+	Add missing braces in md debug macros.
 
-Functions in header files should either be extremely short so that 
-inlining them makes sense, or always optimize to something extremely 
-short after being inlined.
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-If it's an optimization to emit the code only once, then it's a bug that 
-it's in a header file.
+ drivers/md/dm.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
->  - R.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff -upr linux-2.6.22-rc2-mm1-a/drivers/md/dm.h linux-2.6.22-rc2-mm1-b/drivers/md/dm.h
+--- linux-2.6.22-rc2-mm1-a/drivers/md/dm.h  2007-05-23 13:04:21.000000000 +0200
++++ linux-2.6.22-rc2-mm1-b/drivers/md/dm.h  2007-05-24 19:23:46.000000000 +0200
+@@ -25,7 +25,7 @@
+        if (printk_ratelimit()) \
+            printk(KERN_ERR DM_NAME ": " DM_MSG_PREFIX ": " \
+                   f "\n", ## arg); \
+-   while (0)
++   } while (0)
+ 
+ #define DMWARN(f, arg...) \
+    printk(KERN_WARNING DM_NAME ": " DM_MSG_PREFIX ": " f "\n", ## arg)
+@@ -34,7 +34,7 @@
+        if (printk_ratelimit()) \
+            printk(KERN_WARNING DM_NAME ": " DM_MSG_PREFIX ": " \
+                   f "\n", ## arg); \
+-   while (0)
++   } while (0)
+ 
+ #define DMINFO(f, arg...) \
+    printk(KERN_INFO DM_NAME ": " DM_MSG_PREFIX ": " f "\n", ## arg)
+@@ -43,7 +43,7 @@
+        if (printk_ratelimit()) \
+            printk(KERN_INFO DM_NAME ": " DM_MSG_PREFIX ": " f \
+                   "\n", ## arg); \
+-   while (0)
++   } while (0)
+ 
+ #ifdef CONFIG_DM_DEBUG
+ #  define DMDEBUG(f, arg...) \
+@@ -53,7 +53,7 @@
+        if (printk_ratelimit()) \
+            printk(KERN_DEBUG DM_NAME ": " DM_MSG_PREFIX ": " f \
+                   "\n", ## arg); \
+-   while (0)
++   } while (0)
+ #else
+ #  define DMDEBUG(f, arg...) do {} while (0)
+ #  define DMDEBUG_LIMIT(f, arg...) do {} while (0)
