@@ -1,222 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750815AbXEXQyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbXEXQzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750815AbXEXQyo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 12:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbXEXQyf
+	id S1752049AbXEXQzY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 12:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXEXQzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 12:54:35 -0400
-Received: from styx.suse.cz ([82.119.242.94]:41921 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750763AbXEXQyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 12:54:33 -0400
-Date: Thu, 24 May 2007 19:05:54 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [PATCH 2/2] Fix possible leakage of blocks in UDF
-Message-ID: <20070524170554.GC19709@duck.suse.cz>
-References: <20070524165935.GB19709@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="sHrvAb52M6C8blB9"
-Content-Disposition: inline
-In-Reply-To: <20070524165935.GB19709@duck.suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 24 May 2007 12:55:09 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:40688 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750776AbXEXQzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 12:55:07 -0400
+Date: Thu, 24 May 2007 09:54:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
+       Uwe Bugla <uwe.bugla@gmx.de>, Ken Chen <kenchen@google.com>,
+       xfs-masters@oss.sgi.com, Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Chinner <dgc@sgi.com>,
+       Andrea Righi <righiandr@users.sourceforge.net>,
+       Christoph Lameter <clameter@sgi.com>, linux-ide@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Francis Russell <francisrussell@btopenworld.com>,
+       Alan Cox <alan@redhat.com>, Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       Ben Collins <ben.collins@ubuntu.com>
+Subject: Re: 2.6.22-rc2: known regressions with patches
+Message-Id: <20070524095416.d3371632.akpm@linux-foundation.org>
+In-Reply-To: <20070524161116.047c55e9@the-village.bc.nu>
+References: <46559B62.5040903@googlemail.com>
+	<20070524161116.047c55e9@the-village.bc.nu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 May 2007 16:11:16 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
---sHrvAb52M6C8blB9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> > Subject    : pata_via appears to incorrectly detects 40-pin cable
+> > References : http://lkml.org/lkml/2007/5/17/273
+> >              http://bugzilla.kernel.org/show_bug.cgi?id=8142
+> > Submitter  : Francis Russell <francisrussell@btopenworld.com>
+> > Status     : Not really a regression. Alan seems to have a general fix.
+> >              (Tejun Heo)
+> 
+> The laptop one has been resolved, tested and fired at Andrew.
 
-  Hello,
+Do you recall the Subject: on that patch?
 
-  attached is a patch that fixes possible leakage of free blocks / use of
-free blocks in UDF (which spilled nice assertion failures I've added in my
-first round of patches). More details in the changelog. Andrew, please apply.
-Both changes have survived some time of fsx and fsstress testing so they
-should be reasonably safe.
+> Note btw that the bugzilla and email refer to two differing bugs. The
+> SATA one (bugzilla ref) has gone to Jeff and is a different fix.
 
-								Honza
+And that?
 
---sHrvAb52M6C8blB9
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="udf-2.6.22-rc2-2-udf_block_leak.diff"
-
-It is wrong to call udf_discard_prealloc() from udf_clear_inode() as at that time
-inode changes won't be written any more which can lead to leakage of blocks, use
-of free blocks or improperly aligned extents. Also udf_discard_prealloc() does two
-different things - it removes preallocated blocks and truncates the last extent to
-exactly match i_size. We move the latter functionality to udf_truncate_tail_extent(),
-call udf_discard_prealloc() when last reference to a file is dropped and call
-udf_truncate_tail_extent() when inode is being removed from inode cach
-(udf_drop_inode() call). We cannot call udf_truncate_tail_extent() earlier as
-subsequent open+write would find the last block of the file mapped and happily write
-to the end of it, although the last extent says it's shorter.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/inode.c linux-2.6.22-rc2-2-udf_block_leak/fs/udf/inode.c
---- linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/inode.c	2007-05-24 18:16:36.000000000 +0200
-+++ linux-2.6.22-rc2-2-udf_block_leak/fs/udf/inode.c	2007-05-24 18:18:54.000000000 +0200
-@@ -100,14 +100,18 @@ no_delete:
- 	clear_inode(inode);
- }
- 
--void udf_clear_inode(struct inode *inode)
-+void udf_drop_inode(struct inode *inode)
- {
- 	if (!(inode->i_sb->s_flags & MS_RDONLY)) {
- 		lock_kernel();
--		udf_discard_prealloc(inode);
-+		udf_truncate_tail_extent(inode);
- 		unlock_kernel();
- 	}
-+	generic_drop_inode(inode);
-+}
- 
-+void udf_clear_inode(struct inode *inode)
-+{
- 	kfree(UDF_I_DATA(inode));
- 	UDF_I_DATA(inode) = NULL;
- }
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/super.c linux-2.6.22-rc2-2-udf_block_leak/fs/udf/super.c
---- linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/super.c	2007-05-24 18:00:05.000000000 +0200
-+++ linux-2.6.22-rc2-2-udf_block_leak/fs/udf/super.c	2007-05-24 18:18:54.000000000 +0200
-@@ -162,6 +162,7 @@ static const struct super_operations udf
- 	.write_inode		= udf_write_inode,
- 	.delete_inode		= udf_delete_inode,
- 	.clear_inode		= udf_clear_inode,
-+	.drop_inode		= udf_drop_inode,
- 	.put_super		= udf_put_super,
- 	.write_super		= udf_write_super,
- 	.statfs			= udf_statfs,
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/truncate.c linux-2.6.22-rc2-2-udf_block_leak/fs/udf/truncate.c
---- linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/truncate.c	2007-05-24 18:00:05.000000000 +0200
-+++ linux-2.6.22-rc2-2-udf_block_leak/fs/udf/truncate.c	2007-05-24 18:18:54.000000000 +0200
-@@ -61,7 +61,11 @@ static void extent_trunc(struct inode * 
- 	}
- }
- 
--void udf_discard_prealloc(struct inode * inode)
-+/*
-+ * Truncate the last extent to match i_size. This function assumes
-+ * that preallocation extent is already truncated.
-+ */
-+void udf_truncate_tail_extent(struct inode *inode)
- {
- 	struct extent_position epos = { NULL, 0, {0, 0}};
- 	kernel_lb_addr eloc;
-@@ -71,7 +75,7 @@ void udf_discard_prealloc(struct inode *
- 	int adsize;
- 
- 	if (UDF_I_ALLOCTYPE(inode) == ICBTAG_FLAG_AD_IN_ICB ||
--		inode->i_size == UDF_I_LENEXTENTS(inode))
-+	    inode->i_size == UDF_I_LENEXTENTS(inode))
- 		return;
- 
- 	if (UDF_I_ALLOCTYPE(inode) == ICBTAG_FLAG_AD_SHORT)
-@@ -79,25 +83,63 @@ void udf_discard_prealloc(struct inode *
- 	else if (UDF_I_ALLOCTYPE(inode) == ICBTAG_FLAG_AD_LONG)
- 		adsize = sizeof(long_ad);
- 	else
--		adsize = 0;
--
--	epos.block = UDF_I_LOCATION(inode);
-+		BUG();
- 
- 	/* Find the last extent in the file */
- 	while ((netype = udf_next_aext(inode, &epos, &eloc, &elen, 1)) != -1)
- 	{
- 		etype = netype;
- 		lbcount += elen;
--		if (lbcount > inode->i_size && lbcount - elen < inode->i_size)
--		{
--			WARN_ON(lbcount - inode->i_size >= inode->i_sb->s_blocksize);
-+		if (lbcount > inode->i_size) {
-+			if (lbcount - inode->i_size >= inode->i_sb->s_blocksize)
-+				printk(KERN_WARNING "udf_truncate_tail_extent():\
-+ Too long extent after EOF in inode %u: i_size: %Ld lbcount: %Ld extent %u+%u\n",
-+(unsigned)inode->i_ino, (long long)inode->i_size, (long long)lbcount,
-+(unsigned)eloc.logicalBlockNum, (unsigned)elen);
- 			nelen = elen - (lbcount - inode->i_size);
- 			epos.offset -= adsize;
- 			extent_trunc(inode, &epos, eloc, etype, elen, nelen);
- 			epos.offset += adsize;
--			lbcount = inode->i_size;
-+			if (udf_next_aext(inode, &epos, &eloc, &elen, 1) != -1)
-+				printk(KERN_ERR "udf_truncate_tail_extent(): \
-+Extent after EOF in inode %u.\n", (unsigned)inode->i_ino);
-+			break;
- 		}
- 	}
-+	/* This inode entry is in-memory only and thus we don't have to mark
-+	 * the inode dirty */
-+	UDF_I_LENEXTENTS(inode) = inode->i_size;
-+	brelse(epos.bh);
-+}
-+
-+void udf_discard_prealloc(struct inode * inode)
-+{
-+	struct extent_position epos = { NULL, 0, {0, 0}};
-+	kernel_lb_addr eloc;
-+	uint32_t elen;
-+	uint64_t lbcount = 0;
-+	int8_t etype = -1, netype;
-+	int adsize;
-+
-+	if (UDF_I_ALLOCTYPE(inode) == ICBTAG_FLAG_AD_IN_ICB ||
-+		inode->i_size == UDF_I_LENEXTENTS(inode))
-+		return;
-+
-+	if (UDF_I_ALLOCTYPE(inode) == ICBTAG_FLAG_AD_SHORT)
-+		adsize = sizeof(short_ad); 
-+	else if (UDF_I_ALLOCTYPE(inode) == ICBTAG_FLAG_AD_LONG)
-+		adsize = sizeof(long_ad);
-+	else
-+		adsize = 0;
-+
-+	epos.block = UDF_I_LOCATION(inode);
-+
-+	/* Find the last extent in the file */
-+	while ((netype = udf_next_aext(inode, &epos, &eloc, &elen, 1)) != -1)
-+	{
-+		etype = netype;
-+		lbcount += elen;
-+	}
- 	if (etype == (EXT_NOT_RECORDED_ALLOCATED >> 30)) {
- 		epos.offset -= adsize;
- 		lbcount -= elen;
-@@ -118,9 +160,9 @@ void udf_discard_prealloc(struct inode *
- 			mark_buffer_dirty_inode(epos.bh, inode);
- 		}
- 	}
-+	/* This inode entry is in-memory only and thus we don't have to mark
-+	 * the inode dirty */
- 	UDF_I_LENEXTENTS(inode) = lbcount;
--
--	WARN_ON(lbcount != inode->i_size);
- 	brelse(epos.bh);
- }
- 
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/udfdecl.h linux-2.6.22-rc2-2-udf_block_leak/fs/udf/udfdecl.h
---- linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/udfdecl.h	2007-05-24 18:00:05.000000000 +0200
-+++ linux-2.6.22-rc2-2-udf_block_leak/fs/udf/udfdecl.h	2007-05-24 18:18:54.000000000 +0200
-@@ -103,6 +103,7 @@ extern struct buffer_head * udf_bread(st
- extern void udf_truncate(struct inode *);
- extern void udf_read_inode(struct inode *);
- extern void udf_delete_inode(struct inode *);
-+extern void udf_drop_inode(struct inode *);
- extern void udf_clear_inode(struct inode *);
- extern int udf_write_inode(struct inode *, int);
- extern long udf_block_map(struct inode *, sector_t);
-@@ -146,6 +147,7 @@ extern void udf_free_inode(struct inode 
- extern struct inode * udf_new_inode (struct inode *, int, int *);
- 
- /* truncate.c */
-+extern void udf_truncate_tail_extent(struct inode *);
- extern void udf_discard_prealloc(struct inode *);
- extern void udf_truncate_extents(struct inode *);
- 
-
---sHrvAb52M6C8blB9--
+Thanks.
