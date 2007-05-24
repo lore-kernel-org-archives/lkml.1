@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751335AbXEXWf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbXEXWji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751335AbXEXWf7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXEXWfs
+	id S1752563AbXEXWji (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXEXWjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:35:48 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49856 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750846AbXEXWfq (ORCPT
+	Thu, 24 May 2007 18:39:31 -0400
+Received: from web52610.mail.re2.yahoo.com ([206.190.48.213]:30658 "HELO
+	web52610.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750701AbXEXWja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:35:46 -0400
-Date: Thu, 24 May 2007 15:35:45 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1
-In-Reply-To: <20070524145517.1f32cd94.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
- <46540DB2.5000605@googlemail.com> <Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
- <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
- <20070523153730.e0e9e91d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
- <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
- <20070524073131.GA17501@elte.hu> <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
- <20070524142908.f39f42ea.akpm@linux-foundation.org>
- <20070524145517.1f32cd94.randy.dunlap@oracle.com>
+	Thu, 24 May 2007 18:39:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=dxEQqQSxseznw0D1kF5w+739Y/aKVV8jgC7VNLHBcBLp9+xgSRmppOja82ABmFy+hYQtw0bUJ3v7ug5w6OOREQ7FZOKi1hstZPL/wTBjyrG+H3NJfRosGQfAUcOJx5D+4DPu6rCuJxKGnh8hqGNoJ9hfVkfDuFp2VQH43SOGjho=;
+X-YMail-OSG: PPRr1d0VM1ko6vEVPAOe.U2neFf0dxjCg3c51f5VWqugzMhi5RdJkhMXJfbAlQE6j1p957ANgDs4.VrdYGKjOsJ_3mnYs0g4rnkTMxg40GJBEBzLO8Y-
+Date: Fri, 25 May 2007 08:39:28 +1000 (EST)
+From: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705241516330.32086@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <495329.60920.qm@web52610.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007, Randy Dunlap wrote:
+--- Christoph Lameter <clameter@sgi.com> wrote:
+> slabinfo -v
+[...] 
+> Any corrupted objects will be reported to the syslog.
 
-> This is pretty-printing.  and creature-feep.
-> But lib/hexdump.c can probably do this if we add a "prefix/tag" string
-> parameter to it.
-> 
-> Hugh D. wants it to print 32-bit quantities, not just bytes.
-> Yet another parameter.
-> 
-> I'll look into these unless Christoph et al does so first.
+(Only only could have made that sentence better.)
 
-I'd appreciate if you could do this. I just added a call to the function 
-in hexdump.c and got this ugly output. I think we need
+Sorry I didn't know slabinfo -v produces nothing on stdout, stderr, rather all
+findings reported to syslog. Right? You don't have to answer this question, if
+my assumptions are right.
 
-1. byte output
+If so, when ran it produced nothing in the syslog.
 
-2. A way to specify the width of the description.
+Sorry mate, I'm unable to spend a lot of time on slub debugging. I'll
+nonetheless keep slub as my preferred memory allocator for the rest of the
+2.6.22-rc process. If anything interesting turns up that I could contribute
+during this phase, you'll be the first know I promise.
+
+Thanks
 
 
-BUG kmalloc-16: Redzone corrupted. Expected 0xcc at 0xffff81000235ff30 but 
-found 0x12
-INFO: Last alloc: slab_sysfs_init+0xe1/0x280 jiffies_ago=0 cpu=0 pid=1
-INFO: Object=0xffff81000235ff20 slab=0xffff81000107bcc8 offset=3872
-INFO: flags=0x4000000000000082 inuse=45 freelist=0xffff81000235ff78
-Bytes b4ffff81000235ff10: 00000000 00000000 5a5a5a5a 5a5a5a5a  ........ZZZZZZZZ
-Objectffff81000235ff20: 00000000 00000000 00000000 00000000  ................
-Redzoneffff81000235ff30: 12cccccc cccccccc  .IIIIIII
-FreePointer 0xffff81000235ff38 -> 0xffff81000235ff78
-Fillerffff81000235ff70: 5a5a5a5a 5a5a5a5a  ZZZZZZZZ
 
-Call Trace:
- [<ffffffff8026d2af>] check_bytes_and_report+0x7f/0xe0
- [<ffffffff8026d573>] check_object+0x63/0x260
- [<ffffffff8026fd75>] validate_slab+0x175/0x1b0
- [<ffffffff8026fdc9>] validate_slab_slab+0x19/0x70
- [<ffffffff8026fe76>] validate_slab_cache+0x56/0x110
- [<ffffffff805d2466>] slab_sysfs_init+0x106/0x280
- [<ffffffff805c3624>] kernel_init+0xb4/0x290
- [<ffffffff8020a218>] child_rip+0xa/0x12
- [<ffffffff8038dd68>] acpi_ds_init_one_object+0x0/0x7c
- [<ffffffff805c3570>] kernel_init+0x0/0x290
- [<ffffffff8020a20e>] child_rip+0x0/0x12
-
-FIX kmalloc-16: Restoring Redzone (0xcc) from 0xffff81000235ff30-0xffff81000235ff30
-
+      ___________________________________________________________________________________
+How would you spend $50,000 to create a more sustainable environment in Australia?  Go to Yahoo!7 Answers and share your idea.
+http://advision.webevents.yahoo.com/aunz/lifestyle/answers/y7ans-babp_reg.html
 
