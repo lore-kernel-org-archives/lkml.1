@@ -1,89 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbXEXILA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbXEXIME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbXEXILA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 04:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbXEXIKr
+	id S1760059AbXEXIME (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 04:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbXEXILs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 04:10:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33473 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755150AbXEXIKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 04:10:46 -0400
-Date: Thu, 24 May 2007 10:09:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, pranith-kumar_d@mentorg.com,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] CFS scheduler, -v14
-Message-ID: <20070524080959.GA29151@elte.hu>
-References: <20070523120616.GA23407@elte.hu> <20070524064235.GA2386@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 May 2007 04:11:48 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:13181 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755287AbXEXILr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 04:11:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=LJZCKWFXvjvkttBh2kpdei0DHk3M+Z+3QnLgbQIENRWlQoButOunqmqncWQx6vs9C895K5s0g5wNDyj5YvpfSu6Xnw29FYi+/ysmHaRAzLBfMnfbQLoyA93b0kITOF2DMwR0i12dc80ACvxVgRvqXrxpxV2ClOm2kSSowKQF1kk=
+Message-ID: <a8e1da0705240111l790ee29emdd872cf6c56a5e37@mail.gmail.com>
+Date: Thu, 24 May 2007 08:11:46 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: clameter@sgi.com
+Subject: 2.6.22-rc2-mm1 SLUB oops
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070524064235.GA2386@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+When I exec aumix from console, the kernel oops seems in modprobe
+process, and after a while , system hanged.
 
-> Hi, Ingo,
-> 
-> I've implemented a patch on top of v14 for better accounting of 
-> sched_info statistics. Earlier, sched_info relied on jiffies for 
-> accounting and I've seen applications that show "0" cpu usage 
-> statistics (in delay accounting and from /proc) even though they've 
-> been running on the CPU for a long time. The basic problem is that 
-> accounting in jiffies is too coarse to be accurate.
-> 
-> The patch below uses sched_clock() for sched_info accounting.
+BUG: unable to handle kernel paging request at virtual address 646c6f68
+ printing eip:
+c016531e
+*pde = 00000000
+Oops: 0000 [#1]
+PREEMPT
+Modules linked in: cifs snd_hda_intel snd_pcm snd_timer snd_page_alloc snd sound
+core ipv6 capability commoncap e100 mii agpgart pcspkr psmouse
+CPU:    0
+EIP:    0060:[<c016531e>]    Not tainted VLI
+EFLAGS: 00010002   (2.6.22-rc2-mm1 #2)
+EIP is at __kmalloc_track_caller+0x3e/0x80
+eax: 00000000   ebx: c054dc24   ecx: 646c6f68   edx: c1050960
+esi: 00000286   edi: 000000d0   ebp: c013d8c5   esp: c30a1e98
+ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Process modprobe (pid: 1741, ti=c30a0000 task=c1f0ef40 task.ti=c30a0000)
+Stack: c013d866 00000282 f888803e c304194c f8888044 00000006 c0150505 f8840b0c
+       c015049a 0000000f c304194c 00000258 c3041800 c013d8c5 c0521f10 00000000
+       f8840b00 00000000 c3041a34 f8888080 f8887fa4 00000019 f8840b00 f8885000
+Call Trace:
+ [<c013d866>] add_sect_attrs+0x66/0x150
+ [<c0150505>] kstrdup+0x35/0x70
+ [<c015049a>] __kzalloc+0x1a/0x50
+ [<c013d8c5>] add_sect_attrs+0xc5/0x150
+ [<c013f04e>] load_module+0xa6e/0xc00
+ [<c013f244>] sys_init_module+0x44/0x140
+ [<c0104098>] syscall_call+0x7/0xb
+ [<c0440000>] packet_dev_mc+0x10/0x80
+ =======================
+Code: 89 74 24 0c e8 24 f8 ff ff 89 c3 31 c0 85 db 74 24 9c 5e fa 8b 93 88 00 00
+ 00 85 d2 74 2b 8b 42 0c 85 c0 74 24 89 c1 0f b7 42 0a <8b> 04 81 89 42 0c 56 9d
+ 89 c8 8b 5c 24 08 8b 74 24 0c 8b 7c 24
+EIP: [<c016531e>] __kmalloc_track_caller+0x3e/0x80 SS:ESP 0068:c30a1e98
 
-nice! I've merged your patch and it built/booted fine so it should show 
-up in -v15. This should also play well with Andi's sched_clock() 
-enhancements in -mm, slated for .23.
-
-btw., i think some more consolidation could be done in this area. We've 
-now got the traditional /proc/PID/stat metrics, schedstats, taskstats 
-and delay accounting and with CFS we've got /proc/sched_debug and 
-/proc/PID/sched. There's a fair amount of overlap.
-
-btw., CFS does this change to fs/proc/array.c:
-
-@@ -410,6 +408,14 @@ static int do_task_stat(struct task_stru
- 	/* convert nsec -> ticks */
- 	start_time = nsec_to_clock_t(start_time);
- 
-+	/*
-+	 * Use CFS's precise accounting, if available:
-+	 */
-+	if (!has_rt_policy(task)) {
-+		utime = nsec_to_clock_t(task->sum_exec_runtime);
-+		stime = 0;
-+	}
-+
- 	res = sprintf(buffer,"%d (%s) %c %d %d %d %d %d %lu %lu \
- %lu %lu %lu %lu %lu %ld %ld %ld %ld %d 0 %llu %lu %ld %lu %lu %lu %lu %lu \
- %lu %lu %lu %lu %lu %lu %lu %lu %d %d %lu %lu %llu\n",
-
-if you have some spare capacity to improve this code, it could be 
-further enhanced by not setting 'stime' to zero, but using the existing 
-jiffies based utime/stime statistics as a _ratio_ to split up the 
-precise p->sum_exec_runtime. That way we dont have to add precise 
-accounting to syscall entry/exit points (that would be quite expensive), 
-but still the sum of utime+stime would be very precise. (and that's what 
-matters most anyway)
-
-	Ingo
+Regards
+dave
