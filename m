@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752219AbXEXSy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbXEXS4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752219AbXEXSy0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 14:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbXEXSyR
+	id S1752285AbXEXS4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 14:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbXEXS4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 14:54:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:64953 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbXEXSyQ (ORCPT
+	Thu, 24 May 2007 14:56:24 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:51068 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbXEXS4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 14:54:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=FxIjJJaSBO5ZxrhQsFPT7/pddwfNNvAlK0HkdMFIi+w1jmqXos62jcCwhM+MObCsEInQg9EIUoT0f5J9/sbQ1uJI2WAtHZWDHjThq2u8+oNw6ljEnrPW1mPpqkXABzMsQYc+wY+TG9ljMH7vcM7d3qOpUsXkyyfxX5sVgtV4A9Q=
-Date: Thu, 24 May 2007 22:53:20 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Fix possible UDF data corruption
-Message-ID: <20070524185320.GA20500@cvg>
-References: <20070524165935.GB19709@duck.suse.cz> <20070524172017.GA19852@cvg> <20070524113550.d09dbf9e.akpm@linux-foundation.org>
+	Thu, 24 May 2007 14:56:23 -0400
+Message-ID: <4655DF34.7000507@zytor.com>
+Date: Thu, 24 May 2007 11:53:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070524113550.d09dbf9e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.22-rc1-mm1: IDE compile error
+References: <20070515201914.16944e04.akpm@linux-foundation.org>	<20070516185552.GA4086@stusta.de>	<200705240145.38055.bzolnier@gmail.com> <20070524115549.01c0e1ca@the-village.bc.nu>
+In-Reply-To: <20070524115549.01c0e1ca@the-village.bc.nu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andrew Morton - Thu, May 24, 2007 at 11:35:50AM -0700]
-| On Thu, 24 May 2007 21:20:17 +0400
-| Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > [Jan Kara - Thu, May 24, 2007 at 06:59:35PM +0200]
-| > |   Hi Andrew,
-| > | 
-| > |   attached patch fixes possible data corruption in UDF - this bug was actually
-| > | introduced by one of my fixes :-( and should (if possible) go to Linus before
-| > | 2.6.22 is out (that's why I'm diffing against Linus's tree and not the
-| > | latest changes in -mm tree)... Thanks.
-| > | 
-| > | 								Honza
-| > | 
-| > | -- 
-| > | Jan Kara <jack@suse.cz>
-| > | SuSE CR Labs
-| > 
-| > Jan should I wait until Andrew has your patches included and
-| > only then (having taken into account your patches) produce my
-| > conversion?
-| > 
-| 
-| yes please - bugfixes come first.
-| 
+Alan Cox wrote:
+>>> hd.c:(.init.text+0x44a7d): undefined reference to `drive_info'
+>>> hd.c:(.init.text+0x44a89): undefined reference to `drive_info'
+>>> hd.c:(.init.text+0x44a95): undefined reference to `drive_info'
+>>> hd.c:(.init.text+0x44aa1): undefined reference to `drive_info'
+>>> hd.c:(.init.text+0x44aad): undefined reference to `drive_info'
+>>> drivers/built-in.o:hd.c:(.init.text+0x44ab9): more undefined references to `drive_info' follow
+>>> make[1]: *** [.tmp_vmlinux1] Error 1
+>>>
+>>> <--  snip  -->
+>>>
+>>> Considering the fact that we have two more recent drivers with the same 
+>>> functionality, it might be an option to simply remove this driver...
+>> Care to send a patch?
+> 
+> hd.c can drive MFM and RLL disks and drivers/ide cannot. Although it
+> really wants burying further down the config tree the ability to read MFM
+> and RLL disks when recovering ancient data is useful and people do
+> actually use this driver now and then rescuing stuff like twenty year old
+> datasets.
+> 
+> It thus needs fixing not removing.
 
-ok
+Why is this driver parked in drivers/ide/legacy when the companion
+driver, xd.c, is in drivers/block (where hd.c used to be at one point,
+too)?  Especially so since it's not really for IDE, but for ST-506.
 
-		Cyrill
+HOWEVER, the code that fails above hard-assumes that the ST-506 disks
+that you have are your primary system drives, which is obviously a wrong
+assumption -- ST-506 drives were obsolete quite a while before Linux
+existed[1].
 
+xd.c, on the other hand, seems to actually go out and query the hardware
+directly.  I guess this is understandably, since this controller would
+never have been primary.
+
+If hd.c is pure legacy, which it obviously is, should we remove the code
+to assume the BIOS settings are the MFM/RLL settings (i.e. the __i386__
+clause), and instead do something more like the __arm__ clause which
+means that "if you really want to use this you have to specify the
+parameters manually"?
+
+	-hpa
+
+
+[1] The 386-16 that I had access to at Northwestern, which with 0.59
+BogoMIPS was the slowest Linux system in existence until Linux was
+ported to other architectures, might have been an ST-506 drive, but I'm
+not sure.
