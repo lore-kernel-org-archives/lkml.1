@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763450AbXEXEmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760256AbXEXE5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763450AbXEXEmA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 00:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759862AbXEXElu
+	id S1760256AbXEXE5l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 00:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757450AbXEXE5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 00:41:50 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:45264 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759246AbXEXElt (ORCPT
+	Thu, 24 May 2007 00:57:33 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:53669 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756898AbXEXE5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 00:41:49 -0400
-Message-ID: <46551635.30809@cosmosbay.com>
-Date: Thu, 24 May 2007 06:36:05 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Thu, 24 May 2007 00:57:32 -0400
+Message-ID: <46551A93.6050801@gmail.com>
+Date: Thu, 24 May 2007 06:54:43 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Vasily Averin <vvs@sw.ru>
-CC: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH netdev] "wrong timeout value" in sk_wait_data()
-References: <465512EB.4000808@sw.ru>
-In-Reply-To: <465512EB.4000808@sw.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Thu, 24 May 2007 06:36:11 +0200 (CEST)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Michael Tokarev <mjt@tls.msk.ru>, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] add "notime" boot option
+References: <20070522120938.db67f1e9.randy.dunlap@oracle.com>	<46541F65.9060507@msgid.tls.msk.ru>	<20070523100416.93835196.randy.dunlap@oracle.com>	<465492C8.9060003@gmail.com> <20070523135513.b3573f52.randy.dunlap@oracle.com>
+In-Reply-To: <20070523135513.b3573f52.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vasily Averin a écrit :
-> sys_setsockopt() do not check properly timeout values for
-> SO_RCVTIMEO/SO_SNDTIMEO, for example it's possible to set negative timeout
-> values. POSIX do not defines behaviour for sys_setsockopt in case negative
-> timeouts, but requires that setsockopt() shall fail with -EDOM if the send and
-> receive timeout values are too big to fit into the timeout fields in the socket
-> structure.
-> In current implementation negative timeout can lead to error messages like
-> "schedule_timeout: wrong timeout value".
-> 
-> Proposed patch:
-> - checks tv_usec and returns -EDOM if it is wrong
-> - do not allows to set negative timeout values (sets 0 instead) and outputs
-> ratelimited information message about such attempts.
-> 
-> Signed-Off-By:	Vasily Averin <vvs@sw.ru>
-> 
-> diff --git a/net/core/sock.c b/net/core/sock.c
-> index 22183c2..27d7a46 100644
-> --- a/net/core/sock.c
-> +++ b/net/core/sock.c
-> @@ -206,7 +206,19 @@ static int sock_set_timeout(long *timeo_p, char __user
-> *optval, int optlen)
->  		return -EINVAL;
->  	if (copy_from_user(&tv, optval, sizeof(tv)))
->  		return -EFAULT;
-> -
-> +	if (tv.tv_usec < 0 || tv.tv_usec >= 1000000)
-> +		return -EDOM;
+On 05/23/2007 10:55 PM, Randy Dunlap wrote:
 
-Please use USEC_PER_SEC instead of 1000000
-
-> +
-> +	if (tv.tv_sec < 0) {
-> +		static int warned = 0;
-> +		*timeo_p = 0;
-> +		if (warned < 10 && net_ratelimit())
-> +			warned++;
-> +			printk(KERN_INFO "sock_set_timeout: `%s' (pid %d) "
-> +			       "tries to set negative timeout\n",
-> +			        current->comm, current->pid);
-> +		return 0;
-> +	}
->  	*timeo_p = MAX_SCHEDULE_TIMEOUT;
->  	if (tv.tv_sec == 0 && tv.tv_usec == 0)
->  		return 0;
+>>>> That's a good source of confusion.  To me, "notime" means something
+>>>>  like "don't bother calculating time", instead of the proposed 
+>>>> behavior.  Can't it be something like 'nologts' (no log timestamps)
+>>>>  or nots or notimestamps or nologtime instead
+>>> 
+>>> "nologtime" is OK with me.  or does it confuse people in a different
+>>> way?  Anyone else?
+>> 
+>> The CONFIG option is called CONFIG_PRINTK_TIME. How about "noprintktime"? At 
+>> least nicely to the point...
 > 
+> Actually I'm concerned about total kernel command line length,
+> so using option names that are "long" when short will do is not good IMO.
+> 
+> I.e., I can easily overflow a 255-byte command line length buffer,
+> so Shorter is Better.
+
+Okay. I would by the way not be against turning the timestamping off by 
+default and turning it _on_ with a "timestamps" or "logtime" or whatever 
+option. The information is sometimes handy for seeing the (clustering of) 
+event times so I've been compiling it in for a while on some boxes but in 
+the majority case for me it's noise taking up printk real estate...
+
+Rene.
 
