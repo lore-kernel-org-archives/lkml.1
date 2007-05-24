@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbXEXVto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbXEXVwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbXEXVto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbXEXVth
+	id S1753666AbXEXVwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbXEXVwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:49:37 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:32446 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbXEXVtg convert rfc822-to-8bit (ORCPT
+	Thu, 24 May 2007 17:52:07 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:2423 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbXEXVwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:49:36 -0400
-Date: Thu, 24 May 2007 14:55:17 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1
-Message-Id: <20070524145517.1f32cd94.randy.dunlap@oracle.com>
-In-Reply-To: <20070524142908.f39f42ea.akpm@linux-foundation.org>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-	<46540DB2.5000605@googlemail.com>
-	<Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
-	<4654AC94.6080601@googlemail.com>
-	<20070523150122.f9946f37.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
-	<20070523153730.e0e9e91d.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
-	<20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
-	<20070524073131.GA17501@elte.hu>
-	<Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
-	<20070524142908.f39f42ea.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 24 May 2007 17:52:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=IehFrdvU0Pv5QtqINIggYGqPwZwFkhs4BYZx/kDLYZhJeoQnQwRzffjDRV8lP6m3Gocn+wGrOS7z3idadBm98AjsB58bbsn0y53nEW/d9kZZHWdUTw/KkZ1X9WsJ3c3y/+W9BkutQIsSsDlREWKFWBdz8tqZdRZg5iLfZhG/D+8=
+Subject: Re: Long delay in resume from RAM (Was Re: [patch 00/69]
+	-stablereview)
+From: Romano Giannetti <romano.giannetti@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20070524211237.GC1372@uranus.ravnborg.org>
+References: <4652070D.3090509@redhat.com>
+	 <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
+	 <20070521212522.GL3429@sequoia.sous-sol.org>
+	 <1179870110.16656.2.camel@localhost>
+	 <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
+	 <1180008394.15600.26.camel@localhost> <1180019201.15600.57.camel@localhost>
+	 <alpine.LFD.0.98.0705240815530.26602@woody.linux-foundation.org>
+	 <1180037649.15241.6.camel@localhost>
+	 <20070524140154.c8e93d69.akpm@linux-foundation.org>
+	 <20070524211237.GC1372@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 23:51:53 +0200
+Message-Id: <1180043514.15241.31.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007 14:29:08 -0700 Andrew Morton wrote:
+On Thu, 2007-05-24 at 23:12 +0200, Sam Ravnborg wrote:
 
-> On Thu, 24 May 2007 14:20:03 -0700 (PDT)
-> Christoph Lameter <clameter@sgi.com> wrote:
 > 
-> >   Bytes b4 0xffff81000208f6b0:  55 db fe ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a UUpÿ....ZZZZZZZZ
-> >     Object 0xffff81000208f6c0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >     Object 0xffff81000208f6d0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >     Object 0xffff81000208f6e0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >     Object 0xffff81000208f6f0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >     Object 0xffff81000208f700:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >     Object 0xffff81000208f710:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >     Object 0xffff81000208f720:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >     Object 0xffff81000208f730:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> >    Redzone 0xffff81000208f8c0:  ab bb bb bb bb bb bb bb                         «»»»»»»»
+> I really cannot see why it makes a difference.
+> If you use += (and :=) make will resolve EXTRA_CFLAGS when it see it.
+> Whereas with = make will resolve it only when actually referenced.
 > 
-> can we do this with lib/hexdump.c rather than having a private implementation
-> in slub?
+> But the way we use EXTRA_CFLAGS it should not matter.
+> If the fix above really helps nfs I need to take a closer look tomorrow.
+> 
 
-This is pretty-printing.  and creature-feep.
-But lib/hexdump.c can probably do this if we add a "prefix/tag" string
-parameter to it.
+No, you're right, it doesn't help. What could help is a form of saying
+to make "add this EXTRA_CFLAGS  to whatever is specified in the command
+line". No idea if it exists.
 
-Hugh D. wants it to print 32-bit quantities, not just bytes.
-Yet another parameter.
+Romano
 
-I'll look into these unless Christoph et al does so first.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
