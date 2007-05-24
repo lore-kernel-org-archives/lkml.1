@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764161AbXEXEX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763647AbXEXE12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764161AbXEXEX2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 00:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbXEXEXU
+	id S1763647AbXEXE12 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 00:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbXEXE1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 00:23:20 -0400
-Received: from ihemail4.lucent.com ([135.245.0.39]:38534 "EHLO
-	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759532AbXEXEXU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 00:23:20 -0400
-Message-ID: <46551335.7030909@alcatel-lucent.com>
-Date: Thu, 24 May 2007 12:23:17 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 24 May 2007 00:27:19 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:13139 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759198AbXEXE1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 00:27:18 -0400
+Message-ID: <465512EB.4000808@sw.ru>
+Date: Thu, 24 May 2007 08:22:03 +0400
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: How to produce a core
-References: <4655064F.1030808@alcatel-lucent.com> <20070524034913.GN943@1wt.eu>
-In-Reply-To: <20070524034913.GN943@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH netdev] "wrong timeout value" in sk_wait_data()
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 May 2007 04:22:28.0289 (UTC) FILETIME=[23787310:01C79DBB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> On Thu, May 24, 2007 at 11:28:15AM +0800, gshan wrote:
->   
->> This morning, I tried command "kill -7 [pid]" but didn't see the core 
->> file. Anybody has ideas?
->>     
->
-> do the following before starting your program :
->
-> # ulimit -c unlimited
->
-> You can check before and after that the core size changed from 0 to
-> "unlimited" :
->
-> # ulimit -a
->
-> Willy
->
->   
-Willy,
+sys_setsockopt() do not check properly timeout values for
+SO_RCVTIMEO/SO_SNDTIMEO, for example it's possible to set negative timeout
+values. POSIX do not defines behaviour for sys_setsockopt in case negative
+timeouts, but requires that setsockopt() shall fail with -EDOM if the send and
+receive timeout values are too big to fit into the timeout fields in the socket
+structure.
+In current implementation negative timeout can lead to error messages like
+"schedule_timeout: wrong timeout value".
 
-Thank you very much. The command "kill -7 [pid]" really works with 
-"ulimit -c unlimited"
+Proposed patch:
+- checks tv_usec and returns -EDOM if it is wrong
+- do not allows to set negative timeout values (sets 0 instead) and outputs
+ratelimited information message about such attempts.
 
-# /bin/sh                                   
-# ps
-PID   USER     COMMAND
-    1 0        init 
-    2 0        [ksoftirqd/0]
-    3 0        [desched/0]
-    4 0        [events/0]
-    5 0        [khelper]
-   10 0        [kthread]
-   31 0        [kblockd/0]
-   60 0        [pdflush]
-   61 0        [pdflush]
-   63 0        [aio/0]
-   62 0        [kswapd0]
-   64 0        [jfsIO]
-   65 0        [jfsCommit]
-   66 0        [jfsSync]
-   67 0        [xfslogd/0]
-   68 0        [xfsdatad/0]
-   69 0        [xfsbufd]
-  706 0        [mtdblockd]
-  730 0        -sh
-  788 0        /bin/sh
-  789 0        ps
-# ulimit -c unlimited
-# kill -7 788
-Bus error (core dumped)
-# ls -al
-drwxr-xr-x   12 0        0               0 Jan  1 00:55 .
-drwxr-xr-x   12 0        0               0 Jan  1 00:55 ..
-drwxr-xr-x    2 1000     1000            0 Jan  1 00:00 bin
--rw-------    1 0        0          417792 Jan  1 00:55 
-core                                       <<< Here is the corefile
-drwxr-xr-x    2 0        0               0 Jan  1 00:00 dev
-drwxr-xr-x    3 0        0               0 Jan  1 00:00 etc
-lrwxrwxrwx    1 0        0              12 Jan  1 00:00 init -> /bin/busybox
-drwxr-xr-x    2 0        0               0 Jan  1 00:00 lib
-drwxr-xr-x    2 0        0               0 Jan  1 00:00 misc
-dr-xr-xr-x   32 0        0               0 Jan  1 00:00 proc
-drwx------    2 0        0               0 Jan  1 00:00 root
-drwxr-xr-x    2 0        0               0 Jan  1 00:00 sbin
-drwxr-xr-x    2 0        0               0 Jan  1 00:00 sys
-drwxr-xr-x    4 0        0               0 Jan  1 00:00 usr
-#
+Signed-Off-By:	Vasily Averin <vvs@sw.ru>
 
-Thanks,
-Gavin
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 22183c2..27d7a46 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -206,7 +206,19 @@ static int sock_set_timeout(long *timeo_p, char __user
+*optval, int optlen)
+ 		return -EINVAL;
+ 	if (copy_from_user(&tv, optval, sizeof(tv)))
+ 		return -EFAULT;
+-
++	if (tv.tv_usec < 0 || tv.tv_usec >= 1000000)
++		return -EDOM;
++
++	if (tv.tv_sec < 0) {
++		static int warned = 0;
++		*timeo_p = 0;
++		if (warned < 10 && net_ratelimit())
++			warned++;
++			printk(KERN_INFO "sock_set_timeout: `%s' (pid %d) "
++			       "tries to set negative timeout\n",
++			        current->comm, current->pid);
++		return 0;
++	}
+ 	*timeo_p = MAX_SCHEDULE_TIMEOUT;
+ 	if (tv.tv_sec == 0 && tv.tv_usec == 0)
+ 		return 0;
+
