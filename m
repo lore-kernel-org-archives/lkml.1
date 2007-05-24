@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763612AbXEXAkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762364AbXEXAkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763612AbXEXAkN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761128AbXEXAgp
+	id S1762364AbXEXAkk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761486AbXEXAgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:36:45 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40233 "EHLO
+	Wed, 23 May 2007 20:36:48 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40235 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760725AbXEXAgc (ORCPT
+	with ESMTP id S1761262AbXEXAge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:36:32 -0400
+	Wed, 23 May 2007 20:36:34 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 09/21] Unionfs: Rename our "do_rename" to __unionfs_rename
-Date: Wed, 23 May 2007 20:35:59 -0400
-Message-Id: <1179966973293-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 16/21] Unionfs: Disallow setting leftmost branch to readonly
+Date: Wed, 23 May 2007 20:36:06 -0400
+Message-Id: <11799669732839-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
 In-Reply-To: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 References: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
@@ -25,75 +25,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Erez Zadok <ezk@cs.sunysb.edu>
 
-To avoid confusion with the VFS function do_rename, and to help ctags,
-rename our utility (static) function do_rename to __unionfs_rename.
+Unionfs requires the leftmost branch to be writeable for copyup to work
+properly and simply.  If, through branch-management commands (add, delete,
+or mode change), the leftmost branch will becomes readonly, then return an
+error (and tell the user to use "remount,ro" if they want a readonly union).
 
+[jsipek: fixed up to apply cleanly]
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/rename.c |   21 +++++++++++----------
- 1 files changed, 11 insertions(+), 10 deletions(-)
+ fs/unionfs/super.c |   16 ++++++++++++----
+ 1 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index 0e1e71a..edc5a5c 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -18,9 +18,9 @@
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 3dee863..446faf8 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -629,12 +629,20 @@ static int unionfs_remount_fs(struct super_block *sb, int *flags,
+ out_no_change:
  
- #include "union.h"
+ 	/******************************************************************
+-	 * WE'RE ALMOST DONE: see if we need to allocate a small-sized new
+-	 * vector, copy the vectors to their correct place, release the
+-	 * refcnt of the older ones, and return.
+-	 * Also handle invalidating any pages that will have to be re-read.
++	 * WE'RE ALMOST DONE: check if leftmost branch might be read-only,
++	 * see if we need to allocate a small-sized new vector, copy the
++	 * vectors to their correct place, release the refcnt of the older
++	 * ones, and return.  Also handle invalidating any pages that will
++	 * have to be re-read.
+ 	 *******************************************************************/
  
--static int do_rename(struct inode *old_dir, struct dentry *old_dentry,
--		     struct inode *new_dir, struct dentry *new_dentry,
--		     int bindex, struct dentry **wh_old)
-+static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
-+			    struct inode *new_dir, struct dentry *new_dentry,
-+			    int bindex, struct dentry **wh_old)
- {
- 	int err = 0;
- 	struct dentry *hidden_old_dentry;
-@@ -144,7 +144,7 @@ out:
- /*
-  * Main rename code.  This is sufficienly complex, that it's documented in
-  * Docmentation/filesystems/unionfs/rename.txt.  This routine calls
-- * do_rename() above to perform some of the work.
-+ * __unionfs_rename() above to perform some of the work.
-  */
- static int do_unionfs_rename(struct inode *old_dir,
- 			     struct dentry *old_dentry,
-@@ -171,8 +171,8 @@ static int do_unionfs_rename(struct inode *old_dir,
- 	new_bend = dbend(new_dentry);
- 
- 	/* Rename source to destination. */
--	err = do_rename(old_dir, old_dentry, new_dir, new_dentry, old_bstart,
--			&wh_old);
-+	err = __unionfs_rename(old_dir, old_dentry, new_dir, new_dentry,
-+			       old_bstart, &wh_old);
- 	if (err) {
- 		if (!IS_COPYUP_ERR(err))
- 			goto out;
-@@ -230,8 +230,9 @@ static int do_unionfs_rename(struct inode *old_dir,
- 			if (!err) {
- 				dput(wh_old);
- 				bwh_old = bindex;
--				err = do_rename(old_dir, old_dentry, new_dir,
--						new_dentry, bindex, &wh_old);
-+				err = __unionfs_rename(old_dir, old_dentry,
-+						       new_dir, new_dentry,
-+						       bindex, &wh_old);
- 				break;
- 			}
- 		}
-@@ -306,8 +307,8 @@ revert:
- 		goto revert_out;
- 	}
- 
--	local_err = do_rename(new_dir, new_dentry,
--			      old_dir, old_dentry, old_bstart, NULL);
-+	local_err = __unionfs_rename(new_dir, new_dentry,
-+				     old_dir, old_dentry, old_bstart, NULL);
- 
- 	/* If we can't fix it, then we cop-out with -EIO. */
- 	if (local_err) {
++	if (!(tmp_data[0].branchperms & MAY_WRITE)) {
++		printk("unionfs: leftmost branch cannot be read-only "
++		       "(use \"remount,ro\" to create a read-only union)\n");
++		err = -EINVAL;
++		goto out_release;
++	}
++
+ 	/* (re)allocate space for new pointers to hidden dentry */
+ 	size = new_branches * sizeof(struct unionfs_data);
+ 	new_data = krealloc(tmp_data, size, GFP_KERNEL);
 -- 
 1.5.2.rc1.165.gaf9b
 
