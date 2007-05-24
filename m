@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbXEXTNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbXEXTN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752090AbXEXTNJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 15:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXEXTM5
+	id S1752922AbXEXTN1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 15:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXEXTNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 15:12:57 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:61488 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbXEXTM4 (ORCPT
+	Thu, 24 May 2007 15:13:18 -0400
+Received: from ppsw-3.csi.cam.ac.uk ([131.111.8.133]:36050 "EHLO
+	ppsw-3.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbXEXTNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 15:12:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SxJNFbVI2nK1xD6t5tq8WQMdLFp4xFAbIooDiVIF8xowPG2RGETVBRf8CbvjXk6g4SoHM77sLC/yoSTQxngagL0xaGShtJutaI/Ass0YND1Cs1uBV5g/taN532VgHh4p6cl7yzykXBfSD4Wvd2vHt10DgbSM5EZEQPid93lqfEk=
-Message-ID: <a781481a0705241212g787bae30md4b9e81aea465198@mail.gmail.com>
-Date: Fri, 25 May 2007 00:42:44 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Subject: Re: [RFC] LZO de/compression support - take 3
-Cc: "Richard Purdie" <richard@openedhand.com>, linux-kernel@vger.kernel.org,
-       linux-mm-cc@laptop.org
-In-Reply-To: <4cefeab80705240729w6cf0f84fvb6cd86e19256b2b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 24 May 2007 15:13:17 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <20070524115055.6be93924.akpm@linux-foundation.org>
+References: <1412F214-FA89-4088-B3A2-DEE03C324FB6@cam.ac.uk> <20070524115055.6be93924.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3D8CC408-75EA-445C-81F9-83EC7703A2AF@cam.ac.uk>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Richard Purdie <richard@openedhand.com>, markus@oberhumer.com
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-	 <a781481a0705231234m62327134mbfd1c1478b6fb99a@mail.gmail.com>
-	 <1179995105.5880.7.camel@localhost.localdomain>
-	 <a781481a0705240407p2e9933ecm8d2c9863465cdeac@mail.gmail.com>
-	 <4cefeab80705240729w6cf0f84fvb6cd86e19256b2b@mail.gmail.com>
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: Re: [RFC] [-mm] Remove 'unsafe' LZO decompressor
+Date: Thu, 24 May 2007 20:13:14 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/24/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> On 5/24/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> > Hmm. The wrappers would clearly be inline, but if we want a common
-> > low-level decompress function, we'd also need to introduce the "if (safe &&)"
-> > kind of tests for those differently-defined macros which could impact
-> > performance (for the _unsafe variant only, isn't it). By how much is the
-> > question, and whether we really care to avoid duplicating 50 lines of code
-> > to take that hit on the unsafe function (or vice versa).
+On 24 May 2007, at 19:50, Andrew Morton wrote:
+
+> On Thu, 24 May 2007 18:15:17 +0100
+> Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
 >
-> All this just to avoid that symlink?
+>> Attached is a patch which may be desirable for -mm. It applies
+>> directly to 2.6.22-rc2-mm1.
+>>
+>> The patch removes the 'unsafe' LZO decompression function, lowering
+>> the size of the minilzo.c file by nearly 500 out of an original 1727
+>> lines. It also removes references to the 'unsafe' decompression
+>> function in the public LZO header and the EXPORT_SYMBOL_GPL  
+>> declaration.
+>>
+>> This is intended to provoke some discussion over whether a
+>> decompression function able to scribble on arbitrary memory is
+>> desirable in the mainline kernel, whatever the performance increases.
+>>
+>> Over and above the security/stability implications of using this
+>> code, it can also be argued to represent an unnecessary duplication
+>> of the vast majority of LZO decompression code. This is due to the
+>> lack of likely in-kernel uses of the 'unsafe' function.
+>>
+>> Only a single user for this 'unsafe' code has been suggested, the
+>> 'Compressed Caching' project. This code is highly unlikely to move
+>> into mainline in the same timeframe as the LZO code. All of the other
+>> suggested uses require decompression of untrusted data, such that the
+>> 'safe' function should be used.
+>>
+>> Comments / disagreement all welcome :)
+>
+> This is obviously a highly desirable thing to do for a number of  
+> reasons.
+> But have we quantified the performance difference?
 
-Oh, yes. And also to avoid the changes to the master Makefile,
-and the extra stuff in the other Makefile. And you'd even rid
-yourself of some #ifdef's in the actual code. Too many upsides!
+The author of LZO may be able to help us out here, so he's CCed as of  
+this mail.
 
-> What is so wrong with that?
+Michael-Luke
 
-We never required this kind of thing before, why now? Also note
-that it requires all the extra stuff mentioned above ... why not do
-away with all that too.
