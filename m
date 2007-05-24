@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762198AbXEXCGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbXEXCQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762198AbXEXCGz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 22:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757836AbXEXCGs
+	id S1760115AbXEXCQq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 22:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbXEXCQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 22:06:48 -0400
-Received: from critter.phunnypharm.org ([67.97.251.11]:2254 "EHLO critter"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757698AbXEXCGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 22:06:48 -0400
-To: linux-kernel@vger.kernel.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Message-Id: <91fcd7d6a83321c37f6769164b1b41ce78a07bfa.1179964369.git.bcollins@ubuntu.com>
-In-Reply-To: <98cd38b5.git.bcollins@ubuntu.com>
-References: <98cd38b5.git.bcollins@ubuntu.com>
-From: Ben Collins <bcollins@ubuntu.com>
-Date: Wed, 23 May 2007 18:30:46 -0400
-Subject: [PATCH 5/6] SUNHME: Workaround ancient hang on U1's
+	Wed, 23 May 2007 22:16:37 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:22660 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757289AbXEXCQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 22:16:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FPQYmJWhdKs+YeyyPzA+p/c9HTJtcoLR4TQFLEJtFTXEImY2eVLFp3mJhgOvoxQXEPbj2nJVvVo8ue4+TsDUS4QTCjriNBB1UnSnsohwuA3QE82jzTonnUTXtRQWKwfa7G8Nx9oTUnTLnj+q4lKLReM70d8fzcJ8n63BC+OEHaA=
+Message-ID: <7b69d1470705231916q5bfd9c0bo36021f823729b8a3@mail.gmail.com>
+Date: Wed, 23 May 2007 19:16:35 -0700
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [Fwd: Re: Google are using linux kernel - what do you know about the source?]
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Chris Malton" <chrism@cjsoftuk.dyndns.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46549F45.4040403@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4654729C.70404@cjsoftuk.dyndns.org> <4654969F.9060904@garzik.org>
+	 <20070523210249.3e965257@the-village.bc.nu>
+	 <46549F45.4040403@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This work around has been in use by almost any distribution trying to
-support sparc64 since at least 2002. Without it, sunhme hangs fairly
-quickly on UltraSPARC 1's.
-
-Dave, I know it's not in the kernel because it isn't a "fix", but given
-that we haven't seen a fix in more than 5 years, can we get this out of my
-tree please? :)
-
-CC: David S. Miller <davem@davemloft.net>
-Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+On 5/23/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Alan Cox wrote:
+> >> Google does not distribute their software, so they do not have to make
+> >> their modifications public.
+> >
+> > They do for the kernel - they produce an "appliance".
+>
+> Ah, I stand corrected.
+>
+>
+> >> WRT the Linux kernel, Google is essentially a closed source company.
+> >
+> > They've quietly fed little bits back now and then but not made a big song
+> > and dance about it. Hopefully with Andrew there and the like more will
+> > occur.
+>
+> Strange that the NIC and SATA driver bits never seem to be among those
+> "little bits"...  Along with filesystem and other modifications
+> discussed in the press, or observable net stack behavior when connecting
+> to their computers over the 'net.
+>
+> So, emphasis on "little", I guess.
+>
+>         Jeff
 ---
- drivers/net/sunhme.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/sunhme.c b/drivers/net/sunhme.c
-index 51c3fe2..5753298 100644
---- a/drivers/net/sunhme.c
-+++ b/drivers/net/sunhme.c
-@@ -1969,6 +1969,7 @@ static void happy_meal_tx(struct happy_meal *hp)
- 	}
- 	hp->tx_old = elem;
- 	TXD((">"));
-+	udelay(1);
- 
- 	if (netif_queue_stopped(dev) &&
- 	    TX_BUFFS_AVAIL(hp) > (MAX_SKB_FRAGS + 1))
--- 
-1.5.1.4
-
+For 2.6.21, Jon Corbet's count for LWN showed Google ninth on the list
+(by number of changesets), among companies whose contributors could be
+identified.
