@@ -1,109 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbXEXVLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbXEXVLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbXEXVLY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbXEXVLQ
+	id S1754281AbXEXVLx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbXEXVLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:11:16 -0400
-Received: from palrel10.hp.com ([156.153.255.245]:56679 "EHLO palrel10.hp.com"
+	Thu, 24 May 2007 17:11:44 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:45435 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbXEXVLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:11:15 -0400
-Date: Thu, 24 May 2007 16:11:12 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tom.l.nguyen@intel.com, iss_storagedev@hp.com, jens.axboe@oracle.com,
-       Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: msi_free_irqs #2
-Message-ID: <20070524211112.GE14083@beardog.cca.cpqcorp.net>
-References: <20070524160756.GA14083@beardog.cca.cpqcorp.net> <20070524102702.bca37396.akpm@linux-foundation.org> <20070524200743.GB14083@beardog.cca.cpqcorp.net> <m1lkfedjuz.fsf@ebiederm.dsl.xmission.com>
+	id S1751112AbXEXVLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 17:11:43 -0400
+Date: Thu, 24 May 2007 23:12:37 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Romano Giannetti <romano.giannetti@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk
+Subject: Re: Long delay in resume from RAM (Was Re: [patch 00/69] -stablereview)
+Message-ID: <20070524211237.GC1372@uranus.ravnborg.org>
+References: <4652070D.3090509@redhat.com> <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org> <20070521212522.GL3429@sequoia.sous-sol.org> <1179870110.16656.2.camel@localhost> <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> <1180008394.15600.26.camel@localhost> <1180019201.15600.57.camel@localhost> <alpine.LFD.0.98.0705240815530.26602@woody.linux-foundation.org> <1180037649.15241.6.camel@localhost> <20070524140154.c8e93d69.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1lkfedjuz.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070524140154.c8e93d69.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 02:53:08PM -0600, Eric W. Biederman wrote:
+On Thu, May 24, 2007 at 02:01:54PM -0700, Andrew Morton wrote:
+> On Thu, 24 May 2007 22:14:08 +0200
+> Romano Giannetti <romano.giannetti@gmail.com> wrote:
 > 
+> > Compiling now. I had lost a lot of time because at first try it stopped
+> > in ntfs:
+> > 
+> >   CC [M]  fs/ntfs/super.o
+> > fs/ntfs/super.c: In function ___init_ntfs_fs___:
+> > fs/ntfs/super.c:3152: error: expected ___)___ before ___NTFS_VERSION___
+> > fs/ntfs/super.c: At top level:
+> > fs/ntfs/super.c:3262: error: expected ___,___ or ___;___ before ___NTFS_VERSION___
+> > make[2]: *** [fs/ntfs/super.o] Error 1
+> > make[1]: *** [fs/ntfs] Error 2
+> > make: *** [fs] Error 2
+> >   
+> > I suppose because NTFS_VERSION were defined as EXTRA_CFLAGS too in the Makefile, 
 > 
-> Could you please try the patch below.  Unless I have misread something
-> this should fix your problem....
+> ntfs is being naughty.
 > 
-> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-> index 000c9ae..2e1d4af 100644
-> --- a/drivers/pci/msi.c
-> +++ b/drivers/pci/msi.c
-> @@ -404,7 +404,7 @@ static int msix_capability_init(struct pci_dev *dev,
->  		entry->dev = dev;
->  		entry->mask_base = base;
+> --- a/fs/ntfs/Makefile~a
+> +++ a/fs/ntfs/Makefile
+> @@ -6,7 +6,7 @@ ntfs-objs := aops.o attrib.o collate.o c
+>  	     index.o inode.o mft.o mst.o namei.o runlist.o super.o sysctl.o \
+>  	     unistr.o upcase.o
 >  
-> -		list_add(&entry->list, &dev->msi_list);
-> +		list_add_tail(&entry->list, &dev->msi_list);
->  	}
+> -EXTRA_CFLAGS = -DNTFS_VERSION=\"2.1.28\"
+> +EXTRA_CFLAGS += -DNTFS_VERSION=\"2.1.28\"
 >  
->  	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
+>  ifeq ($(CONFIG_NTFS_DEBUG),y)
+>  EXTRA_CFLAGS += -DDEBUG
+> _
 > 
-> > Michael or Eric, would you please review this patch and see if it's OK? Adding
-> > an else
-> > between the the if (list_is....) and the writel resolved the Oops. I'm not sure
-> > how this
-> > is supposed to work but using entry->mask_base after iounmap'ing seems wrong.
 > 
-> I think I would rather just swap those two lines of code.
-> We are manually setting the mask bit to make certain the irq doesn't
-> fire after we free it, and we clearly want to set the mask bit for
-> all the irq entries.
+> akpm:/usr/src/linux-2.6.22-rc2> grep -r EXTRA_CFLAGS . | fgrep '+=' | wc -l 
+> 131
+> akpm:/usr/src/linux-2.6.22-rc2> grep -r EXTRA_CFLAGS . | fgrep -v '+=' | wc -l 
+> 55
 > 
-> > diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-> > index d9cbd58..0e67723 100644
-> > --- a/drivers/pci/msi.c
-> > +++ b/drivers/pci/msi.c
-> > @@ -560,10 +560,11 @@ static int msi_free_irqs(struct pci_dev* dev)
-> >  		if (entry->msi_attrib.type == PCI_CAP_ID_MSIX) {
-> >  			if (list_is_last(&entry->list, &dev->msi_list))
-> >  				iounmap(entry->mask_base);
-> > -
-> > -			writel(1, entry->mask_base + entry->msi_attrib.entry_nr
-> > -				  * PCI_MSIX_ENTRY_SIZE
-> > -				  + PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-> > +			else
-> > +				writel(1, entry->mask_base
-> > +					+ entry->msi_attrib.entry_nr
-> > +					* PCI_MSIX_ENTRY_SIZE
-> > +					+ PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-> >  		}
-> >  		list_del(&entry->list);
-> >  		kfree(entry);
+> hm, lots of Makefiles commit the same sin.  Sam, is this as busted as
+> I think it is?
 
-Here's a patch that just reverses the 2 lines of code as Eric suggests. Please
-consider this for inclusion.
+I really cannot see why it makes a difference.
+If you use += (and :=) make will resolve EXTRA_CFLAGS when it see it.
+Whereas with = make will resolve it only when actually referenced.
 
-Signed-off-by: Mike Miller <mike.miller@hp.com>
-Signed-off-by: Chase Maupin <chase.maupin@hp.com>
+But the way we use EXTRA_CFLAGS it should not matter.
+If the fix above really helps nfs I need to take a closer look tomorrow.
 
-Thanks,
-mikem
-----------------------------------------------------------------------------------------
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index e01380b..6632150 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -558,12 +558,12 @@ static int msi_free_irqs(struct pci_dev* dev)
- 
- 	list_for_each_entry_safe(entry, tmp, &dev->msi_list, list) {
- 		if (entry->msi_attrib.type == PCI_CAP_ID_MSIX) {
--			if (list_is_last(&entry->list, &dev->msi_list))
--				iounmap(entry->mask_base);
--
- 			writel(1, entry->mask_base + entry->msi_attrib.entry_nr
- 				  * PCI_MSIX_ENTRY_SIZE
- 				  + PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-+
-+			if (list_is_last(&entry->list, &dev->msi_list))
-+				iounmap(entry->mask_base);
- 		}
- 		list_del(&entry->list);
- 		kfree(entry);
+	Sam
