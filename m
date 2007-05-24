@@ -1,159 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761992AbXEXIB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbXEXILA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761992AbXEXIB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 04:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbXEXIBZ
+	id S1758718AbXEXILA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 04:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbXEXIKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 04:01:25 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:35413 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755649AbXEXIBW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 04:01:22 -0400
-Message-ID: <465545FB.2080801@linux.vnet.ibm.com>
-Date: Thu, 24 May 2007 13:29:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Pavel Emelianov <xemul@sw.ru>
-CC: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       devel@openvz.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [PATCH 8/8] Per-container pages reclamation
-References: <461A3010.90403@sw.ru> <461A397A.8080609@sw.ru> <464C3D0E.3010603@linux.vnet.ibm.com> <4651B794.4040302@sw.ru>
-In-Reply-To: <4651B794.4040302@sw.ru>
-Content-Type: multipart/mixed;
- boundary="------------040409070904020008050306"
+	Thu, 24 May 2007 04:10:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33473 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755150AbXEXIKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 04:10:46 -0400
+Date: Thu, 24 May 2007 10:09:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, pranith-kumar_d@mentorg.com,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch] CFS scheduler, -v14
+Message-ID: <20070524080959.GA29151@elte.hu>
+References: <20070523120616.GA23407@elte.hu> <20070524064235.GA2386@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070524064235.GA2386@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040409070904020008050306
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Pavel Emelianov wrote:
->> Index: linux-2.6.20/mm/rss_container.c
->> ===================================================================
->> --- linux-2.6.20.orig/mm/rss_container.c	2007-05-15 05:13:46.000000000 -0700
->> +++ linux-2.6.20/mm/rss_container.c	2007-05-16 20:45:45.000000000 -0700
->> @@ -212,6 +212,7 @@ void container_rss_del(struct page_conta
->>  
->>  	css_put(&rss->css);
->>  	kfree(pc);
->> +	init_page_container(page);
+* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+
+> Hi, Ingo,
 > 
-> This hunk is bad.
-> See, when the page drops its mapcount to 0 it may be reused right
-> after this if it belongs to a file map - another CPU can touch it.
-> Thus you're risking to reset the wrong container.
+> I've implemented a patch on top of v14 for better accounting of 
+> sched_info statistics. Earlier, sched_info relied on jiffies for 
+> accounting and I've seen applications that show "0" cpu usage 
+> statistics (in delay accounting and from /proc) even though they've 
+> been running on the CPU for a long time. The basic problem is that 
+> accounting in jiffies is too coarse to be accurate.
 > 
-> The main idea if the accounting is that you cannot trust the
-> page_container(page) value after the page's mapcount became 0.
-> 
+> The patch below uses sched_clock() for sched_info accounting.
 
-Good catch, I'll move the initialization to free_hot_cold_page().
-I'm attaching a new patch. I've also gotten rid of the unused
-variable page in container_rss_del().
+nice! I've merged your patch and it built/booted fine so it should show 
+up in -v15. This should also play well with Andi's sched_clock() 
+enhancements in -mm, slated for .23.
 
-I've compile and boot tested the fix
+btw., i think some more consolidation could be done in this area. We've 
+now got the traditional /proc/PID/stat metrics, schedstats, taskstats 
+and delay accounting and with CFS we've got /proc/sched_debug and 
+/proc/PID/sched. There's a fair amount of overlap.
 
--- 
-	Thanks,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+btw., CFS does this change to fs/proc/array.c:
 
---------------040409070904020008050306
-Content-Type: text/x-patch;
- name="rss-fix-lru-race.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="rss-fix-lru-race.patch"
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
-Index: linux-2.6.20/mm/page_alloc.c
-===================================================================
---- linux-2.6.20.orig/mm/page_alloc.c	2007-05-16 10:30:10.000000000 -0700
-+++ linux-2.6.20/mm/page_alloc.c	2007-05-24 00:41:00.000000000 -0700
-@@ -41,6 +41,7 @@
- #include <linux/pfn.h>
- #include <linux/backing-dev.h>
- #include <linux/fault-inject.h>
-+#include <linux/rss_container.h>
+@@ -410,6 +408,14 @@ static int do_task_stat(struct task_stru
+ 	/* convert nsec -> ticks */
+ 	start_time = nsec_to_clock_t(start_time);
  
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -791,6 +792,7 @@ static void fastcall free_hot_cold_page(
- 
- 	if (!PageHighMem(page))
- 		debug_check_no_locks_freed(page_address(page), PAGE_SIZE);
-+	init_page_container(page);
- 	arch_free_page(page, 0);
- 	kernel_map_pages(page, 1, 0);
- 
-@@ -1977,6 +1979,7 @@ void __meminit memmap_init_zone(unsigned
- 		set_page_links(page, zone, nid, pfn);
- 		init_page_count(page);
- 		reset_page_mapcount(page);
-+		init_page_container(page);
- 		SetPageReserved(page);
- 		INIT_LIST_HEAD(&page->lru);
- #ifdef WANT_PAGE_VIRTUAL
-Index: linux-2.6.20/include/linux/rss_container.h
-===================================================================
---- linux-2.6.20.orig/include/linux/rss_container.h	2007-05-16 10:31:04.000000000 -0700
-+++ linux-2.6.20/include/linux/rss_container.h	2007-05-16 10:32:14.000000000 -0700
-@@ -28,6 +28,11 @@ void container_rss_move_lists(struct pag
- unsigned long isolate_pages_in_container(unsigned long nr_to_scan,
- 		struct list_head *dst, unsigned long *scanned,
- 		struct zone *zone, struct rss_container *, int active);
-+static inline void init_page_container(struct page *page)
-+{
-+	page_container(page) = NULL;
-+}
++	/*
++	 * Use CFS's precise accounting, if available:
++	 */
++	if (!has_rt_policy(task)) {
++		utime = nsec_to_clock_t(task->sum_exec_runtime);
++		stime = 0;
++	}
 +
- #else
- static inline int container_rss_prepare(struct page *pg,
- 		struct vm_area_struct *vma, struct page_container **pc)
-@@ -56,6 +61,10 @@ static inline void mm_free_container(str
- {
- }
- 
-+static inline void init_page_container(struct page *page)
-+{
-+}
-+
- #define isolate_container_pages(nr, dst, scanned, rss, act, zone) ({ BUG(); 0;})
- #define container_rss_move_lists(pg, active) do { } while (0)
- #endif
-Index: linux-2.6.20/mm/rss_container.c
-===================================================================
---- linux-2.6.20.orig/mm/rss_container.c	2007-05-15 05:13:46.000000000 -0700
-+++ linux-2.6.20/mm/rss_container.c	2007-05-24 00:58:43.000000000 -0700
-@@ -199,12 +199,9 @@ void container_rss_add(struct page_conta
- 
- void container_rss_del(struct page_container *pc)
- {
--	struct page *page;
- 	struct rss_container *rss;
- 
--	page = pc->page;
- 	rss = pc->cnt;
--
- 	spin_lock_irq(&rss->res.lock);
- 	list_del(&pc->list);
- 	res_counter_uncharge_locked(&rss->res, 1);
+ 	res = sprintf(buffer,"%d (%s) %c %d %d %d %d %d %lu %lu \
+ %lu %lu %lu %lu %lu %ld %ld %ld %ld %d 0 %llu %lu %ld %lu %lu %lu %lu %lu \
+ %lu %lu %lu %lu %lu %lu %lu %lu %d %d %lu %lu %llu\n",
 
---------------040409070904020008050306--
+if you have some spare capacity to improve this code, it could be 
+further enhanced by not setting 'stime' to zero, but using the existing 
+jiffies based utime/stime statistics as a _ratio_ to split up the 
+precise p->sum_exec_runtime. That way we dont have to add precise 
+accounting to syscall entry/exit points (that would be quite expensive), 
+but still the sum of utime+stime would be very precise. (and that's what 
+matters most anyway)
+
+	Ingo
