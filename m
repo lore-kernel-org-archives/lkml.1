@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbXEXWZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbXEXW0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619AbXEXWZX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXEXWZK
+	id S1753856AbXEXW0M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbXEXWZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:25:10 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:54998 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbXEXWZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:25:08 -0400
-Date: Thu, 24 May 2007 15:24:25 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.20.12
-Message-ID: <20070524222425.GV3429@sequoia.sous-sol.org>
-References: <20070524222355.GU3429@sequoia.sous-sol.org>
+	Thu, 24 May 2007 18:25:57 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:48565 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750885AbXEXWZ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:25:56 -0400
+Date: Thu, 24 May 2007 15:23:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+In-Reply-To: <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0705241517110.26602@woody.linux-foundation.org>
+References: <20070521191612.800400000@sous-sol.org> <4652070D.3090509@redhat.com>
+ <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
+ <20070521212522.GL3429@sequoia.sous-sol.org> <1179870110.16656.2.camel@localhost>
+ <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
+ <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org>
+ <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
+ <20070524220017.GC9604@elf.ucw.cz>
+ <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070524222355.GU3429@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index f585e79..87f5956 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 20
--EXTRAVERSION = .11
-+EXTRAVERSION = .12
- NAME = Homicidal Dwarf Hamster
- 
- # *DOCUMENTATION*
-diff --git a/drivers/crypto/geode-aes.c b/drivers/crypto/geode-aes.c
-index 43a6839..9dbb218 100644
---- a/drivers/crypto/geode-aes.c
-+++ b/drivers/crypto/geode-aes.c
-@@ -104,10 +104,15 @@ geode_aes_crypt(struct geode_aes_op *op)
- 	u32 flags = 0;
- 	int iflags;
- 
--	if (op->len == 0 || op->src == op->dst)
-+	if (op->len == 0)
- 		return 0;
- 
--	if (op->flags & AES_FLAGS_COHERENT)
-+	/* If the source and destination is the same, then
-+	 * we need to turn on the coherent flags, otherwise
-+	 * we don't need to worry
-+	 */
-+
-+	if (op->src == op->dst)
- 		flags |= (AES_CTRL_DCA | AES_CTRL_SCA);
- 
- 	if (op->dir == AES_DIR_ENCRYPT)
-@@ -122,7 +127,7 @@ geode_aes_crypt(struct geode_aes_op *op)
- 		_writefield(AES_WRITEIV0_REG, op->iv);
- 	}
- 
--	if (op->flags & AES_FLAGS_USRKEY) {
-+	if (!(op->flags & AES_FLAGS_HIDDENKEY)) {
- 		flags |= AES_CTRL_WRKEY;
- 		_writefield(AES_WRITEKEY0_REG, op->key);
- 	}
-@@ -291,6 +296,7 @@ static struct crypto_alg geode_cbc_alg = {
- 			.setkey			=	geode_setkey,
- 			.encrypt		=	geode_cbc_encrypt,
- 			.decrypt		=	geode_cbc_decrypt,
-+			.ivsize			=	AES_IV_LENGTH,
- 		}
- 	}
- };
-diff --git a/drivers/crypto/geode-aes.h b/drivers/crypto/geode-aes.h
-index 8003a36..f479686 100644
---- a/drivers/crypto/geode-aes.h
-+++ b/drivers/crypto/geode-aes.h
-@@ -20,8 +20,7 @@
- #define AES_DIR_DECRYPT 0
- #define AES_DIR_ENCRYPT 1
- 
--#define AES_FLAGS_USRKEY   (1 << 0)
--#define AES_FLAGS_COHERENT (1 << 1)
-+#define AES_FLAGS_HIDDENKEY (1 << 0)
- 
- struct geode_aes_op {
- 
+
+
+On Thu, 24 May 2007, Linus Torvalds wrote:
+> 
+> Then, what you do is:
+>  - stop user space
+>  - suspend
+>  - resume
+>  - start user space
+
+Btw, this is where things like "udevd" can be really problematic. That 
+whole "uevent over netlink" stuff is really nasty for things like this.
+
+It's quite possible that even for user-level threads, we simply MUST NOT 
+freeze them the way we do. Exactly because of deadlocks.
+
+I'm personally really really convinced that the whole freezer thing is a 
+total disaster. I don't know how anybody can even imagine anything else. 
+It's simply deadlock city.
+
+We should freeze IO, not processes.
+
+		Linus
