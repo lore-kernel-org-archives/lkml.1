@@ -1,109 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760294AbXEXHqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760290AbXEXHum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760294AbXEXHqZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 03:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756274AbXEXHqR
+	id S1760290AbXEXHum (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 03:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbXEXHuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 03:46:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56886 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754964AbXEXHqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 03:46:17 -0400
-Date: Thu, 24 May 2007 09:45:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] local_softirq_pending storm
-Message-ID: <20070524074534.GA21138@elte.hu>
-References: <200705091942.22920.kernel@prachanda.hub> <200705191525.28400.kernel@prachanda.hub> <1179601868.12981.127.camel@chaos> <200705200253.44992.kernel@prachanda.hub> <1179697388.6570.26.camel@chaos> <6bffcb0e0705221203s1ba21ed3j641e91036859db7d@mail.gmail.com> <20070522201046.GA6113@elte.hu> <46547345.8000808@redhat.com>
+	Thu, 24 May 2007 03:50:35 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2448 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755952AbXEXHue (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 03:50:34 -0400
+Date: Thu, 24 May 2007 08:50:21 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: Define CONFIG_BOUNCE to avoid useless inclusion of bounce buffer logic.
+Message-ID: <20070524075021.GA4310@flint.arm.linux.org.uk>
+Mail-Followup-To: Christoph Lameter <clameter@sgi.com>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+	jens.axboe@oracle.com
+References: <Pine.LNX.4.64.0705212100420.24947@schroedinger.engr.sgi.com> <20070522133906.ae9c362a.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0705212225590.25388@schroedinger.engr.sgi.com> <20070523140702.GA16972@flint.arm.linux.org.uk> <Pine.LNX.4.64.0705231011000.19822@schroedinger.engr.sgi.com> <20070523225812.GE1976@flint.arm.linux.org.uk> <Pine.LNX.4.64.0705231603470.23000@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46547345.8000808@redhat.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0705231603470.23000@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Chuck Ebbert <cebbert@redhat.com> wrote:
-
-> >  	if (need_resched() && system_state == SYSTEM_RUNNING) {
-> > -		raw_local_irq_disable();
-> > -		_local_bh_enable();
-> > -		raw_local_irq_enable();
-> > +		local_bh_enable();
-> >  		__cond_resched();
-> >  		local_bh_disable();
-> >  		return 1;
+On Wed, May 23, 2007 at 04:07:12PM -0700, Christoph Lameter wrote:
+> On Wed, 23 May 2007, Russell King wrote:
+> > At the end of the day, it is _far_ simpler from an architectural point
+> > of view for memory to live in the DMA zone and disable the normal and
+> > highmem zones than it is to selectively populate the normal zone
+> > depending on whether device X is configured, and then also have to hack
+> > around various drivers which decide they want to use __GFP_DMA because
+> > of some antequated x86ism which doesn't apply on non-x86.
 > 
-> We may have a problem with that:
-> 
->  BUG: warning at kernel/softirq.c:138/local_bh_enable() (Not tainted)
->   [<c042b2ef>] local_bh_enable+0x45/0x92
->   [<c06036b7>] cond_resched_softirq+0x2c/0x42
->   [<c059d5d0>] release_sock+0x54/0xa3
->   [<c05c9428>] tcp_sendmsg+0x91b/0xa0c
->   [<c05e1bb9>] inet_sendmsg+0x3b/0x45
->   [<c059af34>] sock_aio_write+0xf9/0x105
->   [<c0476035>] do_sync_write+0xc7/0x10a
->   [<c0437265>] autoremove_wake_function+0x0/0x35
->   [<c047688e>] vfs_write+0xbc/0x154
->   [<c0476e8c>] sys_write+0x41/0x67
->   [<c0404f70>] syscall_call+0x7/0xb
+> If you switch off CONFIG_ZONE_DMA then __GFP_DMA becomes a no op. So no 
+> problem. Many of us want to rid the kernel of __GFP_DMA. Please join the 
+> club and nuke the useless ZONE_DMA on your platforms.
 
-hm, this place really shouldnt call cond_resched_softirq() with hardirqs 
-disabled.
+Absolutely and utterly impossible - with over 100 different machine
+types I don't have anything approaching the necessary knowledge to
+_special_ _case_ those platforms which _might_ be able to survive
+without the DMA zone.  And that's what it'll be - a set of special
+cases in the initialisation path.
 
-perhaps a buggy ->sk_backlog_rcv() handler disabled interrupts without 
-restoring them?
+As I've tried to explain, from day 1 of the multi-zone Linux MM, it's
+always made more sense to put everything into zone DMA and (eventually)
+hope that the normal and highmem zones eventually go away.
 
-could you enable CONFIG_PROVE_LOCKING and apply the patch below - which 
-location is printed as having last disabled hardirqs?
+Who cares what happens to __GFP_DMA - it's irrelevant, since both
+__GFP_DMA and non-_GFP_DMA allocations will come from the DMA zone
+when the normal zone is empty.  Where the normal zone is _never_
+populated with any memory, defining __GFP_DMA to zero will have no
+effect.
 
-	Ingo
+So, let me repeat: it makes much much much more sense to get rid of
+__GFP_DMA _and_ the normal and highmem zones than it does to get rid
+of the DMA zone.
 
---------------------->
-Subject: [patch] softirqs: print out irq-trace events
-From: Ingo Molnar <mingo@elte.hu>
-
-some code is fiddling with softirqs but hardirqs are disabled, so try to 
-figure out who disabled hardirqs.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/softirq.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-Index: linux/kernel/softirq.c
-===================================================================
---- linux.orig/kernel/softirq.c
-+++ linux/kernel/softirq.c
-@@ -135,7 +135,15 @@ void local_bh_enable(void)
- 
- 	WARN_ON_ONCE(in_irq());
- #endif
--	WARN_ON_ONCE(irqs_disabled());
-+	if (irqs_disabled()) {
-+		static int once = 1;
-+
-+		if (once) {
-+			once = 0;
-+			print_irqtrace_events(current);
-+			WARN_ON(1);
-+		}
-+	}
- 
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	local_irq_save(flags);
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
