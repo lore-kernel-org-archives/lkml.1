@@ -1,117 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751521AbXEXPUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751628AbXEXPYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751521AbXEXPUq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 11:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbXEXPUj
+	id S1751628AbXEXPYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 11:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbXEXPYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 11:20:39 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:38581 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750745AbXEXPUh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 11:20:37 -0400
-Subject: RE: [patch] removes MAX_ARG_PAGES
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Ollie Wild <aaw@google.com>, linux-kernel@vger.kernel.org,
-       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A0184DF88@scsmsx411.amr.corp.intel.com>
-References: <617E1C2C70743745A92448908E030B2A0184DF88@scsmsx411.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Thu, 24 May 2007 17:20:19 +0200
-Message-Id: <1180020019.7019.133.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 11:24:13 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:42403 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750752AbXEXPYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 11:24:12 -0400
+Date: Fri, 25 May 2007 00:23:18 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bryan Wu <Bryan.Wu@analog.com>
+Subject: Re: how to allow board writers to customize driver behavior (watchdog here)
+Message-ID: <20070524152318.GA4491@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Robin Getz <rgetz@blackfin.uclinux.org>,
+	Mike Frysinger <vapier.adi@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Bryan Wu <Bryan.Wu@analog.com>
+References: <8bd0f97a0705232121j32fcff72hd04b04e37507450e@mail.gmail.com> <20070524052312.GA2447@linux-sh.org> <200705240929.51696.rgetz@blackfin.uclinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705240929.51696.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-22 at 16:49 -0700, Luck, Tony wrote:
-> > In order to solve this, I added a STACK_TOP_MAX macro for each arch and
-> > use that. This made IA64 boot properly.
+On Thu, May 24, 2007 at 09:29:51AM -0400, Robin Getz wrote:
+> On Thu 24 May 2007 01:23, Paul Mundt pondered:
+> > On Thu, May 24, 2007 at 12:21:47AM -0400, Mike Frysinger wrote:
+> > > is this completely bad mojo ?  is there some other mechanism that
+> > > provides what i want and i just dont know about it ?  or do i just
+> > > make people change the driver to fit their application, thus throwing
+> > > out the idea of keeping all board-specific details in just the boards
+> > > file ...
+> > 
+> > It sounds like your constraining your driver based on terminology.
+> > Watchdogs on most embedded platforms support either a 'reset' mode or
+> > otherwise act as periodic timers, trying to push both of these
+> > functionalities in to a watchdog driver is rather pointless.
+> > CONFIG_WATCHDOG implies 'reset' mode by definition.
 > 
-> Yes.  Patches apply to 2.6.21 cleanly, build cleanly and boot for me too.
-> I can even run:
+> I understand what you mean - typically - most people think of watchdog == 
+> reset.
 > 
-> 	$ ls -lrt `find /usr/share -type f -print`
+No, not typically. This is _precisely_ what CONFIG_WATCHDOG means, and
+how the entire set of drivers underneath it behave.
+
+> But, calling it a periodic timer, and servicing it with the watchdog user 
+> space demon is even more confusing - isn't it?
 > 
-> on the new kernel (thats 48020 files for a total of 2.3MB of args).
-> 
-> > The second patch makes the compat stuff compile, untested though, as I
-> > have no idea how that works on ia64.
-> 
-> Not so good on this part.  Running an ia32 binary on this patched kernel
-> just hung my system :-(
+Calling it a periodic timer when its in periodic timer mode makes sense.
+Why you would want to interface that with a userspace watchdog daemon is
+beyond me, they're conceptually unrelated.
 
-I just tried this on an Altix from the test lab, and ia32 bash just
-started.
-
-native 64 bit gave this:
-
-$ ls `find / -xdev -type f` | wc
-      1   89847 4200288
-
-but the 32 bit bash kept complaining about his arg list being too long.
-This might be a 32->64 issue (/bin/ls is 64 bit after all - and I
-couldn't find a 32 bit ls in the compat packages), but I really don't
-know. Will look into this.
-
-The difference I had with what I posted last is below; these changes
-were just me cleaning up. (and fixing one bug on STACK_GROWS_UP
-introduced by the previous patches - but AFAIK that is not relevant to
-ia64)
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/exec.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
-
-Index: linux-2.6-2/fs/exec.c
-===================================================================
---- linux-2.6-2.orig/fs/exec.c	2007-05-24 09:15:54.000000000 +0200
-+++ linux-2.6-2/fs/exec.c	2007-05-24 09:41:49.000000000 +0200
-@@ -532,26 +532,23 @@ int setup_arg_pages(struct linux_binprm 
- 	stack_base = current->signal->rlim[RLIMIT_STACK].rlim_max;
- 	if (stack_base > (1 << 30))
- 		stack_base = 1 << 30;
--	stack_base = PAGE_ALIGN(stack_top - stack_base);
- 
- 	/* Make sure we didn't let the argument array grow too large. */
- 	if (vma->vm_end - vma->vm_start > stack_base)
- 		return -ENOMEM;
- 
-+	stack_base = PAGE_ALIGN(stack_top - stack_base);
-+
- 	stack_shift = stack_base - vma->vm_start;
- 	mm->arg_start = bprm->p + stack_shift;
- 	bprm->p = vma->vm_end + stack_shift;
- #else
- 	BUG_ON(stack_top & ~PAGE_MASK);
- 
--	stack_base = arch_align_stack(stack_top - mm->stack_vm*PAGE_SIZE);
--	stack_base = PAGE_ALIGN(stack_base);
--
--	/* Make sure we didn't let the argument array grow too large. */
--	if (stack_base > stack_top)
--		return -ENOMEM;
-+	stack_top = arch_align_stack(stack_top);
-+	stack_top = PAGE_ALIGN(stack_top);
-+	stack_shift = stack_top - vma->vm_end;
- 
--	stack_shift = stack_base - (bprm->p & PAGE_MASK);
- 	bprm->p += stack_shift;
- 	mm->arg_start = bprm->p;
- #endif
-@@ -598,7 +595,7 @@ int setup_arg_pages(struct linux_binprm 
- 			return -EFAULT;
- 		}
- #else
--		if (expand_stack(vma, stack_base -
-+		if (expand_stack(vma, vma->vm_start -
- 					EXTRA_STACK_VM_PAGES * PAGE_SIZE)) {
- 			up_write(&mm->mmap_sem);
- 			return -EFAULT;
-
-
+Please read my original mail on the subject. I'm not advocating hiding a
+clocksource somewhere in the depths of CONFIG_WATCHDOG, they're
+completely unrelated.
