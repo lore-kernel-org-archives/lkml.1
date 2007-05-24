@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbXEXQ2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbXEXQ3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751302AbXEXQ2g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 12:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbXEXQ23
+	id S1751875AbXEXQ3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 12:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750707AbXEXQ3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 12:28:29 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:63807 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbXEXQ23 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 12:28:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=t0UsB2V4G0FWDIb3oMHHQG7AEvgSuhnEGwXqNhEAsAPlx9JYv3kVtP3do2VIvise31AtBNZFLt/JndftH5Sjle1uJHRtUN31xP+UayhgQ44nyMXpFjzH1kRiksCLDvbadlG7z4da7RHm18pgNSD9FZLEBaVLKzf9XGAtc+377FE=
-Message-ID: <f24d23310705240928g13dbd516q1affff05da7a44ec@mail.gmail.com>
-Date: Thu, 24 May 2007 21:58:27 +0530
-From: "debian developer" <debiandev@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - 1/1] Documentation/HOWTO
-In-Reply-To: <alpine.LFD.0.98.0705240847160.26602@woody.linux-foundation.org>
+	Thu, 24 May 2007 12:29:08 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:49384 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbXEXQ3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 12:29:06 -0400
+Date: Thu, 24 May 2007 18:26:26 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: coly <colyli@gmail.com>
+cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       linux-ext4 <linux-ext4@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC 2/5] inode reservation v0.1 (ext4 kernel patch)
+In-Reply-To: <1180018046.4078.2.camel@coly-t43.site>
+Message-ID: <Pine.LNX.4.61.0705241826070.31549@yvahk01.tjqt.qr>
+References: <1179943606.4179.53.camel@coly-t43.site> 
+ <1180012837.11124.11.camel@kleikamp.austin.ibm.com> <1180018046.4078.2.camel@coly-t43.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <f24d23310705180629x50c56ayfdcde357f0373fc4@mail.gmail.com>
-	 <Pine.LNX.4.64.0705181200440.18186@localhost.localdomain>
-	 <10867.1179509181@turing-police.cc.vt.edu>
-	 <2cd57c900705240245s5448257ape203deade7812121@mail.gmail.com>
-	 <20070524135633.53260eb3.diegocg@gmail.com>
-	 <alpine.LFD.0.98.0705240847160.26602@woody.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sept. 2006! its been there since quite a long time.
-now what happens to my patch submitted to Greg???
 
-On 5/24/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On May 24 2007 22:47, coly wrote:
 >
+>Dave,
 >
-> On Thu, 24 May 2007, Diego Calleja wrote:
-> > El Thu, 24 May 2007 17:45:04 +0800, "Qi Yong" <qiyong@fc-cn.com> escribió:
-> >
-> > D'oh, it seems the patch was picked from the mailing list and merged twice,
-> > and I didn't notice it.
-> >
-> > > Torvalds, Care to revert one commit?
-> >
-> > Agreed, one of them can be removed.
+>Yes, I found all TABs gone when I received the mail. When I post next
+>version of the patch, I will test to send to me first :-)
 >
-> Yes, done.
->
-> Andrew - can you check that it's also removed from your queues, since it
-> might be there still just because it keeps applying cleanly.
->
-> You might have it described as "HOWTO: mention bughunting" rather than
-> "HOWTO: bug report addition".
->
->                 Linus
+>Thanks for your information.
+
+Blame Gmail.
+
+
+	Jan
+-- 
