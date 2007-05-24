@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758983AbXEXNgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbXEXNhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758983AbXEXNgi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 09:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbXEXNgb
+	id S1759980AbXEXNhS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 09:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbXEXNhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 09:36:31 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34722 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757254AbXEXNga (ORCPT
+	Thu, 24 May 2007 09:37:07 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:61457 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757389AbXEXNhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 09:36:30 -0400
-Date: Thu, 24 May 2007 14:41:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
-Subject: Re: [PATCH] $ARCH: Enable arbitary speed tty ioctls and split
- input/output speed
-Message-ID: <20070524144109.7bd0f4d0@the-village.bc.nu>
-In-Reply-To: <1180012135.8303.89.camel@shinybook.infradead.org>
-References: <20070523172739.1d3a918c@the-village.bc.nu>
-	<1180012135.8303.89.camel@shinybook.infradead.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 09:37:03 -0400
+Date: Thu, 24 May 2007 15:36:25 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       lhcs-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 4/7] SMP: Implement on_one_cpu()
+Message-ID: <20070524133625.GA9863@osiris.ibm.com>
+References: <1180008615579-git-send-email-avi@qumranet.com> <11800086152009-git-send-email-avi@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11800086152009-git-send-email-avi@qumranet.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007 09:08:55 -0400
-David Woodhouse <dwmw2@infradead.org> wrote:
+On Thu, May 24, 2007 at 03:10:12PM +0300, Avi Kivity wrote:
+> This defines on_one_cpu() which is similar to smp_call_function_single()
+> except that it works if cpu happens to be the current cpu.  Can also be
+> seen as a complement to on_each_cpu() (which also doesn't treat the
+> current cpu specially).
+> 
+> Signed-off-by: Avi Kivity <avi@qumranet.com>
+> ---
+>  include/linux/smp.h |   15 +++++++++++++++
+>  kernel/softirq.c    |   24 ++++++++++++++++++++++++
+>  2 files changed, 39 insertions(+), 0 deletions(-)
+> 
+> +/*
+> + * Call a function on one processor
+> + */
+> +int on_one_cpu(int cpu, void (*func)(void *info), void *info,
+> +	       int retry, int wait);
+> 
 
-> Is my mailbox (or brain) failing me, or did you just send out these
-> patches for every architecture _except_ PowerPC? :)
-
-PowerPC is one of the main ones I've not touched because it needs work
-itself to sort out the IBSHIFT value and bit allocations, also because
-its one of several dependant upon the asm-generic stuff (which also means
-your patch won't work)
-
-Most people copied the x86 behaviour which makes it easy to transplant.
-Some are just smoking something (see ioctls.h for sh-64 and weep), others
-have slightly odd behaviour for historical compatibility reasons (Sparc)
-
-> Presumably this is because of the mess in tty_termios_encode_baud_rate
-> when we fix its bogus assumptions about IBSHIFT always being defined?
-
-It's not a bogus assumption. The current code supports
-
-	- The old way
-	- BOTHER and IBSHIFT
-
-When PPC wants to do arbitary baud rate it needs to resolve both of the
-definitions together. IBSHIFT is simply the shift you apply to the baud
-bits to get the input baud bits.
-
-Alan
+Would you mind renaming that one to simply 'on_cpu'? It's even shorter and
+clearly everybody will know what its purpose is. Also I doubt we will ever
+have something like 'on_two_cpus'.
