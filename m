@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbXEXRxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752133AbXEXRzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752632AbXEXRxX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 13:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXEXRxI
+	id S1752133AbXEXRzq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 13:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbXEXRzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 13:53:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45064 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbXEXRxH (ORCPT
+	Thu, 24 May 2007 13:55:38 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:2420 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbXEXRzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 13:53:07 -0400
-Date: Thu, 24 May 2007 10:53:07 -0700
-From: Greg KH <greg@kroah.com>
-To: art@usfltd.com
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
-Message-ID: <20070524175307.GA18940@kroah.com>
-References: <20070517190058.w2oyxzf9wko4w8k8@67.106.77.50>
+	Thu, 24 May 2007 13:55:37 -0400
+X-IronPort-AV: i="4.14,574,1170662400"; 
+   d="scan'208"; a="982795:sNHT19355682"
+To: Rob Landley <rob@landley.net>
+Cc: Adrian Bunk <bunk@stusta.de>, Arjan van de Ven <arjan@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Status of CONFIG_FORCED_INLINING?
+X-Message-Flag: Warning: May contain useful information
+References: <200705231510.52932.rob@landley.net>
+	<20070524171019.GA4470@stusta.de> <ada3b1m87pa.fsf@cisco.com>
+	<200705241347.43727.rob@landley.net>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 24 May 2007 10:55:34 -0700
+In-Reply-To: <200705241347.43727.rob@landley.net> (Rob Landley's message of "Thu, 24 May 2007 13:47:43 -0400")
+Message-ID: <adahcq26r8p.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070517190058.w2oyxzf9wko4w8k8@67.106.77.50>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+X-OriginalArrivalTime: 24 May 2007 17:55:34.0741 (UTC) FILETIME=[BA764050:01C79E2C]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 07:00:58PM -0500, art@usfltd.com wrote:
->  greg
-> 
->  and part of /etc/udev/rules.d/60-libsane.rules
-> 
->  ...
->  ACTION!="add", GOTO="libsane_rules_end"
->  SUBSYSTEM!="usb_device", GOTO="libsane_rules_end"
-> 
->  # Hewlett-Packard ScanJet 4100C
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0101", SYMLINK+="scanner-%k"
->  # Hewlett-Packard Photosmart S20 (C5101A) | Hewlett-Packard Photosmart S20xi 
->  (C7150A)
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0102", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 4200C | Hewlett-Packard ScanJet 4200Cxi | 
->  Hewlett-Packard ScanJet 4200Cse
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0105", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 6200C | Hewlett-Packard ScanJet 6250C
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0201", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 3300c
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0205", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 4300c
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0305", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 5200C
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0401", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 3400c
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0405", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 2100C
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0505", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 6300C | Hewlett-Packard ScanJet 6350C | 
->  Hewlett-Packard ScanJet 6390C
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0601", SYMLINK+="scanner-%k"
->  # Hewlett-Packard ScanJet 2200C
->  SYSFS{idVendor}=="03f0", SYSFS{idProduct}=="0605", SYMLINK+="scanner-%k"
-> 
->  ...
->  # Dell 1600n
->  SYSFS{idVendor}=="413c", SYSFS{idProduct}=="5250", SYMLINK+="scanner-%k"
-> 
->  LABEL="libsane_rules_end"
+ > And if you #include a non-inlined definition in two .c files, the compiler 
+ > will emit two copies into two separate .o files.  What you're hoping is that 
+ > the linker will notice they're identical and merge them, and last I checked I 
+ > couldn't even reliably get it to do that with constant strings.
 
+No, I don't care if the linker merges it or not.  In fact I hope that
+maybe the compiler is smart enough to optimize the function for the
+sites it's called from in a particular .c file.
 
-I don't see anything odd there at all.
-
-Can you run 'git bisect' to try to narrow down to the patch that caused
-the problem?
-
-thanks,
-
-greg k-h
+But a function defined in a .h file had better be static, so it
+shouldn't matter if there are two copies of it in the final linked
+image (any more than it matters if there are 100 inlined copies of it).
