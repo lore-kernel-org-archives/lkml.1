@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXEXXGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbXEXXH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbXEXXGv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 19:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXEXXGo
+	id S1758719AbXEXXH3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 19:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbXEXXHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 19:06:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47913 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750795AbXEXXGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 19:06:43 -0400
-Date: Thu, 24 May 2007 19:06:34 -0400
-From: Dave Jones <davej@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
-Message-ID: <20070524230634.GA30651@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-	Len Brown <len.brown@intel.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Andi Kleen <ak@suse.de>
-References: <20070523224637.GB15887@linux-os.sc.intel.com> <20070524150223.41063046.akpm@linux-foundation.org> <46560E4F.2080009@zytor.com> <20070524224154.GA29337@redhat.com> <465616F3.6090501@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 May 2007 19:07:18 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:16498 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751155AbXEXXHP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 19:07:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ta6ua++McyZ/hAXXyKCm0/OZQ4YbS2j+7sLT5gycDpy6uBk9Sp7UlvWcNEoFDem1H5CbDJ1m7k8PD1GPk4QAPm4IP/xbKPJjOFLwxzlr8jrp+wLRVWyNRsqp8ugLYVvOrsse4T9eZOFd2cYFCzHpHJwBGJoRWAMhgqcSqJVc5OU=
+Message-ID: <4af2d03a0705241607r3c9807c6h3841e87ea4736bd3@mail.gmail.com>
+Date: Fri, 25 May 2007 01:07:09 +0200
+From: "Jiri Slaby" <jirislaby@gmail.com>
+To: "Markus Rechberger" <mrechberger@gmail.com>
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       video4linux-list@redhat.com
+In-Reply-To: <d9def9db0705240724p59a48160l8a2338f4d44b0ef6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <465616F3.6090501@zytor.com>
-User-Agent: Mutt/1.4.2.2i
+References: <2172422218943432279@wsc.cz>
+	 <d9def9db0705240724p59a48160l8a2338f4d44b0ef6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 03:51:31PM -0700, H. Peter Anvin wrote:
- > What you're describing is correct for later-level AMD/Cyrix chips,
- > however, when 3DNow! was first introduced they foolishly squatted on the
- > Intel-assigned CPUID flags.
+On 5/24/07, Markus Rechberger <mrechberger@gmail.com> wrote:
+> Hi Jiri,
+>
+> On 5/24/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+> > Well, no objections on v4l list, try to merge it. Any further comments will
+> > be
+> > appreciated.
+> >
+> > --
+> >
+> > stk11xx, add a new webcam driver
+[...]
+> > +static int stk1125_camera_asleep(struct stk11xx *dev)
+> > +{
+> > +     int value;
+> > +
+> > +     stk11xx_read_registry(dev, 0x0104, &value);
+> > +     stk11xx_read_registry(dev, 0x0105, &value);
+> > +     stk11xx_read_registry(dev, 0x0106, &value);
+> > +
+>
+> why do you read these values (this is also something in the ongoing
+> code I see, the read value just gets overwritten all the time)?
 
-Hmm, the 3dnow spec (doc 21928e) has it in the right place, and I don't see
-anything in the errata docs I have.
+Well, as I tested, reads are neccesary, otherwise it doesn't work. And
+when they are needed, you need to read the value to some place in
+memory -- the &value.
 
-Do you have more info on this?  If its true, I'd like to make x86info
-aware of it.
-
-	Dave
-
+thanks,
 -- 
-http://www.codemonkey.org.uk
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
