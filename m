@@ -1,50 +1,51 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759947AbXEWWxc (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 23 May 2007 18:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbXEWWxX
+	id S1762484AbXEXDMh (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 23 May 2007 23:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757827AbXEXDM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 18:53:23 -0400
-Received: from 114.Red-81-47-197.staticIP.rima-tde.net ([81.47.197.114]:1875
-	"EHLO icasa.es" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755709AbXEWWxW (ORCPT
+	Wed, 23 May 2007 23:12:28 -0400
+Received: from [212.67.121.104] ([212.67.121.104]:4255 "EHLO
+	sgrsil47.onetel.net.uk" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757573AbXEXDM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 18:53:22 -0400
-X-Greylist: delayed 19385 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 18:53:22 EDT
-Date: Wed, 23 May 2007 16:20:04 +0400
-From: "Hannah paddock" <4-mason@adlay.co.jp>
-To: webmaster@es.dgreetings.com, etech@etechtesting.com,
-	nvcampd@nvcc.edu, kin_glenda@australiamail.com,
-	linux-kernel@vger.kernel.org, info@theweekender.com.au,
-	webmaster@maths.qmul.ac.uk
-Subject: need to reach dental offices?
-Message-ID: <3A9F7EE3.7684.B915C2D5@localhost>
+	Wed, 23 May 2007 23:12:28 -0400
+X-Greylist: delayed 1391 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 23:12:27 EDT
+Message-ID: <20070524034908.kub3umghkwkggg4s@mailzone.onetel.net.uk>
+X-Priority: 3 (Normal)
+Date: Thu, 24 May 2007 03:49:08 +0100
+From: Mr Javi Greg <adamdeacock@onetel.com>
+Reply-To: javigreg@yahoo.com.hk
+To: undisclosed-recipients:;
+Subject: Good day From { Mr Javi Greg }
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-X-OriginalArrivalTime: 23 May 2007 11:24:16.0151 (UTC) FILETIME=[E5B7FA70:01C79D2C]
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.0-BETA)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759947AbXEWWxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1762484AbXEXDMh@vger.kernel.org>
+
+Dear Friend,
+
+
+I am a citizen of switzerland  temporarily living and working in Standard
+Chartered Bank ,Hong Kong.
+
+
+I have a proposal to discuss about a late Client of mine who I think is
+co-incidentally related to you, on fixed
+
+deposit in my bank.
 
 
 
-
-Just extracted - all new DENTIST Directory
-
-Fields: Dentist/Clinic Name, Postal Address, Phone, Fax, Email and Website
-
-Breakdown:
-
-597,959 Total Records
-6,494 Emails
-6,000 Faxes
-
-Special price until May 25 - $199 
-
-For more information or to place an order please send an email to dentistdata@hotmail.com
+Please contact me for further information about this business.
 
 
+Thank you.
 
 
-To delete your email from our list please send an email with "delete" in the subject heading.
-
+ Mr Javi Greg.
 
