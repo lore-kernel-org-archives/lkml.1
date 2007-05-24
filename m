@@ -1,51 +1,57 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762484AbXEXDMh (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 23 May 2007 23:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757827AbXEXDM2
+	id S1753448AbXEXV6l (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 24 May 2007 17:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbXEXV6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 23:12:28 -0400
-Received: from [212.67.121.104] ([212.67.121.104]:4255 "EHLO
-	sgrsil47.onetel.net.uk" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757573AbXEXDM2 (ORCPT
+	Thu, 24 May 2007 17:58:33 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:44745 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750885AbXEXV6c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 23:12:28 -0400
-X-Greylist: delayed 1391 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 23:12:27 EDT
-Message-ID: <20070524034908.kub3umghkwkggg4s@mailzone.onetel.net.uk>
-X-Priority: 3 (Normal)
-Date: Thu, 24 May 2007 03:49:08 +0100
-From: Mr Javi Greg <adamdeacock@onetel.com>
-Reply-To: javigreg@yahoo.com.hk
-To: undisclosed-recipients:;
-Subject: Good day From { Mr Javi Greg }
+	Thu, 24 May 2007 17:58:32 -0400
+X-Greylist: delayed 928 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 May 2007 17:58:31 EDT
+Date: Thu, 24 May 2007 20:39:54 -0200
+From: "traversal" <burley@admatec.ch>
+To: linux-ha-dev@lists.linux-ha.org,
+	linux-hardware-request@nl.linux.org, linux-howto@metalab.unc.edu,
+	linux-howto@sunsite.unc.edu, linux-kernel@vger.kernel.org
+Subject: Looking for Chiropractors?
+Message-ID: <EA4A7EE3.7684.2915C2D5@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.0-BETA)
+Content-type: text/plain; charset=US-ASCII
+X-OriginalArrivalTime: 24 May 2007 21:46:01.0265 (UTC) FILETIME=[EBB66210:01C79E4C]
+X-ExchangeSecure-AntiSpam: valid(2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1762484AbXEXDMh@vger.kernel.org>
-
-Dear Friend,
-
-
-I am a citizen of switzerland  temporarily living and working in Standard
-Chartered Bank ,Hong Kong.
-
-
-I have a proposal to discuss about a late Client of mine who I think is
-co-incidentally related to you, on fixed
-
-deposit in my bank.
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753448AbXEXV6l@vger.kernel.org>
 
 
 
-Please contact me for further information about this business.
+
+This week's special:
+
+--------------------------------------------------
+- New Database : American Chiropractor's Offices -
+--------------------------------------------------
+
+Fields: Chiropractor/Clinic Name, Postal Address, Phone, Fax, Email and Website
+Date Created: Apr 5, 2007
+Format: MS Excel
+License: Unlimited Use
 
 
-Thank you.
+Breakdown:
+
+108,421 Total Records
+3,414 Emails
+6,553 Faxes
+
+Special price until May 25 - $199 
+
+Inquiries, please email chiropractordata@hotmail.com
 
 
- Mr Javi Greg.
 
+
+
+To stop receiving emails from us please email with "off" in the subject.
