@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbXEXVIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbXEXVJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbXEXVIv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750705AbXEXVIo
+	id S1754027AbXEXVJr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbXEXVJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:08:44 -0400
-Received: from ns2.suse.de ([195.135.220.15]:50247 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbXEXVIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:08:43 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
-Date: Thu, 24 May 2007 23:08:38 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070523224637.GB15887@linux-os.sc.intel.com> <20070524135513.b6efacbf.akpm@linux-foundation.org> <20070524210103.GA5380@redhat.com>
-In-Reply-To: <20070524210103.GA5380@redhat.com>
+	Thu, 24 May 2007 17:09:40 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58178 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbXEXVJj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 17:09:39 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tom.l.nguyen@intel.com, iss_storagedev@hp.com, jens.axboe@oracle.com,
+       Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] msi: Fix the ordering of msix irqs.
+References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+	<20070524102702.bca37396.akpm@linux-foundation.org>
+	<m1r6p6dn3x.fsf@ebiederm.dsl.xmission.com>
+	<20070524205900.GC14083@beardog.cca.cpqcorp.net>
+Date: Thu, 24 May 2007 15:08:21 -0600
+In-Reply-To: <20070524205900.GC14083@beardog.cca.cpqcorp.net> (Mike Miller's
+	message of "Thu, 24 May 2007 15:59:00 -0500")
+Message-ID: <m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705242308.38360.ak@suse.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 May 2007 23:01:04 Dave Jones wrote:
-> On Thu, May 24, 2007 at 01:55:13PM -0700, Andrew Morton wrote:
->  > On Wed, 23 May 2007 15:46:37 -0700
->  > Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
->  > 
->  > > Display Intel Dynamic Acceleration feature in /proc/cpuinfo. This feature
->  > > will be enabled automatically by current acpi-cpufreq driver and cpufreq.
->  > 
->  > So you're saying that the cpufreq code in Linus's tree aleady supports IDA?
->  > If so, this is a 2.6.22 patch, isn't it?
-> 
-> From my limited understanding[*], ida is the "We're single threaded,
-> disable the 2nd core, and clock the first core faster" magic.
-> It doesn't need code-changes, as its all done in hardware afaik.
+Yours looks more complete then my test patch so:
 
-P0 is somewhat visible to software, but it should be pretty transparent
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> writes:
 
-> 
-> identifying & exporting the flags on earlier kernels should be harmless,
-> but not really 'mustfix'.
+Found what seems the problem with our vectors being listed backward. In
+drivers/pci/msi.c we should be using list_add_tail rather than list_add to
+preserve the ordering across various kernels. Please consider this for
+inclusion.
 
-I think it's generally a good idea to push cpuinfo flags in earliest
-as possible; just make sure we actually use the final name (so that we don't get
-into a pni->sse3 mess again) 
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 0e67723..d74975d 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -333,7 +333,7 @@ static int msi_capability_init(struct pci_dev *dev)
+ 			msi_mask_bits_reg(pos, is_64bit_address(control)),
+ 			maskbits);
+ 	}
+-	list_add(&entry->list, &dev->msi_list);
++	list_add_tail(&entry->list, &dev->msi_list);
  
--Andi
+ 	/* Configure MSI capability structure */
+ 	ret = arch_setup_msi_irqs(dev, 1, PCI_CAP_ID_MSI);
+@@ -404,7 +404,7 @@ static int msix_capability_init(struct pci_dev *dev,
+ 		entry->dev = dev;
+ 		entry->mask_base = base;
+ 
+-		list_add(&entry->list, &dev->msi_list);
++		list_add_tail(&entry->list, &dev->msi_list);
+ 	}
+ 
+ 	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
