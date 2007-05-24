@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbXEXLi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbXEXL5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757000AbXEXLi2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 07:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbXEXLiU
+	id S1757583AbXEXL5j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 07:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbXEXL5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 07:38:20 -0400
-Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:42277 "EHLO
-	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754888AbXEXLiT (ORCPT
+	Thu, 24 May 2007 07:57:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:8173 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756039AbXEXL5b convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 07:38:19 -0400
-X-Greylist: delayed 6578 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 May 2007 07:38:19 EDT
-To: jens.axboe@oracle.com
-Cc: pbadari@gmail.com, linux-kernel@vger.kernel.org, bhalevy@panasas.com,
-       akpm@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
-       michaelc@cs.wisc.edu
-Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20070524093441.GP5722@kernel.dk>
-References: <20070521063554.GF14746@kernel.dk>
-	<1179872108.29302.55.camel@dyn9047017100.beaverton.ibm.com>
-	<20070524093441.GP5722@kernel.dk>
+	Thu, 24 May 2007 07:57:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=CruiMbSrtUQtArlo2gaK4AecuYBt/cAA8HFMjhbdm2ORotKkPvQ6xCh/B7ttyGt5gHei3w60Re+6lDm/e6uJJfBFVfOYOEyZNCtuWPU0G25mdvu8ZcdHkeWzugBqeQOFCjF9lSFjW6FBLT0imNl4m2MVGMYHfmtd9pkgl03UwEk=
+Date: Thu, 24 May 2007 13:56:33 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: "Qi Yong" <qiyong@fc-cn.com>
+Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       "debian developer" <debiandev@gmail.com>, greg@kroah.com,
+       linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH - 1/1] Documentation/HOWTO
+Message-Id: <20070524135633.53260eb3.diegocg@gmail.com>
+In-Reply-To: <2cd57c900705240245s5448257ape203deade7812121@mail.gmail.com>
+References: <f24d23310705180629x50c56ayfdcde357f0373fc4@mail.gmail.com>
+	<Pine.LNX.4.64.0705181200440.18186@localhost.localdomain>
+	<10867.1179509181@turing-police.cc.vt.edu>
+	<2cd57c900705240245s5448257ape203deade7812121@mail.gmail.com>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.10.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070524184334P.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 24 May 2007 18:43:34 +0900
-X-Dispatcher: imput version 20040704(IM147)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
-Date: Thu, 24 May 2007 11:34:41 +0200
+El Thu, 24 May 2007 17:45:04 +0800, "Qi Yong" <qiyong@fc-cn.com> escribió:
 
-> On Tue, May 22 2007, Badari Pulavarty wrote:
-> > > If iommu=off works, can you try a normal boot but with this applied on
-> > > top of the sglist patches? That should fix gart mapping.
-> > > 
-> > > diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
-> > > index 2e22a3a..b16384f 100644
-> > > --- a/arch/x86_64/kernel/pci-gart.c
-> > > +++ b/arch/x86_64/kernel/pci-gart.c
-> > 
-> > Yes. With this patch + kzalloc() for ide probe took care of all my
-> > problems on x86-64.
-> > 
-> > But my ppc64 box is still sick :(
+> Hello,
 > 
-> :-(
-> 
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > SMP NR_CPUS=32 NUMA pSeries
-> > Modules linked in: qla2xxx scsi_transport_fc
-> > NIP: c0000000000414a0 LR: c00000000004162c CTR: 0000000000000001
-> > REGS: c0000000047bb130 TRAP: 0300   Not tainted  (2.6.22-rc1)
-> > MSR: 8000000000001032 <ME,IR,DR>  CR: 28000022  XER: 00000008
-> > DAR: 0000000000000000, DSISR: 0000000040000000
-> > TASK = c0000000047a6aa0[0] 'swapper' THREAD: c0000000047b8000 CPU: 7
-> > GPR00: 0000000000000080 c0000000047bb3b0 c000000000692358 c0000000047a6aa0
-> > GPR04: 0000000000000000 0000000000000070 0000000000000000 c0000000005ac0b8
-> > GPR08: 000000000000e4b4 0000000000000001 0000000000000000 0000000000000280
-> > GPR12: 0000000000000020 c0000000005a3e80 0000000000000000 0000000007a8dd70
-> > GPR16: 0000000000000000 0000000000000000 0000000000000000 c0000000047b8000
-> > GPR20: 000000003b9aca00 c0000000047a6c50 0000000000000001 0000000000000000
-> > GPR24: d000000000909048 0001dee6d30c0d30 c000000003b7dd80 c0000000047a6aa0
-> > GPR28: 00000001079027ca c0000000047a6aa0 c0000000005b7cb0 c000000000472c9c
-> > NIP [c0000000000414a0] .dequeue_task+0x0/0x9c
-> > LR [c00000000004162c] .deactivate_task+0x40/0x60
-> > Call Trace:
-> > [c0000000047bb3b0] [c00000000004bccc] .printk+0x38/0x48 (unreliable)
-> > [c0000000047bb440] [c000000000471704] .schedule+0x1fc/0x8dc
-> > [c0000000047bb540] [c000000000472c9c] .schedule_timeout+0xa8/0xe8
-> > [c0000000047bb610] [c000000000057260] .msleep+0x20/0x38
-> > [c0000000047bb690] [c00000000003f5ec] .eeh_dn_check_failure+0x114/0x268
-> > [c0000000047bb740] [c00000000003fc64] .eeh_check_failure+0xec/0x114
-> > [c0000000047bb7c0] [d00000000086190c] .qla2300_fw_dump+0x1130/0x1c00 [qla2xxx]
-> > [c0000000047bb8a0] [d000000000858d50] .qla2300_intr_handler+0x1e8/0x60c [qla2xxx]
-> > [c0000000047bb950] [c000000000078368] .handle_IRQ_event+0x70/0xe4
-> > [c0000000047bb9f0] [c00000000007a7e0] .handle_fasteoi_irq+0x11c/0x1d0
-> > [c0000000047bba90] [c00000000000c178] .do_IRQ+0x90/0xec
-> > [c0000000047bbb10] [c000000000004790] hardware_interrupt_entry+0x18/0x1c
-> 
-> Not good. The qla changes are non-trivial (that hardware has a really
-> funky sg setup), so I may have botched a part of it. I'll review the
-> qla changes and get back to you.
+> This duplicated paragraph problem was introduced by the following two
+> commits. They are one patch actually.
 
-I guess that qla2xxx needs more for_each_sg macros. My qla2xxx cleanup
-patch might help:
+D'oh, it seems the patch was picked from the mailing list and merged twice,
+and I didn't notice it.
 
-http://git.kernel.org/?p=linux/kernel/git/tomo/linux-2.6-bidi.git;a=commitdiff;h=fb2747a9f2465ac4a1ea9e3533b92510fbcaae0c
+> Torvalds, Care to revert one commit?
+
+Agreed, one of them can be removed.
+
+
+> commit 722385f75efd82d9f480f0765a1e97a4d83cac0d
+> Author: Diego Calleja <diegocg@gmail.com>
+> Date:   Thu Sep 21 22:37:10 2006 +0200
+> 
+>     HOWTO: bug report addition
+> 
+>     I suspect that not many people is subscribed to the bugzilla mailing list,
+>     not surprising since the URLs doesn't seem to be in the tree :)
+> 
+>     After fixing my english, I wonder if the following patch could be applied...
+> 
+>     Signed-off-by: Diego Calleja <diegocg@gmail.com>
+>     Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> commit 3f27100872b21e4cc70d07b96eeb3611b30bce63
+> Author: Diego Calleja <diegocg@gmail.com>
+> Date:   Sat Sep 30 23:27:49 2006 -0700
+> 
+>     [PATCH] HOWTO: mention bughunting
+> 
+>     Signed-off-by: Diego Calleja <diegocg@gmail.com>
+>     Signed-off-by: Andrew Morton <akpm@osdl.org>
+>     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
