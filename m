@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbXEXUrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbXEXUsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbXEXUrd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 16:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXEXUrY
+	id S1753501AbXEXUsf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 16:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXEXUs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 16:47:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48881 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbXEXUrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 16:47:23 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bugme-new] [Bug 8533] New: Panic on boot with early exception rip ffffffff8150a240 error 0 cr2 2260
-Date: Thu, 24 May 2007 22:47:15 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, mjw99@ic.ac.uk,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-References: <200705241523.l4OFN4OZ025419@fire-2.osdl.org> <20070524103249.3e0b87d8.akpm@linux-foundation.org>
-In-Reply-To: <20070524103249.3e0b87d8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 24 May 2007 16:48:28 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:46470 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750841AbXEXUs2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 16:48:28 -0400
+Date: Thu, 24 May 2007 13:48:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ben Collins <bcollins@ubuntu.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/6] RTC: Ratelimit "lost interrupts" message
+Message-Id: <20070524134822.ed020127.akpm@linux-foundation.org>
+In-Reply-To: <e5ea703bf068a19cc9a4cc76a9b6b8990380ee75.1179964369.git.bcollins@ubuntu.com>
+References: <98cd38b5.git.bcollins@ubuntu.com>
+	<e5ea703bf068a19cc9a4cc76a9b6b8990380ee75.1179964369.git.bcollins@ubuntu.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705242247.15790.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 23 May 2007 18:23:06 -0400
+Ben Collins <bcollins@ubuntu.com> wrote:
 
-> > 
-> > Kernel alive
-> > kernel direct mapping tables up to 840000000 @ 8000-2a000
-> > PANIC: early exception rip ffffffff8150a240 error 0 cr2 2260
-> > 
-> > 
-> > 
-> > Steps to reproduce:
-> > 
-> > 1) Boot the kernel with flags
-> > kernel /vmlinuz-2.6.21.2 ro root=LABEL=/ selinux=0 console=ttyS0,57600 console=tty0
-> > 
-> > 2) Observe the above problem
-> > 
+> Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+> ---
+>  drivers/char/rtc.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> erk, -stable just went unstable.
+> diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+> index 20380a2..22cf7aa 100644
+> --- a/drivers/char/rtc.c
+> +++ b/drivers/char/rtc.c
+> @@ -1159,7 +1159,8 @@ static void rtc_dropped_irq(unsigned long data)
+>  
+>  	spin_unlock_irq(&rtc_lock);
+>  
+> -	printk(KERN_WARNING "rtc: lost some interrupts at %ldHz.\n", freq);
+> +	if (printk_ratelimit())
+> +		printk(KERN_WARNING "rtc: lost some interrupts at %ldHz.\n", freq);
+>  
 
-Multiple reports? Sometimes things seem to get "miscompiled" for random
-reasons, so for really weird crashes I would suggest a make clean and try
-again. 
+Presumably someone is getting a lot of these messages.
 
-> hm, it occurred sometime between 2.6.18.3 and 2.6.21.2.  That's a huge
-> leap.  I don't suppose you'd have the time and inclination to run a
-> git-bisect search?
-
-And looking up ffffffff8150a240 in the System.map
-
--Andi
-
-
-
+Do we know why?  Is there something which needs fixing here?
