@@ -1,289 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbXEXUJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbXEXUKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036AbXEXUJu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 16:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbXEXUJl
+	id S1753257AbXEXUKH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 16:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbXEXUJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 16:09:41 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41450 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750877AbXEXUJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 16:09:39 -0400
-Date: Thu, 24 May 2007 22:10:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       sparclinux@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/5] sparc64: ident vmlinux.lds.S
-Message-ID: <20070524201038.GC1109@uranus.ravnborg.org>
-References: <20070524200440.GA1109@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 May 2007 16:09:49 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:25543 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbXEXUJs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 16:09:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DSc5faOmlJeFE2O06Sn8fM+d98ZBXdtBID1U6Ab+JGH1moyLW5fkvxhbgLTvZ2WOg7Jy2S20Sbv8aGEDZ3yZdmehNxcsGIVxS3Zy9jOqM0XElac6CxLRqlboequWRf8GK2YHWmowiWpkvWsm+RrvPoZJ5k2go+nupl3NivQHCLU=
+Message-ID: <a781481a0705241309i7b8b20e4o7c486c0b659d7094@mail.gmail.com>
+Date: Fri, 25 May 2007 01:39:45 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Nitin Gupta" <nitingupta910@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 3
+Cc: "Richard Purdie" <richard@openedhand.com>, linux-kernel@vger.kernel.org,
+       linux-mm-cc@laptop.org, "Bret Towe" <magnade@gmail.com>
+In-Reply-To: <4cefeab80705240720s2c047979r27f3d9433ebeac80@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070524200440.GA1109@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+	 <a781481a0705231234m62327134mbfd1c1478b6fb99a@mail.gmail.com>
+	 <1179995105.5880.7.camel@localhost.localdomain>
+	 <4cefeab80705240720s2c047979r27f3d9433ebeac80@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This introduce a style similar to C code.
-No functional changes.
+On 5/24/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
+> [...]
+> > > > diff --git a/lib/lzo1x/lzo1x_int.h b/lib/lzo1x/lzo1x_int.h
+> > > > [...]
+> > > > +/* Macros for 'safe' decompression */
+> > > > +#ifdef LZO1X_DECOMPRESS_SAFE
+> > > > +
+> > > > +#define lzo1x_decompress lzo1x_decompress_safe
+> > > > +#define TEST_IP        (ip < ip_end)
+> > > > +#define NEED_IP(x) \
+> > > > +       if ((size_t)(ip_end - ip) < (size_t)(x)) goto input_overrun
+> > > > +#define NEED_OP(x) \
+> > > > +       if ((size_t)(op_end - op) < (size_t)(x)) goto output_overrun
+> > > > +#define TEST_LB(m_pos) \
+> > > > +       if (m_pos < out || m_pos >= op) goto lookbehind_overrun
+> > > > +#define HAVE_TEST_IP
+> > > > +#define HAVE_ANY_OP
+> > > > +
+> > > > +#else  /* !LZO1X_DECOMPRESS_SAFE */
+> > > > +
+> > > > +#define        TEST_IP         1
+> > > > +#define        TEST_LB(x)      ((void) 0)
+> > > > +#define        NEED_IP(x)      ((void) 0)
+> > > > +#define        NEED_OP(x)      ((void) 0)
+> > > > +#undef HAVE_TEST_IP
+> > > > +#undef HAVE_ANY_OP
+> > > > +
+> > > > +#endif /* LZO1X_DECOMPRESS_SAFE */
+> > >
+> > > ... ugh. Yes, extracting the common stuff between the _safe and _unsafe
+> > > variants in a common low-level __lzo1x_decompress kind of function
+> > > definitely looks doable. The low-level function could simply take an extra
+> > > argument (say, set by the _safe and _unsafe wrappers) that tells it
+> > > whether it is being called as safe or unsafe ... helps us get rid of the
+> > > disruptions to all the Makefiles above and these #ifdef's ugliness ...
+> >
+> > I suspect it will probably damage performance unless the compiler is
+> > very clever and I don't trust compilers that much...
+>
+> +1. I looked into Satyam suggestion as above but ...yes, we should not
+> leave everything to compiler.  And since all this was suggested just
+> to do away with that symlink, I don't think this splitting work is
+> worth the effort.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- arch/sparc64/kernel/vmlinux.lds.S |  239 ++++++++++++++++++++++---------------
- 1 files changed, 142 insertions(+), 97 deletions(-)
+Not just the symlink ... we get rid of the changes in the two Makefiles,
+the -D...SAFE stuff, some #ifdef's _and_ the macros listed above. Code
+becomes even smaller and simpler. But yes, as I said, there'd be an
+extra condition tested by the _unsafe variant (and *only* the _unsafe
+variant, I must add) at the locations of these macros that was compiled
+away previously. As for performance hit, I'd be interested in actually
+measuring it first ... I definitely wouldn't mind trading off a couple of %
+for a simpler and smaller patch.
 
-diff --git a/arch/sparc64/kernel/vmlinux.lds.S b/arch/sparc64/kernel/vmlinux.lds.S
-index fb648de..6f924fd 100644
---- a/arch/sparc64/kernel/vmlinux.lds.S
-+++ b/arch/sparc64/kernel/vmlinux.lds.S
-@@ -9,105 +9,150 @@ ENTRY(_start)
- jiffies = jiffies_64;
- SECTIONS
- {
--  swapper_low_pmd_dir = 0x0000000000402000;
--  . = 0x4000;
--  .text 0x0000000000404000 :
--  {
--    _text = .;
--    TEXT_TEXT
--    SCHED_TEXT
--    LOCK_TEXT
--    KPROBES_TEXT
--    *(.gnu.warning)
--  } =0
--  _etext = .;
--  PROVIDE (etext = .);
--
--  RODATA
--
--  .data    :
--  {
--    DATA_DATA
--    CONSTRUCTORS
--  }
--  .data1   : { *(.data1) }
--  . = ALIGN(64);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
--  . = ALIGN(64);
--  .data.read_mostly : { *(.data.read_mostly) }
--  _edata  =  .;
--  PROVIDE (edata = .);
--  .fixup   : { *(.fixup) }
--
--  . = ALIGN(16);
--  __start___ex_table = .;
--  __ex_table : { *(__ex_table) }
--  __stop___ex_table = .;
--
--  . = ALIGN(8192);
--  __init_begin = .;
--  .init.text : { 
--	_sinittext = .;
--	*(.init.text)
--	_einittext = .;
--  }
--  .init.data : { *(.init.data) }
--  . = ALIGN(16);
--  __setup_start = .;
--  .init.setup : { *(.init.setup) }
--  __setup_end = .;
--  __initcall_start = .;
--  .initcall.init : {
--	INITCALLS
--  }
--  __initcall_end = .;
--  __con_initcall_start = .;
--  .con_initcall.init : { *(.con_initcall.init) }
--  __con_initcall_end = .;
--  SECURITY_INIT
--  . = ALIGN(4);
--  __tsb_ldquad_phys_patch = .;
--  .tsb_ldquad_phys_patch : { *(.tsb_ldquad_phys_patch) }
--  __tsb_ldquad_phys_patch_end = .;
--  __tsb_phys_patch = .;
--  .tsb_phys_patch : { *(.tsb_phys_patch) }
--  __tsb_phys_patch_end = .;
--  __cpuid_patch = .;
--  .cpuid_patch : { *(.cpuid_patch) }
--  __cpuid_patch_end = .;
--  __sun4v_1insn_patch = .;
--  .sun4v_1insn_patch : { *(.sun4v_1insn_patch) }
--  __sun4v_1insn_patch_end = .;
--  __sun4v_2insn_patch = .;
--  .sun4v_2insn_patch : { *(.sun4v_2insn_patch) }
--  __sun4v_2insn_patch_end = .;
-+	swapper_low_pmd_dir = 0x0000000000402000;
-+	. = 0x4000;
-+	.text 0x0000000000404000 : {
-+		_text = .;
-+		TEXT_TEXT
-+		SCHED_TEXT
-+		LOCK_TEXT
-+		KPROBES_TEXT
-+		*(.gnu.warning)
-+	} =0
-+	_etext = .;
-+	PROVIDE (etext = .);
-+
-+	RODATA
-+
-+	.data : {
-+		DATA_DATA
-+		CONSTRUCTORS
-+	}
-+	.data1 : {
-+		*(.data1)
-+	}
-+
-+	. = ALIGN(64);
-+	.data.cacheline_aligned : {
-+		*(.data.cacheline_aligned)
-+	}
-+
-+	. = ALIGN(64);
-+	.data.read_mostly : {
-+		*(.data.read_mostly)
-+	}
-+	_edata  =  .;
-+	PROVIDE (edata = .);
-+	.fixup : {
-+		*(.fixup)
-+	}
-+
-+	. = ALIGN(16);
-+	__start___ex_table = .;
-+	__ex_table : {
-+		*(__ex_table)
-+	}
-+	__stop___ex_table = .;
-+
-+	. = ALIGN(8192);
-+	__init_begin = .;
-+	.init.text : {
-+		_sinittext = .;
-+		*(.init.text)
-+		_einittext = .;
-+	}
-+
-+	.init.data : {
-+		*(.init.data)
-+	}
-+
-+	. = ALIGN(16);
-+	__setup_start = .;
-+	.init.setup : {
-+		*(.init.setup)
-+	}
-+	__setup_end = .;
-+
-+	__initcall_start = .;
-+	.initcall.init : {
-+		INITCALLS
-+	}
-+	__initcall_end = .;
-+
-+	__con_initcall_start = .;
-+	.con_initcall.init : {
-+		*(.con_initcall.init)
-+	}
-+	__con_initcall_end = .;
-+	SECURITY_INIT
-+
-+	. = ALIGN(4);
-+	__tsb_ldquad_phys_patch = .;
-+	.tsb_ldquad_phys_patch : {
-+		*(.tsb_ldquad_phys_patch)
-+	}
-+	__tsb_ldquad_phys_patch_end = .;
-+
-+	__tsb_phys_patch = .;
-+	.tsb_phys_patch : {
-+		*(.tsb_phys_patch)
-+	}
-+	__tsb_phys_patch_end = .;
-+
-+	__cpuid_patch = .;
-+	.cpuid_patch : {
-+		*(.cpuid_patch)
-+	}
-+	__cpuid_patch_end = .;
-+
-+	__sun4v_1insn_patch = .;
-+	.sun4v_1insn_patch : {
-+		*(.sun4v_1insn_patch)
-+	}
-+	__sun4v_1insn_patch_end = .;
-+	__sun4v_2insn_patch = .;
-+	.sun4v_2insn_patch : {
-+		*(.sun4v_2insn_patch)
-+	}
-+	__sun4v_2insn_patch_end = .;
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--  . = ALIGN(8192); 
--  __initramfs_start = .;
--  .init.ramfs : { *(.init.ramfs) }
--  __initramfs_end = .;
-+	. = ALIGN(8192);
-+	__initramfs_start = .;
-+	.init.ramfs : {
-+		*(.init.ramfs)
-+	}
-+	__initramfs_end = .;
- #endif
- 
--  . = ALIGN(8192);
--  __per_cpu_start = .;
--  .data.percpu  : { *(.data.percpu) }
--  __per_cpu_end = .;
--  . = ALIGN(8192);
--  __init_end = .;
--  __bss_start = .;
--  .sbss      : { *(.sbss) *(.scommon) }
--  .bss       :
--  {
--   *(.dynbss)
--   *(.bss)
--   *(COMMON)
--  }
--  _end = . ;
--  PROVIDE (end = .);
--  /DISCARD/ : { *(.exit.text) *(.exit.data) *(.exitcall.exit) }
--
--  STABS_DEBUG
--
--  DWARF_DEBUG
-+	. = ALIGN(8192);
-+	__per_cpu_start = .;
-+	.data.percpu  : {
-+		*(.data.percpu)
-+	}
-+	__per_cpu_end = .;
-+	. = ALIGN(8192);
-+	__init_end = .;
-+
-+	__bss_start = .;
-+	.sbss : {
-+		*(.sbss)
-+		*(.scommon)
-+	}
-+	.bss : {
-+		*(.dynbss)
-+		*(.bss)
-+		*(COMMON)
-+	}
-+	_end = . ;
-+	PROVIDE (end = .);
-+
-+	/DISCARD/ : {
-+		*(.exit.text)
-+		*(.exit.data)
-+		*(.exitcall.exit)
-+	}
-+
-+	STABS_DEBUG
-+	DWARF_DEBUG
- }
--- 
-1.5.1.rc3.20.gaa453
+But if you don't want even _that_ performance hit, you could also
+simply duplicate the decompress() like Richard has done.
 
+> For rigous testing, I have sent 'compress-test' module (with usage) to
+> Bret Towe who has 64-bit machines available for testing.
+
+This test module isn't so performance benchmarking friendly, good
+enough for checking correctness of the algorithm implementation and
+robustness of the code. But I think Richard's cryptoapi glue code patch
+would work for your version too, as both your interfaces are the same,
+so that'd be a better way to benchmark the relative performance of
+your patch vs his. If you can test/benchmark both your versions and
+produce results that beat his code, you've made it :-)
