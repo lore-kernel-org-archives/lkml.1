@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbXEXUop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbXEXUo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753216AbXEXUop (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 16:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbXEXUoi
+	id S1753451AbXEXUo6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 16:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbXEXUol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 16:44:38 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:39818 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750811AbXEXUoh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 16:44:37 -0400
-Date: Thu, 24 May 2007 13:44:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ben Collins <bcollins@ubuntu.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] i386/x86_64: Allow disabling the putstr's from
- compressed boot wrapper (fixed)
-Message-Id: <20070524134433.731ef20f.akpm@linux-foundation.org>
-In-Reply-To: <b31c080.git.bcollins@ubuntu.com>
-References: <98cd38b5.git.bcollins@ubuntu.com>
-	<b31c080.git.bcollins@ubuntu.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 24 May 2007 16:44:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47613 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbXEXUok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 16:44:40 -0400
+Message-ID: <4655F932.20006@garzik.org>
+Date: Thu, 24 May 2007 16:44:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: David Hollis <dhollis@davehollis.com>
+CC: Greg KH <greg@kroah.com>, Dave Jones <davej@redhat.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [stable] Wanted: Allow adding new device IDs during the	-stable
+ cycle
+References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com>	<46533EA8.7020602@garzik.org> <20070522193538.GA885@kroah.com>	<20070522195135.GG12157@redhat.com>  <20070522221718.GC2302@kroah.com> <1179969655.4489.3.camel@dhollis-lnx.sunera.com>
+In-Reply-To: <1179969655.4489.3.camel@dhollis-lnx.sunera.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 17:59:10 -0400
-Ben Collins <bcollins@ubuntu.com> wrote:
+David Hollis wrote:
+> With the asix.c driver, you can't just add the USB IDs and have it work.
+> Each ID also needs to be told which driver structure to use, since the
+> driver itself supports three similar, but distinct chips.  Adding the
+> IDs to the driver itself is naturally trivial, but adding via sysfs or
+> the like doesn't work.  I would imagine that there are other drivers
+> that operate quite similarly.
 
-> Updated to include proper spacing for putstr() macro.
-> 
-> Signed-off-by: Ben Collins <bcollins@ubuntu.com>
-> ---
->  arch/i386/Kconfig.debug            |    6 ++++++
->  arch/i386/boot/compressed/misc.c   |    8 +++++---
->  arch/x86_64/Kconfig.debug          |    6 ++++++
->  arch/x86_64/boot/compressed/misc.c |    8 +++++---
->  4 files changed, 22 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/i386/Kconfig.debug b/arch/i386/Kconfig.debug
-> --- a/arch/i386/Kconfig.debug
-> +++ b/arch/i386/Kconfig.debug
-> @@ -19,6 +19,12 @@ config EARLY_PRINTK
->  	  with klogd/syslogd or the X server. You should normally N here,
->  	  unless you want to debug such a crash.
->  
-> +config WRAPPER_PRINT
-> +	bool "Boot wrapper print" if EMBEDDED
-> +	default y
-> +	help
-> +	  Enable informational output from the bootwrapper (bzImage and zImage).
-> +
+As is evident from the patches that do upstream (a requirement for 
+-stable), it depends on the driver.  Some drivers work just fine with a 
+simple ID addition.
 
-What is the reason for making this change to the kernel?
+Review the thread, we are just talking about the patches where adding an 
+ID is the only work necessary.
+
+	Jeff
+
+
