@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbXEXWzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbXEXWzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbXEXWzJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXEXWy4
+	id S1752919AbXEXWzh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXEXWzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:54:56 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:37040 "EHLO
+	Thu, 24 May 2007 18:55:21 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:57245 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750702AbXEXWyz (ORCPT
+	by vger.kernel.org with ESMTP id S1752138AbXEXWzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:54:55 -0400
-Date: Thu, 24 May 2007 15:53:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-In-Reply-To: <20070524221743.GD9604@elf.ucw.cz>
-Message-ID: <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
- <20070521212522.GL3429@sequoia.sous-sol.org> <1179870110.16656.2.camel@localhost>
- <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
- <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org>
- <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
- <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
- <20070524221743.GD9604@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 24 May 2007 18:55:19 -0400
+Date: Thu, 24 May 2007 15:54:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Richard Purdie <richard@openedhand.com>
+Cc: Michael-Luke Jones <mlj28@cam.ac.uk>,
+       Nitin Gupta <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm-cc@laptop.org
+Subject: Re: [RFC] LZO de/compression support - take 3
+Message-Id: <20070524155428.55460e9c.akpm@linux-foundation.org>
+In-Reply-To: <1180046482.12821.42.camel@localhost.localdomain>
+References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+	<0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
+	<4cefeab80705230439n6bbb1259le3c3b9704ce49b75@mail.gmail.com>
+	<624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
+	<4cefeab80705230703vdb3c414s250a61c4c2d70c51@mail.gmail.com>
+	<1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
+	<4cefeab80705230721i492b5f1ehfa2d775344b1c04e@mail.gmail.com>
+	<726113DF-D952-401F-96EA-7A10B035604B@cam.ac.uk>
+	<1180046482.12821.42.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 May 2007 23:41:22 +0100
+Richard Purdie <richard@openedhand.com> wrote:
 
+> I'll not send a "rename to unsafe" patch for the LZO core until Andrew
+> decides whether to drop the unsafe version entirely or not as per your
+> patch. If he doesn't due to the potential use by the compressed cache
+> people, I will send that patch.
 
-On Fri, 25 May 2007, Pavel Machek wrote:
-> > 
-> > Why the HELL cannot you realize that kernel threads are different?
-> 
-> Ugh? We are talking about request_firmware() here, right? That's
-> calling userland helper to load the firmware...? Looks like USER
-> thread to me.
-
-Right. And if we had had the nice old /sbin/hotplug thing, it would all 
-have worked fine - because it would just have done an execve(), and things 
-would be happy.
-
-But people screwed that up too, and now udevd is an undebuggable user 
-thread. Shit happens. See my other email about why even user threads can 
-probably not be frozen, and the whole freezer thing is misdesigned.
-
-And I repeat: PowerPC had working and stable suspend five _years_ ago, 
-without any of that freezing crud. We should rip it out.
-
-		Linus
+I'd have thought that a 3% performance difference isn't worth worrying
+about.  Especially when reclaiming that 3% costs an additional 500 lines
+of pretty yukky code.
