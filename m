@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbXEXVQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbXEXVTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbXEXVQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbXEXVQq
+	id S1752971AbXEXVTM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXEXVS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:16:46 -0400
-Received: from mga03.intel.com ([143.182.124.21]:25910 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbXEXVQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:16:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,575,1170662400"; 
-   d="scan'208";a="231816476"
-Date: Thu, 24 May 2007 14:13:37 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
-Message-ID: <20070524211337.GB3692@linux-os.sc.intel.com>
-References: <20070523224637.GB15887@linux-os.sc.intel.com> <20070524135513.b6efacbf.akpm@linux-foundation.org> <20070524210103.GA5380@redhat.com> <200705242308.38360.ak@suse.de>
+	Thu, 24 May 2007 17:18:59 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:36318 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750723AbXEXVS7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 17:18:59 -0400
+Date: Thu, 24 May 2007 14:17:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
+       linux-kernel@vger.kernel.org, tom.l.nguyen@intel.com,
+       iss_storagedev@hp.com, jens.axboe@oracle.com,
+       Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] msi: Fix the ordering of msix irqs.
+Message-Id: <20070524141720.c02582db.akpm@linux-foundation.org>
+In-Reply-To: <m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
+References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+	<20070524102702.bca37396.akpm@linux-foundation.org>
+	<m1r6p6dn3x.fsf@ebiederm.dsl.xmission.com>
+	<20070524205900.GC14083@beardog.cca.cpqcorp.net>
+	<m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705242308.38360.ak@suse.de>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 11:08:38PM +0200, Andi Kleen wrote:
+On Thu, 24 May 2007 15:08:21 -0600
+ebiederm@xmission.com (Eric W. Biederman) wrote:
+
+> Yours looks more complete then my test patch so:
 > 
-> I think it's generally a good idea to push cpuinfo flags in earliest
-> as possible; just make sure we actually use the final name (so that we don't get
-> into a pni->sse3 mess again) 
+> From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> writes:
+> 
+> Found what seems the problem with our vectors being listed backward. In
+> drivers/pci/msi.c we should be using list_add_tail rather than list_add to
+> preserve the ordering across various kernels. Please consider this for
+> inclusion.
+> 
+> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> 
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index 0e67723..d74975d 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -333,7 +333,7 @@ static int msi_capability_init(struct pci_dev *dev)
+>  			msi_mask_bits_reg(pos, is_64bit_address(control)),
+>  			maskbits);
+>  	}
+> -	list_add(&entry->list, &dev->msi_list);
+> +	list_add_tail(&entry->list, &dev->msi_list);
 >  
+>  	/* Configure MSI capability structure */
+>  	ret = arch_setup_msi_irqs(dev, 1, PCI_CAP_ID_MSI);
+> @@ -404,7 +404,7 @@ static int msix_capability_init(struct pci_dev *dev,
+>  		entry->dev = dev;
+>  		entry->mask_base = base;
+>  
+> -		list_add(&entry->list, &dev->msi_list);
+> +		list_add_tail(&entry->list, &dev->msi_list);
+>  	}
+>  
+>  	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
 
-ida is official name as in the Software Developer's Manual now. So, should
-not be a issue unless marketing folks change their mind in future :-)
+Is this as fragile as I think it is?  What happens when close+open and
+rmmod+modprobe happen?  The list gets reordered then?
 
-Thanks,
-Venki
+If this is important then perhaps a big-fat-comment which explains wtf is
+going on is needed?
+
