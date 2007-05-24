@@ -1,115 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbXEXWfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751335AbXEXWf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751999AbXEXWfi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbXEXWfZ
+	id S1751335AbXEXWf7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXEXWfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:35:25 -0400
-Received: from pat.uio.no ([129.240.10.15]:54455 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751746AbXEXWfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:35:24 -0400
-Subject: Re: [PATCH 2/4] AFS: Add a function to excise a rejected write
-	from the pagecache
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <27608.1180042522@redhat.com>
-References: <20070524133821.3ee9c9f3.akpm@linux-foundation.org>
-	 <20070523191518.24135.81257.stgit@warthog.cambridge.redhat.com>
-	 <20070523191524.24135.2609.stgit@warthog.cambridge.redhat.com>
-	 <27608.1180042522@redhat.com>
-Content-Type: text/plain
-Date: Thu, 24 May 2007 18:35:15 -0400
-Message-Id: <1180046115.8872.27.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.139)
-X-UiO-Scanned: E3FA4C0D602B7EBFE994EFE6E248D33543E232FC
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 527 total 1943480 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Thu, 24 May 2007 18:35:48 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49856 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750846AbXEXWfq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:35:46 -0400
+Date: Thu, 24 May 2007 15:35:45 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+In-Reply-To: <20070524145517.1f32cd94.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+ <46540DB2.5000605@googlemail.com> <Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
+ <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
+ <20070523153730.e0e9e91d.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
+ <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
+ <20070524073131.GA17501@elte.hu> <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
+ <20070524142908.f39f42ea.akpm@linux-foundation.org>
+ <20070524145517.1f32cd94.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-24 at 22:35 +0100, David Howells wrote:
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > Could you please flesh this out a bit, from a higher level?
-> 
-> See the description for patch 3/4.
-> 
-> > As in: what does it mean for a server to "reject" a write? What's actually
-> > going on here?
-> 
-> Simply, it means that the server refused to perform the write.  The example I'm
-> thinking of is that it refused to do so because the ACL governing that file
-> changed between the permission() check and the attempt to write the data back.
-> 
-> All it takes is a write-back cache and a tiny little delay between the copy to
-> page cache and the write back to the server and there's a window in which
-> another client can leap in and make it impossible for the client to write the
-> data.
-> 
-> There are other possibilities, for instance:
-> 
->  (1) The key governing the writeback expires.
-> 
->  (2) The user's account is deleted or disabled.
-> 
-> The file being deleted is handled elsewhere.  In such a case, everyone's
-> writes are just discarded.
-> 
-> > Why does the server do this?
-> 
-> Because it's told to by some other client.  Think chmod, or in AFS's case:
-> 
-> 	fs setacl -dir . -acl system:administrators rlidka
-> 
-> This removes write access by not including a 'w' amongst 'rlidka'.
-> 
-> (Note in AFS, the ACLs attached to a directory control the files in that
-> directory).
-> 
-> > I assume that the application will see a short write or an EIO or something?
-> 
-> EACCES or similar most likely.  In AFS's case you should get an abort with some
-> appropriate error code.  This is then mapped to EACCES, EKEYREVOKED,
-> EKEYEXPIRED, etc.
-> 
-> > How does this interact with MAP_SHARED?
-> 
-> MAP_SHARED/PROT_WRITE is just another way of doing writes to the pagecache.  It
-> isn't really special.  The way I've done it is to use page_mkwrite() to track
-> the key with which a write through a mapping is written back.
-> 
-> > Do we expect that any other networked filesystem would want to do this? 
-> > (and if not, why not?) Or do they already attempt to do it in some other
-> > fashion?
-> 
-> _Any_ network filesystem that (a) has access controls, and (b) does writeback
-> caching (be the interval ever so brief) is liable to this issue.  It could
-> possible for a netfs to avoid with this by getting a guarantee that the write
-> will be accepted upfront (CIFS might do this), or by blocking attempts to
-> change the access controls through some sort of locking (again CIFS might do
-> this).
-> 
-> However, looking at NFS, it appears that NFS may be liable to this problem.  It
-> does appear to use writeback caching, though it flushes its writes back fairly
-> promptly making it quite difficult to test.  I talked to Steve Dickson about
-> this, and I get the impression that NFS will just sit their and keep retrying
-> the writeback.
+On Thu, 24 May 2007, Randy Dunlap wrote:
 
-No. If the write fails, then NFS will mark the mapping as invalid and
-attempt to call invalidate_inode_pages2() at the earliest possible
-moment.
+> This is pretty-printing.  and creature-feep.
+> But lib/hexdump.c can probably do this if we add a "prefix/tag" string
+> parameter to it.
+> 
+> Hugh D. wants it to print 32-bit quantities, not just bytes.
+> Yet another parameter.
+> 
+> I'll look into these unless Christoph et al does so first.
 
-I'm adding in a patch to defer marking the page as uptodate until the
-write is successful in cases where NFS is writing a pristine page.
+I'd appreciate if you could do this. I just added a call to the function 
+in hexdump.c and got this ugly output. I think we need
 
-As for pages that are already marked as uptodate, well you already have
-a race: you have deferred the page write, and so other processes may
-already have read the rejected data before you tried to write it out.
+1. byte output
 
-Trond
+2. A way to specify the width of the description.
+
+
+BUG kmalloc-16: Redzone corrupted. Expected 0xcc at 0xffff81000235ff30 but 
+found 0x12
+INFO: Last alloc: slab_sysfs_init+0xe1/0x280 jiffies_ago=0 cpu=0 pid=1
+INFO: Object=0xffff81000235ff20 slab=0xffff81000107bcc8 offset=3872
+INFO: flags=0x4000000000000082 inuse=45 freelist=0xffff81000235ff78
+Bytes b4ffff81000235ff10: 00000000 00000000 5a5a5a5a 5a5a5a5a  ........ZZZZZZZZ
+Objectffff81000235ff20: 00000000 00000000 00000000 00000000  ................
+Redzoneffff81000235ff30: 12cccccc cccccccc  .IIIIIII
+FreePointer 0xffff81000235ff38 -> 0xffff81000235ff78
+Fillerffff81000235ff70: 5a5a5a5a 5a5a5a5a  ZZZZZZZZ
+
+Call Trace:
+ [<ffffffff8026d2af>] check_bytes_and_report+0x7f/0xe0
+ [<ffffffff8026d573>] check_object+0x63/0x260
+ [<ffffffff8026fd75>] validate_slab+0x175/0x1b0
+ [<ffffffff8026fdc9>] validate_slab_slab+0x19/0x70
+ [<ffffffff8026fe76>] validate_slab_cache+0x56/0x110
+ [<ffffffff805d2466>] slab_sysfs_init+0x106/0x280
+ [<ffffffff805c3624>] kernel_init+0xb4/0x290
+ [<ffffffff8020a218>] child_rip+0xa/0x12
+ [<ffffffff8038dd68>] acpi_ds_init_one_object+0x0/0x7c
+ [<ffffffff805c3570>] kernel_init+0x0/0x290
+ [<ffffffff8020a20e>] child_rip+0x0/0x12
+
+FIX kmalloc-16: Restoring Redzone (0xcc) from 0xffff81000235ff30-0xffff81000235ff30
+
 
