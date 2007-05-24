@@ -1,109 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751407AbXEXOqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751285AbXEXOv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751407AbXEXOqx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 10:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXEXOqo
+	id S1751285AbXEXOv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 10:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbXEXOvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 10:46:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:55029 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbXEXOqm (ORCPT
+	Thu, 24 May 2007 10:51:14 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:44502 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbXEXOvM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 10:46:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Lj5A3GzMe6AesDlR+XdBaFkHppyvPpVIE71oh7kDYrbmVwJK8JI4vJTvAlB9QNbO9dzAeuUkTQHurRyVno4KyeY0DEBSUMkaWFm2yyaBwxS849ymEdulBPc7btyTy1oHc0NBk4N4N5+DE1dZ7g/Os/LhZWhRseli2eMn3jya5XI=
-Subject: Re: [RFC 2/5] inode reservation v0.1 (ext4 kernel patch)
-From: coly <colyli@gmail.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: linux-ext4 <linux-ext4@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1180012837.11124.11.camel@kleikamp.austin.ibm.com>
-References: <1179943606.4179.53.camel@coly-t43.site>
-	 <1180012837.11124.11.camel@kleikamp.austin.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 24 May 2007 22:47:26 +0800
-Message-Id: <1180018046.4078.2.camel@coly-t43.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 8bit
+	Thu, 24 May 2007 10:51:12 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>
+Subject: [PATCH] IB/ehca: fix wrong number of send WRs returned
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       "Christoph Raisch" <raisch@de.ibm.com>,
+       "Stefan Roscher" <stefan.roscher@de.ibm.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 6092
+Date: Thu, 24 May 2007 16:51:08 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705241651.09411.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+From: Stefan Roscher <stefan.roscher@de.ibm.com>
 
-Yes, I found all TABs gone when I received the mail. When I post next
-version of the patch, I will test to send to me first :-)
+Due to a typo, the driver was reporting the wrong number of "actual send
+WRs" after ehca_create_qp(). Fixed.
 
-Thanks for your information.
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/hcp_if.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Coly
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 7f0beec..5766ae3 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -331,7 +331,7 @@ u64 hipz_h_alloc_resource_qp(const struct ipz_adapter_handle adapter_handle,
+ 				0);
+ 	qp->ipz_qp_handle.handle = outs[0];
+ 	qp->real_qp_num = (u32)outs[1];
+-	parms->act_nr_send_sges =
++	parms->act_nr_send_wqes =
+ 		(u16)EHCA_BMASK_GET(H_ALL_RES_QP_ACT_OUTST_SEND_WR, outs[2]);
+ 	parms->act_nr_recv_wqes =
+ 		(u16)EHCA_BMASK_GET(H_ALL_RES_QP_ACT_OUTST_RECV_WR, outs[2]);
+-- 
+1.5.2
 
-
-在 2007-05-24四的 08:20 -0500，Dave Kleikamp写道：
-> On Thu, 2007-05-24 at 02:06 +0800, coly wrote:
-> > The patch is generated based on 2.6.20-ext4-2 branch. you can find the
-> > benchmark from other email.
-> > 
-> > DO NOT waste time on reading the patch :-) I post this patch here is to
-> > show that I really spent time on it and the patch can work (even not
-> > well).
-> 
-> I won't waste my time then.  I'm discouraged from trying by the lack of
-> indentation.  It looks like the tabs got converted to a single space
-> somehow.
-> 
-> > diff --git a/Makefile b/Makefile
-> > index 7e2750f..21d21e4 100644
-> > --- a/Makefile
-> > +++ b/Makefile
-> > @@ -1,8 +1,7 @@
-> > VERSION = 2
-> > PATCHLEVEL = 6
-> > SUBLEVEL = 20
-> > -EXTRAVERSION =
-> > -NAME = Homicidal Dwarf Hamster
-> > +EXTRAVERSION = inores
-> > 
-> > # *DOCUMENTATION*
-> > # To see a list of typical targets execute "make help"
-> > diff --git a/fs/ext4/bitmap.c b/fs/ext4/bitmap.c
-> > index 11e93c1..daf88b4 100644
-> > --- a/fs/ext4/bitmap.c
-> > +++ b/fs/ext4/bitmap.c
-> > @@ -30,3 +30,29 @@ unsigned long ext4_count_free (struct buffer_head *
-> > map, unsigned int numchars)
-> > 
-> > #endif  /*  EXT4FS_DEBUG  */
-> > 
-> > +/*
-> > + * Read the inode allocation bitmap for a given block_group, reading
-> > + * into the specified slot in the superblock's bitmap cache.
-> > + *
-> > + * Return buffer_head of bitmap on success or NULL.
-> > + */
-> > +struct buffer_head *
-> > +read_inode_bitmap(struct super_block * sb, unsigned long block_group)
-> > +{
-> > + struct ext4_group_desc *desc;
-> > + struct buffer_head *bh = NULL;
-> > +
-> > + desc = ext4_get_group_desc(sb, block_group, NULL);
-> > + if (!desc)
-> > + goto error_out;
-> > +
-> > + bh = sb_bread(sb, ext4_inode_bitmap(sb, desc));
-> > + if (!bh)
-> > + ext4_error(sb, "read_inode_bitmap",
-> > + "Cannot read inode bitmap - "
-> > + "block_group = %lu, inode_bitmap = %llu",
-> > + block_group, ext4_inode_bitmap(sb, desc));
-> > +error_out:
-> > + return bh;
-> > +}
-> > +
-> 
-> Shaggy
 
