@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759076AbXEXKv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbXEXKxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759076AbXEXKv7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 06:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758748AbXEXKvs
+	id S1758685AbXEXKxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 06:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbXEXKxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 06:51:48 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:53946 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758720AbXEXKvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 06:51:47 -0400
-Date: Thu, 24 May 2007 12:50:58 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: How to access correctly serial port inside module?
-In-Reply-To: <46556CB2.8010709@gmx.de>
-Message-ID: <Pine.LNX.4.61.0705241246180.31549@yvahk01.tjqt.qr>
-References: <46485D84.1010902@gmx.de> <46489EF1.2020509@gmx.de>
- <Pine.LNX.4.61.0705142158340.9570@yvahk01.tjqt.qr> <4648E9F7.5090908@imap.cc>
- <Pine.LNX.4.61.0705151020310.9570@yvahk01.tjqt.qr> <46536C0F.50101@imap.cc>
- <4655676A.1000102@gmx.de> <Pine.LNX.4.61.0705241224510.31549@yvahk01.tjqt.qr>
- <46556CB2.8010709@gmx.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 1.5 points, 6.0 required
-	1.5 MAILTO_TO_SPAM_ADDR    URI: Includes a link to a likely spammer email
+	Thu, 24 May 2007 06:53:03 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:36403 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755855AbXEXKxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 06:53:01 -0400
+Date: Thu, 24 May 2007 11:55:49 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: 2.6.22-rc1-mm1: IDE compile error
+Message-ID: <20070524115549.01c0e1ca@the-village.bc.nu>
+In-Reply-To: <200705240145.38055.bzolnier@gmail.com>
+References: <20070515201914.16944e04.akpm@linux-foundation.org>
+	<20070516185552.GA4086@stusta.de>
+	<200705240145.38055.bzolnier@gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 24 2007 12:45, Lars K.W. Gohlke wrote:
+> > hd.c:(.init.text+0x44a7d): undefined reference to `drive_info'
+> > hd.c:(.init.text+0x44a89): undefined reference to `drive_info'
+> > hd.c:(.init.text+0x44a95): undefined reference to `drive_info'
+> > hd.c:(.init.text+0x44aa1): undefined reference to `drive_info'
+> > hd.c:(.init.text+0x44aad): undefined reference to `drive_info'
+> > drivers/built-in.o:hd.c:(.init.text+0x44ab9): more undefined references to `drive_info' follow
+> > make[1]: *** [.tmp_vmlinux1] Error 1
+> > 
+> > <--  snip  -->
+> > 
+> > Considering the fact that we have two more recent drivers with the same 
+> > functionality, it might be an option to simply remove this driver...
+> 
+> Care to send a patch?
 
->Date: Thu, 24 May 2007 12:45:06 +0200
->From: Lars K.W. Gohlke <lkwg82@gmx.de>
->To: Jan Engelhardt <jengelh@linux01.gwdg.de>
->Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
->Subject: Re: How to access correctly serial port inside module?
->
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Jan Engelhardt schrieb:
->> On May 24 2007 12:22, Lars K.W. Gohlke wrote:
->> > ok, I have read everything and also have read the chapters about
->> > tty_drivers. However I'm not really understand, how to ... .
->> > 
->> > I will summarize the concrete scenario, which will lead to the
->> > understanding and further solution of deadling with serial driver.
->> > 
->> > [scenario]
->> > 
->> > 1. in userspace I'm doing: > date > /dev/ttyS0
->> > 2. in kernelspace I want to print out this date.
->> > 
->> > [/scenario]
->> > 
->> > I'm really new to kernel coding, that's why I maybe understand some
->> > functions not the proper way.
->> > 
->> > I'm a bit confused.
->> 
->> So am I. Usually, you connect two different machines with a serial cable.
->> (Leaving out the special case of connecting ttyS0-ttyS1 on the same
->> machine.)
->> 
->> This poses the first question: whose kernelspace? the sender or
->> the receiver side? And by "this date" do you perhaps mean
->> "whatever was sent", or specifically a date? And print to _where_?
->> 
->> Up to now, it looks like you want to do "cat </dev/ttyS0" in-kernel.
->> 
->> 
->> Jan
->
-> date is an example
->
-> and you got it, I want to do "cat </dev/ttyS0" in-kernel.
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
->
-> iD8DBQFGVWy0AAomYJ1taN8RAu7/AJ9+1irJURFy5KFy/wzHqSXXD5sRgACfSi49
-> ec5AnOQoTz2nCt//siaiTNs=
-> =uj4G
-> -----END PGP SIGNATURE-----
->
+hd.c can drive MFM and RLL disks and drivers/ide cannot. Although it
+really wants burying further down the config tree the ability to read MFM
+and RLL disks when recovering ancient data is useful and people do
+actually use this driver now and then rescuing stuff like twenty year old
+datasets.
 
-	Jan
--- 
+It thus needs fixing not removing.
+
+
+Alan
