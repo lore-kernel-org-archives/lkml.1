@@ -1,68 +1,59 @@
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbXFANVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbXEaQf2 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 31 May 2007 12:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbXEaQfJ
+	id S1760208AbXFANVa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jun 2007 09:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbXFANVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 12:35:09 -0400
-Received: from imf20aec.mail.bellsouth.net ([205.152.59.68]:61246 "EHLO
-	imf20aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754619AbXEaQfH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 12:35:07 -0400
-X-Mailer: Openwave WebEngine, version 2.8.16.1 (webedge20-101-1106-101-20040924)
-X-Originating-IP: [208.113.194.21]
-From: Beck's <unit0976@bellsouth.net>
-Reply-To: adriano.f@fondazionedivittorio.org
-Organization: Beck's 
-To: <info@beckspromo.co.uk>
-Subject: Confirm Your Winning Amount
-Date: Thu, 31 May 2007 12:35:04 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Message-Id: <20070531163504.YRPG19234.ibm62aec.bellsouth.net@mail.bellsouth.net>
+	Fri, 1 Jun 2007 09:21:19 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4806 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754663AbXFANVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jun 2007 09:21:19 -0400
+Date: Thu, 24 May 2007 14:47:27 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: David Wagner <daw-usenet@taverner.cs.berkeley.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
+Message-ID: <20070524144726.GB3920@ucw.cz>
+References: <653438.15244.qm@web36612.mail.mud.yahoo.com> <20070529144518.GD5840@ucw.cz> <Pine.LNX.4.64.0705291622430.31474@asgard.lang.hm> <20070529233041.GC24200@elf.ucw.cz> <f3il25$pcp$1@taverner.cs.berkeley.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f3il25$pcp$1@taverner.cs.berkeley.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760066AbXEaQf2@vger.kernel.org>
 
-Beck IPC GmbH,=20
-Gr=FCninger Weg 24. 35415,=20
-Pohlheim-Garbenteich -
-Germany.
+Hi!
 
-Beck's After Dark" Promotion Notification.
+(Please do not drop me from cc list when replying).
 
-Dear Winner,
+> > no, this won't help you much against local users, [...]
+> 
+> Pavel Machek  wrote:
+> >Hmm, I guess I'd love "it is useless on multiuser boxes" to become
+> >standard part of AA advertising.
+> 
+> That's not quite what david@ said.  As I understand it, AppArmor is not
+> focused on preventing attacks by local users against other local users;
+> that's not the main problem it is trying to solve.  Rather, it's primary
+> purpose is to deal with attacks by remote bad guys against your network
+> servers.  That is a laudable goal.
 
-This is to inform you of the Award of One Million Euro (1,000,000.00 EU=
-R) from Beck's Beer annual Promotions. This promotional award is to rai=
-se the profile of Beck's beer consumers  in rural and urban centers.
+It is also not going to prevent local users attacking network servers.
+Local users can ln arbitrary files, and then play tricks with network
+servers.
 
-The online promotions build email lists were generated from the World W=
-ide Web. This promotion takes place annually to challenge and to take m=
-arket share from the popular Dutch import beer. The tactics included li=
-ve events, local campaigns and general buzz to establish the brand one =
-neighborhood at a time in major urban / rural centers.
+> This means that AppArmor could still be useful on multiuser boxes,
+> even if that utility is limited to defending (some) network daemons
+> against remote attack (or, more precisely, reducing the damage done by
+> a successful remote attack against a network daemon).
 
-Your Email falls within our European booklet representative's office in=
- Europe . In view of this, your award of One Million Euro (1,000,000.00=
- EUR) will be released to you by our payment office ,Our clearance mana=
-ger will commence the process to facilitate the release of your funds a=
-s soon as you contact him.=20
 
-Find the contact details below;
-
-Mr. Adriano Fabio
-Clearance Manager.
-Email:adriano.f@fondazionedivittorio.org=20
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Kevin Wright
-Online Lead
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Yes, if there's significantly more remote bad guys than local bad
+guys, and if remote bad guys can't just get some local user first, AA
+still has some value.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
