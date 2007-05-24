@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751053AbXEXUWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXEXUWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751053AbXEXUWU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 16:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXEXUVy
+	id S1753381AbXEXUWu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 16:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbXEXUWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 16:21:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:32586 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbXEXUVv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 16:21:51 -0400
+	Thu, 24 May 2007 16:22:41 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:46817 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbXEXUWk (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 16:22:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ijvdq180knHa2kqncpa5RLRMz+VW6BvcDrMi4uVN1fwXEHTXeJ4pbHNhoQ7FPnDrIcPB9D2Mrfog2CNcqEPG2odR31D5bYv5feD6HPP5Z45fZjpZKiQZ5Pby8X/mgpYbLvStVJVwb3X/ToiJUArxOAKJadgnJppA5pqWYAS0p7o=
-Subject: Re: Long delay in resume from RAM (Was Re: [patch 00/69]
-	-stablereview)
-From: Romano Giannetti <romano.giannetti@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <alpine.LFD.0.98.0705240851300.26602@woody.linux-foundation.org>
-References: <20070521191612.800400000@sous-sol.org>
-	 <4652070D.3090509@redhat.com>
-	 <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
-	 <20070521212522.GL3429@sequoia.sous-sol.org>
-	 <1179870110.16656.2.camel@localhost>
-	 <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
-	 <1180008394.15600.26.camel@localhost> <1180019201.15600.57.camel@localhost>
-	 <alpine.LFD.0.98.0705240815530.26602@woody.linux-foundation.org>
-	 <alpine.LFD.0.98.0705240851300.26602@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 24 May 2007 22:21:41 +0200
-Message-Id: <1180038102.15241.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s7ZNVAmTkGYwmzDkoSRgGv1M124MnpV+YheoB9zSswbSz5pw1xnJvgsj+uBhaXLdNBtAs/NrItiSPdRnrPRgVR5mbB9PEIvhZKgWgRRSnz+gaMDt6mj3hGwjwWvB2G5yp8TSwEKh3lMu42pmb5/qG84rf5vG0GMjhbOeR20AYH8=
+Message-ID: <6934efce0705241322j7ad7c4fex621217e0749ddf3e@mail.gmail.com>
+Date: Thu, 24 May 2007 13:22:37 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: richard.griffiths@windriver.com
+Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
+Cc: Linux-kernel@vger.kernel.org
+In-Reply-To: <1179871779.24163.11.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1179871779.24163.11.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-24 at 08:52 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 24 May 2007, Linus Torvalds wrote:
-> > 
-> > Ok. That was probably true even before you added the suspend ordering 
-> > patch.
-> 
-> Oh, no it apparently wasn't. I missed your other email that said
-> 
->    "So, I tried to suspend without any card in the pcmcia slot. Guess what?
->     I extracted the card and the system did not suspend. Just stopped dead."
-> 
-> so apparently the patch actually did matter for you. Can you double-check 
-> and confirm?
-> 
+On 5/22/07, Richard Griffiths <res07ml0@verizon.net> wrote:
+> Venerable cramfs fs Linear XIP patch originally from MontaVista, used in
+> the embedded Linux community for years, updated for 2.6.21. Tested on
+> several systems with NOR Flash. PXA270, TI OMAP2430, ARM Versatile and
+> Freescale iMX31ADS.
+>
 
-Well, I've made a bit of a mess. The setup that has not the delay when
-the card is out is a plain 2.6.21.2 (without suspend ordering). 
+When trying to verify this patch on our PXA270 system we get the
+following error when running an XIP rootfs:
 
-The lockup ocurred on a 2.6.21.1 WITH the suspend ordering patch, but
-was just one time, after I plugged and unplugged the card several time.
-Could not reproduce it, however. Puzzled.
+cramfs: checking physical address 0xa00000 for linear cramfs image
+cramfs: linear cramfs image appears to be 3236 KB in size
+VFS: Mounted root (cramfs filesystem) readonly.
+Freeing init memory: 96K
+/sbin/init: error while loading shared libraries: libgcc_s.so.1:
+failed to map segment from shared object: Error 11
+Kernel panic - not syncing: Attempted to kill init!
 
-Romano 
- 
+However, if our busybox binary is XIP while the libgcc_s.so.1 is not
+XIP, busybox runs fine.
 
+Richard, May I email you the rootfs tarball so you can recreate what
+we are seeing?  It is a little less than 2MiB.  The filing system
+executables will only run on a PXA27x processor.
