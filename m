@@ -1,71 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764308AbXEXEWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764161AbXEXEX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764308AbXEXEWK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 00:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762005AbXEXEVt
+	id S1764161AbXEXEX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 00:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbXEXEXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 00:21:49 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:48685 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761737AbXEXEVs (ORCPT
+	Thu, 24 May 2007 00:23:20 -0400
+Received: from ihemail4.lucent.com ([135.245.0.39]:38534 "EHLO
+	ihemail4.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759532AbXEXEXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 00:21:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=FVz9z9n+d3DnReK6fKk5RxbZoN7tT83kwUU0E2txQJF1mTo6iKOX+G0eam4QR8Z/D8GakZugRnAiHYuXpWN4CowvaS35TZTx5BWOvQX6+EJFx6kq4/KpgqAtKeLwoNJoYXwg7sG9yCJ0U575VHUvqowWrMq/kpboSrdKuKk+jN0=
-Message-ID: <8bd0f97a0705232121j32fcff72hd04b04e37507450e@mail.gmail.com>
-Date: Thu, 24 May 2007 00:21:47 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: how to allow board writers to customize driver behavior (watchdog here)
-Cc: "Bryan Wu" <Bryan.Wu@analog.com>
+	Thu, 24 May 2007 00:23:20 -0400
+Message-ID: <46551335.7030909@alcatel-lucent.com>
+Date: Thu, 24 May 2007 12:23:17 +0800
+From: gshan <gshan@alcatel-lucent.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: How to produce a core
+References: <4655064F.1030808@alcatel-lucent.com> <20070524034913.GN943@1wt.eu>
+In-Reply-To: <20070524034913.GN943@1wt.eu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-OriginalArrivalTime: 24 May 2007 04:22:28.0289 (UTC) FILETIME=[23787310:01C79DBB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the Blackfin on-chip watchdog has controllable behavior ... it can be
-configured to reset the processor (like a normal watchdog), or it can
-be configured to simply generate an interrupt.
+Willy Tarreau wrote:
+> On Thu, May 24, 2007 at 11:28:15AM +0800, gshan wrote:
+>   
+>> This morning, I tried command "kill -7 [pid]" but didn't see the core 
+>> file. Anybody has ideas?
+>>     
+>
+> do the following before starting your program :
+>
+> # ulimit -c unlimited
+>
+> You can check before and after that the core size changed from 0 to
+> "unlimited" :
+>
+> # ulimit -a
+>
+> Willy
+>
+>   
+Willy,
 
-i can see embedded systems where simply resetting the system is not
-desirable ... perhaps it's the control system for some machinery and
-resetting the system will force it to reinitialize itself which could
-cause problems if a guy is servicing the insides at the time ;)
+Thank you very much. The command "kill -7 [pid]" really works with 
+"ulimit -c unlimited"
 
-the Blackfin watchdog driver has a module parameter, "action" ... the
-default will have the watchdog act like every other watchdog out there
--- it reboots after a timeout.  however, by setting the action param
-appropriately, the watchdog goes into simple interrupt generation.
-the question then becomes, how do people developing their
-board-specific version customize what happens when the timeout occurs
-and the interrupt is fired ?  making every customer who wishes to
-customize the watchdog behavior edit the watchdog driver is
-troublesome as they're now blurring the distinct parts: the
-watchdog-specific piece and their board-specific piece.
+# /bin/sh                                   
+# ps
+PID   USER     COMMAND
+    1 0        init 
+    2 0        [ksoftirqd/0]
+    3 0        [desched/0]
+    4 0        [events/0]
+    5 0        [khelper]
+   10 0        [kthread]
+   31 0        [kblockd/0]
+   60 0        [pdflush]
+   61 0        [pdflush]
+   63 0        [aio/0]
+   62 0        [kswapd0]
+   64 0        [jfsIO]
+   65 0        [jfsCommit]
+   66 0        [jfsSync]
+   67 0        [xfslogd/0]
+   68 0        [xfsdatad/0]
+   69 0        [xfsbufd]
+  706 0        [mtdblockd]
+  730 0        -sh
+  788 0        /bin/sh
+  789 0        ps
+# ulimit -c unlimited
+# kill -7 788
+Bus error (core dumped)
+# ls -al
+drwxr-xr-x   12 0        0               0 Jan  1 00:55 .
+drwxr-xr-x   12 0        0               0 Jan  1 00:55 ..
+drwxr-xr-x    2 1000     1000            0 Jan  1 00:00 bin
+-rw-------    1 0        0          417792 Jan  1 00:55 
+core                                       <<< Here is the corefile
+drwxr-xr-x    2 0        0               0 Jan  1 00:00 dev
+drwxr-xr-x    3 0        0               0 Jan  1 00:00 etc
+lrwxrwxrwx    1 0        0              12 Jan  1 00:00 init -> /bin/busybox
+drwxr-xr-x    2 0        0               0 Jan  1 00:00 lib
+drwxr-xr-x    2 0        0               0 Jan  1 00:00 misc
+dr-xr-xr-x   32 0        0               0 Jan  1 00:00 proc
+drwx------    2 0        0               0 Jan  1 00:00 root
+drwxr-xr-x    2 0        0               0 Jan  1 00:00 sbin
+drwxr-xr-x    2 0        0               0 Jan  1 00:00 sys
+drwxr-xr-x    4 0        0               0 Jan  1 00:00 usr
+#
 
-what i'm doing now is weak symbols:
-...
-extern irqreturn_t bfin_board_watchdog_interrupt(void) __attribute__((weak));
-static irqreturn_t bfin_wdt_interrupt(int irq, void *dev_id)
-{
-    if (bfin_board_watchdog_interrupt) {
-        return bfin_board_watchdog_interrupt();
-    } else {
-        bfin_wdt_stop();
-        bfin_wdt_keepalive();
-        bfin_wdt_start();
-        return IRQ_HANDLED;
-    }
-}
-...
-
-is this completely bad mojo ?  is there some other mechanism that
-provides what i want and i just dont know about it ?  or do i just
-make people change the driver to fit their application, thus throwing
-out the idea of keeping all board-specific details in just the boards
-file ...
--mike
+Thanks,
+Gavin
