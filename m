@@ -1,129 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbXEXLUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbXEXLi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012AbXEXLUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 07:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbXEXLUd
+	id S1757000AbXEXLi2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 07:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbXEXLiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 07:20:33 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50584 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755911AbXEXLUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 07:20:32 -0400
-X-Authenticated: #14603182
-X-Provags-ID: V01U2FsdGVkX19gF8hndWdgQ2eCu0K6ijmofXj5UCz7ug9007M4WJ
-	Fn14gS6JZ5oitC
-Message-ID: <46557500.3070205@gmx.de>
-Date: Thu, 24 May 2007 13:20:32 +0200
-From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: How to access correctly serial port inside module?
-References: <46485D84.1010902@gmx.de> <46489EF1.2020509@gmx.de> <Pine.LNX.4.61.0705142158340.9570@yvahk01.tjqt.qr> <4648E9F7.5090908@imap.cc> <Pine.LNX.4.61.0705151020310.9570@yvahk01.tjqt.qr> <46536C0F.50101@imap.cc> <4655676A.1000102@gmx.de> <Pine.LNX.4.61.0705241224510.31549@yvahk01.tjqt.qr> <46556CB2.8010709@gmx.de> <Pine.LNX.4.61.0705241246180.31549@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0705241246180.31549@yvahk01.tjqt.qr>
-Content-Type: multipart/mixed;
- boundary="------------080102050504070500020000"
-X-PGP-KeyID: 9D6D68DF
-X-Request-PGP: 
-X-OpenPGP-Key-ID: 000A26609D6D68DF
-X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
-X-OpenPGP-Key-URL: 
-X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
-X-Y-GMX-Trusted: 0
+	Thu, 24 May 2007 07:38:20 -0400
+Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:42277 "EHLO
+	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754888AbXEXLiT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 07:38:19 -0400
+X-Greylist: delayed 6578 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 May 2007 07:38:19 EDT
+To: jens.axboe@oracle.com
+Cc: pbadari@gmail.com, linux-kernel@vger.kernel.org, bhalevy@panasas.com,
+       akpm@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
+       michaelc@cs.wisc.edu
+Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20070524093441.GP5722@kernel.dk>
+References: <20070521063554.GF14746@kernel.dk>
+	<1179872108.29302.55.camel@dyn9047017100.beaverton.ibm.com>
+	<20070524093441.GP5722@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070524184334P.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 24 May 2007 18:43:34 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
+Date: Thu, 24 May 2007 11:34:41 +0200
 
---------------080102050504070500020000
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+> On Tue, May 22 2007, Badari Pulavarty wrote:
+> > > If iommu=off works, can you try a normal boot but with this applied on
+> > > top of the sglist patches? That should fix gart mapping.
+> > > 
+> > > diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
+> > > index 2e22a3a..b16384f 100644
+> > > --- a/arch/x86_64/kernel/pci-gart.c
+> > > +++ b/arch/x86_64/kernel/pci-gart.c
+> > 
+> > Yes. With this patch + kzalloc() for ide probe took care of all my
+> > problems on x86-64.
+> > 
+> > But my ppc64 box is still sick :(
+> 
+> :-(
+> 
+> > Oops: Kernel access of bad area, sig: 11 [#1]
+> > SMP NR_CPUS=32 NUMA pSeries
+> > Modules linked in: qla2xxx scsi_transport_fc
+> > NIP: c0000000000414a0 LR: c00000000004162c CTR: 0000000000000001
+> > REGS: c0000000047bb130 TRAP: 0300   Not tainted  (2.6.22-rc1)
+> > MSR: 8000000000001032 <ME,IR,DR>  CR: 28000022  XER: 00000008
+> > DAR: 0000000000000000, DSISR: 0000000040000000
+> > TASK = c0000000047a6aa0[0] 'swapper' THREAD: c0000000047b8000 CPU: 7
+> > GPR00: 0000000000000080 c0000000047bb3b0 c000000000692358 c0000000047a6aa0
+> > GPR04: 0000000000000000 0000000000000070 0000000000000000 c0000000005ac0b8
+> > GPR08: 000000000000e4b4 0000000000000001 0000000000000000 0000000000000280
+> > GPR12: 0000000000000020 c0000000005a3e80 0000000000000000 0000000007a8dd70
+> > GPR16: 0000000000000000 0000000000000000 0000000000000000 c0000000047b8000
+> > GPR20: 000000003b9aca00 c0000000047a6c50 0000000000000001 0000000000000000
+> > GPR24: d000000000909048 0001dee6d30c0d30 c000000003b7dd80 c0000000047a6aa0
+> > GPR28: 00000001079027ca c0000000047a6aa0 c0000000005b7cb0 c000000000472c9c
+> > NIP [c0000000000414a0] .dequeue_task+0x0/0x9c
+> > LR [c00000000004162c] .deactivate_task+0x40/0x60
+> > Call Trace:
+> > [c0000000047bb3b0] [c00000000004bccc] .printk+0x38/0x48 (unreliable)
+> > [c0000000047bb440] [c000000000471704] .schedule+0x1fc/0x8dc
+> > [c0000000047bb540] [c000000000472c9c] .schedule_timeout+0xa8/0xe8
+> > [c0000000047bb610] [c000000000057260] .msleep+0x20/0x38
+> > [c0000000047bb690] [c00000000003f5ec] .eeh_dn_check_failure+0x114/0x268
+> > [c0000000047bb740] [c00000000003fc64] .eeh_check_failure+0xec/0x114
+> > [c0000000047bb7c0] [d00000000086190c] .qla2300_fw_dump+0x1130/0x1c00 [qla2xxx]
+> > [c0000000047bb8a0] [d000000000858d50] .qla2300_intr_handler+0x1e8/0x60c [qla2xxx]
+> > [c0000000047bb950] [c000000000078368] .handle_IRQ_event+0x70/0xe4
+> > [c0000000047bb9f0] [c00000000007a7e0] .handle_fasteoi_irq+0x11c/0x1d0
+> > [c0000000047bba90] [c00000000000c178] .do_IRQ+0x90/0xec
+> > [c0000000047bbb10] [c000000000004790] hardware_interrupt_entry+0x18/0x1c
+> 
+> Not good. The qla changes are non-trivial (that hardware has a really
+> funky sg setup), so I may have botched a part of it. I'll review the
+> qla changes and get back to you.
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+I guess that qla2xxx needs more for_each_sg macros. My qla2xxx cleanup
+patch might help:
 
-Jan Engelhardt schrieb:
-> On May 24 2007 12:45, Lars K.W. Gohlke wrote:
->
->> Date: Thu, 24 May 2007 12:45:06 +0200
->> From: Lars K.W. Gohlke <lkwg82@gmx.de>
->> To: Jan Engelhardt <jengelh@linux01.gwdg.de>
->> Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
->> Subject: Re: How to access correctly serial port inside module?
->>
->> -----BEGIN PGP SIGNED MESSAGE-----
->> Hash: SHA1
->>
->> Jan Engelhardt schrieb:
->>> On May 24 2007 12:22, Lars K.W. Gohlke wrote:
->>>> ok, I have read everything and also have read the chapters about
->>>> tty_drivers. However I'm not really understand, how to ... .
->>>>
->>>> I will summarize the concrete scenario, which will lead to the
->>>> understanding and further solution of deadling with serial driver.
->>>>
->>>> [scenario]
->>>>
->>>> 1. in userspace I'm doing: > date > /dev/ttyS0
->>>> 2. in kernelspace I want to print out this date.
->>>>
->>>> [/scenario]
->>>>
->>>> I'm really new to kernel coding, that's why I maybe understand some
->>>> functions not the proper way.
->>>>
->>>> I'm a bit confused.
->>> So am I. Usually, you connect two different machines with a serial cable.
->>> (Leaving out the special case of connecting ttyS0-ttyS1 on the same
->>> machine.)
->>>
->>> This poses the first question: whose kernelspace? the sender or
->>> the receiver side? And by "this date" do you perhaps mean
->>> "whatever was sent", or specifically a date? And print to _where_?
->>>
->>> Up to now, it looks like you want to do "cat </dev/ttyS0" in-kernel.
->>>
->>>
->>> Jan
->> date is an example
->>
->> and you got it, I want to do "cat </dev/ttyS0" in-kernel.
->> -----BEGIN PGP SIGNATURE-----
->> Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
->>
->> iD8DBQFGVWy0AAomYJ1taN8RAu7/AJ9+1irJURFy5KFy/wzHqSXXD5sRgACfSi49
->> ec5AnOQoTz2nCt//siaiTNs=
->> =uj4G
->> -----END PGP SIGNATURE-----
->>
->
-> 	Jan
-
-for example I want to print out it with printk().
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
-
-iD8DBQFGVXUBAAomYJ1taN8RAix3AJ0Q8GTuMg2eJsFbD/fdQFN8SnmoqgCgrHDO
-gTj9ygAshefP33OY7a3MGyk=
-=Mt6g
------END PGP SIGNATURE-----
-
---------------080102050504070500020000
-Content-Type: text/x-vcard; charset=utf-8;
- name="lkwg82.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="lkwg82.vcf"
-
-begin:vcard
-fn:Lars K.W. Gohlke
-n:Gohlke;Lars K.W.
-email;internet:lkwg82@gmx.de
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
-
-
---------------080102050504070500020000--
-
+http://git.kernel.org/?p=linux/kernel/git/tomo/linux-2.6-bidi.git;a=commitdiff;h=fb2747a9f2465ac4a1ea9e3533b92510fbcaae0c
