@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbXEXWEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbXEXWGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbXEXWEx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbXEXWEq
+	id S1753946AbXEXWGp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbXEXWGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:04:46 -0400
-Received: from yurusanai.de ([85.25.62.54]:41666 "EHLO yurusanai.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbXEXWEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:04:45 -0400
-X-Greylist: delayed 2625 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 May 2007 18:04:45 EDT
-Message-ID: <48969.80.228.60.226.1180041664.squirrel@yurusanai.de>
-Date: Thu, 24 May 2007 23:21:04 +0200 (CEST)
-Subject: HPT366 not enabled by kernel 2.6.21.2
-From: "Pascal Schmidt" <pasukaru@yurusanai.de>
-To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Thu, 24 May 2007 18:06:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56740
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751151AbXEXWGh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:06:37 -0400
+Date: Thu, 24 May 2007 15:06:40 -0700 (PDT)
+Message-Id: <20070524.150640.31659488.davem@davemloft.net>
+To: tglx@linutronix.de
+CC: linux-kernel@vger.kernel.org
+Subject: [BUG]: hrtimer overflow bug on 64-bit systems
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hello!
+I've been tracing this problem on sparc64 now that it uses hi-res
+timers, and I finally figured it out.
 
-I recently upgraded my kernel to 2.6.21 (.1 and .2 with identical
-results) and my second IDE controller, a HPT366 on a PCI card,
-doesn't get enabled any more. The latest previous kernel I used was
-2.6.19.7, where the HPT366 worked.
+The symptom is that ksoftirqd on most of the cpus of an idle SMP
+system chew up around %10 of cpu time.
 
-Here's the HPT366 part of the 2.6.21.2 dmesg:
+The raise_softirq_irqoff() is constantly being invoked via
+tick_nohz_stop_sched_tick(), but why?
 
-HPT366: IDE controller at PCI slot 0000:02:0a.0
-ACPI: PCI Interrupt 0000:02:0a.0[A] -> GSI 18 (level, low) -> IRQ 18
-HPT366: chipset revision 1
-HPT366: using 33 MHz PCI clock
-HPT366: 100% native mode on irq 18
-HPT366: neither IDE port enabled (BIOS)
-ACPI: PCI Interrupt 0000:02:0a.1[A] -> GSI 18 (level, low) -> IRQ 18
-HPT366: using 33 MHz PCI clock
-HPT366: neither IDE port enabled (BIOS)
+Tracing revealed that delta_ticks is enormous, which is correct
+because no timers are pending on the cpu so we should schedule the
+hrtimer as far into the future as possible.
 
-There is a flash disk connected to the primary channel (master)
-which also shows up in the controller's BIOS screen, so I don't
-think it's true that both ports are disabled.
+tick_nohz_stop_sched_tick() then proceeds to start the hrtimer, and
+then it checks hrtimer_active() but for some reason this is always
+false.
 
-Under 2.6.17.9 the "neither IDE port enabled" message doesn't
-happen and hde gets detected.
+Why?
 
-Please CC me on replies.
+The reason is that the expires calculation here:
 
--- 
-Ciao,
-Pascal
+		expires = ktime_add_ns(last_update, tick_period.tv64 *
+				       delta_jiffies);
+
+overflows on 64-bit systems.
+
+On 32-bit systems, LONG_MAX is a 32-bit quantity so the largest
+possible delta_jiffies don't cause an overflow in this multiply
+(which is 64-bit).  (LONG_MAX determines how large a value
+will be returned to indicate "infinity" from get_next_timer_interrupt(),
+specifically it's the initialization of local variable 'expires'
+in __next_timer_interrupt).
+
+Because of this 'expires' is zero and of course that causes the
+hrtimer to not get scheduled at all.
+
+I'm surprised this problem is not seen with the x86_64 hrtimer patches
+applied :-)
+
+I'm not exactly sure how to best fix this, we could either make
+__next_timer_interrupt use INT_MAX or we could make
+tick_nohz_stop_sched_tick() realize and handle the overflow
+properly.  Neither of those solutions are fully satisfactory in
+my opinion :-)
+
+FWIW, I've verified that using INT_MAX in __next_timer_interrupt()
+makes the problem go away.
 
