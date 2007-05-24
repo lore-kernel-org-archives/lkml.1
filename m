@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbXEXWcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbXEXWdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757532AbXEXWcX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXEXWcN
+	id S1756983AbXEXWdA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbXEXWcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:32:13 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44932 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753651AbXEXWcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:32:11 -0400
-Date: Fri, 25 May 2007 00:32:00 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-Message-ID: <20070524223200.GE9604@elf.ucw.cz>
-References: <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org> <20070521212522.GL3429@sequoia.sous-sol.org> <1179870110.16656.2.camel@localhost> <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org> <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org> <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
+	Thu, 24 May 2007 18:32:50 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:45187 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbXEXWct (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:32:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Jus57FOkW3nM0pJBcKO6qDViXxbRqam6zhb/hwJ+FPKPylb3d7/Noso9ioHrdgHqdlfy35iaDHXhx8A7bB3AwyfpHfG116vg5N38yxBGIIlPyf56GRRZl/8dN245Q2Ux3LOcy5pEgzISMnyxDfqOPAe0M4V8llQLhrfZkNFJ8Xw=
+Message-ID: <46561287.8020103@gmail.com>
+Date: Fri, 25 May 2007 02:32:39 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Roland Dreier <rdreier@cisco.com>
+CC: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCIE
+References: <46543045.3030904@gmail.com> <20070523155958.GA5282@kroah.com>	<4654AB40.6060208@gmail.com> <adaejl79rh0.fsf@cisco.com>	<4654BC10.2000808@gmail.com> <adazm3v89hv.fsf@cisco.com>	<4654C85B.6060505@gmail.com> <adatzu385g1.fsf@cisco.com>
+In-Reply-To: <adatzu385g1.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> 
-> On Fri, 25 May 2007, Pavel Machek wrote:
-> > > 
-> > > Equally arguably, we should just have a "resume_late()" call that can be 
-> > > used to do this after everything is up and running.
-> > 
-> > Yes, we can do that. But userland will see devices "not there" for a
-> > few seconds after boot.
-> 
-> No they won't.
-> 
-> Why the HELL cannot you realize that kernel threads are different?
-> 
-> The right thing to do is AND HAS ALWAYS BEEN, to stop and start user 
-> threads only around the whole thing.
-> 
-> Don't touch those kernel threads. Stop freezing them.
-> 
-> Then, what you do is:
->  - stop user space
->  - suspend
->  - resume
-~~~~~~~~~~~
-notice how resume of pcmcia card that poor user has needs
-userspace. So this does not work.
+Roland Dreier wrote:
 
->  - start user space
+> Why does the device come up in a state where it generates a stream of
+> interrupts as soon as you enable the PCI device?  That's somewhat
+> unusual behavior, although certainly not unheard of.
+> 
 
-My proposed solution is "fix pcmcia to load firmware before suspend
-even starts"
+In fact the device wasn't generating a stream of interrupts when loaded
+(i guess). It was just that the shared handler was showing all the
+interrupts that occurred, since i was not looking at the interrupt
+mask/status.
 
-- HERE
->  - stop user space
->  - suspend
->  - resume
->  - start user space
+But accessing any registers caused me a flood of interrupts, which froze
+the system. excessive printing to the console caused a lockup.
 
-Maybe freezer causes cancer in small children, but lets not blame it
-for this.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I am now wondering whether the usage of MSI would help in this case and
+that i should be using enable_msi before request_irq ?
+
