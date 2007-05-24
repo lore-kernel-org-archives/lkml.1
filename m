@@ -1,77 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbXEXVTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbXEXVUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971AbXEXVTM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXEXVS7
+	id S1754623AbXEXVUR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbXEXVUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:18:59 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:36318 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750723AbXEXVS7 (ORCPT
+	Thu, 24 May 2007 17:20:07 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45795 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750794AbXEXVUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:18:59 -0400
-Date: Thu, 24 May 2007 14:17:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
-       linux-kernel@vger.kernel.org, tom.l.nguyen@intel.com,
-       iss_storagedev@hp.com, jens.axboe@oracle.com,
-       Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] msi: Fix the ordering of msix irqs.
-Message-Id: <20070524141720.c02582db.akpm@linux-foundation.org>
-In-Reply-To: <m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
-References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
-	<20070524102702.bca37396.akpm@linux-foundation.org>
-	<m1r6p6dn3x.fsf@ebiederm.dsl.xmission.com>
-	<20070524205900.GC14083@beardog.cca.cpqcorp.net>
-	<m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 17:20:05 -0400
+Date: Thu, 24 May 2007 14:20:03 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+In-Reply-To: <20070524073131.GA17501@elte.hu>
+Message-ID: <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+ <46540DB2.5000605@googlemail.com> <Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
+ <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
+ <20070523153730.e0e9e91d.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
+ <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
+ <20070524073131.GA17501@elte.hu>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-408306564-1180041603=:31613"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007 15:08:21 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Yours looks more complete then my test patch so:
-> 
-> From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> writes:
-> 
-> Found what seems the problem with our vectors being listed backward. In
-> drivers/pci/msi.c we should be using list_add_tail rather than list_add to
-> preserve the ordering across various kernels. Please consider this for
-> inclusion.
-> 
-> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
-> 
-> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-> index 0e67723..d74975d 100644
-> --- a/drivers/pci/msi.c
-> +++ b/drivers/pci/msi.c
-> @@ -333,7 +333,7 @@ static int msi_capability_init(struct pci_dev *dev)
->  			msi_mask_bits_reg(pos, is_64bit_address(control)),
->  			maskbits);
->  	}
-> -	list_add(&entry->list, &dev->msi_list);
-> +	list_add_tail(&entry->list, &dev->msi_list);
->  
->  	/* Configure MSI capability structure */
->  	ret = arch_setup_msi_irqs(dev, 1, PCI_CAP_ID_MSI);
-> @@ -404,7 +404,7 @@ static int msix_capability_init(struct pci_dev *dev,
->  		entry->dev = dev;
->  		entry->mask_base = base;
->  
-> -		list_add(&entry->list, &dev->msi_list);
-> +		list_add_tail(&entry->list, &dev->msi_list);
->  	}
->  
->  	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
+---1700579579-408306564-1180041603=:31613
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Is this as fragile as I think it is?  What happens when close+open and
-rmmod+modprobe happen?  The list gets reordered then?
+On Thu, 24 May 2007, Ingo Molnar wrote:
 
-If this is important then perhaps a big-fat-comment which explains wtf is
-going on is needed?
+> please also put in one of the keywords as the first word of whatever=20
+> SLUB prints:
 
+I modified the reports as you suggested. Here is a sample:
+
+BUG kmalloc-512: Redzone corrupted. Expected 0xbb at 0xffff81000208f8c0 but=
+ found 0xab
+INFO: Last alloc: slab_sysfs_init+0x223/0x280 jiffies_ago=3D0 cpu=3D0 pid=
+=3D1
+INFO: Last free : slab_sysfs_init+0x22e/0x280 jiffies_ago=3D0 cpu=3D0 pid=
+=3D1
+INFO: Object=3D0xffff81000208f6c0 slab=3D0xffff810001071ea0 offset=3D14016
+INFO: flags=3D0x4000000000002082 inuse=3D24 freelist=3D0xffff81000208f6c0
+  Bytes b4 0xffff81000208f6b0:  55 db fe ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5=
+a 5a UUp=FF....ZZZZZZZZ
+    Object 0xffff81000208f6c0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
+b 6b kkkkkkkkkkkkkkkk
+    Object 0xffff81000208f6d0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
+b 6b kkkkkkkkkkkkkkkk
+    Object 0xffff81000208f6e0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
+b 6b kkkkkkkkkkkkkkkk
+    Object 0xffff81000208f6f0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
+b 6b kkkkkkkkkkkkkkkk
+    Object 0xffff81000208f700:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
+b 6b kkkkkkkkkkkkkkkk
+    Object 0xffff81000208f710:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
+b 6b kkkkkkkkkkkkkkkk
+    Object 0xffff81000208f720:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
+b 6b kkkkkkkkkkkkkkkk
+    Object 0xffff81000208f730:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6=
+b 6b kkkkkkkkkkkkkkkk
+   Redzone 0xffff81000208f8c0:  ab bb bb bb bb bb bb bb                    =
+     =AB=BB=BB=BB=BB=BB=BB=BB
+FreePointer 0xffff81000208f8c8 -> 0xffff81000208f908
+    Filler 0xffff81000208f900:  5a 5a 5a 5a 5a 5a 5a 5a                    =
+     ZZZZZZZZ
+
+Call Trace:
+ [<ffffffff8026d3aa>] check_bytes_and_report+0x7a/0xc0
+ [<ffffffff8026d653>] check_object+0x63/0x260
+ [<ffffffff8026fde4>] validate_slab+0x104/0x1b0
+ [<ffffffff8026fea9>] validate_slab_slab+0x19/0x70
+ [<ffffffff8026ff56>] validate_slab_cache+0x56/0x110
+ [<ffffffff805d25ae>] slab_sysfs_init+0x24e/0x280
+ [<ffffffff805c3624>] kernel_init+0xb4/0x290
+ [<ffffffff8020a218>] child_rip+0xa/0x12
+ [<ffffffff8038de48>] acpi_ds_init_one_object+0x0/0x7c
+ [<ffffffff805c3570>] kernel_init+0x0/0x290
+ [<ffffffff8020a20e>] child_rip+0x0/0x12
+
+FIX kmalloc-512: Restoring Redzone (0xbb) from 0xffff81000208f8c0-0xffff810=
+00208f8c7
+
+---1700579579-408306564-1180041603=:31613--
