@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763169AbXEXDkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763597AbXEXDlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763169AbXEXDkb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 23:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbXEXDkX
+	id S1763597AbXEXDlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 23:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbXEXDlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 23:40:23 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:10241 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760321AbXEXDkX (ORCPT
+	Wed, 23 May 2007 23:41:11 -0400
+Received: from outbound-mail-78.bluehost.com ([69.89.22.27]:41189 "HELO
+	outbound-mail-78.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760555AbXEXDlK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 23:40:23 -0400
-X-IronPort-AV: i="4.14,571,1170651600"; 
-   d="scan'208"; a="30798478:sNHT28935102"
-Subject: Re: [PATCH] blackfin: Enable arbitary speed serial setting
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Aubrey Li <aubreylee@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, aubrey.li@analog.com, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <6d6a94c50705232023w18fea193i44f1409dc7dd3377@mail.gmail.com>
-References: <20070523173050.275119c7@the-village.bc.nu>
-	 <6d6a94c50705232023w18fea193i44f1409dc7dd3377@mail.gmail.com>
-Content-Type: text/plain
+	Wed, 23 May 2007 23:41:10 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
+Date: Wed, 23 May 2007 20:40:53 -0700
+User-Agent: KMail/1.9.6
+Cc: Olivier Galibert <galibert@pobox.com>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
+References: <4635510D.4060103@shaw.ca> <alpine.LFD.0.98.0705232016350.3890@woody.linux-foundation.org> <alpine.LFD.0.98.0705232018380.3890@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705232018380.3890@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Thu, 24 May 2007 11:39:10 +0800
-Message-Id: <1179977950.23609.4.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Disposition: inline
+Message-Id: <200705232040.53651.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-24 at 11:23 +0800, Aubrey Li wrote:
-> Thanks.
-> 
-> Acked-by: Aubrey Li <aubrey.li@analog.com>
-> 
-> On 5/24/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > Add the needed definitions to activate arbitary speed support on the
-> > blackfin platform.
-> >
-> > Signed-off-by: Alan Cox <alan@redhat.com>
-> >
+On Wednesday, May 23, 2007 8:20:14 Linus Torvalds wrote:
+> On Wed, 23 May 2007, Linus Torvalds wrote:
+> > Sure. I think mmconfig is perfectly sane if it falls back to conf1
+> > accesses for legacy stuff..
+>
+> .. but without a regression, it's obviously a post-2.6.22 thing, I guess I
+> should make that clear, just because I think people send me patches after
+> -rc1 way too eagerly just because they think it fixes a bug.
+>
+> Basically if it's not somethign that has _ever_ worked some way, it's not
+> a bug, it's a feature ;)
 
-I noticed another patch from Alan "lots-of-architectures: enable
-arbitary speed tty support" is added to -mm tree, which defined struct
-termios2. That is required by this one.
+No, I know better than to send something after your merge window closes.  I 
+have no desire to be flamed even further on this topic.  :)
 
-So it should be tested together and merged together, although Aubrey
-didn't received the
-lots-of-architectures-enable-arbitary-speed-tty-support.patch from LKML.
+And come to think of it, adding the enable/disable bits might be good even 
+with the patch to make legacy accesses go through type 1, since PCIe BAR 
+probing is probably done the same way (I haven't looked) and so we might run 
+into the same problems there.
 
-Thanks a lot
--Bryan Wu
+Thanks,
+Jesse
+
