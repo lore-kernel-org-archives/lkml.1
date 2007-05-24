@@ -1,105 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbXEXWMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbXEXWMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbXEXWMY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbXEXWML
+	id S1752632AbXEXWMu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbXEXWMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:12:11 -0400
-Received: from smtp.osdl.org ([207.189.120.12]:34444 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbXEXWMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:12:09 -0400
-Date: Thu, 24 May 2007 15:08:45 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Mike Houston <mikeserv@bmts.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: sky2/pci issues on Gigabyte
-Message-ID: <20070524150845.07d0608f@freepuppy>
-In-Reply-To: <20070524142644.837a26ed.mikeserv@bmts.com>
-References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
-	<20070520170506.814a38d9.mikeserv@bmts.com>
-	<20070521084549.61a1aa71@freepuppy>
-	<20070521131055.0017404f.mikeserv@bmts.com>
-	<20070521103755.51b954e1@freepuppy>
-	<20070521225806.bb18d589.mikeserv@bmts.com>
-	<20070521213146.3e220a44@freepuppy>
-	<20070522181444.ad932718.mikeserv@bmts.com>
-	<alpine.LFD.0.98.0705221653010.3890@woody.linux-foundation.org>
-	<20070523133909.a3ec171a.mikeserv@bmts.com>
-	<alpine.LFD.0.98.0705231044160.3890@woody.linux-foundation.org>
-	<20070524142644.837a26ed.mikeserv@bmts.com>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 18:12:40 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:54750 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753190AbXEXWMj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:12:39 -0400
+Date: Thu, 24 May 2007 15:10:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+In-Reply-To: <20070524220017.GC9604@elf.ucw.cz>
+Message-ID: <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
+References: <20070521191612.800400000@sous-sol.org> <4652070D.3090509@redhat.com>
+ <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
+ <20070521212522.GL3429@sequoia.sous-sol.org> <1179870110.16656.2.camel@localhost>
+ <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
+ <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org>
+ <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
+ <20070524220017.GC9604@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007 14:26:44 -0400
-Mike Houston <mikeserv@bmts.com> wrote:
 
-> On Wed, 23 May 2007 10:46:05 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
+
+On Fri, 25 May 2007, Pavel Machek wrote:
 > > 
-> > 
-> > On Wed, 23 May 2007, Mike Houston wrote:
-> > > 
-> > > I still happen to have a Windows Vista install kicking around, so
-> > > to make sure we're not flogging a dead horse I booted that and
-> > > let it set up the yukon2 chip and I tested it. (more to make sure
-> > > that eeprom update didn't break it). I used it for a bit and
-> > > successfully transferred some large files from box running Samba.
-> > > MS must be using some specific workaround or something.
-> > 
-> > I think there is some lspci-like thing for windows too. 
-> > 
-> > Can you do the equivalent of "lspci -vvxxx" on that box under both
-> > Linux and Windows? _If_ it's some PCI config space thing (which is
-> > not at all guaranteed - it could be about setup in random MMIO
-> > ranges) it might give us some clues.
-> >
+> > Equally arguably, we should just have a "resume_late()" call that can be 
+> > used to do this after everything is up and running.
 > 
-> This is the sky2 issue with Gigabyte 88E8056 onboard LAN.
-> 
-> I've had no luck getting pciutils compiled for win32, but I found a
-> utility that gives similar output called Craig Hart's PCI bus sniffer
-> (pci32.exe).
-> 
-> Here is the output of pci32 with hex dump from within Windows Vista:
-> http://www.mikeserv.org/files/pci32_info.txt
-> 
-> Here is the output of lspci -vvxxx from within Linux:
-> http://www.mikeserv.org/files/lspci.txt
-> 
-> I hope this is helpful,
-> 
-> Mike Houston
+> Yes, we can do that. But userland will see devices "not there" for a
+> few seconds after boot.
 
+No they won't.
 
-Looking at the 88e8056 PCI config values:
+Why the HELL cannot you realize that kernel threads are different?
 
-Differences:
-1. Linux use MSI (no INTx), Vista does not.
+The right thing to do is AND HAS ALWAYS BEEN, to stop and start user 
+threads only around the whole thing.
 
-2. Vista use IRQ 16, Linux uses 219 (because of MSI)
+Don't touch those kernel threads. Stop freezing them.
 
-3. Vista sets Device Control(E8) 4000h = 2K, 
-   Linux uses 2000h = 1k
-   This would cause larger max read requests.
+Then, what you do is:
+ - stop user space
+ - suspend
+ - resume
+ - start user space
 
-4. Vista status (EA) 0010h
-   Linux is 0019h
-   Driver doesn't bother clearing the correctable error status on boot.
+and at no point do you touch any kernel threads.
 
-You can get the same settings on Linux without changing driver by doing:
+And yes, that "resume" part is multi-phase. We already have 
+"resume_early()" to do bus-level setup, and then "resume()" to do the 
+"make devices work". I was suggesting adding a "resume_late()" phase to 
+let the devices do things that require other devices to work, like doing 
+firmware loading.
 
-modprobe sky2 disable_msi=1
-setpci -s 04:00 e8.w=4000,19
+But stopping kernel threads is STUPID. As long as we continue to do that, 
+it will never _ever_ work.
 
-No luck, I tried it, but it still dies..
+Yeah, we could re-start the kernel thread before "resume_late()", but the 
+fact is, they shouldn't have been stopped in the first place.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+			Linus
