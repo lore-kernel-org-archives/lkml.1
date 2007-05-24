@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbXEXWCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbXEXWDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbXEXWCY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXEXWCP
+	id S1754517AbXEXWDV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXEXWDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:02:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:13364 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062AbXEXWCO (ORCPT
+	Thu, 24 May 2007 18:03:09 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:57429 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751151AbXEXWDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:02:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=ei1ndsaAC9NRLGK6qJbJK/YlahCBHQ/MER8jcIdJPdeJrj0CQl9UNxMd8od2vtWwe28eM2EpzoCYpvEBO5E0WDP6fse71UqRh3ILrrnUz4b8dKLNf6/rxctB/tulzrQLxHnGZa2R0Ft3RnJgcopwCx3re7HPwfaitrTCWRS5wlA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Pascal Schmidt" <pasukaru@yurusanai.de>
-Subject: Re: HPT366 not enabled by kernel 2.6.21.2
-Date: Fri, 25 May 2007 00:15:02 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>
-References: <48969.80.228.60.226.1180041664.squirrel@yurusanai.de>
-In-Reply-To: <48969.80.228.60.226.1180041664.squirrel@yurusanai.de>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200705250015.02222.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 24 May 2007 18:03:08 -0400
+Date: Thu, 24 May 2007 15:02:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in
+ /proc/cpuinfo
+Message-Id: <20070524150223.41063046.akpm@linux-foundation.org>
+In-Reply-To: <20070523224637.GB15887@linux-os.sc.intel.com>
+References: <20070523224637.GB15887@linux-os.sc.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 23 May 2007 15:46:37 -0700
+Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
 
-[ adding linux-ide ML and Sergei to cc: ]
-
-Hi,
-
-On Thursday 24 May 2007, Pascal Schmidt wrote:
+> Display Intel Dynamic Acceleration feature in /proc/cpuinfo. This feature
+> will be enabled automatically by current acpi-cpufreq driver and cpufreq.
 > 
-> Hello!
+> Refer to Intel Software Developer's Manual for more details about the feature.
 > 
-> I recently upgraded my kernel to 2.6.21 (.1 and .2 with identical
-> results) and my second IDE controller, a HPT366 on a PCI card,
-> doesn't get enabled any more. The latest previous kernel I used was
-> 2.6.19.7, where the HPT366 worked.
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 > 
-> Here's the HPT366 part of the 2.6.21.2 dmesg:
-> 
-> HPT366: IDE controller at PCI slot 0000:02:0a.0
-> ACPI: PCI Interrupt 0000:02:0a.0[A] -> GSI 18 (level, low) -> IRQ 18
-> HPT366: chipset revision 1
-> HPT366: using 33 MHz PCI clock
-> HPT366: 100% native mode on irq 18
-> HPT366: neither IDE port enabled (BIOS)
-> ACPI: PCI Interrupt 0000:02:0a.1[A] -> GSI 18 (level, low) -> IRQ 18
-> HPT366: using 33 MHz PCI clock
-> HPT366: neither IDE port enabled (BIOS)
-> 
-> There is a flash disk connected to the primary channel (master)
-> which also shows up in the controller's BIOS screen, so I don't
-> think it's true that both ports are disabled.
-> 
-> Under 2.6.17.9 the "neither IDE port enabled" message doesn't
-> happen and hde gets detected.
+> Index: linux-2.6.22-rc-mm/arch/i386/kernel/cpu/proc.c
+> ===================================================================
+> --- linux-2.6.22-rc-mm.orig/arch/i386/kernel/cpu/proc.c
+> +++ linux-2.6.22-rc-mm/arch/i386/kernel/cpu/proc.c
+> @@ -41,7 +41,7 @@ static int show_cpuinfo(struct seq_file 
+>  		"cxmmx", "k6_mtrr", "cyrix_arr", "centaur_mcr",
+>  		NULL, NULL, NULL, NULL,
+>  		"constant_tsc", "up", NULL, NULL, NULL, NULL, NULL, NULL,
+> -		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+> +		"ida", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+>  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+>  
+>  		/* Intel-defined (#2) */
+> Index: linux-2.6.22-rc-mm/arch/x86_64/kernel/setup.c
+> ===================================================================
+> --- linux-2.6.22-rc-mm.orig/arch/x86_64/kernel/setup.c
+> +++ linux-2.6.22-rc-mm/arch/x86_64/kernel/setup.c
+> @@ -949,7 +949,7 @@ static int show_cpuinfo(struct seq_file 
+>  		/* Other (Linux-defined) */
+>  		"cxmmx", NULL, "cyrix_arr", "centaur_mcr", NULL,
+>  		"constant_tsc", NULL, NULL,
+> -		"up", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+> +		"up", NULL, NULL, NULL, "ida", NULL, NULL, NULL,
+>  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+>  		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 
-The fix from Sergei (queued for 2.6.21.3) is here:
+Ho hum.  This clashes with hpa's git-newsetup tree, which goes for a great
+tromp through the cpuinfo implementation.
 
-http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob_plain;f=queue-2.6.21/hpt366-don-t-check-enablebits-for-hpt36x.patch;h=0833e0a37e23ed103a18ca93684201e1cb94a0a9
+Hunk #1 FAILED at 41.
+1 out of 1 hunk FAILED -- saving rejects to file arch/i386/kernel/cpu/proc.c.rej
+patching file arch/x86_64/kernel/setup.c
+Hunk #1 FAILED at 951.
+1 out of 1 hunk FAILED -- saving rejects to file arch/x86_64/kernel/setup.c.rej
+patching file include/asm-i386/cpufeature.h
+Hunk #1 FAILED at 81.
+1 out of 1 hunk FAILED -- saving rejects to file include/asm-i386/cpufeature.h.rej
+patching file include/asm-x86_64/cpufeature.h
+Hunk #1 FAILED at 70.
+1 out of 1 hunk FAILED -- saving rejects to file include/asm-x86_64/cpufeature.h.rej
 
-[ it has already been merged into 2.6.22 tree ]
+I'm not sure I can be bothered repairing all that at present.  I think I'll
+go and hide until it becomes somebody else's problem.
 
-Thanks,
-Bart
+<looks at hpa's tree>
+
+@@ -23,13 +23,14 @@ static int show_cpuinfo(struct seq_file 
+                "fpu", "vme", "de", "pse", "tsc", "msr", "pae", "mce",
+                "cx8", "apic", NULL, "sep", "mtrr", "pge", "mca", "cmov",
+                "pat", "pse36", "pn", "clflush", NULL, "dts", "acpi", "mmx",
+-               "fxsr", "sse", "sse2", "ss", "ht", "tm", "ia64", "pbe",
++               "fxsr", "sse", "sse2", "ss", "ht", "tm", "ia64", NULL,
+
+<wonders where pbe went to>
+
+
