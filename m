@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbXEXM2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757695AbXEXMcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676AbXEXM2d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 08:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbXEXM2Z
+	id S1757695AbXEXMcE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 08:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbXEXMbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 08:28:25 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:34386 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754084AbXEXM2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 08:28:25 -0400
-Message-id: <23207103161692929650@wsc.cz>
-Subject: [PATCH 1/1] Char: n_hdlc, allow RESTARTSYS retval of tty write
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Cc: Paul Fulghum <paulkf@microgate.com>
-Date: Thu, 24 May 2007 14:28:20 +0200 (CEST)
+	Thu, 24 May 2007 08:31:55 -0400
+Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:38783 "EHLO
+	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754866AbXEXMby (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 08:31:54 -0400
+Message-ID: <4655856E.4040603@gentoo.org>
+Date: Thu, 24 May 2007 08:30:38 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Ben Collins <bcollins@ubuntu.com>
+CC: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 5/6] SUNHME: Workaround ancient hang on U1's
+References: <98cd38b5.git.bcollins@ubuntu.com> <91fcd7d6a83321c37f6769164b1b41ce78a07bfa.1179964369.git.bcollins@ubuntu.com>
+In-Reply-To: <91fcd7d6a83321c37f6769164b1b41ce78a07bfa.1179964369.git.bcollins@ubuntu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-n_hdlc, allow RESTARTSYS retval of tty write
+Ben Collins wrote:
+> This work around has been in use by almost any distribution trying to
+> support sparc64 since at least 2002. Without it, sunhme hangs fairly
+> quickly on UltraSPARC 1's.
+> 
+> Dave, I know it's not in the kernel because it isn't a "fix", but given
+> that we haven't seen a fix in more than 5 years, can we get this out of my
+> tree please? :)
 
-Cc: Paul Fulghum <paulkf@microgate.com>
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Are you sure it is still needed? Gentoo dropped this a few months ago 
+and have no regression reports.
 
----
-commit 119ce83eb190c70d50ed7558c7b67b400ea00ec7
-tree d334650d032ded74085a6951c0a1d3e3268fb7db
-parent 221eebee5eedfa7c2463dcbfb545b92595512310
-author Jiri Slaby <jirislaby@gmail.com> Wed, 23 May 2007 17:55:46 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Wed, 23 May 2007 17:55:46 +0200
+http://www.mail-archive.com/sparclinux@vger.kernel.org/msg00418.html
 
- drivers/char/n_hdlc.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+Daniel
 
-diff --git a/drivers/char/n_hdlc.c b/drivers/char/n_hdlc.c
-index 37f7d34..e8332f3 100644
---- a/drivers/char/n_hdlc.c
-+++ b/drivers/char/n_hdlc.c
-@@ -400,7 +400,12 @@ static void n_hdlc_send_frames(struct n_hdlc *n_hdlc, struct tty_struct *tty)
- 		/* Send the next block of data to device */
- 		tty->flags |= (1 << TTY_DO_WRITE_WAKEUP);
- 		actual = tty->driver->write(tty, tbuf->buf, tbuf->count);
--		    
-+
-+		/* rollback was possible and has been done */
-+		if (actual == -ERESTARTSYS) {
-+			n_hdlc->tbuf = tbuf;
-+			break;
-+		}
- 		/* if transmit error, throw frame away by */
- 		/* pretending it was accepted by driver */
- 		if (actual < 0)
