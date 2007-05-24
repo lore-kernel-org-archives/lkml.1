@@ -1,82 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758384AbXEXMGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbXEXMG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758384AbXEXMGq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 08:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbXEXMGi
+	id S1758843AbXEXMG7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 08:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756131AbXEXMGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 24 May 2007 08:06:38 -0400
-Received: from ic0245.upco.es ([130.206.70.245]:55066 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756005AbXEXMGg convert rfc822-to-8bit (ORCPT
+Received: from agminet01.oracle.com ([141.146.126.228]:26745 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756039AbXEXMGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 08:06:36 -0400
-Subject: Re: [patch 00/69] -stable review
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
-References: <20070521191612.800400000@sous-sol.org> 
-	<4652070D.3090509@redhat.com> 
-	<alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org> 
-	<20070521212522.GL3429@sequoia.sous-sol.org> 
-	<1179870110.16656.2.camel@localhost> 
-	<alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
-Content-Type: text/plain;
-	charset=utf-8
-Date: Thu, 24 May 2007 14:06:34 +0200
-Message-Id: <1180008394.15600.26.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8BIT
+	Thu, 24 May 2007 08:06:37 -0400
+Date: Thu, 24 May 2007 14:05:13 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, bhalevy@panasas.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       fujita.tomonori@lab.ntt.co.jp, michaelc@cs.wisc.edu
+Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
+Message-ID: <20070524120513.GT5722@kernel.dk>
+References: <20070515175025.GE23798@kernel.dk> <1179349294.16195.6.camel@dyn9047017100.beaverton.ibm.com> <20070517062742.GW23798@kernel.dk> <1179414911.23725.7.camel@dyn9047017100.beaverton.ibm.com> <20070518073525.GD23798@kernel.dk> <1179510664.29302.16.camel@dyn9047017100.beaverton.ibm.com> <20070521061445.GD14746@kernel.dk> <20070521063554.GF14746@kernel.dk> <1179872108.29302.55.camel@dyn9047017100.beaverton.ibm.com> <20070524093441.GP5722@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070524093441.GP5722@kernel.dk>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-22 at 15:07 -0700, Linus Torvalds wrote:
->
-> On Tue, 22 May 2007, Romano Giannetti wrote:
-> >
+On Thu, May 24 2007, Jens Axboe wrote:
+> > Oops: Kernel access of bad area, sig: 11 [#1]
+> > SMP NR_CPUS=32 NUMA pSeries
+> > Modules linked in: qla2xxx scsi_transport_fc
+> > NIP: c0000000000414a0 LR: c00000000004162c CTR: 0000000000000001
+> > REGS: c0000000047bb130 TRAP: 0300   Not tainted  (2.6.22-rc1)
+> > MSR: 8000000000001032 <ME,IR,DR>  CR: 28000022  XER: 00000008
+> > DAR: 0000000000000000, DSISR: 0000000040000000
+> > TASK = c0000000047a6aa0[0] 'swapper' THREAD: c0000000047b8000 CPU: 7
+> > GPR00: 0000000000000080 c0000000047bb3b0 c000000000692358 c0000000047a6aa0
+> > GPR04: 0000000000000000 0000000000000070 0000000000000000 c0000000005ac0b8
+> > GPR08: 000000000000e4b4 0000000000000001 0000000000000000 0000000000000280
+> > GPR12: 0000000000000020 c0000000005a3e80 0000000000000000 0000000007a8dd70
+> > GPR16: 0000000000000000 0000000000000000 0000000000000000 c0000000047b8000
+> > GPR20: 000000003b9aca00 c0000000047a6c50 0000000000000001 0000000000000000
+> > GPR24: d000000000909048 0001dee6d30c0d30 c000000003b7dd80 c0000000047a6aa0
+> > GPR28: 00000001079027ca c0000000047a6aa0 c0000000005b7cb0 c000000000472c9c
+> > NIP [c0000000000414a0] .dequeue_task+0x0/0x9c
+> > LR [c00000000004162c] .deactivate_task+0x40/0x60
+> > Call Trace:
+> > [c0000000047bb3b0] [c00000000004bccc] .printk+0x38/0x48 (unreliable)
+> > [c0000000047bb440] [c000000000471704] .schedule+0x1fc/0x8dc
+> > [c0000000047bb540] [c000000000472c9c] .schedule_timeout+0xa8/0xe8
+> > [c0000000047bb610] [c000000000057260] .msleep+0x20/0x38
+> > [c0000000047bb690] [c00000000003f5ec] .eeh_dn_check_failure+0x114/0x268
+> > [c0000000047bb740] [c00000000003fc64] .eeh_check_failure+0xec/0x114
+> > [c0000000047bb7c0] [d00000000086190c] .qla2300_fw_dump+0x1130/0x1c00 [qla2xxx]
+> > [c0000000047bb8a0] [d000000000858d50] .qla2300_intr_handler+0x1e8/0x60c [qla2xxx]
+> > [c0000000047bb950] [c000000000078368] .handle_IRQ_event+0x70/0xe4
+> > [c0000000047bb9f0] [c00000000007a7e0] .handle_fasteoi_irq+0x11c/0x1d0
+> > [c0000000047bba90] [c00000000000c178] .do_IRQ+0x90/0xec
+> > [c0000000047bbb10] [c000000000004790] hardware_interrupt_entry+0x18/0x1c
+> 
+> Not good. The qla changes are non-trivial (that hardware has a really
+> funky sg setup), so I may have botched a part of it. I'll review the
+> qla changes and get back to you.
 
-> It's not known, no, and yeah, that's scary (and 60 seconds is long enough
-> that most people would have grown bored and pushed the power button for
-> five seconds, having considered the resume a failure).
->
-> > [    1.617972] pcmcia: registering new device pcmcia1.0
-> > [   61.612517] PM: Writing back config space on device 0000:00:[...]
-> >
+Does this help?
 
-I discovered that SysRq-t works during the pause. So I pressed it more
-or less halfway the pause; the full result is here:
-http://www.dea.icai.upcomillas.es/romano/linux/info/dmesg-resume.txt
+diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c
+index 10251bf..5510b86 100644
+--- a/drivers/scsi/qla2xxx/qla_iocb.c
++++ b/drivers/scsi/qla2xxx/qla_iocb.c
+@@ -155,6 +155,8 @@ void qla2x00_build_scsi_iocbs_32(srb_t *sp, cmd_entry_t *cmd_pkt,
+ 	uint32_t	*cur_dsd;
+ 	scsi_qla_host_t	*ha;
+ 	struct scsi_cmnd *cmd;
++	struct scatterlist *sg;
++	int i;
+ 
+ 	cmd = sp->cmd;
+ 
+@@ -178,13 +180,10 @@ void qla2x00_build_scsi_iocbs_32(srb_t *sp, cmd_entry_t *cmd_pkt,
+ 
+ 	/* Load data segments */
+ 	if (cmd->use_sg != 0) {
+-		struct	scatterlist *cur_seg;
+-		struct	scatterlist *end_seg;
+-
+-		cur_seg = (struct scatterlist *)cmd->request_buffer;
+-		end_seg = cur_seg + tot_dsds;
+-		while (cur_seg < end_seg) {
+-			cont_entry_t	*cont_pkt;
++		struct scatterlist *sgl = cmd->request_buffer;
++	
++		for_each_sg(sgl, sg, tot_dsds, i) {
++			cont_entry_t *cont_pkt;
+ 
+ 			/* Allocate additional continuation packets? */
+ 			if (avail_dsds == 0) {
+@@ -197,11 +196,9 @@ void qla2x00_build_scsi_iocbs_32(srb_t *sp, cmd_entry_t *cmd_pkt,
+ 				avail_dsds = 7;
+ 			}
+ 
+-			*cur_dsd++ = cpu_to_le32(sg_dma_address(cur_seg));
+-			*cur_dsd++ = cpu_to_le32(sg_dma_len(cur_seg));
++			*cur_dsd++ = cpu_to_le32(sg_dma_address(sg));
++			*cur_dsd++ = cpu_to_le32(sg_dma_len(sg));
+ 			avail_dsds--;
+-
+-			cur_seg++;
+ 		}
+ 	} else {
+ 		*cur_dsd++ = cpu_to_le32(sp->dma_handle);
+@@ -224,6 +221,9 @@ void qla2x00_build_scsi_iocbs_64(srb_t *sp, cmd_entry_t *cmd_pkt,
+ 	uint32_t	*cur_dsd;
+ 	scsi_qla_host_t	*ha;
+ 	struct scsi_cmnd *cmd;
++	struct scatterlist *sgl;
++	struct scatterlist *sg;
++	int i;
+ 
+ 	cmd = sp->cmd;
+ 
+@@ -247,12 +247,8 @@ void qla2x00_build_scsi_iocbs_64(srb_t *sp, cmd_entry_t *cmd_pkt,
+ 
+ 	/* Load data segments */
+ 	if (cmd->use_sg != 0) {
+-		struct	scatterlist *cur_seg;
+-		struct	scatterlist *end_seg;
+-
+-		cur_seg = (struct scatterlist *)cmd->request_buffer;
+-		end_seg = cur_seg + tot_dsds;
+-		while (cur_seg < end_seg) {
++		sgl = cmd->request_buffer;
++		for_each_sg(sgl, sg, tot_dsds, i) {
+ 			dma_addr_t	sle_dma;
+ 			cont_a64_entry_t *cont_pkt;
+ 
+@@ -267,13 +263,11 @@ void qla2x00_build_scsi_iocbs_64(srb_t *sp, cmd_entry_t *cmd_pkt,
+ 				avail_dsds = 5;
+ 			}
+ 
+-			sle_dma = sg_dma_address(cur_seg);
++			sle_dma = sg_dma_address(sg);
+ 			*cur_dsd++ = cpu_to_le32(LSD(sle_dma));
+ 			*cur_dsd++ = cpu_to_le32(MSD(sle_dma));
+-			*cur_dsd++ = cpu_to_le32(sg_dma_len(cur_seg));
++			*cur_dsd++ = cpu_to_le32(sg_dma_len(sg));
+ 			avail_dsds--;
+-
+-			cur_seg++;
+ 		}
+ 	} else {
+ 		*cur_dsd++ = cpu_to_le32(LSD(sp->dma_handle));
+@@ -642,6 +636,8 @@ qla24xx_build_scsi_iocbs(srb_t *sp, struct cmd_type_7 *cmd_pkt,
+ 	uint32_t	*cur_dsd;
+ 	scsi_qla_host_t	*ha;
+ 	struct scsi_cmnd *cmd;
++	struct scatterlist *sg, *sgl;
++	int i;
+ 
+ 	cmd = sp->cmd;
+ 
+@@ -671,11 +667,8 @@ qla24xx_build_scsi_iocbs(srb_t *sp, struct cmd_type_7 *cmd_pkt,
+ 
+ 	/* Load data segments */
+ 	if (cmd->use_sg != 0) {
+-		struct	scatterlist *sgl = cmd->request_buffer;
+-		struct	scatterlist *cur_seg;
+-		int i;
+-
+-		for_each_sg(sgl, cur_seg, tot_dsds, i) {
++		sgl = cmd->request_buffer;
++		for_each_sg(sgl, sg, tot_dsds, i) {
+ 			dma_addr_t	sle_dma;
+ 			cont_a64_entry_t *cont_pkt;
+ 
+@@ -690,10 +683,10 @@ qla24xx_build_scsi_iocbs(srb_t *sp, struct cmd_type_7 *cmd_pkt,
+ 				avail_dsds = 5;
+ 			}
+ 
+-			sle_dma = sg_dma_address(cur_seg);
++			sle_dma = sg_dma_address(sg);
+ 			*cur_dsd++ = cpu_to_le32(LSD(sle_dma));
+ 			*cur_dsd++ = cpu_to_le32(MSD(sle_dma));
+-			*cur_dsd++ = cpu_to_le32(sg_dma_len(cur_seg));
++			*cur_dsd++ = cpu_to_le32(sg_dma_len(sg));
+ 			avail_dsds--;
+ 		}
+ 	} else {
 
-It seems that most of the tasks are in
-
-[<c0138931>] refrigerator+0x41/0x60
-
-So, I tried to suspend without any card in the pcmcia slot. Guess what?
-I extracted the card and the system did not suspend. Just stopped dead.
-
-Sigh.
-
-	Romano
-
-
---
-Romano Giannetti --- romano.giannetti@gmail.com
-Sorry for the following disclaimer, it's attached by our otugoing server
-and I cannot shut it up.
-
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+-- 
+Jens Axboe
 
