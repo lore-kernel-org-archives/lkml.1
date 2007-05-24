@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbXEXXUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbXEXXXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758938AbXEXXUU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 19:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbXEXXUI
+	id S1753515AbXEXXXW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 19:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbXEXXXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 19:20:08 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43312 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750702AbXEXXUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 19:20:06 -0400
-Date: Fri, 25 May 2007 01:19:50 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-Message-ID: <20070524231950.GH9604@elf.ucw.cz>
-References: <1179870110.16656.2.camel@localhost> <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org> <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org> <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org> <20070524223200.GE9604@elf.ucw.cz> <20070524231638.GC29678@khazad-dum.debian.net>
+	Thu, 24 May 2007 19:23:14 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:57503 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbXEXXXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 19:23:14 -0400
+Message-ID: <46561E55.7090107@zytor.com>
+Date: Thu, 24 May 2007 16:23:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070524231638.GC29678@khazad-dum.debian.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Andi Kleen <ak@suse.de>, Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Brown, Len" <len.brown@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
+References: <653FFBB4508B9042B5D43DC9E18836F5EE129C@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5EE129C@scsmsx415.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-05-24 20:16:38, Henrique de Moraes Holschuh wrote:
-> On Fri, 25 May 2007, Pavel Machek wrote:
-> > My proposed solution is "fix pcmcia to load firmware before suspend
-> > even starts"
+Pallipadi, Venkatesh wrote:
 > 
-> s/pcmcia/all drivers that load firmware/ if you are going to go that way.
+> Yes. But it only has 3 features defined right now. 2 in EAX and one in
+> ECX. Should I use 2 new words for these bits or just use the software
+> defined bits as in my earlier patch?
+> 
 
-I'm not "going that way". It always was that way. If driver tries to
-load firmware during suspend, it will deadlock.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Oh for heaven's sake.  Could you please do the world a favour and shoot
+your CPUID architect?
+
+The real answer depends on how you expect it to grow in the future.
+Intel has a piss-poor record at being consistent in this matter, which
+speaks for a more ad hoc approach, but if there really is a sane growth
+path going forward, then go ahead and define two new words.
+
+	-hpa
