@@ -1,92 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbXEXVkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbXEXVmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbXEXVkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbXEXVkI
+	id S1756004AbXEXVmw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbXEXVmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:40:08 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:56442 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752084AbXEXVkG convert rfc822-to-8bit (ORCPT
+	Thu, 24 May 2007 17:42:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54719 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750723AbXEXVmo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:40:06 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] Introduce CONFIG_VIRT_TO_BUS
-Date: Thu, 24 May 2007 23:38:45 +0200
-User-Agent: KMail/1.9.6
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20070523170155.2cb9eff8.sfr@canb.auug.org.au> <20070523070450.GN4095@ftp.linux.org.uk>
-In-Reply-To: <20070523070450.GN4095@ftp.linux.org.uk>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?iso-8859-1?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?iso-8859-1?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ?=
- =?iso-8859-1?q?=0A=098MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?iso-8859-1?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?iso-8859-1?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Thu, 24 May 2007 17:42:44 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
+       linux-kernel@vger.kernel.org, tom.l.nguyen@intel.com,
+       iss_storagedev@hp.com, jens.axboe@oracle.com,
+       Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] msi: Fix the ordering of msix irqs.
+References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+	<20070524102702.bca37396.akpm@linux-foundation.org>
+	<m1r6p6dn3x.fsf@ebiederm.dsl.xmission.com>
+	<20070524205900.GC14083@beardog.cca.cpqcorp.net>
+	<m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070524141720.c02582db.akpm@linux-foundation.org>
+Date: Thu, 24 May 2007 15:36:41 -0600
+In-Reply-To: <20070524141720.c02582db.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 24 May 2007 14:17:20 -0700")
+Message-ID: <m1d50peweu.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200705242338.45499.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+N7CiGICVqrJ93Q4BNmO+VCEtGZl4VDZWtHUz
- r6aNJZjTCF5tc5B4D6QfGj7FRZ0VI0V7VCFGYudghmWyIcHc4+
- vzdVu0d5PL2gdvmEUaoPQ==
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 May 2007, Al Viro wrote:
-> 
-> On Wed, May 23, 2007 at 05:01:55PM +1000, Stephen Rothwell wrote:
-> > Make some offending drivers depend on it and set
-> > CONFIG_ARCH_NO_VIRT_TO_BUS for ppc64 so that we don't build those drivers.
-> 
-> Seeing how few targets _do_ have that, I'd invert the that.  I.e. have
-> HAS_VIRT_TO_BUS in arch/*/Kconfig for the few architectures that have
-> that stuff.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Currently, that would mark x86_64 as HAS_VIRT_TO_BUS, while 64 bit powerpc
-would be NO_VIRT_TO_BUS. I think they really should be the same, probably
-like the other 64 bit targets, which means:
+> On Thu, 24 May 2007 15:08:21 -0600
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>
+>> Yours looks more complete then my test patch so:
+>> 
+>> From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> writes:
+>> 
+>> Found what seems the problem with our vectors being listed backward. In
+>> drivers/pci/msi.c we should be using list_add_tail rather than list_add to
+>> preserve the ordering across various kernels. Please consider this for
+>> inclusion.
+>> 
+>> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+>> 
+>> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+>> index 0e67723..d74975d 100644
+>> --- a/drivers/pci/msi.c
+>> +++ b/drivers/pci/msi.c
+>> @@ -333,7 +333,7 @@ static int msi_capability_init(struct pci_dev *dev)
+>>  			msi_mask_bits_reg(pos, is_64bit_address(control)),
+>>  			maskbits);
+>>  	}
+>> -	list_add(&entry->list, &dev->msi_list);
+>> +	list_add_tail(&entry->list, &dev->msi_list);
+>>  
+>>  	/* Configure MSI capability structure */
+>>  	ret = arch_setup_msi_irqs(dev, 1, PCI_CAP_ID_MSI);
+>> @@ -404,7 +404,7 @@ static int msix_capability_init(struct pci_dev *dev,
+>>  		entry->dev = dev;
+>>  		entry->mask_base = base;
+>>  
+>> -		list_add(&entry->list, &dev->msi_list);
+>> +		list_add_tail(&entry->list, &dev->msi_list);
+>>  	}
+>>  
+>>  	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
+>
+> Is this as fragile as I think it is?  What happens when close+open and
+> rmmod+modprobe happen?  The list gets reordered then?
 
-* If CONFIG_IOMMU is disabled, provide a __deprecated inline function that
-maps virt_to_bus to virt_to_phys, and allow building drivers that use it.
+No this patch is not that fragile.  We destroy and recreate the list
+each time we call pci_disable_msix, pci_enable_msix.  The order only
+matters for the duration of pci_enable_msix.
 
-* If we build with CONFIG_IOMMU enabled, but don't support disabling the
-iommu, have no declaration for virt_to_bus at all, and disable the users
-in Kconfig
+Yes that silly struct msi_entries *entries vector passed into
+pci_enable_msix is that fragile.  The right fix is to just kill that
+vector and have the driver walk the list.  That is fundamentally more
+robust.
 
-* If the usage of the iommu is determined at run time, warn about users
-of virt_to_bus at run time if it is enabled.
+> If this is important then perhaps a big-fat-comment which explains wtf is
+> going on is needed?
 
-It could look like this
+When I get a moment I will remove the need to keep the list in any
+sort of order.  That will permanently remove the need for
+explanations. 
 
-/* mm/memory.c or somewhere */
-#if defined(CONFIG_HAS_VIRT_TO_BUS) && defined(CONFIG_IOMMU)
-unsigned long virt_to_bus(void *virt)
-{
-	WARN_ON(iommu_enabled);
-	return __virt_to_bus(virt);
-}
-#endif
+The truly problematic piece of code is this one below:
+	i = 0;
+	list_for_each_entry(entry, &dev->msi_list, list) {
+		entries[i].vector = entry->irq;
+		set_irq_msi(entry->irq, entry);
+		i++;
+	}
 
-/* include/linux/io.h */
+If we don't want to care about order we should really
+should make it look something like:
 
-#ifndef __virt_to_bus
-#define __virt_to_bus virt_to_phys /* some architectures need 
-					their own __virt_to_bus */
-#endif
+	list_for_each_entry(entry, &dev->msi_list, list) {
+        	for (i = 0; i < nvecs; i++) {
+                	if (entries[i].vector == entry->entry_nr)
+                        	entries[i].vector = entry->irq;
+                }
+		set_irq_msi(entry->irq, entry);
+	}
 
-#ifdef CONFIG_HAS_VIRT_TO_BUS
-#ifdef CONFIG_IOMMU
-extern __deprecated unsigned long virt_to_bus(void *);
-#else
-static inline __deprecated unsigned long virt_to_bus(void *virt)
-{
-	return __virt_to_bus(virt);
-}
-#endif
-#endif
+But that is overkill for a trivial bug fix, and under kill
+for a proper fix because the drivers still need to deal with
+that complexity.
 
-	Arnd <><
+Letting the drivers walk dev->msi_list should be noticeably more
+maintainable long term.  Especially when drivers start using a lot
+of msi irqs.
+
+Eric
+
+
