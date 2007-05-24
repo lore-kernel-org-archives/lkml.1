@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbXEXAFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbXEXAHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759636AbXEXAFx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbXEXAFp
+	id S1760279AbXEXAHw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756658AbXEXAHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:05:45 -0400
-Received: from outbound-mail-56.bluehost.com ([69.89.20.36]:40159 "HELO
-	outbound-mail-56.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756343AbXEXAFp (ORCPT
+	Wed, 23 May 2007 20:07:45 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:46662 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756374AbXEXAHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:05:45 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
-Date: Wed, 23 May 2007 17:02:30 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-References: <4635510D.4060103@shaw.ca>
-In-Reply-To: <4635510D.4060103@shaw.ca>
+	Wed, 23 May 2007 20:07:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=NV9B/FTYAu+2jBNzHHSO1HCXZU0eMtMa9cIGdSDCOZxaB8nKOpJt3yYW+3WRE+E438iSBHK+4OGA2JuNT/XzuLE5YChS2zVsrH2cPQJ7aG+niNncUTPpetL9WiRZ58u3B/0pcyEjG4cJOaO07YJHxnDEoR60ezem8j9r5bc/iIk=
+Message-ID: <4654D743.10907@gmail.com>
+Date: Thu, 24 May 2007 04:07:31 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Roland Dreier <rdreier@cisco.com>
+CC: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCIE
+References: <46543045.3030904@gmail.com> <20070523155958.GA5282@kroah.com>	<4654AB40.6060208@gmail.com> <adaejl79rh0.fsf@cisco.com>	<4654BC10.2000808@gmail.com> <adazm3v89hv.fsf@cisco.com>	<4654C85B.6060505@gmail.com> <adatzu385g1.fsf@cisco.com>
+In-Reply-To: <adatzu385g1.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705231702.30679.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, April 29, 2007 7:14 pm Robert Hancock wrote:
-> This path adds validation of the MMCONFIG table against the ACPI
-> reserved motherboard resources. If the MMCONFIG table is found to be
-> reserved in ACPI, we don't bother checking the E820 table. The PCI
-> Express firmware spec apparently tells BIOS developers that
-> reservation in ACPI is required and E820 reservation is optional, so
-> checking against ACPI first makes sense. Many BIOSes don't reserve
-> the MMCONFIG region in E820 even though it is perfectly functional,
-> the existing check needlessly disables MMCONFIG in these cases.
->
-> In order to do this, MMCONFIG setup has been split into two phases.
-> If PCI configuration type 1 is not available (like on EFI Macs) then
-> MMCONFIG is enabled early as before. Otherwise, it is enabled later
-> after the ACPI interpreter is enabled, since we need to be able to
-> execute control methods in order to check the ACPI reserved
-> resources. Presently this is just triggered off the end of ACPI
-> interpreter initialization.
->
-> There are a few other behavioral changes here:
->
-> -Validate all MMCONFIG configurations provided, not just the first
-> one.
->
-> -Validate the entire required length of each configuration according
-> to the provided ending bus number is reserved, not just the minimum
-> required allocation.
->
-> -Validate that the area is reserved even if we read it from the
-> chipset directly and not from the MCFG table. This catches the case
-> where the BIOS didn't set the location properly in the chipset and
-> has mapped it over other things it shouldn't have. This might be
-> overly pessimistic - we might be able to instead verify that no other
-> reserved resources (like chipset registers) are inside this memory
-> range.
->
-> Some testing is needed to see if this rejects MMCONFIG on all systems
-> where it is problematic. There were some patches floating around to
-> read the table location out of the chipset for Intel 915 and 965, I
-> think the author found the latter to be problematic since the chipset
-> had the table mapped over top of motherboard resources. The extra
-> checking here may catch that case if we add that chipset-specific
-> support.
->
-> Applies to 2.6.21.1.
->
-> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+Roland Dreier wrote:
+>  > It looks so, from the logs. The only problem is i can't disable the
+>  > interrupts, if i write "0" to 0x500, the interrupt/enable register, it
+>  > gives me a solid freeze. If i read from the handler, commenting out the
+>  > disable interrupts in init, that read also gives me a solid freeze. This
+>  > lead me to think that there could be some problem with the MMIO block
+>  > access.
+> 
+> OK, this looks reasonable:
+> 
+>  > #define saa716x_write(dat, addr)	writel((dat), (saa716x->mmio)+(addr))
+> 
+> although
+> 
+>   a) your driver has no hope of working on a system with more than one
+>      device of this type; and
 
-Acked-by:  Jesse Barnes <jesse.barnes@intel.com>
+to make it working with more than one device shouldn't be hard once it
+is going on.
 
-As long as we get a fix for the mmconfig based probing issues in the 
-other thread, I think this patch should go in.  Robert, maybe you could 
-submit it along with this one (and an i386 equivalent)?  Type 1 config 
-access is already a fallback for mmconfig for x86_64 at least, so it 
-should be safe for non-extended access too, and it avoids problems with 
-our lack of decode disable in the generic PCI probing code.
+>   b) there's really no point in obfuscating a simple use of writel()
+>      this way.
+> 
+> Why does the device come up in a state where it generates a stream of
+> interrupts as soon as you enable the PCI device?  That's somewhat
+> unusual behavior, although certainly not unheard of.
 
-Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
+Will ask the vendor, what's going on.
 
-diff --git a/arch/x86_64/pci/mmconfig.c b/arch/x86_64/pci/mmconfig.c
-index 65d8273..5052f80 100644
---- a/arch/x86_64/pci/mmconfig.c
-+++ b/arch/x86_64/pci/mmconfig.c
-@@ -61,7 +61,7 @@ static int pci_mmcfg_read(unsigned int seg, unsigned 
-int bus,
- 	}
- 
- 	addr = pci_dev_base(seg, bus, devfn);
--	if (!addr)
-+	if (!addr || reg < 256) /* Use type 1 for non-extended access */
- 		return pci_conf1_read(seg,bus,devfn,reg,len,value);
- 
- 	switch (len) {
-@@ -89,7 +89,7 @@ static int pci_mmcfg_write(unsigned int seg, unsigned 
-int bus,
- 		return -EINVAL;
- 
- 	addr = pci_dev_base(seg, bus, devfn);
--	if (!addr)
-+	if (!addr || reg < 256) /* Use type 1 for non-extended access */
- 		return pci_conf1_write(seg,bus,devfn,reg,len,value);
- 
- 	switch (len) {
+> This really has the feel of a typical driver bug to me, not anything
+> related to general PCIe access.  I've definitely wedged my system many
+> times while trying to poke a device the right way.
+
+Yeah, you seem to sound right.
+
+> Also, where are you getting the offset of 0x500 from?  
+
+The register offset is according to the device specs. Of course i
+already found some wrong offsets etc, maybe this one's wrong too, probably.
+
+> Is it possible
+> that the offset is really being given to you in bits (so you should
+> use 0x500 / 8) or 32-bit words (so you should use an offset of 0x500 *
+
+It says, the base address is currently 500h
+
+> 4)?  Are the datasheet / programming docs available for this device?
+
+Working with this device, under NDA with the vendor.
+
+> I actually have:
+> 
+>   02:00.0 Multimedia controller: Philips Semiconductors Unknown device 7162
+> 
+> in one of my systems so I'd be somewhat interested in getting a driver
+> working too.
+
+Cool, won't be that long, just the bridge part remains, most other parts
+are done or do exist.
+
+Thanks,
+Manu
+
