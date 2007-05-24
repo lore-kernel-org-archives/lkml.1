@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXEXTWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbXEXTYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbXEXTWq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 15:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbXEXTWf
+	id S1752582AbXEXTYZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 15:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbXEXTYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 15:22:35 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:39531 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751949AbXEXTWc (ORCPT
+	Thu, 24 May 2007 15:24:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:32497 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbXEXTYS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 15:22:32 -0400
-Date: Thu, 24 May 2007 12:21:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
+	Thu, 24 May 2007 15:24:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=UqpYtJhmgkfZZLdyFLHixp1jllB/ft1XqQjut0LbLiG4f5DCwVFXwcAa7L2SCbzPKqsBo3pCb6LKe5IPm5PBn3rPNkaRHDYlbFc6SWTyYl8U1tYV5hneGu8T/pkS4rVDEHNLtK37U7GTWiCvWhVnhkNu9i81N+SCiq5rFoDitJg=
+Date: Thu, 24 May 2007 23:23:21 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Christoph Lameter <clameter@sgi.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
-       linux-pcmcia@lists.infradead.org,
-       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
-       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
-       linux1394-devel@lists.sourceforge.net,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kristian H?gsberg <krh@bitplanet.net>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
-       Andrey Borzenkov <arvidjaar@mail.ru>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
-In-Reply-To: <20070524114902.e802f327.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.98.0705241220070.26602@woody.linux-foundation.org>
-References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com>
- <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com>
- <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>
- <20070524114902.e802f327.akpm@linux-foundation.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Jan Kara <jack@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] Fix possible UDF data corruption
+Message-ID: <20070524192321.GD20500@cvg>
+References: <20070524165935.GB19709@duck.suse.cz> <20070524172017.GA19852@cvg> <20070524113550.d09dbf9e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070524113550.d09dbf9e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Andrew Morton - Thu, May 24, 2007 at 11:35:50AM -0700]
+| On Thu, 24 May 2007 21:20:17 +0400
+| Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > [Jan Kara - Thu, May 24, 2007 at 06:59:35PM +0200]
+| > |   Hi Andrew,
+| > | 
+| > |   attached patch fixes possible data corruption in UDF - this bug was actually
+| > | introduced by one of my fixes :-( and should (if possible) go to Linus before
+| > | 2.6.22 is out (that's why I'm diffing against Linus's tree and not the
+| > | latest changes in -mm tree)... Thanks.
+| > | 
+| > | 								Honza
+| > | 
+| > | -- 
+| > | Jan Kara <jack@suse.cz>
+| > | SuSE CR Labs
+| > 
+| > Jan should I wait until Andrew has your patches included and
+| > only then (having taken into account your patches) produce my
+| > conversion?
+| > 
+| 
+| yes please - bugfixes come first.
+| 
 
+Andrew, so could I assume that these patches are in your -mm tree
+to be able to work on UDF style conversion?
 
-On Thu, 24 May 2007, Andrew Morton wrote:
+		Cyrill
 
-> On Thu, 24 May 2007 10:12:14 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > > BUG: at include/linux/slub_def.h:88 kmalloc_index()
-> > 
-> > I'm going to change that "BUG:" to "WARNING:". 
-> 
-> I think we should remove these kmalloc(0, ...) warnings prior to
-> the 2.6.22 release, put them back afterwards.
-
-Orthogonal issue, but yes, I agree. I'll do that too, but let's keep it 
-for now.
-
-> I'm not sure how we could do this, apart from patching and unpatching a
-> config file each time.
-
-Doing it in the Makefile would make more sense, since I have to edit that 
-file anyway to change -rc5 to -rc6.
-
-		Linus
