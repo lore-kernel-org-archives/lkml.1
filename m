@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751840AbXEXQsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751952AbXEXQtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751840AbXEXQsY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 12:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbXEXQsR
+	id S1751952AbXEXQtQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 12:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXEXQtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 12:48:17 -0400
-Received: from styx.suse.cz ([82.119.242.94]:53992 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750718AbXEXQsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 12:48:16 -0400
-Date: Thu, 24 May 2007 18:59:35 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [PATCH 1/2] Fix possible UDF data corruption
-Message-ID: <20070524165935.GB19709@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="UHN/qo2QbUvPLonB"
+	Thu, 24 May 2007 12:49:00 -0400
+Received: from mga09.intel.com ([134.134.136.24]:40048 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750721AbXEXQs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 12:48:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,574,1170662400"; 
+   d="scan'208";a="90162834"
+Date: Thu, 24 May 2007 09:45:38 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Ingo Molnar <mingo@elte.hu>, colpatch@us.ibm.com,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Con Kolivas <kernel@kolivas.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v12
+Message-ID: <20070524164538.GA13301@linux-os.sc.intel.com>
+References: <464A6698.3080400@bigpond.net.au> <20070516063625.GA9058@elte.hu> <464CE8FD.4070205@bigpond.net.au> <20070518071325.GB28702@elte.hu> <464DA61A.4040406@bigpond.net.au> <b647ffbd0705210825y25331066x8b2a4d50cdb7c266@mail.gmail.com> <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au> <4655423E.6000202@bigpond.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4655423E.6000202@bigpond.net.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 24, 2007 at 12:43:58AM -0700, Peter Williams wrote:
+>Peter Williams wrote:
+>> The relevant code, find_busiest_group() and find_busiest_queue(), has a 
+>> lot of code that is ifdefed by CONFIG_SCHED_MC and CONFIG_SCHED_SMT and, 
+>> as these macros were defined in the kernels I was testing with, I built 
+>> a kernel with these macros undefined and reran my tests.  The 
+>> problems/anomalies were not present in 10 consecutive tests on this new 
+>> kernel.  Even better on the few occasions that a 3/1 split did occur it 
+>> was quickly corrected to 2/2 and top was reporting approx 49% of CPU for 
+>> all spinners throughout each of the ten tests.
+>> 
+>> So all that is required now is an analysis of the code inside the ifdefs 
+>> to see why it is causing a problem.
+>
+>
+>Further testing indicates that CONFIG_SCHED_MC is not implicated and
+>it's CONFIG_SCHED_SMT that's causing the problem.  This rules out the
+>code in find_busiest_group() as it is common to both macros.
+>
+>I think this makes the scheduling domain parameter values the most
+>likely cause of the problem.  I'm not very familiar with this code so 
+>I've added those who've modified this code in the last year or 
+>so to the 
+>address of this e-mail.
 
---UHN/qo2QbUvPLonB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+What platform is this? I remember you mentioned its a 2 cpu box. Is it
+dual core or dual package or one with HT?
 
-  Hi Andrew,
-
-  attached patch fixes possible data corruption in UDF - this bug was actually
-introduced by one of my fixes :-( and should (if possible) go to Linus before
-2.6.22 is out (that's why I'm diffing against Linus's tree and not the
-latest changes in -mm tree)... Thanks.
-
-								Honza
-
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
-
---UHN/qo2QbUvPLonB
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="udf-2.6.22-rc2-1-udf_data_corruption.diff"
-
-update_next_aext() could possibly rewrite values in elen and eloc, possibly
-leading to data corruption when rewriting a file. Use temporary variables
-instead. Also advance cur_epos as it can also point to an indirect extent
-pointer.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.22-rc2/fs/udf/inode.c linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/inode.c
---- linux-2.6.22-rc2/fs/udf/inode.c	2007-05-24 18:00:05.000000000 +0200
-+++ linux-2.6.22-rc2-1-udf_data_corruption/fs/udf/inode.c	2007-05-24 18:16:36.000000000 +0200
-@@ -460,8 +460,8 @@ static struct buffer_head * inode_getblk
- 	kernel_long_ad laarr[EXTENT_MERGE_SIZE];
- 	struct extent_position prev_epos, cur_epos, next_epos;
- 	int count = 0, startnum = 0, endnum = 0;
--	uint32_t elen = 0;
--	kernel_lb_addr eloc;
-+	uint32_t elen = 0, tmpelen;
-+	kernel_lb_addr eloc, tmpeloc;
- 	int c = 1;
- 	loff_t lbcount = 0, b_off = 0;
- 	uint32_t newblocknum, newblock;
-@@ -520,8 +520,12 @@ static struct buffer_head * inode_getblk
- 
- 	b_off -= lbcount;
- 	offset = b_off >> inode->i_sb->s_blocksize_bits;
--	/* Move into indirect extent if we are at a pointer to it */
--	udf_next_aext(inode, &prev_epos, &eloc, &elen, 0);
-+	/*
-+	 * Move prev_epos and cur_epos into indirect extent if we are at
-+	 * the pointer to it
-+	 */
-+	udf_next_aext(inode, &prev_epos, &tmpeloc, &tmpelen, 0);
-+	udf_next_aext(inode, &cur_epos, &tmpeloc, &tmpelen, 0);
- 
- 	/* if the extent is allocated and recorded, return the block
-        if the extent is not a multiple of the blocksize, round up */
-
---UHN/qo2QbUvPLonB--
+thanks,
+suresh
