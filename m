@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbXEXR05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752620AbXEXR1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157AbXEXR05 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 13:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbXEXR0s
+	id S1752620AbXEXR1c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 13:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbXEXR1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 13:26:48 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:58885 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750698AbXEXR0r (ORCPT
+	Thu, 24 May 2007 13:27:23 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:32873 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750729AbXEXR1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 13:26:47 -0400
-Subject: RE: [PATCH] [scsi] Remove __GFP_DMA
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
-       Aubrey Li <aubreylee@gmail.com>, Bernhard Walle <bwalle@suse.de>,
-       linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0705241020040.29126@schroedinger.engr.sgi.com>
-References: <AE4F746F2AECFC4DA4AADD66A1DFEF019E1CAA@otce2k301.adaptec.com>
-	 <1180018752.3692.16.camel@mulgrave.il.steeleye.com>
-	 <Pine.LNX.4.64.0705240959310.28086@schroedinger.engr.sgi.com>
-	 <1180026917.3692.47.camel@mulgrave.il.steeleye.com>
-	 <Pine.LNX.4.64.0705241020040.29126@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Thu, 24 May 2007 12:26:45 -0500
-Message-Id: <1180027605.3692.51.camel@mulgrave.il.steeleye.com>
+	Thu, 24 May 2007 13:27:22 -0400
+Date: Thu, 24 May 2007 10:27:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: linux-kernel@vger.kernel.org, tom.l.nguyen@intel.com,
+       iss_storagedev@hp.com, jens.axboe@oracle.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: msi_free_irqs #2
+Message-Id: <20070524102702.bca37396.akpm@linux-foundation.org>
+In-Reply-To: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-24 at 10:22 -0700, Christoph Lameter wrote:
-> On Thu, 24 May 2007, James Bottomley wrote:
+On Thu, 24 May 2007 11:07:56 -0500
+"Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+
+> So I guess I found the answer to my own question. msi_free_irqs was apparently added
+> in 2.6.22-something. I don't find it in 2.6.21.2 or anywhere else. So somebody broke a
+> couple of things.
+> The most noticable is cciss hangs after turning on interrupts. The reason for that is
+> the kernel now looks at my array of MSI-X vectors in reverse order. We have 4 ways of
+> generating an interrupt on Smart Array hw. They are:
 > 
-> > The idea was basically to match an allocation to a device mask.  I was
-> > going to do a generic implementation (which would probably kmalloc,
-> > check the physaddr and fall back to GFP_DMA if we were unlucky) but
-> > allow the architectures to override.
+> #       define DOORBELL_INT     0
+> #       define PERF_MODE_INT    1
+> #       define SIMPLE_MODE_INT  2
+> #       define MEMQ_MODE_INT    3
 > 
-> Hmmmm... We could actually implement something like it in the slab 
-> allocators. The mask parameter would lead the allocator to check if the 
-> objects are in a satisfactory range. If not it could examine its partial 
-> lists for slabs that satisfy the range. If that does not work then it 
-> would eventually go to the page allocator to ask for a page in a fitting 
-> range.
+> For INTx these four lines are OR'ed together and run to one interrupt pin. MSI-X
+> breaks this hardware OR'ing so we must register either all 4 or at the least the
+> correct interrupt. When I first submitted the MSI/X support I was registering all 4.
+> Someone changed that to only register a single MSI-X vector. That worked fine until
+> 2.6.22-something. 
+> Now it appears that the kernel is looking at the array in reverse order. IOW, I must
+> register PERF_MODE_INT in order for cciss to work. That's messed up. Anybody want to
+> `fess up to making these changes? :)
+> I'll keep working this, but I'm going to undo someones change when I figure out where
+> it's broke.
 > 
-> That wont be fast though. How performance sensitive are the allocations?
 
-Most of them aren't very.  They're usually things that are set at driver
-intialisation time (shared mailbox memory etc).
+I'd guess that you're referring to Michael's changes.  If you can identify
+the offending code in a less vague fashion, more confident answers can
+be given ;)
 
-If the allocation is performance sensitive and has to be done at command
-or ioctl submission time, we tend to feed the consistent or mapped
-memory into a dma pool which pre allocates and solves the performance
-issue.
-
-In the aacraid case, the mbox is done at ioctl time, but isn't
-incredibly performance sensitive.
-
-James
-
-
+I canot find any sign of anyone altering the IRQ handling in cciss.c after
+your initial MSI-support merge.  But that's perhaps isn't what you meant.
+it's all rather foggy.  Please either quote file-n-line, or grab a copy
+of git-blame.
