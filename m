@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751900AbXEXPZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751231AbXEXPbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751900AbXEXPZT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 11:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbXEXPZI
+	id S1751231AbXEXPbF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 11:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXEXPaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 11:25:08 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:52738 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbXEXPZF (ORCPT
+	Thu, 24 May 2007 11:30:55 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:42128 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750829AbXEXPay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 11:25:05 -0400
-Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
-From: Badari Pulavarty <pbadari@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, bhalevy@panasas.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       fujita.tomonori@lab.ntt.co.jp, michaelc@cs.wisc.edu
-In-Reply-To: <20070524120513.GT5722@kernel.dk>
-References: <20070515175025.GE23798@kernel.dk>
-	 <1179349294.16195.6.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070517062742.GW23798@kernel.dk>
-	 <1179414911.23725.7.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070518073525.GD23798@kernel.dk>
-	 <1179510664.29302.16.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070521061445.GD14746@kernel.dk> <20070521063554.GF14746@kernel.dk>
-	 <1179872108.29302.55.camel@dyn9047017100.beaverton.ibm.com>
-	 <20070524093441.GP5722@kernel.dk>  <20070524120513.GT5722@kernel.dk>
-Content-Type: text/plain
-Date: Thu, 24 May 2007 08:25:44 -0700
-Message-Id: <1180020344.29302.82.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 11:30:54 -0400
+Date: Thu, 24 May 2007 08:28:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Romano Giannetti <romanol@upcomillas.es>
+cc: Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: Long delay in resume from RAM (Was Re: [patch 00/69]
+ -stablereview)
+In-Reply-To: <1180019201.15600.57.camel@localhost>
+Message-ID: <alpine.LFD.0.98.0705240815530.26602@woody.linux-foundation.org>
+References: <20070521191612.800400000@sous-sol.org>  <4652070D.3090509@redhat.com>
+  <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org> 
+ <20070521212522.GL3429@sequoia.sous-sol.org>  <1179870110.16656.2.camel@localhost>
+  <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> 
+ <1180008394.15600.26.camel@localhost>
+ <1180019201.15600.57.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-24 at 14:05 +0200, Jens Axboe wrote:
-> On Thu, May 24 2007, Jens Axboe wrote:
-> > > Oops: Kernel access of bad area, sig: 11 [#1]
-> > > SMP NR_CPUS=32 NUMA pSeries
-> > > Modules linked in: qla2xxx scsi_transport_fc
-> > > NIP: c0000000000414a0 LR: c00000000004162c CTR: 0000000000000001
-> > > REGS: c0000000047bb130 TRAP: 0300   Not tainted  (2.6.22-rc1)
-> > > MSR: 8000000000001032 <ME,IR,DR>  CR: 28000022  XER: 00000008
-> > > DAR: 0000000000000000, DSISR: 0000000040000000
-> > > TASK = c0000000047a6aa0[0] 'swapper' THREAD: c0000000047b8000 CPU: 7
-> > > GPR00: 0000000000000080 c0000000047bb3b0 c000000000692358 c0000000047a6aa0
-> > > GPR04: 0000000000000000 0000000000000070 0000000000000000 c0000000005ac0b8
-> > > GPR08: 000000000000e4b4 0000000000000001 0000000000000000 0000000000000280
-> > > GPR12: 0000000000000020 c0000000005a3e80 0000000000000000 0000000007a8dd70
-> > > GPR16: 0000000000000000 0000000000000000 0000000000000000 c0000000047b8000
-> > > GPR20: 000000003b9aca00 c0000000047a6c50 0000000000000001 0000000000000000
-> > > GPR24: d000000000909048 0001dee6d30c0d30 c000000003b7dd80 c0000000047a6aa0
-> > > GPR28: 00000001079027ca c0000000047a6aa0 c0000000005b7cb0 c000000000472c9c
-> > > NIP [c0000000000414a0] .dequeue_task+0x0/0x9c
-> > > LR [c00000000004162c] .deactivate_task+0x40/0x60
-> > > Call Trace:
-> > > [c0000000047bb3b0] [c00000000004bccc] .printk+0x38/0x48 (unreliable)
-> > > [c0000000047bb440] [c000000000471704] .schedule+0x1fc/0x8dc
-> > > [c0000000047bb540] [c000000000472c9c] .schedule_timeout+0xa8/0xe8
-> > > [c0000000047bb610] [c000000000057260] .msleep+0x20/0x38
-> > > [c0000000047bb690] [c00000000003f5ec] .eeh_dn_check_failure+0x114/0x268
-> > > [c0000000047bb740] [c00000000003fc64] .eeh_check_failure+0xec/0x114
-> > > [c0000000047bb7c0] [d00000000086190c] .qla2300_fw_dump+0x1130/0x1c00 [qla2xxx]
-> > > [c0000000047bb8a0] [d000000000858d50] .qla2300_intr_handler+0x1e8/0x60c [qla2xxx]
-> > > [c0000000047bb950] [c000000000078368] .handle_IRQ_event+0x70/0xe4
-> > > [c0000000047bb9f0] [c00000000007a7e0] .handle_fasteoi_irq+0x11c/0x1d0
-> > > [c0000000047bba90] [c00000000000c178] .do_IRQ+0x90/0xec
-> > > [c0000000047bbb10] [c000000000004790] hardware_interrupt_entry+0x18/0x1c
-> > 
-> > Not good. The qla changes are non-trivial (that hardware has a really
-> > funky sg setup), so I may have botched a part of it. I'll review the
-> > qla changes and get back to you.
+
+
+On Thu, 24 May 2007, Romano Giannetti wrote:
 > 
-> Does this help?
+> More data. I compiled 2.6.21.2 + the patch "Fix ACPI suspend / device
+> suspend ordering problem  (52ade9b3b97fd3bea42842a056fe0786c28d0555)
 > 
-> diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c
+> and I discovered that if I do not put the 3Com 3CXEM556B card into the
+> pcmcia slot, the suspend/resume (and the snapshot/restore) works ok,
+> without delay at all.
 
-Yes. It does. For now, I have no more complaints :)
+Ok. That was probably true even before you added the suspend ordering 
+patch.
 
-Thanks,
-Badari
+> It continues to work even with a cardbus wifi in the slot, so my 
+> conclusions are that the probable culprit is restricted to:
+> 
+>       *  a race when loading the .cis file from userspace
+>       * the serial_cs or 3c589_cs driver (only when the device is in;
+>         they are loaded still now and all is working ok)
+> 
+> ...what now?
 
+Can you compile those two modules with PCMCIA_DEBUG=4?
 
+Something like
 
+	make EXTRA_CFLAGS=-DPCMCIA_DEBUG=4
+
+should do it. You might also enable CONFIG_PCMCIA_DEBUG while you're at 
+it. And then the extra debugging output hopefully will narrow down where 
+things go south.
+
+		Linus
