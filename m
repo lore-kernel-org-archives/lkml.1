@@ -1,119 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbXEXLHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbXEXLUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbXEXLHp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 07:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbXEXLHi
+	id S1757012AbXEXLUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 07:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbXEXLUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 07:07:38 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:33375 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755805AbXEXLHh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 07:07:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oGPIDlyIBIH1Is/YhAkutlZUweA05z/+Y6hbLvR2ZTcnI656zBnl+R0cF66Oim8u773MDJPukI5u/oW9WaGfyMc3JPIA5+ECManRpFLfVkmgCQySERv5rCLbKOuL/DOyvPFUbSuLCoqC2iX7hQprGt+ddBHKxNzK+VFf8i3DWeo=
-Message-ID: <a781481a0705240407p2e9933ecm8d2c9863465cdeac@mail.gmail.com>
-Date: Thu, 24 May 2007 16:37:35 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Richard Purdie" <richard@openedhand.com>
-Subject: Re: [RFC] LZO de/compression support - take 3
-Cc: "Nitin Gupta" <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm-cc@laptop.org
-In-Reply-To: <1179995105.5880.7.camel@localhost.localdomain>
+	Thu, 24 May 2007 07:20:33 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50584 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755911AbXEXLUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 07:20:32 -0400
+X-Authenticated: #14603182
+X-Provags-ID: V01U2FsdGVkX19gF8hndWdgQ2eCu0K6ijmofXj5UCz7ug9007M4WJ
+	Fn14gS6JZ5oitC
+Message-ID: <46557500.3070205@gmx.de>
+Date: Thu, 24 May 2007 13:20:32 +0200
+From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-	 <a781481a0705231234m62327134mbfd1c1478b6fb99a@mail.gmail.com>
-	 <1179995105.5880.7.camel@localhost.localdomain>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
+Subject: Re: How to access correctly serial port inside module?
+References: <46485D84.1010902@gmx.de> <46489EF1.2020509@gmx.de> <Pine.LNX.4.61.0705142158340.9570@yvahk01.tjqt.qr> <4648E9F7.5090908@imap.cc> <Pine.LNX.4.61.0705151020310.9570@yvahk01.tjqt.qr> <46536C0F.50101@imap.cc> <4655676A.1000102@gmx.de> <Pine.LNX.4.61.0705241224510.31549@yvahk01.tjqt.qr> <46556CB2.8010709@gmx.de> <Pine.LNX.4.61.0705241246180.31549@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705241246180.31549@yvahk01.tjqt.qr>
+Content-Type: multipart/mixed;
+ boundary="------------080102050504070500020000"
+X-PGP-KeyID: 9D6D68DF
+X-Request-PGP: 
+X-OpenPGP-Key-ID: 000A26609D6D68DF
+X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
+X-OpenPGP-Key-URL: 
+X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Richard,
 
-On 5/24/07, Richard Purdie <richard@openedhand.com> wrote:
-> On Thu, 2007-05-24 at 01:04 +0530, Satyam Sharma wrote:
-> > On 5/23/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> > > [...]
-> > > +/* Macros for 'safe' decompression */
-> > > +#ifdef LZO1X_DECOMPRESS_SAFE
-> > > +
-> > > +#define lzo1x_decompress lzo1x_decompress_safe
-> > > +#define TEST_IP        (ip < ip_end)
-> > > +#define NEED_IP(x) \
-> > > +       if ((size_t)(ip_end - ip) < (size_t)(x)) goto input_overrun
-> > > +#define NEED_OP(x) \
-> > > +       if ((size_t)(op_end - op) < (size_t)(x)) goto output_overrun
-> > > +#define TEST_LB(m_pos) \
-> > > +       if (m_pos < out || m_pos >= op) goto lookbehind_overrun
-> > > +#define HAVE_TEST_IP
-> > > +#define HAVE_ANY_OP
-> > > +
-> > > +#else  /* !LZO1X_DECOMPRESS_SAFE */
-> > > +
-> > > +#define        TEST_IP         1
-> > > +#define        TEST_LB(x)      ((void) 0)
-> > > +#define        NEED_IP(x)      ((void) 0)
-> > > +#define        NEED_OP(x)      ((void) 0)
-> > > +#undef HAVE_TEST_IP
-> > > +#undef HAVE_ANY_OP
-> > > +
-> > > +#endif /* LZO1X_DECOMPRESS_SAFE */
-> >
-> > ... ugh. Yes, extracting the common stuff between the _safe and _unsafe
-> > variants in a common low-level __lzo1x_decompress kind of function
-> > definitely looks doable. The low-level function could simply take an extra
-> > argument (say, set by the _safe and _unsafe wrappers) that tells it
-> > whether it is being called as safe or unsafe ... helps us get rid of the
-> > disruptions to all the Makefiles above and these #ifdef's ugliness ...
+--------------080102050504070500020000
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Jan Engelhardt schrieb:
+> On May 24 2007 12:45, Lars K.W. Gohlke wrote:
 >
-> I suspect it will probably damage performance unless the compiler is
-> very clever and I don't trust compilers that much...
-
-Hmm. The wrappers would clearly be inline, but if we want a common
-low-level decompress function, we'd also need to introduce the "if (safe &&)"
-kind of tests for those differently-defined macros which could impact
-performance (for the _unsafe variant only, isn't it). By how much is the
-question, and whether we really care to avoid duplicating 50 lines of code
-to take that hit on the unsafe function (or vice versa).
-
-> > BTW, it'd be really cool if Richard and yourself could get together and
-> > pool your energies / efforts to develop a common / same patchset for this.
-> > (I wonder how different your implementations are, actually, and if there
-> > are any significant performance disparities, especially.) I really like your
-> > work, as it clears up the major gripe I had with Richard's patchset -- the
-> > ugliness (and monstrosity) of it. But he's also worked up the glue code for
-> > cryptoapi / jffs2 etc for this, so no point duplicating his efforts.
+>> Date: Thu, 24 May 2007 12:45:06 +0200
+>> From: Lars K.W. Gohlke <lkwg82@gmx.de>
+>> To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+>> Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
+>> Subject: Re: How to access correctly serial port inside module?
+>>
+>> -----BEGIN PGP SIGNED MESSAGE-----
+>> Hash: SHA1
+>>
+>> Jan Engelhardt schrieb:
+>>> On May 24 2007 12:22, Lars K.W. Gohlke wrote:
+>>>> ok, I have read everything and also have read the chapters about
+>>>> tty_drivers. However I'm not really understand, how to ... .
+>>>>
+>>>> I will summarize the concrete scenario, which will lead to the
+>>>> understanding and further solution of deadling with serial driver.
+>>>>
+>>>> [scenario]
+>>>>
+>>>> 1. in userspace I'm doing: > date > /dev/ttyS0
+>>>> 2. in kernelspace I want to print out this date.
+>>>>
+>>>> [/scenario]
+>>>>
+>>>> I'm really new to kernel coding, that's why I maybe understand some
+>>>> functions not the proper way.
+>>>>
+>>>> I'm a bit confused.
+>>> So am I. Usually, you connect two different machines with a serial cable.
+>>> (Leaving out the special case of connecting ttyS0-ttyS1 on the same
+>>> machine.)
+>>>
+>>> This poses the first question: whose kernelspace? the sender or
+>>> the receiver side? And by "this date" do you perhaps mean
+>>> "whatever was sent", or specifically a date? And print to _where_?
+>>>
+>>> Up to now, it looks like you want to do "cat </dev/ttyS0" in-kernel.
+>>>
+>>>
+>>> Jan
+>> date is an example
+>>
+>> and you got it, I want to do "cat </dev/ttyS0" in-kernel.
+>> -----BEGIN PGP SIGNATURE-----
+>> Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
+>>
+>> iD8DBQFGVWy0AAomYJ1taN8RAu7/AJ9+1irJURFy5KFy/wzHqSXXD5sRgACfSi49
+>> ec5AnOQoTz2nCt//siaiTNs=
+>> =uj4G
+>> -----END PGP SIGNATURE-----
+>>
 >
-> All I will add is that after the amendment I made, the ugliness in my
-> patchset is confined to one file now and I still think its the better
-> approach to take.
->
-> My main concerns with this patch are that:
-> * from the security point of view its not tried and tested code
-> * I'm not 100% confident in what Nitin has done with the code from a
->   buffer overflow/security PoV
-> * its not tested on many architectures
+> 	Jan
 
-Right, it needs testing (for correctness and robustness). But that
-shouldn't be too difficult -- Nitin, you could just write up a simple test
-module that others can use with your patch to do testing on their
-arch's ... the more this gets tested, the better chances it's got.
+for example I want to print out it with printk().
 
-> * the performance implications of the rewrite are unknown
->
-> In theory both sets of code should result in the output bytecode if the
-> compiler does its job properly. Ideally I'd like to compare the
-> performance of them as well as have a look at the code. I'm not quite
-> sure when I'm going to have time for this though :/.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
 
-Yes, performance disparities (if any) would be most important, IMO.
+iD8DBQFGVXUBAAomYJ1taN8RAix3AJ0Q8GTuMg2eJsFbD/fdQFN8SnmoqgCgrHDO
+gTj9ygAshefP33OY7a3MGyk=
+=Mt6g
+-----END PGP SIGNATURE-----
 
-> Also, I did notice you had the error defines in two header files. They
-> should only exist in one place and the LZO implementation should be
-> including the copy in linux/.
+--------------080102050504070500020000
+Content-Type: text/x-vcard; charset=utf-8;
+ name="lkwg82.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="lkwg82.vcf"
 
-Satyam
+begin:vcard
+fn:Lars K.W. Gohlke
+n:Gohlke;Lars K.W.
+email;internet:lkwg82@gmx.de
+x-mozilla-html:FALSE
+version:2.1
+end:vcard
+
+
+--------------080102050504070500020000--
+
