@@ -1,48 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbXEXMK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbXEXMKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758196AbXEXMK2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 08:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbXEXMKT
+	id S1759238AbXEXMKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 08:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbXEXMKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 08:10:19 -0400
-Received: from il.qumranet.com ([82.166.9.18]:36436 "EHLO il.qumranet.com"
+	Thu, 24 May 2007 08:10:20 -0400
+Received: from il.qumranet.com ([82.166.9.18]:36437 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755767AbXEXMKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756039AbXEXMKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 24 May 2007 08:10:18 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, shaohua.li@intel.com,
-       lhcs-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 2/7] HOTPLUG: Adapt cpuset hotplug callback to CPU_DYING
-Date: Thu, 24 May 2007 15:10:10 +0300
-Message-Id: <11800086153720-git-send-email-avi@qumranet.com>
+       lhcs-devel@lists.sourceforge.net
+Subject: [PATCH 0/7] KVM: Suspend and cpu hotplug fixes
+Date: Thu, 24 May 2007 15:10:08 +0300
+Message-Id: <1180008615579-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <1180008615579-git-send-email-avi@qumranet.com>
-References: <1180008615579-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CPU_DYING is called in atomic context, so don't try to take any locks.
+The following patchset makes kvm more robust wrt cpu hotunplug, and
+makes suspend-to-ram actually work.  Suspend-to-disk benefits from
+the cpu hotunplug improvements as well.
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- kernel/cpuset.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+The major issue is that KVM wants to disable the virtualization
+extensions at a point in time when no user processes are schedulable
+on the victim cpu.  No current notifier exists, so a new one, CPU_DYING,
+is added for the purpose.
 
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index f57854b..d4ab1c6 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -2138,6 +2138,9 @@ static void common_cpu_mem_hotplug_unplug(void)
- static int cpuset_handle_cpuhp(struct notifier_block *nb,
- 				unsigned long phase, void *cpu)
- {
-+	if (phase == CPU_DYING)
-+		return NOTIFY_DONE;
-+
- 	common_cpu_mem_hotplug_unplug();
- 	return 0;
- }
--- 
-1.5.0.6
-
+Should there be no objections, I will submit this patchset for inclusion
+in 2.6.22, and backport it to 2.6.21.stable.
