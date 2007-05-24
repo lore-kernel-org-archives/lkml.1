@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbXEXWyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbXEXWzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758208AbXEXWyb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXEXWyX
+	id S1754659AbXEXWzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbXEXWy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:54:23 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:39578 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750701AbXEXWyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:54:22 -0400
-Subject: [PATCH -mm] reiser4: remove lzo compression security hole
-From: Richard Purdie <rpurdie@rpsys.net>
-To: akpm <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, edward@namesys.com, vs@namesys.com
-Content-Type: text/plain
-Date: Thu, 24 May 2007 23:54:00 +0100
-Message-Id: <1180047240.12821.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 18:54:56 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:37040 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750702AbXEXWyz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:54:55 -0400
+Date: Thu, 24 May 2007 15:53:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+In-Reply-To: <20070524221743.GD9604@elf.ucw.cz>
+Message-ID: <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
+ <20070521212522.GL3429@sequoia.sous-sol.org> <1179870110.16656.2.camel@localhost>
+ <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
+ <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org>
+ <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
+ <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
+ <20070524221743.GD9604@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switch reiser4 to use lzo1x_decompress_safe instead of lzo1x_decompress
-as otherwise it presents a security hole (lzo1x_decompress doesn't
-perform bounds checking on the decompressed data).
-
-Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
-
----
- fs/reiser4/plugin/compress/compress.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.21/fs/reiser4/plugin/compress/compress.c
-===================================================================
---- linux-2.6.21.orig/fs/reiser4/plugin/compress/compress.c	2007-05-16 20:47:45.000000000 +0100
-+++ linux-2.6.21/fs/reiser4/plugin/compress/compress.c	2007-05-24 23:43:28.000000000 +0100
-@@ -319,7 +319,7 @@ lzo1_decompress(coa_t coa, __u8 * src_fi
- 	assert("edward-851", coa == NULL);
- 	assert("edward-852", src_len != 0);
- 
--	result = lzo1x_decompress(src_first, src_len, dst_first, &dstlen, NULL);
-+	result = lzo1x_decompress_safe(src_first, src_len, dst_first, &dstlen, NULL);
- 	if (result != LZO_E_OK)
- 		warning("edward-853", "lzo1x_1_decompress failed\n");
- 	*dst_len = dstlen;
 
 
+On Fri, 25 May 2007, Pavel Machek wrote:
+> > 
+> > Why the HELL cannot you realize that kernel threads are different?
+> 
+> Ugh? We are talking about request_firmware() here, right? That's
+> calling userland helper to load the firmware...? Looks like USER
+> thread to me.
+
+Right. And if we had had the nice old /sbin/hotplug thing, it would all 
+have worked fine - because it would just have done an execve(), and things 
+would be happy.
+
+But people screwed that up too, and now udevd is an undebuggable user 
+thread. Shit happens. See my other email about why even user threads can 
+probably not be frozen, and the whole freezer thing is misdesigned.
+
+And I repeat: PowerPC had working and stable suspend five _years_ ago, 
+without any of that freezing crud. We should rip it out.
+
+		Linus
