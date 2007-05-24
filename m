@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbXEXRWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751639AbXEXRZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752210AbXEXRWf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 13:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbXEXRW0
+	id S1751639AbXEXRZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 13:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXEXRZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 13:22:26 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34318 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750837AbXEXRWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 13:22:25 -0400
-Date: Thu, 24 May 2007 10:22:24 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
-       Aubrey Li <aubreylee@gmail.com>, Bernhard Walle <bwalle@suse.de>,
-       linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: RE: [PATCH] [scsi] Remove __GFP_DMA
-In-Reply-To: <1180026917.3692.47.camel@mulgrave.il.steeleye.com>
-Message-ID: <Pine.LNX.4.64.0705241020040.29126@schroedinger.engr.sgi.com>
-References: <AE4F746F2AECFC4DA4AADD66A1DFEF019E1CAA@otce2k301.adaptec.com> 
- <1180018752.3692.16.camel@mulgrave.il.steeleye.com> 
- <Pine.LNX.4.64.0705240959310.28086@schroedinger.engr.sgi.com>
- <1180026917.3692.47.camel@mulgrave.il.steeleye.com>
+	Thu, 24 May 2007 13:25:36 -0400
+Received: from gw.goop.org ([64.81.55.164]:43662 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750757AbXEXRZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 13:25:35 -0400
+Message-ID: <4655CA84.5060103@goop.org>
+Date: Thu, 24 May 2007 18:25:24 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, pranith-kumar_d@mentorg.com,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch] CFS scheduler, -v14
+References: <20070523120616.GA23407@elte.hu> <20070524064235.GA2386@linux.vnet.ibm.com> <20070524080959.GA29151@elte.hu>
+In-Reply-To: <20070524080959.GA29151@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007, James Bottomley wrote:
+Ingo Molnar wrote:
+> nice! I've merged your patch and it built/booted fine so it should show 
+> up in -v15. This should also play well with Andi's sched_clock() 
+> enhancements in -mm, slated for .23.
+>   
 
-> The idea was basically to match an allocation to a device mask.  I was
-> going to do a generic implementation (which would probably kmalloc,
-> check the physaddr and fall back to GFP_DMA if we were unlucky) but
-> allow the architectures to override.
+BTW, does CFS treat sched_clock as a per-cpu clock, or will it compare
+time values of sched_clock()s called on different CPUs?
 
-Hmmmm... We could actually implement something like it in the slab 
-allocators. The mask parameter would lead the allocator to check if the 
-objects are in a satisfactory range. If not it could examine its partial 
-lists for slabs that satisfy the range. If that does not work then it 
-would eventually go to the page allocator to ask for a page in a fitting 
-range.
-
-That wont be fast though. How performance sensitive are the allocations?
-
+    J
