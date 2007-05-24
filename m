@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbXEXWdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbXEXWf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756983AbXEXWdA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbXEXWcu
+	id S1751994AbXEXWf0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXEXWfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:32:50 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:45187 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbXEXWct (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:32:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Jus57FOkW3nM0pJBcKO6qDViXxbRqam6zhb/hwJ+FPKPylb3d7/Noso9ioHrdgHqdlfy35iaDHXhx8A7bB3AwyfpHfG116vg5N38yxBGIIlPyf56GRRZl/8dN245Q2Ux3LOcy5pEgzISMnyxDfqOPAe0M4V8llQLhrfZkNFJ8Xw=
-Message-ID: <46561287.8020103@gmail.com>
-Date: Fri, 25 May 2007 02:32:39 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIE
-References: <46543045.3030904@gmail.com> <20070523155958.GA5282@kroah.com>	<4654AB40.6060208@gmail.com> <adaejl79rh0.fsf@cisco.com>	<4654BC10.2000808@gmail.com> <adazm3v89hv.fsf@cisco.com>	<4654C85B.6060505@gmail.com> <adatzu385g1.fsf@cisco.com>
-In-Reply-To: <adatzu385g1.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 18:35:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40859 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750721AbXEXWfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:35:10 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070524144732.d9b2650b.akpm@linux-foundation.org>
+References: <20070524144732.d9b2650b.akpm@linux-foundation.org> <20070524133821.3ee9c9f3.akpm@linux-foundation.org> <20070523191518.24135.81257.stgit@warthog.cambridge.redhat.com> <20070523191524.24135.2609.stgit@warthog.cambridge.redhat.com> <27608.1180042522@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] AFS: Add a function to excise a rejected write from the pagecache
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Thu, 24 May 2007 23:34:33 +0100
+Message-ID: <28590.1180046073@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Why does the device come up in a state where it generates a stream of
-> interrupts as soon as you enable the PCI device?  That's somewhat
-> unusual behavior, although certainly not unheard of.
-> 
+> So my reason for asking the above is to try to find a way to make all these
+> new PG-error games just go away.
 
-In fact the device wasn't generating a stream of interrupts when loaded
-(i guess). It was just that the shared handler was showing all the
-interrupts that occurred, since i was not looking at the interrupt
-mask/status.
+Yeah.  However, there needs to be something to cover the gap between releasing
+PG_writeback and getting PG_lock.  They have to be done in that order to avoid
+deadlocking against truncate and other stuff, but that leaves a window in which
+the page appears to be in a good state - one in which prepare_write() or
+page_mkwrite() can potentially leak through.
 
-But accessing any registers caused me a flood of interrupts, which froze
-the system. excessive printing to the console caused a lockup.
+Nick Piggin talked about using an extra lock, but as far as I can tell, that
+just compounds the deadlock problems.
 
-I am now wondering whether the usage of MSI would help in this case and
-that i should be using enable_msi before request_irq ?
+I suppose I could leave something in page->private that indicated that the
+page was defunct, but that'd have to be done by the filesystem, probably
+before calling cancel_rejected_write().
 
+David
