@@ -1,35 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751159AbXEXOEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751261AbXEXOEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751159AbXEXOEU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 10:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbXEXOEG
+	id S1751261AbXEXOEj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 10:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXEXOEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 10:04:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:35582 "EHLO
+	Thu, 24 May 2007 10:04:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:34799 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbXEXOEC (ORCPT
+	with ESMTP id S1750765AbXEXOEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 10:04:02 -0400
+	Thu, 24 May 2007 10:04:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=UYQayYebf45rt1g1QM8BxDsP5B2zKQDB0SIu8esFIRo0jl1b5VshQ1N5SiGb1KIFBQqcXhi3++btm80XplPOhjx4iM+J6Ki5ApXRKiiTkt5o8wuhJ84xaDOIe2torONL+mBGr2hr2SsE+8qDTfW39nXlyckGxJUIe24669nxD7s=
-Message-ID: <46559B49.8020304@googlemail.com>
-Date: Thu, 24 May 2007 16:03:53 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=jhs4qSFN31dX9IH1dXwJOgEja4EtDL13itnVtYija4vk9qd7l2ZfFYM8pGmyD1XHh9Gb5IJuPSHIG7O+dzbejd7yc/Z9wbgzvmWaY90mUmGS9BwpNifU1hUXNLGgN5D0V2DYSmB65wfPgKqZIKORlL2Okjo210KeNcr85DPSk3c=
+Message-ID: <46559B54.80106@googlemail.com>
+Date: Thu, 24 May 2007 16:04:04 +0200
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Anant Nitya <kernel@prachanda.info>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Ray Lee <ray-lk@madrabbit.org>,
-       Ben Collins <bcollins@ubuntu.com>,
-       Thierry Volpiatto <tvolpiatt@neuf.fr>, alsa-devel@alsa-project.org,
-       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>
-Subject: [1/3] 2.6.22-rc2: known regressions v2
+       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux1394-devel@lists.sourceforge.net,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@bitplanet.net>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
+References: <46558708.2040803@googlemail.com>
+In-Reply-To: <46558708.2040803@googlemail.com>
 X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,43 +53,46 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Unclassified
+Memory management
 
-Subject    : lag problems while browsing sites with heavy JS and or flash usage
-References : http://lkml.org/lkml/2007/5/19/189
-Submitter  : Anant Nitya <kernel@prachanda.info>
-Handled-By : Ingo Molnar <mingo@elte.hu>
-             David Miller <davem@davemloft.net>
-Status     : problem is being debugged
-
-
-
-ACPI
-
-Subject    : unable to shutdown on kernel 2.6.22-rc2
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8516
-Submitter  : Thierry Volpiatto <tvolpiatt@neuf.fr>
-Status     : Unknown
-
-Subject    : BAT0 no longer seen, ACPI errors
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8493
-Submitter  : Ben Collins <bcollins@ubuntu.com>
-Workaround : BIOS upgrade
-Status     : Unknown
-
-Subject    : nx6125 has lost fan control
-References : http://lkml.org/lkml/2007/5/16/249
-Submitter  : Ray Lee <ray-lk@madrabbit.org>
+Subject    : kernel BUG at include/linux/slub_def.h:88 kmalloc_index()
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8476
+Submitter  : Cherwin R. Nooitmeer <cherwin@gmail.com>
 Status     : Unknown
 
 
 
-ALSA
+PCMCIA
 
-Subject    : snd-aoa causes badness in lib/kref.c:33
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8513
-Submitter  : Ben Collins <bcollins@ubuntu.com>
+Subject    : libata and legacy ide pcmcia failure
+References : http://lkml.org/lkml/2007/5/17/305
+Submitter  : Robert de Rooy <robert.de.rooy@gmail.com>
 Status     : Unknown
+
+
+
+Sparc64
+
+Subject    : 2.6.22-rc broke X on Ultra5
+References : http://lkml.org/lkml/2007/5/22/78
+Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+Status     : Unknown
+
+
+
+Suspend
+
+Subject    : STD fails with pci_device_suspend(): usb_hcd_pci_suspend+0x0/0x160 [usbcore]() returns -16
+References : http://lkml.org/lkml/2007/5/19/66
+Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
+Status     : Unknown
+
+Subject    : 2.6.22-rc1 suspend to RAM problem
+References : http://permalink.gmane.org/gmane.linux.power-management.general/5819
+Submitter  : Marcus Better <marcus@better.se>
+Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>
+             Kristian HÃ¸gsberg <krh@bitplanet.net>
+Status     : caused by fw-ohci module
 
 
 
@@ -88,6 +100,7 @@ Regards,
 Michal
 
 -- 
-"Najbardziej brakowa³o mi twojego milczenia."
--- Andrzej Sapkowski "Co¶ wiêcej"
+"Najbardziej brakowaÅ‚o mi twojego milczenia."
+-- Andrzej Sapkowski "CoÅ› wiÄ™cej"
+
 
