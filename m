@@ -1,37 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbXEXUzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbXEXU4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396AbXEXUzi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 16:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbXEXUzb
+	id S1753583AbXEXU4m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 16:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbXEXU4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 16:55:31 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:39116 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750811AbXEXUza (ORCPT
+	Thu, 24 May 2007 16:56:35 -0400
+Received: from adelie.ubuntu.com ([82.211.81.139]:44408 "EHLO
+	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbXEXU4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 16:55:30 -0400
-Date: Thu, 24 May 2007 13:55:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in
- /proc/cpuinfo
-Message-Id: <20070524135513.b6efacbf.akpm@linux-foundation.org>
-In-Reply-To: <20070523224637.GB15887@linux-os.sc.intel.com>
-References: <20070523224637.GB15887@linux-os.sc.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 24 May 2007 16:56:35 -0400
+Subject: Re: [PATCH 4/6] RTC: Ratelimit "lost interrupts" message
+From: Ben Collins <ben.collins@ubuntu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070524134822.ed020127.akpm@linux-foundation.org>
+References: <98cd38b5.git.bcollins@ubuntu.com>
+	 <e5ea703bf068a19cc9a4cc76a9b6b8990380ee75.1179964369.git.bcollins@ubuntu.com>
+	 <20070524134822.ed020127.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Canonical
+Date: Thu, 24 May 2007 16:56:52 -0400
+Message-Id: <1180040212.12570.279.camel@cunning>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.11.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 15:46:37 -0700
-Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+On Thu, 2007-05-24 at 13:48 -0700, Andrew Morton wrote:
+> On Wed, 23 May 2007 18:23:06 -0400
+> Ben Collins <bcollins@ubuntu.com> wrote:
+> 
+> > Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+> > ---
+> >  drivers/char/rtc.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+> > index 20380a2..22cf7aa 100644
+> > --- a/drivers/char/rtc.c
+> > +++ b/drivers/char/rtc.c
+> > @@ -1159,7 +1159,8 @@ static void rtc_dropped_irq(unsigned long data)
+> >  
+> >  	spin_unlock_irq(&rtc_lock);
+> >  
+> > -	printk(KERN_WARNING "rtc: lost some interrupts at %ldHz.\n", freq);
+> > +	if (printk_ratelimit())
+> > +		printk(KERN_WARNING "rtc: lost some interrupts at %ldHz.\n", freq);
+> >  
+> 
+> Presumably someone is getting a lot of these messages.
+> 
+> Do we know why?  Is there something which needs fixing here?
 
-> Display Intel Dynamic Acceleration feature in /proc/cpuinfo. This feature
-> will be enabled automatically by current acpi-cpufreq driver and cpufreq.
+I got it a lot when using any sort of virtualization on my Core2Duo
+(kvm, vmware, qemu). Just a big spew. Honestly, I was getting this with
+2.6.20, and haven't tested again with latest kernel.
 
-So you're saying that the cpufreq code in Linus's tree aleady supports IDA?
-If so, this is a 2.6.22 patch, isn't it?
+-- 
+Ubuntu   : http://www.ubuntu.com/
+Linux1394: http://wiki.linux1394.org/
+
