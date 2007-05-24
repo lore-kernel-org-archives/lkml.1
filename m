@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbXEXN2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758983AbXEXNgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760359AbXEXN2W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 09:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbXEXN2M
+	id S1758983AbXEXNgi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 09:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbXEXNgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 09:28:12 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:39587 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757722AbXEXN2K (ORCPT
+	Thu, 24 May 2007 09:36:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34722 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757254AbXEXNga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 09:28:10 -0400
-X-IronPort-AV: i="4.14,573,1170651600"; 
-   d="scan'208"; a="30831252:sNHT25670645"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Paul Mundt" <lethal@linux-sh.org>
-Subject: Re: how to allow board writers to customize driver behavior (watchdog here)
-Date: Thu, 24 May 2007 09:29:51 -0400
-User-Agent: KMail/1.9.5
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Bryan Wu" <Bryan.Wu@analog.com>
-References: <8bd0f97a0705232121j32fcff72hd04b04e37507450e@mail.gmail.com> <20070524052312.GA2447@linux-sh.org>
-In-Reply-To: <20070524052312.GA2447@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 24 May 2007 09:36:30 -0400
+Date: Thu, 24 May 2007 14:41:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
+Subject: Re: [PATCH] $ARCH: Enable arbitary speed tty ioctls and split
+ input/output speed
+Message-ID: <20070524144109.7bd0f4d0@the-village.bc.nu>
+In-Reply-To: <1180012135.8303.89.camel@shinybook.infradead.org>
+References: <20070523172739.1d3a918c@the-village.bc.nu>
+	<1180012135.8303.89.camel@shinybook.infradead.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705240929.51696.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 24 May 2007 13:27:16.0890 (UTC) FILETIME=[3F651FA0:01C79E07]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 24 May 2007 01:23, Paul Mundt pondered:
-> On Thu, May 24, 2007 at 12:21:47AM -0400, Mike Frysinger wrote:
-> > is this completely bad mojo ?  is there some other mechanism that
-> > provides what i want and i just dont know about it ?  or do i just
-> > make people change the driver to fit their application, thus throwing
-> > out the idea of keeping all board-specific details in just the boards
-> > file ...
-> 
-> It sounds like your constraining your driver based on terminology.
-> Watchdogs on most embedded platforms support either a 'reset' mode or
-> otherwise act as periodic timers, trying to push both of these
-> functionalities in to a watchdog driver is rather pointless.
-> CONFIG_WATCHDOG implies 'reset' mode by definition.
+On Thu, 24 May 2007 09:08:55 -0400
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-I understand what you mean - typically - most people think of watchdog == 
-reset.
+> Is my mailbox (or brain) failing me, or did you just send out these
+> patches for every architecture _except_ PowerPC? :)
 
-But, calling it a periodic timer, and servicing it with the watchdog user 
-space demon is even more confusing - isn't it?
+PowerPC is one of the main ones I've not touched because it needs work
+itself to sort out the IBSHIFT value and bit allocations, also because
+its one of several dependant upon the asm-generic stuff (which also means
+your patch won't work)
 
--Robin
+Most people copied the x86 behaviour which makes it easy to transplant.
+Some are just smoking something (see ioctls.h for sh-64 and weep), others
+have slightly odd behaviour for historical compatibility reasons (Sparc)
+
+> Presumably this is because of the mess in tty_termios_encode_baud_rate
+> when we fix its bogus assumptions about IBSHIFT always being defined?
+
+It's not a bogus assumption. The current code supports
+
+	- The old way
+	- BOTHER and IBSHIFT
+
+When PPC wants to do arbitary baud rate it needs to resolve both of the
+definitions together. IBSHIFT is simply the shift you apply to the baud
+bits to get the input baud bits.
+
+Alan
