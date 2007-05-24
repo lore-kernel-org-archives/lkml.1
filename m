@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761744AbXEXAjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763612AbXEXAkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761744AbXEXAjr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761405AbXEXAgl
+	id S1763612AbXEXAkN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761128AbXEXAgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:36:41 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40230 "EHLO
+	Wed, 23 May 2007 20:36:45 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40233 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759109AbXEXAgZ (ORCPT
+	with ESMTP id S1760725AbXEXAgc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:36:25 -0400
+	Wed, 23 May 2007 20:36:32 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 17/21] Unionfs: Documentation update regarding overlapping branches and new lookup code
-Date: Wed, 23 May 2007 20:36:07 -0400
-Message-Id: <11799669741770-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 09/21] Unionfs: Rename our "do_rename" to __unionfs_rename
+Date: Wed, 23 May 2007 20:35:59 -0400
+Message-Id: <1179966973293-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
 In-Reply-To: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 References: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
@@ -25,70 +25,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Erez Zadok <ezk@cs.sunysb.edu>
 
-Added detailed comment and updated documentation to explain why overlapping
-branches are disallowed, and better explain the cache coherency issues.
+To avoid confusion with the VFS function do_rename, and to help ctags,
+rename our utility (static) function do_rename to __unionfs_rename.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- Documentation/filesystems/unionfs/issues.txt |   16 ++++++++--------
- fs/unionfs/main.c                            |   16 +++++++++++++++-
- 2 files changed, 23 insertions(+), 9 deletions(-)
+ fs/unionfs/rename.c |   21 +++++++++++----------
+ 1 files changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/filesystems/unionfs/issues.txt b/Documentation/filesystems/unionfs/issues.txt
-index a434fee..c634604 100644
---- a/Documentation/filesystems/unionfs/issues.txt
-+++ b/Documentation/filesystems/unionfs/issues.txt
-@@ -5,14 +5,14 @@ KNOWN Unionfs 2.0 ISSUES:
-    This means we can't reliably detect a read-only NFS export.
+diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
+index 0e1e71a..edc5a5c 100644
+--- a/fs/unionfs/rename.c
++++ b/fs/unionfs/rename.c
+@@ -18,9 +18,9 @@
  
- 2. Modifying a Unionfs branch directly, while the union is mounted, is
--   currently unsupported.  We have tested Unionfs under such conditions, and
--   fixed any bugs we found (Unionfs comes with an extensive regression test
--   suite).  However, it may still be possible that changes made to lower
--   branches directly could cause cache incoherency which, in the worst case,
--   may case an oops.  We are currently addressing this problem for Unionfs
--   and also generically for all stackable file systems, by handing mmap and
--   introducing small VFS/MM changes that would allow a file system to handle
--   cache coherency correctly.
-+   currently unsupported, because it could cause a cache incoherency between
-+   the union layer and the lower file systems (for that reason, Unionfs
-+   currently prohibits using branches which overlap with each other, even
-+   partially).  We have tested Unionfs under such conditions, and fixed any
-+   bugs we found (Unionfs comes with an extensive regression test suite).
-+   However, it may still be possible that changes made to lower branches
-+   directly could cause cache incoherency which, in the worst case, may case
-+   an oops.
+ #include "union.h"
  
-    Unionfs 2.0 has a temporary workaround for this.  You can force Unionfs
-    to increase the superblock generation number, and hence purge all cached
-diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
-index 84d3bf5..a9ad445 100644
---- a/fs/unionfs/main.c
-+++ b/fs/unionfs/main.c
-@@ -351,7 +351,21 @@ static int parse_dirs_option(struct super_block *sb, struct unionfs_dentry_info
+-static int do_rename(struct inode *old_dir, struct dentry *old_dentry,
+-		     struct inode *new_dir, struct dentry *new_dentry,
+-		     int bindex, struct dentry **wh_old)
++static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
++			    struct inode *new_dir, struct dentry *new_dentry,
++			    int bindex, struct dentry **wh_old)
+ {
+ 	int err = 0;
+ 	struct dentry *hidden_old_dentry;
+@@ -144,7 +144,7 @@ out:
+ /*
+  * Main rename code.  This is sufficienly complex, that it's documented in
+  * Docmentation/filesystems/unionfs/rename.txt.  This routine calls
+- * do_rename() above to perform some of the work.
++ * __unionfs_rename() above to perform some of the work.
+  */
+ static int do_unionfs_rename(struct inode *old_dir,
+ 			     struct dentry *old_dentry,
+@@ -171,8 +171,8 @@ static int do_unionfs_rename(struct inode *old_dir,
+ 	new_bend = dbend(new_dentry);
  
- 	BUG_ON(branches != (hidden_root_info->bend + 1));
+ 	/* Rename source to destination. */
+-	err = do_rename(old_dir, old_dentry, new_dir, new_dentry, old_bstart,
+-			&wh_old);
++	err = __unionfs_rename(old_dir, old_dentry, new_dir, new_dentry,
++			       old_bstart, &wh_old);
+ 	if (err) {
+ 		if (!IS_COPYUP_ERR(err))
+ 			goto out;
+@@ -230,8 +230,9 @@ static int do_unionfs_rename(struct inode *old_dir,
+ 			if (!err) {
+ 				dput(wh_old);
+ 				bwh_old = bindex;
+-				err = do_rename(old_dir, old_dentry, new_dir,
+-						new_dentry, bindex, &wh_old);
++				err = __unionfs_rename(old_dir, old_dentry,
++						       new_dir, new_dentry,
++						       bindex, &wh_old);
+ 				break;
+ 			}
+ 		}
+@@ -306,8 +307,8 @@ revert:
+ 		goto revert_out;
+ 	}
  
--	/* ensure that no overlaps exist in the branches */
-+	/*
-+	 * Ensure that no overlaps exist in the branches.
-+	 *
-+	 * This test is required because the Linux kernel has no support
-+	 * currently for ensuring coherency between stackable layers and
-+	 * branches.  If we were to allow overlapping branches, it would be
-+	 * possible, for example, to delete a file via one branch, which
-+	 * would not be reflected in another branch.  Such incoherency could
-+	 * lead to inconsistencies and even kernel oopses.  Rather than
-+	 * implement hacks to work around some of these cache-coherency
-+	 * problems, we prevent branch overlapping, for now.  A complete
-+	 * solution will involve proper kernel/VFS support for cache
-+	 * coherency, at which time we could safely remove this
-+	 * branch-overlapping test.
-+	 */
- 	for (i = 0; i < branches; i++) {
- 		for (j = i + 1; j < branches; j++) {
- 			dent1 = hidden_root_info->lower_paths[i].dentry;
+-	local_err = do_rename(new_dir, new_dentry,
+-			      old_dir, old_dentry, old_bstart, NULL);
++	local_err = __unionfs_rename(new_dir, new_dentry,
++				     old_dir, old_dentry, old_bstart, NULL);
+ 
+ 	/* If we can't fix it, then we cop-out with -EIO. */
+ 	if (local_err) {
 -- 
 1.5.2.rc1.165.gaf9b
 
