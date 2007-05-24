@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbXEXXEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXEXXGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbXEXXEN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 19:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbXEXXD7
+	id S1755897AbXEXXGv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 19:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXEXXGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 19:03:59 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:34458 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702AbXEXXD7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 19:03:59 -0400
-Message-ID: <465619CE.9000406@zytor.com>
-Date: Thu, 24 May 2007 16:03:42 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-CC: Andi Kleen <ak@suse.de>, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 24 May 2007 19:06:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47913 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795AbXEXXGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 19:06:43 -0400
+Date: Thu, 24 May 2007 19:06:34 -0400
+From: Dave Jones <davej@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
        Len Brown <len.brown@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
 Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
-References: <20070523224637.GB15887@linux-os.sc.intel.com> <200705242308.38360.ak@suse.de> <20070524211337.GB3692@linux-os.sc.intel.com> <200705242325.28011.ak@suse.de> <20070524212806.GA5249@linux-os.sc.intel.com>
-In-Reply-To: <20070524212806.GA5249@linux-os.sc.intel.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070524230634.GA30651@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+	Len Brown <len.brown@intel.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Andi Kleen <ak@suse.de>
+References: <20070523224637.GB15887@linux-os.sc.intel.com> <20070524150223.41063046.akpm@linux-foundation.org> <46560E4F.2080009@zytor.com> <20070524224154.GA29337@redhat.com> <465616F3.6090501@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465616F3.6090501@zytor.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Venki Pallipadi wrote:
-> 
-> I can do it in intel setup function. But, the feature may not be activated
-> unless the driver is loaded. Going by the hardware capability point
-> of view, we can do it in setup function.
-> 
-> The feature appears in CPUID 6 (called Power Management Leaf) instead of
-> regular CPUID 1 features.
-> 
+On Thu, May 24, 2007 at 03:51:31PM -0700, H. Peter Anvin wrote:
+ > What you're describing is correct for later-level AMD/Cyrix chips,
+ > however, when 3DNow! was first introduced they foolishly squatted on the
+ > Intel-assigned CPUID flags.
 
-This sounds like it should be a new CPUID word?
+Hmm, the 3dnow spec (doc 21928e) has it in the right place, and I don't see
+anything in the errata docs I have.
 
-	-hpa
+Do you have more info on this?  If its true, I'd like to make x86info
+aware of it.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
