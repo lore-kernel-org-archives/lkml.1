@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763597AbXEXDlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762751AbXEXDt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763597AbXEXDlU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 23:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbXEXDlL
+	id S1762751AbXEXDt6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 23:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbXEXDtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 23:41:11 -0400
-Received: from outbound-mail-78.bluehost.com ([69.89.22.27]:41189 "HELO
-	outbound-mail-78.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760555AbXEXDlK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 23:41:10 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
-Date: Wed, 23 May 2007 20:40:53 -0700
-User-Agent: KMail/1.9.6
-Cc: Olivier Galibert <galibert@pobox.com>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-References: <4635510D.4060103@shaw.ca> <alpine.LFD.0.98.0705232016350.3890@woody.linux-foundation.org> <alpine.LFD.0.98.0705232018380.3890@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705232018380.3890@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 23 May 2007 23:49:50 -0400
+Received: from 1wt.eu ([62.212.114.60]:2729 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758844AbXEXDtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 23:49:49 -0400
+Date: Thu, 24 May 2007 05:49:15 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: gshan <gshan@alcatel-lucent.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How to produce a core
+Message-ID: <20070524034913.GN943@1wt.eu>
+References: <4655064F.1030808@alcatel-lucent.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705232040.53651.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <4655064F.1030808@alcatel-lucent.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 23, 2007 8:20:14 Linus Torvalds wrote:
-> On Wed, 23 May 2007, Linus Torvalds wrote:
-> > Sure. I think mmconfig is perfectly sane if it falls back to conf1
-> > accesses for legacy stuff..
->
-> .. but without a regression, it's obviously a post-2.6.22 thing, I guess I
-> should make that clear, just because I think people send me patches after
-> -rc1 way too eagerly just because they think it fixes a bug.
->
-> Basically if it's not somethign that has _ever_ worked some way, it's not
-> a bug, it's a feature ;)
+On Thu, May 24, 2007 at 11:28:15AM +0800, gshan wrote:
+> This morning, I tried command "kill -7 [pid]" but didn't see the core 
+> file. Anybody has ideas?
 
-No, I know better than to send something after your merge window closes.  I 
-have no desire to be flamed even further on this topic.  :)
+do the following before starting your program :
 
-And come to think of it, adding the enable/disable bits might be good even 
-with the patch to make legacy accesses go through type 1, since PCIe BAR 
-probing is probably done the same way (I haven't looked) and so we might run 
-into the same problems there.
+# ulimit -c unlimited
 
-Thanks,
-Jesse
+You can check before and after that the core size changed from 0 to
+"unlimited" :
+
+# ulimit -a
+
+Willy
 
