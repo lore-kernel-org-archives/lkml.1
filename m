@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751639AbXEXRZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbXEXR05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751639AbXEXRZn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 13:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXEXRZg
+	id S1752157AbXEXR05 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 13:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbXEXR0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 13:25:36 -0400
-Received: from gw.goop.org ([64.81.55.164]:43662 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbXEXRZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 13:25:35 -0400
-Message-ID: <4655CA84.5060103@goop.org>
-Date: Thu, 24 May 2007 18:25:24 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, pranith-kumar_d@mentorg.com,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch] CFS scheduler, -v14
-References: <20070523120616.GA23407@elte.hu> <20070524064235.GA2386@linux.vnet.ibm.com> <20070524080959.GA29151@elte.hu>
-In-Reply-To: <20070524080959.GA29151@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 24 May 2007 13:26:48 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:58885 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750698AbXEXR0r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 13:26:47 -0400
+Subject: RE: [PATCH] [scsi] Remove __GFP_DMA
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
+       Aubrey Li <aubreylee@gmail.com>, Bernhard Walle <bwalle@suse.de>,
+       linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0705241020040.29126@schroedinger.engr.sgi.com>
+References: <AE4F746F2AECFC4DA4AADD66A1DFEF019E1CAA@otce2k301.adaptec.com>
+	 <1180018752.3692.16.camel@mulgrave.il.steeleye.com>
+	 <Pine.LNX.4.64.0705240959310.28086@schroedinger.engr.sgi.com>
+	 <1180026917.3692.47.camel@mulgrave.il.steeleye.com>
+	 <Pine.LNX.4.64.0705241020040.29126@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 12:26:45 -0500
+Message-Id: <1180027605.3692.51.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> nice! I've merged your patch and it built/booted fine so it should show 
-> up in -v15. This should also play well with Andi's sched_clock() 
-> enhancements in -mm, slated for .23.
->   
+On Thu, 2007-05-24 at 10:22 -0700, Christoph Lameter wrote:
+> On Thu, 24 May 2007, James Bottomley wrote:
+> 
+> > The idea was basically to match an allocation to a device mask.  I was
+> > going to do a generic implementation (which would probably kmalloc,
+> > check the physaddr and fall back to GFP_DMA if we were unlucky) but
+> > allow the architectures to override.
+> 
+> Hmmmm... We could actually implement something like it in the slab 
+> allocators. The mask parameter would lead the allocator to check if the 
+> objects are in a satisfactory range. If not it could examine its partial 
+> lists for slabs that satisfy the range. If that does not work then it 
+> would eventually go to the page allocator to ask for a page in a fitting 
+> range.
+> 
+> That wont be fast though. How performance sensitive are the allocations?
 
-BTW, does CFS treat sched_clock as a per-cpu clock, or will it compare
-time values of sched_clock()s called on different CPUs?
+Most of them aren't very.  They're usually things that are set at driver
+intialisation time (shared mailbox memory etc).
 
-    J
+If the allocation is performance sensitive and has to be done at command
+or ioctl submission time, we tend to feed the consistent or mapped
+memory into a dma pool which pre allocates and solves the performance
+issue.
+
+In the aacraid case, the mbox is done at ioctl time, but isn't
+incredibly performance sensitive.
+
+James
+
+
