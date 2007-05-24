@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752256AbXEXSAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751272AbXEXSF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752256AbXEXSAE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 14:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750747AbXEXR7z
+	id S1751272AbXEXSF2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 14:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXEXSFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 13:59:55 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:59128 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750741AbXEXR7y convert rfc822-to-8bit (ORCPT
+	Thu, 24 May 2007 14:05:19 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:33168 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750751AbXEXSFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 13:59:54 -0400
-From: Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>
-Organization: TUBITAK/UEKAE
-To: Diego Calleja <diegocg@gmail.com>
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-Date: Thu, 24 May 2007 21:01:02 +0300
-User-Agent: KMail/1.9.7
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       video4linux-list@redhat.com
-References: <2172422218943432279@wsc.cz> <20070524193805.1b5d37d9.diegocg@gmail.com>
-In-Reply-To: <20070524193805.1b5d37d9.diegocg@gmail.com>
+	Thu, 24 May 2007 14:05:18 -0400
+X-IronPort-AV: i="4.14,574,1170662400"; 
+   d="scan'208"; a="153995476:sNHT39781134"
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       "Christoph Raisch" <raisch@de.ibm.com>,
+       "Stefan Roscher" <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: fix wrong number of send WRs returned
+X-Message-Flag: Warning: May contain useful information
+References: <200705241651.09411.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 24 May 2007 11:05:10 -0700
+In-Reply-To: <200705241651.09411.fenkes@de.ibm.com> (Joachim Fenkes's message of "Thu, 24 May 2007 16:51:08 +0200")
+Message-ID: <ada8xbe6qsp.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200705242101.03537.ismail@pardus.org.tr>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 24 May 2007 18:05:10.0593 (UTC) FILETIME=[11B24B10:01C79E2E]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 May 2007 20:38:05 Diego Calleja wrote:
-> El Thu, 24 May 2007 16:01:33 +0200 (CEST), Jiri Slaby <jirislaby@gmail.com> 
-escribió:
-> > +config USB_STK11XX
-> > +	tristate "STK11XX based webcams"
-> > +	depends on VIDEO_V4L2
-> > +	---help---
-> > +	  This will add support for Syntek webcams such as dc1125 and stk1135.
-> > +
-> > +	  If you choose to build it as module, it will be called stk11xx.
->
-> Maybe this is a too picky requeriment, but IMO it would be nice if the
-> module would be called "camera_stk11xx", or had any other prefix that gives
-> some meaning about what is doing. It's hard to decipher from the name when
-> you run lsmod.
-
-That would be too picky indeed since other camera modules have no camera_ 
-prefix like pwc,spca5xx, etc.
-
-Regards,
-ismail
-
--- 
-Perfect is the enemy of good
+thanks, applied.
