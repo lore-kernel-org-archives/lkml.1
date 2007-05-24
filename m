@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761941AbXEXAin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbXEXAjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761941AbXEXAin (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761099AbXEXAgd
+	id S1761364AbXEXAjE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbXEXAgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:36:33 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40226 "EHLO
+	Wed, 23 May 2007 20:36:35 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40228 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758138AbXEXAgX (ORCPT
+	with ESMTP id S1758809AbXEXAgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:36:23 -0400
+	Wed, 23 May 2007 20:36:25 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Yiannis Pericleous <yiannos@fsl.cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 20/21] Unionfs: Removed a trailing whitespace
-Date: Wed, 23 May 2007 20:36:10 -0400
-Message-Id: <11799669742692-git-send-email-jsipek@cs.sunysb.edu>
+Cc: akpm@linux-foundation.org, "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 14/21] Unionfs: Call realloc unconditionally
+Date: Wed, 23 May 2007 20:36:04 -0400
+Message-Id: <11799669733164-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
 In-Reply-To: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 References: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yiannis Pericleous <yiannos@fsl.cs.sunysb.edu>
+krealloc already checks if the new size is greater than the old size.
+Therefore, we can call realloc unconditionally - making the code simpler and
+cleaner.
 
-Signed-off-by: Yiannis Pericleous <yiannos@fsl.cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/super.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ fs/unionfs/lookup.c |   26 ++++++++------------------
+ 1 files changed, 8 insertions(+), 18 deletions(-)
 
-diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index bfd6c24..fe02941 100644
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -699,10 +699,12 @@ out_no_change:
- 	i = atomic_inc_return(&UNIONFS_SB(sb)->generation);
- 	atomic_set(&UNIONFS_D(sb->s_root)->generation, i);
- 	atomic_set(&UNIONFS_I(sb->s_root->d_inode)->generation, i);
--	if (!(*flags & MS_SILENT)) 
--		printk("unionfs: new generation number %d\n", i);
-+
- 	err = 0;		/* reset to success */
+diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
+index cf78c46..758c813 100644
+--- a/fs/unionfs/lookup.c
++++ b/fs/unionfs/lookup.c
+@@ -451,17 +451,17 @@ void free_dentry_private_data(struct unionfs_dentry_info *udi)
+ /* allocate new dentry private data, free old one if necessary */
+ int new_dentry_private_data(struct dentry *dentry)
+ {
+-	int new_size;
+ 	int size;
+ 	struct unionfs_dentry_info *info = UNIONFS_D(dentry);
++	void *p;
+ 	int unlock_on_err = 0;
  
-+	if (!(*flags & MS_SILENT))
-+		printk("unionfs: new generation number %d\n", i);
-+
- 	/*
- 	 * The code above falls through to the next label, and releases the
- 	 * refcnts of the older ones (stored in tmp_*): if we fell through
+ 	spin_lock(&dentry->d_lock);
+ 	if (!info) {
+ 		dentry->d_fsdata = kmem_cache_alloc(unionfs_dentry_cachep,
+ 						    GFP_ATOMIC);
++		
+ 		info = UNIONFS_D(dentry);
+-
+ 		if (!info)
+ 			goto out;
+ 
+@@ -470,9 +470,7 @@ int new_dentry_private_data(struct dentry *dentry)
+ 		unlock_on_err = 1;
+ 
+ 		info->lower_paths = NULL;
+-		size = 0;
+-	} else
+-		size = sizeof(struct path) * info->bcount;
++	}
+ 
+ 	info->bstart = -1;
+ 	info->bend = -1;
+@@ -481,21 +479,13 @@ int new_dentry_private_data(struct dentry *dentry)
+ 	atomic_set(&info->generation,
+ 		   atomic_read(&UNIONFS_SB(dentry->d_sb)->generation));
+ 
+-	new_size = sizeof(struct path) * sbmax(dentry->d_sb);
+-
+-	/*
+-	 * Don't reallocate when we already have enough space.
+-	 */
+-	if (new_size > size) {
+-		void *p;
++	size = sizeof(struct path) * sbmax(dentry->d_sb);
+ 
+-		p = krealloc(info->lower_paths, new_size, GFP_ATOMIC);
+-		if (!p)
+-			goto out_free;
++	p = krealloc(info->lower_paths, size, GFP_ATOMIC);
++	if (!p)
++		goto out_free;
+ 
+-		info->lower_paths = p;
+-		size = new_size;
+-	}
++	info->lower_paths = p;
+ 	memset(info->lower_paths, 0, size);
+ 
+ 	spin_unlock(&dentry->d_lock);
 -- 
 1.5.2.rc1.165.gaf9b
 
