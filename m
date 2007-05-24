@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbXEXXQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbXEXXTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757032AbXEXXQy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 19:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbXEXXQq
+	id S1755254AbXEXXTA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 19:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbXEXXSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 19:16:46 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:57526 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750778AbXEXXQp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 19:16:45 -0400
-X-Sasl-enc: To3WaaVr2SUybwMfAL9+jzM8nzvpMKINlEbYf+GTVP2K 1180048603
-Date: Thu, 24 May 2007 20:16:38 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-Message-ID: <20070524231638.GC29678@khazad-dum.debian.net>
-References: <20070521212522.GL3429@sequoia.sous-sol.org> <1179870110.16656.2.camel@localhost> <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org> <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org> <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org> <20070524223200.GE9604@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070524223200.GE9604@elf.ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 24 May 2007 19:18:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50600 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750702AbXEXXSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 19:18:52 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1180046115.8872.27.camel@heimdal.trondhjem.org>
+References: <1180046115.8872.27.camel@heimdal.trondhjem.org> <20070524133821.3ee9c9f3.akpm@linux-foundation.org> <20070523191518.24135.81257.stgit@warthog.cambridge.redhat.com> <20070523191524.24135.2609.stgit@warthog.cambridge.redhat.com> <27608.1180042522@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] AFS: Add a function to excise a rejected write from the pagecache
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Fri, 25 May 2007 00:18:45 +0100
+Message-ID: <29320.1180048725@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 May 2007, Pavel Machek wrote:
-> My proposed solution is "fix pcmcia to load firmware before suspend
-> even starts"
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-s/pcmcia/all drivers that load firmware/ if you are going to go that way.
+> No. If the write fails, then NFS will mark the mapping as invalid and
+> attempt to call invalidate_inode_pages2() at the earliest possible
+> moment.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Will it erase *all* unwritten writes?  Or is that what launder_page() is for?
+
+How do you deal with pages that were in the process of being written out when
+that particular write was rejected?  Do you just summarily clear PG_writeback
+and hope no-one else looks at the page until invalidate_inode_pages2() gets
+around to excising it?  Or do you have a better way?
+
+> I'm adding in a patch to defer marking the page as uptodate until the
+> write is successful in cases where NFS is writing a pristine page.
+
+That sounds reasonable, though it doesn't help in the case I'm looking at.  Do
+you also munge i_size if the write fails?
+
+> As for pages that are already marked as uptodate, well you already have
+> a race: you have deferred the page write, and so other processes may
+> already have read the rejected data before you tried to write it out.
+
+Yeah, I know, and that's very difficult to deal with without some formal
+transaction rollback mechanism.  I think that the best I can do is to discard
+the dodgy data that I've got lurking in the pagecache, but I still have to
+deal with writes made by other users to that file after the rejected write.
+
+There isn't a perfect way of dealing with it, given the circumstances.
+
+David
