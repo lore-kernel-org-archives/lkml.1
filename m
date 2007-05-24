@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763058AbXEXDzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761428AbXEXD4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763058AbXEXDzc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 23:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759022AbXEXDzZ
+	id S1761428AbXEXD4E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 23:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758517AbXEXDzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 23:55:25 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:26898 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758517AbXEXDzY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 23:55:24 -0400
-Date: Wed, 23 May 2007 20:59:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] kernel-doc: fix leading dot in man-mode output
-Message-Id: <20070523205940.5bc4fdb2.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 23 May 2007 23:55:53 -0400
+Received: from ozlabs.org ([203.10.76.45]:33787 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758457AbXEXDzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 23:55:52 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Message-ID: <18005.2746.374990.29287@cargo.ozlabs.ibm.com>
+Date: Thu, 24 May 2007 13:47:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: Define CONFIG_BOUNCE to avoid useless inclusion of bounce buffer
+ logic.
+In-Reply-To: <Pine.LNX.4.64.0705231011000.19822@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705212100420.24947@schroedinger.engr.sgi.com>
+	<20070522133906.ae9c362a.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0705212225590.25388@schroedinger.engr.sgi.com>
+	<20070523140702.GA16972@flint.arm.linux.org.uk>
+	<Pine.LNX.4.64.0705231011000.19822@schroedinger.engr.sgi.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Christoph Lameter writes:
 
-If a parameter description begins with a '.', this indicates a
-"request" for "man" mode output (*roff), so it needs special
-handling.
+> > The DMA zone is for memory allocations _for_ _DMA_.  If all your memory
+> > is DMA-able then it belongs in the DMA zone.
+> 
+> Nope. The DMA zone is for crappy DMA devices that can only use a portion 
+> of memory.
 
-Problem case is in include/asm-i386/atomic.h for function
-atomic_add_unless():
- * @u: ...unless v is equal to u.
-This parameter description is currently not printed in man mode output.
+That is (presumably) true today, but is in fact a redefinition of what
+ZONE_DMA historically was for.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+Also there is the problem that some drivers use ZONE_DMA allocations
+because their device can only generate addresses below some limit, but
+on a platform with an IOMMU there is in fact no restriction on what
+memory the device can access.
 
---- linux-2.6.21-rc2-git4.orig/scripts/kernel-doc
-+++ linux-2.6.21-rc2-git4/scripts/kernel-doc
-@@ -384,8 +384,13 @@ sub output_highlight {
-       if ($line eq ""){
- 	    print $lineprefix, $blankline;
- 	} else {
--            $line =~ s/\\\\\\/\&/g;
--	    print $lineprefix, $line;
-+	    $line =~ s/\\\\\\/\&/g;
-+	    if ($output_mode eq "man" && substr($line, 0, 1) eq ".") {
-+		print "\\{$line";
-+	    }
-+	    else {
-+		print $lineprefix, $line;
-+	    }
- 	}
- 	print "\n";
-     }
+Paul.
