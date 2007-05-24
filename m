@@ -1,42 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbXEXWIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbXEXWLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753627AbXEXWIc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbXEXWIX
+	id S1753884AbXEXWLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbXEXWLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:08:23 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33603 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751165AbXEXWIW (ORCPT
+	Thu, 24 May 2007 18:11:12 -0400
+Received: from mga02.intel.com ([134.134.136.20]:40390 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750723AbXEXWLL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:08:22 -0400
-X-Sasl-enc: JYvDKdXM1acAkSwTTHT7zbhf+jcDSHVZGFWYjC0WNvUw 1180044500
-Date: Thu, 24 May 2007 19:08:16 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, linux-acpi@vger.kernel.org
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070524220816.GC23214@khazad-dum.debian.net>
-References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu>
+	Thu, 24 May 2007 18:11:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,575,1170662400"; 
+   d="scan'208";a="247022181"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.22-rc1-mm1 - s390 vs. md
+Date: Thu, 24 May 2007 15:11:08 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5201E703A5@azsmsx413.amr.corp.intel.com>
+In-Reply-To: <20070523104639.6bc0650e@gondolin.boeblingen.de.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.22-rc1-mm1 - s390 vs. md
+Thread-Index: AcedFu3Z2OkTVYHqTS+ZSG+B+bo4XgBNfgYQ
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: "Cornelia Huck" <cornelia.huck@de.ibm.com>, <schwidefsky@de.ibm.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "NeilBrown" <neilb@suse.de>,
+       "linux-s390" <linux-s390@vger.kernel.org>
+X-OriginalArrivalTime: 24 May 2007 22:11:09.0803 (UTC) FILETIME=[6EDF03B0:01C79E50]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007, Miklos Szeredi wrote:
-> Tried nmi_watchdog=1, but then the machine locks up hard shortly after
-> boot.
+> From: Cornelia Huck [mailto:cornelia.huck@de.ibm.com]
+> On Wed, 23 May 2007 10:05:39 +0200,
+> Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> 
+> > We are trying to get rid of dma-mapping.h, see the last change to
+the
+> > file with commit 411f0f3edc141a582190d3605cadd1d993abb6df. I don't
+think
+> > we should reintroduce dma related definition but split the async_tx
+in a
+> > way that allows to compile it on an architecture with
+CONFIG_NO_DMA=y
+> > (yes I know that is harder that to just add the dma stubs).
 
-NMIs in some thinkpads are bad trouble, they lock up the blasted IBM/Lenovo
-SMBIOS if they happen to hit it while it is servicing a SMI, and thinkpads
-do SMIs like crazy.
+Not harder, it just a question of which is "uglier", but given the
+direction taken with CONFIG_HAS_DMA it now appears more appropriate to
+change async_tx.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> > You've said that there is a software implementation if there is no
+dma
+> > engine present. This software implementation should be independent
+of
+> > dma-mapping.h. Without having looked at the code, isn't it possible
+to
+> > isolate that software implementation into its own C file? That would
+be
+> > the only one that gets compiled for s390.
+> 
+> Taking a quick look at the async_*.c stuff, the functions in question
+> basically seem to be of the form
+> 
+> check_if_we_can_do_it_async();
+> if (async_ok) {
+> 	/* do async stuff */
+> 	/* that's where the dma mapping creeps in */
+> } else {
+> 	/* do it sync */
+> 	/* seems fine for us */
+> }
+> 
+> So you should be able to factor out (say) async_memset_{sync,async}()
+> and put it into async_memset_{sync,async}.c. async_memset() would then
+> be
+> 
+> async_memset()
+> {
+> #if CONFIG_HAS_DMA
+> 	if (check_if_we_can_do_at_async())
+> 		async_memset_async();
+> #endif
+> 	return async_memset_sync();
+> }
+> 
+> Kconfig could then do
+> 
+> config ASYNC_MEMSET
+> 	default m
+> 	tristate "async_memset support"
+> 	select ASYNC_MEMSET_ASYNC if HAS_DMA
+> 
+> config ASYNC_MEMSET_ASYNC
+> 	depends on HAS_DMA
+> 	tristate "async_memset async via dma support"
+> 
+> Thoughts?
+
+I took your approach of encasing the HAS_DMA dependent portion of the
+code in #ifdef CONFIG_HAS_DMA, and I dropped the dma-mapping-stub patch.
+I let the compiler do the factoring out for me by making
+async_tx_find_channel become the following when CONFIG_DMA_ENGINE=n:
+
+static inline struct dma_chan *
+async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
+	enum dma_transaction_type tx_type)
+{
+	return NULL;
+}
+
+---
+
+diff --git a/async_tx/async_memcpy.c b/async_tx/async_memcpy.c
+index 7896ba8..547976e 100644
+--- a/async_tx/async_memcpy.c
++++ b/async_tx/async_memcpy.c
+@@ -56,6 +56,7 @@ async_memcpy(struct page *dest, struct page *src,
+unsigned int dest_offset,
+ 		int_en) : NULL;
+ 
+ 	if (tx) { /* run the memcpy asynchronously */
++		#ifdef CONFIG_HAS_DMA
+ 		dma_addr_t dma_addr;
+ 		enum dma_data_direction dir;
+ 
+@@ -75,6 +76,9 @@ async_memcpy(struct page *dest, struct page *src,
+unsigned int dest_offset,
+ 
+ 		async_tx_submit(chan, tx, flags, depend_tx, callback,
+ 			callback_param);
++		#else
++		BUG();
++		#endif /* CONFIG_HAS_DMA */
+ 	} else { /* run the memcpy synchronously */
+ 		void *dest_buf, *src_buf;
+ 		pr_debug("%s: (sync) len: %zu\n", __FUNCTION__, len);
+diff --git a/async_tx/async_memset.c b/async_tx/async_memset.c
+index 736c7c2..9166a27 100644
+--- a/async_tx/async_memset.c
++++ b/async_tx/async_memset.c
+@@ -55,6 +55,7 @@ async_memset(struct page *dest, int val, unsigned int
+offset,
+ 			int_en) : NULL;
+ 
+ 	if (tx) { /* run the memset asynchronously */
++		#ifdef CONFIG_HAS_DMA
+ 		dma_addr_t dma_addr;
+ 		enum dma_data_direction dir;
+ 
+@@ -67,6 +68,9 @@ async_memset(struct page *dest, int val, unsigned int
+offset,
+ 
+ 		async_tx_submit(chan, tx, flags, depend_tx, callback,
+ 			callback_param);
++		#else
++		BUG();
++		#endif /* CONFIG_HAS_DMA */
+ 	} else { /* run the memset synchronously */
+ 		void *dest_buf;
+ 		pr_debug("%s: (sync) len: %zu\n", __FUNCTION__, len);
+diff --git a/async_tx/async_xor.c b/async_tx/async_xor.c
+index 37ae5fc..5e4bc29 100644
+--- a/async_tx/async_xor.c
++++ b/async_tx/async_xor.c
+@@ -31,6 +31,7 @@
+ #include <linux/raid/xor.h>
+ #include <linux/async_tx.h>
+ 
++#ifdef CONFIG_HAS_DMA
+ static void
+ do_async_xor(struct dma_async_tx_descriptor *tx, struct dma_device
+*device,
+ 	struct dma_chan *chan, struct page *dest, struct page
+**src_list,
+@@ -62,6 +63,17 @@ do_async_xor(struct dma_async_tx_descriptor *tx,
+struct dma_device *device,
+ 	async_tx_submit(chan, tx, flags, depend_tx, callback,
+ 		callback_param);
+ }
++#else
++static void
++do_async_xor(struct dma_async_tx_descriptor *tx, struct dma_device
+*device,
++	struct dma_chan *chan, struct page *dest, struct page
+**src_list,
++	unsigned int offset, unsigned int src_cnt, size_t len,
++	enum async_tx_flags flags, struct dma_async_tx_descriptor
+*depend_tx,
++	dma_async_tx_callback callback, void *callback_param)
++{
++	BUG();
++}
++#endif /* CONFIG_HAS_DMA */
+ 
+ static void
+ do_sync_xor(struct page *dest, struct page **src_list, unsigned int
+offset,
+@@ -265,6 +277,7 @@ async_xor_zero_sum(struct page *dest, struct page
+**src_list,
+ 	BUG_ON(src_cnt <= 1);
+ 
+ 	if (tx) {
++		#ifdef CONFIG_HAS_DMA
+ 		dma_addr_t dma_addr;
+ 		enum dma_data_direction dir;
+ 
+@@ -281,6 +294,9 @@ async_xor_zero_sum(struct page *dest, struct page
+**src_list,
+ 
+ 		async_tx_submit(chan, tx, flags, depend_tx, callback,
+ 			callback_param);
++		#else
++		BUG();
++		#endif /* CONFIG_HAS_DMA */
+ 	} else {
+ 		unsigned long xor_flags = flags;
+ 
