@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbXEXSxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752219AbXEXSy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752676AbXEXSxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 14:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbXEXSxn
+	id S1752219AbXEXSy0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 14:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbXEXSyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 14:53:43 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:28813 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751112AbXEXSxl (ORCPT
+	Thu, 24 May 2007 14:54:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:64953 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750793AbXEXSyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 14:53:41 -0400
+	Thu, 24 May 2007 14:54:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VzFMRnoA2R5rtOug7fpPpwNQUpwHUDbZR4DRs/vRVJz5C2FZCL6Ok67tlxDF3NEKhOmbbbsv23XxOGj4BPgxiCOkxmm22RHg8kQOxtccyXMLUdJZKC+NP9zbEMS94FgN420SUH+RUKDThUOl1DQ4c1GNDZHk6j90oB8Rx2to0bk=
-Message-ID: <a781481a0705241153m29781dd2u825c0e9bfdb6beb0@mail.gmail.com>
-Date: Fri, 25 May 2007 00:23:39 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: any value to "NORET_TYPE" macro?
-Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, "Adrian Bunk" <bunk@stusta.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0705241239560.10926@localhost.localdomain>
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=FxIjJJaSBO5ZxrhQsFPT7/pddwfNNvAlK0HkdMFIi+w1jmqXos62jcCwhM+MObCsEInQg9EIUoT0f5J9/sbQ1uJI2WAtHZWDHjThq2u8+oNw6ljEnrPW1mPpqkXABzMsQYc+wY+TG9ljMH7vcM7d3qOpUsXkyyfxX5sVgtV4A9Q=
+Date: Thu, 24 May 2007 22:53:20 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Jan Kara <jack@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] Fix possible UDF data corruption
+Message-ID: <20070524185320.GA20500@cvg>
+References: <20070524165935.GB19709@duck.suse.cz> <20070524172017.GA19852@cvg> <20070524113550.d09dbf9e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
-	 <Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
-	 <20070522161951.GC2098@stusta.de> <m3ejl8k6e3.fsf@maximus.localdomain>
-	 <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain>
-	 <m37ir0iodl.fsf@maximus.localdomain>
-	 <a781481a0705230137v4c8ba82fx263212a2958b55b9@mail.gmail.com>
-	 <Pine.LNX.4.64.0705230908180.4309@localhost.localdomain>
-	 <a781481a0705230646x9a0255ak4254d05ba5442cad@mail.gmail.com>
-	 <Pine.LNX.4.64.0705241239560.10926@localhost.localdomain>
+In-Reply-To: <20070524113550.d09dbf9e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/24/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> On Wed, 23 May 2007, Satyam Sharma wrote:
->
-> > Actually there's another thing :-) The __attribute__((xxx)) must go
-> > with the function _declarations_ (and not the
-> > implementations/definitions).
->
-> that's not true, AFAICT.  the pattern seems to be that, in the case of
-> declarations, attributes go at the end, as in:
->
-> arch/sparc/boot/btfixupprep.c:void fatal(void) __attribute__((noreturn));
+[Andrew Morton - Thu, May 24, 2007 at 11:35:50AM -0700]
+| On Thu, 24 May 2007 21:20:17 +0400
+| Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > [Jan Kara - Thu, May 24, 2007 at 06:59:35PM +0200]
+| > |   Hi Andrew,
+| > | 
+| > |   attached patch fixes possible data corruption in UDF - this bug was actually
+| > | introduced by one of my fixes :-( and should (if possible) go to Linus before
+| > | 2.6.22 is out (that's why I'm diffing against Linus's tree and not the
+| > | latest changes in -mm tree)... Thanks.
+| > | 
+| > | 								Honza
+| > | 
+| > | -- 
+| > | Jan Kara <jack@suse.cz>
+| > | SuSE CR Labs
+| > 
+| > Jan should I wait until Andrew has your patches included and
+| > only then (having taken into account your patches) produce my
+| > conversion?
+| > 
+| 
+| yes please - bugfixes come first.
+| 
 
-Yes, please, this is the normal way.
+ok
 
-> while in actual definitions, they typically go after the return type,
-> as in arch/arm/kernel/traps.c:
->
-> void __attribute__((noreturn)) __bug(const char *file, int line)
-> {
->         printk(KERN_CRIT"kernel BUG at %s:%d!\n", file, line);
->         *(int *)0 = 0;
->
->         /* Avoid "noreturn function does return" */
->         for (;;);
-> }
+		Cyrill
 
-Function attributes don't need to appear in function definitions at all.
-(I've not come across such cases often, so this is certainly not the
-standard). Anyway, the above is a case that the function lacks a
-separate declaration which is why we put it there at the definition.
-And yes, if we really do have to put an attribute in the function
-definition, then we do need to place it _before_ the function name.
-
->   is that the standard that most people use?  if it is, i can use that
-> standard for the cleanup.
-
-Ok, so if you're really planning to do this cleanup, you can do the
-following (for all occurrences of NORET_TYPE):
-
-1. If this is a function _declaration_ (i.e. a prototype in some
-header or some .c file), then remove the NORET_TYPE macro. Also,
-if an ATTRIB_NORET or NORET_AND already exists then you're done.
-Else, introduce an ATTRIB_NORET after the arglist but before ;
-
-2. If this is a function _definition_, then remove the NORET_TYPE
-macro.
-	(a) If a _declaration_ also exists somewhere (say, some
-	    header or in the same .c file) for this function, then go
-	    and check it.
-		(i) If it already contains an ATTRIB_NORET or
-		    NORET_AND, then you're done.
-		(ii) Else, introduce ATTRIB_NORET.
-
-	(b) If no separate declaration exists for this function,
-	    then just introduce the ATTRIB_NORET _before_ the
-	    function name if it isn't there already.
-
-I suspect the above would cover all cases :-)
