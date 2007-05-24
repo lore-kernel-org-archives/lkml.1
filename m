@@ -1,74 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbXEXWGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbXEXWIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbXEXWGp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbXEXWGi
+	id S1753627AbXEXWIc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbXEXWIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:06:38 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56740
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751151AbXEXWGh (ORCPT
+	Thu, 24 May 2007 18:08:23 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33603 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751165AbXEXWIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:06:37 -0400
-Date: Thu, 24 May 2007 15:06:40 -0700 (PDT)
-Message-Id: <20070524.150640.31659488.davem@davemloft.net>
-To: tglx@linutronix.de
-CC: linux-kernel@vger.kernel.org
-Subject: [BUG]: hrtimer overflow bug on 64-bit systems
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 18:08:22 -0400
+X-Sasl-enc: JYvDKdXM1acAkSwTTHT7zbhf+jcDSHVZGFWYjC0WNvUw 1180044500
+Date: Thu, 24 May 2007 19:08:16 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, linux-acpi@vger.kernel.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070524220816.GC23214@khazad-dum.debian.net>
+References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 May 2007, Miklos Szeredi wrote:
+> Tried nmi_watchdog=1, but then the machine locks up hard shortly after
+> boot.
 
-I've been tracing this problem on sparc64 now that it uses hi-res
-timers, and I finally figured it out.
+NMIs in some thinkpads are bad trouble, they lock up the blasted IBM/Lenovo
+SMBIOS if they happen to hit it while it is servicing a SMI, and thinkpads
+do SMIs like crazy.
 
-The symptom is that ksoftirqd on most of the cpus of an idle SMP
-system chew up around %10 of cpu time.
-
-The raise_softirq_irqoff() is constantly being invoked via
-tick_nohz_stop_sched_tick(), but why?
-
-Tracing revealed that delta_ticks is enormous, which is correct
-because no timers are pending on the cpu so we should schedule the
-hrtimer as far into the future as possible.
-
-tick_nohz_stop_sched_tick() then proceeds to start the hrtimer, and
-then it checks hrtimer_active() but for some reason this is always
-false.
-
-Why?
-
-The reason is that the expires calculation here:
-
-		expires = ktime_add_ns(last_update, tick_period.tv64 *
-				       delta_jiffies);
-
-overflows on 64-bit systems.
-
-On 32-bit systems, LONG_MAX is a 32-bit quantity so the largest
-possible delta_jiffies don't cause an overflow in this multiply
-(which is 64-bit).  (LONG_MAX determines how large a value
-will be returned to indicate "infinity" from get_next_timer_interrupt(),
-specifically it's the initialization of local variable 'expires'
-in __next_timer_interrupt).
-
-Because of this 'expires' is zero and of course that causes the
-hrtimer to not get scheduled at all.
-
-I'm surprised this problem is not seen with the x86_64 hrtimer patches
-applied :-)
-
-I'm not exactly sure how to best fix this, we could either make
-__next_timer_interrupt use INT_MAX or we could make
-tick_nohz_stop_sched_tick() realize and handle the overflow
-properly.  Neither of those solutions are fully satisfactory in
-my opinion :-)
-
-FWIW, I've verified that using INT_MAX in __next_timer_interrupt()
-makes the problem go away.
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
