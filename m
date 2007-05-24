@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbXEXWlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbXEXWmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbXEXWlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbXEXWlq
+	id S1754413AbXEXWmM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXEXWlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:41:46 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:48129 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750751AbXEXWlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:41:45 -0400
-Subject: Re: [RFC] LZO de/compression support - take 3
-From: Richard Purdie <richard@openedhand.com>
-To: Michael-Luke Jones <mlj28@cam.ac.uk>, akpm <akpm@linux-foundation.org>
-Cc: Nitin Gupta <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm-cc@laptop.org
-In-Reply-To: <726113DF-D952-401F-96EA-7A10B035604B@cam.ac.uk>
-References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-	 <0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
-	 <4cefeab80705230439n6bbb1259le3c3b9704ce49b75@mail.gmail.com>
-	 <624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
-	 <4cefeab80705230703vdb3c414s250a61c4c2d70c51@mail.gmail.com>
-	 <1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
-	 <4cefeab80705230721i492b5f1ehfa2d775344b1c04e@mail.gmail.com>
-	 <726113DF-D952-401F-96EA-7A10B035604B@cam.ac.uk>
-Content-Type: text/plain
-Date: Thu, 24 May 2007 23:41:22 +0100
-Message-Id: <1180046482.12821.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 18:41:55 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:44745 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753117AbXEXWly (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 18:41:54 -0400
+Date: Fri, 25 May 2007 00:41:47 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Status of CONFIG_FORCED_INLINING?
+Message-ID: <20070524224147.GF4470@stusta.de>
+References: <200705231510.52932.rob@landley.net> <20070524171019.GA4470@stusta.de> <ada3b1m87pa.fsf@cisco.com> <200705241347.43727.rob@landley.net> <adahcq26r8p.fsf@cisco.com> <20070524180704.GE4470@stusta.de> <adawsyy5azc.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <adawsyy5azc.fsf@cisco.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-23 at 15:33 +0100, Michael-Luke Jones wrote:
-> On 23 May 2007, at 15:21, Nitin Gupta wrote:
+On Thu, May 24, 2007 at 11:32:07AM -0700, Roland Dreier wrote:
+>  > The problem is that inline functions in headers are intended to be 
+>  > called from different C files.
+>  > 
+>  > gcc might not inline it in the C files where it is called more than 
+>  > once.
+>  > 
+>  > But it will always inline it if it's called only once.
+>  > 
+>  > One of both will be suboptimal, but from gcc's perspective it was 
+>  > optimal.
 > 
-> > If somebody is up to including compression he must be having head  
-> > to use the right
-> > decompress version depending on this scenario :-)
+> Yes, we could probably get huge benefits from --combine and/or
+> -fwhole-program to let gcc see more than one file at a time.
 > 
-> By that logic, experienced kernel dev Richard Purdie is not up to  
-> using compression (?!)
-> 
-> To me, it looks like an easy trap to fall into. And one that an  
-> experienced dev *has* just fallen in to.
+> But I still don't see the issue with having gcc do the best it can on
+> each file it compiles.  If you force the inlining, then that means
+> that on files where not inlining was better, you've forced gcc to
+> generate worse code.  (I don't see how not inlining could be locally
+> better on a single file but globally worse, even though it generated
+> better code on each compiled file)
 
-To be fair, I just altered resier4 to use the library functions and it
-was someone else who chose to use the "unsafe" version. I did flag this
-up on LKML when I saw it and the resier4 people are considering
-changing. 
+Can you give examples where for one function it differs between 
+different C files whether it should be inlined or not?
 
-I've since promised to send a patch changing it to use the safe version.
+cu
+Adrian
 
-I'll not send a "rename to unsafe" patch for the LZO core until Andrew
-decides whether to drop the unsafe version entirely or not as per your
-patch. If he doesn't due to the potential use by the compressed cache
-people, I will send that patch.
+-- 
 
-Cheers,
-
-Richard
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
