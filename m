@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbXEXCmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761174AbXEXCsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760831AbXEXCmZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 22:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757968AbXEXCmR
+	id S1761174AbXEXCsz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 22:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758034AbXEXCsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 22:42:17 -0400
-Received: from critter.phunnypharm.org ([67.97.251.11]:2974 "EHLO critter"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757391AbXEXCmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 22:42:17 -0400
-X-Greylist: delayed 2129 seconds by postgrey-1.27 at vger.kernel.org; Wed, 23 May 2007 22:42:17 EDT
-To: linux-kernel@vger.kernel.org
-Message-Id: <17ae6569b9848ca4db6bef17013f2c9904f1b026.1179964369.git.bcollins@ubuntu.com>
-In-Reply-To: <98cd38b5.git.bcollins@ubuntu.com>
-References: <98cd38b5.git.bcollins@ubuntu.com>
-From: Ben Collins <bcollins@ubuntu.com>
-Date: Wed, 23 May 2007 18:18:24 -0400
-Subject: [PATCH 2/6] PM: Do not require dev spew to get PM_DEBUG
+	Wed, 23 May 2007 22:48:47 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50837 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757391AbXEXCsq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 22:48:46 -0400
+Date: Wed, 23 May 2007 19:43:37 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+In-Reply-To: <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0705231941230.23957@schroedinger.engr.sgi.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+ <46540DB2.5000605@googlemail.com> <Pine.LNX.4.64.0705231016330.20031@schroedinger.engr.sgi.com>
+ <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
+ <20070523153730.e0e9e91d.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
+ <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to enable things like PM_TRACE, you're required to enable
-PM_DEBUG, which sends a large spew of messages on boot, and often times
-can overflow dmesg buffer.
+On Wed, 23 May 2007, Randy Dunlap wrote:
 
-Create new PM_VERBOSE and shift that to be the option that enables
-drivers/base/power's messages.
+> > > A few words in slub.txt, perhaps?
+> 
+> Thanks for the update.  A few nits below.
 
-Signed-off-by: Ben Collins <bcollins@ubuntu.com>
----
- drivers/base/power/Makefile |    2 +-
- kernel/power/Kconfig        |   17 ++++++++++++-----
- 2 files changed, 13 insertions(+), 6 deletions(-)
+Ok will get the nits out soon.
 
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index 91f2309..704d326 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -5,6 +5,6 @@ obj-$(CONFIG_PM_TRACE)	+= trace.o
- ifeq ($(CONFIG_DEBUG_DRIVER),y)
- EXTRA_CFLAGS += -DDEBUG
- endif
--ifeq ($(CONFIG_PM_DEBUG),y)
-+ifeq ($(CONFIG_PM_VERBOSE),y)
- EXTRA_CFLAGS += -DDEBUG
- endif
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 495b7d4..1f8cdbd 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -33,13 +33,20 @@ config PM_DEBUG
- 	bool "Power Management Debug Support"
- 	depends on PM
- 	---help---
--	This option enables verbose debugging support in the Power Management
--	code. This is helpful when debugging and reporting various PM bugs, 
--	like suspend support.
-+	This option enables various debugging support in the Power Management
-+	code. This is helpful when debugging and reporting PM bugs, like
-+	suspend support.
-+
-+config PM_VERBOSE
-+	bool "Verbose Power Management debugging"
-+	depends on PM_DEBUG
-+	default n
-+	---help---
-+	This option enables verbose messages from the Power Management code.
- 
- config DISABLE_CONSOLE_SUSPEND
- 	bool "Keep console(s) enabled during suspend/resume (DANGEROUS)"
--	depends on PM && PM_DEBUG
-+	depends on PM_DEBUG
- 	default n
- 	---help---
- 	This option turns off the console suspend mechanism that prevents
-@@ -50,7 +57,7 @@ config DISABLE_CONSOLE_SUSPEND
- 
- config PM_TRACE
- 	bool "Suspend/resume event tracing"
--	depends on PM && PM_DEBUG && X86_32 && EXPERIMENTAL
-+	depends on PM_DEBUG && X86_32 && EXPERIMENTAL
- 	default n
- 	---help---
- 	This enables some cheesy code to save the last PM event point in the
--- 
-1.5.1.4
+> How large is the RedZone?  Is it a fixed size or does it vary?
+
+The red zone are between 1 byte and a full word. If the object does not 
+end at a word boundary then we fill up to the next word. If it ends on a 
+word boundary then a full word of red zone bytes are inserted.
+
 
