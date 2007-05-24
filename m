@@ -1,104 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbXEXMMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759614AbXEXMNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759936AbXEXMMg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 08:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756573AbXEXMKY
+	id S1759614AbXEXMNz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 08:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbXEXMNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 08:10:24 -0400
-Received: from il.qumranet.com ([82.166.9.18]:36455 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756065AbXEXMKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 08:10:20 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: kvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, shaohua.li@intel.com,
-       lhcs-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 4/7] SMP: Implement on_one_cpu()
-Date: Thu, 24 May 2007 15:10:12 +0300
-Message-Id: <11800086152009-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.0.6
-In-Reply-To: <1180008615579-git-send-email-avi@qumranet.com>
-References: <1180008615579-git-send-email-avi@qumranet.com>
+	Thu, 24 May 2007 08:13:46 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:55250 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755689AbXEXMNp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 08:13:45 -0400
+Subject: Re: 2.6.21.1 fails to suspend/resume to disk (sort of)
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Antonino Ingargiola <tritemio@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <5486cca80705240101u2fb6a954q53025752560f3ef7@mail.gmail.com>
+References: <1179905115.7043.25.camel@localhost> 
+	<200705231105.08408.rjw@sisk.pl> <1179914262.7043.56.camel@localhost> 
+	<5486cca80705240101u2fb6a954q53025752560f3ef7@mail.gmail.com>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Thu, 24 May 2007 14:13:43 +0200
+Message-Id: <1180008823.15600.35.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This defines on_one_cpu() which is similar to smp_call_function_single()
-except that it works if cpu happens to be the current cpu.  Can also be
-seen as a complement to on_each_cpu() (which also doesn't treat the
-current cpu specially).
+On Thu, 2007-05-24 at 10:01 +0200, Antonino Ingargiola wrote:
+> Hi,
+>
+> 2007/5/23, Romano Giannetti <romano.giannetti@gmail.com>:
+> [cut]
+> > Uf, I will try to find the time. I am on my way to try to compile
+> > 2.6.21.2 now. Problem is that a kernel compile "the ubuntu way" last
+> > hours here. If there is an expert on make-kpkg here, I could use some
+> > advise.
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
- include/linux/smp.h |   15 +++++++++++++++
- kernel/softirq.c    |   24 ++++++++++++++++++++++++
- 2 files changed, 39 insertions(+), 0 deletions(-)
+> Is not the ubuntu or debian way to take hours to compile. Is that you
+> have to trim the config and enable the only modules you need for your
+> hardware, then a rebuild cycle could last 10-15 min.
 
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index 3f70149..4ff8d68 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -60,6 +60,11 @@ int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
-  * Call a function on all processors
-  */
- int on_each_cpu(void (*func) (void *info), void *info, int retry, int wait);
-+/*
-+ * Call a function on one processor
-+ */
-+int on_one_cpu(int cpu, void (*func)(void *info), void *info,
-+	       int retry, int wait);
- 
- #define MSG_ALL_BUT_SELF	0x8000	/* Assume <32768 CPU's */
- #define MSG_ALL			0x8001
-@@ -95,6 +100,16 @@ static inline int up_smp_call_function(void)
- 		local_irq_enable();		\
- 		0;				\
- 	})
-+
-+static inline int on_one_cpu(int cpu, void (*func)(void *info), void *info,
-+			     int retry, int wait)
-+{
-+	local_irq_disable();
-+	func(info);
-+	local_irq_enable();
-+	return 0;
-+}
-+
- static inline void smp_send_reschedule(int cpu) { }
- #define num_booting_cpus()			1
- #define smp_prepare_boot_cpu()			do {} while (0)
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 0b9886a..b1a3284 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -658,4 +658,28 @@ int on_each_cpu(void (*func) (void *info), void *info, int retry, int wait)
- 	return ret;
- }
- EXPORT_SYMBOL(on_each_cpu);
-+
-+/*
-+ * Call a function on one processor, which might be the currently executing
-+ * processor.
-+ */
-+int on_one_cpu(int cpu, void (*func) (void *info), void *info,
-+	       int retry, int wait)
-+{
-+	int ret;
-+	int this_cpu;
-+
-+	this_cpu = get_cpu();
-+	if (this_cpu == cpu) {
-+		local_irq_disable();
-+		func(info);
-+		local_irq_enable();
-+		ret = 0;
-+	} else
-+		ret = smp_call_function_single(cpu, func, info, retry, wait);
-+	put_cpu();
-+	return ret;
-+}
-+EXPORT_SYMBOL(on_one_cpu);
-+
- #endif
--- 
-1.5.0.6
+That is a problem, yes. But I was referring to the need of a make-kpkg
+clean every time you recompile changing the EXTRAVERSION, wich forces a
+make clean. I am trying to discover how to build manually and initramfs
+that works...
+
+>
+> You will spend one hour once to cut down the configuration, but then
+> you can reuse the .config for new kernels too with make oldconfig.
+>
+
+Yep, done that. The kernel does not boot (in the initramfs, there is
+a /dev/hda1 but it refuses to mount; and yes, I have ext3 and ext2
+compiled in, checked a lot of things, no joy. Will retry).
+
+> To find the minimum configuration for you hardware use lspci -v,
+> menuconfig help, and look at chapter 7 and 8 of Linux Kernel in a
+> Nutshell:
+>
+> http://www.kroah.com/lkn/
+>
+> Also, pasting "lspci -n" output in the following page can be of some help:
+>
+> http://kmuto.jp/debian/hcl/
+>
+> Hope this helps.
+>
+
+What would be great is a tool that generate a config starting from the
+lsmod list, to start from there and _enable_ more thing... but I know,
+I'm dreaming.
+
+Romano
+
+
+--
+Romano Giannetti --- romano.giannetti@gmail.com
+Sorry for the following disclaimer, it's attached by our otugoing server
+and I cannot shut it up.
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
 
