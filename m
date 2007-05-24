@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbXEXMwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbXEXMxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759328AbXEXMwB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 08:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbXEXMvu
+	id S1759024AbXEXMxk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 08:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbXEXMxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 08:51:50 -0400
-Received: from wine.ocn.ne.jp ([220.111.47.146]:63169 "EHLO
-	smtp.wine.ocn.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756091AbXEXMvs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 08:51:48 -0400
-To: jmorris@namei.org, agruen@suse.de
-Cc: viro@ftp.linux.org.uk, jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, tonyj@suse.de
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSMhook
-From: Tetsuo Handa <penguin-fsdevel@I-love.SAKURA.ne.jp>
-References: <20070412090809.917795000@suse.de>
-	<20070412090836.207973000@suse.de>
-	<20070412101236.GD4095@ftp.linux.org.uk>
-	<200705232106.28260.agruen@suse.de>
-	<Line.LNX.4.64.0705232109030.3178@d.namei>
-In-Reply-To: <Line.LNX.4.64.0705232109030.3178@d.namei>
-Message-Id: <200705242151.HAD83735.OOFEFMVJFWGQtHT@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50]
-X-Accept-Language: ja,en
-Date: Thu, 24 May 2007 21:51:51 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 May 2007 08:53:33 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45076 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756420AbXEXMxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 08:53:32 -0400
+Message-ID: <46558ACB.1080000@qumranet.com>
+Date: Thu, 24 May 2007 15:53:31 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: kvm-devel@lists.sourceforge.net
+CC: linux-kernel@vger.kernel.org, lhcs-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [PATCH 0/7] KVM: Suspend and cpu hotplug fixes
+References: <1180008615579-git-send-email-avi@qumranet.com>
+In-Reply-To: <1180008615579-git-send-email-avi@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Avi Kivity wrote:
+> The following patchset makes kvm more robust wrt cpu hotunplug, and
+> makes suspend-to-ram actually work.  Suspend-to-disk benefits from
+> the cpu hotunplug improvements as well.
+>
+>   
 
-I think bind mounts were discussed when shared subtree
-( http://lwn.net/Articles/159092/ ) was introduced.
+Here's the patchset diffstat in case anyone's interested:
 
-For systems that allow users mount their CD/DVDs freely,
-bind mounts are used and labeling files is a convenient way
-to deny accessing somebody else's files.
+ arch/i386/kernel/cpu/mcheck/therm_throt.c |    6 ++-
+ drivers/kvm/kvm_main.c                    |   51 
++++++++++++++++++++++--------
+ include/linux/notifier.h                  |    3 ++
+ include/linux/smp.h                       |   15 ++++++++
+ kernel/cpu.c                              |   16 ++++++++-
+ kernel/cpuset.c                           |    3 ++
+ kernel/softirq.c                          |   24 +++++++++++++
+ 7 files changed, 100 insertions(+), 18 deletions(-)
 
-But systems that don't allow users mount their CD/DVDs freely,
-bind mounts needn't to be used and using pathnames is a convenient way
-to deny accessing somebody else's files.
 
-Pathname based access control/auditing system
-works if the system doesn't use bind mounts.
+-- 
+error compiling committee.c: too many arguments to function
 
-However, there are distributions (e.g. Debian Etch)
-that always use bind mounts. In such distributions,
-pathname based access control/auditing system doesn't work.
-
-This is not the fault of distributions nor
-pathname based access control/auditing system.
-It is possible to solve by passing vfsmount to VFS and LSM functions.
-
-SELinux users are having a lot of trouble because pathnames in audit logs
-are not always complete.
-AppArmor users are having a lot of trouble because pathnames which
-a process requested are ambiguous when bind mounts are used.
-
-Being able to report pathnames that a process requested is not surprising
-when considering user friendliness.
-I beleive passing vfsmount makes both users happy.
-
-Thanks.
