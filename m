@@ -1,98 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbXEXAjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbXEXAja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbXEXAjE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbXEXAgf
+	id S1761327AbXEXAja (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761329AbXEXAgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:36:35 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40228 "EHLO
+	Wed, 23 May 2007 20:36:38 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40224 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758809AbXEXAgZ (ORCPT
+	with ESMTP id S1758030AbXEXAgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:36:25 -0400
+	Wed, 23 May 2007 20:36:22 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: akpm@linux-foundation.org, "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 14/21] Unionfs: Call realloc unconditionally
-Date: Wed, 23 May 2007 20:36:04 -0400
-Message-Id: <11799669733164-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 19/21] Unionfs: Actually catch bad use of unionfs_mnt{get,put}
+Date: Wed, 23 May 2007 20:36:09 -0400
+Message-Id: <11799669741312-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
 In-Reply-To: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 References: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-krealloc already checks if the new size is greater than the old size.
-Therefore, we can call realloc unconditionally - making the code simpler and
-cleaner.
-
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/lookup.c |   26 ++++++++------------------
- 1 files changed, 8 insertions(+), 18 deletions(-)
+ fs/unionfs/union.h |   34 +++++++---------------------------
+ 1 files changed, 7 insertions(+), 27 deletions(-)
 
-diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
-index cf78c46..758c813 100644
---- a/fs/unionfs/lookup.c
-+++ b/fs/unionfs/lookup.c
-@@ -451,17 +451,17 @@ void free_dentry_private_data(struct unionfs_dentry_info *udi)
- /* allocate new dentry private data, free old one if necessary */
- int new_dentry_private_data(struct dentry *dentry)
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index 5376b76..335d579 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -459,38 +459,18 @@ static inline void unlock_dir(struct dentry *dir)
+ static inline struct vfsmount *unionfs_mntget(struct dentry *dentry,
+ 					      int bindex)
  {
--	int new_size;
- 	int size;
- 	struct unionfs_dentry_info *info = UNIONFS_D(dentry);
-+	void *p;
- 	int unlock_on_err = 0;
+-	struct vfsmount *mnt;
++	BUG_ON(!dentry || bindex < 0);
  
- 	spin_lock(&dentry->d_lock);
- 	if (!info) {
- 		dentry->d_fsdata = kmem_cache_alloc(unionfs_dentry_cachep,
- 						    GFP_ATOMIC);
-+		
- 		info = UNIONFS_D(dentry);
--
- 		if (!info)
- 			goto out;
- 
-@@ -470,9 +470,7 @@ int new_dentry_private_data(struct dentry *dentry)
- 		unlock_on_err = 1;
- 
- 		info->lower_paths = NULL;
--		size = 0;
--	} else
--		size = sizeof(struct path) * info->bcount;
-+	}
- 
- 	info->bstart = -1;
- 	info->bend = -1;
-@@ -481,21 +479,13 @@ int new_dentry_private_data(struct dentry *dentry)
- 	atomic_set(&info->generation,
- 		   atomic_read(&UNIONFS_SB(dentry->d_sb)->generation));
- 
--	new_size = sizeof(struct path) * sbmax(dentry->d_sb);
--
--	/*
--	 * Don't reallocate when we already have enough space.
--	 */
--	if (new_size > size) {
--		void *p;
-+	size = sizeof(struct path) * sbmax(dentry->d_sb);
- 
--		p = krealloc(info->lower_paths, new_size, GFP_ATOMIC);
--		if (!p)
--			goto out_free;
-+	p = krealloc(info->lower_paths, size, GFP_ATOMIC);
-+	if (!p)
-+		goto out_free;
- 
--		info->lower_paths = p;
--		size = new_size;
+-	if (!dentry) {
+-		if (bindex < 0)
+-			return NULL;
+-		BUG_ON(bindex < 0);
 -	}
-+	info->lower_paths = p;
- 	memset(info->lower_paths, 0, size);
+-	mnt = unionfs_lower_mnt_idx(dentry, bindex);
+-	if (!mnt) {
+-		if (bindex < 0)
+-			return NULL;
+-		BUG_ON(mnt && bindex < 0);
+-	}
+-	mnt = mntget(mnt);
+-	return mnt;
++	return mntget(unionfs_lower_mnt_idx(dentry, bindex));
+ }
  
- 	spin_unlock(&dentry->d_lock);
+ static inline void unionfs_mntput(struct dentry *dentry, int bindex)
+ {
+-	struct vfsmount *mnt;
++	if (!dentry)
++		return;
+ 
+-	if (!dentry) {
+-		if (bindex < 0)
+-			return;
+-		BUG_ON(dentry && bindex < 0);
+-	}
+-	mnt = unionfs_lower_mnt_idx(dentry, bindex);
+-	if (!mnt) {
+-		if (bindex < 0)
+-			return;
+-		BUG_ON(mnt && bindex < 0);
+-	}
+-	mntput(mnt);
++	BUG_ON(bindex < 0);
++
++	mntput(unionfs_lower_mnt_idx(dentry, bindex));
+ }
+ #endif	/* not _UNION_H_ */
 -- 
 1.5.2.rc1.165.gaf9b
 
