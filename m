@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751410AbXEXQIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751705AbXEXQJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751410AbXEXQIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 12:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750723AbXEXQID
+	id S1751705AbXEXQJQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 12:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbXEXQJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 12:08:03 -0400
-Received: from palrel13.hp.com ([156.153.255.238]:35629 "EHLO palrel13.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbXEXQIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 12:08:01 -0400
-Date: Thu, 24 May 2007 11:07:56 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: linux-kernel@vger.kernel.org, tom.l.nguyen@intel.com
-Cc: iss_storagedev@hp.com, akpm@linux-foundation.org, jens.axboe@oracle.com
-Subject: msi_free_irqs #2
-Message-ID: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+	Thu, 24 May 2007 12:09:00 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:56415 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750723AbXEXQJA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 12:09:00 -0400
+Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: jens.axboe@oracle.com, pbadari@gmail.com, linux-kernel@vger.kernel.org,
+       bhalevy@panasas.com, akpm@linux-foundation.org, michaelc@cs.wisc.edu
+In-Reply-To: <20070525010134I.fujita.tomonori@lab.ntt.co.jp>
+References: <20070524120554.GU5722@kernel.dk>
+	 <20070524214446V.fujita.tomonori@lab.ntt.co.jp>
+	 <1180021184.3692.32.camel@mulgrave.il.steeleye.com>
+	 <20070525010134I.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 11:08:56 -0500
+Message-Id: <1180022937.3692.34.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So I guess I found the answer to my own question. msi_free_irqs was apparently added
-in 2.6.22-something. I don't find it in 2.6.21.2 or anywhere else. So somebody broke a
-couple of things.
-The most noticable is cciss hangs after turning on interrupts. The reason for that is
-the kernel now looks at my array of MSI-X vectors in reverse order. We have 4 ways of
-generating an interrupt on Smart Array hw. They are:
+On Fri, 2007-05-25 at 01:01 +0900, FUJITA Tomonori wrote:
+> From: James Bottomley <James.Bottomley@SteelEye.com>
+> Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
+> Date: Thu, 24 May 2007 10:39:44 -0500
+> 
+> > On Thu, 2007-05-24 at 21:44 +0900, FUJITA Tomonori wrote:
+> > > (cc's added)
+> > > 
+> > > From: Jens Axboe <jens.axboe@oracle.com>
+> > > Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
+> > > Date: Thu, 24 May 2007 14:05:54 +0200
+> > > 
+> > > > On Thu, May 24 2007, Jens Axboe wrote:
+> > > > > > http://git.kernel.org/?p=linux/kernel/git/tomo/linux-2.6-bidi.git;a=commitdiff;h=fb2747a9f2465ac4a1ea9e3533b92510fbcaae0c
+> > > > > 
+> > > > > Neat, will take a look! I should be able to just reuse that.
+> > > > 
+> > > > BTW, when do you plan on pushing the SCSI sg update? I'd love for it to
+> > > > be soon, so I can just rebase the sglist branch on that and get rid of
+> > > > the SCSI stuff in there.
+> > > 
+> > > Well, all I can say is that I'd love James to push the cleanups
+> > > patchset soon too.
+> > 
+> > I'll put the accessor one into scsi-misc.  I'll try to get the other 40
+> > reviewed via the scsi-pending tree that Mark Salyzyn suggested ... give
+> > me some time on that.
+> 
+> Thanks. Do you want me to send the patches to scsi-ml or you directly
+> get them via the git tree?
 
-#       define DOORBELL_INT     0
-#       define PERF_MODE_INT    1
-#       define SIMPLE_MODE_INT  2
-#       define MEMQ_MODE_INT    3
+Either works ... but for 40 patches it was easier for me to fetch into a
+git branch and cherry pick the two that can go into scsi-misc now.
 
-For INTx these four lines are OR'ed together and run to one interrupt pin. MSI-X
-breaks this hardware OR'ing so we must register either all 4 or at the least the
-correct interrupt. When I first submitted the MSI/X support I was registering all 4.
-Someone changed that to only register a single MSI-X vector. That worked fine until
-2.6.22-something. 
-Now it appears that the kernel is looking at the array in reverse order. IOW, I must
-register PERF_MODE_INT in order for cciss to work. That's messed up. Anybody want to
-`fess up to making these changes? :)
-I'll keep working this, but I'm going to undo someones change when I figure out where
-it's broke.
+I'm just correcting a compile warning on the 53c700 one, then I'll push.
 
-mikem
+James
+
+
