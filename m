@@ -1,153 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751103AbXEXOfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751389AbXEXOhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751103AbXEXOfn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 10:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbXEXOfh
+	id S1751389AbXEXOhK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 10:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXEXOg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 10:35:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:11668 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbXEXOfg (ORCPT
+	Thu, 24 May 2007 10:36:57 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:48459 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbXEXOg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 10:35:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=F2xvxO0/VfWupVesjBd+nQxEpuqHmprK2BPhopO12WiA+c5qqMub2azfNvYlJ93+RM4xtwC9ilc4JYT/h5sToBgDTxy/ulp1kDunvapXQcMgcJARV46KPyNBpQqJtT0YrmowgNGnuLWtbe4FMCdCYn6yAxydUwK/RazHvBfyt4s=
-Date: Thu, 24 May 2007 18:34:35 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]: UDF code style conversion to kernel style
-Message-ID: <20070524143435.GA8488@cvg>
-References: <20070523184436.GA14771@cvg> <20070524083714.GA27047@duck.suse.cz>
+	Thu, 24 May 2007 10:36:56 -0400
+Date: Thu, 24 May 2007 15:36:45 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Message-ID: <20070524143644.GA27364@srcf.ucam.org>
+References: <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <1180016213.16396.74.camel@queen.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070524083714.GA27047@duck.suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1180016213.16396.74.camel@queen.suse.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.22-rc1-mm1 Implementing fan/thermal control in userspace - Was: [cannot change thermal trip points]
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jan Kara - Thu, May 24, 2007 at 10:37:14AM +0200]
-| On Wed 23-05-07 22:44:36, Cyrill Gorcunov wrote:
-| > This patch converts UDF system coding style to kernel coding style.
-| > There is no error fixing - just code cleanup. I attempted to make
-| > the minimum changes as possible but the patch was growing and growing.
-| > So there is a lot of code to review and that could be painful and boring.
-| > I've it reviewed several times to assure that the patch does not break
-| > current UDF system... but I've only one pair of eyes.
-| > 
-| > Any comments, suggestions and swearing are welcome. But don't be
-| > expected for fast reply - I'm not mature kernel developer ;)
-| > 
-| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-|   Thanks for doing this tedious work... One general comment: Kernel is
-| supposed to be viewable on a terminal 80 characters wide so you should
-| avoid making longer lines whenever possible (I agree that there are
-| cases where wrapped line looks worse that a long line but that's
-| just my personal opinion ;).
-| 
+On Thu, May 24, 2007 at 04:16:53PM +0200, Thomas Renninger wrote:
 
-Jan, I think the problem is about long UDF structures names.
-The only purpose for this patch is to set up braces and spaces
-properly. I'll make lines shorter as soon as _this_ patch become
-veryfied and included in main kernel. Moreover I also should
-get rid of macroses and other stuff. Lets do work by small steps ;)
-But you are absolutely right!
+> I doubt it is impossible, would you mind sharing your knowledge why you
+> think it is impossible or point to some related discussion, pls.
 
-| >  static void udf_merge_extents(struct inode *inode,
-| > -	 kernel_long_ad laarr[EXTENT_MERGE_SIZE], int *endnum)
-| > +			      kernel_long_ad laarr[EXTENT_MERGE_SIZE],
-| > +			      int *endnum)
-| >  {
-| >  	int i;
-| >  
-| > -	for (i=0; i<(*endnum-1); i++)
-| > +	for (i = 0; i < (*endnum - 1); i++)
-| >  	{
-|   ^^^^^^^ the brace should be on the previous line
+Because, as Len has pointed out, you end up with two different ideas 
+about what the trip points are - the kernel's and the hardware's. That 
+works fine until some event in the firmware either forcibly 
+resynchronises the two or makes assumptions about the spec-compliance of 
+the interpreter.
 
-Thanks for note. I've it just missed.
+> Yes, trip points are overridden by BIOS on HPs and what is the problem?
+> The workaround won't work for them, but it still does on others
+> (mainly on ThinkPads which have passive tp at about 89 C and critical on
+> 91 C).
 
-| 
-| > @@ -1283,86 +1201,74 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
-| >  		offset = sizeof(struct extendedFileEntry) + UDF_I_LENEATTR(inode);
-| >  	}
-| >  
-| > -	switch (fe->icbTag.fileType)
-| > -	{
-| > +	switch (fe->icbTag.fileType) {
-| >  		case ICBTAG_FILE_TYPE_DIRECTORY:
-| > -		{
-| > -			inode->i_op = &udf_dir_inode_operations;
-| > +			inode->i_op = (struct inode_operations *)&udf_dir_inode_operations;
-|   ^^^ Why have you added explicit retyping?
+You don't know whether the workaround will work or not until you've 
+performed a full audit of the platform firmware, which is going to 
+potentially change between BIOS versions. It's entirely legal for the 
+firmware to behave in this way, and even beneficial under various 
+circumstances.
 
-This became from my local git branch. Thanks. Will be removed.
+> I could imagine an implementation for this, that e.g. critical...active9
+> get module parameters. BIOS updates for trip points get ignored as soon
+> as one is set and you can only decrease a value. Nothing bad can happen
+> and it will make some people happy (yes it's hacky, violates the specs
+> and so on..., but some more people have a working machine). Will this
+> (or similar) get accepted?
 
-| 
-| >  			inode->i_fop = &udf_dir_operations;
-| >  			inode->i_mode |= S_IFDIR;
-| >  			inc_nlink(inode);
-| >  			break;
-| > -		}
-| >  		case ICBTAG_FILE_TYPE_REALTIME:
-| >  		case ICBTAG_FILE_TYPE_REGULAR:
-| >  		case ICBTAG_FILE_TYPE_UNDEF:
-| > -		{
-| >  			if (UDF_I_ALLOCTYPE(inode) == ICBTAG_FLAG_AD_IN_ICB)
-| >  				inode->i_data.a_ops = &udf_adinicb_aops;
-| >  			else
-| >  				inode->i_data.a_ops = &udf_aops;
-| > -			inode->i_op = &udf_file_inode_operations;
-| > +			inode->i_op = (struct inode_operations *)&udf_file_inode_operations;
-|   ^^^ And here again?
-| 
-| 
-Arh!
+The interface would need to be more complicated than that if you wanted 
+to be able to implement hysteresis, and there's the potential for 
+hardware damage if paramaters are set inappropriately. Even then, 
+there's no easy way of programatically determining whether it would work 
+on any given hardware.
 
-| > -static mode_t
-| > -udf_convert_permissions(struct fileEntry *fe)
-| > +static int udf_alloc_i_data(struct inode *inode, size_t size)
-| > +{
-| > +	UDF_I_DATA(inode) = kmalloc(size, GFP_KERNEL);
-| > +
-| > +	if (!UDF_I_DATA(inode)) {
-| > +		printk(KERN_ERR "udf:udf_alloc_i_data (ino %ld) no free memory\n",
-| > +		       inode->i_ino);
-| > +		return -ENOMEM;
-| > +	}
-| > +
-| > +	return 0;
-| > +}
-| > +
-|   It seems you've introduced a new function but never used it...
+> It's even more impossible to get ACPI working correctly for all machines
+> and all subsystems, these little workarounds can help some people to at
+> least use their machine or get some parts working better.
 
-Jan I've messed up with this patch and my prev patches that already
-in -mm tree. Actually udf_alloc_i_data was introduced by my prev patch.
-I'll fix this mess.
+It's fairly clearly not impossible, given that there exists at least one 
+OS that these machines work with.
 
-| 
-| 
-| > @@ -1573,35 +1465,30 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
-| >  	udf_find_anchor(sb);
-| >  
-| >  	/* Fill in the rest of the superblock */
-| > -	sb->s_op = &udf_sb_ops;
-| > +	sb->s_op = (struct super_operations *)&udf_sb_ops;
-|   Again this explicit typing shouldn't be needed...
-Damn, sorry.
-
-| 
-| 										Honza
-| -- 
-| Jan Kara <jack@suse.cz>
-| SuSE CR Labs
-| 
-
-Andew please drop this patch. I'll make new one (over -mm tree ;)
-
-		Cyrill
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
