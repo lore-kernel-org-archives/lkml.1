@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbXEXXBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbXEXXCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756311AbXEXXBG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 19:01:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbXEXXA4
+	id S1757118AbXEXXCX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 19:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXEXXCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 19:00:56 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:48514 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbXEXXAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 19:00:55 -0400
-Subject: Re: [RFC] LZO de/compression support - take 3
-From: Richard Purdie <richard@openedhand.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael-Luke Jones <mlj28@cam.ac.uk>,
-       Nitin Gupta <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm-cc@laptop.org
-In-Reply-To: <20070524155428.55460e9c.akpm@linux-foundation.org>
-References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-	 <0F6CEFD7-86F2-4903-B4F7-F723DF88BE9A@cam.ac.uk>
-	 <4cefeab80705230439n6bbb1259le3c3b9704ce49b75@mail.gmail.com>
-	 <624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
-	 <4cefeab80705230703vdb3c414s250a61c4c2d70c51@mail.gmail.com>
-	 <1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
-	 <4cefeab80705230721i492b5f1ehfa2d775344b1c04e@mail.gmail.com>
-	 <726113DF-D952-401F-96EA-7A10B035604B@cam.ac.uk>
-	 <1180046482.12821.42.camel@localhost.localdomain>
-	 <20070524155428.55460e9c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 25 May 2007 00:00:43 +0100
-Message-Id: <1180047643.12821.53.camel@localhost.localdomain>
+	Thu, 24 May 2007 19:02:16 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34686 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751988AbXEXXCP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 19:02:15 -0400
+Date: Thu, 24 May 2007 16:02:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] smpboot: cachesize comparison fix in
+ smp_tune_scheduling()
+Message-Id: <20070524160207.51a478cd.akpm@linux-foundation.org>
+In-Reply-To: <20070524103322.GA1920@ff.dom.local>
+References: <20070524103322.GA1920@ff.dom.local>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-24 at 15:54 -0700, Andrew Morton wrote:
-> On Thu, 24 May 2007 23:41:22 +0100
-> Richard Purdie <richard@openedhand.com> wrote:
+On Thu, 24 May 2007 12:33:23 +0200
+Jarek Poplawski <jarkao2@o2.pl> wrote:
+
 > 
-> > I'll not send a "rename to unsafe" patch for the LZO core until Andrew
-> > decides whether to drop the unsafe version entirely or not as per your
-> > patch. If he doesn't due to the potential use by the compressed cache
-> > people, I will send that patch.
+> smpboot: cachesize comparison fix in smp_tune_scheduling()
 > 
-> I'd have thought that a 3% performance difference isn't worth worrying
-> about.  Especially when reclaiming that 3% costs an additional 500 lines
-> of pretty yukky code.
+> boot_cpu_data.x86_cache_size is signed int and can be < 0 too.
+> 
+> PS: this function is removed from current -mm.
+> 
+> 
+> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+> 
+> ---
+> 
+> diff -Nurp 2.6.22-rc2-git5-/arch/i386/kernel/smpboot.c 2.6.22-rc2-git5/arch/i386/kernel/smpboot.c
+> --- 2.6.22-rc2-git5-/arch/i386/kernel/smpboot.c	2007-05-24 09:37:11.000000000 +0200
+> +++ 2.6.22-rc2-git5/arch/i386/kernel/smpboot.c	2007-05-24 11:48:03.000000000 +0200
+> @@ -948,7 +948,7 @@ static void smp_tune_scheduling(void)
+>  	if (cpu_khz) {
+>  		cachesize = boot_cpu_data.x86_cache_size;
+>  
+> -		if (cachesize > 0)
+> +		if ((long)cachesize > 0)
+>  			max_cache_size = cachesize * 1024;
+>  	}
+>  }
 
-7% since the 3% applied to code that was over twice as slow in the first
-place!
+Under what conditions can boot_cpu_data.x86_cache_size be negative?
 
-Richard
+Have negative values of boot_cpu_data.x86_cache_size been observed in
+practice?
 
+Thanks.
