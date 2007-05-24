@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbXEXQYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbXEXQ2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751737AbXEXQYS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 12:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXEXQYK
+	id S1751302AbXEXQ2g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 12:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbXEXQ23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 12:24:10 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:50637 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750714AbXEXQYI (ORCPT
+	Thu, 24 May 2007 12:28:29 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:63807 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750710AbXEXQ23 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 12:24:08 -0400
-Date: Thu, 24 May 2007 09:23:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: righiandr@users.sourceforge.net, Bernd Eckenfels <ecki@lina.inka.de>,
-       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 1/2] limit print_fatal_signal() rate (was: [RFC] log
- out-of-virtual-memory events)
-Message-Id: <20070524092336.b0b8cd8d.akpm@linux-foundation.org>
-In-Reply-To: <20070524095503.GA14783@elte.hu>
-References: <E1Hp5PV-0001Bn-00@calista.eckenfels.net>
-	<464ED258.2010903@users.sourceforge.net>
-	<20070520203123.5cde3224.akpm@linux-foundation.org>
-	<20070524075835.GC21138@elte.hu>
-	<20070524011551.3d72a6e8.akpm@linux-foundation.org>
-	<20070524095503.GA14783@elte.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 12:28:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=t0UsB2V4G0FWDIb3oMHHQG7AEvgSuhnEGwXqNhEAsAPlx9JYv3kVtP3do2VIvise31AtBNZFLt/JndftH5Sjle1uJHRtUN31xP+UayhgQ44nyMXpFjzH1kRiksCLDvbadlG7z4da7RHm18pgNSD9FZLEBaVLKzf9XGAtc+377FE=
+Message-ID: <f24d23310705240928g13dbd516q1affff05da7a44ec@mail.gmail.com>
+Date: Thu, 24 May 2007 21:58:27 +0530
+From: "debian developer" <debiandev@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - 1/1] Documentation/HOWTO
+In-Reply-To: <alpine.LFD.0.98.0705240847160.26602@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <f24d23310705180629x50c56ayfdcde357f0373fc4@mail.gmail.com>
+	 <Pine.LNX.4.64.0705181200440.18186@localhost.localdomain>
+	 <10867.1179509181@turing-police.cc.vt.edu>
+	 <2cd57c900705240245s5448257ape203deade7812121@mail.gmail.com>
+	 <20070524135633.53260eb3.diegocg@gmail.com>
+	 <alpine.LFD.0.98.0705240847160.26602@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007 11:55:03 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+sept. 2006! its been there since quite a long time.
+now what happens to my patch submitted to Greg???
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 24 May 2007 09:58:35 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > Well OK.  But vdso-print-fatal-signals.patch is designated 
-> > > > not-for-mainline anyway.
-> > > 
-> > > btw., why?
-> > 
-> > err, because that's what I decided a year ago.  I wonder why ;)
-> > 
-> > Perhaps because of the DoS thing, but it has a /proc knob and defaults 
-> > to off, so it should be OK.
-> 
-> yeah. There's also a boot option. To address the DoS angle, should i 
-> make it optionally printk_ratelimit() perhaps? (although often the 
-> messages come in streams and skipping a message can be annoying)
-
-I don't think so, really.  It takes a deliberate act to turn the thing
-on, after all.
-
-I we _were_ concerned about the logspam then it might be better to make the
-feature turn itself off after 100 messages, rather than ratelimiting it.
+On 5/24/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>
+> On Thu, 24 May 2007, Diego Calleja wrote:
+> > El Thu, 24 May 2007 17:45:04 +0800, "Qi Yong" <qiyong@fc-cn.com> escribió:
+> >
+> > D'oh, it seems the patch was picked from the mailing list and merged twice,
+> > and I didn't notice it.
+> >
+> > > Torvalds, Care to revert one commit?
+> >
+> > Agreed, one of them can be removed.
+>
+> Yes, done.
+>
+> Andrew - can you check that it's also removed from your queues, since it
+> might be there still just because it keeps applying cleanly.
+>
+> You might have it described as "HOWTO: mention bughunting" rather than
+> "HOWTO: bug report addition".
+>
+>                 Linus
