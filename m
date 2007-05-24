@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbXEXB3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbXEXBgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761329AbXEXB3O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 21:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbXEXB25
+	id S1761371AbXEXBgG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 21:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbXEXBfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 21:28:57 -0400
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:37624 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757545AbXEXB24 (ORCPT
+	Wed, 23 May 2007 21:35:55 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48261 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756737AbXEXBfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 21:28:56 -0400
-Date: Wed, 23 May 2007 21:28:52 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Andreas Gruenbacher <agruen@suse.de>
-cc: Al Viro <viro@ftp.linux.org.uk>, jjohansen@suse.de,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
-       Tony Jones <tonyj@suse.de>
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM
- hook
-In-Reply-To: <200705232106.28260.agruen@suse.de>
-Message-ID: <Line.LNX.4.64.0705232109030.3178@d.namei>
-References: <20070412090809.917795000@suse.de> <20070412090836.207973000@suse.de>
- <20070412101236.GD4095@ftp.linux.org.uk> <200705232106.28260.agruen@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 23 May 2007 21:35:55 -0400
+Date: Wed, 23 May 2007 18:35:52 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Paul Menage <menage@google.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [PATCH] Reduce cpuset.c write_lock_irq() to read_lock()
+Message-Id: <20070523183552.e0ae95db.pj@sgi.com>
+In-Reply-To: <20070524012316.98BFB3D65BA@localhost>
+References: <20070524012316.98BFB3D65BA@localhost>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007, Andreas Gruenbacher wrote:
+Paul M wrote:
+> cpuset.c:update_nodemask() uses a write_lock_irq() on tasklist_lock to
+> block concurrent forks; a read_lock() suffices and is less intrusive.
 
-> This is backwards from what AppArmor does. The policy defines which paths may 
-> be accessed; all paths not explicitly listed are denied. If files are mounted 
-> at multiple locations, then the policy may allow access to some locations but 
-> not to others. That's not a hole.
+Seems reasonable to me - thanks.
 
-I don't know what else you'd call it.
+> -		write_lock_irq(&tasklist_lock);		/* block fork */
+> +		read_lock(&tasklist_lock);		/* block fork */
+>  		if (atomic_read(&cs->count) <= ntasks)
+>  			break;				/* got enough */
+> -		write_unlock_irq(&tasklist_lock);	/* try again */
+> +		read_unlock(&tasklist_lock);	/* try again */
 
-Would you mind providing some concrete examples of how such a model would 
-be useful?
+Too bad you didn't keep the nicely aligned comments aligned ;).
 
-
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
