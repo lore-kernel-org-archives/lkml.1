@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbXEXSYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752026AbXEXS1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751932AbXEXSYQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 14:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXEXSYE
+	id S1752026AbXEXS1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 14:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXEXS1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 14:24:04 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:2175 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750741AbXEXSYD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 14:24:03 -0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-To: tglx@linutronix.de, mingo@elte.hu
-Subject: [PATCH 2.6.21-rt7] PowerPC: fix clockevents for classic CPUs
-Date: Thu, 24 May 2007 22:25:30 +0400
-User-Agent: KMail/1.5
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <200705172142.26739.sshtylyov@ru.mvista.com>
-In-Reply-To: <200705172142.26739.sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 24 May 2007 14:27:05 -0400
+Received: from nicole.bmts.com ([216.183.128.225]:35639 "EHLO nicole.bmts.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbXEXS1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 14:27:04 -0400
+Date: Thu, 24 May 2007 14:26:44 -0400
+From: Mike Houston <mikeserv@bmts.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc2
+Message-Id: <20070524142644.837a26ed.mikeserv@bmts.com>
+In-Reply-To: <alpine.LFD.0.98.0705231044160.3890@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
+	<20070520170506.814a38d9.mikeserv@bmts.com>
+	<20070521084549.61a1aa71@freepuppy>
+	<20070521131055.0017404f.mikeserv@bmts.com>
+	<20070521103755.51b954e1@freepuppy>
+	<20070521225806.bb18d589.mikeserv@bmts.com>
+	<20070521213146.3e220a44@freepuppy>
+	<20070522181444.ad932718.mikeserv@bmts.com>
+	<alpine.LFD.0.98.0705221653010.3890@woody.linux-foundation.org>
+	<20070523133909.a3ec171a.mikeserv@bmts.com>
+	<alpine.LFD.0.98.0705231044160.3890@woody.linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705242225.30225.sshtylyov@ru.mvista.com>
+X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
+X-brucetelecom.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uncoditionally set a maximum positive value to the decrementer before calling
-an event handler for all "classic" PPC CPUs (although this is only necessary
-to clear interrupt on POWER4+, I've been asked to do it this way) -- otherwise
-it wouldn't have been done for an offline CPU in periodic mode since the event
-reprogramming has been delegated to the timer subsystem.
-Also, as the classic decrementer doesn't have periodic mode, make set_mode()
-method for this case completely empty.
-While at it, add a switch case for CLOCK_EVT_MODE_RESUME to hush the warning.
+On Wed, 23 May 2007 10:46:05 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> 
+> 
+> On Wed, 23 May 2007, Mike Houston wrote:
+> > 
+> > I still happen to have a Windows Vista install kicking around, so
+> > to make sure we're not flogging a dead horse I booted that and
+> > let it set up the yukon2 chip and I tested it. (more to make sure
+> > that eeprom update didn't break it). I used it for a bit and
+> > successfully transferred some large files from box running Samba.
+> > MS must be using some specific workaround or something.
+> 
+> I think there is some lspci-like thing for windows too. 
+> 
+> Can you do the equivalent of "lspci -vvxxx" on that box under both
+> Linux and Windows? _If_ it's some PCI config space thing (which is
+> not at all guaranteed - it could be about setup in random MMIO
+> ranges) it might give us some clues.
+>
 
----
-Testing on "classic" CPUs is still needed (used to work atop of 2.6.18-rt7).
+This is the sky2 issue with Gigabyte 88E8056 onboard LAN.
 
- arch/powerpc/kernel/time.c |   15 +++++++--------
- 1 files changed, 7 insertions(+), 8 deletions(-)
+I've had no luck getting pciutils compiled for win32, but I found a
+utility that gives similar output called Craig Hart's PCI bus sniffer
+(pci32.exe).
 
-Index: linux-2.6/arch/powerpc/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/time.c
-+++ linux-2.6/arch/powerpc/kernel/time.c
-@@ -166,11 +166,14 @@ static void decrementer_set_mode(enum	cl
- 	case CLOCK_EVT_MODE_SHUTDOWN:
- 		tcr &= ~TCR_DIE;
- 		break;
-+	case CLOCK_EVT_MODE_RESUME:
-+		break;
- 	}
- 	mtspr(SPRN_TCR, tcr);
--#endif
-+
- 	if (mode == CLOCK_EVT_MODE_PERIODIC)
- 		decrementer_set_next_event(tb_ticks_per_jiffy, dev);
-+#endif
- }
- 
- static struct clock_event_device decrementer_clockevent = {
-@@ -549,16 +552,12 @@ void timer_interrupt(struct pt_regs * re
- 	irq_enter();
- 
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
--#ifdef CONFIG_PPC_MULTIPLATFORM
-+#if !defined(CONFIG_40x) && !defined(CONFIG_BOOKE)
- 	/*
- 	 * We must write a positive value to the decrementer to clear
--	 * the interrupt on the IBM 970 CPU series.  In periodic mode,
--	 * this happens when the decrementer gets reloaded later, but
--	 * in one-shot mode, we have to do it here since an event handler
--	 * may skip loading the new value...
-+	 * the interrupt on POWER4+ compatible CPUs.
- 	 */
--	if (per_cpu(decrementers, cpu).mode != CLOCK_EVT_MODE_PERIODIC)
--		set_dec(DECREMENTER_MAX);
-+	set_dec(DECREMENTER_MAX);
- #endif
- 	/*
- 	 * We can't disable the decrementer, so in the period between
+Here is the output of pci32 with hex dump from within Windows Vista:
+http://www.mikeserv.org/files/pci32_info.txt
 
+Here is the output of lspci -vvxxx from within Linux:
+http://www.mikeserv.org/files/lspci.txt
+
+I hope this is helpful,
+
+Mike Houston
