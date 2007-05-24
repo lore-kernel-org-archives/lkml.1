@@ -1,105 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbXEXKpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbXEXKrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758550AbXEXKpW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 06:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbXEXKpJ
+	id S1758066AbXEXKrf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 06:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbXEXKr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 06:45:09 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55193 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755802AbXEXKpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 06:45:06 -0400
-X-Authenticated: #14603182
-X-Provags-ID: V01U2FsdGVkX18rn94ZT0ArL/YgRfYiEo7EsK/xBbWgYgb9d1Qn8+
-	AnDWBC5XS8dOwQ
-Message-ID: <46556CB2.8010709@gmx.de>
-Date: Thu, 24 May 2007 12:45:06 +0200
-From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org
-Subject: Re: How to access correctly serial port inside module?
-References: <46485D84.1010902@gmx.de> <46489EF1.2020509@gmx.de> <Pine.LNX.4.61.0705142158340.9570@yvahk01.tjqt.qr> <4648E9F7.5090908@imap.cc> <Pine.LNX.4.61.0705151020310.9570@yvahk01.tjqt.qr> <46536C0F.50101@imap.cc> <4655676A.1000102@gmx.de> <Pine.LNX.4.61.0705241224510.31549@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0705241224510.31549@yvahk01.tjqt.qr>
-Content-Type: multipart/mixed;
- boundary="------------070400000903070101000408"
-X-PGP-KeyID: 9D6D68DF
-X-Request-PGP: 
-X-OpenPGP-Key-ID: 000A26609D6D68DF
-X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
-X-OpenPGP-Key-URL: 
-X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
-X-Y-GMX-Trusted: 0
+	Thu, 24 May 2007 06:47:29 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4930 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754443AbXEXKr2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 06:47:28 -0400
+Date: Thu, 24 May 2007 20:47:13 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: rmmod e1000 hangs (Was Re: 2.6.22-rc2-mm1)
+Message-ID: <20070524104713.GA9174@gondor.apana.org.au>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <46556AA6.7040503@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46556AA6.7040503@goop.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 24, 2007 at 11:36:22AM +0100, Jeremy Fitzhardinge wrote:
+> 
+> I got a hang while rmmodding e1000.  sysrq-t shows:
+> 
+> rmmod         D 003FFAFC  6616 15923  15911 (NOTLB)
+>        e9341e44 00000092 82318c15 003ffafc e9341e2c 00000000 e9341e14 823187a1 
+>        003ffafc 00000000 c0123862 d3dbab80 d3dbad1c c2c08a40 77a67d01 000001ca 
+>        00000292 e9341e24 c03799cd e9341e54 c0540840 e9341e44 00223389 000000ff 
+> Call Trace:
+>  [<c03777b1>] schedule_timeout+0x70/0x8e
+>  [<c03777e4>] schedule_timeout_uninterruptible+0x15/0x17
+>  [<c0133d04>] msleep+0x10/0x16
+>  [<c030d5e0>] dev_close+0x39/0x6b
 
---------------070400000903070101000408
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Looks like we're spinning on __LINK_STATE_RX_SCHED.  This means that
+someone called netif_poll_disable() without re-enabling it again.
+Perhaps e1000_io_error_detected? Auke?
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Jan Engelhardt schrieb:
-> On May 24 2007 12:22, Lars K.W. Gohlke wrote:
->> ok, I have read everything and also have read the chapters about
->> tty_drivers. However I'm not really understand, how to ... .
->>
->> I will summarize the concrete scenario, which will lead to the
->> understanding and further solution of deadling with serial driver.
->>
->> [scenario]
->>
->> 1. in userspace I'm doing: > date > /dev/ttyS0
->> 2. in kernelspace I want to print out this date.
->>
->> [/scenario]
->>
->> I'm really new to kernel coding, that's why I maybe understand some
->> functions not the proper way.
->>
->> I'm a bit confused.
->
-> So am I. Usually, you connect two different machines with a serial cable.
-> (Leaving out the special case of connecting ttyS0-ttyS1 on the same machine.)
->
-> This poses the first question: whose kernelspace? the sender or
-> the receiver side? And by "this date" do you perhaps mean
-> "whatever was sent", or specifically a date? And print to _where_?
->
-> Up to now, it looks like you want to do "cat </dev/ttyS0" in-kernel.
->
->
-> 	Jan
-
-date is an example
-
-and you got it, I want to do "cat </dev/ttyS0" in-kernel.
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
-
-iD8DBQFGVWy0AAomYJ1taN8RAu7/AJ9+1irJURFy5KFy/wzHqSXXD5sRgACfSi49
-ec5AnOQoTz2nCt//siaiTNs=
-=uj4G
------END PGP SIGNATURE-----
-
---------------070400000903070101000408
-Content-Type: text/x-vcard; charset=utf-8;
- name="lkwg82.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="lkwg82.vcf"
-
-begin:vcard
-fn:Lars K.W. Gohlke
-n:Gohlke;Lars K.W.
-email;internet:lkwg82@gmx.de
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
-
-
---------------070400000903070101000408--
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
