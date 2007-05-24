@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbXEXW17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbXEXW2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbXEXW17 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbXEXW1r
+	id S1757907AbXEXW2Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 18:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbXEXW2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:27:47 -0400
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:4249 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbXEXW1q (ORCPT
+	Thu, 24 May 2007 18:28:09 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:44656 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753583AbXEXW2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:27:46 -0400
-From: "Miquel van Smoorenburg" <miquels@cistron.nl>
-To: facorread@gmail.com
-Subject: Re: 2.6.22-rc2 and libata/shutdown
-X-Newsgroups: lists.linux.kernel
-In-Reply-To: <xs4all.4655FDEA.30209@gmail.com>
-References: <xs4all.20070524102122.GA8652@localhost.localdomain>
-Organization: 
-Cc: linux-kernel@vger.kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <E1HrLmU-0003XG-OM@n2o.xs4all.nl>
-Date: Fri, 25 May 2007 00:27:38 +0200
+	Thu, 24 May 2007 18:28:07 -0400
+Message-ID: <46561145.6000304@zytor.com>
+Date: Thu, 24 May 2007 15:27:17 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
+References: <20070523224637.GB15887@linux-os.sc.intel.com> <20070524150223.41063046.akpm@linux-foundation.org>
+In-Reply-To: <20070524150223.41063046.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <xs4all.4655FDEA.30209@gmail.com> you write:
->Hello Damien, people...
->
->Damien Wyart wrote:
->> Hello,
->> 
->> After trying 2.6.22-rc2, I noticed the warning message from libata about
->> upgrading shutdown(8). First, I have two SATA disks, and get the warning for
->> only one of them. Second, I double-checked the source of shutdown for my
->> distro (Debian unstable), and do not see anything related to issueing
->> STANDBYNOW.
->
->The warning is pretty important, and you can check it at
->
->http://linux-ata.org/shutdown.html
->
->I have been checking the sysvinit sources and I cannot see the portions
->on scanning SCSI or SATA
->disks. I only see the IDE scanning and standby-related code at
->src/hddown.c. Does anybody know
->how in the world are the SATA disks put to sleep in userspace?
+Andrew Morton wrote:
+> 
+> @@ -23,13 +23,14 @@ static int show_cpuinfo(struct seq_file 
+>                 "fpu", "vme", "de", "pse", "tsc", "msr", "pae", "mce",
+>                 "cx8", "apic", NULL, "sep", "mtrr", "pge", "mca", "cmov",
+>                 "pat", "pse36", "pn", "clflush", NULL, "dts", "acpi", "mmx",
+> -               "fxsr", "sse", "sse2", "ss", "ht", "tm", "ia64", "pbe",
+> +               "fxsr", "sse", "sse2", "ss", "ht", "tm", "ia64", NULL,
+> 
+> <wonders where pbe went to>
+> 
 
-Standard sysvinit doesn't do this, but many distributions have
-patched it so that it does.
+I just went through all the codepaths, and we filter this bit in all the
+appropriate places, so it's safe to display.  I've added it to both i386
+and x86-64 in the git.newsetup tree (the two were inconsistent.)
 
-Debian has patched it as well; if you unpack the debian
-sources you won't see it right away though. The extra patches
-are applied by the build process, patches are under debian/
-
-Mike.
+	-hpa
