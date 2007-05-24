@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751850AbXEXPM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751361AbXEXPSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751850AbXEXPM7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 11:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbXEXPMw
+	id S1751361AbXEXPSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 11:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbXEXPSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 11:12:52 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:27982 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbXEXPMv (ORCPT
+	Thu, 24 May 2007 11:18:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42279 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbXEXPSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 11:12:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fLoCPCkz2/rmVPTasB6skOk8nkKloQeHTOi9yLUpsOsKLw9haTZu5iIFzUPLROvPL4HxUSbmlECD9Ihd7823Yl9hTjiWDZRrLbkxQp5PbRP1gfmf/BRWo/EYkjYlZQcfCx/HOpqGOEtCgFkfwMpzB+SeeN56Orf/hYjT1mnDnhQ=
-Message-ID: <8bd0f97a0705240812s27925cads9b2f50dbeb67b9ff@mail.gmail.com>
-Date: Thu, 24 May 2007 11:12:46 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Bryan Wu" <Bryan.Wu@analog.com>
-Subject: Re: how to allow board writers to customize driver behavior (watchdog here)
-In-Reply-To: <20070524052312.GA2447@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 24 May 2007 11:18:13 -0400
+Subject: Re: [PATCH] $ARCH: Enable arbitary speed tty ioctls and split
+	input/output speed
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, paulus@samba.org
+In-Reply-To: <20070524160559.54c2c639@the-village.bc.nu>
+References: <20070523172739.1d3a918c@the-village.bc.nu>
+	 <1180012135.8303.89.camel@shinybook.infradead.org>
+	 <20070524144109.7bd0f4d0@the-village.bc.nu>
+	 <1180014338.8303.95.camel@shinybook.infradead.org>
+	 <20070524160559.54c2c639@the-village.bc.nu>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 11:18:21 -0400
+Message-Id: <1180019901.8303.104.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-17.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8bd0f97a0705232121j32fcff72hd04b04e37507450e@mail.gmail.com>
-	 <20070524052312.GA2447@linux-sh.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/24/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Thu, May 24, 2007 at 12:21:47AM -0400, Mike Frysinger wrote:
-> > is this completely bad mojo ?  is there some other mechanism that
-> > provides what i want and i just dont know about it ?  or do i just
-> > make people change the driver to fit their application, thus throwing
-> > out the idea of keeping all board-specific details in just the boards
-> > file ...
->
-> It sounds like your constraining your driver based on terminology.
-> Watchdogs on most embedded platforms support either a 'reset' mode or
-> otherwise act as periodic timers, trying to push both of these
-> functionalities in to a watchdog driver is rather pointless.
-> CONFIG_WATCHDOG implies 'reset' mode by definition.
+On Thu, 2007-05-24 at 16:05 +0100, Alan Cox wrote:
+> 
+> > Likewise, I assume the lack of IBSHIFT on PowerPC is because of AIX?
+> 
+> I assume nobody ever got around to it. CIBAUD is in the PowerPC System V
+> API supplement for example and is supported by other Power OS's.
 
-my constraint was trying to keep all of the code that deals with the
-watchdog in one file ... those were the blinders i had on from the get
-go so the idea of having different drivers that work with the watchdog
-hardware hadnt even occurred to me
+Hm... what we have in asm-powerpc/termbits.h doesn't seem to match
+what's in ppc-sysv-1995-09.ps.gz. Where _should_ I be looking?
 
-> If you wish to use your watchdog timer as a periodic timer, simply have a
-> clocksource/clockevents established for it, leave the watchdog driver as
-> a reset-only thing, and let the user decide which one they want either
-> via Kconfig or the kernel command line. (The watchdog driver can just
-> -ENODEV or -EBUSY if the clocksource is active).
+Paulus?
 
-hmm, i'll poke the clocksource/clockevents stuff as well as the
-notifier idea from Alan
+-- 
+dwmw2
 
-thanks
--mike
