@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763148AbXEXF3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763061AbXEXF3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763148AbXEXF3G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 01:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758517AbXEXF2y
+	id S1763061AbXEXF3Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 01:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763414AbXEXF3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 01:28:54 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:42384 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758447AbXEXF2x (ORCPT
+	Thu, 24 May 2007 01:29:10 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:40343 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763277AbXEXF3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 01:28:53 -0400
-Date: Wed, 23 May 2007 23:28:50 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] [scsi] Remove __GFP_DMA
-In-reply-to: <fa.txrEcCPLxIukzeVBv7UG39WubcI@ifi.uio.no>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Aubrey Li <aubreylee@gmail.com>, Christoph Lameter <clameter@sgi.com>,
-       Bernhard Walle <bwalle@suse.de>, linux-scsi@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Message-id: <46552292.3090207@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.6bUV4KR+za7HW4tT2WBlccqvoq0@ifi.uio.no>
- <fa.NYl60pD1cwd1ESdKNCPaOwSz1WA@ifi.uio.no>
- <fa.hW9tQQfgwmXj0gAKQoWXOxVzpvk@ifi.uio.no>
- <fa.xLFpJ54sTvGq6YIol2Ew31Rrq2s@ifi.uio.no>
- <fa.JZsPKKyEKOAfxp6reMY5ZwSNjQU@ifi.uio.no>
- <fa.txrEcCPLxIukzeVBv7UG39WubcI@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Thu, 24 May 2007 01:29:08 -0400
+Date: Thu, 24 May 2007 10:58:49 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bernhard Walle <bwalle@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix crash with irqpoll due to the IRQF_IRQPOLL flag
+Message-ID: <20070524052849.GA26967@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070426093620.GB2626@in.ibm.com> <20070426082405.67a0fdd2.akpm@linux-foundation.org> <20070430084833.GA16173@in.ibm.com> <20070502221932.GA488@suse.de> <20070508171841.GA29733@in.ibm.com> <20070514140513.GD29616@suse.de> <20070522083756.GB18498@suse.de> <alpine.LFD.0.98.0705230836370.3890@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705230836370.3890@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Wed, 23 May 2007 15:17:08 -0400
-> "Salyzyn, Mark" <mark_salyzyn@adaptec.com> wrote:
+On Wed, May 23, 2007 at 09:01:04AM -0700, Linus Torvalds wrote:
 > 
->> The 31 bit limit for some of these cards is a problem, we currently only
->> do __GFP_DMA for bounce buffer sg elements allocated for user supplied
->> references in ioctls.
->>
->> I figure we should be using pci_alloc_consistent calls for these
->> allocations to more accurately acquire memory within the 31 bit limit if
->> necessary, we could switch to these to remove the need for the __GFP_DMA
->> flag in the aacraid driver?
 > 
-> That didn't used to work right on the AMD boards when I tried it last as
-> we ended up with a buffer that was mapped by the IOMMU for some reason
-> and that was not below 2GB.
+> On Tue, 22 May 2007, Bernhard Walle wrote:
+> >
+> > o System crashes if booted with irqpoll command line option.
+> > 
+> > o Problem happens because Inside note_interrupt() we are accessing
+> >   desc->action->flag without taking the desc->lock. While accessing it
+> >   somebody goes ahead and unregisters the irq handler hence desc->action
+> >   is NULL. By the time note_interrupt() checks it, it crashes.
+> 
+> I absolutely _detest_ patches that make already complex and unreadable 
+> code even more so. Especially conditionals. Please don't do that.
+> 
+> If you need a variable for a conditional, make it be an implicit one from 
+> an inline function, and aim for making it readable.
+> 
+> So how about instead writing it out as a nice self-explanatory inline 
+> function? I can almost guarantee that this generates no worse code, and it 
+> also makes it easy to explain things like "we don't bother with the lock, 
+> because we don't care enough".
+> 
+> Untested, but I think the point of the patch is obvious. Anybody want to 
+> test it, send it back to me, and fix the bug while making the code more 
+> readable?
+> 
 
-The physical address you mean? If that is still happening then it needs 
-to get fixed. The allocation should not succeed if it can't provide 
-memory that's inside the DMA mask for the device..
+Hi Linus,
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+I tested it. It works fine. And yes, this patch is more readable.
 
+Thanks
+Vivek
