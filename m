@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbXEXU6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbXEXU6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbXEXU6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 16:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbXEXU6K
+	id S1753792AbXEXU6p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 16:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbXEXU6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 16:58:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41739 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751755AbXEXU6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 16:58:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-Date: Thu, 24 May 2007 23:03:17 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-References: <20070521191612.800400000@sous-sol.org> <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
+	Thu, 24 May 2007 16:58:36 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53779 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbXEXU6f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 16:58:35 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tom.l.nguyen@intel.com, iss_storagedev@hp.com, jens.axboe@oracle.com,
+       Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: msi_free_irqs #2
+References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+	<20070524102702.bca37396.akpm@linux-foundation.org>
+	<20070524200743.GB14083@beardog.cca.cpqcorp.net>
+Date: Thu, 24 May 2007 14:53:08 -0600
+In-Reply-To: <20070524200743.GB14083@beardog.cca.cpqcorp.net> (Mike Miller's
+	message of "Thu, 24 May 2007 15:07:43 -0500")
+Message-ID: <m1lkfedjuz.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705242303.19241.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 24 May 2007 22:27, Linus Torvalds wrote:
-> 
-> On Thu, 24 May 2007, Pavel Machek wrote:
-> > 
-> > If someone does request_firmware from resume function... that's
-> > bad. Resume function should be fixed. Pcmcia? ti12xx driver?
-> 
-> Probably pcmcia "ds" driver and CONFIG_PCMCIA_LOAD_CIS.
-> 
-> > Well. we'd like to present hardware in working state as soon as we
-> > resume (if eth0 was there before resume, it should be there after
-> > resume. not 3 seconds after resume); so if someone needs to load the
-> > firmware, they should just store it in the kernel memory, and load it
-> > during boot or during (very early) suspend.
-> 
-> Equally arguably, we should just have a "resume_late()" call that can be 
-> used to do this after everything is up and running.
-> 
-> And quite frankly, I don't actually see any reason why firmware loading 
-> shouldn't work in the resume path. I really do think that this is ANOTHER 
-> bug that has no other reason than the fact that that f*cking freezer 
-> killed the system for no really good reason.
 
-Well, if I understand request_firmware() correctly, it does something in sysfs
-and waits for the user land to react, but at this point the user land can't do
-anything.
 
-Greetings,
-Rafael
+Could you please try the patch below.  Unless I have misread something
+this should fix your problem....
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 000c9ae..2e1d4af 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -404,7 +404,7 @@ static int msix_capability_init(struct pci_dev *dev,
+ 		entry->dev = dev;
+ 		entry->mask_base = base;
+ 
+-		list_add(&entry->list, &dev->msi_list);
++		list_add_tail(&entry->list, &dev->msi_list);
+ 	}
+ 
+ 	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
+
+> Michael or Eric, would you please review this patch and see if it's OK? Adding
+> an else
+> between the the if (list_is....) and the writel resolved the Oops. I'm not sure
+> how this
+> is supposed to work but using entry->mask_base after iounmap'ing seems wrong.
+
+I think I would rather just swap those two lines of code.
+We are manually setting the mask bit to make certain the irq doesn't
+fire after we free it, and we clearly want to set the mask bit for
+all the irq entries.
+
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index d9cbd58..0e67723 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -560,10 +560,11 @@ static int msi_free_irqs(struct pci_dev* dev)
+>  		if (entry->msi_attrib.type == PCI_CAP_ID_MSIX) {
+>  			if (list_is_last(&entry->list, &dev->msi_list))
+>  				iounmap(entry->mask_base);
+> -
+> -			writel(1, entry->mask_base + entry->msi_attrib.entry_nr
+> -				  * PCI_MSIX_ENTRY_SIZE
+> -				  + PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+> +			else
+> +				writel(1, entry->mask_base
+> +					+ entry->msi_attrib.entry_nr
+> +					* PCI_MSIX_ENTRY_SIZE
+> +					+ PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+>  		}
+>  		list_del(&entry->list);
+>  		kfree(entry);
+> -----------------------------------------------------------------------------------------
+>
+> I hope this clears up a little of the fog.
+
+Yes it does thanks.
+
+Eric
