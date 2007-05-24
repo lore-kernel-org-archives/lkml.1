@@ -1,131 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759095AbXEXBEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbXEXBFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759095AbXEXBEN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 21:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbXEXBD7
+	id S1760394AbXEXBFW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 21:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756954AbXEXBFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 21:03:59 -0400
-Received: from critter.phunnypharm.org ([67.97.251.11]:2376 "EHLO critter"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755212AbXEXBD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 21:03:59 -0400
-To: linux-kernel@vger.kernel.org
-Message-Id: <b31c080.git.bcollins@ubuntu.com>
-In-Reply-To: <98cd38b5.git.bcollins@ubuntu.com>
-From: Ben Collins <bcollins@ubuntu.com>
-Date: Wed, 23 May 2007 17:59:10 -0400
-Subject: [PATCH 1/6] i386/x86_64: Allow disabling the putstr's from compressed boot wrapper
+	Wed, 23 May 2007 21:05:10 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:48292 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756825AbXEXBFH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 23 May 2007 21:05:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d6QdDW7oqJJugfa2tctRJV+YGiWCqrJkfwF/aUmhWDtCoOtNCSsbbBnlfkuSk/wCf39KkZK6DJU1A/gxYacxhjXJYoT4Uv51sVlwfihE2cpcq8QRdHSgrIuf4vJMYR4+YG63t+bjqSwQHu7Hd+bG3fbiuX9EX3mVsz9NSSRnAKE=
+Message-ID: <a8e1da0705231805j47fb7438k1a2f5926b20835f9@mail.gmail.com>
+Date: Thu, 24 May 2007 01:05:03 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: "Steven French" <sfrench@us.ibm.com>
+Subject: Re: 2.6.22-rc1-mm1 cifs_mount oops
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Kleikamp" <shaggy@us.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Shirish S Pargaonkar" <shirishp@us.ibm.com>
+In-Reply-To: <OF5C2BA51B.B63E317D-ON872572E4.00793F56-862572E4.007A3D2C@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070523091013.b1475211.akpm@linux-foundation.org>
+	 <OF5C2BA51B.B63E317D-ON872572E4.00793F56-862572E4.007A3D2C@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Ben Collins <bcollins@ubuntu.com>
----
- arch/i386/Kconfig.debug            |    6 ++++++
- arch/i386/boot/compressed/misc.c   |    8 +++++---
- arch/x86_64/Kconfig.debug          |    6 ++++++
- arch/x86_64/boot/compressed/misc.c |    8 +++++---
- 4 files changed, 22 insertions(+), 6 deletions(-)
+Hi,
 
-diff --git a/arch/i386/Kconfig.debug b/arch/i386/Kconfig.debug
-index b31c080..eb26441 100644
---- a/arch/i386/Kconfig.debug
-+++ b/arch/i386/Kconfig.debug
-@@ -19,6 +19,12 @@ config EARLY_PRINTK
- 	  with klogd/syslogd or the X server. You should normally N here,
- 	  unless you want to debug such a crash.
- 
-+config WRAPPER_PRINT
-+	bool "Boot wrapper print" if EMBEDDED
-+	default y
-+	help
-+	  Enable informational output from the bootwrapper (bzImage and zImage).
-+
- config DEBUG_STACKOVERFLOW
- 	bool "Check for stack overflows"
- 	depends on DEBUG_KERNEL
-diff --git a/arch/i386/boot/compressed/misc.c b/arch/i386/boot/compressed/misc.c
-index b28505c..cc630d5 100644
---- a/arch/i386/boot/compressed/misc.c
-+++ b/arch/i386/boot/compressed/misc.c
-@@ -184,8 +184,6 @@ static void free(void *where);
- static void *memset(void *s, int c, unsigned n);
- static void *memcpy(void *dest, const void *src, unsigned n);
- 
--static void putstr(const char *);
--
- static unsigned long free_mem_ptr;
- static unsigned long free_mem_end_ptr;
- 
-@@ -232,7 +230,8 @@ static void gzip_release(void **ptr)
- {
- 	free_mem_ptr = (unsigned long) *ptr;
- }
-- 
-+
-+#ifdef CONFIG_WRAPPER_PRINT 
- static void scroll(void)
- {
- 	int i;
-@@ -278,6 +277,9 @@ static void putstr(const char *s)
- 	outb_p(15, vidport);
- 	outb_p(0xff & (pos >> 1), vidport+1);
- }
-+#else
-+#define putstr(__x) do{}while(0)
-+#endif /* CONFIG_WRAPPER_PRINT */
- 
- static void* memset(void* s, int c, unsigned n)
- {
-diff --git a/arch/x86_64/Kconfig.debug b/arch/x86_64/Kconfig.debug
-index 775d211..a1b87b8 100644
---- a/arch/x86_64/Kconfig.debug
-+++ b/arch/x86_64/Kconfig.debug
-@@ -6,6 +6,12 @@ config TRACE_IRQFLAGS_SUPPORT
- 
- source "lib/Kconfig.debug"
- 
-+config WRAPPER_PRINT
-+	bool "Boot wrapper print" if EMBEDDED
-+	default y
-+	help
-+	  Enable informational output from the bootwrapper (bzImage and zImage).
-+
- config DEBUG_RODATA
-        bool "Write protect kernel read-only data structures"
-        depends on DEBUG_KERNEL
-diff --git a/arch/x86_64/boot/compressed/misc.c b/arch/x86_64/boot/compressed/misc.c
-index f932b0e..43bb44c 100644
---- a/arch/x86_64/boot/compressed/misc.c
-+++ b/arch/x86_64/boot/compressed/misc.c
-@@ -184,8 +184,6 @@ static void free(void *where);
- static void *memset(void *s, int c, unsigned n);
- static void *memcpy(void *dest, const void *src, unsigned n);
- 
--static void putstr(const char *);
--
- static long free_mem_ptr;
- static long free_mem_end_ptr;
- 
-@@ -228,7 +226,8 @@ static void gzip_release(void **ptr)
- {
- 	free_mem_ptr = (long) *ptr;
- }
-- 
-+
-+#ifdef CONFIG_WRAPPER_PRINT 
- static void scroll(void)
- {
- 	int i;
-@@ -274,6 +273,9 @@ static void putstr(const char *s)
- 	outb_p(15, vidport);
- 	outb_p(0xff & (pos >> 1), vidport+1);
- }
-+#else
-+#define putstr(__x) do{}while(0)
-+#endif /* CONFIG_WRAPPER_PRINT */
- 
- static void* memset(void* s, int c, unsigned n)
- {
--- 
-1.5.1.4
+I have one problem about this:  after the srvTcp->tsk is set to NULL
+(maybe the thread is  still there, isn't it?), is the kthread still
+needed to be stopped by calling kthread_stop()? If it is true, then
+the task_struct should be saved before send_sig like my patch:
 
+                        if (srvTcp->tsk) {
++                               struct task_struct * tsk = srvTcp->tsk;
+                               send_sig(SIGKILL,srvTcp->tsk,1);
+-                               kthread_stop(srvTcp->tsk);
++                               kthread_stop(tsk);
+
+Regards
+dave
