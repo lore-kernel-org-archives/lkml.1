@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbXEXVJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbXEXVKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbXEXVJr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbXEXVJk
+	id S1754156AbXEXVKT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXEXVKC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:09:40 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58178 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbXEXVJj (ORCPT
+	Thu, 24 May 2007 17:10:02 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:40873 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751117AbXEXVKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:09:39 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tom.l.nguyen@intel.com, iss_storagedev@hp.com, jens.axboe@oracle.com,
-       Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] msi: Fix the ordering of msix irqs.
-References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
-	<20070524102702.bca37396.akpm@linux-foundation.org>
-	<m1r6p6dn3x.fsf@ebiederm.dsl.xmission.com>
-	<20070524205900.GC14083@beardog.cca.cpqcorp.net>
-Date: Thu, 24 May 2007 15:08:21 -0600
-In-Reply-To: <20070524205900.GC14083@beardog.cca.cpqcorp.net> (Mike Miller's
-	message of "Thu, 24 May 2007 15:59:00 -0500")
-Message-ID: <m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 24 May 2007 17:10:00 -0400
+Date: Thu, 24 May 2007 14:09:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ben Collins <ben.collins@ubuntu.com>
+Cc: linux-kernel@vger.kernel.org, Zachary Amsden <zach@vmware.com>
+Subject: Re: [PATCH 4/6] RTC: Ratelimit "lost interrupts" message
+Message-Id: <20070524140956.12ff7c99.akpm@linux-foundation.org>
+In-Reply-To: <1180040212.12570.279.camel@cunning>
+References: <98cd38b5.git.bcollins@ubuntu.com>
+	<e5ea703bf068a19cc9a4cc76a9b6b8990380ee75.1179964369.git.bcollins@ubuntu.com>
+	<20070524134822.ed020127.akpm@linux-foundation.org>
+	<1180040212.12570.279.camel@cunning>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yours looks more complete then my test patch so:
+On Thu, 24 May 2007 16:56:52 -0400
+Ben Collins <ben.collins@ubuntu.com> wrote:
 
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> writes:
+> On Thu, 2007-05-24 at 13:48 -0700, Andrew Morton wrote:
+> > On Wed, 23 May 2007 18:23:06 -0400
+> > Ben Collins <bcollins@ubuntu.com> wrote:
+> > 
+> > > Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+> > > ---
+> > >  drivers/char/rtc.c |    3 ++-
+> > >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+> > > index 20380a2..22cf7aa 100644
+> > > --- a/drivers/char/rtc.c
+> > > +++ b/drivers/char/rtc.c
+> > > @@ -1159,7 +1159,8 @@ static void rtc_dropped_irq(unsigned long data)
+> > >  
+> > >  	spin_unlock_irq(&rtc_lock);
+> > >  
+> > > -	printk(KERN_WARNING "rtc: lost some interrupts at %ldHz.\n", freq);
+> > > +	if (printk_ratelimit())
+> > > +		printk(KERN_WARNING "rtc: lost some interrupts at %ldHz.\n", freq);
+> > >  
+> > 
+> > Presumably someone is getting a lot of these messages.
+> > 
+> > Do we know why?  Is there something which needs fixing here?
+> 
+> I got it a lot when using any sort of virtualization on my Core2Duo
+> (kvm, vmware, qemu). Just a big spew. Honestly, I was getting this with
+> 2.6.20, and haven't tested again with latest kernel.
 
-Found what seems the problem with our vectors being listed backward. In
-drivers/pci/msi.c we should be using list_add_tail rather than list_add to
-preserve the ordering across various kernels. Please consider this for
-inclusion.
+OK, a bit of googling finds things like this:
+http://chxo.com/be2/20060821_3333.html, so I assume that it's some sort of
+generic problem with the hypervisor's emulation of the RTC.
 
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Zach, do you know what the score is here?
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 0e67723..d74975d 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -333,7 +333,7 @@ static int msi_capability_init(struct pci_dev *dev)
- 			msi_mask_bits_reg(pos, is_64bit_address(control)),
- 			maskbits);
- 	}
--	list_add(&entry->list, &dev->msi_list);
-+	list_add_tail(&entry->list, &dev->msi_list);
- 
- 	/* Configure MSI capability structure */
- 	ret = arch_setup_msi_irqs(dev, 1, PCI_CAP_ID_MSI);
-@@ -404,7 +404,7 @@ static int msix_capability_init(struct pci_dev *dev,
- 		entry->dev = dev;
- 		entry->mask_base = base;
- 
--		list_add(&entry->list, &dev->msi_list);
-+		list_add_tail(&entry->list, &dev->msi_list);
- 	}
- 
- 	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
+Thanks.
