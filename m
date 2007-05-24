@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751277AbXEXOLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751225AbXEXORS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751277AbXEXOLR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 10:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXEXOLF
+	id S1751225AbXEXORS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 10:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbXEXORI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 10:11:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38766 "EHLO mx3.mail.elte.hu"
+	Thu, 24 May 2007 10:17:08 -0400
+Received: from mx2.suse.de ([195.135.220.15]:46641 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750740AbXEXOLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 10:11:04 -0400
-Date: Thu, 24 May 2007 16:10:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       tglx@linutronix.de
-Subject: Re: [BUG] long freezes on thinkpad t60
-Message-ID: <20070524141059.GA19872@elte.hu>
-References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu> <20070524125453.GA7554@elte.hu> <E1HrDuQ-0005m7-00@dorka.pomaz.szeredi.hu>
+	id S1750711AbXEXORG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 10:17:06 -0400
+Subject: Re: 2.6.22-rc1-mm1 Implementing fan/thermal control in userspace -
+	Was: [cannot change thermal trip points]
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+In-Reply-To: <20070522003153.GA18162@srcf.ucam.org>
+References: <200705171517.14087.lenb@kernel.org>
+	 <1179604609.16465.83.camel@sublime.suse.de>
+	 <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz>
+	 <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz>
+	 <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz>
+	 <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz>
+	 <20070522003153.GA18162@srcf.ucam.org>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Thu, 24 May 2007 16:16:53 +0200
+Message-Id: <1180016213.16396.74.camel@queen.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1HrDuQ-0005m7-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Stripping some CCs, acpi and kernel list should be enough this one goes
+to...
 
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> > how reproducable are these lockups - could you possibly trace it? If 
-> > yes then please apply:
+On Tue, 2007-05-22 at 01:31 +0100, Matthew Garrett wrote:
+> On Tue, May 22, 2007 at 12:42:00AM +0200, Pavel Machek wrote:
+> > On Mon 2007-05-21 14:45:53, Matthew Garrett wrote:
+> > > So don't do it badly. The advantage of doing so is that you can make it 
+> > > work properly, which you can't by putting it in the kernel.
 > > 
-> >   http://www.tglx.de/private/tglx/ht-debug/tracer.diff
+> > You want stuff like critical shutdowns to work even if userspace is
+> > dead.
 > 
-> With this patch boot stops at segfaulting fsck.  I enabled all the new 
-> config options, is that not a good idea?  Which one exactly do I need?
+> I don't think anyone suggested putting the critical shutdown control in 
+> userspace. The kernel already handles that fine.
+> 
+> > I do not think you can control passive cooling adequately from 
+> > userspace, and you can certainly not prevent kernel from slowing 
+> > machine down too soon.
+> 
+> Given the choice between something impossible and something difficult, 
+> I'm inclined towards picking the difficult one.
 
-hm, you should only need these:
+I doubt it is impossible, would you mind sharing your knowledge why you
+think it is impossible or point to some related discussion, pls.
 
- CONFIG_EVENT_TRACE=y
- CONFIG_FUNCTION_TRACE=y
- # CONFIG_WAKEUP_TIMING is not set
- # CONFIG_CRITICAL_IRQSOFF_TIMING is not set
- CONFIG_MCOUNT=y
+Does this mean checking temperature against trip points and adjust fan
+and cpufreq should be done in a hal module?
+In which stage is this, rfc, development, already in some git tree?
 
-does it boot with these?
+Yes, trip points are overridden by BIOS on HPs and what is the problem?
+The workaround won't work for them, but it still does on others
+(mainly on ThinkPads which have passive tp at about 89 C and critical on
+91 C).
 
-	Ingo
+I could imagine an implementation for this, that e.g. critical...active9
+get module parameters. BIOS updates for trip points get ignored as soon
+as one is set and you can only decrease a value. Nothing bad can happen
+and it will make some people happy (yes it's hacky, violates the specs
+and so on..., but some more people have a working machine). Will this
+(or similar) get accepted?
+
+It's even more impossible to get ACPI working correctly for all machines
+and all subsystems, these little workarounds can help some people to at
+least use their machine or get some parts working better.
+
+   Thomas
+
