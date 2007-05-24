@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760379AbXEXB5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761518AbXEXB7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760379AbXEXB5A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 21:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756737AbXEXB4w
+	id S1761518AbXEXB7R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 21:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757490AbXEXB7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 21:56:52 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:50691 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756579AbXEXB4v (ORCPT
+	Wed, 23 May 2007 21:59:07 -0400
+Received: from adelie.ubuntu.com ([82.211.81.139]:34040 "EHLO
+	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757450AbXEXB7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 21:56:51 -0400
-Date: Wed, 23 May 2007 18:56:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-ide@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] IDE fixes
-In-Reply-To: <200705240246.19039.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.0.98.0705231850520.3890@woody.linux-foundation.org>
-References: <200705240246.19039.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 23 May 2007 21:59:07 -0400
+Subject: Re: [PATCH 5/6] SUNHME: Workaround ancient hang on U1's
+From: Ben Collins <ben.collins@ubuntu.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070523.171723.68041701.davem@davemloft.net>
+References: <98cd38b5.git.bcollins@ubuntu.com>
+	 <91fcd7d6a83321c37f6769164b1b41ce78a07bfa.1179964369.git.bcollins@ubuntu.com>
+	 <20070523.171723.68041701.davem@davemloft.net>
+Content-Type: text/plain
+Organization: Canonical
+Date: Wed, 23 May 2007 21:59:18 -0400
+Message-Id: <1179971958.12570.161.camel@cunning>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-05-23 at 17:17 -0700, David Miller wrote:
+> From: Ben Collins <bcollins@ubuntu.com>
+> Date: Wed, 23 May 2007 18:30:46 -0400
+> 
+> > This work around has been in use by almost any distribution trying to
+> > support sparc64 since at least 2002. Without it, sunhme hangs fairly
+> > quickly on UltraSPARC 1's.
+> > 
+> > Dave, I know it's not in the kernel because it isn't a "fix", but given
+> > that we haven't seen a fix in more than 5 years, can we get this out of my
+> > tree please? :)
+> 
+> It isn't needed any more, the hang no longer occurs.
+> 
+> Nobody should be applying that patch, my guess is that it was
+> a GCC bug that has been fixed over time that reordered the
+> writes to RX/TX descriptors which hung the chip.
 
+Ah, thanks. I'll revert it out. Seemed like every time I yanked it out
+of the our tree (Debian/Ubuntu) some one would complain, and I had to
+put it back in.
 
-On Thu, 24 May 2007, Bartlomiej Zolnierkiewicz wrote:
-> diff --git a/drivers/ide/pci/serverworks.c b/drivers/ide/pci/serverworks.c
-> index 6234f80..47bcd91 100644
-> --- a/drivers/ide/pci/serverworks.c
-> +++ b/drivers/ide/pci/serverworks.c
-> @@ -173,7 +179,7 @@ dma_pio:
->  				   ((dma_stat&(1<<(5+unit)))==(1<<(5+unit)))) {
->  				u8 dmaspeed = dma_timing;
->  
-> -				dma_timing &= ~0xFF;
-> +				dma_timing &= ~0xFFU;
+-- 
+Ubuntu   : http://www.ubuntu.com/
+Linux1394: http://wiki.linux1394.org/
 
-This is just crap.
-
-The old code was _also_ crap, but the new code just is worse. 
-
-What's the point of this, really?
-
-dma_timing is a 8-bit value, so the above is just a *really* stupid and 
-bad way of saying
-
-	dma_timing = 0;
-
-and whoever wrote that code is just terminally confused.
-
-I pulled, but that driver is CRAP. Please don't add new crap blindly like 
-that. 
-
-Andrew, that was your change, it appears. Tssk.
-
-Please, we do NOT fix compiler warnings without understanding the code! 
-That's a sure way to just introduce _new_ bugs, rather than fix old ones. 
-So please, please, please, realize that the compiler is _stupid_, and 
-fixing warnings without understanding the code is bad.
-
-In this case, anybody who actually spends 5 seconds looking at the code 
-should have realized that the warning is just another way of saying that 
-the author of the code was on some bad drugs, and the warnings WERE BETTER 
-OFF REMAINING! Because that code _should_ have warnings. Big fat warnings 
-about incompetence!
-
-		Linus
