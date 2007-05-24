@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763230AbXEXFTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbXEXFVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763230AbXEXFTq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 01:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbXEXFTj
+	id S1762006AbXEXFVQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 01:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbXEXFVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 01:19:39 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:31255 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758517AbXEXFTi (ORCPT
+	Thu, 24 May 2007 01:21:06 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:8077 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757533AbXEXFVE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 01:19:38 -0400
-Date: Wed, 23 May 2007 23:19:35 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
- resources
-In-reply-to: <200705232040.53651.jbarnes@virtuousgeek.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Olivier Galibert <galibert@pobox.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-Message-id: <46552067.8090107@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <4635510D.4060103@shaw.ca>
- <alpine.LFD.0.98.0705232016350.3890@woody.linux-foundation.org>
- <alpine.LFD.0.98.0705232018380.3890@woody.linux-foundation.org>
- <200705232040.53651.jbarnes@virtuousgeek.org>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Thu, 24 May 2007 01:21:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=BQlEgxUCnwjSsFNxwoSl4Nag07wwrvDWFYveEVfdiI5EfP0iFyeJ4yVZ1iwK22HeocbUFm2UXinUBEQL+bHMtYcitZ3I6qOAkRHdflX79NQK3Orin9AhmMcGPVXTSzx+aDMw9YAZdCvN3kOD5TY/LKDNNftKK33t+GSIWO3QOyw=
+Subject: Re: 2.6.21.1 fails to suspend/resume  to disk  (sort of)
+From: Romano Giannetti <romano.giannetti@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <200705231857.33012.rjw@sisk.pl>
+References: <1179905115.7043.25.camel@localhost>
+	 <200705231105.08408.rjw@sisk.pl> <1179914262.7043.56.camel@localhost>
+	 <200705231857.33012.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 07:20:58 +0200
+Message-Id: <1179984058.12599.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Wednesday, May 23, 2007 8:20:14 Linus Torvalds wrote:
->> On Wed, 23 May 2007, Linus Torvalds wrote:
->>> Sure. I think mmconfig is perfectly sane if it falls back to conf1
->>> accesses for legacy stuff..
->> .. but without a regression, it's obviously a post-2.6.22 thing, I guess I
->> should make that clear, just because I think people send me patches after
->> -rc1 way too eagerly just because they think it fixes a bug.
->>
->> Basically if it's not somethign that has _ever_ worked some way, it's not
->> a bug, it's a feature ;)
+On Wed, 2007-05-23 at 18:57 +0200, Rafael J. Wysocki wrote:
+> On Wednesday, 23 May 2007 11:57, Romano Giannetti wrote:
+> > On Wed, 2007-05-23 at 11:05 +0200, Rafael J. Wysocki wrote:
+> > > Hi,
+> > > 
+> > > On Wednesday, 23 May 2007 09:25, Romano Giannetti wrote:
+> > > > http://lkml.org/lkml/2007/5/23/38
+> > > 
+> > > Please see http://bugzilla.kernel.org/show_bug.cgi?id=8456
+> > > That seems to resemble the symptoms you describe.
+> > > 
+> > 
+> > No, I don't think. The delay I observe is on resume (suspend is very
+> > fast). Moreover, I have no SATA. It seems that my problem came from
+> > pcmcia.
 > 
-> No, I know better than to send something after your merge window closes.  I 
-> have no desire to be flamed even further on this topic.  :)
+> Hmm, there also is this patch: http://lkml.org/lkml/2007/5/22/434
 > 
-> And come to think of it, adding the enable/disable bits might be good even 
-> with the patch to make legacy accesses go through type 1, since PCIe BAR 
-> probing is probably done the same way (I haven't looked) and so we might run 
-> into the same problems there.
+Neither this is related. My report was for a delay of 60 seconds on
+resume, not an infinite delay. And I have no bluetooth here.
 
-I think that disabling decode on non-host-bridge devices during the BAR 
-sizing is something we should at least try, indeed.
+I will try to add some data to the bug and then will open a bugzilla
+report.
 
-The issue I have with forcing legacy config space accesses to type1 is 
-that it would make it much less obvious if the MMCONFIG access wasn't 
-working properly. You'd likely be able to boot up but then wonder why 
-something that does extended config space accesses didn't work or hung 
-the box. As I mentioned before, either we trust the MMCONFIG or we 
-don't, and if we decide that we don't on a particular box, we should 
-really be shutting it off entirely. Hopefully with the ACPI reservation 
-checking patch and the disable-decode-during-BAR-sizing patch
-we wouldn't need to add that restriction.
+Romano
 
-But yes, post-2.6.22 for all of this :-)
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
