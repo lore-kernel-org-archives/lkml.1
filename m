@@ -1,85 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbXEXNXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759789AbXEXNZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759431AbXEXNXn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 09:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757272AbXEXNXg
+	id S1759789AbXEXNZN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 09:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbXEXNY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 09:23:36 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:51493 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757012AbXEXNXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 09:23:35 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [rfe] easier customization of kconfig for non-Linux projects
-Date: Thu, 24 May 2007 09:23:40 -0400
-User-Agent: KMail/1.9.6
-Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       kbuild-devel@lists.sourceforge.net
-References: <200705240117.39800.vapier@gentoo.org> <20070524064004.GA28923@uranus.ravnborg.org>
-In-Reply-To: <20070524064004.GA28923@uranus.ravnborg.org>
+	Thu, 24 May 2007 09:24:59 -0400
+Received: from mail-gw3.adaptec.com ([216.52.22.36]:46969 "EHLO
+	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756420AbXEXNY6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 09:24:58 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3683074.cRu6THnrNq";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705240923.42035.vapier@gentoo.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] [scsi] Remove __GFP_DMA
+Date: Thu, 24 May 2007 09:24:53 -0400
+Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF019E1CAA@otce2k301.adaptec.com>
+In-reply-to: <6d6a94c50705221941y63f4db7bj174a2265d9eaa61a@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] [scsi] Remove __GFP_DMA
+Thread-Index: Acec4+PARkm5rqN/THqyP1QFYI1C8ABImmFQ
+From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+To: "Aubrey Li" <aubreylee@gmail.com>, "Christoph Lameter" <clameter@sgi.com>
+Cc: "Bernhard Walle" <bwalle@suse.de>, <linux-scsi@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>,
+       "James Bottomley" <James.Bottomley@steeleye.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3683074.cRu6THnrNq
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+So, is the sequence:
 
-On Thursday 24 May 2007, Sam Ravnborg wrote:
-> The intent with this is clear but the solution you suggest albeit simple
-> does not really match where we could end up with kconfig.
-> Recently Roman added support for options in the kconfig language
-> and I would assume we could deal with most of this just using options.
+	p = kmalloc(upsg->sg[i].count,GFP_KERNEL);
+	. . .
+	addr = pci_map_single(dev->pdev, p, upsg->sg[i].count,
+data_dir);
 
-that certainly sounds nicer :)
+Going to ensure that we have a 31 bit (not 32 bit) physical address?
 
-> One example could be to support options for the mainmenu entrye like this:
->
-> mainmenu "Busybow config system"
-> 	option project=3D"Busybox"
-> 	option version=3D"$VERSION"   <=3D Where '$' signify an environment vari=
-able
+If not, then I reject this patch. We can not consider replacement with
+pci_alloc_consistent until it works on AMD respecting the DMA masks.
 
-this is doable now ?  if so, i'll test it out in uClibc ...
+Sincerely -- Mark Salyzyn
 
-> In this way we could later distribute kconfig as a binary instead
-> of building it into the source as today.
-
-not entirely sure how useful that'd be unless you mean as a completely sep=
-=20
-package that distributions would include ...
-=2Dmike
-
---nextPart3683074.cRu6THnrNq
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iQIVAwUARlWR3UFjO5/oN/WBAQLXaw/+NRZkrwK5Qqe7+I6nJrhpvg9/RkE55Ocb
-pn2fOT2Z4yLImymOvEVQrAjJfkuzF8rQ7f870GKFqfjc3QJe4QYVNncXDfEAlF71
-3Z3/NsjORUFF50TwQb7Baqk738uSQMmSWGzCyBYXsNgPDcoAnv9hdI5q05ilvpzH
-XrRJgJt7qaYaJnqjniqRjeZYPbbMCOCKBVSIzKO1XR9Q3b4vuwKum8PTexhOO6Bk
-kCPFAjXFuP3BwO0NxvoCfVvINujDolu2Uhk+dA4gZm5cOQZawAfj4y329Zk4uydy
-hXnfimNnrTvF0M1j59L72NVSZeFeFomeGL8jaIdSq6EWzGPFtf3VqIA37A/IJmTE
-lXmrtqiVDJVhNI6o7mbCKDZmMhfr+eYUVf8Fm/CRjd7rUsYWUdn4U+CxSWxed6f3
-5XU7iIblU5lUl0ribf18ThFkTjcPgTNIv2C7KjTFLKJCPqoId2YFCnnOSWNzN7md
-SLyqdZ2QSI9vebmP54nW+3Wz6hOY+m5KTyZZ3V3+KFvC+8trZfBqYMv6/JeumU2H
-l8M/+9pcyWNvDwPmKJxrQpBN31Xf2Z2SVjpb3Nxo3dvgAYpUl/6cE9nU/BMsGBgC
-f8FDmSdFGmAqzj3nquRCqjuxFnO4HmD2hbwJ3Wq7WgTgr+Iqg+Vn8ugio0lgznD9
-jkIJhRXDxpU=
-=7WQ6
------END PGP SIGNATURE-----
-
---nextPart3683074.cRu6THnrNq--
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org 
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Aubrey Li
+> Sent: Tuesday, May 22, 2007 10:41 PM
+> To: Christoph Lameter
+> Cc: Bernhard Walle; linux-scsi@vger.kernel.org; Andrew 
+> Morton; linux-kernel@vger.kernel.org; James Bottomley
+> Subject: Re: [PATCH] [scsi] Remove __GFP_DMA
+> 
+> 
+> On 5/23/07, Christoph Lameter <clameter@sgi.com> wrote:
+> > On Mon, 21 May 2007, Bernhard Walle wrote:
+> >
+> > > [PATCH] [scsi] Remove __GFP_DMA
+> > >
+> > > After 821de3a27bf33f11ec878562577c586cd5f83c64, it's not 
+> necessary to alloate a
+> > > DMA buffer any more in sd.c.
+> > >
+> > > Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> >
+> > Great that avoids a DMA kmalloc slab. Any other GFP_DMAs 
+> left in the scsi
+> > layer?
+> >
+> > Acked-by: Christoph Lameter <clameter@sgi.com>
+> 
+> Yes, here is another patch
+> 
+> Signed-off-by: Aubrey.Li <aubreylee@gmail.com>
+> ---
+>  drivers/scsi/aacraid/commctrl.c |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/scsi/aacraid/commctrl.c 
+> b/drivers/scsi/aacraid/commctrl.c
+> index 72b0393..405722d 100644
+> --- a/drivers/scsi/aacraid/commctrl.c
+> +++ b/drivers/scsi/aacraid/commctrl.c
+> @@ -580,8 +580,8 @@ static int aac_send_raw_srb(struct aac_dev* dev,
+> void __user * arg)
+>  			for (i = 0; i < upsg->count; i++) {
+>  				u64 addr;
+>  				void* p;
+> -				/* Does this really need to be 
+> GFP_DMA? */
+> -				p = 
+> kmalloc(upsg->sg[i].count,GFP_KERNEL|__GFP_DMA);
+> +
+> +				p = 
+> kmalloc(upsg->sg[i].count,GFP_KERNEL);
+>  				if(p == 0) {
+>  					
+> dprintk((KERN_DEBUG"aacraid: Could not allocate SG buffer - size
+> = %d buffer number %d of %d\n",
+>  					  
+> upsg->sg[i].count,i,upsg->count));
+> @@ -624,8 +624,8 @@ static int aac_send_raw_srb(struct aac_dev* dev,
+> void __user * arg)
+>  			for (i = 0; i < usg->count; i++) {
+>  				u64 addr;
+>  				void* p;
+> -				/* Does this really need to be 
+> GFP_DMA? */
+> -				p = 
+> kmalloc(usg->sg[i].count,GFP_KERNEL|__GFP_DMA);
+> +
+> +				p = 
+> kmalloc(usg->sg[i].count,GFP_KERNEL);
+>  				if(p == 0) {
+>  					kfree (usg);
+>  					
+> dprintk((KERN_DEBUG"aacraid: Could not allocate SG buffer - size
+> = %d buffer number %d of %d\n",
+> @@ -666,8 +666,8 @@ static int aac_send_raw_srb(struct aac_dev* dev,
+> void __user * arg)
+>  			for (i = 0; i < upsg->count; i++) {
+>  				u64 addr;
+>  				void* p;
+> -				/* Does this really need to be 
+> GFP_DMA? */
+> -				p = 
+> kmalloc(usg->sg[i].count,GFP_KERNEL|__GFP_DMA);
+> +
+> +				p = 
+> kmalloc(usg->sg[i].count,GFP_KERNEL);
+>  				if(p == 0) {
+>  					
+> dprintk((KERN_DEBUG"aacraid: Could not allocate SG buffer - size
+> = %d buffer number %d of %d\n",
+>  					  
+> usg->sg[i].count,i,usg->count));
+> -- 
+> 1.5.1.1
+> -
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
