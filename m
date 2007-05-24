@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762948AbXEXAqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764822AbXEXAqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762948AbXEXAqD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762260AbXEXAhv
+	id S1764822AbXEXAqg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761798AbXEXAiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:37:51 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40252 "EHLO
+	Wed, 23 May 2007 20:38:07 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40236 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757168AbXEXAg7 (ORCPT
+	with ESMTP id S1761275AbXEXAge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:36:59 -0400
+	Wed, 23 May 2007 20:36:34 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 13/21] Unionfs: Don't leak resources when copyup fails partially
-Date: Wed, 23 May 2007 20:36:03 -0400
-Message-Id: <11799669731382-git-send-email-jsipek@cs.sunysb.edu>
+Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 18/21] Unionfs: Remove defunct unionfs_put_inode super op
+Date: Wed, 23 May 2007 20:36:08 -0400
+Message-Id: <11799669741651-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
 In-Reply-To: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 References: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Original-patch-by: Erez Zadok <ezk@cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+
+Removed old workaround code that was needed to get mmap working, is no
+longer needed with recent kernels.
+
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/copyup.c |   24 ++++++++++++++++++++++--
- 1 files changed, 22 insertions(+), 2 deletions(-)
+ fs/unionfs/super.c |   20 --------------------
+ 1 files changed, 0 insertions(+), 20 deletions(-)
 
-diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
-index 0975b6e..a80ece6 100644
---- a/fs/unionfs/copyup.c
-+++ b/fs/unionfs/copyup.c
-@@ -632,7 +632,7 @@ static struct dentry *create_parents_named(struct inode *dir,
- 	unsigned int childnamelen;
- 
- 	int nr_dentry;
--	int count;
-+	int count = 0;
- 
- 	int old_bstart;
- 	int old_bend;
-@@ -660,7 +660,6 @@ static struct dentry *create_parents_named(struct inode *dir,
- 	/* assume the negative dentry of unionfs as the parent dentry */
- 	parent_dentry = dentry;
- 
--	count = 0;
- 	/*
- 	 * This loop finds the first parent that exists in the given branch.
- 	 * We start building the directory structure from there.  At the end
-@@ -772,6 +771,23 @@ static struct dentry *create_parents_named(struct inode *dir,
- 							 hidden_dentry);
- 			unlock_dir(hidden_parent_dentry);
- 			if (err) {
-+				struct inode *inode = hidden_dentry->d_inode;
-+				/*
-+				 * If we get here, it means that we created a new
-+				 * dentry+inode, but copying permissions failed.
-+				 * Therefore, we should delete this inode and dput
-+				 * the dentry so as not to leave cruft behind.
-+				 *
-+				 * XXX: call dentry_iput() instead, but then we have
-+				 * to export that symbol.
-+				 */
-+				if (hidden_dentry->d_op && hidden_dentry->d_op->d_iput)
-+					hidden_dentry->d_op->d_iput(hidden_dentry,
-+								    inode);
-+				else
-+					iput(inode);
-+				hidden_dentry->d_inode = NULL;
-+
- 				dput(hidden_dentry);
- 				hidden_dentry = ERR_PTR(err);
- 				goto out;
-@@ -786,6 +802,10 @@ static struct dentry *create_parents_named(struct inode *dir,
- 		child_dentry = path[--count];
- 	}
- out:
-+	/* cleanup any leftover locks from the do/while loop above */
-+	if (IS_ERR(hidden_dentry))
-+		while (count)
-+			unionfs_unlock_dentry(path[count--]);
- 	kfree(path);
- 	return hidden_dentry;
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 446faf8..bfd6c24 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -62,25 +62,6 @@ static void unionfs_read_inode(struct inode *inode)
+ 	inode->i_mapping->a_ops = &unionfs_empty_aops;
  }
+ 
+-static void unionfs_put_inode(struct inode *inode)
+-{
+-	/*
+-	 * This is really funky stuff:
+-	 *
+-	 * Basically, if i_count == 1, iput will then decrement it and this
+-	 * inode will be destroyed.  It is currently holding a reference to
+-	 * the hidden inode.  Therefore, it needs to release that reference
+-	 * by calling iput on the hidden inode.  iput() _will_ do it for us
+-	 * (by calling our clear_inode), but _only_ if i_nlink == 0.  The
+-	 * problem is, NFS keeps i_nlink == 1 for silly_rename'd files.  So
+-	 * we must force our i_nlink to 0 here to trick iput() into calling
+-	 * our clear_inode.
+-	 */
+-
+-	if (atomic_read(&inode->i_count) == 1)
+-		inode->i_nlink = 0;
+-}
+-
+ /*
+  * we now define delete_inode, because there are two VFS paths that may
+  * destroy an inode: one of them calls clear inode before doing everything
+@@ -938,7 +919,6 @@ out:
+ 
+ struct super_operations unionfs_sops = {
+ 	.read_inode	= unionfs_read_inode,
+-	.put_inode	= unionfs_put_inode,
+ 	.delete_inode	= unionfs_delete_inode,
+ 	.put_super	= unionfs_put_super,
+ 	.statfs		= unionfs_statfs,
 -- 
 1.5.2.rc1.165.gaf9b
 
