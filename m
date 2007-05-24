@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbXEXMWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbXEXM2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758888AbXEXMWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 08:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbXEXMV5
+	id S1757676AbXEXM2d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 08:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbXEXM2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 08:21:57 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:37995 "EHLO smtp.wsc.cz"
+	Thu, 24 May 2007 08:28:25 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:34386 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756270AbXEXMV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 08:21:56 -0400
-Message-id: <14679305782221614362@wsc.cz>
-In-reply-to: <21152561019300868@wsc.cz>
-Subject: [PATCH 3/3] Char: riscom8, eliminate busy loop
+	id S1754084AbXEXM2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 08:28:25 -0400
+Message-id: <23207103161692929650@wsc.cz>
+Subject: [PATCH 1/1] Char: n_hdlc, allow RESTARTSYS retval of tty write
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Date: Thu, 24 May 2007 14:21:55 +0200 (CEST)
+Cc: Paul Fulghum <paulkf@microgate.com>
+Date: Thu, 24 May 2007 14:28:20 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-riscom8, eliminate busy loop
+n_hdlc, allow RESTARTSYS retval of tty write
 
+Cc: Paul Fulghum <paulkf@microgate.com>
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit 221eebee5eedfa7c2463dcbfb545b92595512310
-tree ea667b3ef038cff3a0e86266d37d364766a17303
-parent a677db846e7951118d0409956f4197cc01194f99
-author Jiri Slaby <jirislaby@gmail.com> Wed, 23 May 2007 17:30:19 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Wed, 23 May 2007 17:30:19 +0200
+commit 119ce83eb190c70d50ed7558c7b67b400ea00ec7
+tree d334650d032ded74085a6951c0a1d3e3268fb7db
+parent 221eebee5eedfa7c2463dcbfb545b92595512310
+author Jiri Slaby <jirislaby@gmail.com> Wed, 23 May 2007 17:55:46 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Wed, 23 May 2007 17:55:46 +0200
 
- drivers/char/riscom8.c |   12 ++----------
- 1 files changed, 2 insertions(+), 10 deletions(-)
+ drivers/char/n_hdlc.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/char/riscom8.c b/drivers/char/riscom8.c
-index 3494e3f..8ea231f 100644
---- a/drivers/char/riscom8.c
-+++ b/drivers/char/riscom8.c
-@@ -213,14 +213,6 @@ static inline void rc_release_io_range(struct riscom_board * const bp)
- 		release_region(RC_TO_ISA(rc_ioport[i]) + bp->base, 1);
- }
- 	
--/* Must be called with enabled interrupts */
--static inline void rc_long_delay(unsigned long delay)
--{
--	unsigned long i;
--	
--	for (i = jiffies + delay; time_after(i,jiffies); ) ;
--}
--
- /* Reset and setup CD180 chip */
- static void __init rc_init_CD180(struct riscom_board const * bp)
- {
-@@ -231,7 +223,7 @@ static void __init rc_init_CD180(struct riscom_board const * bp)
- 	rc_wait_CCR(bp);			   /* Wait for CCR ready        */
- 	rc_out(bp, CD180_CCR, CCR_HARDRESET);      /* Reset CD180 chip          */
- 	sti();
--	rc_long_delay(HZ/20);                      /* Delay 0.05 sec            */
-+	msleep(50);				   /* Delay 0.05 sec            */
- 	cli();
- 	rc_out(bp, CD180_GIVR, RC_ID);             /* Set ID for this chip      */
- 	rc_out(bp, CD180_GICR, 0);                 /* Clear all bits            */
-@@ -280,7 +272,7 @@ static int __init rc_probe(struct riscom_board *bp)
- 		rc_wait_CCR(bp);
- 		rc_out(bp, CD180_CCR, CCR_TXEN);        /* Enable transmitter     */
- 		rc_out(bp, CD180_IER, IER_TXRDY);       /* Enable tx empty intr   */
--		rc_long_delay(HZ/20);	       		
-+		msleep(50);	       		
- 		irqs = probe_irq_off(irqs);
- 		val1 = rc_in(bp, RC_BSR);		/* Get Board Status reg   */
- 		val2 = rc_in(bp, RC_ACK_TINT);          /* ACK interrupt          */
+diff --git a/drivers/char/n_hdlc.c b/drivers/char/n_hdlc.c
+index 37f7d34..e8332f3 100644
+--- a/drivers/char/n_hdlc.c
++++ b/drivers/char/n_hdlc.c
+@@ -400,7 +400,12 @@ static void n_hdlc_send_frames(struct n_hdlc *n_hdlc, struct tty_struct *tty)
+ 		/* Send the next block of data to device */
+ 		tty->flags |= (1 << TTY_DO_WRITE_WAKEUP);
+ 		actual = tty->driver->write(tty, tbuf->buf, tbuf->count);
+-		    
++
++		/* rollback was possible and has been done */
++		if (actual == -ERESTARTSYS) {
++			n_hdlc->tbuf = tbuf;
++			break;
++		}
+ 		/* if transmit error, throw frame away by */
+ 		/* pretending it was accepted by driver */
+ 		if (actual < 0)
