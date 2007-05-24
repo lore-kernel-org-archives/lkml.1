@@ -1,141 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764472AbXEXAl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763953AbXEXAm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764472AbXEXAl6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761810AbXEXAhH
+	id S1763953AbXEXAm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761853AbXEXAhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:37:07 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40254 "EHLO
+	Wed, 23 May 2007 20:37:09 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40257 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756343AbXEXAhA (ORCPT
+	with ESMTP id S1761637AbXEXAhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 23 May 2007 20:37:00 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 12/21] Unionfs: Prefix external functions with 'extern' properly
-Date: Wed, 23 May 2007 20:36:02 -0400
-Message-Id: <117996697398-git-send-email-jsipek@cs.sunysb.edu>
+Cc: akpm@linux-foundation.org, "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 10/21] Unionfs: Move unionfs_query_file to commonfops.c
+Date: Wed, 23 May 2007 20:36:00 -0400
+Message-Id: <11799669734102-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
 In-Reply-To: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 References: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Erez Zadok <ezk@cs.sunysb.edu>
+Moved unionfs_query_file closer to its one user in commonfops.c.
+Additionally, it can now become static, and branchman.c can be removed as it
+is empty.
 
-Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/sioq.h  |    1 +
- fs/unionfs/union.h |   50 +++++++++++++++++++++++++-------------------------
- 2 files changed, 26 insertions(+), 25 deletions(-)
+ fs/unionfs/Makefile     |    4 +-
+ fs/unionfs/branchman.c  |   60 -----------------------------------------------
+ fs/unionfs/commonfops.c |   41 ++++++++++++++++++++++++++++++++
+ fs/unionfs/union.h      |    6 ----
+ 4 files changed, 43 insertions(+), 68 deletions(-)
+ delete mode 100644 fs/unionfs/branchman.c
 
-diff --git a/fs/unionfs/sioq.h b/fs/unionfs/sioq.h
-index 5a96f66..55b781e 100644
---- a/fs/unionfs/sioq.h
-+++ b/fs/unionfs/sioq.h
-@@ -74,6 +74,7 @@ struct sioq_args {
- 	};
- };
+diff --git a/fs/unionfs/Makefile b/fs/unionfs/Makefile
+index e6b2e0c..6986d79 100644
+--- a/fs/unionfs/Makefile
++++ b/fs/unionfs/Makefile
+@@ -1,7 +1,7 @@
+ obj-$(CONFIG_UNION_FS) += unionfs.o
  
-+/* Extern definitions for SIOQ functions */
- extern int __init init_sioq(void);
- extern __exit void stop_sioq(void);
- extern void run_sioq(work_func_t func, struct sioq_args *args);
+ unionfs-y := subr.o dentry.o file.o inode.o main.o super.o \
+-	branchman.o rdstate.o copyup.o dirhelper.o rename.o \
+-	unlink.o lookup.o commonfops.o dirfops.o sioq.o
++	rdstate.o copyup.o dirhelper.o rename.o unlink.o \
++	lookup.o commonfops.o dirfops.o sioq.o
+ 
+ unionfs-$(CONFIG_UNION_FS_XATTR) += xattr.o
+diff --git a/fs/unionfs/branchman.c b/fs/unionfs/branchman.c
+deleted file mode 100644
+index 4545e18..0000000
+--- a/fs/unionfs/branchman.c
++++ /dev/null
+@@ -1,60 +0,0 @@
+-/*
+- * Copyright (c) 2003-2007 Erez Zadok
+- * Copyright (c) 2003-2006 Charles P. Wright
+- * Copyright (c) 2005-2007 Josef 'Jeff' Sipek
+- * Copyright (c) 2005-2006 Junjiro Okajima
+- * Copyright (c) 2005      Arun M. Krishnakumar
+- * Copyright (c) 2004-2006 David P. Quigley
+- * Copyright (c) 2003-2004 Mohammad Nayyer Zubair
+- * Copyright (c) 2003      Puja Gupta
+- * Copyright (c) 2003      Harikesavan Krishnan
+- * Copyright (c) 2003-2007 Stony Brook University
+- * Copyright (c) 2003-2007 The Research Foundation of SUNY
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#include "union.h"
+-
+-/*
+- * return to user-space the branch indices containing the file in question
+- *
+- * We use fd_set and therefore we are limited to the number of the branches
+- * to FD_SETSIZE, which is currently 1024 - plenty for most people
+- */
+-int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
+-			    unsigned long arg)
+-{
+-	int err = 0;
+-	fd_set branchlist;
+-
+-	int bstart = 0, bend = 0, bindex = 0;
+-	struct dentry *dentry, *hidden_dentry;
+-
+-	dentry = file->f_dentry;
+-	unionfs_lock_dentry(dentry);
+-	if ((err = unionfs_partial_lookup(dentry)))
+-		goto out;
+-	bstart = dbstart(dentry);
+-	bend = dbend(dentry);
+-
+-	FD_ZERO(&branchlist);
+-
+-	for (bindex = bstart; bindex <= bend; bindex++) {
+-		hidden_dentry = unionfs_lower_dentry_idx(dentry, bindex);
+-		if (!hidden_dentry)
+-			continue;
+-		if (hidden_dentry->d_inode)
+-			FD_SET(bindex, &branchlist);
+-	}
+-
+-	err = copy_to_user((void __user *)arg, &branchlist, sizeof(fd_set));
+-	if (err)
+-		err = -EFAULT;
+-
+-out:
+-	unionfs_unlock_dentry(dentry);
+-	return err < 0 ? err : bend;
+-}
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index a57471e..69d9c87 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -632,6 +632,47 @@ out:
+ 	return err;
+ }
+ 
++/*
++ * return to user-space the branch indices containing the file in question
++ *
++ * We use fd_set and therefore we are limited to the number of the branches
++ * to FD_SETSIZE, which is currently 1024 - plenty for most people
++ */
++static int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
++				   unsigned long arg)
++{
++	int err = 0;
++	fd_set branchlist;
++
++	int bstart = 0, bend = 0, bindex = 0;
++	struct dentry *dentry, *hidden_dentry;
++
++	dentry = file->f_dentry;
++	unionfs_lock_dentry(dentry);
++	if ((err = unionfs_partial_lookup(dentry)))
++		goto out;
++	bstart = dbstart(dentry);
++	bend = dbend(dentry);
++
++	FD_ZERO(&branchlist);
++
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		hidden_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		if (!hidden_dentry)
++			continue;
++		if (hidden_dentry->d_inode)
++			FD_SET(bindex, &branchlist);
++	}
++
++	err = copy_to_user((void __user *)arg, &branchlist, sizeof(fd_set));
++	if (err)
++		err = -EFAULT;
++
++out:
++	unionfs_unlock_dentry(dentry);
++	return err < 0 ? err : bend;
++}
++
+ long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	long err;
 diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index dab408f..5376b76 100644
+index fee4f88..dab408f 100644
 --- a/fs/unionfs/union.h
 +++ b/fs/unionfs/union.h
-@@ -183,26 +183,26 @@ struct unionfs_dir_state {
- #include "fanout.h"
- #include "sioq.h"
+@@ -319,12 +319,6 @@ int __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd);
+ extern int unionfs_interpose(struct dentry *this_dentry,
+ 			     struct super_block *sb, int flag);
  
--/* Cache creation/deletion routines. */
--void unionfs_destroy_filldir_cache(void);
--int unionfs_init_filldir_cache(void);
--int unionfs_init_inode_cache(void);
--void unionfs_destroy_inode_cache(void);
--int unionfs_init_dentry_cache(void);
--void unionfs_destroy_dentry_cache(void);
-+/* externs for cache creation/deletion routines */
-+extern void unionfs_destroy_filldir_cache(void);
-+extern int unionfs_init_filldir_cache(void);
-+extern int unionfs_init_inode_cache(void);
-+extern void unionfs_destroy_inode_cache(void);
-+extern int unionfs_init_dentry_cache(void);
-+extern void unionfs_destroy_dentry_cache(void);
- 
- /* Initialize and free readdir-specific  state. */
--int init_rdstate(struct file *file);
--struct unionfs_dir_state *alloc_rdstate(struct inode *inode, int bindex);
--struct unionfs_dir_state *find_rdstate(struct inode *inode, loff_t fpos);
--void free_rdstate(struct unionfs_dir_state *state);
--int add_filldir_node(struct unionfs_dir_state *rdstate, const char *name,
--		     int namelen, int bindex, int whiteout);
--struct filldir_node *find_filldir_node(struct unionfs_dir_state *rdstate,
--				       const char *name, int namelen);
+-/* Branch management ioctls. */
+-int unionfs_ioctl_incgen(struct file *file, unsigned int cmd,
+-			 unsigned long arg);
+-int unionfs_ioctl_queryfile(struct file *file, unsigned int cmd,
+-			    unsigned long arg);
 -
--struct dentry **alloc_new_dentries(int objs);
--struct unionfs_data *alloc_new_data(int objs);
-+extern int init_rdstate(struct file *file);
-+extern struct unionfs_dir_state *alloc_rdstate(struct inode *inode, int bindex);
-+extern struct unionfs_dir_state *find_rdstate(struct inode *inode, loff_t fpos);
-+extern void free_rdstate(struct unionfs_dir_state *state);
-+extern int add_filldir_node(struct unionfs_dir_state *rdstate, const char *name,
-+			    int namelen, int bindex, int whiteout);
-+extern struct filldir_node *find_filldir_node(struct unionfs_dir_state *rdstate,
-+					      const char *name, int namelen);
-+
-+extern struct dentry **alloc_new_dentries(int objs);
-+extern struct unionfs_data *alloc_new_data(int objs);
- 
- /* We can only use 32-bits of offset for rdstate --- blech! */
- #define DIREOF (0xfffff)
-@@ -236,8 +236,8 @@ static inline void unionfs_double_lock_dentry(struct dentry *d1,
- }
- 
- extern int new_dentry_private_data(struct dentry *dentry);
--void free_dentry_private_data(struct unionfs_dentry_info *udi);
--void update_bstart(struct dentry *dentry);
-+extern void free_dentry_private_data(struct unionfs_dentry_info *udi);
-+extern void update_bstart(struct dentry *dentry);
- 
- /*
-  * EXTERNALS:
-@@ -246,6 +246,7 @@ void update_bstart(struct dentry *dentry);
- /* replicates the directory structure up to given dentry in given branch */
- extern struct dentry *create_parents(struct inode *dir, struct dentry *dentry,
- 				     int bindex);
-+extern int make_dir_opaque(struct dentry *dir, int bindex);
- 
- /* partial lookup */
- extern int unionfs_partial_lookup(struct dentry *dentry);
-@@ -304,10 +305,11 @@ extern long unionfs_ioctl(struct file *file, unsigned int cmd,
- /* Inode operations */
- extern int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 			  struct inode *new_dir, struct dentry *new_dentry);
--int unionfs_unlink(struct inode *dir, struct dentry *dentry);
--int unionfs_rmdir(struct inode *dir, struct dentry *dentry);
-+extern int unionfs_unlink(struct inode *dir, struct dentry *dentry);
-+extern int unionfs_rmdir(struct inode *dir, struct dentry *dentry);
- 
--int __unionfs_d_revalidate_chain(struct dentry *dentry, struct nameidata *nd);
-+extern int __unionfs_d_revalidate_chain(struct dentry *dentry,
-+					struct nameidata *nd);
- 
- /* The values for unionfs_interpose's flag. */
- #define INTERPOSE_DEFAULT	0
-@@ -454,8 +456,6 @@ static inline void unlock_dir(struct dentry *dir)
- 	dput(dir);
- }
- 
--extern int make_dir_opaque(struct dentry *dir, int bindex);
--
- static inline struct vfsmount *unionfs_mntget(struct dentry *dentry,
- 					      int bindex)
- {
+ #ifdef CONFIG_UNION_FS_XATTR
+ /* Extended attribute functions. */
+ extern void *unionfs_xattr_alloc(size_t size, size_t limit);
 -- 
 1.5.2.rc1.165.gaf9b
 
