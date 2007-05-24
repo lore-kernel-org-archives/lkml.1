@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbXEXTu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbXEXTvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbXEXTu2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 15:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbXEXTuQ
+	id S1752411AbXEXTvu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 15:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbXEXTvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 15:50:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:62340 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbXEXTuP (ORCPT
+	Thu, 24 May 2007 15:51:42 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:35115 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750815AbXEXTvl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 15:50:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=IlBEulCf7Dm/SnZLMzI4xqJwdhz4m64P0W2Nk1JjQi0pQpHopHQC2zgIRfCI5VI9jxPYiC+d+jhCcLmEYVH1ipujQ2mUZMd/riuua0vkgCgxV6lHjesY6lv/lemOh/lidbqZNOs/nl08hX2o4m54KxbNoVYWtrvvfl5ahuBAw+o=
-Date: Thu, 24 May 2007 23:49:19 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Fix possible UDF data corruption
-Message-ID: <20070524194919.GA8370@cvg>
-References: <20070524165935.GB19709@duck.suse.cz> <20070524172017.GA19852@cvg> <20070524113550.d09dbf9e.akpm@linux-foundation.org> <20070524192321.GD20500@cvg> <20070524123621.4327aca9.akpm@linux-foundation.org>
+	Thu, 24 May 2007 15:51:41 -0400
+Date: Thu, 24 May 2007 12:50:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Christoph Lameter <clameter@sgi.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux1394-devel@lists.sourceforge.net,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kristian H?gsberg <krh@bitplanet.net>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
+In-Reply-To: <20070524193740.GA6787@elte.hu>
+Message-ID: <alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org>
+References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com>
+ <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>
+ <20070524193740.GA6787@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070524123621.4327aca9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andrew Morton - Thu, May 24, 2007 at 12:36:21PM -0700]
-| On Thu, 24 May 2007 23:23:21 +0400
-| Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > [Andrew Morton - Thu, May 24, 2007 at 11:35:50AM -0700]
-| > | On Thu, 24 May 2007 21:20:17 +0400
-| > | Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > | 
-| > | > [Jan Kara - Thu, May 24, 2007 at 06:59:35PM +0200]
-| > | > |   Hi Andrew,
-| > | > | 
-| > | > |   attached patch fixes possible data corruption in UDF - this bug was actually
-| > | > | introduced by one of my fixes :-( and should (if possible) go to Linus before
-| > | > | 2.6.22 is out (that's why I'm diffing against Linus's tree and not the
-| > | > | latest changes in -mm tree)... Thanks.
-| > | > | 
-| > | > | 								Honza
-| > | > | 
-| > | > | -- 
-| > | > | Jan Kara <jack@suse.cz>
-| > | > | SuSE CR Labs
-| > | > 
-| > | > Jan should I wait until Andrew has your patches included and
-| > | > only then (having taken into account your patches) produce my
-| > | > conversion?
-| > | > 
-| > | 
-| > | yes please - bugfixes come first.
-| > | 
-| > 
-| > Andrew, so could I assume that these patches are in your -mm tree
-| > to be able to work on UDF style conversion?
-| > 
-| 
-| Sure.  If something breaks, I'll fix it up.
-| 
-| If you take the two-patch approach (first patch is Lindent, second patch is
-| post-Lindent fixups) then it becomes easy at this end: the first patch is
-| the big one and if it breaks, I just re-run Lindent and regenerate it.
-| 
 
-OK
 
-		Cyrill
+On Thu, 24 May 2007, Ingo Molnar wrote:
+> 
+> i very much agree that this kmalloc_index() one shouldnt be called a 
+> "BUG: ", but if you look at the majority of WARN_ON() instances they are 
+> checks for clear, serious kernel bugs.
 
+I _still_ disagree.
+
+There's a huge difference between "You killed my father, prepare to die", 
+and "Btw, I didn't like that, but I'll just continue".
+
+And that's the difference between BUG_ON() and WARN_ON().
+
+And dammit, the kernel message should make that CLEAR. It's totally 
+idiotic to call both "BUG". One is a clear BUG, the other is a "uhhuh, 
+something unexpected happened, but I know how to continue".
+
+So stop this idiotic "we should call them both the same". If they actually 
+were the same, they'd both be called BUG_ON().
+
+		Linus
