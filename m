@@ -1,109 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbXEXW5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbXEXXAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbXEXW5Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 18:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbXEXW5O
+	id S1754030AbXEXXAL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 19:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXEXW75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 18:57:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:5659 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752163AbXEXW5N (ORCPT
+	Thu, 24 May 2007 18:59:57 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52442 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750751AbXEXW75 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 18:57:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Lmir8NkFmcpOyRLkBT7xikOe5WY1s1qtnMkZgc7BlgA/Wh+dffFabhMQMLJchbqI769IsADcV90mnekk45EcJzkW5JCiVgpAehicAmgJ9XYgd8Jmh3NC2SwxiRwntxlffdm0IM4Z7E6W+Fq20kWdCmZ7NTZi6LuD3q9km5/Rp3E=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Remove a few UMSDOS leftovers
-Date: Fri, 25 May 2007 00:58:29 +0200
-User-Agent: KMail/1.9.6
-Cc: Jacques Gelinas <jacques@solucorp.qc.ca>,
-       Matija Nalis <mnalis@jagor.srce.hr>, Matija Nalis <mnalis@voyager.hr>,
-       trivial@kernel.org, Jesper Juhl <jesper.juhl@gmail.com>
+	Thu, 24 May 2007 18:59:57 -0400
+X-Sasl-enc: Pz6ZzF8lub4+kKF3294lzA6P9M0jFlB9efow+AJBx22K 1180047595
+Date: Thu, 24 May 2007 19:59:52 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Damien Wyart <damien.wyart@free.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2 and libata/shutdown
+Message-ID: <20070524225952.GB29678@khazad-dum.debian.net>
+References: <20070524102122.GA8652@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705250058.29266.jesper.juhl@gmail.com>
+In-Reply-To: <20070524102122.GA8652@localhost.localdomain>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 24 May 2007, Damien Wyart wrote:
+> After trying 2.6.22-rc2, I noticed the warning message from libata about
+> upgrading shutdown(8). First, I have two SATA disks, and get the warning for
+> only one of them. Second, I double-checked the source of shutdown for my
+> distro (Debian unstable), and do not see anything related to issueing
+> STANDBYNOW.
 
-The UMSDOS filesystem was removed back in 2.6.11, but some tiny bits 
-stuck around. This patch removes the few leftovers.
-The only things left behind after this are the entries in the CREDITS file.
+It is done inside the halt binary.  You can disable that STANDBYNOW by
+editing /etc/init.d/halt and removing the -h the initscript passes to halt.
+Look for a line that has something like hddown="-h".
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
---- 
+But if you do, make sure the kernel is configured to shutdown all SCSI and
+SATA disks first!
 
- Documentation/ioctl-number.txt |    1 -
- arch/arm26/defconfig           |    1 -
- arch/cris/arch-v10/defconfig   |    1 -
- arch/um/config.release         |    1 -
- include/linux/ncp_fs.h         |    2 --
- 5 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/Documentation/ioctl-number.txt b/Documentation/ioctl-number.txt
-index 3de7d37..f9f15bf 100644
---- a/Documentation/ioctl-number.txt
-+++ b/Documentation/ioctl-number.txt
-@@ -67,7 +67,6 @@ Code	Seq#	Include File		Comments
- 0x00	00-1F	linux/wavefront.h	conflict!
- 0x02	all	linux/fd.h
- 0x03	all	linux/hdreg.h
--0x04	all	linux/umsdos_fs.h
- 0x06	all	linux/lp.h
- 0x09	all	linux/md.h
- 0x12	all	linux/fs.h
-diff --git a/arch/arm26/defconfig b/arch/arm26/defconfig
-index c4a8970..2b7d44b 100644
---- a/arch/arm26/defconfig
-+++ b/arch/arm26/defconfig
-@@ -248,7 +248,6 @@ CONFIG_I2C_CHARDEV=y
- # CONFIG_JBD_DEBUG is not set
- # CONFIG_FAT_FS is not set
- # CONFIG_MSDOS_FS is not set
--# CONFIG_UMSDOS_FS is not set
- # CONFIG_VFAT_FS is not set
- # CONFIG_EFS_FS is not set
- # CONFIG_JFFS_FS is not set
-diff --git a/arch/cris/arch-v10/defconfig b/arch/cris/arch-v10/defconfig
-index 2a3411e..710c20b 100644
---- a/arch/cris/arch-v10/defconfig
-+++ b/arch/cris/arch-v10/defconfig
-@@ -429,7 +429,6 @@ CONFIG_NET_ETHERNET=y
- # CONFIG_BFS_FS is not set
- # CONFIG_FAT_FS is not set
- # CONFIG_MSDOS_FS is not set
--# CONFIG_UMSDOS_FS is not set
- # CONFIG_VFAT_FS is not set
- # CONFIG_EFS_FS is not set
- # CONFIG_JFFS_FS is not set
-diff --git a/arch/um/config.release b/arch/um/config.release
-index fc68bcb..aba42f8 100644
---- a/arch/um/config.release
-+++ b/arch/um/config.release
-@@ -200,7 +200,6 @@ CONFIG_JBD=y
- # CONFIG_JBD_DEBUG is not set
- CONFIG_FAT_FS=y
- CONFIG_MSDOS_FS=y
--CONFIG_UMSDOS_FS=y
- CONFIG_VFAT_FS=y
- CONFIG_EFS_FS=m
- # CONFIG_JFFS_FS is not set
-diff --git a/include/linux/ncp_fs.h b/include/linux/ncp_fs.h
-index 83e39eb..88766e4 100644
---- a/include/linux/ncp_fs.h
-+++ b/include/linux/ncp_fs.h
-@@ -148,8 +148,6 @@ struct ncp_nls_ioctl
- #include <linux/ncp_fs_i.h>
- #include <linux/ncp_fs_sb.h>
- 
--/* undef because public define in umsdos_fs.h (ncp_fs.h isn't public) */
--#undef PRINTK
- /* define because it is easy to change PRINTK to {*}PRINTK */
- #define PRINTK(format, args...) printk(KERN_DEBUG format , ## args)
- 
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
