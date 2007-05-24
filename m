@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbXEXUV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751053AbXEXUWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbXEXUV5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 16:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbXEXUVt
+	id S1751053AbXEXUWU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 16:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXEXUVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 16:21:49 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:45246 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbXEXUVr (ORCPT
+	Thu, 24 May 2007 16:21:54 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:32586 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbXEXUVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 16:21:47 -0400
-Date: Thu, 24 May 2007 14:21:44 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: coly <colyli@gmail.com>
-Cc: linux-ext4 <linux-ext4@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Subject: Re: [RFC 4/5] inode reservation v0.1 (benchmark result)
-Message-ID: <20070524202144.GS5181@schatzie.adilger.int>
-Mail-Followup-To: coly <colyli@gmail.com>,
-	linux-ext4 <linux-ext4@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-fsdevel <linux-fsdevel@vger.kernel.org>
-References: <1179943697.4179.55.camel@coly-t43.site>
+	Thu, 24 May 2007 16:21:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ijvdq180knHa2kqncpa5RLRMz+VW6BvcDrMi4uVN1fwXEHTXeJ4pbHNhoQ7FPnDrIcPB9D2Mrfog2CNcqEPG2odR31D5bYv5feD6HPP5Z45fZjpZKiQZ5Pby8X/mgpYbLvStVJVwb3X/ToiJUArxOAKJadgnJppA5pqWYAS0p7o=
+Subject: Re: Long delay in resume from RAM (Was Re: [patch 00/69]
+	-stablereview)
+From: Romano Giannetti <romano.giannetti@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <alpine.LFD.0.98.0705240851300.26602@woody.linux-foundation.org>
+References: <20070521191612.800400000@sous-sol.org>
+	 <4652070D.3090509@redhat.com>
+	 <alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org>
+	 <20070521212522.GL3429@sequoia.sous-sol.org>
+	 <1179870110.16656.2.camel@localhost>
+	 <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
+	 <1180008394.15600.26.camel@localhost> <1180019201.15600.57.camel@localhost>
+	 <alpine.LFD.0.98.0705240815530.26602@woody.linux-foundation.org>
+	 <alpine.LFD.0.98.0705240851300.26602@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 24 May 2007 22:21:41 +0200
+Message-Id: <1180038102.15241.12.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179943697.4179.55.camel@coly-t43.site>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 24, 2007  02:08 +0800, coly wrote:
-> Due to the bad design of magic inode and the on-disk layout of magic
-> inode. When 30 files created alternatively in each directory, no
-> performance advantage exists. When 50 files created alternatively in
-> each directory, the patched ext4 will use double time on removing all
-> the files and directories.
+On Thu, 2007-05-24 at 08:52 -0700, Linus Torvalds wrote:
+> 
+> On Thu, 24 May 2007, Linus Torvalds wrote:
+> > 
+> > Ok. That was probably true even before you added the suspend ordering 
+> > patch.
+> 
+> Oh, no it apparently wasn't. I missed your other email that said
+> 
+>    "So, I tried to suspend without any card in the pcmcia slot. Guess what?
+>     I extracted the card and the system did not suspend. Just stopped dead."
+> 
+> so apparently the patch actually did matter for you. Can you double-check 
+> and confirm?
+> 
 
-I don't think the use of magic inodes is the right approach.  One possibility
-to avoid changing the on-disk format at all is to only do the reservation in
-memory, scaling the reservation with the size of the directory.
+Well, I've made a bit of a mess. The setup that has not the delay when
+the card is out is a plain 2.6.21.2 (without suspend ordering). 
 
-The only issue that arises is how to regenerate the same reservation
-after a remount.  This might be possible to do by looking into the leaf
-block at create time to see which inode numbers are already in use for
-that leaf and checking whether there are free inodes in each group.
+The lockup ocurred on a 2.6.21.1 WITH the suspend ordering patch, but
+was just one time, after I plugged and unplugged the card several time.
+Could not reproduce it, however. Puzzled.
 
-One way to get the "best" mapping is possibly checking groups in order of
-decreasing number of inodes for that leaf in each group and once a suitable
-group has been found doing a few name->hash->inode numbers to get the old
-mapping back.  Once this leaf->group mapping has been established it
-can be re-used for a given leaf block until that window is full.
-
-Since you need to scan all of a leaf block's dir entries in a hash block
-at insert time to look for duplicate names, and the inode numbers are
-in the dir entries, this shouldn't introduce any additional disk IO.
-
-Also, regardless of what the mapping turns out to be - the goal is to place
-inodes with a similar hash into nearby inodes, and this heuristic works
-relatively well for that.  Once the given leaf block's inode range is full
-then new inodes can be allocated from a new window as it was done for the
-newly-created directory.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
+Romano 
+ 
 
