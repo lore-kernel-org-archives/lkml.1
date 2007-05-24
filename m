@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751389AbXEXOhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751151AbXEXOnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751389AbXEXOhK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 10:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbXEXOg5
+	id S1751151AbXEXOnM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 10:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbXEXOm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 10:36:57 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:48459 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbXEXOg4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 10:36:56 -0400
-Date: Thu, 24 May 2007 15:36:45 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Message-ID: <20070524143644.GA27364@srcf.ucam.org>
-References: <200705202350.45145.lenb@kernel.org> <20070521121048.GA8332@elf.ucw.cz> <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <1180016213.16396.74.camel@queen.suse.de>
-MIME-Version: 1.0
+	Thu, 24 May 2007 10:42:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41121 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbXEXOm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 10:42:57 -0400
+X-Greylist: delayed 1915 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 May 2007 10:42:57 EDT
+Date: Thu, 24 May 2007 16:42:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       tglx@linutronix.de
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070524144251.GA24859@elte.hu>
+References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu> <20070524125453.GA7554@elte.hu> <E1HrDuQ-0005m7-00@dorka.pomaz.szeredi.hu> <20070524141059.GA19872@elte.hu> <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1180016213.16396.74.camel@queen.suse.de>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.22-rc1-mm1 Implementing fan/thermal control in userspace - Was: [cannot change thermal trip points]
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.6
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.6 required=5.9 tests=BAYES_00,UPPERCASE_25_50 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.4 UPPERCASE_25_50        message body is 25-50% uppercase
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 04:16:53PM +0200, Thomas Renninger wrote:
 
-> I doubt it is impossible, would you mind sharing your knowledge why you
-> think it is impossible or point to some related discussion, pls.
+* Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-Because, as Len has pointed out, you end up with two different ideas 
-about what the trip points are - the kernel's and the hardware's. That 
-works fine until some event in the firmware either forcibly 
-resynchronises the two or makes assumptions about the spec-compliance of 
-the interpreter.
+> > hm, you should only need these:
+> > 
+> >  CONFIG_EVENT_TRACE=y
+> >  CONFIG_FUNCTION_TRACE=y
+> >  # CONFIG_WAKEUP_TIMING is not set
+> >  # CONFIG_CRITICAL_IRQSOFF_TIMING is not set
+> >  CONFIG_MCOUNT=y
+> > 
+> > does it boot with these?
+> 
+> Nope.  Same segfault.  If I try to continue manually with 'init 5', 
+> then init segfaults as well :(
 
-> Yes, trip points are overridden by BIOS on HPs and what is the problem?
-> The workaround won't work for them, but it still does on others
-> (mainly on ThinkPads which have passive tp at about 89 C and critical on
-> 91 C).
+does it go away if you turn off CONFIG_FUNCTION_TRACE? (that will make 
+the trace a lot less verbose, but still informative)
 
-You don't know whether the workaround will work or not until you've 
-performed a full audit of the platform firmware, which is going to 
-potentially change between BIOS versions. It's entirely legal for the 
-firmware to behave in this way, and even beneficial under various 
-circumstances.
-
-> I could imagine an implementation for this, that e.g. critical...active9
-> get module parameters. BIOS updates for trip points get ignored as soon
-> as one is set and you can only decrease a value. Nothing bad can happen
-> and it will make some people happy (yes it's hacky, violates the specs
-> and so on..., but some more people have a working machine). Will this
-> (or similar) get accepted?
-
-The interface would need to be more complicated than that if you wanted 
-to be able to implement hysteresis, and there's the potential for 
-hardware damage if paramaters are set inappropriately. Even then, 
-there's no easy way of programatically determining whether it would work 
-on any given hardware.
-
-> It's even more impossible to get ACPI working correctly for all machines
-> and all subsystems, these little workarounds can help some people to at
-> least use their machine or get some parts working better.
-
-It's fairly clearly not impossible, given that there exists at least one 
-OS that these machines work with.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	Ingo
