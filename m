@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbXEXV4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbXEXV4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873AbXEXV4K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbXEXVz6
+	id S1753887AbXEXV4s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbXEXV4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:55:58 -0400
-Received: from AStrasbourg-253-1-12-113.w81-51.abo.wanadoo.fr ([81.51.227.113]:37485
-	"EHLO snowman.cryosphere.shacknet.nu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750906AbXEXVz5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:55:57 -0400
-X-Greylist: delayed 441 seconds by postgrey-1.27 at vger.kernel.org; Thu, 24 May 2007 17:55:56 EDT
-Message-ID: <46560830.2000405@gmx.net>
-Date: Thu, 24 May 2007 23:48:32 +0200
-From: Jimmy Jazz <Jimmy.Jazz@gmx.net>
-Reply-To: Jimmy.Jazz@gmx.net
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	Thu, 24 May 2007 17:56:38 -0400
+Received: from mail.suse.de ([195.135.220.2]:59027 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750906AbXEXV4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 17:56:36 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
+Date: Thu, 24 May 2007 23:56:28 +0200
+User-Agent: KMail/1.9.5
+Cc: James Morris <jmorris@namei.org>, jjohansen@suse.de,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chrisw@sous-sol.org,
+       Tony Jones <tonyj@suse.de>
+References: <20070412090809.917795000@suse.de> <200705242010.00961.agruen@suse.de> <20070524184039.GH4095@ftp.linux.org.uk>
+In-Reply-To: <20070524184039.GH4095@ftp.linux.org.uk>
 MIME-Version: 1.0
-To: Luca Tettamanti <kronos.it@gmail.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Daniel Drake <dsd@gentoo.org>,
-       linux list <linux-kernel@vger.kernel.org>
-Subject: Re: radeonfb and X800 cards
-References: <464BB43D.2020407@gentoo.org> <1179367164.32247.256.camel@localhost.localdomain> <20070517195958.GA6489@dreamland.darkstar.lan> <1179451140.32247.326.camel@localhost.localdomain> <465044FC.30204@gmx.net> <20070522193149.GA15040@dreamland.darkstar.lan>
-In-Reply-To: <20070522193149.GA15040@dreamland.darkstar.lan>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705242356.29370.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luca Tettamanti a écrit :
-> Il Sun, May 20, 2007 at 02:54:20PM +0200, Jimmy Jazz ha scritto: 
->> @Luca, if i remember well you have a X850, could you please try the
->> patch for me ?
+On Thursday 24 May 2007 20:40, Al Viro wrote:
+> On Thu, May 24, 2007 at 08:10:00PM +0200, Andreas Gruenbacher wrote:
 > 
-> It does work - sort of; BIOS parsing code is correct. It lacks the
-> proper connector detection though (esp. port sharing). ATOM BIOS has a
-> different data layout, so this should be added (now radeonfb thinks that
-> I've 2 monitors).
+> > Read it like this: we don't have a good idea how to support multiple 
+> > namespaces so far. Currently, we interpret all pathnames relative to the 
+> > namespace a process is in. Confined processes don't have the privilege to 
+> > create or manipulate namespaces, which makes this safe. We may find a
+> > better future solution.
 > 
-> I'll be away this weekend, so I'll try to come up with a patch as soon
-> as I return home.
-> 
-> Luca
+> You also don't have a solution for multiple chroot jails, since they
+> often have the same fs mounted in many places on given box *and* since
+> the pathnames from the confined processes' POVs have fsck-all to do
+> with each other.
+>
+> It's really not kinder than multiple namespaces as far as your approach
+> is concerned.
 
-Hello,
+Well, the pathnames we check against are namespace relative, so no matter what 
+pathnames the chrooted processes think they are looking at, we always know 
+the actual pathnames up to ``outside the chroot''. Having the same filesystem 
+mounted in multiple chroots or in multiple locations in the same chroot 
+doesn't matter.
 
-The fact that you see two monitors doesn't really surprise me  :) .
-Also, i'm convinced to move to the mega patch even if i'm not quite sure
-all that code is also needed and I know it will unnecessarily increase
-the size of the kernel. However, better have much then less. Sure, if
-there were any more information on the web about video card
-connector/port logic, my knowledge would have been undoubtedly improved.
-Anyway, adding (conn->ddc_type == ddc_monid) in the if condition in
-radeon_i2c.c works for me as well.
+The main problem I see when it comes to defining per-namespace policy is that 
+namespaces are inherently anonymous, and there is no obvious way of 
+associating different sets of profiles with different namespaces. 
+Implementing something to also handle multiple namespaces doesn't seem 
+hard -- after all, it's not such a difficult concept -- but I don't have a 
+good enough idea what would work best.
 
---- /usr/src/model_with-radeon-r400/aty/radeon_i2c.c	2007-04-13
-13:35:49.000000000 +0200
-+++ radeon_i2c.c	2007-04-13 22:07:16.000000000 +0200
-@@ -163,7 +163,7 @@
- 		mon_type = MT_NONE;
- 		goto done;
- 	}
--	if ((edid[EDID_STRUCT_DISPLAY] & 0x80) && (conn->ddc_type == ddc_dvi)) {
-+	if ((edid[EDID_STRUCT_DISPLAY] & 0x80) && ((conn->ddc_type == ddc_dvi)
-|| (conn->ddc_type == ddc_monid))) {
- 		RTRACE("radeonfb: I2C (port %d) ... found TMDS panel\n", conn->ddc_type);
- 		mon_type = MT_DFP;
- 		goto done;
-
-Thank you for testing the patch.
-
-Jj
+Thanks,
+Andreas
