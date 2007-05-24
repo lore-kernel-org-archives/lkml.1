@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbXEXVZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbXEXVZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbXEXVZl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 17:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbXEXVZe
+	id S1755483AbXEXVZy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 17:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbXEXVZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 17:25:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51755 "EHLO mx2.suse.de"
+	Thu, 24 May 2007 17:25:37 -0400
+Received: from mx1.suse.de ([195.135.220.2]:56025 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750723AbXEXVZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 17:25:33 -0400
+	id S1753328AbXEXVZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 17:25:36 -0400
 From: Andi Kleen <ak@suse.de>
 Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Ioan Ionita" <opslynx@gmail.com>
-Subject: Re: x86-64 2.6.22-rc2 random segfaults
-Date: Thu, 24 May 2007 23:15:29 +0200
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
+Date: Thu, 24 May 2007 23:25:27 +0200
 User-Agent: KMail/1.9.6
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <df47b87a0705241142gce9bdbbkaa3b25be21ba04c0@mail.gmail.com>
-In-Reply-To: <df47b87a0705241142gce9bdbbkaa3b25be21ba04c0@mail.gmail.com>
+Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <len.brown@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070523224637.GB15887@linux-os.sc.intel.com> <200705242308.38360.ak@suse.de> <20070524211337.GB3692@linux-os.sc.intel.com>
+In-Reply-To: <20070524211337.GB3692@linux-os.sc.intel.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200705242325.28011.ak@suse.de>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705242315.29743.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 May 2007 20:42:07 Ioan Ionita wrote:
-> Hello,
+On Thursday 24 May 2007 23:13:37 Venki Pallipadi wrote:
+> On Thu, May 24, 2007 at 11:08:38PM +0200, Andi Kleen wrote:
+> > 
+> > I think it's generally a good idea to push cpuinfo flags in earliest
+> > as possible; just make sure we actually use the final name (so that we don't get
+> > into a pni->sse3 mess again) 
+> >  
 > 
-> Since upgrading from 2.6.21 to 2.6.22-rc2, I started seeing some
-> segfaults in dmesg.
-> 2.6.22-rc1-git2 even locked up on me at one point.
-> 
-> I'm using SLUB. I haven't yet found a way to easily reproduce the
-> problem.. Once I do, I'll try a git bisect
+> ida is official name as in the Software Developer's Manual now. So, should
+> not be a issue unless marketing folks change their mind in future :-)
 
-Hmm, nothing comes to mind. Please bisect.
+Well they did sometimes in the past.
+
+But actually reading the patch: it seems weird to detect the flag 
+in acpi-cpufreq and essentially change /proc/cpuinfo when a
+module is loaded. Why not in the intel setup function? And why is it 
+not in the standard CPUID 1 features mask anyways?
 
 -Andi
