@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbXEXN1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbXEXN2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760201AbXEXN1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 09:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757047AbXEXN1j
+	id S1760359AbXEXN2W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 09:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757752AbXEXN2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 09:27:39 -0400
-Received: from [216.16.235.2] ([216.16.235.2]:37121 "EHLO rubicon.netdirect.ca"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757258AbXEXN1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 09:27:38 -0400
-X-Originating-Ip: 99.246.112.70
-Date: Thu, 24 May 2007 09:25:31 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Krzysztof Halasa <khc@pm.waw.pl>
-cc: Satyam Sharma <satyam.sharma@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: any value to "NORET_TYPE" macro?
-In-Reply-To: <m33b1mz7sz.fsf@maximus.localdomain>
-Message-ID: <Pine.LNX.4.64.0705240924530.5473@localhost.localdomain>
-References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
- <20070522135927.GA2098@stusta.de> <Pine.LNX.4.64.0705221002350.14457@localhost.localdomain>
- <20070522161951.GC2098@stusta.de> <m3ejl8k6e3.fsf@maximus.localdomain>
- <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain>
- <m37ir0iodl.fsf@maximus.localdomain> <a781481a0705230137v4c8ba82fx263212a2958b55b9@mail.gmail.com>
- <Pine.LNX.4.64.0705230908180.4309@localhost.localdomain>
- <a781481a0705230646x9a0255ak4254d05ba5442cad@mail.gmail.com>
- <m33b1mz7sz.fsf@maximus.localdomain>
+	Thu, 24 May 2007 09:28:12 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:39587 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757722AbXEXN2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 09:28:10 -0400
+X-IronPort-AV: i="4.14,573,1170651600"; 
+   d="scan'208"; a="30831252:sNHT25670645"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Paul Mundt" <lethal@linux-sh.org>
+Subject: Re: how to allow board writers to customize driver behavior (watchdog here)
+Date: Thu, 24 May 2007 09:29:51 -0400
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Bryan Wu" <Bryan.Wu@analog.com>
+References: <8bd0f97a0705232121j32fcff72hd04b04e37507450e@mail.gmail.com> <20070524052312.GA2447@linux-sh.org>
+In-Reply-To: <20070524052312.GA2447@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.396, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, DRUGS_ANXIETY 0.40, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705240929.51696.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 24 May 2007 13:27:16.0890 (UTC) FILETIME=[3F651FA0:01C79E07]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007, Krzysztof Halasa wrote:
+On Thu 24 May 2007 01:23, Paul Mundt pondered:
+> On Thu, May 24, 2007 at 12:21:47AM -0400, Mike Frysinger wrote:
+> > is this completely bad mojo ?  is there some other mechanism that
+> > provides what i want and i just dont know about it ?  or do i just
+> > make people change the driver to fit their application, thus throwing
+> > out the idea of keeping all board-specific details in just the boards
+> > file ...
+> 
+> It sounds like your constraining your driver based on terminology.
+> Watchdogs on most embedded platforms support either a 'reset' mode or
+> otherwise act as periodic timers, trying to push both of these
+> functionalities in to a watchdog driver is rather pointless.
+> CONFIG_WATCHDOG implies 'reset' mode by definition.
 
-> "Satyam Sharma" <satyam.sharma@gmail.com> writes:
->
-> > Actually there's another thing :-) The __attribute__((xxx)) must go with the
-> > function _declarations_ (and not the implementations/definitions). I noticed
-> > after my previous mail that most of the double annotations are actually in
-> > the case of the _declarations_ of these non-returning functions, whereas
-> > most of the single-occurrences of NORET_TYPE were in the function
-> > definitions, which means your patch that simply got rid of NORET_TYPE
-> > actually ended up doing exactly the right thing that we wanted :-)
->
-> Only half of it. Half of right thing is (here) a bad thing.
->
-> NORET_TYPE does not do any harm.
-> Removing it removes pointers to attrib((noreturn)) candidates.
-> Simple.
+I understand what you mean - typically - most people think of watchdog == 
+reset.
 
-everybody take a valium -- i asked andrew to drop that patch from the
-mm-tree until i get the time to go back and take a closer look.
+But, calling it a periodic timer, and servicing it with the watchdog user 
+space demon is even more confusing - isn't it?
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+-Robin
