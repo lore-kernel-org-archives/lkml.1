@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbXEXAgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbXEXAgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbXEXAgb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 23 May 2007 20:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756310AbXEXAgS
+	id S1761588AbXEXAgx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 23 May 2007 20:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758025AbXEXAgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 23 May 2007 20:36:18 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40188 "EHLO
+	Wed, 23 May 2007 20:36:22 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40210 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755709AbXEXAgR (ORCPT
+	with ESMTP id S1757606AbXEXAgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 23 May 2007 20:36:17 -0400
+	Wed, 23 May 2007 20:36:20 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [GIT PULL -mm] Unionfs cleanups and fixes
-Date: Wed, 23 May 2007 20:35:50 -0400
-Message-Id: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
+Cc: akpm@linux-foundation.org, Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 01/21] Unionfs: Tiny documentation fixups
+Date: Wed, 23 May 2007 20:35:51 -0400
+Message-Id: <11799669711151-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.rc1.165.gaf9b
+In-Reply-To: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
+References: <11799669712090-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patches consist of mostly cleanups of the Unionfs code, as
-well as fixes for several harder to hit bugs (resource/memory leaks).
+From: Erez Zadok <ezk@cs.sunysb.edu>
 
-As before, there is a git repo at:
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+---
+ Documentation/filesystems/unionfs/usage.txt |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/unionfs.git
-
-(master.kernel.org:/pub/scm/linux/kernel/git/jsipek/unionfs.git)
-
-There are 21 new commits:
-
-	Unionfs: Correctly decrement refcounts of mnt's upon branch management
-	Unionfs: Removed a trailing whitespace
-	Unionfs: Actually catch bad use of unionfs_mnt{get,put}
-	Unionfs: Remove defunct unionfs_put_inode super op
-	Unionfs: Documentation update regarding overlapping branches and new lookup code
-	Unionfs: Disallow setting leftmost branch to readonly
-	Unionfs: Use krealloc instead of open-coding the functionality
-	Unionfs: Call realloc unconditionally
-	Unionfs: Don't leak resources when copyup fails partially
-	Unionfs: Prefix external functions with 'extern' properly
-	Unionfs: Combine unionfs_write with __unionfs_write.
-	Unionfs: Move unionfs_query_file to commonfops.c
-	Unionfs: Rename our "do_rename" to __unionfs_rename
-	Unionfs: Rename Unionfs's double_lock_dentry to avoid confusion
-	Unionfs: Consistent pointer declaration spacing
-	Unionfs: Added numerous comments
-	Unionfs: Cleanup of strings and comments
-	Unionfs: Add missing copyright notices
-	Unionfs: Every printk should prefix with "unionfs: " consistently
-	Unionfs: Coding style fixes
-	Unionfs: Tiny documentation fixups
-
-Thanks,
-
-Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+diff --git a/Documentation/filesystems/unionfs/usage.txt b/Documentation/filesystems/unionfs/usage.txt
+index 13fbcea..1c7554b 100644
+--- a/Documentation/filesystems/unionfs/usage.txt
++++ b/Documentation/filesystems/unionfs/usage.txt
+@@ -81,10 +81,10 @@ CACHE CONSISTENCY
+ If you modify any file on any of the lower branches directly, while there is
+ a Unionfs 2.0 mounted above any of those branches, you should tell Unionfs
+ to purge its caches and re-get the objects.  To do that, you have to
+-incremenet the generation number of the superblock using the following
++increment the generation number of the superblock using the following
+ command:
+ 
+-# mount -t unionfs -o remount,remount,incgen none MOUNTPOINT
++# mount -t unionfs -o remount,incgen none MOUNTPOINT
+ 
+ 
+ For more information, see <http://unionfs.filesystems.org/>.
+-- 
+1.5.2.rc1.165.gaf9b
 
