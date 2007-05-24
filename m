@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750995AbXEXNzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751111AbXEXN47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750995AbXEXNzq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 09:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750723AbXEXNzj
+	id S1751111AbXEXN47 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 09:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750705AbXEXN4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 09:55:39 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:44118 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbXEXNzi (ORCPT
+	Thu, 24 May 2007 09:56:52 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:13185 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbXEXN4v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 09:55:38 -0400
-Date: Wed, 23 May 2007 21:20:55 -0400
-From: David Hollis <dhollis@davehollis.com>
-Subject: Re: [stable] Wanted: Allow adding new device IDs during the	-stable
- cycle
-In-reply-to: <20070522221718.GC2302@kroah.com>
-To: Greg KH <greg@kroah.com>
-Cc: Dave Jones <davej@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Message-id: <1179969655.4489.3.camel@dhollis-lnx.sunera.com>
-MIME-version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com>
-	<46533EA8.7020602@garzik.org> <20070522193538.GA885@kroah.com>
-	<20070522195135.GG12157@redhat.com>  <20070522221718.GC2302@kroah.com>
+	Thu, 24 May 2007 09:56:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=IojC+dcoinnyFPgWmhSkng8USAEXRMndOp9awUfoSRAd+Rnxa8wJc/jyFFDM8Znsl9KZQg/ryt1v4sgOUKdyY6ZKxVDVKclZFreg5aIgwoTEXxPkhnU8xevm6GVuUaMcDm8SQi7xGwoZSB1fMNWJemrQsW+e4wzNcV1viYQm81U=
+Message-ID: <2c0942db0705240656k7d7e4e47r9c43168cc4cecf49@mail.gmail.com>
+Date: Thu, 24 May 2007 06:56:49 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Romano Giannetti" <romanol@upcomillas.es>
+Subject: Re: 2.6.21.1 fails to suspend/resume to disk (sort of)
+Cc: "Antonino Ingargiola" <tritemio@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1180008823.15600.35.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1179905115.7043.25.camel@localhost>
+	 <200705231105.08408.rjw@sisk.pl> <1179914262.7043.56.camel@localhost>
+	 <5486cca80705240101u2fb6a954q53025752560f3ef7@mail.gmail.com>
+	 <1180008823.15600.35.camel@localhost>
+X-Google-Sender-Auth: a1328265ab582c70
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-22 at 15:17 -0700, Greg KH wrote:
+On 5/24/07, Romano Giannetti <romanol@upcomillas.es> wrote:
+> On Thu, 2007-05-24 at 10:01 +0200, Antonino Ingargiola wrote:
+> > 2007/5/23, Romano Giannetti <romano.giannetti@gmail.com>:
+> > [cut]
+> > > Uf, I will try to find the time. I am on my way to try to compile
+> > > 2.6.21.2 now. Problem is that a kernel compile "the ubuntu way" last
+> > > hours here. If there is an expert on make-kpkg here, I could use some
+> > > advise.
+>
+>
+> > Is not the ubuntu or debian way to take hours to compile. Is that you
+> > have to trim the config and enable the only modules you need for your
+> > hardware, then a rebuild cycle could last 10-15 min.
+>
+> That is a problem, yes. But I was referring to the need of a make-kpkg
+> clean every time you recompile changing the EXTRAVERSION, wich forces a
+> make clean. I am trying to discover how to build manually and initramfs
+> that works...
 
-> > 
-> > Theres more to this than just PCI IDs though.
-> > ac97 ID updates, usb id updates, etc, etc.
-> 
-> USB ids also can be added through sysfs :)
-> 
+Yeah, the make-kpkg clean is highly annoying, and eventually made me
+give up on using that tool. Instead, I've been using the deb-pkg
+target that ships with the kernel. When bisecting, I use a script like
+the one below to test a new kernel with a minimum of interaction. It
+should give you a good idea of how to do all the steps by hand.
 
-FWIW,
+And yeah, paring down the .config is critical :-).
 
-With the asix.c driver, you can't just add the USB IDs and have it work.
-Each ID also needs to be told which driver structure to use, since the
-driver itself supports three similar, but distinct chips.  Adding the
-IDs to the driver itself is naturally trivial, but adding via sysfs or
-the like doesn't work.  I would imagine that there are other drivers
-that operate quite similarly.
-
-
--- 
-David Hollis <dhollis@davehollis.com>
-
+#!/bin/bash
+sudo -v
+make oldconfig
+fakeroot make -j2 deb-pkg
+sudo dpkg -i ../linux-2.6.20_2.6.20_amd64.deb
+sudo update-initramfs -c -k 2.6.20
