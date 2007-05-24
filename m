@@ -1,106 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbXEXHoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760294AbXEXHqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759667AbXEXHoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 03:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755952AbXEXHoO
+	id S1760294AbXEXHqZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 03:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756274AbXEXHqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 03:44:14 -0400
-Received: from omta05sl.mx.bigpond.com ([144.140.93.195]:23821 "EHLO
-	omta05sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754964AbXEXHoN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 03:44:13 -0400
-Message-ID: <4655423E.6000202@bigpond.net.au>
-Date: Thu, 24 May 2007 17:43:58 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, colpatch@us.ibm.com,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Con Kolivas <kernel@kolivas.org>,
-       Christoph Lameter <clameter@sgi.com>
-CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v12
-References: <20070513153853.GA19846@elte.hu> <464A6698.3080400@bigpond.net.au>	 <20070516063625.GA9058@elte.hu> <464CE8FD.4070205@bigpond.net.au>	 <20070518071325.GB28702@elte.hu> <464DA61A.4040406@bigpond.net.au> <b647ffbd0705210825y25331066x8b2a4d50cdb7c266@mail.gmail.com> <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au>
-In-Reply-To: <4652DC03.60801@bigpond.net.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07sl.mx.bigpond.com from [60.231.45.148] using ID pwil3058@bigpond.net.au at Thu, 24 May 2007 07:44:03 +0000
+	Thu, 24 May 2007 03:46:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56886 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754964AbXEXHqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 03:46:17 -0400
+Date: Thu, 24 May 2007 09:45:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Anant Nitya <kernel@prachanda.info>, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] local_softirq_pending storm
+Message-ID: <20070524074534.GA21138@elte.hu>
+References: <200705091942.22920.kernel@prachanda.hub> <200705191525.28400.kernel@prachanda.hub> <1179601868.12981.127.camel@chaos> <200705200253.44992.kernel@prachanda.hub> <1179697388.6570.26.camel@chaos> <6bffcb0e0705221203s1ba21ed3j641e91036859db7d@mail.gmail.com> <20070522201046.GA6113@elte.hu> <46547345.8000808@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46547345.8000808@redhat.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Williams wrote:
-> Peter Williams wrote:
->> Peter Williams wrote:
->>> Dmitry Adamushko wrote:
->>>> On 18/05/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
->>>> [...]
->>>>> One thing that might work is to jitter the load balancing interval a
->>>>> bit.  The reason I say this is that one of the characteristics of top
->>>>> and gkrellm is that they run at a more or less constant interval (and,
->>>>> in this case, X would also be following this pattern as it's doing
->>>>> screen updates for top and gkrellm) and this means that it's possible
->>>>> for the load balancing interval to synchronize with their intervals
->>>>> which in turn causes the observed problem.
->>>>
->>>> Hum.. I guess, a 0/4 scenario wouldn't fit well in this explanation..
->>>
->>> No, and I haven't seen one.
->>>
->>>> all 4 spinners "tend" to be on CPU0 (and as I understand each gets
->>>> ~25% approx.?), so there must be plenty of moments for
->>>> *idle_balance()* to be called on CPU1 - as gkrellm, top and X consume
->>>> together just a few % of CPU. Hence, we should not be that dependent
->>>> on the load balancing interval here..
->>>
->>> The split that I see is 3/1 and neither CPU seems to be favoured with 
->>> respect to getting the majority.  However, top, gkrellm and X seem to 
->>> be always on the CPU with the single spinner.  The CPU% reported by 
->>> top is approx. 33%, 33%, 33% and 100% for the spinners.
->>>
->>> If I renice the spinners to -10 (so that there load weights dominate 
->>> the run queue load calculations) the problem goes away and the 
->>> spinner to CPU allocation is 2/2 and top reports them all getting 
->>> approx. 50% each.
->>
->> For no good reason other than curiosity, I tried a variation of this 
->> experiment where I reniced the spinners to 10 instead of -10 and, to 
->> my surprise, they were allocated 2/2 to the CPUs on average.  I say on 
->> average because the allocations were a little more volatile and 
->> occasionally 0/4 splits would occur but these would last for less than 
->> one top cycle before the 2/2 was re-established.  The quickness of 
->> these recoveries would indicate that it was most likely the idle 
->> balance mechanism that restored the balance.
->>
->> This may point the finger at the tick based load balance mechanism 
->> being too conservative
+
+* Chuck Ebbert <cebbert@redhat.com> wrote:
+
+> >  	if (need_resched() && system_state == SYSTEM_RUNNING) {
+> > -		raw_local_irq_disable();
+> > -		_local_bh_enable();
+> > -		raw_local_irq_enable();
+> > +		local_bh_enable();
+> >  		__cond_resched();
+> >  		local_bh_disable();
+> >  		return 1;
 > 
-> The relevant code, find_busiest_group() and find_busiest_queue(), has a 
-> lot of code that is ifdefed by CONFIG_SCHED_MC and CONFIG_SCHED_SMT and, 
-> as these macros were defined in the kernels I was testing with, I built 
-> a kernel with these macros undefined and reran my tests.  The 
-> problems/anomalies were not present in 10 consecutive tests on this new 
-> kernel.  Even better on the few occasions that a 3/1 split did occur it 
-> was quickly corrected to 2/2 and top was reporting approx 49% of CPU for 
-> all spinners throughout each of the ten tests.
+> We may have a problem with that:
 > 
-> So all that is required now is an analysis of the code inside the ifdefs 
-> to see why it is causing a problem.
+>  BUG: warning at kernel/softirq.c:138/local_bh_enable() (Not tainted)
+>   [<c042b2ef>] local_bh_enable+0x45/0x92
+>   [<c06036b7>] cond_resched_softirq+0x2c/0x42
+>   [<c059d5d0>] release_sock+0x54/0xa3
+>   [<c05c9428>] tcp_sendmsg+0x91b/0xa0c
+>   [<c05e1bb9>] inet_sendmsg+0x3b/0x45
+>   [<c059af34>] sock_aio_write+0xf9/0x105
+>   [<c0476035>] do_sync_write+0xc7/0x10a
+>   [<c0437265>] autoremove_wake_function+0x0/0x35
+>   [<c047688e>] vfs_write+0xbc/0x154
+>   [<c0476e8c>] sys_write+0x41/0x67
+>   [<c0404f70>] syscall_call+0x7/0xb
 
-Further testing indicates that CONFIG_SCHED_MC is not implicated and
-it's CONFIG_SCHED_SMT that's causing the problem.  This rules out the
-code in find_busiest_group() as it is common to both macros.
+hm, this place really shouldnt call cond_resched_softirq() with hardirqs 
+disabled.
 
-I think this makes the scheduling domain parameter values the most
-likely cause of the problem.  I'm not very familiar with this code so 
-I've added those who've modified this code in the last year or so to the 
-address of this e-mail.
+perhaps a buggy ->sk_backlog_rcv() handler disabled interrupts without 
+restoring them?
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+could you enable CONFIG_PROVE_LOCKING and apply the patch below - which 
+location is printed as having last disabled hardirqs?
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+	Ingo
 
+--------------------->
+Subject: [patch] softirqs: print out irq-trace events
+From: Ingo Molnar <mingo@elte.hu>
+
+some code is fiddling with softirqs but hardirqs are disabled, so try to 
+figure out who disabled hardirqs.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/softirq.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+Index: linux/kernel/softirq.c
+===================================================================
+--- linux.orig/kernel/softirq.c
++++ linux/kernel/softirq.c
+@@ -135,7 +135,15 @@ void local_bh_enable(void)
+ 
+ 	WARN_ON_ONCE(in_irq());
+ #endif
+-	WARN_ON_ONCE(irqs_disabled());
++	if (irqs_disabled()) {
++		static int once = 1;
++
++		if (once) {
++			once = 0;
++			print_irqtrace_events(current);
++			WARN_ON(1);
++		}
++	}
+ 
+ #ifdef CONFIG_TRACE_IRQFLAGS
+ 	local_irq_save(flags);
