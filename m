@@ -1,51 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761448AbXEYLu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761689AbXEYLwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761448AbXEYLu5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 07:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbXEYLuv
+	id S1761689AbXEYLwX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 07:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbXEYLwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 07:50:51 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:33903 "EHLO twin.jikos.cz"
+	Fri, 25 May 2007 07:52:13 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:28434 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752427AbXEYLuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 07:50:50 -0400
-Date: Fri, 25 May 2007 13:50:37 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Yoann Padioleau <padator@wanadoo.fr>
-cc: kernel-janitors@lists.osdl.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] potential parse error in ifdef 
-In-Reply-To: <87abvtfi9w.fsf@wanadoo.fr>
-Message-ID: <Pine.LNX.4.64.0705251349330.8531@twin.jikos.cz>
-References: <87abvtfi9w.fsf@wanadoo.fr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754269AbXEYLwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 07:52:11 -0400
+Date: Fri, 25 May 2007 13:49:11 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Chinner <dgc@sgi.com>
+Cc: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+Message-ID: <20070525114910.GQ7653@kernel.dk>
+References: <18006.38689.818186.221707@notabene.brown> <20070525111557.GP85884050@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070525111557.GP85884050@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 May 2007, Yoann Padioleau wrote:
+On Fri, May 25 2007, David Chinner wrote:
+> > The second, while much easier, can fail.
+> 
+> So we do a test I/O to see if the device supports them before
+> enabling that mode.  But, as we've recently discovered, this is not
+> sufficient to detect *correctly functioning* barrier support.
 
-> I have made a tool to parse the kernel that does not pre-process the
-> source. That means that my parser tries to parse all the code, including
-> code in the #else branch or code that is not often compiled because
-> the driver is not very used (or not used at all). So, my parser
-> sometimes reports parse error not originally detected by gcc. 
-> Here is my (first) patch.
->  drivers/char/watchdog/ixp2000_wdt.c |    2 +-
->  drivers/mtd/devices/pmc551.c        |    2 +-
->  drivers/mtd/nand/autcpu12.c         |    2 +-
->  drivers/mtd/nand/ppchameleonevb.c   |    2 +-
->  drivers/net/amd8111e.c              |    2 +-
->  drivers/net/skfp/smt.c              |    2 +-
->  drivers/scsi/aic7xxx/aic79xx_core.c |    2 +-
->  sound/arm/sa11xx-uda1341.c          |    2 +-
->  8 files changed, 8 insertions(+), 8 deletions(-)
+Right, those are two different things. But paranoia aside, will this
+ever be a real life problem? I've always been of the opinion to just
+nicely ignore them. We can't easily detect it and tell the user his hw
+is crap.
 
-As these are totally independent fixes across various subsystems, you 
-should probably split the patch into per-subsystem patches and submit them 
-separately.
+> > So a filesystem should be
+> > prepared to deal with that failure by falling back to the first
+> > option.
+> 
+> I don't buy that argument.....
 
-Thanks,
+The problem with Neils reasoning there is that blkdev_issue_flush() may
+use the same method as the barrier to ensure data is on platter.
+
+A barrier write will include a flush, but it may also use the FUA bit to
+ensure data is on platter. So the only situation where a fallback from a
+barrier to flush would be valid, is if the device lied and told you it
+could do FUA but it could not and that is the reason why the barrier
+write failed. If that is the case, the block layer should stop using FUA
+and fallback to flush-write-flush. And if it does that, then there's
+never a valid reason to switch from using barrier writes to
+blkdev_issue_flush() since both methods would either both work or both
+fail.
+
+> > Thus the general sequence might be:
+> > 
+> >   a/ issue all "preceding writes".
+> >   b/ issue the commit write with BIO_RW_BARRIER
+> 
+> At this point, the filesystem has done everything it needs to ensure
+> that the block layer has been informed of the I/O ordering
+> requirements. Why should the filesystem now have to detect block
+> layer breakage, and then use a different block layer API to issue
+> the same I/O under the same constraints?
+
+It's not block layer breakage, it's a device issue.
+
+> > 2/ Mirror devices.  This includes md/raid1 and dm-raid1.
+> ......
+> >    Hopefully this is unlikely to happen.  What device would work
+> >    correctly with barriers once, and then not the next time?
+> >    The answer is md/raid1.  If you remove a failed device and add a
+> >    new device that doesn't support barriers, md/raid1 will notice and
+> >    stop supporting barriers.
+> 
+> In case you hadn't already guess, I don't like this behaviour at
+> all.  It makes async I/O completion of barrier I/O an ugly, messy
+> business, and every place you do sync I/O completion you need to put
+> special error handling.
+
+That's unfortunately very true. It's an artifact of the sometimes
+problematic device capability discovery.
+
+> If this happens to md/raid1, then why can't it simply do a
+> blkdev_issue_flush, write, blkdev_issue_flush sequence to the device
+> that doesn't support barriers and then the md device *never changes
+> behaviour*. Next time the filesystem is mounted, it will turn off
+> barriers because they won't be supported....
+
+Because if it doesn't support barriers, blkdev_issue_flush() wouldn't
+work either. At least that is the case for SATA/IDE, SCSI is somewhat
+different (and has somewhat other issues).
+
+> >  - Should the various filesystems be "fixed" as suggested above?  Is 
+> >     someone willing to do that?
+> 
+> Alternate viewpoint - should the block layer be fixed so that the
+> filesystems only need to use one barrier API that provides static
+> behaviour for the life of the mount?
+
+blkdev_issue_flush() isn't part of the barrier API, and using it as a
+work-around for a device that has barrier "issues" is wrong for the
+reasons listed above.
+
+The DRAIN_FUA -> DRAIN_FLUSH automatic downgrade I mentioned above
+should be added, in which case blkdev_issue_flush() would never be
+needed (unless you want to do a data-less barrier, and we should
+probably add that specific functionality with an empty bio instead of
+providing an alternate way of doing that).
 
 -- 
-Jiri Kosina
+Jens Axboe
+
