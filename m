@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbXEYEFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbXEYEIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbXEYEFv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 00:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbXEYEFo
+	id S1754210AbXEYEIB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 00:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750731AbXEYEHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 00:05:44 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:43771 "EHLO smtp.ocgnet.org"
+	Fri, 25 May 2007 00:07:54 -0400
+Received: from iucha.net ([209.98.146.184]:42504 "EHLO mail.iucha.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750715AbXEYEFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 00:05:42 -0400
-Date: Fri, 25 May 2007 13:04:45 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Bryan Wu <Bryan.Wu@analog.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: how to allow board writers to customize driver behavior (watchdog here)
-Message-ID: <20070525040445.GA8395@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Robin Getz <rgetz@blackfin.uclinux.org>,
-	Mike Frysinger <vapier.adi@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Bryan Wu <Bryan.Wu@analog.com>,
-	Thomas Gleixner <tglx@linutronix.de>
-References: <8bd0f97a0705232121j32fcff72hd04b04e37507450e@mail.gmail.com> <200705240929.51696.rgetz@blackfin.uclinux.org> <20070524152318.GA4491@linux-sh.org> <200705241332.30335.rgetz@blackfin.uclinux.org>
+	id S1750724AbXEYEHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 00:07:53 -0400
+Date: Thu, 24 May 2007 23:07:52 -0500
+To: Jan Kara <jack@suse.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Oops in dentry_iput with 2.6.22-rc2 on AMD64
+Message-ID: <20070525040752.GB5762@iucha.net>
+References: <20070522041036.GD6074@iucha.net> <20070522095711.GB27428@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="QTprm0S8XgL7H0Dt"
 Content-Disposition: inline
-In-Reply-To: <200705241332.30335.rgetz@blackfin.uclinux.org>
+In-Reply-To: <20070522095711.GB27428@atrey.karlin.mff.cuni.cz>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 01:32:30PM -0400, Robin Getz wrote:
-> On Thu 24 May 2007 11:23, Paul Mundt pondered:
-> > 
-> > Calling it a periodic timer when its in periodic timer mode makes sense.
-> 
-> No disagreements - but I don't think that a watchdog that doesn't cause a 
-> reset is a periodic timer.
-> 
-I'm not sure what else you think it is? On most platforms, when it's not
-in reset mode, it works as a free-running timer with an IRQ generated on
-overflow. I've certainly used the watchdog as a system timer before on
-boards where all of the timer channels are tied up for other uses.
 
-> > Why you would want to interface that with a userspace watchdog daemon is
-> > beyond me, they're conceptually unrelated.
-> 
-> Agreed again - periodic timers have nothing to do with watchdogs. This is 
-> where I am confused about why you are saying that the only event a watchdog 
-> can have is a hard reset.
-> 
-No, what I said was that the only event that _matters_ to CONFIG_WATCHDOG
-is a hard reset. So far no one has suggested anything outside of hard
-reset, periodic timer, or softlockup detection that would be useful to
-extend CONFIG_WATCHDOG for.
+--QTprm0S8XgL7H0Dt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-If you're talking about specific events, clockevents are still a much
-better way to go than trying to hammer something in to CONFIG_WATCHDOG
-that it was never designed for. If you have some 'special' events for
-your watchdog that would be of use to others, tying these in as
-additional flags for clockevents would be far more beneficial anyways.
+On Tue, May 22, 2007 at 11:57:11AM +0200, Jan Kara wrote:
+> > I was running a multithreaded perl application that leaks some memory
+> > so it gets to eat up a significant chunk of my 2 GB and even push a
+> > bit into swap.  I left it running before going out for a walk.
+>   Hmm, what seems suspitious is, that in R12 (which probably contains
+> the address dereferenced later) is address ffff9100... while all other
+> addresses start with ffff8100. So it seems to me it could be a 1-bit
+> flip. Care to check your memory with memtest?
 
-> > I'm not advocating hiding a clocksource somewhere in the depths of
-> > CONFIG_WATCHDOG, they're completely unrelated.
-> 
-> I (and many others) consider a "watchdog" a clock sink - something that needs 
-> to be poked within certain limits (too fast can indicate a failures just as 
-> too slow is a failure).
-> 
-Currently there's nothing in the kernel that cares about clearing 'too fast'.
-I can't imagine why this _should_ be treated as a failure, but feel free
-to code up a solution if you feel it will be useful.
+I let it run overnight: 8 passes and no surprises.  This is a system
+that has been quite stable for a year and a half, except finding the
+occasional kernel bug ;)
 
-> The event or how something is notified of the failure of the watchdog to be 
-> serviced shouldn't determine what the name is.
-> 
-If all you want is a timer that you occasionally have to poke and then
-take some notification when it expires, you can just use a regular
-one-shot timer anyways and bank off of the system timer, the 'watchdog'
-is certainly not doing anything useful at this point.
+>   Also this is a code all other people use all the time so I guess we
+> would see more reports if this was some general bug...
 
-So far the only example anyone has provided outside of periodic timers or
-hardware reset has been dumping the stack when something gets stuck.
-Softlockup does this already today, using a timer.
+Haven't got any more oopses like that, either.
 
-If your system is completely dead, you won't have any way to trigger or
-see the stack dump anyways, so the watchdog doesn't buy you anything
-there, either.
+Thanks,
+florin
 
-What many watchdogs do today is simply to have split timer for userspace
-and the actual hardware (where userspace has to poke the timer every now
-and then, or the kernel will allow the overflow). This is pretty common
-for watchdogs with very fast overflow periods.
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
 
-There's certainly nothing wrong with having a timer that runs out and
-kicks a notifier chain if there's something special you want to do, but
-tying up the watchdog hardware for that is silly. There are many other
-things one has to use the watchdog hardware for anyways (reset, periodic
-timing, frequency scaling -- waiting for PLL stabilization, etc.). Tying
-down a hardware block where a struct timer_list will do the same work
-makes no sense.
+--QTprm0S8XgL7H0Dt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGVmEYND0rFCN2b1sRAnM/AKCABqe1Axv8e76SYi+nGaoYiU2VDACcD03n
+xH/Q6x7l/78tv4zJAlOni28=
+=BGQY
+-----END PGP SIGNATURE-----
+
+--QTprm0S8XgL7H0Dt--
