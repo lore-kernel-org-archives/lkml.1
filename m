@@ -1,177 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762999AbXEYNMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbXEYNM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762999AbXEYNMO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 09:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbXEYNL7
+	id S1763298AbXEYNM4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 09:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbXEYNMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 09:11:59 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:53724 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756769AbXEYNL6 (ORCPT
+	Fri, 25 May 2007 09:12:49 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:44837
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751133AbXEYNMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 09:11:58 -0400
-Message-ID: <4656E08B.2030506@hitachi.com>
-Date: Fri, 25 May 2007 22:11:39 +0900
-From: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Fri, 25 May 2007 09:12:47 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Date: Fri, 25 May 2007 15:12:09 +0200
+User-Agent: KMail/1.9.6
+Cc: "Uwe Bugla" <uwe.bugla@gmx.de>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+References: <20070524195616.234280@gmx.net> <20070524130659.de435bd4.akpm@linux-foundation.org>
+In-Reply-To: <20070524130659.de435bd4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, holt@sgi.com, alan@lxorguk.ukuu.org.uk,
-       masami.hiramatsu.pt@hitachi.com, yumiko.sugita.yf@hitachi.com,
-       soshima@redhat.com, haoki@redhat.com
-Subject: [PATCH 6/7] ELF-FDPIC: enable core dump filtering
-References: <4656DBFB.2050501@hitachi.com>
-In-Reply-To: <4656DBFB.2050501@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705251512.09878.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables core dump filtering for ELF-FDPIC-formatted
-core file.
+On Thursday 24 May 2007 22:06:59 Andrew Morton wrote:
+> On Thu, 24 May 2007 21:56:16 +0200
+> "Uwe Bugla" <uwe.bugla@gmx.de> wrote:
+> 
+> > Hi everybody,
+> 
+> (added linux-wireless, others)
+> 
+> > The patch against b44.c contained in 2.6.22-rc2-mm1 has two consequences:
+> > 
+> > 1. a tight binding to module ssb whose function or necessity I neither see through nor do comprehend
+> > 
+> > 2. a breakdown (disfunctionality) of my onboard NIC.
+> > 
+> > lspci -v looks like this:
+> > 
+> > 00:00.0 Host bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE DRAM Controller/Host-Hub Interface (rev 02)
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 80b2
+> > 	Flags: bus master, fast devsel, latency 0
+> > 	Memory at f8000000 (32-bit, prefetchable) [size=64M]
+> > 	Capabilities: [e4] Vendor Specific Information
+> > 	Capabilities: [a0] AGP version 2.0
+> > 
+> > 00:01.0 PCI bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE Host-to-AGP Bridge (rev 02) (prog-if 00 [Normal decode])
+> > 	Flags: bus master, 66MHz, fast devsel, latency 64
+> > 	Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+> > 	I/O behind bridge: 0000d000-0000dfff
+> > 	Memory behind bridge: f2000000-f27fffff
+> > 	Prefetchable memory behind bridge: f3f00000-f7ffffff
+> > 
+> > 00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 02) (prog-if 00 [UHCI])
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 8089
+> > 	Flags: bus master, medium devsel, latency 0, IRQ 17
+> > 	I/O ports at b800 [size=32]
+> > 
+> > 00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #2 (rev 02) (prog-if 00 [UHCI])
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 8089
+> > 	Flags: bus master, medium devsel, latency 0, IRQ 20
+> > 	I/O ports at b400 [size=32]
+> > 
+> > 00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 02) (prog-if 00 [UHCI])
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 8089
+> > 	Flags: bus master, medium devsel, latency 0, IRQ 16
+> > 	I/O ports at b000 [size=32]
+> > 
+> > 00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2 EHCI Controller (rev 02) (prog-if 20 [EHCI])
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 8089
+> > 	Flags: bus master, medium devsel, latency 0, IRQ 18
+> > 	Memory at f1800000 (32-bit, non-prefetchable) [size=1K]
+> > 	Capabilities: [50] Power Management version 2
+> > 	Capabilities: [58] Debug port
+> > 
+> > 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 82) (prog-if 00 [Normal decode])
+> > 	Flags: bus master, fast devsel, latency 0
+> > 	Bus: primary=00, secondary=02, subordinate=02, sec-latency=32
+> > 	Memory behind bridge: f1000000-f17fffff
+> > 	Prefetchable memory behind bridge: f2800000-f3efffff
+> > 
+> > 00:1f.0 ISA bridge: Intel Corporation 82801DB/DBL (ICH4/ICH4-L) LPC Interface Bridge (rev 02)
+> > 	Flags: bus master, medium devsel, latency 0
+> > 
+> > 00:1f.1 IDE interface: Intel Corporation 82801DB (ICH4) IDE Controller (rev 02) (prog-if 8a [Master SecP PriP])
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 8089
+> > 	Flags: bus master, medium devsel, latency 0, IRQ 16
+> > 	I/O ports at 01f0 [size=8]
+> > 	I/O ports at 03f4 [size=1]
+> > 	I/O ports at 0170 [size=8]
+> > 	I/O ports at 0374 [size=1]
+> > 	I/O ports at f000 [size=16]
+> > 	Memory at 30000000 (32-bit, non-prefetchable) [size=1K]
+> > 
+> > 00:1f.3 SMBus: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) SMBus Controller (rev 02)
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 8089
+> > 	Flags: medium devsel, IRQ 19
+> > 	I/O ports at e800 [size=32]
+> > 
+> > 00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 02)
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 80b0
+> > 	Flags: bus master, medium devsel, latency 0, IRQ 19
+> > 	I/O ports at a800 [size=256]
+> > 	I/O ports at a400 [size=64]
+> > 	Memory at f0800000 (32-bit, non-prefetchable) [size=512]
+> > 	Memory at f0000000 (32-bit, non-prefetchable) [size=256]
+> > 	Capabilities: [50] Power Management version 2
+> > 
+> > 01:00.0 VGA compatible controller: ATI Technologies Inc Rage 128 PF/PRO AGP 4x TMDS (prog-if 00 [VGA])
+> > 	Subsystem: ATI Technologies Inc Rage Fury Pro/Xpert 2000 Pro
+> > 	Flags: bus master, stepping, 66MHz, medium devsel, latency 64, IRQ 17
+> > 	Memory at f4000000 (32-bit, prefetchable) [size=64M]
+> > 	I/O ports at d800 [size=256]
+> > 	Memory at f2000000 (32-bit, non-prefetchable) [size=16K]
+> > 	Expansion ROM at f3fe0000 [disabled] [size=128K]
+> > 	Capabilities: [50] AGP version 2.0
+> > 	Capabilities: [5c] Power Management version 2
+> > 
+> > 02:05.0 Ethernet controller: Broadcom Corporation BCM4401 100Base-T (rev 01)
+> > 	Subsystem: ASUSTeK Computer Inc. A7V8X motherboard
+> > 	Flags: bus master, fast devsel, latency 32, IRQ 255
+> > 	Memory at f1000000 (32-bit, non-prefetchable) [disabled] [size=8K]
+> > 	Capabilities: [40] Power Management version 2
+> > 
+> > 02:0b.0 Multimedia video controller: Brooktree Corporation Bt878 Video Capture (rev 11)
+> > 	Subsystem: Pinnacle Systems Inc. PCTV Sat (DBC receiver)
+> > 	Flags: bus master, medium devsel, latency 32, IRQ 18
+> > 	Memory at f3000000 (32-bit, prefetchable) [size=4K]
+> > 	Capabilities: [44] Vital Product Data
+> > 	Capabilities: [4c] Power Management version 2
+> > 
+> > 02:0b.1 Multimedia controller: Brooktree Corporation Bt878 Audio Capture (rev 11)
+> > 	Subsystem: Pinnacle Systems Inc. PCTV Sat (DBC receiver)
+> > 	Flags: bus master, medium devsel, latency 32, IRQ 18
+> > 	Memory at f2800000 (32-bit, prefetchable) [size=4K]
+> > 	Capabilities: [44] Vital Product Data
+> > 	Capabilities: [4c] Power Management version 2
+> > 
+> > Please note:
+> > 
+> > 1. IRQ 255 looks very idiotic, doesn't it? It does not exist at all, does it?
+> > 
+> > Questions:
+> > 
+> > 1. What is the technical need / progress of module ssb please?
+> > 
+> > 2. If Andrew Morton's guidelines clearly say: "Do test your patches on three different machines" and this guideline seems to be strictly ignored by some sparetime hackers:
+> > 
+> > What is the master plan then to avoid the fact that such a crap is being sent in to Andrew?
+> > 
+> > Yours sincerely
+> > 
+> > Uwe
+> > 
+> > P. S.: There is an important saying going like this:
+> > 
+> > Too many cooks do mess up the pap.
+> > 
+> > Regarding the patch in mm-tree I can see SIX (!) Copyright owners.
+> > The last one of them (i. e. the one of 2007) obviuosly does not seem to understand what he is doing (see that nonsense interrupt please, just incredible!) :(
+> > 
+> > In so far I would deeply appreciate Andrew Morton to throw that b44.c patch into the trashbox as soon as possible :)
+> > 
+> 
+> The code presumably worked for the developer.  The reason for merging it
+> into -mm is to allow others to identify problems such as these before the
+> code hits mainline.
+> 
+> Having bugs in -mm is normal, natural and expected.  What I _do_ very much
+> prefer to see is that these bugs get fixed promptly and, critically, that
+> the code doesn't go into Linus's tree until all the known bugs are
+> repaired.
+> 
+> Also, it's really bad when a bug makes the entire -mm release unusable for
+> testers.  Because this means that all the _other_ people who have code
+> being tested in -mm just lost a tester.  And it can cause people to just
+> not bother testing -mm kernels at all, which means that more badness will
+> get into mainline.
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- fs/binfmt_elf_fdpic.c |   52 ++++++++++++++++++++++++++--------------
- 1 files changed, 35 insertions(+), 17 deletions(-)
+You are talking a _lot_ of bullshit, and I'd really like to tell
+you to fuck off, because you have no clue how software development works.
 
-Index: linux-2.6.22-rc2-mm1/fs/binfmt_elf_fdpic.c
-===================================================================
---- linux-2.6.22-rc2-mm1.orig/fs/binfmt_elf_fdpic.c
-+++ linux-2.6.22-rc2-mm1/fs/binfmt_elf_fdpic.c
-@@ -1181,8 +1181,10 @@ static int dump_seek(struct file *file, 
-  *
-  * I think we should skip something. But I am not sure how. H.J.
-  */
--static int maydump(struct vm_area_struct *vma)
-+static int maydump(struct vm_area_struct *vma, unsigned long mm_flags)
- {
-+	int dump_ok;
-+
- 	/* Do not dump I/O mapped devices or special mappings */
- 	if (vma->vm_flags & (VM_IO | VM_RESERVED)) {
- 		kdcore("%08lx: %08lx: no (IO)", vma->vm_start, vma->vm_flags);
-@@ -1197,27 +1199,35 @@ static int maydump(struct vm_area_struct
- 		return 0;
- 	}
- 
--	/* Dump shared memory only if mapped from an anonymous file. */
-+	/* By default, dump shared memory if mapped from an anonymous file. */
- 	if (vma->vm_flags & VM_SHARED) {
- 		if (vma->vm_file->f_path.dentry->d_inode->i_nlink == 0) {
--			kdcore("%08lx: %08lx: no (share)", vma->vm_start, vma->vm_flags);
--			return 1;
-+			dump_ok = test_bit(MMF_DUMP_ANON_SHARED, &mm_flags);
-+			kdcore("%08lx: %08lx: %s (share)", vma->vm_start,
-+			       vma->vm_flags, dump_ok ? "yes" : "no");
-+			return dump_ok;
- 		}
- 
--		kdcore("%08lx: %08lx: no (share)", vma->vm_start, vma->vm_flags);
--		return 0;
-+		dump_ok = test_bit(MMF_DUMP_MAPPED_SHARED, &mm_flags);
-+		kdcore("%08lx: %08lx: %s (share)", vma->vm_start,
-+		       vma->vm_flags, dump_ok ? "yes" : "no");
-+		return dump_ok;
- 	}
- 
- #ifdef CONFIG_MMU
--	/* If it hasn't been written to, don't write it out */
-+	/* By default, if it hasn't been written to, don't write it out */
- 	if (!vma->anon_vma) {
--		kdcore("%08lx: %08lx: no (!anon)", vma->vm_start, vma->vm_flags);
--		return 0;
-+		dump_ok = test_bit(MMF_DUMP_MAPPED_PRIVATE, &mm_flags);
-+		kdcore("%08lx: %08lx: %s (!anon)", vma->vm_start,
-+		       vma->vm_flags, dump_ok ? "yes" : "no");
-+		return dump_ok;
- 	}
- #endif
- 
--	kdcore("%08lx: %08lx: yes", vma->vm_start, vma->vm_flags);
--	return 1;
-+	dump_ok = test_bit(MMF_DUMP_ANON_PRIVATE, &mm_flags);
-+	kdcore("%08lx: %08lx: %s", vma->vm_start, vma->vm_flags,
-+	       dump_ok ? "yes" : "no");
-+	return dump_ok;
- }
- 
- /* An ELF note in memory */
-@@ -1457,14 +1467,14 @@ static int elf_dump_thread_status(long s
-  */
- #ifdef CONFIG_MMU
- static int elf_fdpic_dump_segments(struct file *file, size_t *size,
--				   unsigned long *limit)
-+			   unsigned long *limit, unsigned long mm_flags)
- {
- 	struct vm_area_struct *vma;
- 
- 	for (vma = current->mm->mmap; vma; vma = vma->vm_next) {
- 		unsigned long addr;
- 
--		if (!maydump(vma))
-+		if (!maydump(vma, mm_flags))
- 			continue;
- 
- 		for (addr = vma->vm_start;
-@@ -1512,14 +1522,14 @@ end_coredump:
-  */
- #ifndef CONFIG_MMU
- static int elf_fdpic_dump_segments(struct file *file, size_t *size,
--				   unsigned long *limit)
-+			   unsigned long *limit, unsigned long mm_flags)
- {
- 	struct vm_list_struct *vml;
- 
- 	for (vml = current->mm->context.vmlist; vml; vml = vml->next) {
- 	struct vm_area_struct *vma = vml->vma;
- 
--		if (!maydump(vma))
-+		if (!maydump(vma, mm_flags))
- 			continue;
- 
- 		if ((*size += PAGE_SIZE) > *limit)
-@@ -1570,6 +1580,7 @@ static int elf_fdpic_core_dump(long sign
- 	struct vm_list_struct *vml;
- #endif
- 	elf_addr_t *auxv;
-+	unsigned long mm_flags;
- 
- 	/*
- 	 * We no longer stop all VM operations.
-@@ -1707,6 +1718,13 @@ static int elf_fdpic_core_dump(long sign
- 	/* Page-align dumped data */
- 	dataoff = offset = roundup(offset, ELF_EXEC_PAGESIZE);
- 
-+	/*
-+	 * We must use the same mm->flags while dumping core to avoid
-+	 * inconsistency between the program headers and bodies, otherwise an
-+	 * unusable core file can be generated.
-+	 */
-+	mm_flags = current->mm->flags;
-+
- 	/* write program headers for segments dump */
- 	for (
- #ifdef CONFIG_MMU
-@@ -1728,7 +1746,7 @@ static int elf_fdpic_core_dump(long sign
- 		phdr.p_offset = offset;
- 		phdr.p_vaddr = vma->vm_start;
- 		phdr.p_paddr = 0;
--		phdr.p_filesz = maydump(vma) ? sz : 0;
-+		phdr.p_filesz = maydump(vma, mm_flags) ? sz : 0;
- 		phdr.p_memsz = sz;
- 		offset += phdr.p_filesz;
- 		phdr.p_flags = vma->vm_flags & VM_READ ? PF_R : 0;
-@@ -1762,7 +1780,7 @@ static int elf_fdpic_core_dump(long sign
- 
- 	DUMP_SEEK(dataoff);
- 
--	if (elf_fdpic_dump_segments(file, current->mm, &size, &limit) < 0)
-+	if (elf_fdpic_dump_segments(file, &size, &limit, mm_flags) < 0)
- 		goto end_coredump;
- 
- #ifdef ELF_CORE_WRITE_EXTRA_DATA
+But I (as the primary developer of ssb) like to resolve the issue, too.
+Please provide more information on the actual _issue_.
+In this whole mail you basically only state that:
+> IRQ 255 looks very idiotic, doesn't it?
+Explain that in detail, please. Why do you think it's wrong?
+Which IRQ number do you get with the old b44 driver?
 
+Thanks for your testing. That is why -mm exists.
+Next time without bullshitting, please.
 
+-- 
+Greetings Michael.
