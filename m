@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761050AbXEYLFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761092AbXEYLMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761050AbXEYLFx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 07:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbXEYLFq
+	id S1761092AbXEYLMj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 07:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbXEYLMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 07:05:46 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50201 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbXEYLFq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 07:05:46 -0400
-Date: Fri, 25 May 2007 13:05:43 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, rusty@rustcorp.com.au
-Subject: Re: [patch] x86_64: fix sched_clock()
-Message-ID: <20070525110543.GM8094@one.firstfloor.org>
-References: <20070525075446.GA20140@elte.hu> <20070525080209.GE8094@one.firstfloor.org> <20070525080415.GB21446@elte.hu> <20070525082018.GF8094@one.firstfloor.org> <20070525083430.GB27236@elte.hu> <20070525084109.GI8094@one.firstfloor.org> <20070525084426.GA29973@elte.hu> <20070525084547.GJ8094@one.firstfloor.org> <20070525015544.bce3cb99.akpm@linux-foundation.org> <20070525090315.GK8094@one.firstfloor.org>
+	Fri, 25 May 2007 07:12:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49172 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751665AbXEYLMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 07:12:31 -0400
+Date: Fri, 25 May 2007 13:11:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Guillaume Chazarain <guichaz@yahoo.fr>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de,
+       kernel@kolivas.org, containers@lists.osdl.org,
+       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
+       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
+Message-ID: <20070525111140.GA24942@elte.hu>
+References: <20070523164859.GA6595@in.ibm.com> <3d8471ca0705231112rfac9cfbt9145ac2da8ec1c85@mail.gmail.com> <20070523183824.GA7388@elte.hu> <4654BF88.3030404@yahoo.fr> <20070525074500.GD6157@in.ibm.com> <20070525082951.GA25280@elte.hu> <20070525105641.GA12114@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070525090315.GK8094@one.firstfloor.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070525105641.GA12114@in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 11:03:15AM +0200, Andi Kleen wrote:
-> > This?    I sent it to you earlier this week:
+
+* Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+
+> On Fri, May 25, 2007 at 10:29:51AM +0200, Ingo Molnar wrote:
+> > btw., what are you thoughts about SMP?
 > 
-> Sorry haven't processed those yet.
-> 
-> Ah. The correct fix here is to clear the tsc flag in boot_cpu_data
-> when the option is set. Will do that.
+> I was planning on reusing smpnice concepts here, with the difference 
+> that we balance group weights across CPU in addition to total weight 
+> of CPUs.
 
-Hmm I double checked this now; tsc_disable indeed clears
-X86_FEATURE_TSC in identify_cpu and that should be always
-called before anything sched_clock related runs on a CPU.
+ok, that would be (much) simpler that any explicit vcpu approach. Do you 
+plan to add this next?
 
-Also the only possibly faulting division is protected
-by a cpu_has_tsc which even checks boot_cpu_data. this means
-even if the resync frequency code was called for
-some reason before the identify_cpu of a AP it should
-still work. For the BP this definitely cannot happen.
-
-I also tried it with qemu myself (both one and two cpus) and it worked
-
-Rusty, was this really on a standard kernel? Was it with multiple
-CPUs? 
-
--Andi
+	Ingo
