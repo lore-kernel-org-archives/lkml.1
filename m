@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbXEYKCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbXEYKJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759417AbXEYKCw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 06:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXEYKCo
+	id S1759477AbXEYKJk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 06:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbXEYKJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 06:02:44 -0400
-Received: from postfix1-g20.free.fr ([212.27.60.42]:49438 "EHLO
-	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746AbXEYKCn (ORCPT
+	Fri, 25 May 2007 06:09:33 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:44159 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752198AbXEYKJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 06:02:43 -0400
-Message-ID: <4656ACB3.3060707@yahoo.fr>
-Date: Fri, 25 May 2007 11:30:27 +0200
-From: Guillaume Chazarain <guichaz@yahoo.fr>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 25 May 2007 06:09:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LgS+hiSB4dMBJS97N3RvJbfr3dPw6KDbsQGysAb8helOc8l0lI+vgNE0hnCZFqRQWVTijwdkmqibZvSB8+prsra9Zyk+LxObS0Jh3EzySzFFsQ9RJ/xQakuJK0s3q5MRDSjMc6gw0lKd+jWzTT8IIobh+RiZT+9Gf8Kk7gLCunE=
+Message-ID: <ba1ee50c0705250309j64eb1d99j45b1ed35a4a5b1ed@mail.gmail.com>
+Date: Fri, 25 May 2007 05:09:30 -0500
+From: "Daniel Newby" <daniel.a.newby@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: how to allow board writers to customize driver behavior (watchdog here)
+In-Reply-To: <20070525040445.GA8395@linux-sh.org>
 MIME-Version: 1.0
-To: vatsa@in.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       efault@gmx.de, kernel@kolivas.org, containers@lists.osdl.org,
-       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
-       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
-References: <20070523164859.GA6595@in.ibm.com> <3d8471ca0705231112rfac9cfbt9145ac2da8ec1c85@mail.gmail.com> <20070523183824.GA7388@elte.hu> <4654BF88.3030404@yahoo.fr> <20070525074500.GD6157@in.ibm.com>
-In-Reply-To: <20070525074500.GD6157@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8bd0f97a0705232121j32fcff72hd04b04e37507450e@mail.gmail.com>
+	 <200705240929.51696.rgetz@blackfin.uclinux.org>
+	 <20070524152318.GA4491@linux-sh.org>
+	 <200705241332.30335.rgetz@blackfin.uclinux.org>
+	 <20070525040445.GA8395@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri a écrit :
-> Can you repeat your tests with this patch pls? With the patch applied, I am
-> now getting the same split between nice 0 and nice 10 task as CFS-v13
-> provides (90:10 as reported by top )
+On 5/24/07, Paul Mundt <lethal@linux-sh.org> wrote:
+> So far the only example anyone has provided outside of periodic timers or
+> hardware reset has been dumping the stack when something gets stuck.
+> Softlockup does this already today, using a timer.
 
-Yep, this fixes the problem for me too.
+Many watchdogs can be hooked up to a non-maskable interrupt (NMI) that
+cannot be disabled or preempted.  You get a stack dump even for drastic
+bugs:  ISR lock up, timer misconfiguration, level-sensitive interrupt
+line stuck asserted, and so forth.  Getting that information by other
+means can be painful and/or expensive.
 
-Thanks.
+The Blackfin chip in the original message appears to support watchdog
+NMI.
 
--- 
-Guillaume
+    -- Daniel
