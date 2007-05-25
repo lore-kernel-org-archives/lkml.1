@@ -1,47 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761158AbXEYIp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbXEYIw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761158AbXEYIp5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbXEYIpu
+	id S1759431AbXEYIw6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbXEYIww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:45:50 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34312 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbXEYIpt (ORCPT
+	Fri, 25 May 2007 04:52:52 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:39162 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbXEYIwu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:45:49 -0400
-Date: Fri, 25 May 2007 10:45:47 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, akpm@osdl.org
-Subject: Re: [patch] x86_64: fix sched_clock()
-Message-ID: <20070525084547.GJ8094@one.firstfloor.org>
-References: <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu> <20070525075446.GA20140@elte.hu> <20070525080209.GE8094@one.firstfloor.org> <20070525080415.GB21446@elte.hu> <20070525082018.GF8094@one.firstfloor.org> <20070525083430.GB27236@elte.hu> <20070525084109.GI8094@one.firstfloor.org> <20070525084426.GA29973@elte.hu>
+	Fri, 25 May 2007 04:52:50 -0400
+Subject: Re: Long delay in resume from RAM (Was Re: [patch 
+	00/69]-stablereview)
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <alpine.LFD.0.98.0705241549130.26602@woody.linux-foundation.org
+	>
+References: <20070521191612.800400000@sous-sol.org> 
+	<4652070D.3090509@redhat.com> 
+	<alpine.LFD.0.98.0705211406000.3890@woody.linux-foundation.org> 
+	<20070521212522.GL3429@sequoia.sous-sol.org> 
+	<1179870110.16656.2.camel@localhost> 
+	<alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> 
+	<1180008394.15600.26.camel@localhost> <1180019201.15600.57.camel@localhost>
+	 <alpine.LFD.0.98.0705240815530.26602@woody.linux-foundation.org> 
+	<1180044888.15241.39.camel@localhost> 
+	<alpine.LFD.0.98.0705241549130.26602@woody.linux-foundation.org>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Fri, 25 May 2007 10:52:47 +0200
+Message-Id: <1180083167.31495.6.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070525084426.GA29973@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 10:44:26AM +0200, Ingo Molnar wrote:
-> 
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > arch/i386/kernel/sched-clock.c (now built on x86_64 too with the 
-> > > patch i sent) uses the tsc_disable global flag which is non-existent 
-> > > on x86_64. So my tsc.h change adds that global flag, always-defined 
-> > > to 0.
-> > 
-> > My version of sched_clock.c doesn't have any reference to tsc_disable.
-> 
-> must be an -mm fix. I used -mm as a basis of my work. Please apply my 
-> patch.
+On Thu, 2007-05-24 at 15:49 -0700, Linus Torvalds wrote:
+>
+> On Fri, 25 May 2007, Romano Giannetti wrote:
+> >
+> > Another naive doubt I have is: in 2.6.17.13, with additional patches
+> > http://zeus2.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=d834c16516d1ebec4766fc58c059bf01311e6045
+> > http://zeus2.kernel.org/git/?p=linux/kernel/git/brodo/pcmcia-fixes-2.6.git;a=commitdiff;h=f755c48254ce743a3d4c1fd6b136366c018ee5b2
+> > http://zeus2.kernel.org/git/?p=linux/kernel/git/brodo/pcmcia-fixes-2.6.git;a=commitdiff;h=e6248ff596dd15bce0be4d780c60f173389b11c3
+> >
+> > (now in the mainline), it works. And it used the cis file too.
+>
+> It really would be nice of you to just "git bisect" this, to see where it
+> started having that 60-second delay..
+>
+> 		Linus
 
-I would prefer to find out why the mm patch was added and then hopefully
-remove it.  IMNSHO it should not be needed.
+Yep, it would be nice. I will try; but this has to wait a week or more,
+end term is approaching and this is a busy period not only for student.
+Meanwhile, I tried to compile with PCMCIA debug with nil result (it
+seems that a good part of the kernel do not compile if you override
+EXTRA_CFLAGS on the make command line). So I tried to define
+PCMCIA_DEBUG=4 in the source(s) file affected, but no joy... then I
+checked in a clean tree:
 
--Andi
+cd /linux-2.6.21.3/drivers/pcmcia
+% grep PCMCIA_DEBUG *
+Kconfig:config PCMCIA_DEBUG
+m8xx_pcmcia.c:#ifdef PCMCIA_DEBUG
+m8xx_pcmcia.c:static int pc_debug = PCMCIA_DEBUG;
+Makefile:ifeq ($(CONFIG_PCMCIA_DEBUG),y)
+
+...so it's seems that only the m8xx modules uses it, and the modules
+that load the drivers for my card is yenta_socket... no idea on how to
+enable debug.
+
+Romano
+
+
+
+--
+Romano Giannetti --- romano.giannetti@gmail.com
+Sorry for the following disclaimer, it's attached by our otugoing server
+and I cannot shut it up.
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+
