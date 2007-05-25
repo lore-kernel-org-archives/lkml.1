@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbXEYFjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbXEYFoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbXEYFjR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 01:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXEYFjE
+	id S1757113AbXEYFoi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 01:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXEYFob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 01:39:04 -0400
-Received: from mail.suse.de ([195.135.220.2]:59783 "EHLO mx1.suse.de"
+	Fri, 25 May 2007 01:44:31 -0400
+Received: from colo.lackof.org ([198.49.126.79]:49363 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbXEYFjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 01:39:02 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 2/2] msi:  Add support for the Intel chipsets that support MSI.
-Date: Fri, 25 May 2007 07:38:56 +0200
-User-Agent: KMail/1.9.6
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@ninex.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ninex@o2.pl,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	id S1752178AbXEYFoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 01:44:30 -0400
+Date: Thu, 24 May 2007 23:44:22 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Jay Cliburn <jacliburn@bellsouth.net>,
+       Grzegorz Krzystek <ninex@NineX.eu.org>, Andi Kleen <ak@suse.de>,
+       ninex@o2.pl, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
        Michael Ellerman <michael@ellerman.id.au>,
        David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>,
-       len.brown@intel.com
-References: <200705122146.l4CLkH6q012322@fire-2.osdl.org> <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com> <m1r6p5cyut.fsf_-_@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1r6p5cyut.fsf_-_@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
+Message-ID: <20070525054422.GA23748@colo.lackof.org>
+References: <m18xbrnyxi.fsf@ebiederm.dsl.xmission.com> <20070514160005.627435e3@osprey.hogchain.net> <m1odkmmft4.fsf@ebiederm.dsl.xmission.com> <20070515212200.517fcba2@osprey.hogchain.net> <m14pmcmz8r.fsf@ebiederm.dsl.xmission.com> <20070516185225.3f3ac082@osprey.hogchain.net> <m1sl9wl28m.fsf@ebiederm.dsl.xmission.com> <20070522204103.134bf5a2@osprey.hogchain.net> <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com> <20070524213157.1d39458f.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705250738.57066.ak@suse.de>
+In-Reply-To: <20070524213157.1d39458f.akpm@linux-foundation.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 May 2007 06:26:50 Eric W. Biederman wrote:
+On Thu, May 24, 2007 at 09:31:57PM -0700, Andrew Morton wrote:
+> On Thu, 24 May 2007 22:19:09 -0600 ebiederm@xmission.com (Eric W. Biederman) wrote:
 > 
-> This patch is the result of a quick survey of the Intel chipset
-> documents.  I took a quick look in the document to see if the chipset
-> supported MSI and if so I looked through to find the vendor and device
-> id of device 0 function 0 of the chipset and added a quirk for that
-> device id if I it was not a duplicate. 
+> > Currently we blacklist known bad msi configurations which means we
+> > keep getting MSI enabled on chipsets that either do not support MSI,
+> > or MSI is implemented improperly.  Since the normal IRQ routing
+> > mechanism seems to works even when MSI does not, this is a bad default
+> > and causes non-functioning systems for no good reason.
+...
+> Yup.
+> 
+> Do we have a feel for how much performace we're losing on those 
+> systems which _could_ do MSI, but which will end up defaulting
+> to not using it?
 
-It would be better to look for any PCI bridge. Sometimes there are
-different PCI bridges around (e.g. external PCI-X bridges on HT systems) 
-which might need own quirks
+Rick Jones (HP, aka Mr Netperf.org) just recently posted some data
+that happened to compare. I've clipped out thw two relevant lines below:
 
-Also in the x86 world Microsoft defined a FADT ACPI flag that MSI doesn't
-work for Vista. It might make sense to do
+http://lists.openfabrics.org/pipermail/general/2007-May/035709.html
 
-if (dmi year >= 2007 && FADT.msi_disable not set) assume it works
 
-> This patch should be safe.  The anecdotal evidence is that when dealing
-> with MSI the Intel chipsets just work.  If we find some buggy ones
-> changing the list won't be hard.
+                              Bulk Transfer                  "Latency"
+                          Unidir            Bidir
+     Card          Mbit/s SDx   SDr   Mbit/s SDx   SDr   Tran/s SDx   SDr
+---------------------------------------------------------------------------
+  Myri10G IP 9k     9320  0.862 0.949 10950  1.00  0.86   19260 19.67 16.18 *
+  Myri10G IP 9k msi 9320  0.449 0.672 10840  0.63  0.62   19430 11.68 11.56
 
-The FADT bit should be probably checked anyways.
+original posting explains the fields.
+SDx (Service Demand on Transmit) is 2x more with MSI disabled. 
+SDr (Service Demand on RX) is ~50% higher with MSI disabled.
+Ditto for latency metrics.
 
--Andi
+ISTR to remember seeing ~5-10% difference on tg3 NICs and ~20% with PCI-X
+infiniband (all on HP ZX1 chip, bottleneck was PCI-X bus).  When I posted
+a tg3 patch to linux-net (which got rejected because of tg3 HW bugs), I
+did NOT include any performance numbers like I thought I did. :(
 
- 
+hth,
+grant
