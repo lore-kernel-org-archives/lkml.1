@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763636AbXEYQzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764296AbXEYQzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763636AbXEYQzE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 12:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbXEYQy4
+	id S1764296AbXEYQzh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 12:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbXEYQza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 12:54:56 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:43912 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751481AbXEYQyz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 12:54:55 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andi Kleen <ak@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@ninex.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ninex@o2.pl,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>,
-       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>,
-       len.brown@intel.com
-Subject: Re: [PATCH 2/2] msi:  Add support for the Intel chipsets that support MSI.
-References: <200705122146.l4CLkH6q012322@fire-2.osdl.org>
-	<m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6p5cyut.fsf_-_@ebiederm.dsl.xmission.com>
-	<200705250738.57066.ak@suse.de>
-	<m17iqxcu27.fsf@ebiederm.dsl.xmission.com> <4656F5BD.40800@redhat.com>
-Date: Fri, 25 May 2007 10:52:54 -0600
-In-Reply-To: <4656F5BD.40800@redhat.com> (Chuck Ebbert's message of "Fri, 25
-	May 2007 10:42:05 -0400")
-Message-ID: <m1veegalqx.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 25 May 2007 12:55:30 -0400
+Received: from keil-draco.com ([216.193.185.50]:50138 "EHLO mail"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751292AbXEYQz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 12:55:29 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Richard Purdie <richard@openedhand.com>
+Subject: Re: [RFC] LZO de/compression support - take 4
+Date: Fri, 25 May 2007 12:55:21 -0400
+User-Agent: KMail/1.9.6
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Nitin Gupta <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm-cc@laptop.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andrey Panin <pazke@donpac.ru>, Bret Towe <magnade@gmail.com>,
+       Michael-Luke Jones <mlj28@cam.ac.uk>
+References: <4cefeab80705250445m51736a9aj8c89af893d8c242c@mail.gmail.com> <a781481a0705250537o768c609evaf32d517444f7aca@mail.gmail.com> <1180100304.5864.60.camel@localhost.localdomain>
+In-Reply-To: <1180100304.5864.60.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705251255.22600.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert <cebbert@redhat.com> writes:
-
-> http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f8993aff8b4de0317c6e081802ca5c86c449fef2
-> Commit:     f8993aff8b4de0317c6e081802ca5c86c449fef2
-> Parent:     a23cf14b161b8deeb0f701d577a0e8be6365e247
-> Author:     Shaohua Li <shaohua.li@intel.com>
-> AuthorDate: Wed Apr 25 11:05:12 2007 +0800
-> Committer:  Len Brown <len.brown@intel.com>
-> CommitDate: Wed Apr 25 01:13:47 2007 -0400
+On Friday 25 May 2007 09:38:24 Richard Purdie wrote:
+<snip>
+> > > I am however still strongly of the opinion that we should just use the
+> > > version in -mm (which is my latest version).
+> >
+> > Right, if the difference is anything >10%, code cleanup does lose
+> > its attractiveness.
 >
->     ACPI: Disable MSI on request of FADT
+> Agreed, and I still have the security and maintainability concerns. Add
+> them all together and its more unattractive.
 
-Interesting.  I'm going to have to read up on this bit.
-Perhaps it is enough.
+I can understand the security concerns, but since none of the bounds checking 
+has been removed there shouldn't be any difference from a security  
+viewpoint. I have maintained the code to a MUD server at one point - I can 
+guarantee that it had a lot more code than the LZO code - and it was so 
+highly customized that no patches to the core code from anywhere *outside* 
+that games "coders" would apply. This means that every one of those patches 
+had to be done manually - sure, it was a massive PITA - but it was worth it.
 
-Eric
+In other words - yes, it will make maintaining the code harder, but the fact 
+that the code matches the kernels style and is "lightweight" compared to the 
+original userspace code *and* Richards "miniLZO" should mitigate this.
+
+As to the performance - I can see absolutely no reason why the minimal version 
+shouldn't perform the same (or better). The kernel codes memset and memcpy 
+routines have been heavily tested *and* optimized over the years and moving 
+from macro's to inline functions shouldn't have impacted performance at all. 
+I will be testing the two code bases myself in a little bit - I'm more than a 
+little paranoid and don't like the idea of trusting anyone with a "competing 
+project" for all testing.
+
+DRH
