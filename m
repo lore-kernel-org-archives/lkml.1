@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765488AbXEYTqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765562AbXEYTqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765488AbXEYTqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 15:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765332AbXEYTpy
+	id S1765562AbXEYTqv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 15:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbXEYTqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 15:45:54 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:54473 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765321AbXEYTpx (ORCPT
+	Fri, 25 May 2007 15:46:08 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:41973 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755811AbXEYTqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 15:45:53 -0400
-Message-ID: <46573CE4.8080300@zytor.com>
-Date: Fri, 25 May 2007 12:45:40 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 25 May 2007 15:46:06 -0400
+Date: Fri, 25 May 2007 12:45:36 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] sched_clock(): cleanups, #2
+In-Reply-To: <20070525191447.GA19412@elte.hu>
+Message-ID: <alpine.LFD.0.98.0705251238440.26602@woody.linux-foundation.org>
+References: <20070525090315.GK8094@one.firstfloor.org> <20070525091928.GA3177@elte.hu>
+ <20070525094640.GL8094@one.firstfloor.org> <20070525101248.GA7547@elte.hu>
+ <20070525112020.GN8094@one.firstfloor.org> <20070525112600.GA27007@elte.hu>
+ <20070525115004.GA4574@elte.hu> <20070525115544.GP8094@one.firstfloor.org>
+ <20070525120228.GA7186@elte.hu> <alpine.LFD.0.98.0705250946120.26602@woody.linux-foundation.org>
+ <20070525191447.GA19412@elte.hu>
 MIME-Version: 1.0
-To: Ben Collins <ben.collins@ubuntu.com>
-CC: Andi Kleen <andi@firstfloor.org>, Ben Collins <bcollins@ubuntu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] i386/x86_64: Allow disabling the putstr's from	compressed
- boot wrapper
-References: <98cd38b5.git.bcollins@ubuntu.com>	 <b31c080.git.bcollins@ubuntu.com>  <p737iqxcf43.fsf@bingen.suse.de> <1180097543.12570.396.camel@cunning>
-In-Reply-To: <1180097543.12570.396.camel@cunning>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Collins wrote:
-> On Fri, 2007-05-25 at 13:33 +0200, Andi Kleen wrote:
->> Ben Collins <bcollins@ubuntu.com> writes:
->>
->> Why? 
-> 
-> Because there's no other way to make the kernel totally quiet. We've
-> been patching this out so that the boot sequence has that "clean look".
-> 
-> Other than that, it's useless :)
-> 
 
-Worse than that, it's harmful.
 
-"Clean look" means "undebuggable."
+On Fri, 25 May 2007, Ingo Molnar wrote:
+> 
+> sure enough, i'll work something sane out - i already have it partly 
+> split up. It will probably be something along the lines of: 'remove 
+> stuff that we can remove and still have functional scheduling' followed 
+> by an 'add minimal CFS patch' and then nicely split up 'CFS related 
+> add-ons' (like the task-stats accounting things, debugging, etc).
 
-	-hpa
+Ok, that sounds good. Some of that is obviously already in separate files 
+already, even if they then just get #include'd into the main sched.c, so 
+yeah, splitting it up along those lines makes sense.
+
+> Do you think i should try to split up the core CFS bits some more beyond 
+> this level? (that would be quite nontrivial i suspect)
+
+I'd love to see some of that too, but I suspect that with something like 
+the scheduler, it's hard to have any reasonable (and working!) points that 
+make much sense. At some point, the changes to make it work incrementally 
+get bigger than the patches themselves, and rather than show what's going 
+on, it might _hide_ what's going on.
+
+		Linus
