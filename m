@@ -1,159 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764913AbXEYSrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765285AbXEYSsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764913AbXEYSrt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 14:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763898AbXEYSrl
+	id S1765285AbXEYSsE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 14:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764973AbXEYSrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 14:47:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36902 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1763416AbXEYSrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 14:47:40 -0400
-X-Authenticated: #8359428
-X-Provags-ID: V01U2FsdGVkX1+EkDMMMe+EgE+mmdyvoik0CNb9EsmO4pe7eGMmBW
-	jAczURv0d0Ctty
-From: Uwe Bugla <uwe.bugla@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
-Date: Fri, 25 May 2007 20:42:17 +0200
-User-Agent: KMail/1.9.5
-References: <20070524195616.234280@gmx.net> <200705251652.19911.mb@bu3sch.de> <20070525095618.1cd86672.akpm@linux-foundation.org>
-In-Reply-To: <20070525095618.1cd86672.akpm@linux-foundation.org>
-Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 25 May 2007 14:47:51 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33381 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764934AbXEYSrt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 14:47:49 -0400
+Date: Fri, 25 May 2007 11:53:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] kconfig: no STRANGE misc. devices
+Message-Id: <20070525115347.c9d1ef64.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705252042.17680.uwe.bugla@gmx.de>
-X-Y-GMX-Trusted: 0
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 25. Mai 2007 18:56 schrieben Sie:
-> On Fri, 25 May 2007 16:52:19 +0200 Michael Buesch <mb@bu3sch.de> wrote:
-> > I bet your bug is _not_ caused by ssb, but by some other breakage
-> > in another subsystem. Maybe ACPI or APIC is broken? Try to boot
-> > the machine without ACPI and/or APIC.
->
-> It wouldn't be the first time.
->
-> Uwe, please generate the `dmesg -s 1000000' output for 2.6.22-rc2 and for
-> 2.6.22-rc2-mm1, feed them through `diff -u' and see if you can spot any
-> interesting-looking differences in the PCI/ACPI/IRQ area.  Send both the
-> files to me and I'll stick them on a server and then I'll see if we can
-> hunt down the perpetrator.
->
-> Thanks.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Hi everybody,
+This config symbol name is confusing and unneeded/unwanted, so just
+change it to MISC_DEVICES.
 
-unfortunately Andrew's path can be proven to be wrong:
-There is no bug in the ACPI area at all.
+*
+* Misc devices
+*
+Misc devices (MISC_STRANGE_DEV) [Y/n] (NEW)
 
-I reverted the following modules in 2.6.22-rc2-mm1:
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/misc/Kconfig |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- linux-2.6.22-rc2/drivers/net/b44.c	2007-05-19 02:24:07.000000000 -0700
-+++ devel/drivers/net/b44.c	2007-05-22 21:55:36.000000000 -0700
-
-AND:
-
---- linux-2.6.22-rc2/drivers/net/b44.h	2007-04-25 23:42:17.000000000 -0700
-+++ devel/drivers/net/b44.h	2007-05-22 21:55:36.000000000 -0700
-
-AND:
-
---- linux-2.6.22-rc2/drivers/usb/host/ohci-hcd.c	2007-05-19 
-02:24:07.000000000 -0700
-+++ devel/drivers/usb/host/ohci-hcd.c	2007-05-22 21:55:36.000000000 -0700
-
-AND:
-
---- /dev/null	2007-05-07 19:14:32.301975000 -0700
-+++ devel/drivers/usb/host/ohci-ssb.c	2007-05-22 21:55:36.000000000 -0700
-
-
-RESULT:
-
-Broadcom 4401 is working purrfectly! YUP!
-
-Apart from that the kernel configuration menu of 2.6.22-rc2-mm1 is highly 
-confusing:
-
-Kernel Config differences:
-
-In kernel 2.6.21.2 you are bound to go:
-
-EISA, VLB, PCI and onboard controllers Y
-
-Broadcom 4400 ethernet support m
-
-
-Whereas in Kernel 2.6.22-rc2-mm1 is completely confusing:
-
-1. There is a menu called Sonics Silicon Backplane, which does not
-exist in 2.6.21.2.
-
-2. In Section Network device support Y
-Ethernet (10 or 100Mbit) Y
-
-you got 2 confusing choices:
-
-Option A:
-EISA, VLB, PCI and onboard controllers Y
-
-Broadcom 4400 ethernet support m
-
-Broadcom 4400 PCI device support y
-
-This enables "Sonic Silicon Backplane support m"
-
-OR, and this is in fact confusing:
-
-Option B:
-
-Leave OUT (!!!) EISA, VLB, PCI and onboard controllers Y
-
-Simply: Broadcom 4400 ethernet support m
-
-This enables "Sonic Silicon Backplane support m"
-
-Option B is proved to be working with the patch against the b44.c module
-reverted  in 2.6.22-rc2-mm1.
-
-If it is NOT reverted, Option B fails, but the confusion stays:
-
-You do not get the idea whether
-
-"Support for SSB on PCI bus host m" is necessary or not!
-
-And above that, THIS ONE:
-
-"Broadcom 4400 ethernet support m"
-
-should never appear when THIS one:
-
-"EISA, VLB, PCI and onboard controllers Y"
-
-is DESELECTED, should it??
-
-And that's it exactly what I meant when I mentioned that the ATTACHMENT of ssb 
-to b44 is highly buggy!
-
-I hope, Michael, that you believe that now.
-
-If you need lspci -v or / and dmesg to prove that I am right and you are 
-wrong:
-
-Pleasure for me, just ask please!
-
-Cheers
-
-Uwe
-
-P. S.: In clear words:
-
-I higly suspect that simply the kernel config bindings are highly buggy and 
-chaotic.
+--- linux-2.6.22-rc2-mm1.orig/drivers/misc/Kconfig
++++ linux-2.6.22-rc2-mm1/drivers/misc/Kconfig
+@@ -2,11 +2,11 @@
+ # Misc strange devices
+ #
+ 
+-menuconfig MISC_STRANGE_DEV
++menuconfig MISC_DEVICES
+ 	bool "Misc devices"
+ 	default y
+ 
+-if MISC_STRANGE_DEV
++if MISC_DEVICES
+ 
+ config IBM_ASM
+ 	tristate "Device driver for IBM RSA service processor"
+@@ -205,4 +205,4 @@ config EEPROM_93CX6
+ 	  This is a driver for the EEPROM chipsets 93c46 and 93c66.
+ 	  The driver supports both read as well as write commands.
+ 
+-endif # MISC_STRANGE_DEV
++endif # MISC_DEVICES
