@@ -1,52 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbXEYOQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbXEYO0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762032AbXEYOQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 10:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbXEYOQZ
+	id S1761327AbXEYO0e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 10:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbXEYO01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 10:16:25 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45845 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751719AbXEYOQY (ORCPT
+	Fri, 25 May 2007 10:26:27 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:38891 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbXEYO00 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 10:16:24 -0400
-Date: Fri, 25 May 2007 15:19:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: 2.6.22-rc1-mm1: IDE compile error
-Message-ID: <20070525151909.34284a24@the-village.bc.nu>
-In-Reply-To: <4656332C.7080909@zytor.com>
-References: <20070515201914.16944e04.akpm@linux-foundation.org>
-	<20070516185552.GA4086@stusta.de>
-	<200705240145.38055.bzolnier@gmail.com>
-	<20070524115549.01c0e1ca@the-village.bc.nu>
-	<4656284D.7080709@zytor.com>
-	<20070525011403.20e77ee7@the-village.bc.nu>
-	<46562B5A.2070008@zytor.com>
-	<20070525013817.26061764@the-village.bc.nu>
-	<4656332C.7080909@zytor.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 25 May 2007 10:26:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=VuPA/zEvm8oAMJ8j96fWJmA8Q0wPzieYK8kKLAqFuJvA8vfRVZd2KYd6POL5r1RygHhQTrNGaSEnd90yUlfN00NKtyTEQa0vqyES1ryrCSzpJkZSHn2SN0fXU/uG6spdG9S7Gh7KvYzlA1m90Olh2DXFSPJfMlBeWuIb9rtkQB0=
+Message-ID: <2bd9ebfa0705250726t64b017f3sf36ab95c36089bde@mail.gmail.com>
+Date: Fri, 25 May 2007 10:26:24 -0400
+From: "Tej Parkash" <tejparkash.d@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH - 1/1] Reg: __builtin_expect(!!(x), 0)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > To set it up the user will have to know the parameters and have typed
-> > them into the BIOS (if it even has an option for it). I see no problem
-> 
-> Sorry, see no problem which way?  
-
-Forcing the user to provide the geometry. Historically that driver dealt
-with the main disks the user had. Today its only use is specialist
-recovery work. Anyone recovering a disk has to get the geometry data into
-the BIOS (if the BIOS even allows it - many now don't) and will therefore
-know it for hd= arguments as well
-
-Alan
+what is this hack and why it is required
