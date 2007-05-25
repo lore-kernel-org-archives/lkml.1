@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765044AbXEYShz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764614AbXEYSlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765044AbXEYShz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 14:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763517AbXEYSht
+	id S1764614AbXEYSlA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 14:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763483AbXEYSky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 14:37:49 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:23769 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763078AbXEYShs convert rfc822-to-8bit (ORCPT
+	Fri, 25 May 2007 14:40:54 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:51543 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752773AbXEYSkx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 14:37:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=NfJYzwBuRuTiaEACPZAKZkAZ/AyL3KsQTkRFYtUtBwLp9cUS0q7dzSXXZeZAzHuuuIqT0FFr+NCuuoI1tKExFJzCL65u6OEIs8mikLjx3FjG1OWB5Ha2acpR8g9OY/d2MbJ8tvDStF737isacTnBp9IvezKE9qsM8dOLarIo74E=
-Message-ID: <114492e40705251137k53d9c341q3430710c75408b33@mail.gmail.com>
-Date: Fri, 25 May 2007 15:37:46 -0300
-From: "Rodrigo Pereira" <rodripe@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: sysfs permitions on class leds
+	Fri, 25 May 2007 14:40:53 -0400
+Message-ID: <46572DAF.1000108@zytor.com>
+Date: Fri, 25 May 2007 11:40:47 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH] MIPS: Transform old-style macros to newer "__noreturn"
+ standard.
+References: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(sorry my English)
+Robert P. J. Day wrote:
+> Convert old/obsolete NORET_TYPE and ATTRIB_NORET macros to use the
+> newer standard of "__noreturn" as defined in compiler-gcc.h.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-I'm helping Márton Németh  in a experimental mail led driver
-leds-clevo-mail.c for clevo laptops and I have problems with this
-driver:
-this files
-/sys/class/<ledname>trigger,  /sys/class/<ledname>/dalay_on and
-/sys/class/<ledname>/delay_off  are  created  as 644 permissions. Also
-ROOT controls the led. I think write udev rules but my rules don't
-change this permissions.
+> 1) in a function declaration, the "__noreturn" will go at the end of
+> the declaration.
+> 
+> 2) in a definition, "__noreturn" will go between the return type and
+> the function name
+> 
+> 3) in a function typedef, "__noreturn" will go immediately after the
+> return type, just like with definitions.
+> 
+> 4) if a function definition already includes "__noreturn", there's no
+> point in having any external references to it also say the same thing.
+> (right?)
 
-The clevo mail led is a trigger led (time-trigger) for blinks the led
-when a new mail arrives.
+This is dumb, though.
 
-How can I change the permissions of the sysfs objects in runtime or userspace?
+"void __noreturn" is redundant.  It would be much cleaner to have a
+macro which amounts to "void __attribute__((noreturn))" and use it
+instead of giving a return type.
 
-the code of this driver is found at
-http://sourceforge.net/projects/clevo-mailled/
+Even "void" as the return type is bogus -- the function never returns so
+it doesn't *have* a return type...
 
-Thank you.
-
-Rodrigo Pereira
+	-hpa
