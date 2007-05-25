@@ -1,89 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765414AbXEYVMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765663AbXEYVO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765414AbXEYVMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 17:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbXEYVMR
+	id S1765663AbXEYVO0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 17:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbXEYVOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 17:12:17 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:49948 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753433AbXEYVMQ (ORCPT
+	Fri, 25 May 2007 17:14:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47541
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754042AbXEYVOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 17:12:16 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Fri, 25 May 2007 17:10:15 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] MIPS: Transform old-style macros to newer "__noreturn"
- standard.
-In-Reply-To: <46573B23.1090700@zytor.com>
-Message-ID: <Pine.LNX.4.64.0705251705510.14578@localhost.localdomain>
-References: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain>
- <46572DAF.1000108@zytor.com> <Pine.LNX.4.64.0705251458440.13906@localhost.localdomain>
- <46573B23.1090700@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 25 May 2007 17:14:19 -0400
+Date: Fri, 25 May 2007 14:14:21 -0700 (PDT)
+Message-Id: <20070525.141421.73699719.davem@davemloft.net>
+To: satyam.sharma@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: double exclamation (!!) suckage in the kernel
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <a781481a0705251323s6b5c8014t48e8d2ad63e8434a@mail.gmail.com>
+References: <a781481a0705251323s6b5c8014t48e8d2ad63e8434a@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 May 2007, H. Peter Anvin wrote:
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+Date: Sat, 26 May 2007 01:53:59 +0530
 
-> Robert P. J. Day wrote:
-> >
-> >
-> >   f() __attribute__((noreturn)) ;
-> >
-> > you get:
-> >
-> >   warning: data definition has no type or storage class
-> >
-> > but gcc doesn't complain if you declare it thusly:
-> >
-> >   __attribute__((noreturn)) f() ;
-> >
-> > that strikes me as a flaw in gcc, no?
-> >
->
-> Doesn't matter.  gcc accepts "void __attribute__((noreturn)) f();", and
-> thus, one can define:
->
-> #define __noreturn void __attribute__((noreturn))
->
-> ... and declare functions as:
->
-> __noreturn f();
->
-> ... which is the syntactially sane way of doing it.
+WHat is with multiple people asking about "!!" all of a
+sudden today?
 
-that may be, but keep in mind that gcc allows attributes to *follow*
-the parameter list as well, and some people might prefer to do the
-following:
+> Are all these occurrences merely the debris of
+> s/something/!notsomething/g kind of patches or is there some
+> dark, unknown C / gcc wizardry I have absolutely no clue of?
 
-  f() __noreturn;
+"!!" is used in contexts where pointers might be being
+tested as well as plain integers, the "!!" turns a pointer
+into the equivalent integer boolean for testing.
 
-that would fail badly if you defined __noreturn as you suggest.
-
-  is there, in fact, a tradition for attribute usage, along the lines
-of what satyam suggested earlier?  because once there's an established
-standard, that's going to dictate what is and isn't possible in terms
-of macros and shortcuts.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+NULL pointers become 0
+non-NULL pointers become 1
