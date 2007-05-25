@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765604AbXEYVH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765743AbXEYVIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765604AbXEYVH5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 17:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbXEYVHt
+	id S1765743AbXEYVIy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 17:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbXEYVIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 17:07:49 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:13099 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753966AbXEYVHs (ORCPT
+	Fri, 25 May 2007 17:08:45 -0400
+Received: from smtpa3.netcabo.pt ([212.113.174.18]:40202 "EHLO
+	exch01smtp02.hdi.tvcabo" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756325AbXEYVIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 17:07:48 -0400
-X-IronPort-AV: i="4.14,581,1170662400"; 
-   d="scan'208"; a="154629669:sNHT14720952015"
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Greg KH <gregkh@suse.de>, Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@NineX.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       ninex@o2.pl, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>,
-       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
-X-Message-Flag: Warning: May contain useful information
-References: <20070514093829.377e04bc@osprey.hogchain.net>
-	<m18xbrnyxi.fsf@ebiederm.dsl.xmission.com>
-	<20070514160005.627435e3@osprey.hogchain.net>
-	<m1odkmmft4.fsf@ebiederm.dsl.xmission.com>
-	<20070515212200.517fcba2@osprey.hogchain.net>
-	<m14pmcmz8r.fsf@ebiederm.dsl.xmission.com>
-	<20070516185225.3f3ac082@osprey.hogchain.net>
-	<m1sl9wl28m.fsf@ebiederm.dsl.xmission.com>
-	<20070522204103.134bf5a2@osprey.hogchain.net>
-	<m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070525052032.GB9386@suse.de>
-	<m1myztaq5s.fsf@ebiederm.dsl.xmission.com> <adawsyw52tl.fsf@cisco.com>
-	<adasl9k52q8.fsf@cisco.com> <m18xbcc2ai.fsf@ebiederm.dsl.xmission.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 25 May 2007 13:25:26 -0700
-In-Reply-To: <m18xbcc2ai.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's message of "Fri, 25 May 2007 10:10:13 -0600")
-Message-ID: <adafy5k4pmx.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Fri, 25 May 2007 17:08:44 -0400
+X-Greylist: delayed 553 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 May 2007 17:08:44 EDT
+Message-ID: <46574DE4.2080900@rncbc.org>
+Date: Fri, 25 May 2007 21:58:12 +0100
+From: Rui Nuno Capela <rncbc@rncbc.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 May 2007 20:25:26.0425 (UTC) FILETIME=[D4561890:01C79F0A]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: 2.6.21-rt2..8 troubles
+References: <23932.213.58.131.130.1170156409.squirrel@www.rncbc.org> <460FE7F3.4060303@rncbc.org> <20070401183928.GB27614@elte.hu>
+In-Reply-To: <20070401183928.GB27614@elte.hu>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 May 2007 20:59:26.0630 (UTC) FILETIME=[9464AC60:01C79F0F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > In addition to PCI INTx compatible interrupt emulation, PCI Express
- > > requires support of MSI or MSI-X or both. 
- > Which suggests that INTx support is required.
- > 
- > I do not find any wording that suggest the opposite.
- > I do see it stated that it is intended to EOL support for INTx at
- > some point.
- > 
- > Where did you see it mentioned that INTx was optional?
+Hi Ingo et al.
 
-I don't see any requirement that a device that generates MSI
-interrupts must also be able to signal the same interrupts via INTx.
-The spec explicitly says:
+It's been quite a while, since last time I've complained about the -rt
+kernel patch series. This time I'm afraid I have a nasty specialty I've
+been trying to figure out and isolate but to no definitive results.
 
-    "All PCI Express device Functions that are capable of generating
-    interrupts must support MSI or MSI-X or both."
+Fact is, since 2.6.21-rt2 and still on latest -rt8, that I'm facing
+troubled behavior while running on a Core2 T7200 laptop (SMP). Somehow,
+soon or later, the whole system starts crawling to death. It just slows
+down to some kind of Big Freeze, with no evidence over the console
+whatsoever, so that I'm ultimately left with a brick on my hands.
 
-but there is no corresponding explicit requirement that legacy INTx
-mode be supported, so it certainly seems permitted for a device not to
-generate INTx interrupts.  In fact as you alluded to, the spec says,
+This behavior is consistent and occurs every time after a while. It
+surely does not occur on 2.6.21-rt1 and earlier. Even stranger, it does
+not occur on another but older P4@3.3Ghz desktop (HT/SMP) where a very
+identical system image is deployed (openSUSE 10.2 i386, gcc 4.1.2, KDE
+3.5.7)
 
-    "The legacy INTx emulation mechanism may be deprecated in a future
-    version of this specification."
+I wish I could give you more details, but the fact is I don't know where
+to look. The machine just freezes silently, again and again, with all
+kernels from -rt2 to -rt8 inclusive, with no traceable evidence, at
+least to my knowledge. The only symptom that I can come about is that,
+from some moment on and ever since, the system cannot start any new
+process anymore, or otherwise takes forever to realize and launch any
+new started process thread.
 
-and I wouldn't think the intention would be for one version of the
-spec to *require* something that is planned on being deprecated later.
+A sample dmesg output:
+   http://www.rncbc.org/datahub/dmesg-2.6.21-rt5.0
+The corresponding .config:
+   http://www.rncbc.org/datahub/config-2.6.21-rt5.0
 
-And the Pathscale guys were pretty confident that their device was
-compliant with the PCIe spec.
+Again, there's no logged evidence of the problem, which is as nasty as
+repeatable after each boot. Unfortunately, it's not quite
+deterministically reproducible, this behavior of turning into an
+unresponsive brick ;) It's just a matter of time, or so I think. That's
+why I have no clues.
 
- - R.
+Is there anything I can do better to help myself figuring out this
+issue? As this is a  modern laptop such things like a serial console are
+unavailable, but it would be nice to track things up over netconsole
+perhaps?
+
+I just need some bright and nice directions now ;) Hope someone finds
+this worth of attention too. Meanwhile, I'll be happy with 2.6.21-rt1 :)
+
+Cheers.
+-- 
+rncbc aka Rui Nuno Capela
+rncbc@rncbc.org
+
