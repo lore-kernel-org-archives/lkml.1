@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765372AbXEYSsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbXEYTCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765372AbXEYSsg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 14:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764066AbXEYSsV
+	id S1763481AbXEYTCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 15:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbXEYTCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 14:48:21 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55119 "EHLO mga03.intel.com"
+	Fri, 25 May 2007 15:02:08 -0400
+Received: from mga02.intel.com ([134.134.136.20]:15031 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764044AbXEYSsS convert rfc822-to-8bit (ORCPT
+	id S1751434AbXEYTCH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 14:48:18 -0400
+	Fri, 25 May 2007 15:02:07 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.14,580,1170662400"; 
-   d="scan'208";a="232165277"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+   d="scan'208";a="247367312"
+From: Jason Gaston <jason.d.gaston@intel.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, jason.d.gaston@intel.com
+Subject: [PATCH 2.6.22-rc2] pci_ids: update patch for Intel ICH9M
+Date: Fri, 25 May 2007 12:03:31 -0700
+User-Agent: KMail/1.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [patch] removes MAX_ARG_PAGES
-Date: Fri, 25 May 2007 11:48:09 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A018B17DE@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <1180020019.7019.133.camel@twins>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] removes MAX_ARG_PAGES
-Thread-Index: AceeFxRGD6tMziZvQSGRqcgfGRFVPQA5SQGg
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Cc: "Ollie Wild" <aaw@google.com>, <linux-kernel@vger.kernel.org>,
-       <parisc-linux@lists.parisc-linux.org>, <linux-mm@kvack.org>,
-       <linux-arch@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>
-X-OriginalArrivalTime: 25 May 2007 18:48:11.0087 (UTC) FILETIME=[3E342DF0:01C79EFD]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705251203.31985.jason.d.gaston@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I just tried this on an Altix from the test lab, and ia32 bash just
-> started.
+This patch updates the Intel ICH9M LPC Controller DID's, due to a 
+specification change.
 
-I don't have any native x86 binaries on my Madison-based testbox, so my
-test case was to compile a simple program that counted total length of
-argument strings on an x86 box, and copy it to my ia64 box.  So that I
-wouldn't have to copy over a bunch of libraries too, I compiled it
-with -static.  This is the test case that "hung" my system (re-running
-it today from /dev/tty1 instead of from an xterm, I see that it actually
-oopsed in rb_next()).  I wasn't even running with a long arglist.  Just
-"*" for my home directory (19 files/directories = ~170 bytes).
+Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
 
--Tony
-
-My test program.  Compile on ia32 box with "cc -static -o args args.c"
-
----- begin args.c ----
-main(int argc, char **argv)
-{
-	int n;
-
-	printf("argc = %d\n", argc);
-
-	n = 0;
-	while (--argc)
-		n += strlen(*++argv);
-
-	printf("bytes = %d\n", n);
-}
+--- linux-2.6.22-rc2/include/linux/pci_ids.h.orig	2007-05-25 
+11:42:11.000000000 -0700
++++ linux-2.6.22-rc2/include/linux/pci_ids.h	2007-05-25 11:43:28.000000000 
+-0700
+@@ -2266,11 +2266,11 @@
+ #define PCI_DEVICE_ID_INTEL_ICH8_5	0x283e
+ #define PCI_DEVICE_ID_INTEL_ICH8_6	0x2850
+ #define PCI_DEVICE_ID_INTEL_ICH9_0	0x2910
+-#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2911
++#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2917
+ #define PCI_DEVICE_ID_INTEL_ICH9_2	0x2912
+ #define PCI_DEVICE_ID_INTEL_ICH9_3	0x2913
+ #define PCI_DEVICE_ID_INTEL_ICH9_4	0x2914
+-#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2915
++#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
+ #define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
+ #define PCI_DEVICE_ID_INTEL_82855PM_HB	0x3340
+ #define PCI_DEVICE_ID_INTEL_82830_HB	0x3575
