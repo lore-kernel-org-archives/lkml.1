@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbXEYHWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbXEYHYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbXEYHWz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 03:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbXEYHWs
+	id S1758461AbXEYHYR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 03:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbXEYHYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 03:22:48 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:1077 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbXEYHWr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 03:22:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uDkgOj1VrW6XwQBr2h43skyKg44FrrM7Hq8YOjwgR1hM0aUKBR9ClkhxdIddPy1wdCZJjHG9hL2BnCLoFQ3CniN7VDOfmdfJxVu2QDKeqBclgHPi+K8CaeS5o6yES7A2hWOvINCrtI+zLpW7Sz9A5xH3uBHmoquaiNmewNRkS2U=
-Message-ID: <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com>
-Date: Fri, 25 May 2007 12:52:43 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] sched_clock(): cleanups
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <20070525071005.GA6431@elte.hu>
+	Fri, 25 May 2007 03:24:08 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:48959 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750769AbXEYHYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 03:24:07 -0400
+Date: Fri, 25 May 2007 09:23:53 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Zan Lynx <zlynx@acm.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+In-Reply-To: <1180058760.7001.6.camel@oberon.rnd.esoft.com>
+Message-ID: <Pine.LNX.4.64.0705250910110.8531@twin.jikos.cz>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> 
+ <1179962229.8575.4.camel@localhost>  <Pine.LNX.4.64.0705240131050.27422@twin.jikos.cz>
+ <1180058760.7001.6.camel@oberon.rnd.esoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070525071005.GA6431@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Thu, 24 May 2007, Zan Lynx wrote:
 
-On 5/25/07, Ingo Molnar <mingo@elte.hu> wrote:
-> [...]
-> @@ -137,6 +147,7 @@ static void call_r_s_f(void *arg)
->  {
->         struct cpufreq_freqs *freq = arg;
->         unsigned f = freq->new;
-> +
->         if (!f)
->                 f = cpufreq_get(freq->cpu);
->         if (!f)
+> [snip]
+> > Do you please have any indication which kernel versions were OK with the 
+> > same .config, with respect to the USB mouse/keyboard hogs you are seeing 
+> > with 2.6.22-rc2-mm1?
+> The last 2.6.21 -mm kernel worked well.
+[...]
+> drivers/hid/usbhid/hid-core.c: input irq status -75 received
 
-if (!f)
-	f = cpufreq_get(freq->cpu);
-if (!f)
-	f = tsc_khz;
+Zan,
 
-?
+this has been reported also in bugzilla, so it's now handled in 
+http://bugzilla.kernel.org/show_bug.cgi?id=8535
 
-Something's not quite right here :-)
+It's reported there that mainline is OK, and there are realy very few 
+patches in the HID area which I can't imagine how they could be causing 
+it, they are only a few simple quirks for a specific hardware.
 
-Satyam
+Could you please try the following things in this order:
+
+- disable CONFIG_HIDRAW and test whether it is still reproducible
+- revert git-hid.patch and test whether it is still reproducible
+- if so, I am afraid that it's some USB patch that is causing this, so 
+  bisecting would be needed
+
+I will meanwhile try to reproduce it myself here, but I have not been 
+successful with it so far.
+
+Thanks,
+
+-- 
+Jiri Kosina
