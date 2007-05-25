@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765315AbXEYUg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765530AbXEYUhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765315AbXEYUg6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 16:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbXEYUgv
+	id S1765530AbXEYUhh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 16:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXEYUha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 16:36:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50061
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754533AbXEYUgu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 16:36:50 -0400
-Date: Fri, 25 May 2007 13:36:53 -0700 (PDT)
-Message-Id: <20070525.133653.57156321.davem@davemloft.net>
-To: crn@netunix.com
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, clameter@sgi.com,
-       michal.k.k.piotrowski@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, cherwin@gmail.com,
-       linux-pcmcia@lists.infradead.org, robert.de.rooy@gmail.com,
-       alan@redhat.com, htejun@gmail.com, sparclinux@vger.kernel.org,
-       mikpe@it.uu.se, linux1394-devel@lists.sourceforge.net,
-       stefanr@s5r6.in-berlin.de, krh@bitplanet.net,
-       linux-pm@lists.linux-foundation.org, rjw@sisk.pl, pavel@ucw.cz,
-       marcus@better.se, arvidjaar@mail.ru,
-       linux-usb-devel@lists.sourceforge.net, gregkh@suse.de
-Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46572507.6010800@netunix.com>
-References: <4656CE39.8050800@netunix.com>
-	<alpine.LFD.0.98.0705250937550.26602@woody.linux-foundation.org>
-	<46572507.6010800@netunix.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 25 May 2007 16:37:30 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41576 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756023AbXEYUh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 16:37:29 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1/GFEBd0u3GpFrzRvchh0PtXb9Xrhj4cSeClPpYVQ
+	bNVuGKuMbaOuKs
+Date: Fri, 25 May 2007 22:37:30 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: double exclamation (!!) suckage in the kernel
+Message-ID: <20070525203730.GA5974@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Satyam Sharma <satyam.sharma@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <a781481a0705251323s6b5c8014t48e8d2ad63e8434a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a781481a0705251323s6b5c8014t48e8d2ad63e8434a@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Newport <crn@netunix.com>
-Date: Fri, 25 May 2007 19:03:51 +0100
+On 2007.05.26 01:53:59 +0530, Satyam Sharma wrote:
+> Hello,
+> 
+> Grepping through the sources I found 500+ occurrences of double
+> exclamation marks before identifier names (such as !!x -- I took care
+> to ignore occurrences of !! inside comment blocks, because there
+> are plenty of that sort too).
+> 
+> !! are to be found even in the definitions of common macros such as
+> likely() and unlikely(), which hundreds of eyes must have seen over
+> the last year or so ...
+> 
+> Are all these occurrences merely the debris of
+> s/something/!notsomething/g kind of patches or is there some
+> dark, unknown C / gcc wizardry I have absolutely no clue of?
 
-> Not really a Solaris feature. This is a feature of the  Openboot  PROM
-> which is also used by several other vendors.
-> The Openboot PROM knows how to write to disk. The same should
-> apply on Apple hardware and others which use the openboot
-> convention.
+It avoids useless warnings. If you have a pointer and want to store if
+it is NULL/non-NULL in an integer variables, you have to use !x or !!x.
+Just using x will result in a warning that you convert a pointer to an
+integer without a cast.
 
-This is totally unusable even if it weren't stupid, and as
-someone who loves OpenBoot I think it's very stupid.
+Given this example:
 
-The reason it's unusable is that PowerPC already and sparc64 soon (in
-order to support LDOMs) totally drops the OBP firmware very soon after
-early kernel boot.  We pull in the device tree and then say "see ya"
-to openboot.
+int main()
+{
+	int ret;
+	void *foo;
 
-PowerPC does it because sharing the address space with openboot is
-next to impossible on that cpu, sparc64 will need to do it because
-dynamic-reconfiguration of cpus in an LDOM is too hard to do with
-openboot there.
+	ret = foo;
+	ret = !!foo;
+
+	return 0;
+}
+
+gcc will emit this warning:
+ttt.c:6: warning: assignment makes integer from pointer without a cast
+
+HTH
+Björn
