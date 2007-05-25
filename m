@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759308AbXEYKmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760619AbXEYKpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759308AbXEYKmP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 06:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbXEYKmA
+	id S1760619AbXEYKpn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 06:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbXEYKph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 06:42:00 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:4262 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750762AbXEYKl7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 06:41:59 -0400
-Date: Fri, 25 May 2007 12:42:58 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] tty_io: Use kzalloc
-Message-ID: <20070525124258.5b72f077@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 25 May 2007 06:45:37 -0400
+Received: from c3po.0xdef.net ([217.172.181.57]:4571 "EHLO c3po.0xdef.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750938AbXEYKpg (ORCPT <rfc822;linux-kerneL@vger.kernel.org>);
+	Fri, 25 May 2007 06:45:36 -0400
+X-Greylist: delayed 1562 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 May 2007 06:45:36 EDT
+Date: Fri, 25 May 2007 12:19:33 +0200
+From: Hagen Paul Pfeifer <hagen@jauu.net>
+To: linux-kerneL@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Hagen Paul Pfeifer <pfeifer@netlab.nec.de>
+Subject: INTERNODE_CACHE_SHIFT redefinition for hot spot data alignment
+Message-ID: <20070525101933.GB32742@c3po.0xdef.net>
+Mail-Followup-To: Hagen Paul Pfeifer <hagen@jauu.net>,
+	linux-kerneL@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Hagen Paul Pfeifer <pfeifer@netlab.nec.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+X-Key-Id: 98350C22
+X-Key-Fingerprint: 490F 557B 6C48 6D7E 5706 2EA2 4A22 8D45 9835 0C22
+X-GPG-Key: gpg --recv-keys --keyserver wwwkeys.eu.pgp.net 98350C22
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+
+I read code in include/linux/mmzone.h and attract attention to the padding
+construct for struct zone:
+
+struct zone_padding {
+         char x[0];
+} ____cacheline_internodealigned_in_smp;
+
+
+The definition for ____cacheline_internodealigned_in_smp
+is definded as __attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))
+
+INTERNODE_CACHE_SHIFT in turn is defined as L1_CACHE_SHIFT for all
+architectures (expect x86_64) as L1_CACHE_SHIFT - which is not that what
+everybody should expected if they use ____cacheline_internodealigned_in_smp!
+The comment stated out: "The maximum alignment needed for some critical
+structures. These could be inter-node cacheline sizes/L3 cacheline size etc.
+Define this in asm/cache.h for your arch"
+
+BTW: the superior solution is to utilize the gcc 4.2 alternative to use the
+cpuid instruction (which is new in gcc release 4.2) to gather cpu attributes
+at compile time and replace the static 
+#define L1_CACHE_BYTES  (1 << L1_CACHE_SHIFT)
+macros
+
+My suggestion is added as an patch -- any superior suggestions
+
+Shalom
+Hagen Paul Pfeifer
+
+
+
+
+Increase (double) the definition for INTERNODE_CACHE_SHIFT to accommodate a
+higher cache line size for l2 and l3 cacheline sizes - compared to l1 cache
+line size. The introduced overhead for architectures where the l1 cache line
+size correspond to the l2  cache line size is evanescent small, cause
+INTERNODE_CACHE_SHIFT is used only for hot spots.
 ---
-Andrew, can you please pick this? I couldn't find any maintainer for
-this driver. Thanks.
+ include/linux/cache.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- drivers/char/tty_io.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
-
---- linux-2.6.22-rc2.orig/drivers/char/tty_io.c	2007-05-25 08:43:16.000000000 +0200
-+++ linux-2.6.22-rc2/drivers/char/tty_io.c	2007-05-25 08:43:24.000000000 +0200
-@@ -2009,11 +2009,10 @@ static int init_dev(struct tty_driver *d
- 	}
+diff --git a/include/linux/cache.h b/include/linux/cache.h
+index 4552504..ebc366c 100644
+--- a/include/linux/cache.h
++++ b/include/linux/cache.h
+@@ -48,7 +48,7 @@
+  * size etc.  Define this in asm/cache.h for your arch
+  */
+ #ifndef INTERNODE_CACHE_SHIFT
+-#define INTERNODE_CACHE_SHIFT L1_CACHE_SHIFT
++#define INTERNODE_CACHE_SHIFT (L1_CACHE_SHIFT + 1)
+ #endif
  
- 	if (!*ltp_loc) {
--		ltp = (struct ktermios *) kmalloc(sizeof(struct ktermios),
-+		ltp = (struct ktermios *) kzalloc(sizeof(struct ktermios),
- 						 GFP_KERNEL);
- 		if (!ltp)
- 			goto free_mem_out;
--		memset(ltp, 0, sizeof(struct ktermios));
- 	}
- 
- 	if (driver->type == TTY_DRIVER_TYPE_PTY) {
-@@ -2043,10 +2042,9 @@ static int init_dev(struct tty_driver *d
- 
- 		if (!*o_ltp_loc) {
- 			o_ltp = (struct ktermios *)
--				kmalloc(sizeof(struct ktermios), GFP_KERNEL);
-+				kzalloc(sizeof(struct ktermios), GFP_KERNEL);
- 			if (!o_ltp)
- 				goto free_mem_out;
--			memset(o_ltp, 0, sizeof(struct ktermios));
- 		}
- 
- 		/*
-@@ -3732,9 +3730,8 @@ struct tty_driver *alloc_tty_driver(int 
- {
- 	struct tty_driver *driver;
- 
--	driver = kmalloc(sizeof(struct tty_driver), GFP_KERNEL);
-+	driver = kzalloc(sizeof(struct tty_driver), GFP_KERNEL);
- 	if (driver) {
--		memset(driver, 0, sizeof(struct tty_driver));
- 		driver->magic = TTY_DRIVER_MAGIC;
- 		driver->num = lines;
- 		/* later we'll move allocation of tables here */
-
-
+ #if !defined(____cacheline_internodealigned_in_smp)
 -- 
-Jean Delvare
+1.4.4.4
+
