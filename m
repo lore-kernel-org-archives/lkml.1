@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXEYNdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762195AbXEYNeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760091AbXEYNdQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 09:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXEYNdB
+	id S1762195AbXEYNeQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 09:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbXEYNeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 09:33:01 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4948 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751312AbXEYNdA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 09:33:00 -0400
-Date: Fri, 25 May 2007 23:32:53 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+	Fri, 25 May 2007 09:34:06 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:37611 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751538AbXEYNeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 09:34:05 -0400
+Subject: Re: [RFC] LZO de/compression support - take 4
+From: Richard Purdie <richard@openedhand.com>
+To: Nitin Gupta <nitingupta910@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm-cc@laptop.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: rmmod e1000 hangs (Was Re: 2.6.22-rc2-mm1)
-Message-ID: <20070525133253.GA30626@gondor.apana.org.au>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <46556AA6.7040503@goop.org> <20070524104713.GA9174@gondor.apana.org.au> <20070524105403.GA9285@gondor.apana.org.au> <4655A4CD.8010901@intel.com> <20070525125413.GA29433@gondor.apana.org.au> <20070525130404.GA30071@gondor.apana.org.au>
+       Satyam Sharma <satyam.sharma@gmail.com>, Andrey Panin <pazke@donpac.ru>,
+       Bret Towe <magnade@gmail.com>, Michael-Luke Jones <mlj28@cam.ac.uk>
+In-Reply-To: <4cefeab80705250557w1baee0afn255e37436b6545a@mail.gmail.com>
+References: <4cefeab80705250445m51736a9aj8c89af893d8c242c@mail.gmail.com>
+	 <1180095000.5864.48.camel@localhost.localdomain>
+	 <4cefeab80705250557w1baee0afn255e37436b6545a@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 25 May 2007 14:33:43 +0100
+Message-Id: <1180100024.5864.54.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070525130404.GA30071@gondor.apana.org.au>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 11:04:04PM +1000, Herbert Xu wrote:
+Hi Nitin,
+
+On Fri, 2007-05-25 at 18:27 +0530, Nitin Gupta wrote:
+> On 5/25/07, Richard Purdie <richard@openedhand.com> wrote:
+> > On Fri, 2007-05-25 at 17:15 +0530, Nitin Gupta wrote:
+> > > Richard, can you please provide perf. results for this patch also?
+> > > Also, can you please mail back latest version of your LZO patch? In
+> > > meantime, I will try to include benchmarking support to the
+> > > 'compress-test' module.
+> >
+> > This version is 15% slower at decompression and about equal on
+> > compression.
 > 
-> [E1000]: Call netif_poll_enable in e1000_open
+> If you don't mind, can you please try patch attached now? I have now
+> also rolled back that cpu_to_le16() change as Satyam suggested. I see
+> no other reason for this perf. loss as I made no other change!
 
-Here is a better one.
+I tested it with no real change in the results. Since I'm doing the
+tests on LE, cpu_to_le16() should a NOP anyway.
 
-[E1000]: Restore netif_poll_enable call but make sure IRQs are off
+> Also, can you please verify if you are comparing your _safe_ version
+> with this patch? This patch does not include unsafe version and the
+> safe one is simply called lzo1x_decompress().
 
-This restores the previously removed netif_poll_enable call in
-e1000_open.  It's needed on all but the first call to e1000_open
-for a NIC as e1000_close always calls netif_poll_disable.
-
-netif_poll_enable can only be called safely if no polls have been
-scheduled.  This should be the case as long as we don't enter our
-IRQ handler.
-
-In order to guarantee this we explicitly disable IRQs as early
-as possible when we're probing the NIC.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Yes, I am comparing with my safe version.
 
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index cbc7feb..9ec35b7 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -1325,7 +1325,10 @@ e1000_sw_init(struct e1000_adapter *adapter)
- 	spin_lock_init(&adapter->tx_queue_lock);
- #endif
- 
--	atomic_set(&adapter->irq_sem, 1);
-+	/* Explicitly disable IRQ since the NIC can be in any state. */
-+	atomic_set(&adapter->irq_sem, 0);
-+	e1000_irq_disable(adapter);
-+
- 	spin_lock_init(&adapter->stats_lock);
- 
- 	set_bit(__E1000_DOWN, &adapter->flags);
-@@ -1431,6 +1434,10 @@ e1000_open(struct net_device *netdev)
- 	/* From here on the code is the same as e1000_up() */
- 	clear_bit(__E1000_DOWN, &adapter->flags);
- 
-+#ifdef CONFIG_E1000_NAPI
-+	netif_poll_enable(netdev);
-+#endif
-+
- 	e1000_irq_enable(adapter);
- 
- 	/* fire a link status change interrupt to start the watchdog */
+
+Richard
+
