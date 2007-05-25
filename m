@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbXEYACJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXEYAE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbXEYACJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 20:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbXEYAB5
+	id S1753899AbXEYAE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 20:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXEYAEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 20:01:57 -0400
-Received: from nicole.bmts.com ([216.183.128.225]:46093 "EHLO nicole.bmts.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbXEYAB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 20:01:56 -0400
-Date: Thu, 24 May 2007 20:01:46 -0400
-From: Mike Houston <mikeserv@BMTS.COM>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Houston <mikeserv@BMTS.COM>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sky2/pci issues on Gigabyte
-Message-Id: <20070524200146.a9e4906c.mikeserv@bmts.com>
-In-Reply-To: <20070524160440.63667048@freepuppy>
-References: <alpine.LFD.0.98.0705182209030.3890@woody.linux-foundation.org>
-	<20070520170506.814a38d9.mikeserv@bmts.com>
-	<20070521084549.61a1aa71@freepuppy>
-	<20070521131055.0017404f.mikeserv@bmts.com>
-	<20070521103755.51b954e1@freepuppy>
-	<20070521225806.bb18d589.mikeserv@bmts.com>
-	<20070521213146.3e220a44@freepuppy>
-	<20070522181444.ad932718.mikeserv@bmts.com>
-	<alpine.LFD.0.98.0705221653010.3890@woody.linux-foundation.org>
-	<20070523133909.a3ec171a.mikeserv@bmts.com>
-	<alpine.LFD.0.98.0705231044160.3890@woody.linux-foundation.org>
-	<20070524142644.837a26ed.mikeserv@bmts.com>
-	<20070524150845.07d0608f@freepuppy>
-	<alpine.LFD.0.98.0705241524350.26602@woody.linux-foundation.org>
-	<20070524160440.63667048@freepuppy>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 24 May 2007 20:04:21 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:35871 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbXEYAEV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 20:04:21 -0400
+Message-ID: <465627FD.9040301@zytor.com>
+Date: Thu, 24 May 2007 17:04:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Andi Kleen <ak@suse.de>, Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Brown, Len" <len.brown@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
+References: <653FFBB4508B9042B5D43DC9E18836F5EE12ED@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5EE12ED@scsmsx415.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
-X-brucetelecom.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
-X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 24 May 2007 16:04:40 -0700
-Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > 	-00: 86 80 47 28 07 00 10 00 02 00 04 06 08 00 81 00
-> > 	+00: 86 80 47 28 07 04 10 00 02 00 04 06 08 00 81 00
->                              ^--- INTX disable bit
-> 	Vista isn't enabling MSI, Linux is.
-> 	Try "nomsi"?
+Pallipadi, Venkatesh wrote:
+> The way new Intel features are being exposed in CPUID is kind of
+> changing.
 
-I had noticed that Vista wasn't using MSI for any devices and I
-tried booting with pci=nomsi in addition to building the kernel
-without MSI enabled (just in case there might somehow be a
-difference). I see I should have mentioned it, but it had no effect
-on the problem. The device gets IRQ 16 in Linux without MSI and it
-still croaks with the same messages.
+Changing is a VERY BAD THING when it comes to something like CPUID.
 
-Mike Houston
+> Now we have different CPUID leafs for different kind of features with
+> each of them growing much slowly.
+> I mean, there is
+> monitor-mwait related features in CPUID 5
+> powermanagement features in CPUID 6 EAX, ECX
+> Perfmon features in CPUID 10
+
+Again, this is bad.
+
+> This does not fit well with the way we use the feature words in Linux.
+
+No, it doesn't... nor for anyone else who wants a compact representation
+of this kind of information.
+
+If they grow slowly from the bottom, I guess we could simply allocate
+space in the vector byte by byte instead.  Either way, it means more
+work whenever anything has to change.
+
+	-hpa
