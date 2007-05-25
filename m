@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbXEXX7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751795AbXEYAAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275AbXEXX7y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 19:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbXEXX7p
+	id S1751795AbXEYAAo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 20:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbXEYAAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 19:59:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37640
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750709AbXEXX7o (ORCPT
+	Thu, 24 May 2007 20:00:15 -0400
+Received: from mga09.intel.com ([134.134.136.24]:6846 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753550AbXEYAAN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 19:59:44 -0400
-Date: Thu, 24 May 2007 16:59:47 -0700 (PDT)
-Message-Id: <20070524.165947.09931811.davem@davemloft.net>
-To: vvs@sw.ru
-Cc: dada1@cosmosbay.com, netdev@vger.kernel.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH netdev] "wrong timeout value" in sk_wait_data() v2
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46552142.4090801@sw.ru>
-References: <465512EB.4000808@sw.ru>
-	<46551635.30809@cosmosbay.com>
-	<46552142.4090801@sw.ru>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 24 May 2007 20:00:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,575,1170662400"; 
+   d="scan'208";a="90298772"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
+Date: Thu, 24 May 2007 17:00:11 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F5EE12ED@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <46561E55.7090107@zytor.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Display Intel Dynamic Acceleration feature in /proc/cpuinfo
+Thread-Index: AceeWoFcI5gNMFjhTAuDmsDz3PHeBgAA8dSg
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Andi Kleen" <ak@suse.de>, "Dave Jones" <davej@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Brown, Len" <len.brown@intel.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 25 May 2007 00:00:12.0342 (UTC) FILETIME=[AA873D60:01C79E5F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vasily Averin <vvs@sw.ru>
-Date: Thu, 24 May 2007 09:23:14 +0400
+ 
 
-> sys_setsockopt() do not check properly timeout values for
-> SO_RCVTIMEO/SO_SNDTIMEO, for example it's possible to set negative timeout
-> values. POSIX do not defines behaviour for sys_setsockopt in case negative
-> timeouts, but requires that setsockopt() shall fail with -EDOM if the send and
-> receive timeout values are too big to fit into the timeout fields in the socket
-> structure.
-> In current implementation negative timeout can lead to error messages like
-> "schedule_timeout: wrong timeout value".
-> 
-> Proposed patch:
-> - checks tv_usec and returns -EDOM if it is wrong
-> - do not allows to set negative timeout values (sets 0 instead) and outputs
-> ratelimited information message about such attempts.
-> 
-> Signed-Off-By:	Vasily Averin <vvs@sw.ru>
+>-----Original Message-----
+>From: H. Peter Anvin [mailto:hpa@zytor.com] 
+>Sent: Thursday, May 24, 2007 4:23 PM
+>To: Pallipadi, Venkatesh
+>Cc: Andi Kleen; Dave Jones; Andrew Morton; Brown, Len; linux-kernel
+>Subject: Re: [PATCH] Display Intel Dynamic Acceleration 
+>feature in /proc/cpuinfo
+>
+>Pallipadi, Venkatesh wrote:
+>> 
+>> Yes. But it only has 3 features defined right now. 2 in EAX 
+>and one in
+>> ECX. Should I use 2 new words for these bits or just use the software
+>> defined bits as in my earlier patch?
+>> 
+>
+>Oh for heaven's sake.  Could you please do the world a favour and shoot
+>your CPUID architect?
+>
+>The real answer depends on how you expect it to grow in the future.
+>Intel has a piss-poor record at being consistent in this matter, which
+>speaks for a more ad hoc approach, but if there really is a sane growth
+>path going forward, then go ahead and define two new words.
+>
 
-Thank you for this bug fix, patch applied.
+The way new Intel features are being exposed in CPUID is kind of
+changing.
+Now we have different CPUID leafs for different kind of features with
+each of them growing much slowly.
+I mean, there is
+monitor-mwait related features in CPUID 5
+powermanagement features in CPUID 6 EAX, ECX
+Perfmon features in CPUID 10
+
+This does not fit well with the way we use the feature words in Linux.
+Probably
+it is better to have one new word for new Intel features and add bits
+from all
+CPUIDs as they come. I will take a look at all the other fields and try
+for
+a better solution than adding new words for different CPUIDs like above.
+
+Thanks,
+Venki
