@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762703AbXEYMRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbXEYM0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762703AbXEYMRJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 08:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761779AbXEYMPn
+	id S1758933AbXEYM0g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 08:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbXEYM02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 08:15:43 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54759 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761765AbXEYMPm (ORCPT
+	Fri, 25 May 2007 08:26:28 -0400
+Received: from no-dns-yet.demon.co.uk ([83.105.13.114]:36980 "EHLO
+	mailgate.netunix.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751133AbXEYM01 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 08:15:42 -0400
-Date: Fri, 25 May 2007 14:15:40 +0200
-From: Andi Kleen <andi@firstfloor.org>
+	Fri, 25 May 2007 08:26:27 -0400
+X-Greylist: delayed 1775 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 May 2007 08:26:26 EDT
+Message-ID: <4656CE39.8050800@netunix.com>
+Date: Fri, 25 May 2007 12:53:29 +0100
+From: Chris Newport <crn@netunix.com>
+Reply-To: crn@netunix.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7) Gecko/20040618
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>,
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] sched_clock(): cleanups, #2
-Message-ID: <20070525121540.GA24083@one.firstfloor.org>
-References: <20070525015544.bce3cb99.akpm@linux-foundation.org> <20070525090315.GK8094@one.firstfloor.org> <20070525091928.GA3177@elte.hu> <20070525094640.GL8094@one.firstfloor.org> <20070525101248.GA7547@elte.hu> <20070525112020.GN8094@one.firstfloor.org> <20070525112600.GA27007@elte.hu> <20070525115004.GA4574@elte.hu> <20070525115544.GP8094@one.firstfloor.org> <20070525120228.GA7186@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070525120228.GA7186@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+       LKML <linux-kernel@vger.kernel.org>,
+       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux1394-devel@lists.sourceforge.net,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kristian H?gsberg <krh@bitplanet.net>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
+References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com> <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org> <20070524193740.GA6787@elte.hu> <alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org> <20070525101105.GA9268@elte.hu>
+In-Reply-To: <20070525101105.GA9268@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 02:02:28PM +0200, Ingo Molnar wrote:
-> 
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > find below the cleanups from my first patch that didnt make it into 
-> > > your cleanups. (plus one more cleanup i noticed while merging the 
-> > > missing bits from my first patch) Goes after the bugfix i just sent. 
-> > > Please apply.
-> > 
-> > I cannot apply it as is because it changes code from the paravirtops 
-> > patch too.
-> 
-> ok - then please merge that single hunk into the paravirtops patch - and 
-> leave the other 6 hunks in this patch.
+Ingo Molnar wrote:
 
-I added the empty lines too.
+>A BUG_ON() has a (much) lower likelyhood of being reported back - for 
+>most users it is a "X just hung hard, there was nothing in the syslog, i 
+>had to switch back to the older kernel" experience, and they do not have 
+>a serial console to hook up (newer hardware often doesnt even have a 
+>serial port). With the WARN_ON()s we have a _chance_ that despite the 
+>seriousness of the bug, the message makes it to the syslog, until the 
+>system comes to a screeching halt due to side-effects of the bug.
+>
+>in that sense i am part of the problem: i was adding WARN_ON()s that 
+>werent true 'warnings' but 'bugs'. So i'd very much like to fix that 
+>problem, but i'd also like to solve the (very serious and existing) 
+>problem of BUG_ON()s making it less likely to get bugs reported back. 
+>
+>  
+>
+There is a fundamental problem in getting  a decent log to debug  a 
+crashed kernel.  Maybe we should take a hint from Solaris.
+If the kernel crashes Solaris dumps core to swap and sets a flag.
+At the next boot this image is copied to /var/adm/crashdump where
+it is preserved for future debugging. Obviously swap needs to be
+larger than core, but this is usually the case.
 
-> 
-> > BTW to nitpick the original formattings you changed are all probably 
-> > standard code style and the new comment is a classical i++; /* 
-> > Increase i */
-> 
-> could you please quote the portion from my patch that you are talking 
-> about?
+On Sun machines this is fairly easy because the dump can be
+performed by the OBP, on other architectures it may be more
+difficult to still have enough working kernel to achieve the dump
+after a kernel panic.
 
--static int sc_freq_event(struct notifier_block *nb, unsigned long event,
--                        void *data)
-+static int
-+sc_freq_event(struct notifier_block *nb, unsigned long event, void *data)
+Just a thought .......
 
-and
-
-+               /*
-+                * Still no frequency? Then fall back to tsc_khz:  
-+                */
-                if (!freq->new)
-                        freq->new = tsc_khz;
-
-
--Andi (who hopes this thread will end soon now and we can all go
-back to more important issues)
 
