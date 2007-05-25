@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbXEYUAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764873AbXEYUAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761752AbXEYUAV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 16:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXEYUAJ
+	id S1764873AbXEYUAt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 16:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbXEYUAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 16:00:09 -0400
-Received: from quechua.inka.de ([193.197.184.2]:44435 "EHLO mail.inka.de"
+	Fri, 25 May 2007 16:00:38 -0400
+Received: from ns2.suse.de ([195.135.220.15]:35253 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752721AbXEYUAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 16:00:08 -0400
-Date: Fri, 25 May 2007 22:00:05 +0200
-From: Bernd Eckenfels <be-mail2007@lina.inka.de>
-To: Scott Preece <sepreece@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - 1/1] Documentation/HOWTO
-Message-ID: <20070525200005.GA2980@lina.inka.de>
-References: <Pine.LNX.4.64.0705181200440.18186@localhost.localdomain> <E1Hp5SW-0001CR-00@calista.eckenfels.net> <7b69d1470705250924x7ab2441bicee5d8cda7ff0d52@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752875AbXEYUAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 16:00:36 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SuSE Labs, Novell
+To: casey@schaufler-ca.com
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
+Date: Fri, 25 May 2007 22:00:21 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeremy Maitin-Shepard <jbms@cmu.edu>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <267570.85171.qm@web36604.mail.mud.yahoo.com>
+In-Reply-To: <267570.85171.qm@web36604.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7b69d1470705250924x7ab2441bicee5d8cda7ff0d52@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200705252200.21765.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 11:24:46AM -0500, Scott Preece wrote:
-> However, it might be phrased more diplomatically in this context, like
-> "because you are sacrificing time that could be spent adding features,
-> to fix somebody else's mistakes".
+On Friday 25 May 2007 19:43, Casey Schaufler wrote:
+> [...] but the AppArmor code could certainly check for that in exec by
+> enforcing the argv[0] convention. It would be perfectly reasonable for a
+> system that is so dependent on pathnames to require that.
 
-Not all Bugs are mistakes of the coder. I still think it is not correct to
-blame developers. And it is also not a good idea to treat helping hands as
-second class only because they improve instead of create things.
+Hmm ... that's a strange idea. AppArmor cannot assume anything about argv[0], 
+and it would be a really bad idea to change the well-established semantics of 
+argv[0].
 
-Linux Kernel is developed in a collaborative evolutionary process. The
-documentation change is completely wrong worded.
+There is no actual need for looking at argv[0], though: AppArmor decides based 
+on the actual pathname of the executable...
 
-(However the idea to ask ppl to look for small clear tasks, especially if
-not everybody has the option to work on it (hardware) is good) - and very
-rewarding.
-
-Gruss
-Bernd
+Thanks,
+Andreas
