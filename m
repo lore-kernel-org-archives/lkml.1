@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbXEYDQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbXEYDVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbXEYDQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 23:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750703AbXEYDQB
+	id S1753766AbXEYDVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 23:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbXEYDVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 23:16:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50761 "EHLO mail.dvmed.net"
+	Thu, 24 May 2007 23:21:34 -0400
+Received: from mail.windriver.com ([147.11.1.11]:34737 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750705AbXEYDQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 23:16:00 -0400
-Message-ID: <465654EC.9080805@garzik.org>
-Date: Thu, 24 May 2007 23:15:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	id S1750706AbXEYDVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 23:21:33 -0400
+Message-ID: <4656564D.5030307@windriver.com>
+Date: Thu, 24 May 2007 22:21:49 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       htejun@gmail.com, "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [patch 1/7] libata: check for AN support
-References: <20070510072247.063476979@intel.com>	<20070509163809.7b0b3fde.kristen.c.accardi@intel.com>	<20070509220952.5fa34822.akpm@linux-foundation.org> <20070510100215.94c3a2ea.kristen.c.accardi@intel.com>
-In-Reply-To: <20070510100215.94c3a2ea.kristen.c.accardi@intel.com>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] 2.6.21 hang in cancel_rearming_delayed_workqueue()
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-OriginalArrivalTime: 25 May 2007 03:21:32.0346 (UTC) FILETIME=[CAC591A0:01C79E7B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> Check to see if an ATAPI device supports Asynchronous Notification.
-> If so, enable it.
-> 
-> Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> ---
-> Andrew, I cleaned up the function header to properly comply with kernel
-> doc requirements.  Other than that, this patch is the same.  
+There is a problem with the calling cancel_rearming_delayed_work if the 
+timer was not yet active.
 
-I would ask for a simple revision:  update ata_dev_set_AN() such that it 
-takes a second argument 'enable'.  This boolean indicates to the 
-function whether SETFEATURES_SATA_ENABLE or SETFEATURES_SATA_DISABLE 
-should be passed to the device.
+I see this problem when netpoll_cleanup() is called without having done 
+any work because it had not processed any packets yet.  The problem 
+appears to be a result of the loop check 
+while(!cancel_delayed_work(dwork)).    This endlessly loops because 
+del_timer_sync() can return 0 or 1 for success which is passed back as a 
+result to the final invariant check for the loop.  In this particular 
+case zero will always be returned because the timer is not active.
 
-Otherwise than that, it's ready to merge I would say.
+It is possible that the problem exists else where, but I thought I would 
+ask if this is expected?
 
+#0  del_timer_sync (timer=0xc7ed90f8) at kernel/timer.c:530
+#1  0xc012f08e in cancel_rearming_delayed_workqueue (wq=0xc7fee800,
+   dwork=0xc7ed90e8) at include/linux/workqueue.h:201
+#2  0xc012f0af in cancel_rearming_delayed_work (dwork=0x20)
+   at kernel/workqueue.c:680
+#3  0xc0312f78 in netpoll_cleanup (np=0xc880bf40) at net/core/netpoll.c:784
+
+Possible fix.
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+
+Index: linux-2.6.21/kernel/workqueue.c
+===================================================================
+--- linux-2.6.21.orig/kernel/workqueue.c
++++ linux-2.6.21/kernel/workqueue.c
+@@ -666,7 +666,7 @@ EXPORT_SYMBOL(flush_scheduled_work);
+void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
+                                      struct delayed_work *dwork)
+{
+-       while (!cancel_delayed_work(dwork))
++       while (cancel_delayed_work(dwork) > 0)
+               flush_workqueue(wq);
+}
+EXPORT_SYMBOL(cancel_rearming_delayed_workqueue);
+
+
+
+
+Thanks,
+Jason.
