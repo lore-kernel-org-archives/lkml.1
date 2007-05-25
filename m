@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764950AbXEYVRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765407AbXEYVUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764950AbXEYVRZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 17:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbXEYVRT
+	id S1765407AbXEYVUv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 17:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXEYVUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 17:17:19 -0400
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:53337 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752152AbXEYVRS (ORCPT
+	Fri, 25 May 2007 17:20:44 -0400
+Received: from smtp.ono.com ([62.42.230.12]:60538 "EHLO resmaa05.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754625AbXEYVUo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 17:17:18 -0400
-X-IronPort-AV: i="4.14,581,1170662400"; 
-   d="scan'208"; a="2726977:sNHT119695068"
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Greg KH <gregkh@suse.de>, Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@NineX.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       ninex@o2.pl, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>,
-       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
-X-Message-Flag: Warning: May contain useful information
-References: <20070514160005.627435e3@osprey.hogchain.net>
-	<m1odkmmft4.fsf@ebiederm.dsl.xmission.com>
-	<20070515212200.517fcba2@osprey.hogchain.net>
-	<m14pmcmz8r.fsf@ebiederm.dsl.xmission.com>
-	<20070516185225.3f3ac082@osprey.hogchain.net>
-	<m1sl9wl28m.fsf@ebiederm.dsl.xmission.com>
-	<20070522204103.134bf5a2@osprey.hogchain.net>
-	<m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070525052032.GB9386@suse.de>
-	<m1myztaq5s.fsf@ebiederm.dsl.xmission.com>
-	<20070525203501.GD5413@suse.de>
-	<m1k5uwaa0h.fsf@ebiederm.dsl.xmission.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 25 May 2007 14:17:07 -0700
-In-Reply-To: <m1k5uwaa0h.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's message of "Fri, 25 May 2007 15:06:22 -0600")
-Message-ID: <adatzu038oc.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 May 2007 21:17:08.0085 (UTC) FILETIME=[0D11DA50:01C79F12]
-Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim7002 verified; ); 
+	Fri, 25 May 2007 17:20:44 -0400
+Date: Fri, 25 May 2007 23:20:25 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: idle=poll burns my box [was Re: 2.6.22-rc2-mm1]
+Message-ID: <20070525232025.416b32d7@werewolf-wl>
+In-Reply-To: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.9.2cvs12 (GTK+ 2.10.12; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I think for most of Intel I can reduce my test to:
- > If (bus == 0 , device == 0, function == 0 && vendor == Intel &&
- >     has a pci express capability) {
- > 	Enable msi on all busses().
- > }
+On Wed, 23 May 2007 00:42:33 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-MSI was working on every Intel PCI-X chipset I ever saw too...
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
+> 
 
- - R.
+Don't know if it's specific to this kernel, but as I have realized it now...
+
+I booted with idle=poll to check some issues (with nvidia driver, btw).
+And suddenly I noticed my box was running near 80ºC hot.
+I pulled out the lid, an try to see what happened.
+
+In short, idle=poll rises the temperature about 20ºC.
+I have an ASUS PC-DL mobo, with a couple Xeon Northwood with HypertThreading
+at 2.4 GHz, for a total of 4 threads.
+
+If I boot the box with idle=poll, and let it doing _nothing_ but staring at
+the gnome desktop, I get this temperatures:
+(Time,VRM,CPU0,CPU1) (wihtout the side cover, remember...)
+
+15:46 64 56 54
+15:55 70 60 56
+16:02 71 62 57
+
+If I reboot without idle=poll, the box colds quickly:
+
+16:07 58 52 48
+16:12 50 43 42
+16:15 49 42 41
+
+I I put the box to do some multithreaded render, so all four cores stay
+above 98% usage, the box warms again:
+
+16:17 51 43 42
+16:24 67 57 54
+16:28 70 60 56
+16:30 72 61 57
+16:37 72 61 56
+
+And as soon as I stop the work, it colds again:
+
+16:41 71 60 56
+16:42 64 56 52
+16:43 60 54 50
+16:45 55 48 46
+16:46 53 46 44
+
+Left alone for awhile, it stays at 46 39 39 (for VRM and both CPUs, as I said).
+
+Is idle=poll a quick and dirty way to burn your box in flames ?
+To warm your cpu doing nothing ?
+Summer is coming, but this...
+
+Any ideas ?
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.0 (Cooker) for i586
+Linux 2.6.21-jam03 (gcc 4.1.2 20070302 (4.1.2-1mdv2007.1)) SMP PREEMPT
+09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
