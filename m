@@ -1,264 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbXEYHtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbXEYHvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbXEYHtf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 03:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbXEYHt2
+	id S1752819AbXEYHvg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 03:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbXEYHva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 03:49:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58171 "EHLO mx2.mail.elte.hu"
+	Fri, 25 May 2007 03:51:30 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:53656 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750916AbXEYHt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 03:49:27 -0400
-Date: Fri, 25 May 2007 09:49:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] sched_clock(): cleanups
-Message-ID: <20070525074915.GA18400@elte.hu>
-References: <20070525071005.GA6431@elte.hu> <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com> <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu>
+	id S1750721AbXEYHv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 03:51:29 -0400
+Date: Fri, 25 May 2007 13:29:36 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de, kernel@kolivas.org,
+       containers@lists.osdl.org, ckrm-tech@lists.sourceforge.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       pwil3058@bigpond.net.au, tingy@cs.umass.edu, tong.n.li@intel.com,
+       wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
+Message-ID: <20070525075936.GE6157@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070523164859.GA6595@in.ibm.com> <20070523183252.GB6253@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070525074316.GA16821@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070523183252.GB6253@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 23, 2007 at 08:32:52PM +0200, Ingo Molnar wrote:
+> > Here's an attempt to extend CFS (v13) to be fair at a group level, 
+> > rather than just at task level. The patch is in a very premature state 
+> > (passes simple tests, smp load balance not supported yet) at this 
+> > point. I am sending it out early to know if this is a good direction 
+> > to proceed.
+> 
+> cool patch! :-)
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Thanks!
 
-> updated version of the cleanup patch below, renamed r_s_c to 
-> resync_freq, and changed 'f' to 'freq'.
+> > 1. This patch reuses CFS core to achieve fairness at group level also.
+> > 
+> >    To make this possible, CFS core has been abstracted to deal with 
+> >    generic schedulable "entities" (tasks, users etc).
+> 
+> yeah, i like this alot.
+> 
+> The "struct sched_entity" abstraction looks very clean, and that's the 
+> main thing that matters: it allows for a design that will only cost us 
+> performance if group scheduling is desired.
+> 
+> If you could do a -v14 port and at least add minimal SMP support: i.e. 
+> it shouldnt crash on SMP, but otherwise no extra load-balancing logic is 
+> needed for the first cut - then i could try to pick all these core 
+> changes up for -v15. (I'll let you know about any other thoughts/details 
+> when i do the integration.)
 
-updated one below.
+Sure ..I will work on a -v14 port. I would like to target for something which:
 
-	Ingo
+1. doesn't break performance/functionality of existing CFS scheduler
+  -if- CONFIG_FAIR_USER_SCHEDULER is disabled. This also means load
+  balance should work as it works today when the config option is
+  disabled.
 
-------------------->
-Subject: [patch] sched_clock(): cleanups
-From: Ingo Molnar <mingo@elte.hu>
+  Do you recommend a set of tests that I need to run to ensure there
+  is no regression? I know that there is a bunch of scheduler
+  tests floating around on lkml ..Just need to dig to them (or if
+  someone has all these tests handy on a website, I will download from
+  that site!)
 
-clean up sched-clock.c - mostly comment style fixes.
+2. Provides fairness at group (user) level at the cost of missing load
+   balance functionaility (missing until I get around to work on it that
+   is).
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/i386/kernel/sched-clock.c |  110 +++++++++++++++++++++++++----------------
- 1 file changed, 69 insertions(+), 41 deletions(-)
+> kernel builds dont really push scheduling micro-costs, rather try 
+> something like 'hackbench.c' to measure that. (kernel builds are of 
+> course one of our primary benchmarks.)
 
-Index: linux-cfs-2.6.22-rc2-mm1.q/arch/i386/kernel/sched-clock.c
-===================================================================
---- linux-cfs-2.6.22-rc2-mm1.q.orig/arch/i386/kernel/sched-clock.c
-+++ linux-cfs-2.6.22-rc2-mm1.q/arch/i386/kernel/sched-clock.c
-@@ -60,18 +60,20 @@ DEFINE_PER_CPU(struct sc_data, sc_data) 
-  */
- unsigned long long native_sched_clock(void)
- {
--	unsigned long long r;
- 	struct sc_data *sc = &get_cpu_var(sc_data);
-+	unsigned long long r;
-+	unsigned long flags;
- 
- 	if (sc->unstable) {
--		unsigned long flags;
- 		r = (jiffies_64 - sc->sync_base) * (1000000000 / HZ);
- 		r += sc->ns_base;
- 		local_irq_save(flags);
--		/* last_val is used to avoid non monotonity on a
--		   stable->unstable transition. Make sure the time
--		   never goes to before the last value returned by
--		   the TSC clock */
-+		/*
-+		 * last_val is used to avoid non monotonity on a
-+		 * stable->unstable transition. Make sure the time
-+		 * never goes to before the last value returned by
-+		 * the TSC clock
-+		 */
- 		if (r <= sc->last_val)
- 			r = sc->last_val + 1;
- 		sc->last_val = r;
-@@ -87,8 +89,10 @@ unsigned long long native_sched_clock(vo
- 	return r;
- }
- 
--/* We need to define a real function for sched_clock, to override the
--   weak default version */
-+/*
-+ * We need to define a real function for sched_clock, to override the
-+ * weak default version
-+ */
- #ifdef CONFIG_PARAVIRT
- unsigned long long sched_clock(void)
- {
-@@ -101,9 +105,11 @@ unsigned long long sched_clock(void)
- 
- static int no_sc_for_printk;
- 
--/* printk clock: when it is known the sc results are very non monotonic
--   fall back to jiffies for printk. Other sched_clock users are supposed
--   to handle this. */
-+/*
-+ * printk clock: when it is known the sc results are very non monotonic
-+ * fall back to jiffies for printk. Other sched_clock users are supposed
-+ * to handle this.
-+ */
- unsigned long long printk_clock(void)
- {
- 	if (unlikely(no_sc_for_printk))
-@@ -119,35 +125,46 @@ static void resync_sc_freq(struct sc_dat
- 		sc->unstable = 1;
- 		return;
- 	}
--	/* Handle nesting, but when we're zero multiple calls in a row
--	   are ok too and not a bug */
-+	/*
-+	 * Handle nesting, but when we're zero multiple calls in a row
-+	 * are ok too and not a bug
-+	 */
- 	if (sc->unstable > 0)
- 		sc->unstable--;
- 	if (sc->unstable)
- 		return;
--	/* RED-PEN protect with seqlock? I hope that's not needed
--	   because sched_clock callers should be able to tolerate small
--	   errors. */
-+	/*
-+	 * RED-PEN protect with seqlock? I hope that's not needed
-+	 * because sched_clock callers should be able to tolerate small
-+	 * errors.
-+	 */
- 	sc->ns_base = ktime_to_ns(ktime_get());
- 	rdtscll(sc->sync_base);
- 	sc->cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR) / newfreq;
- }
- 
--static void call_r_s_f(void *arg)
-+static void __resync_freq(void *arg)
- {
--	struct cpufreq_freqs *freq = arg;
--	unsigned f = freq->new;
--	if (!f)
--		f = cpufreq_get(freq->cpu);
--	if (!f)
--		f = tsc_khz;
--	resync_sc_freq(&per_cpu(sc_data, freq->cpu), f);
-+	struct cpufreq_freqs *freqp = arg;
-+	unsigned freq = freqp->new;
-+
-+	if (!freq) {
-+		freq = cpufreq_get(freqp->cpu);
-+		/*
-+		 * Still no frequency? Then fall back to tsc_khz:
-+		 */
-+		if (!freq)
-+			freq = tsc_khz;
-+	}
-+	resync_sc_freq(&per_cpu(sc_data, freqp->cpu), freq);
- }
- 
--static void call_r_s_f_here(void *arg)
-+static void resync_freq(void *arg)
- {
--	struct cpufreq_freqs f = { .cpu = get_cpu(), .new = 0 };
--	call_r_s_f(&f);
-+	struct cpufreq_freqs f = { .new = 0 };
-+
-+	f.cpu = get_cpu();
-+	__resync_freq(&f);
- 	put_cpu();
- }
- 
-@@ -155,9 +172,11 @@ static int sc_freq_event(struct notifier
- 			 void *data)
- {
- 	struct cpufreq_freqs *freq = data;
--	int cpu = get_cpu();
--	struct sc_data *sc = &per_cpu(sc_data, cpu);
-+	struct sc_data *sc;
-+	int cpu;
- 
-+	cpu = get_cpu();
-+	sc = &per_cpu(sc_data, cpu);
- 	if (cpu_has(&cpu_data[cpu], X86_FEATURE_CONSTANT_TSC))
- 		goto out;
- 	if (freq->old == freq->new)
-@@ -167,25 +186,30 @@ static int sc_freq_event(struct notifier
- 	case CPUFREQ_SUSPENDCHANGE:
- 		/* Mark TSC unstable during suspend/resume */
- 	case CPUFREQ_PRECHANGE:
--		/* Mark TSC as unstable until cpu frequency change is done
--		   because we don't know when exactly it will change.
--		   unstable in used as a counter to guard against races
--		   between the cpu frequency notifiers and normal resyncs */
-+		/*
-+		 * Mark TSC as unstable until cpu frequency change is done
-+		 * because we don't know when exactly it will change.
-+		 * unstable in used as a counter to guard against races
-+		 * between the cpu frequency notifiers and normal resyncs
-+		 */
- 		sc->unstable++;
- 		/* FALL THROUGH */
- 	case CPUFREQ_RESUMECHANGE:
- 	case CPUFREQ_POSTCHANGE:
--		/* Frequency change or resume is done -- update everything and
--		   mark TSC as stable again. */
-+		/*
-+		 * Frequency change or resume is done -- update everything
-+		 * and mark TSC as stable again.
-+		 */
- 		if (cpu == freq->cpu)
- 			resync_sc_freq(sc, freq->new);
- 		else
--			smp_call_function_single(freq->cpu, call_r_s_f,
-+			smp_call_function_single(freq->cpu, __resync_freq,
- 						 freq, 0, 1);
- 		break;
- 	}
- out:
- 	put_cpu();
-+
- 	return NOTIFY_DONE;
- }
- 
-@@ -197,9 +221,11 @@ static int __cpuinit
- sc_cpu_event(struct notifier_block *self, unsigned long event, void *hcpu)
- {
- 	long cpu = (long)hcpu;
-+
- 	if (event == CPU_ONLINE) {
- 		struct cpufreq_freqs f = { .cpu = cpu, .new = 0 };
--		smp_call_function_single(cpu, call_r_s_f, &f, 0, 1);
-+
-+		smp_call_function_single(cpu, __resync_freq, &f, 0, 1);
- 	}
- 	return NOTIFY_DONE;
- }
-@@ -209,13 +235,15 @@ static __init int init_sched_clock(void)
- 	if (unsynchronized_tsc())
- 		no_sc_for_printk = 1;
- 
--	/* On a race between the various events the initialization might be
--	   done multiple times, but code is tolerant to this */
-+	/*
-+	 * On a race between the various events the initialization might be
-+	 * done multiple times, but code is tolerant to this
-+	 */
- 	cpufreq_register_notifier(&sc_freq_notifier,
- 				CPUFREQ_TRANSITION_NOTIFIER);
- 	hotcpu_notifier(sc_cpu_event, 0);
--	on_each_cpu(call_r_s_f_here, NULL, 0, 0);
-+	on_each_cpu(resync_freq, NULL, 0, 0);
-+
- 	return 0;
- }
- core_initcall(init_sched_clock);
--
+sure i will try that on my next version.
+
+-- 
+Regards,
+vatsa
