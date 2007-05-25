@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762415AbXEYPKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbXEYPLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762415AbXEYPKd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 11:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbXEYPKZ
+	id S1763106AbXEYPLM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 11:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762952AbXEYPKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 11:10:25 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:51284 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751435AbXEYPKZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 11:10:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=pMX7q5U+ZZrGiGr57ooRxFr0y0ThXhK3bhFNMPDMkAFA4mAQoSxW2gpV2nciTu9vmvETyzs8a5gtkNAtZjpm3SXUkQUmmO+6L1qA6sftVeQmr3KerrXHpbGeYp3oK7lWC13+pBFg8yA2ua61zpnodE8HLzporf6c5ciR14sOLms=
-Message-ID: <2bd9ebfa0705250810l4878c33ene551235247a4a896@mail.gmail.com>
-Date: Fri, 25 May 2007 11:10:23 -0400
-From: "Tej Parkash" <tejparkash.d@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Reg: redundancy in inet socket
+	Fri, 25 May 2007 11:10:55 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:46478 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752021AbXEYPKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 11:10:54 -0400
+Message-ID: <4656FC87.6030901@cfl.rr.com>
+Date: Fri, 25 May 2007 11:11:03 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: device-mapper development <dm-devel@redhat.com>
+CC: linux-fsdevel@vger.kernel.org, linux-raid@vger.kernel.org,
+       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [dm-devel] [RFD] BIO_RW_BARRIER - what it means for devices,
+ filesystems, and dm/md.
+References: <18006.38689.818186.221707@notabene.brown>
+In-Reply-To: <18006.38689.818186.221707@notabene.brown>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-OriginalArrivalTime: 25 May 2007 15:11:03.0451 (UTC) FILETIME=[E920AEB0:01C79EDE]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15198.000
+X-TM-AS-Result: No--11.764900-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-list_for_each_rcu(p, &inetsw[sock->type]) {
-		answer = list_entry(p, struct inet_protosw, list);
+Neil Brown wrote:
+> There is no guarantee that a device can support BIO_RW_BARRIER - it is
+> always possible that a request will fail with EOPNOTSUPP.
 
-		/* Check the non-wild match. */
-		if (protocol == answer->protocol) {
-			if (protocol != IPPROTO_IP)
-				break;
-		} else {
-			/* Check for the two wild cases. */
-			if (IPPROTO_IP == protocol) {
-				protocol = answer->protocol;
-				break;
-			}
-			if (IPPROTO_IP == answer->protocol)
-				break;
-		}
+Why is it not the job of the block layer to translate for broken devices 
+and send them a flush/write/flush?
 
-i think there is a problem in this code because if (protocol ==
-answer->protocol) will be more like an assignment rather then
-comparison
-pl cc to me.
-TEJ
+>    These devices would find it very hard to support BIO_RW_BARRIER.
+>    Doing this would require keeping track of all in-flight requests
+>    (which some, possibly all, of the above don't) and then:
+
+The device mapper keeps track of in flight requests already.  When 
+switching tables it has to hold new requests and wait for in flight 
+requests to complete before switching to the new table.  When it gets a 
+barrier request it just needs to do the same thing, only not switch 
+tables.
+
+>    I think the best approach for this class of devices is to return
+>    -EOPNOSUP.  If the filesystem does the wait (which they all do
+>    already) and the blkdev_issue_flush (which is easy to add), they
+>    don't need to support BIO_RW_BARRIER.
+
+Why?  The personalities should just pass the BARRIER flag down to each 
+underlying device, and the dm common code should wait for all in flight 
+io to complete before sending the barrier to the personality.
+
+> For devices that don't support QUEUE_ORDERED_TAG (i.e. commands sent to
+> the controller can be tagged as barriers), SCSI will use the
+> SYNCHRONIZE_CACHE command to flush the cache after the barrier
+> request (a bit like the filesystem calling blkdev_issue_flush, but at
+
+Don't you have to flush the cache BEFORE the barrier to ensure that 
+previous IO is committed first, THEN the barrier write?
+
+
