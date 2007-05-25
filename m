@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765221AbXEYUf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765315AbXEYUg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765221AbXEYUf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 16:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbXEYUfR
+	id S1765315AbXEYUg6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 16:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbXEYUgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 16:35:17 -0400
-Received: from mail.suse.de ([195.135.220.2]:56270 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756764AbXEYUfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 16:35:16 -0400
-Date: Fri, 25 May 2007 13:35:01 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@NineX.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       ninex@o2.pl, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>,
-       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
-Message-ID: <20070525203501.GD5413@suse.de>
-References: <20070514160005.627435e3@osprey.hogchain.net> <m1odkmmft4.fsf@ebiederm.dsl.xmission.com> <20070515212200.517fcba2@osprey.hogchain.net> <m14pmcmz8r.fsf@ebiederm.dsl.xmission.com> <20070516185225.3f3ac082@osprey.hogchain.net> <m1sl9wl28m.fsf@ebiederm.dsl.xmission.com> <20070522204103.134bf5a2@osprey.hogchain.net> <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com> <20070525052032.GB9386@suse.de> <m1myztaq5s.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1myztaq5s.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Fri, 25 May 2007 16:36:51 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50061
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754533AbXEYUgu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 16:36:50 -0400
+Date: Fri, 25 May 2007 13:36:53 -0700 (PDT)
+Message-Id: <20070525.133653.57156321.davem@davemloft.net>
+To: crn@netunix.com
+Cc: torvalds@linux-foundation.org, mingo@elte.hu, clameter@sgi.com,
+       michal.k.k.piotrowski@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, cherwin@gmail.com,
+       linux-pcmcia@lists.infradead.org, robert.de.rooy@gmail.com,
+       alan@redhat.com, htejun@gmail.com, sparclinux@vger.kernel.org,
+       mikpe@it.uu.se, linux1394-devel@lists.sourceforge.net,
+       stefanr@s5r6.in-berlin.de, krh@bitplanet.net,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl, pavel@ucw.cz,
+       marcus@better.se, arvidjaar@mail.ru,
+       linux-usb-devel@lists.sourceforge.net, gregkh@suse.de
+Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <46572507.6010800@netunix.com>
+References: <4656CE39.8050800@netunix.com>
+	<alpine.LFD.0.98.0705250937550.26602@woody.linux-foundation.org>
+	<46572507.6010800@netunix.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 09:17:35AM -0600, Eric W. Biederman wrote:
-> Greg KH <gregkh@suse.de> writes:
-> 
-> > Originally I would have thought this would be a good idea, but now that
-> > Vista is out, which supports MSI, I don't think we are going to need
-> > this in the future.  All new chipsets should support MSI fine and this
-> > table will only grow in the future, while the blacklist should not need
-> > to have many new entries added to it.
-> >
-> > So I don't think this is a good idea, sorry.
-> 
-> - The current situation is broken
-> - In spec hardware does not require MSI to generate interrupts
->   Which leaves enabling MSI optional.
-> 
-> Do you have a better idea to solve the current brokenness?
-> 
-> MSI appears to have enough problems that enabling it in a kernel
-> that is supposed to run lots of different hardware (like a distro
-> kernel) is a recipe for disaster.
+From: Chris Newport <crn@netunix.com>
+Date: Fri, 25 May 2007 19:03:51 +0100
 
-Oh, I agree it's a major pain in the ass at times...
+> Not really a Solaris feature. This is a feature of the  Openboot  PROM
+> which is also used by several other vendors.
+> The Openboot PROM knows how to write to disk. The same should
+> apply on Apple hardware and others which use the openboot
+> convention.
 
-But I'm real hesitant to change things this way.  We'll get reports of
-people who used to have MSI working, and now it will not (like all AMD
-chipsets).  That's a regression...
+This is totally unusable even if it weren't stupid, and as
+someone who loves OpenBoot I think it's very stupid.
 
-Perhaps we can trigger off of the same flag that Vista uses like Andi
-suggested?  That's one way to "know" that the hardware works, right?
+The reason it's unusable is that PowerPC already and sparc64 soon (in
+order to support LDOMs) totally drops the OBP firmware very soon after
+early kernel boot.  We pull in the device tree and then say "see ya"
+to openboot.
 
-For non-x86 arches, they all seem to want to always enable MSI as they
-don't have to deal with as many broken chipsets, if any at all.  So for
-them, we'd have to just whitelist the whole arch.  Does that really make
-sense?
-
-And again, over time, like years, this list is going to grow way beyond
-a managable thing, especially as any new chipset that comes out in 2009
-is going to have working MSI, right?  I think our blacklist is easier to
-manage over time, while causing a problem for some users in trying to
-determine their broken hardware that they currently have.
-
-It's a trade off, and I'd like to choose the one that over the long
-term, causes the least ammount of work and maintaiblity.  I think the
-current blacklist meets that goal.
-
-thanks,
-
-greg k-h
+PowerPC does it because sharing the address space with openboot is
+next to impossible on that cpu, sparc64 will need to do it because
+dynamic-reconfiguration of cpus in an LDOM is too hard to do with
+openboot there.
