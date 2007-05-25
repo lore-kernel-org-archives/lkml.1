@@ -1,286 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763352AbXEYRVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764085AbXEYRV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763352AbXEYRVR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 13:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbXEYRVJ
+	id S1764085AbXEYRV7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 13:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762158AbXEYRVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 13:21:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:55611 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbXEYRVH (ORCPT
+	Fri, 25 May 2007 13:21:51 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:55926 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752758AbXEYRVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 13:21:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:reply-to:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:message-id;
-        b=ISHcvhhrgy5OV8XUhQnAx2L0kqAiCUn9FnOd3znjFK4E+gQpZ++VAb+cihpv0xVAD2uRDGktCL67m7FYeCjihrfnHkfAwr/umCikPrVD/gZOoo2bCjI8zrsUulI0w6X3Kjtf+p/uH/UJGzHCEsd4REidJYhVNQXl9K3mUpypcyY=
-From: Bjoern Olausson <spamsuxx@gmail.com>
-Reply-To: spamsuxx@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.21.3] [pata_jmicron] BUG: soft lockup detected on CPU#0!
-Date: Fri, 25 May 2007 19:20:55 +0200
-User-Agent: KMail/1.9.5
+	Fri, 25 May 2007 13:21:49 -0400
+Date: Fri, 25 May 2007 10:19:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Chris Newport <crn@netunix.com>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <clameter@sgi.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux1394-devel@lists.sourceforge.net,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kristian H?gsberg <krh@bitplanet.net>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
+In-Reply-To: <20070525180304.2cc4dae0@the-village.bc.nu>
+Message-ID: <alpine.LFD.0.98.0705251012200.26602@woody.linux-foundation.org>
+References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com>
+ <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>
+ <20070524193740.GA6787@elte.hu> <alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org>
+ <20070525101105.GA9268@elte.hu> <4656CE39.8050800@netunix.com>
+ <alpine.LFD.0.98.0705250937550.26602@woody.linux-foundation.org>
+ <20070525180304.2cc4dae0@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1324692.A9enu5oEYd";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705251921.00846.spamsuxx@gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1324692.A9enu5oEYd
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Dear list members,
-
-I am posting to this list just to get additional help for the bug I=20
-reported here:
-http://bugzilla.kernel.org/show_bug.cgi?id=3D8259 =20
-
-So the problem is the following:
-
-I have a Asus P5W-DH Delux Mainboard with an onboard JMicron 20360/20363 AH=
-CI=20
-Controller.
-As soon as I enable this controller my system freezes after some time.
-
-I captured some of the soft lockups with and without the closed source Nvid=
-ia=20
-drivers. =20
-
-As no one has answered for some time now on my bug, I am seeking help on th=
-is=20
-list.
-
-My major question is: Does it look like a hardware issue or is it a bug in =
-the=20
-driver?
 
 
-Thanks for your help in advance. =20
+On Fri, 25 May 2007, Alan Cox wrote:
+> 
+> There is an additional factor - dumps contain data which variously is -
+> copyright third parties, protected by privacy laws, just personally
+> private, security sensitive (eg browser history) and so on.
 
-Best regards
-Bjoern
+Yes. 
 
+I'm sure we've had one or two crashdumps over the years that have actually 
+clarified a bug.
 
-Below I will provide all logs/dmsg/lspci .... which could be from interest.=
- If=20
-you need more info, blease let me kno
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-The soft lockup occurs still on  2.6.21.3
-All logs/lspci/dmsg... can be found here http://olausson.name/bug/
+But I seriously doubt it is more than a handful. 
 
-The latest, captured today is
-http://olausson.name/bug/2007.05.25-freax-bug-nvidia.log
+> Diskdump (and even more so netdump) are useful in the hands of a
+> developer crashing their own box just like kgdb, but not in the the
+> normal and rational end user response of  "its broken, hit reset"
 
-Usefull information can be found on the following lines:
-=2D-Line 764 lspci --vv
-=2D-Line 1167 dmsg
-=2D-Line 1803 lsmod
-=2D-Line 1841 cat /proc/interrupts
-=2D-Line 1865 lsusb
-=2D-Line 1883 uname -a
-=2D-Line 1886 cat /usr/src/linux/.config
+Amen, brother.
 
-May 25 18:53:45 freax BUG: soft lockup detected on CPU#0!
-May 25 18:53:45 freax
-May 25 18:53:45 freax Call Trace:
-May 25 18:53:45 freax <IRQ>  [<ffffffff802558d4>] softlockup_tick+0xda/0xf5
-May 25 18:53:45 freax [<ffffffff8023b301>] update_process_times+0x42/0x68
-May 25 18:53:45 freax [<ffffffff8021772d>] smp_local_timer_interrupt+0x34/0=
-x52
-May 25 18:53:45 freax [<ffffffff80217e36>] smp_apic_timer_interrupt+0x44/0x=
-5e
-May 25 18:53:45 freax [<ffffffff8020a086>] apic_timer_interrupt+0x66/0x70
-May 25 18:53:45 freax [<ffffffff80255b95>] handle_IRQ_event+0x1a/0x53
-May 25 18:53:45 freax [<ffffffff80256d07>] handle_edge_irq+0xe4/0x128
-May 25 18:53:45 freax [<ffffffff8020ba7d>] do_IRQ+0xf1/0x160
-May 25 18:53:45 freax [<ffffffff80209931>] ret_from_intr+0x0/0xa
-May 25 18:53:45 freax [<ffffffff80459072>] ata_scsi_qc_complete+0x0/0x385
-May 25 18:53:45 freax [<ffffffff8020a5dc>] call_softirq+0x1c/0x28
-May 25 18:53:45 freax [<ffffffff80237509>] __do_softirq+0x3e/0xb8
-May 25 18:53:45 freax [<ffffffff8020a5dc>] call_softirq+0x1c/0x28
-May 25 18:53:45 freax [<ffffffff8020b93b>] do_softirq+0x2c/0x7d
-May 25 18:53:45 freax [<ffffffff802374bf>] irq_exit+0x36/0x42
-May 25 18:53:45 freax [<ffffffff8020bac9>] do_IRQ+0x13d/0x160
-May 25 18:53:45 freax [<ffffffff80209931>] ret_from_intr+0x0/0xa
-May 25 18:53:45 freax <EOI>  [<ffffffff805bf694>]=20
-_spin_unlock_irqrestore+0xc/0x31
-May 25 18:53:45 freax [<ffffffff8043a7d6>] scsi_dispatch_cmd+0x1f1/0x236
-May 25 18:53:45 freax [<ffffffff8043f373>] scsi_request_fn+0x26c/0x337
-May 25 18:53:45 freax [<ffffffff8039de56>] generic_unplug_device+0x18/0x25
-May 25 18:53:45 freax [<ffffffff8029bb5f>] sync_buffer+0x36/0x40
-May 25 18:53:45 freax [<ffffffff805be1c2>] __wait_on_bit+0x40/0x6e
-May 25 18:53:45 freax [<ffffffff8029bb29>] sync_buffer+0x0/0x40
-May 25 18:53:45 freax [<ffffffff805be25c>] out_of_line_wait_on_bit+0x6c/0x78
-May 25 18:53:45 freax [<ffffffff80244f63>] wake_bit_function+0x0/0x23
-May 25 18:53:45 freax [<ffffffff802e1d75>]=20
-journal_commit_transaction+0x68b/0x11fe
-May 25 18:53:45 freax [<ffffffff8023b0dc>] lock_timer_base+0x1b/0x3c
-May 25 18:53:45 freax [<ffffffff805bf69e>] _spin_unlock_irqrestore+0x16/0x31
-May 25 18:53:45 freax [<ffffffff80244b96>] keventd_create_kthread+0x0/0x6a
-May 25 18:53:45 freax [<ffffffff802e6014>] kjournald+0xba/0x217
-May 25 18:53:45 freax [<ffffffff80244f35>] autoremove_wake_function+0x0/0x2e
-May 25 18:53:45 freax [<ffffffff80244b96>] keventd_create_kthread+0x0/0x6a
-May 25 18:53:45 freax [<ffffffff802e5f5a>] kjournald+0x0/0x217
-May 25 18:53:45 freax [<ffffffff80244df1>] kthread+0xd1/0x100
-May 25 18:53:45 freax [<ffffffff8020a268>] child_rip+0xa/0x12
-May 25 18:53:45 freax [<ffffffff80244b96>] keventd_create_kthread+0x0/0x6a
-May 25 18:53:45 freax [<ffffffff80244d20>] kthread+0x0/0x100
-May 25 18:53:45 freax [<ffffffff8020a25e>] child_rip+0x0/0x12
-May 25 18:53:45 freax
-=2D------------------------------------------------------------------------=
-=2D-------------------------------------
+Even for developers, I suspect a _lot_ of people end up doing "ok, let's 
+bisect this" or some other method to narrow it down to a specific case, 
+and then staring at the source code once they get to that point.
 
-Older Soft Lockups:
+At least I hope so. Even in user space, you should generally use gdb to 
+get a traceback and perhaps variable information, and then go look at the 
+source code.
 
-(NV in the filenames means the xorg's nvidia driver)
-(nvidia in the fienames means Nvidias closed source driver)
+Yes, dumps can (in theory) be useful for one-off issues, but I doubt many 
+people have ever been able to get anything much more out of them than from 
+a kernel "oops" message. 
 
-Heres a soft-lockup without NVIDIA driver (using the xorgs NV driver instea=
-d)
+For developers, I can heartily recommend the firewire-based remote debug 
+facilities that the PowerPC people use. I've used it once or twice, and it 
+is fairly simple and much better than a full dump (adn it works even when 
+the CPU is totally locked up, which is the best reason for using it).
 
-Apr 13 22:33:59 freax BUG: soft lockup detected on CPU#0!
-Apr 13 22:33:59 freax =20
-Apr 13 22:33:59 freax Call Trace:
-Apr 13 22:33:59 freax <IRQ> [<ffffffff802559c8>] softlockup_tick+0xda/0xf5
-Apr 13 22:33:59 freax [<ffffffff8023b42d>] update_process_times+0x42/0x68
-Apr 13 22:33:59 freax [<ffffffff80217775>] smp_local_timer_interrupt+0x34/0=
-x52 =20
-Apr 13 22:33:59 freax [<ffffffff80217e7e>] smp_apic_timer_interrupt+0x44/0x=
-5e
-Apr 13 22:33:59 freax [<ffffffff8020a086>] apic_timer_interrupt+0x66/0x70
-Apr 13 22:33:59 freax [<ffffffff80255c89>] handle_IRQ_event+0x1a/0x53 =20
-Apr 13 22:33:59 freax [<ffffffff80256dfb>] handle_edge_irq+0xe4/0x128
-Apr 13 22:33:59 freax [<ffffffff8020a5dc>] call_softirq+0x1c/0x28
-Apr 13 22:33:59 freax [<ffffffff8020baa9>] do_IRQ+0xf1/0x160 =20
-Apr 13 22:33:59 freax [<ffffffff80209931>] ret_from_intr+0x0/0xa
-Apr 13 22:33:59 freax <EOI>
+But 99% of the time, the problem doesn't happen on a developer machine, 
+and even if it does, 90% of the time you really just want the traceback 
+and register info that you get out of an oops.
 
-
-And this one is WITH the CS NVIDIA driver:
-
-Apr 13 18:14:09 freax BUG: soft lockup detected on CPU#0! =20
-Apr 13 18:14:09 freax
-Apr 13 18:14:09 freax Call Trace:
-Apr 13 18:14:09 freax <IRQ> [<ffffffff802559c8>] softlockup_tick+0xda/0xf5
-Apr 13 18:14:09 freax [<ffffffff8023b42d>] update_process_times+0x42/0x68 =
-=20
-Apr 13 18:14:09 freax [<ffffffff80217775>] smp_local_timer_interrupt+0x34/0=
-x52
-Apr 13 18:14:09 freax [<ffffffff80217e7e>] smp_apic_timer_interrupt+0x44/0x=
-5e
-Apr 13 18:14:09 freax [<ffffffff8020a086>] apic_timer_interrupt+0x66/0x70 =
-=20
-Apr 13 18:14:09 freax [<ffffffff80255c89>] handle_IRQ_event+0x1a/0x53
-Apr 13 18:14:09 freax [<ffffffff80256dfb>] handle_edge_irq+0xe4/0x128
-Apr 13 18:14:09 freax [<ffffffff8020a5dc>] call_softirq+0x1c/0x28 =20
-Apr 13 18:14:09 freax [<ffffffff8020baa9>] do_IRQ+0xf1/0x160
-Apr 13 18:14:09 freax [<ffffffff80209931>] ret_from_intr+0x0/0xa
-Apr 13 18:14:09 freax <EOI> [<ffffffff80584cf4>] _spin_unlock_irqrestore+0x=
-c/ =20
-0x31
-Apr 13 18:14:09 freax [<ffffffff80450f70>] ata_hsm_move+0x216/0x66a
-Apr 13 18:14:09 freax [<ffffffff80244cc2>] keventd_create_kthread+0x0/0x6a
-Apr 13 18:14:09 freax [<ffffffff804540be>] ata_pio_task+0x0/0xe9 =20
-Apr 13 18:14:09 freax [<ffffffff8045419a>] ata_pio_task+0xdc/0xe9
-Apr 13 18:14:09 freax [<ffffffff80241669>] run_workqueue+0x8f/0x137
-Apr 13 18:14:09 freax [<ffffffff802420e8>] worker_thread+0x0/0x14a =20
-Apr 13 18:14:09 freax [<ffffffff80244cc2>] keventd_create_kthread+0x0/0x6a
-Apr 13 18:14:09 freax [<ffffffff802421fc>] worker_thread+0x114/0x14a
-Apr 13 18:14:09 freax [<ffffffff8022ccce>] default_wake_function+0x0/0xe =20
-Apr 13 18:14:09 freax [<ffffffff80244f1d>] kthread+0xd1/0x100
-Apr 13 18:14:09 freax [<ffffffff8020a268>] child_rip+0xa/0x12
-Apr 13 18:14:09 freax [<ffffffff80244cc2>] keventd_create_kthread+0x0/0x6a =
-=20
-Apr 13 18:14:09 freax [<ffffffff802420e8>] worker_thread+0x0/0x14a
-Apr 13 18:14:09 freax [<ffffffff80244e4c>] kthread+0x0/0x100
-Apr 13 18:14:09 freax [<ffffffff8020a25e>] child_rip+0x0/0x12
- Apr 13 18:14:09 freax
-
-
-More logs, dmsg, interupts etc. can be found here:
-http://olausson.name/bug/
-Hope there is some usfull info in them.
-
-=20
-Here the next two softlocks: =20
-(Again, _without_ the CS NVIDIA driver)
-
-(http://olausson.name/bug/minicom_nv-1.log)
-Apr 14 09:46:13 freax Call Trace:
-Apr 14 09:46:13 freax <IRQ> [<ffffffff802559c8>] softlockup_tick+0xda/0xf5 =
-=20
-Apr 14 09:46:13 freax [<ffffffff8023b42d>] update_process_times+0x42/0x68
-Apr 14 09:46:13 freax [<ffffffff80217775>] smp_local_timer_interrupt+0x34/0=
-x52
-Apr 14 09:46:13 freax [<ffffffff80217e7e>] smp_apic_timer_interrupt+0x44/0x=
-5e =20
-Apr 14 09:46:13 freax [<ffffffff8020a086>] apic_timer_interrupt+0x66/0x70
-Apr 14 09:46:13 freax [<ffffffff80255c89>] handle_IRQ_event+0x1a/0x53
-Apr 14 09:46:13 freax [<ffffffff80256dfb>] handle_edge_irq+0xe4/0x128 =20
-Apr 14 09:46:13 freax [<ffffffff8020baa9>] do_IRQ+0xf1/0x160
-Apr 14 09:46:13 freax [<ffffffff80209931>] ret_from_intr+0x0/0xa
-Apr 14 09:46:13 freax [<ffffffff804553ee>] ata_scsi_qc_complete+0x0/0x385 =
-=20
-Apr 14 09:46:13 freax [<ffffffff80255c89>] handle_IRQ_event+0x1a/0x53
-Apr 14 09:46:13 freax [<ffffffff80256dfb>] handle_edge_irq+0xe4/0x128
-Apr 14 09:46:13 freax [<ffffffff8020a5dc>] call_softirq+0x1c/0x28 =20
-Apr 14 09:46:13 freax [<ffffffff8020baa9>] do_IRQ+0xf1/0x160
-Apr 14 09:46:13 freax [<ffffffff80209931>] ret_from_intr+0x0/0xa
-Apr 14 09:46:13 freax <EOI>
-
-( http://olausson.name/bug/minicom_nv-2.log)
-=2D-More--Apr 14 16:53:21 freax BUG: soft lockup detected on CPU#0!
-Apr 14 16:53:21 freax
-Apr 14 16:53:21 freax Call Trace:
-Apr 14 16:53:21 freax <IRQ> [<ffffffff802559c8>] softlockup_tick+0xda/0xf5 =
-=20
-Apr 14 16:53:21 freax [<ffffffff8023b42d>] update_process_times+0x42/0x68
-Apr 14 16:53:21 freax [<ffffffff80217775>] smp_local_timer_interrupt+0x34/0=
-x52
-Apr 14 16:53:21 freax [<ffffffff80217e7e>] smp_apic_timer_interrupt+0x44/0x=
-5e =20
-Apr 14 16:53:21 freax [<ffffffff8020a086>] apic_timer_interrupt+0x66/0x70
-Apr 14 16:53:21 freax [<ffffffff80255c89>] handle_IRQ_event+0x1a/0x53
-Apr 14 16:53:21 freax [<ffffffff80256dfb>] handle_edge_irq+0xe4/0x128 =20
-Apr 14 16:53:21 freax [<ffffffff8020a5dc>] call_softirq+0x1c/0x28
-Apr 14 16:53:21 freax [<ffffffff8020baa9>] do_IRQ+0xf1/0x160
-Apr 14 16:53:21 freax [<ffffffff80209931>] ret_from_intr+0x0/0xa
- Apr 14 16:53:21 freax <EOI> [<ffffffff802420e8>] worker_thread+0x0/0x14a
-Apr 14 16:53:21 freax [<ffffffff8058264b>] __sched_text_start+0x14b/0x7bc
-Apr 14 16:53:21 freax [<ffffffff80244cc2>] keventd_create_kthread+0x0/0x6a =
-=20
-Apr 14 16:53:21 freax [<ffffffff8022a3aa>] __wake_up+0x38/0x4f
-Apr 14 16:53:21 freax [<ffffffff80584cfe>] _spin_unlock_irqrestore+0x16/0x31
-Apr 14 16:53:21 freax [<ffffffff802420e8>] worker_thread+0x0/0x14a =20
-Apr 14 16:53:21 freax [<ffffffff80244cc2>] keventd_create_kthread+0x0/0x6a
-Apr 14 16:53:21 freax [<ffffffff802420e8>] worker_thread+0x0/0x14a
-Apr 14 16:53:21 freax [<ffffffff802421cc>] worker_thread+0xe4/0x14a =20
-Apr 14 16:53:21 freax [<ffffffff8022ccce>] default_wake_function+0x0/0xe
-Apr 14 16:53:21 freax [<ffffffff80244f1d>] kthread+0xd1/0x100
-Apr 14 16:53:21 freax [<ffffffff8020a268>] child_rip+0xa/0x12 =20
-Apr 14 16:53:21 freax [<ffffffff80244cc2>] keventd_create_kthread+0x0/0x6a
-Apr 14 16:53:21 freax [<ffffffff80244e4c>] kthread+0x0/0x100
-Apr 14 16:53:21 freax [<ffffffff8020a25e>] child_rip+0x0/0x12 =20
-Apr 14 16:53:21 freax
-
---nextPart1324692.A9enu5oEYd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGVxr5dxYXZjyxLUsRApiQAJ9HGPyGYQubZTgKlaOkzeUXKvSFdwCfSvco
-qKC+tzkevBqC8tZ9tKZ299k=
-=Kvdi
------END PGP SIGNATURE-----
-
---nextPart1324692.A9enu5oEYd--
+			Linus
