@@ -1,38 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765530AbXEYUhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764991AbXEYUle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765530AbXEYUhh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 16:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXEYUha
+	id S1764991AbXEYUle (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 16:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbXEYUl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 16:37:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41576 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756023AbXEYUh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 16:37:29 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX1/GFEBd0u3GpFrzRvchh0PtXb9Xrhj4cSeClPpYVQ
-	bNVuGKuMbaOuKs
-Date: Fri, 25 May 2007 22:37:30 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+	Fri, 25 May 2007 16:41:28 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40925 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753674AbXEYUl2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 16:41:28 -0400
+Date: Fri, 25 May 2007 21:41:27 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
 To: Satyam Sharma <satyam.sharma@gmail.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: double exclamation (!!) suckage in the kernel
-Message-ID: <20070525203730.GA5974@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Satyam Sharma <satyam.sharma@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-ID: <20070525204127.GK4095@ftp.linux.org.uk>
 References: <a781481a0705251323s6b5c8014t48e8d2ad63e8434a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 In-Reply-To: <a781481a0705251323s6b5c8014t48e8d2ad63e8434a@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.05.26 01:53:59 +0530, Satyam Sharma wrote:
+On Sat, May 26, 2007 at 01:53:59AM +0530, Satyam Sharma wrote:
 > Hello,
 > 
 > Grepping through the sources I found 500+ occurrences of double
@@ -48,26 +41,10 @@ On 2007.05.26 01:53:59 +0530, Satyam Sharma wrote:
 > s/something/!notsomething/g kind of patches or is there some
 > dark, unknown C / gcc wizardry I have absolutely no clue of?
 
-It avoids useless warnings. If you have a pointer and want to store if
-it is NULL/non-NULL in an integer variables, you have to use !x or !!x.
-Just using x will result in a warning that you convert a pointer to an
-integer without a cast.
+That's a question for a quiz in introductory course on C:
+	what type should x have for !!x to be a valid expression?
+	what will be the type of result?
+	what are the possible values of the result?
+	describe which values of x correspond to each possible value of !!x
 
-Given this example:
-
-int main()
-{
-	int ret;
-	void *foo;
-
-	ret = foo;
-	ret = !!foo;
-
-	return 0;
-}
-
-gcc will emit this warning:
-ttt.c:6: warning: assignment makes integer from pointer without a cast
-
-HTH
-Björn
+You have 10 minutes (and that's a fairly generous, actually).
