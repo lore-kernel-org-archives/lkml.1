@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbXEYJVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbXEYJV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759677AbXEYJVf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 05:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbXEYJV3
+	id S1760890AbXEYJV4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 05:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758045AbXEYJVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 05:21:29 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:44651 "EHLO
+	Fri, 25 May 2007 05:21:49 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:44662 "EHLO
 	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbXEYJV2 (ORCPT
+	with ESMTP id S1753634AbXEYJVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 05:21:28 -0400
+	Fri, 25 May 2007 05:21:48 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: akpm@linux-foundation.org
 Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
-Message-Id: <20070525092126.17283.41581.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 0/5] Arbitrary grouping and statistics for grouping pages by mobility
-Date: Fri, 25 May 2007 10:21:26 +0100 (IST)
+Message-Id: <20070525092147.17283.10488.sendpatchset@skynet.skynet.ie>
+In-Reply-To: <20070525092126.17283.41581.sendpatchset@skynet.skynet.ie>
+References: <20070525092126.17283.41581.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 1/5] Fix calculation in move_freepages_block for counting pages
+Date: Fri, 25 May 2007 10:21:47 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-The following patches address points brought up during review of the grouping
-pages by mobility patches. The main aim of this patchset is to group pages
-by an order other than MAX_ORDER-1 and provide some statistics but there
-is also one bug fix at the start of the patchset.
+move_freepages_block() returns the number of blocks moved. This value is
+used to determine if a block of pages should be stolen for the exclusive
+use of a migrate type or not. However, the value returned is being used
+correctly. This patch fixes the calculation to return the number of base
+pages that have been moved.
 
-Changelog since v2
-o Patches acked by Christoph
+This should be considered a fix to the patch move-free-pages-between-lists-on-steal.patch
 
-Changelog since v1 of statistics and grouping by arbitrary order
-o Fix a bug in move_freepages_block() calculations
-o Make page_order available in internal.h for PageBuddy pages
-o Rename fragavoidance to pagetypeinfo for both code and proc filename
-o Renamr nr_pages_pageblock to pageblock_nr_pages for consistency
-o Print out pageblock_nr_pages and pageblock_order in proc output
-o Print out the orders in the header for /proc/pagetypeinfo
-o The order being grouped at is no longer printed to the kernel log. The
-  necessary information is available in /proc/pagetypeinfo
-o Breakout page_order so that statistics do not require special knowledge
-  of the buddy allocator
+Credit to Andy Whitcroft for spotting the problem.
 
-The first patch is a fix to move_freepages_block() where it calculates the
-number of blocks used instead of the number of base pages which is what we
-are really interested in. This is a bug fix.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+Acked-by: Christoph Lameter <clameter@sgi.com>
+---
 
-The second patch moves page_order() to internal.h as it is needed by
-the statistics patch later in the patchset. It is also needed by the
-not-ready-for-posting-yet memory compaction prototype.
+ page_alloc.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-The third patch allows grouping by mobility at sizes other than
-MAX_ORDER_NR_PAGES.  The size is based on the order of the system hugepage
-where that is defined. When possible this is specified as a compile time
-constant to help the optimiser. It does change the handling of hugepagesz
-from __setup() to early_param() which needs looking at.
-
-The fourth and fifth patches provide some statistics in relation to
-fragmentation avoidance. The statistics patches are split as the second
-set depend on information from PAGE_OWNER when it's available.
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-clean/mm/page_alloc.c linux-2.6.22-rc2-mm1-001_fix_movefreepages/mm/page_alloc.c
+--- linux-2.6.22-rc2-mm1-clean/mm/page_alloc.c	2007-05-24 10:13:34.000000000 +0100
++++ linux-2.6.22-rc2-mm1-001_fix_movefreepages/mm/page_alloc.c	2007-05-24 16:37:27.000000000 +0100
+@@ -728,7 +728,7 @@ int move_freepages(struct zone *zone,
+ {
+ 	struct page *page;
+ 	unsigned long order;
+-	int blocks_moved = 0;
++	int pages_moved = 0;
+ 
+ #ifndef CONFIG_HOLES_IN_ZONE
+ 	/*
+@@ -757,10 +757,10 @@ int move_freepages(struct zone *zone,
+ 		list_add(&page->lru,
+ 			&zone->free_area[order].free_list[migratetype]);
+ 		page += 1 << order;
+-		blocks_moved++;
++		pages_moved += 1 << order;
+ 	}
+ 
+-	return blocks_moved;
++	return pages_moved;
+ }
+ 
+ int move_freepages_block(struct zone *zone, struct page *page, int migratetype)
+@@ -843,7 +843,7 @@ static struct page *__rmqueue_fallback(s
+ 								start_migratetype);
+ 
+ 				/* Claim the whole block if over half of it is free */
+-				if ((pages << current_order) >= (1 << (MAX_ORDER-2)))
++				if (pages >= (1 << (MAX_ORDER-2)))
+ 					set_pageblock_migratetype(page,
+ 								start_migratetype);
+ 
