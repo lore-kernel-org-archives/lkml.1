@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763071AbXEYTf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764645AbXEYTgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763071AbXEYTf4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 15:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbXEYTft
+	id S1764645AbXEYTgs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 15:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbXEYTgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 15:35:49 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:13869 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753031AbXEYTfs (ORCPT
+	Fri, 25 May 2007 15:36:41 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:45467 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753273AbXEYTgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 15:35:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=S1aaiyt+L2gp1hd/mhjZfmxmnbBasmtLKt/cyBg6+Qw90xWYA/a/5Kgc/ilZ8YOTEhYSc5fXxIOmM2FnNYIRTEvaQpNu4T234JLn2LtZUY16QQiwjQJzb7XuzM42BwGjLxCj9MT7A5wKiiXs0+5ZU6kbXhSXGtuipjPo+fXCiw8=
-Message-ID: <a781481a0705251235q37084077r86bc166b145a0d8a@mail.gmail.com>
-Date: Sat, 26 May 2007 01:05:41 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Daniel Hazelton" <dhazelton@enter.net>
-Subject: Re: [RFC] LZO de/compression support - take 4
-Cc: "Richard Purdie" <richard@openedhand.com>,
-       "Nitin Gupta" <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm-cc@laptop.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andrey Panin" <pazke@donpac.ru>, "Bret Towe" <magnade@gmail.com>,
-       "Michael-Luke Jones" <mlj28@cam.ac.uk>
-In-Reply-To: <200705251445.18188.dhazelton@enter.net>
+	Fri, 25 May 2007 15:36:41 -0400
+Date: Fri, 25 May 2007 21:36:39 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+In-Reply-To: <200705251850.30342.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.62.0705252135010.2657@pademelon.sonytel.be>
+References: <20070525083607.784351000@sonycom.com> <20070525083632.677742000@sonycom.com>
+ <200705251850.30342.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705250445m51736a9aj8c89af893d8c242c@mail.gmail.com>
-	 <1180100304.5864.60.camel@localhost.localdomain>
-	 <200705251255.22600.dhazelton@enter.net>
-	 <200705251445.18188.dhazelton@enter.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
+On Fri, 25 May 2007, Arnd Bergmann wrote:
+> On Friday 25 May 2007, Geert.Uytterhoeven@sonycom.com wrote:
+> > Add a CD/DVD/BD Storage Driver for the PS3:
+> >   - Implemented as a SCSI device driver
+> 
+> I assume you tried implementing it as a block device driver,
+> like you PS3 disk driver does, and failed for some reason.
+> 
+> What is the problem? Is there infrastructure missing in the
+> CD-ROM layer?
 
-On 5/26/07, Daniel Hazelton <dhazelton@enter.net> wrote:
-> On Friday 25 May 2007 12:55:21 Daniel Hazelton wrote:
-> <snip>
-> > As to the performance - I can see absolutely no reason why the minimal
-> > version shouldn't perform the same (or better). The kernel codes memset and
-> > memcpy routines have been heavily tested *and* optimized over the years and
-> > moving from macro's to inline functions shouldn't have impacted performance
-> > at all. I will be testing the two code bases myself in a little bit - I'm
-> > more than a little paranoid and don't like the idea of trusting anyone with
-> > a "competing project" for all testing.
->
->
-> I'll have to better instrument my test code (a real quick (userspace) hack)
-> using the minimized LZO1X implementation (take 4 :) and the complete LZOv2
-> library (lzo1x_1_11_compress and the *unsafe* version of the decompressor
-> used) but preliminary testing using just "time ./test" - the differences I've
-> seen might be because I'm directly including one version of the code and the
-> other is in a shared library. But even if I discount the system and user
-> time - going *only* by the "real" time value I get results across 10 runs
-> that differ by less than 0.001s - the average across 10 runs of the stripped
-> down LZO code is about 0.00133s where the LZO library (liblzo2) returns about
-> even performance - average is 0.001s.
->
-> A total difference of *ONE* *THIRD* of *ONE* *THOUSANDTH* of a second. With
-> the better performance being in-kernel should bring, I can see no reason for
-> a "big" difference.
->
-> If anyone's interested in the code I used for the test, let me know and I'll
-> make it available.
+As the CD/DVD/BD part just accepts SCSI/ATAPI commands (except for plain
+read/write), I was suggested to keep it as a SCSI driver.
 
-Yes, please do. It'd be nice if numbers are compared across arch's (LE,
-BE, 32-bit, 64-bit) by others who have access to such boxes too.
+Gr{oetje,eeting}s,
 
-Thanks,
-Satyam
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
