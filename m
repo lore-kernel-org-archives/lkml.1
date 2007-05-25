@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760811AbXEYJwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761418AbXEYJwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760811AbXEYJwa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 05:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbXEYJwW
+	id S1761418AbXEYJwo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 05:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbXEYJwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 25 May 2007 05:52:23 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:42199 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751163AbXEYJwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 May 2007 05:52:22 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:56674 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751982AbXEYJwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 05:52:21 -0400
-Date: Fri, 25 May 2007 11:52:09 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net, Zan Lynx <zlynx@acm.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [BUG] USB input death then system freeze
-In-Reply-To: <Pine.LNX.4.64.0705251143480.8531@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.64.0705251151000.8531@twin.jikos.cz>
-References: <1180031903.4309.6.camel@rousalka.dyndns.org>
- <Pine.LNX.4.64.0705251143480.8531@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: mingo@elte.hu
+CC: chris@atlee.ca, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       tglx@linutronix.de
+In-reply-to: <20070524210153.GB19672@elte.hu> (message from Ingo Molnar on
+	Thu, 24 May 2007 23:01:53 +0200)
+Subject: Re: [BUG] long freezes on thinkpad t60
+References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu> <20070524125453.GA7554@elte.hu> <E1HrDuQ-0005m7-00@dorka.pomaz.szeredi.hu> <20070524141059.GA19872@elte.hu> <E1HrEIp-0005qy-00@dorka.pomaz.szeredi.hu> <20070524144447.GA25068@elte.hu> <E1HrGom-0006AC-00@dorka.pomaz.szeredi.hu> <20070524210153.GB19672@elte.hu>
+Message-Id: <E1HrWSH-0000mH-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 25 May 2007 11:51:29 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 May 2007, Jiri Kosina wrote:
+> > 2.6.22-rc2, only EVENT_TRACE - boots, can't rerpoduce
+> > 2.6.21-vanila - can reproduce
+> > 2.6.21-rt7, trace options off - can reproduce
+> > 2.6.21-rt7, trace options on - can't reproduce
+> > 
+> > Possibly something timing related, that's altered by the trace code. I 
+> > tried the trace kernel without starting the trace app, but still no 
+> > bug.
+> > 
+> > Any other ideas?
+> 
+> perhaps try 2.6.21-rt7 with EVENT_TRACE on (the other trace options off) 
+> - does that hide the bug too?
 
-> This is now handled in bugzilla [1]. Zan Lynx also reported this problem, 
-> and from the HID_DEBUG output he provided is evident that it is caused by 
-> HID layer receiving a report of size 4294967284 (which corresponds to 
-> urb->actual_length of the URB received from USB core).
+The option itself doesn't hide the bug this time, I got one freeze
+pretty quickly.  But after starting the trace-it-1sec loop, I couldn't
+get it any more.
 
-For completness, this is a snippet of HID_DEBUG output that Zan sent me in 
-a private mail, which demonstrates the urb->actual_length badness:
+Normally I get a freeze after 3-5 minutes of testing, but with
+trace-it-1sec there's still nothing after 30 minutes.
 
-...
-drivers/hid/hid-core.c: report (size 3) (unnumbered)
-drivers/hid/hid-core.c: report 0 (size 3) =  00 00 00
-hid-debug: input Keyboard.00e0 = 0
-hid-debug: input Keyboard.00e1 = 0
-hid-debug: input Keyboard.00e2 = 0
-hid-debug: input Keyboard.00e3 = 0
-hid-debug: input Keyboard.00e4 = 0
-hid-debug: input Keyboard.00e5 = 0
-hid-debug: input Keyboard.00e6 = 0
-hid-debug: input Keyboard.00e7 = 0
-drivers/hid/hid-core.c: report (size 4294967284) (unnumbered)
-drivers/hid/hid-core.c: report 0 (size 4294967284) =
-hid-debug: input Keyboard.00e0 = 0
-hid-debug: input Keyboard.00e1 = 0
-hid-debug: input Keyboard.00e2 = 0
-hid-debug: input Keyboard.00e3 = 0
-hid-debug: input Keyboard.00e4 = 0
-hid-debug: input Keyboard.00e5 = 0
-hid-debug: input Keyboard.00e6 = 0
-hid-debug: input Keyboard.00e7 = 0
-drivers/hid/hid-core.c: report (size 6) (numbered)
-drivers/hid/hid-core.c: report 2 (size 5) =  00 00 00 00 00
-hid-debug: input Button.0001 = 0
-hid-debug: input Button.0002 = 0
-hid-debug: input Button.0003 = 0
-hid-debug: input Button.0004 = 0
-hid-debug: input Button.0005 = 0
-hid-debug: input Button.0006 = 0
-hid-debug: input Button.0007 = 0
-hid-debug: input Button.0008 = 0
-hid-debug: input GenericDesktop.X = 0
-hid-debug: input GenericDesktop.Y = 0
-hid-debug: input GenericDesktop.Wheel = 0
-Hangcheck: hangcheck value past margin!
-drivers/hid/usbhid/hid-core.c: input irq status -75 received
+If I stop trace-it, and do "echo 0 > /proc/sys/kernel/trace_enabled",
+I get the freeze again. It's a perfect heisenbug.
 
-...
+This issue came up when I was testing a userspace fuse bug, and now
+the reporter of that bug (added to CC) says that he also sometimes
+experienced a hard lockup during testing but ignored it up to now.  So
+we may yet get some info from him.
 
--- 
-Jiri Kosina
+It could be something fuse related, but it's very hard to imagine how
+fuse could trigger such a low-level problem.
+
+Miklos
