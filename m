@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbXEYGwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbXEYG7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759031AbXEYGwp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 02:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbXEYGwj
+	id S1758530AbXEYG7S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 02:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbXEYG7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 02:52:39 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:1735 "EHLO kernel.dk"
+	Fri, 25 May 2007 02:59:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51754 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752226AbXEYGwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 02:52:38 -0400
-Date: Fri, 25 May 2007 08:49:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, bhalevy@panasas.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       fujita.tomonori@lab.ntt.co.jp, michaelc@cs.wisc.edu
-Subject: Re: [PATCH] Chaining sg lists for big IO commands v5
-Message-ID: <20070525064938.GJ7653@kernel.dk>
-References: <20070517062742.GW23798@kernel.dk> <1179414911.23725.7.camel@dyn9047017100.beaverton.ibm.com> <20070518073525.GD23798@kernel.dk> <1179510664.29302.16.camel@dyn9047017100.beaverton.ibm.com> <20070521061445.GD14746@kernel.dk> <20070521063554.GF14746@kernel.dk> <1179872108.29302.55.camel@dyn9047017100.beaverton.ibm.com> <20070524093441.GP5722@kernel.dk> <20070524120513.GT5722@kernel.dk> <1180020344.29302.82.camel@dyn9047017100.beaverton.ibm.com>
+	id S1752719AbXEYG7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 02:59:08 -0400
+X-Greylist: delayed 65031 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 May 2007 02:59:08 EDT
+Date: Fri, 25 May 2007 08:58:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [BUG] long freezes on thinkpad t60
+Message-ID: <20070525065858.GA4257@elte.hu>
+References: <E1HrC3W-0005SZ-00@dorka.pomaz.szeredi.hu> <20070524220816.GC23214@khazad-dum.debian.net> <46560E04.2090500@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1180020344.29302.82.camel@dyn9047017100.beaverton.ibm.com>
+In-Reply-To: <46560E04.2090500@intel.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24 2007, Badari Pulavarty wrote:
-> On Thu, 2007-05-24 at 14:05 +0200, Jens Axboe wrote:
-> > On Thu, May 24 2007, Jens Axboe wrote:
-> > > > Oops: Kernel access of bad area, sig: 11 [#1]
-> > > > SMP NR_CPUS=32 NUMA pSeries
-> > > > Modules linked in: qla2xxx scsi_transport_fc
-> > > > NIP: c0000000000414a0 LR: c00000000004162c CTR: 0000000000000001
-> > > > REGS: c0000000047bb130 TRAP: 0300   Not tainted  (2.6.22-rc1)
-> > > > MSR: 8000000000001032 <ME,IR,DR>  CR: 28000022  XER: 00000008
-> > > > DAR: 0000000000000000, DSISR: 0000000040000000
-> > > > TASK = c0000000047a6aa0[0] 'swapper' THREAD: c0000000047b8000 CPU: 7
-> > > > GPR00: 0000000000000080 c0000000047bb3b0 c000000000692358 c0000000047a6aa0
-> > > > GPR04: 0000000000000000 0000000000000070 0000000000000000 c0000000005ac0b8
-> > > > GPR08: 000000000000e4b4 0000000000000001 0000000000000000 0000000000000280
-> > > > GPR12: 0000000000000020 c0000000005a3e80 0000000000000000 0000000007a8dd70
-> > > > GPR16: 0000000000000000 0000000000000000 0000000000000000 c0000000047b8000
-> > > > GPR20: 000000003b9aca00 c0000000047a6c50 0000000000000001 0000000000000000
-> > > > GPR24: d000000000909048 0001dee6d30c0d30 c000000003b7dd80 c0000000047a6aa0
-> > > > GPR28: 00000001079027ca c0000000047a6aa0 c0000000005b7cb0 c000000000472c9c
-> > > > NIP [c0000000000414a0] .dequeue_task+0x0/0x9c
-> > > > LR [c00000000004162c] .deactivate_task+0x40/0x60
-> > > > Call Trace:
-> > > > [c0000000047bb3b0] [c00000000004bccc] .printk+0x38/0x48 (unreliable)
-> > > > [c0000000047bb440] [c000000000471704] .schedule+0x1fc/0x8dc
-> > > > [c0000000047bb540] [c000000000472c9c] .schedule_timeout+0xa8/0xe8
-> > > > [c0000000047bb610] [c000000000057260] .msleep+0x20/0x38
-> > > > [c0000000047bb690] [c00000000003f5ec] .eeh_dn_check_failure+0x114/0x268
-> > > > [c0000000047bb740] [c00000000003fc64] .eeh_check_failure+0xec/0x114
-> > > > [c0000000047bb7c0] [d00000000086190c] .qla2300_fw_dump+0x1130/0x1c00 [qla2xxx]
-> > > > [c0000000047bb8a0] [d000000000858d50] .qla2300_intr_handler+0x1e8/0x60c [qla2xxx]
-> > > > [c0000000047bb950] [c000000000078368] .handle_IRQ_event+0x70/0xe4
-> > > > [c0000000047bb9f0] [c00000000007a7e0] .handle_fasteoi_irq+0x11c/0x1d0
-> > > > [c0000000047bba90] [c00000000000c178] .do_IRQ+0x90/0xec
-> > > > [c0000000047bbb10] [c000000000004790] hardware_interrupt_entry+0x18/0x1c
-> > > 
-> > > Not good. The qla changes are non-trivial (that hardware has a really
-> > > funky sg setup), so I may have botched a part of it. I'll review the
-> > > qla changes and get back to you.
-> > 
-> > Does this help?
-> > 
-> > diff --git a/drivers/scsi/qla2xxx/qla_iocb.c b/drivers/scsi/qla2xxx/qla_iocb.c
+
+* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+
+> Henrique de Moraes Holschuh wrote:
+> >On Thu, 24 May 2007, Miklos Szeredi wrote:
+> >>Tried nmi_watchdog=1, but then the machine locks up hard shortly after
+> >>boot.
+> >
+> >NMIs in some thinkpads are bad trouble, they lock up the blasted IBM/Lenovo
+> >SMBIOS if they happen to hit it while it is servicing a SMI, and thinkpads
+> >do SMIs like crazy.
 > 
-> Yes. It does. For now, I have no more complaints :)
+> there's also a L1 ASPM issue with the e1000 chipset in the way (for 
+> T60/X60 only). Make sure you are using 2.6.21 or newer. See netdev 
+> archives for more on that.
 
-Excellent! Let me know if you manage to run some performance numbers.
+Miklos is using latest -git and he has nmi_watchdog disabled - still the 
+long pauses persist. (i've never seen that on my t60)
 
--- 
-Jens Axboe
-
+	Ingo
