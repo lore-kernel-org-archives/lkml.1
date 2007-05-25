@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbXEYIke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761678AbXEYIlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbXEYIke (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXEYIkU
+	id S1761678AbXEYIlV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbXEYIlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:40:20 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:37029 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753572AbXEYIkS (ORCPT
+	Fri, 25 May 2007 04:41:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53490 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbXEYIlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:40:18 -0400
-Message-ID: <4656A0F0.4050909@s5r6.in-berlin.de>
-Date: Fri, 25 May 2007 10:40:16 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Yoann Padioleau <padator@wanadoo.fr>, kernel-janitors@lists.osdl.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] old declaration ritchie style fix
-References: <87y7jemb1u.fsf@wanadoo.fr> <46568F7F.1040100@gmail.com>
-In-Reply-To: <46568F7F.1040100@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 25 May 2007 04:41:13 -0400
+Date: Fri, 25 May 2007 10:41:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] x86_64: fix sched_clock()
+Message-ID: <20070525084109.GI8094@one.firstfloor.org>
+References: <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com> <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu> <20070525075446.GA20140@elte.hu> <20070525080209.GE8094@one.firstfloor.org> <20070525080415.GB21446@elte.hu> <20070525082018.GF8094@one.firstfloor.org> <20070525083430.GB27236@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070525083430.GB27236@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Yoann Padioleau napsal(a):
->>  static int
->> -receivepkt (target, buffer)
->> -	int target;
->> -	unsigned char *buffer;
->> +receivepkt (int target, unsigned char *buffer)
+On Fri, May 25, 2007 at 10:34:31AM +0200, Ingo Molnar wrote:
 > 
-> When you are at it, you can also get rid of bsd return-type-on-its-own-line
-> style
+> * Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > > > Hmm indeed. I actually had it correct at some point (i remember 
+> > > > fixing 64bit compile errors in sched-clock ;-). I guess the 
+> > > > Makefile hunk accidentially dropped out during some later merging 
+> > > > and this didn't get noticed due to the weak attribute.
+> > > 
+> > > well the tsc.h bit was needed too.
+> > 
+> > It's not in defconfig at least. I just tried it.
+> 
+> what do you mean? The tsc.h bit is needed because 
 
-return-type-on-its-own-line is IMO OK if it occurs consistently in a
-file.  It can improve readability particularly if long return types are
-combined with long function names.
+Means i readded the Makefile hunk and it compiled for me in 64bit without
+changing anything else.
 
-> + remove the space before parenthesis.
+> arch/i386/kernel/sched-clock.c (now built on x86_64 too with the patch i 
+> sent) uses the tsc_disable global flag which is non-existent on x86_64. 
+> So my tsc.h change adds that global flag, always-defined to 0.
 
-Indeed.
--- 
-Stefan Richter
--=====-=-=== -=-= ==--=
-http://arcgraph.de/sr/
+My version of sched_clock.c doesn't have any reference to tsc_disable.
+
+-andi
