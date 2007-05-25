@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760490AbXEYIZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbXEYIZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760490AbXEYIZE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbXEYIYu
+	id S1760815AbXEYIZv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbXEYIZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:24:50 -0400
-Received: from holomorphy.com ([66.93.40.71]:44398 "EHLO holomorphy.com"
+	Fri, 25 May 2007 04:25:42 -0400
+Received: from hydra.ck.polsl.pl ([157.158.1.11]:52244 "EHLO hydra.ck.polsl.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752321AbXEYIYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:24:49 -0400
-Date: Fri, 25 May 2007 01:25:37 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] i386, numaq: enable TSCs again
-Message-ID: <20070525082537.GZ19966@holomorphy.com>
-References: <20070525071005.GA6431@elte.hu> <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com> <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu> <20070525075446.GA20140@elte.hu> <20070525080827.GA22399@elte.hu> <20070525081944.GZ31925@holomorphy.com> <20070525082259.GH8094@one.firstfloor.org>
+	id S1752014AbXEYIZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 04:25:40 -0400
+X-Greylist: delayed 464 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 May 2007 04:25:40 EDT
+Date: Fri, 25 May 2007 10:17:50 +0200
+From: Adam Osuchowski <adwol@zonk.pl>
+To: bridge@lists.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [BUG] Dropping fragmented IP packets within VLAN frames on bridge
+Message-ID: <20070525081750.5ba4a411@zonk.pl>
+Reply-To: Adam Osuchowski <adwol@zonk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070525082259.GH8094@one.firstfloor.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 01:19:44AM -0700, William Lee Irwin III wrote:
->> I remember. It was far beyond "slightly async;" they would drift
->> minutes apart during reasonable amounts of uptime, though it would take
->> at least several days to drift so far (I don't recall how long it took).
+There is a problem with fragmented IP packet sent within 802.1Q tagged
+ethernet frame through bridge. Problem exists when conntrack is enabled
+(i.e. nf_conntrack_ipv4 module is loaded). Then, such packets are not
+fragmented again (after prior reassembling on bridge device) during
+passing it to bridge enslaved NIC. It cause MTU exceeding and as a result
+dropping packet.
 
-On Fri, May 25, 2007 at 10:22:59AM +0200, Andi Kleen wrote:
-> sched_clock should handle that.
+Problem exists from kernel version 2.6.17 to 2.6.21.3 inclusive.
 
-On Fri, May 25, 2007 at 01:19:44AM -0700, William Lee Irwin III wrote:
->> TSC synchronization is uniformly impossible on NUMA-Q. Bootlogs showing
->> the results of the attempts are still extant. They shouldn't end up too
->> far apart right after booting, but I don't have even ballpark estimates.
->> I'd hazard a guess of a few seconds.
+Below, there is a patch to fix it.
 
-On Fri, May 25, 2007 at 10:22:59AM +0200, Andi Kleen wrote:
-> You should mark_tsc_instable(), but not tsc disable. In a release or two
-> hopefully even that will be obsolete.
-
-I don't have any particular preference here. I'm just donating a memory
-dump. I have no intention of attempting to maintain NUMA-Q support code.
+Regards.
 
 
--- wli
+--- linux-2.6.21.3.orig/net/bridge/br_netfilter.c	2007-05-25 09:56:15.000000000 +0200
++++ linux-2.6.21.3/net/bridge/br_netfilter.c	2007-05-25 10:11:42.000000000 +0200
+@@ -731,7 +731,7 @@
+ 
+ static int br_nf_dev_queue_xmit(struct sk_buff *skb)
+ {
+-	if (skb->protocol == htons(ETH_P_IP) &&
++	if ((skb->protocol == htons(ETH_P_IP) || IS_VLAN_IP(skb)) &&
+ 	    skb->len > skb->dev->mtu &&
+ 	    !skb_is_gso(skb))
+ 		return ip_fragment(skb, br_dev_queue_push_xmit);
