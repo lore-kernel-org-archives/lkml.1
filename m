@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbXEYLU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbXEYLU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761465AbXEYLU3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 07:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXEYLUX
+	id S1761963AbXEYLU6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 07:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbXEYLUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 07:20:23 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34122 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbXEYLUW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 07:20:22 -0400
-Date: Fri, 25 May 2007 13:20:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
+	Fri, 25 May 2007 07:20:50 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:53751 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753982AbXEYLUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 07:20:49 -0400
+Date: Fri, 25 May 2007 16:58:49 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] x86_64: fix sched_clock()
-Message-ID: <20070525112020.GN8094@one.firstfloor.org>
-References: <20070525082018.GF8094@one.firstfloor.org> <20070525083430.GB27236@elte.hu> <20070525084109.GI8094@one.firstfloor.org> <20070525084426.GA29973@elte.hu> <20070525084547.GJ8094@one.firstfloor.org> <20070525015544.bce3cb99.akpm@linux-foundation.org> <20070525090315.GK8094@one.firstfloor.org> <20070525091928.GA3177@elte.hu> <20070525094640.GL8094@one.firstfloor.org> <20070525101248.GA7547@elte.hu>
+Cc: Guillaume Chazarain <guichaz@yahoo.fr>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de,
+       kernel@kolivas.org, containers@lists.osdl.org,
+       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
+       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
+Message-ID: <20070525112849.GG6157@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070523164859.GA6595@in.ibm.com> <3d8471ca0705231112rfac9cfbt9145ac2da8ec1c85@mail.gmail.com> <20070523183824.GA7388@elte.hu> <4654BF88.3030404@yahoo.fr> <20070525074500.GD6157@in.ibm.com> <20070525082951.GA25280@elte.hu> <20070525105641.GA12114@in.ibm.com> <20070525111140.GA24942@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070525101248.GA7547@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070525111140.GA24942@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 12:12:48PM +0200, Ingo Molnar wrote:
+On Fri, May 25, 2007 at 01:11:40PM +0200, Ingo Molnar wrote:
+> > I was planning on reusing smpnice concepts here, with the difference 
+> > that we balance group weights across CPU in addition to total weight 
+> > of CPUs.
 > 
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > please indicate that you've picked up my style cleanups, i dont want 
-> > > to redo all this a few days/weeks down the line ...
-> > 
-> > It's done slightly differently now due to conflicting earlier changes, 
-> > but the end result should be about what you intended. [...]
-> 
-> please send me your current sched-clock.c, i'll redo any remaining 
-> cleanups.
+> ok, that would be (much) simpler that any explicit vcpu approach. Do you 
+> plan to add this next?
 
-It needs at least one new preliminary patch (to add on_cpu_single);
-please get the series from 
-ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches-2.6.22-rc2-git7-070525-1.tar.gz
-You need at least tsc-unstable upto paravirt-add-a-sched_clock-paravirt
-for everything
+sure, after i first cleanup current group changes a bit. Hopefully I can
+send you first version of smp support by early next week.
 
-> But ... i find your approach curious, why didnt you just apply the 
-> cleanups i sent? You clearly started working on this as a reaction to my 
-> cleanup patches and to the bugfixes i sent ontop of the cleanup patches. 
-> Your "I'll do this differently" approach is totally unnecessary from a 
-> commit management point of view (this is new code after all and 
-> will/should go upstream in a single clean chunk anyway), the only effect 
-> this has is that that you are discouraging contributors like me from 
-> contributing cleanups to the x86_64 tree.
-
-Unfortunately right now it is a already a set of patches; e.g. due to 
-the paravirt ops change. I can merge back the cleanup change; but
-kept it separately due to your earlier complaint about not using
-your patch. I think one hunk of your original one is still in there :-)
-
-> so to me the impression is 
-> that deep in yourself you are (subconsciously) not happy about others 
-> contributing to the x86_64 tree. Please tell me that i'm wrong :-(
-
-You're reading too much into that. Of course I value contributions
-to x86-64, including cleanups. In general when I don't like it I complain
-so saying nothing is approval (or me being not reading email, but that
-doesn't happen that often) 
-
--Andi
+-- 
+Regards,
+vatsa
