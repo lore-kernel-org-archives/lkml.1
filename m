@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbXEYGff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbXEYGkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190AbXEYGff (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 02:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbXEYGf2
+	id S1756454AbXEYGkf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 02:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbXEYGk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 02:35:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:60371 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751519AbXEYGf2 (ORCPT
+	Fri, 25 May 2007 02:40:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50315
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752045AbXEYGk2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 02:35:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MSwjpH86QpRei/eZDFaOQungsjo2ZI4NtSTh/vXwOwSTya4h4oUCOzr+6cEGZQ9oeBRisdeUb/vNdkJl5Enj0MOsLQEVbcWsWKUWQqFE8QVYZlfnzsDS51h7J96rL59LpX96ZWpvpQfeFhnF47OI2ArsMwzlAL5UHGjMnUe0g5M=
-Message-ID: <4cefeab80705242335s399b20aek61cebc31260ad01@mail.gmail.com>
-Date: Fri, 25 May 2007 12:05:26 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Markus F.X.J. Oberhumer" <markus@oberhumer.com>
-Subject: Re: [RFC] [-mm] Remove 'unsafe' LZO decompressor
-Cc: "Richard Purdie" <richard@openedhand.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michael-Luke Jones" <mlj28@cam.ac.uk>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>
-In-Reply-To: <4656307F.6010204@oberhumer.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 25 May 2007 02:40:28 -0400
+Date: Thu, 24 May 2007 23:40:31 -0700 (PDT)
+Message-Id: <20070524.234031.78709215.davem@davemloft.net>
+To: michael@ellerman.id.au
+Cc: ebiederm@xmission.com, gregkh@suse.de, jacliburn@bellsouth.net,
+       ninex@NineX.eu.org, akpm@linux-foundation.org, ak@suse.de, ninex@o2.pl,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       tony.luck@intel.com
+Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1180070050.8203.30.camel@concordia.ozlabs.ibm.com>
+References: <20070522204103.134bf5a2@osprey.hogchain.net>
+	<m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
+	<1180070050.8203.30.camel@concordia.ozlabs.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1412F214-FA89-4088-B3A2-DEE03C324FB6@cam.ac.uk>
-	 <20070524115055.6be93924.akpm@linux-foundation.org>
-	 <1180045572.12821.35.camel@localhost.localdomain>
-	 <4656307F.6010204@oberhumer.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Markus,
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Fri, 25 May 2007 15:14:10 +1000
 
-On 5/25/07, Markus F.X.J. Oberhumer <markus@oberhumer.com> wrote:
-> Please do _not_ rewrite the LZO implementation just for coding style principles.
->
-> The current miniLZO implementation is _extrememly_ well tested, pretty
-> optimized and quite portable.
->
-> I agree that the implementation may look confusing, but you should be able to
-> make it look much better by removing all the unused #defines and #ifdef code
-> paths - LZO supports exotic things like 16-bit DOS and CRAY PVP memory models
-> which obviously are not needed in the kernel and account for quite a number of
-> abstractions (which are implemented through the preprocessor).
->
-> Finally the current version has been tested with a lot of compilers and
-> contains accumulated knowledge about some hairy things - see
-> http://gcc.gnu.org/PR25196 for an example, as well as some not-yet identified
-> aliasing issue.
->
-> ~Markus
+> On Thu, 2007-05-24 at 22:19 -0600, Eric W. Biederman wrote:
+> > Currently we blacklist known bad msi configurations which means we
+> > keep getting MSI enabled on chipsets that either do not support MSI,
+> > or MSI is implemented improperly.  Since the normal IRQ routing
+> > mechanism seems to works even when MSI does not, this is a bad default
+> > and causes non-functioning systems for no good reason.
+> > 
+> > So this patch inverts the sense of the MSI bus flag to only enable
+> > MSI on known good systems.  I am seeding that list with the set of
+> > chipsets with an enabled hypertransport MSI mapping capability.  Which
+> > is as close as I can come to an generic MSI enable.  So for actually
+> > using MSI this patch is a regression, but for just having MSI enabled
+> > in the kernel by default things should just work with this patch
+> > applied.
+> 
+> I guess this is a good idea for random x86 machines. On powerpc I think
+> we'll just turn it on for every bus, and let the existing per-platform
+> logic decide.
 
-I did not rewrite any part of your code except replacing COPY4() macro
-and some open-coded byte-by-byte copying with memcpy(). But this has
-resulted in very significant perf. loss (as suggested by results from
-Richard's tests) - so will rollback these changes.
-
-Additionally following was done to _greatly_ reduce no. of LOC I had
-to retain. These should not affect code correctness and performance:
-- Used standard/kernel defined data types equivalent of lzo_* types.
-This resulted in removal of huge chunks of #ifdefs:
-    lzo_byptep -> unsigned char *
-    lzo_uint -> size_t
-    lzo_xint -> size_t
-    lzo_uintptr_t -> unsigned long
-    lzo_uint32p -> uint32_t *
-- Removed everything #ifdefed under COPY_DICT  -- from minilzo code I
-see that this is not #defined for LZO1X (safe/unsafe) (though I could
-not understand meaning behind COPY_DICT).
-- Removed everthing #ifdef'ed for LZO1Y, LZO1Z, other variants.
-
-
-Thanks,
-Nitin
+I think I'll turn it on always on sparc64.
