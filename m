@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbXEYFv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758402AbXEYF4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758416AbXEYFv7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 01:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbXEYFvw
+	id S1758402AbXEYF4o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 01:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXEYF4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 01:51:52 -0400
-Received: from mx1.suse.de ([195.135.220.2]:60608 "EHLO mx1.suse.de"
+	Fri, 25 May 2007 01:56:32 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:45084 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752178AbXEYFvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 01:51:51 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
-Date: Fri, 25 May 2007 07:51:45 +0200
-User-Agent: KMail/1.9.6
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@ninex.eu.org>, ninex@o2.pl,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>,
-       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200705122146.l4CLkH6q012322@fire-2.osdl.org> <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com> <20070524213157.1d39458f.akpm@linux-foundation.org>
-In-Reply-To: <20070524213157.1d39458f.akpm@linux-foundation.org>
+	id S1752974AbXEYF4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 01:56:31 -0400
+Date: Fri, 25 May 2007 07:52:35 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+cc: coly <colyli@gmail.com>, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       linux-ext4 <linux-ext4@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC 2/5] inode reservation v0.1 (ext4 kernel patch)
+In-Reply-To: <20070525013003.GA2429@localhost.localdomain>
+Message-ID: <Pine.LNX.4.61.0705250745390.14357@yvahk01.tjqt.qr>
+References: <1179943606.4179.53.camel@coly-t43.site>
+ <1180012837.11124.11.camel@kleikamp.austin.ibm.com> <1180018046.4078.2.camel@coly-t43.site>
+ <Pine.LNX.4.61.0705241826070.31549@yvahk01.tjqt.qr>
+ <20070525013003.GA2429@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705250751.45738.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Do we have a feel for how much performace we're losing on those 
-> systems which _could_ do MSI, but which will end up defaulting
-> to not using it?
+On May 25 2007 09:30, WANG Cong wrote:
+>>>
+>>>Yes, I found all TABs gone when I received the mail. When I post next
+>>>version of the patch, I will test to send to me first :-)
+>>>
+>>>Thanks for your information.
+>>
+>>Blame Gmail.
+>
+>I am using gmail too. That's not gmail's fault,
 
-At least on 10GB ethernet it is a significant difference; you usually
-cannot go anywhere near line speed without MSI
+Then it is one of these:
+- gmail's default settings for web input sucks or
 
-I suspect it is visible on high performance / multiple GB NICs too.
+- the web browser reformats it
+  (not so much - pastebin.ca suffers from something similar, but *not the
+  same*; in that it translates all tabs into spaces, but at least it keeps
+  the width.) or
 
--Andi
+- you are using your own client, and directly SMTPing gmail servers,
+  in which case unwanted reformatting by broken MTAs can be bypassed.
+
+>I think your email client sucks.
+>So which email client are you using, coly? I recommend mutt to you. ;)
+
+X-Mailer:	 Evolution 2.6.0
+
+Hm, this looks like another of these "Thunderbird" cases. (Means,
+Thunderbird users also get their patches wrapped and twangled unless
+they set some option that is not on by default.)
+
+
+	Jan
+-- 
