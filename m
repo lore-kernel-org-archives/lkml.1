@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764631AbXEYSOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764666AbXEYSRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764631AbXEYSOO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 14:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762603AbXEYSN6
+	id S1764666AbXEYSRM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 14:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763189AbXEYSQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 14:13:58 -0400
-Received: from sccrmhc12.comcast.net ([204.127.200.82]:38367 "EHLO
-	sccrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbXEYSN4 (ORCPT
+	Fri, 25 May 2007 14:16:59 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49803 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763027AbXEYSQ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 14:13:56 -0400
-From: Jeremy Maitin-Shepard <jbms@cmu.edu>
-To: casey@schaufler-ca.com
-Cc: Andreas Gruenbacher <agruen@suse.de>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-References: <267570.85171.qm@web36604.mail.mud.yahoo.com>
-	<87fy5kpye6.fsf@jbms.ath.cx>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Fri, 25 May 2007 14:13:25 -0400
-In-Reply-To: <87fy5kpye6.fsf@jbms.ath.cx> (Jeremy Maitin-Shepard's message of
-	"Fri\, 25 May 2007 14\:10\:41 -0400")
-Message-ID: <87bqg8py9m.fsf@jbms.ath.cx>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.990 (gnu/linux)
-MIME-Version: 1.0
+	Fri, 25 May 2007 14:16:58 -0400
+Subject: Re: [patch] i386, numaq: enable TSCs again
+From: Dave Hansen <hansendc@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "John G. Stultz [imap]" <johnstul@us.ibm.com>
+In-Reply-To: <20070525084115.GA29077@elte.hu>
+References: <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com>
+	 <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu>
+	 <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu>
+	 <20070525075446.GA20140@elte.hu> <20070525080827.GA22399@elte.hu>
+	 <20070525081944.GZ31925@holomorphy.com> <20070525083153.GA27236@elte.hu>
+	 <20070525083813.GA19966@holomorphy.com>  <20070525084115.GA29077@elte.hu>
 Content-Type: text/plain
+Date: Fri, 25 May 2007 11:16:18 -0700
+Message-Id: <1180116978.14844.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Maitin-Shepard <jbms@cmu.edu> writes:
+On Fri, 2007-05-25 at 10:41 +0200, Ingo Molnar wrote:
+> * William Lee Irwin III <wli@holomorphy.com> wrote:
+> > > yes, that's what i meant under 'slightly async'. Some AMD CPUs are 
+> > > like that too and sched_clock() now handles that fine. So we should 
+> > > try my patch.
+> > 
+> > Sorry, then. I took slight to mean something else. In any event I was 
+> > only quantifying things. I've no opinion whatsoever on the impact of 
+> > the code on NUMA-Q, only some recall of its operating characteristics.
+> 
+> there's no need to apologize at all! Thanks for reminding us about the 
+> time-scale and nature of the TSC drift on NUMAQ. I was worried that 
+> maybe the TSC was totally unusable for some reason - but that's 
+> fortunately not the case. So we now have one quirk less, hopefully :-)
 
-> [snip]
+Last I remember, it was totally useless for timekeeping, but was useful
+for cpu-local time measurements.
 
-> Well, my point was exactly that App Armor doesn't (as far as I know) do
-> anything to enforce the argv[0] convention, nor would it in general
-> prevent a confined program from making a symlink or hard link.  Even
-> disregarding that, it seems very fragile in general to make an suid
-> program (there would be no point in confining the execution of a
-> non-suid program) perform essentially access control based on argv[0].
+John, it's still useless for time, right?  Does sched_clock() really fix
+it?
 
-Note that by "confining the execution of a non-suid program", I mean
-defining an App Armor profile that prevents the execution of a
-particular non-suid program, unless of course the program file itself
-contains secret information, which is irrelevant to this discussion.
+-- Dave
 
--- 
-Jeremy Maitin-Shepard
