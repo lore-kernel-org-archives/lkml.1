@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbXEYNCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762289AbXEYNES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762616AbXEYNCu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 09:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXEYNCm
+	id S1762289AbXEYNES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 09:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXEYNEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 09:02:42 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:50161
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751348AbXEYNCl (ORCPT
+	Fri, 25 May 2007 09:04:11 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4785 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753340AbXEYNEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 09:02:41 -0400
-Date: Fri, 25 May 2007 15:04:44 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: developers@islsm.org, linux-wireless@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 2/2] use list_for_each() for iteration in Prism 54 driver
-Message-ID: <20070525130444.GG31790@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	developers@islsm.org, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20070525125630.GE31790@traven>
-MIME-Version: 1.0
+	Fri, 25 May 2007 09:04:10 -0400
+Date: Fri, 25 May 2007 23:04:04 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: rmmod e1000 hangs (Was Re: 2.6.22-rc2-mm1)
+Message-ID: <20070525130404.GA30071@gondor.apana.org.au>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <46556AA6.7040503@goop.org> <20070524104713.GA9174@gondor.apana.org.au> <20070524105403.GA9285@gondor.apana.org.au> <4655A4CD.8010901@intel.com> <20070525125413.GA29433@gondor.apana.org.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070525125630.GE31790@traven>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070525125413.GA29433@gondor.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use list_for_each() in the Prism54 driver to iterate over the MAC list
+On Fri, May 25, 2007 at 10:54:13PM +1000, Herbert Xu wrote:
+> 
+> So please revert my patch.
+> 
+> We need to find out why we're getting IRQs before calling
+> e1000_irq_enable in e1000_open.
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+In the mean time this should be a safe fix.  This is against
+the current mainline tree.
 
---
+[E1000]: Call netif_poll_enable in e1000_open
 
-diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
-index 283be4a..34cf13c 100644
---- a/drivers/net/wireless/prism54/isl_ioctl.c
-+++ b/drivers/net/wireless/prism54/isl_ioctl.c
-@@ -1861,7 +1861,7 @@ prism54_del_mac(struct net_device *ndev, struct iw_request_info *info,
- 
- 	if (down_interruptible(&acl->sem))
- 		return -ERESTARTSYS;
--	for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
-+	list_for_each(ptr, &acl->mac_list) {
- 		entry = list_entry(ptr, struct mac_entry, _list);
- 
- 		if (memcmp(entry->addr, addr->sa_data, ETH_ALEN) == 0) {
-@@ -1891,7 +1891,7 @@ prism54_get_mac(struct net_device *ndev, struct iw_request_info *info,
- 	if (down_interruptible(&acl->sem))
- 		return -ERESTARTSYS;
- 
--	for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
-+	list_for_each(ptr, &acl->mac_list) {
- 		entry = list_entry(ptr, struct mac_entry, _list);
- 
- 		memcpy(dst->sa_data, entry->addr, ETH_ALEN);
-@@ -1972,7 +1972,7 @@ prism54_mac_accept(struct islpci_acl *acl, char *mac)
- 		return 1;
- 	}
- 
--	for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
-+	list_for_each(ptr, &acl->mac_list) {
- 		entry = list_entry(ptr, struct mac_entry, _list);
- 		if (memcmp(entry->addr, mac, ETH_ALEN) == 0) {
- 			res = 1;
+This restores the previously removed netif_poll_enable call in
+e1000_open.  It's needed on all but the first call to e1000_open
+for a NIC as e1000_close always calls netif_poll_disable.
 
+netif_poll_enable can only be called safely if no polls have been
+scheduled.  This should be the case as long as we don't enter our
+IRQ handler.  Just in case someone has left IRQs enabled, we call
+this before the IRQ handler is installed.
+
+Of course we should really make sure that IRQs are disabled as
+early as possible, i.e., when we're still in the probe routine.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
 -- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-               If sharing a thing in no way diminishes it,
-               it is not rightly owned if it is not shared
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+index cbc7feb..d91a378 100644
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -1424,6 +1424,10 @@ e1000_open(struct net_device *netdev)
+ 	 * clean_rx handler before we do so.  */
+ 	e1000_configure(adapter);
+ 
++#ifdef CONFIG_E1000_NAPI
++	netif_poll_enable(netdev);
++#endif
++
+ 	err = e1000_request_irq(adapter);
+ 	if (err)
+ 		goto err_req_irq;
