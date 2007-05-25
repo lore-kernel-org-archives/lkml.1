@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764184AbXEYQuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764300AbXEYQvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764184AbXEYQuQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 12:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761248AbXEYQuF
+	id S1764300AbXEYQvL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 12:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762926AbXEYQu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 12:50:05 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:34302 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750789AbXEYQuD (ORCPT
+	Fri, 25 May 2007 12:50:58 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:59229 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761248AbXEYQu5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 12:50:03 -0400
-Date: Fri, 25 May 2007 09:49:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] sched_clock(): cleanups, #2
-In-Reply-To: <20070525120228.GA7186@elte.hu>
-Message-ID: <alpine.LFD.0.98.0705250946120.26602@woody.linux-foundation.org>
-References: <20070525084547.GJ8094@one.firstfloor.org>
- <20070525015544.bce3cb99.akpm@linux-foundation.org> <20070525090315.GK8094@one.firstfloor.org>
- <20070525091928.GA3177@elte.hu> <20070525094640.GL8094@one.firstfloor.org>
- <20070525101248.GA7547@elte.hu> <20070525112020.GN8094@one.firstfloor.org>
- <20070525112600.GA27007@elte.hu> <20070525115004.GA4574@elte.hu>
- <20070525115544.GP8094@one.firstfloor.org> <20070525120228.GA7186@elte.hu>
+	Fri, 25 May 2007 12:50:57 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+Date: Fri, 25 May 2007 18:50:29 +0200
+User-Agent: KMail/1.9.6
+Cc: Geert.Uytterhoeven@sonycom.com, linux-kernel@vger.kernel.org
+References: <20070525083607.784351000@sonycom.com> <20070525083632.677742000@sonycom.com>
+In-Reply-To: <20070525083632.677742000@sonycom.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705251850.30342.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+MStpKhD5s72FiogDG8OT4zks54RP4tvpDbXt
+ gmF2sDjSYwBwWcg8D+Otz1X3KxYfjCqXULAKgz8o8e126AlrPh
+ OYbhbwJyenjStLyHow/BA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 25 May 2007, Geert.Uytterhoeven@sonycom.com wrote:
+> Add a CD/DVD/BD Storage Driver for the PS3:
+>   - Implemented as a SCSI device driver
 
+I assume you tried implementing it as a block device driver,
+like you PS3 disk driver does, and failed for some reason.
 
-On Fri, 25 May 2007, Ingo Molnar wrote:
-> 
-> ok - then please merge that single hunk into the paravirtops patch - and 
-> leave the other 6 hunks in this patch.
+What is the problem? Is there infrastructure missing in the
+CD-ROM layer?
 
-Note: I'm actually much more interested in applying the scheduler changes 
-than the paravirt-ops changes. It looks like CFS is getting stable, I'd 
-much rather have Ingo working on making a nice CFS patch on top of 2.6.22 
-(and the current -git tree should obviously approximate that, I don't 
-expect any real changes to scheduler stuff), and merge that immediately 
-after 2.6.22 is out. 
-
-Ingo: to make things easier, the _best_ split-up would be not "this is the 
-historical series of patches leading up to CFS v15" or something like 
-that, but it would be nice to get that final CFS version as a series of 
-patches that do some specific things rather than as one final one. Is 
-there any possibility that could happen? 
-
-		Linus
+	Arnd <><
