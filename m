@@ -1,115 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbXEYCUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbXEYCcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754091AbXEYCUW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 22:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXEYCUK
+	id S1754167AbXEYCcq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 22:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXEYCcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 22:20:10 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:54040 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323AbXEYCUI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 22:20:08 -0400
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <alpine.LFD.0.98.0705241905490.26602@woody.linux-foundation.org>
-References: <1179870110.16656.2.camel@localhost>
-	 <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org>
-	 <1180008394.15600.26.camel@localhost>
-	 <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org>
-	 <20070524200435.GA9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
-	 <20070524220017.GC9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
-	 <20070524221743.GD9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org>
-	 <20070524231852.GG9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241736120.26602@woody.linux-foundation.org>
-	 <1180058123.3997.91.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0705241905490.26602@woody.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-nvwRWSkeSv71GGWgiETv"
-Date: Fri, 25 May 2007 12:20:05 +1000
-Message-Id: <1180059605.3997.100.camel@nigel.suspend2.net>
+	Thu, 24 May 2007 22:32:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:42290 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752809AbXEYCci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 22:32:38 -0400
+Subject: Re: [PATCH] msi: Fix the ordering of msix irqs.
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tom.l.nguyen@intel.com, iss_storagedev@hp.com, jens.axboe@oracle.com
+In-Reply-To: <m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
+References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
+	 <20070524102702.bca37396.akpm@linux-foundation.org>
+	 <m1r6p6dn3x.fsf@ebiederm.dsl.xmission.com>
+	 <20070524205900.GC14083@beardog.cca.cpqcorp.net>
+	 <m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9PThvc5lqqLtTBYj+Rt0"
+Date: Fri, 25 May 2007 12:32:36 +1000
+Message-Id: <1180060356.8203.26.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-nvwRWSkeSv71GGWgiETv
+--=-9PThvc5lqqLtTBYj+Rt0
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi Linus.
+On Thu, 2007-05-24 at 15:08 -0600, Eric W. Biederman wrote:
+> Yours looks more complete then my test patch so:
+>=20
+> From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> writes:
+>=20
+> Found what seems the problem with our vectors being listed backward. In
+> drivers/pci/msi.c we should be using list_add_tail rather than list_add t=
+o
+> preserve the ordering across various kernels. Please consider this for
+> inclusion.
+>=20
+> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-On Thu, 2007-05-24 at 19:10 -0700, Linus Torvalds wrote:
->=20
-> On Fri, 25 May 2007, Nigel Cunningham wrote:
-> >=20
-> > First, let me agree with you that for the atomic copy itself, the
-> > freezer is unnecessary. Disabling irqs and so on is enough to ensure th=
-e
-> > atomic copy is atomic. I don't think any of us are arguing with you
-> > there.
->=20
-> First off, realize that the problem actually happens during=20
-> suspend-to-ram.
->=20
-> Think about that for a second.
->=20
-> In fact, think about it for a _loong_ time. Because dammit, people seem t=
-o=20
-> have a really hard time even realizing this.
->=20
-> 	There is no "atomic copy".
->=20
-> 	There is no "checkpointing".
->=20
-> 	There is no "spoon".
->=20
-> > Hope this helps.
->=20
-> Hope _the_above_ helps. Why is it so hard for people to accept that=20
-> suspend-to-ram shouldn't break because of some IDIOTIC issues with disk=20
-> snapshots?
->=20
-> And why do you people _always_ keep mixing the two up?
+Screwed-up-by: Michael Ellerman <michael@ellerman.id.au>
 
-It does. Sorry. I didn't read enough of the context.
+The sad part is my earlier patches did use list_add_tail(), doh. :(
 
-To answer the question, I guess the answer is that although they're
-different creatures, they have similarities. This is one of them, which
-is why I could make the mistake I did. Nothing in the issue being
-discussed was unique to suspend-to-ram. Perhaps we (or at least I) focus
-too much on the similarities, but that doesn't mean they're not there.
+Thanks for debugging it.
 
-Regards,
+cheers
 
-Nigel
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
---=-nvwRWSkeSv71GGWgiETv
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-9PThvc5lqqLtTBYj+Rt0
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGVkfVN0y+n1M3mo0RAr/tAJsFhHD6wF//bSQQiKepyOcY4FFDLACffWCT
-mihbwmlya5wDOR2rtj0HqoA=
-=COZM
+iD8DBQBGVkrEdSjSd0sB4dIRAoIBAJ48yi8lg1GvOZ3m/eYWWdPymZtqjQCeOPlx
+POem9fQCB69CnsHFv+O7b3I=
+=2A5N
 -----END PGP SIGNATURE-----
 
---=-nvwRWSkeSv71GGWgiETv--
+--=-9PThvc5lqqLtTBYj+Rt0--
 
