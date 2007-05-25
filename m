@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbXEYXvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbXEYXxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756634AbXEYXvN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 19:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbXEYXu6
+	id S1756142AbXEYXxA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 19:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXEYXwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 19:50:58 -0400
-Received: from outbound-mail-36.bluehost.com ([69.89.20.190]:40157 "HELO
-	outbound-mail-36.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753484AbXEYXu5 (ORCPT
+	Fri, 25 May 2007 19:52:54 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:33666 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752605AbXEYXwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 19:50:57 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/6] i386/x86_64: Allow disabling the putstr's from compressed boot wrapper
-Date: Fri, 25 May 2007 16:50:50 -0700
-User-Agent: KMail/1.9.6
-Cc: Ben Collins <ben.collins@ubuntu.com>, Andi Kleen <andi@firstfloor.org>,
-       Ben Collins <bcollins@ubuntu.com>, linux-kernel@vger.kernel.org
-References: <98cd38b5.git.bcollins@ubuntu.com> <200705251638.37489.jbarnes@virtuousgeek.org> <465774AD.8020408@zytor.com>
-In-Reply-To: <465774AD.8020408@zytor.com>
+	Fri, 25 May 2007 19:52:53 -0400
+Message-ID: <465776CE.5070007@zytor.com>
+Date: Fri, 25 May 2007 16:52:46 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ben Collins <ben.collins@ubuntu.com>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] i386/x86_64: Allow disabling the putstr's from	compressed
+ boot wrapper
+References: <98cd38b5.git.bcollins@ubuntu.com>	 <1180097543.12570.396.camel@cunning> <46573CE4.8080300@zytor.com>	 <200705251623.55551.jbarnes@virtuousgeek.org>  <46577112.7090106@zytor.com> <1180137053.12570.446.camel@cunning>
+In-Reply-To: <1180137053.12570.446.camel@cunning>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705251650.50471.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.102.120.196 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, May 25, 2007 4:43:41 H. Peter Anvin wrote:
-> Jesse Barnes wrote:
-> > Right, but you're special that way.  And moreover, you would know how to
-> > add such debug statements as needed.  But is this output something we
-> > really need enabled unconditionally for everyone?
->
-> *I* can do that, yes, but I usually don't have access to the platform in
-> question.
->
-> As such I really don't want to see this as a compilation option.  Make
-> it a runtime option[*] so the user with the problematic machine.
->
-> > I personally don't care that much, aside from the feeling that we have
-> > way too many printks in general...
->
-> [*] FWIW, my setup rewrite has a proper command-line parser in it, so we
-> can use the command line from the start.
+Ben Collins wrote:
+> On Fri, 2007-05-25 at 16:28 -0700, H. Peter Anvin wrote:
+>> Jesse Barnes wrote:
+>>> But how often do you have to debug bootloader or compressed boot code?  In 
+>>> fact, most debug output like this isn't very useful after some initial 
+>>> debugging, so we usually take it out.  I'm not sure why this would be any 
+>>> different...
+>>>
+>> You're asking me this?
+>>
+>> I get to hear all the time about some new platform -- sometimes exotic,
+>> sometimes not -- breaking early boot.
+> 
+> Truth be told, I'd much rather just remove the informational pustr's and
+> leave the error ones enabled. If it's acceptable, I can just remove
+> those lines, or make them only work with -DDEBUG.
 
-Yeah, that sounds much better.  Then it can just be under the usual 'debug' 
-command line option.
+The problem with that is you don't have any idea how far a boot
+proceeded before a hang.  That's actually a very important piece of
+information.
 
-Jesse
+	-hpa
