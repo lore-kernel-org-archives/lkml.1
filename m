@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763277AbXEYTW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761886AbXEYTZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763277AbXEYTW1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 15:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXEYTWT
+	id S1761886AbXEYTZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 15:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbXEYTZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 15:22:19 -0400
-Received: from daemonizer.de ([87.230.16.230]:58470 "EHLO daemonizer.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750814AbXEYTWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 15:22:18 -0400
-X-Greylist: delayed 1994 seconds by postgrey-1.27 at vger.kernel.org; Fri, 25 May 2007 15:22:18 EDT
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
-Newsgroups: gmane.linux.kernel.wireless.general,gmane.linux.kernel
-References: <20070524195616.234280@gmx.net>
-	<200705251559.49807.uwe.bugla@gmx.de> <200705251652.19911.mb@bu3sch.de>
-	<200705251759.30065.uwe.bugla@gmx.de>
-X-Draft-Attribution: On Fri, 25 May 2007 17:59:29 +0200, Uwe Bugla wrote:
-X-Draft-Attribution-Author: Uwe Bugla
-	<uwe.bugla-Mmb7MZpHnFY@public.gmane.org>
-X-Draft-Attribution-Date: Fri, 25 May 2007 17:59:29 +0200
-X-Draft-Attribution-Id: 200705251759.30065.uwe.bugla@gmx.de
+	Fri, 25 May 2007 15:25:21 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:1147 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752579AbXEYTZU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 15:25:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WjRZfIb/12RCyfhQHHp7fri75kvKPrVk8fzaAUZcUFvw80KftWw6ksAatXLdZ+fP2J4k7itmzdCzedqsHq+ObA6DOZNdCarFl2fiW/lV9y/cBk/hGpbtlvRkbMX0zyBwg/TBRjojpkrXRgbOOhxm6KTlxxKMEU5D0LjtnfHChWY=
+Message-ID: <a781481a0705251225g12d2cd8eya57df87fcbfd5eed@mail.gmail.com>
+Date: Sat, 26 May 2007 00:55:17 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: any value to "NORET_TYPE" macro?
+Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, "Adrian Bunk" <bunk@stusta.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705251335010.13229@localhost.localdomain>
 MIME-Version: 1.0
-X-Length: 1836
-To: linux-wireless@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>, mb@bu3sch.de,
-       uwe.bugla@gmx.de
-Date: Fri, 25 May 2007 20:48:02 +0200
-Content-Type: multipart/signed;
-  boundary="nextPart2011387.J2bNc92kcN";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705252048.11931.maxi@daemonizer.de>
-X-Spam-Score: -4.1 (----)
-X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.3 AWL AWL: From: address is in the auto white-list
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0705220904320.13623@localhost.localdomain>
+	 <m3ejl8k6e3.fsf@maximus.localdomain>
+	 <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain>
+	 <m37ir0iodl.fsf@maximus.localdomain>
+	 <a781481a0705230137v4c8ba82fx263212a2958b55b9@mail.gmail.com>
+	 <Pine.LNX.4.64.0705230908180.4309@localhost.localdomain>
+	 <a781481a0705230646x9a0255ak4254d05ba5442cad@mail.gmail.com>
+	 <Pine.LNX.4.64.0705241239560.10926@localhost.localdomain>
+	 <a781481a0705241153m29781dd2u825c0e9bfdb6beb0@mail.gmail.com>
+	 <Pine.LNX.4.64.0705251335010.13229@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2011387.J2bNc92kcN
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Robert,
 
-On Fri, 25 May 2007 17:59:29 +0200, Uwe Bugla wrote:
+On 5/25/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+> On Fri, 25 May 2007, Satyam Sharma wrote:
+> ...
+> > 1. If this is a function _declaration_ (i.e. a prototype in some
+> > header or some .c file), then remove the NORET_TYPE macro. Also,
+> > if an ATTRIB_NORET or NORET_AND already exists then you're done.
+> > Else, introduce an ATTRIB_NORET after the arglist but before ;
+>
+> actually, what i would be introducing in all cases is "__noreturn",
+> the short form currently defined in compiler-gcc.h.  and i would be
+> removing every instance of ATTRIB_NORET and its buddies.
 
->=20
-> Perhaps someone reading this could try to reproduce that problem on his
-> machine.
-> Now who of the readers owes a Broadcom 4401 NIC and can please try to
-> test kernel 2.6.22-rc2-mm1?
->=20
-> Those NICs have been used very very often as onboard controllers,
-> especially on ASUS boards.
+Ummm ... you mean we're replacing all occurrences of ATTRIB_NORET
+as well? Note that NORET_TYPE and ATTRIB_NORET are both defined
+in the generic include/linux/linkage.h whereas __noreturn is in
+compiler-gcc.h which is included only for gcc builds -- hence, my
+preference for ATTRIB_NORET. Also, there is not even a single user of
+__noreturn anywhere in the kernel code whereas ATTRIB_NORET is used
+in all these places, which means it looks like to be the standard thing ...
+Anyway, I'm fine either way.
 
-I've been using 2.6.22-rc2 for some time and now I compiled 2.6.22-rc2-
-mm1 and both work fine with the BCM4401 in my laptop.
-
-Maxi
-
---nextPart2011387.J2bNc92kcN
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGVy9rOimwv528XGERAs01AJ40Pz8pwHToiviKOXvHfMsfgTUQDgCgmogc
-INSe0NTxtiGuqL3ew1Ic7Lg=
-=72ya
------END PGP SIGNATURE-----
-
---nextPart2011387.J2bNc92kcN--
+Thanks,
+Satyam
