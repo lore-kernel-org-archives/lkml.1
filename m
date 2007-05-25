@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764789AbXEYRkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbXEYRn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764789AbXEYRkw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 13:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbXEYRkp
+	id S1764271AbXEYRn6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 13:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762849AbXEYRnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 13:40:45 -0400
-Received: from mga01.intel.com ([192.55.52.88]:10170 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752050AbXEYRko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 13:40:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,580,1170662400"; 
-   d="scan'208";a="249741809"
-Message-ID: <46571F99.1050307@intel.com>
-Date: Fri, 25 May 2007 10:40:41 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	Fri, 25 May 2007 13:43:49 -0400
+Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:43621 "HELO
+	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752281AbXEYRns (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 13:43:48 -0400
+X-YMail-OSG: 4AP15u4VM1llkxan7.Yur0KTvnCZC5Z_RlhIcvoAPGO4IvhNM4KyPTG39NM1Pgdm0Q.NWFwOIQ--
+X-RocketYMMF: rancidfat
+Date: Fri, 25 May 2007 10:43:47 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
+To: Jeremy Maitin-Shepard <jbms@cmu.edu>
+Cc: Andreas Gruenbacher <agruen@suse.de>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <87lkfdpjm7.fsf@jbms.ath.cx>
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] [condingstyle] Add chapter on tests
-References: <20070525172509.5138.56430.stgit@localhost.localdomain> <20070525172515.5138.13652.stgit@localhost.localdomain> <46571E08.1050509@s5r6.in-berlin.de>
-In-Reply-To: <46571E08.1050509@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 May 2007 17:40:43.0455 (UTC) FILETIME=[D1A08CF0:01C79EF3]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <267570.85171.qm@web36604.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Auke Kok wrote:
->> +If you give your variables and pointers good names, there is never a need
->> +to compare the value stored in that variable to NULL or true/false, so
->> +omit all that and keep it short.
+
+--- Jeremy Maitin-Shepard <jbms@cmu.edu> wrote:
+
+> Casey Schaufler <casey@schaufler-ca.com> writes:
 > 
-> I agree with this in principle.  But do we have to standardize it?
+> > On Fedora zcat, gzip and gunzip are all links to the same file.
+> > I can imagine (although it is a bit of a stretch) allowing a set
+> > of users access to gunzip but not gzip (or the other way around).
+> > There are probably more sophisticated programs that have different
+> > behavior based on the name they're invoked by that would provide
+> > a more compelling arguement, assuming of course that you buy into
+> > the behavior-based-on-name scheme. What I think I'm suggesting is
+> > that AppArmor might be useful in addressing the fact that a file
+> > with multiple hard links is necessarily constrained to have the
+> > same access control on each of those names. That assumes one
+> > believes that such behavior is flawwed, and I'm not going to try
+> > to argue that. The question was about an example, and there is one.
+> 
+> This doesn't work.  The behavior depends on argv[0], which is not
+> necessarily the same as the name of the file.
 
-yes, I think so. Not only does it remove useless fluff but it forces you to pick 
-your function and variable names decently. It really doesn't hurt to mention it 
-especially when you see how many drivers have copied bad style over without 
-knowing better. Now we can refer them to the CodingStyle doc right away.
+Sorry, but I don't understand your objection. If AppArmor is configured
+to allow everyone access to /bin/gzip but only some people access to
+/bin/gunzip and (important detail) the single binary uses argv[0]
+as documented and (another important detail) there aren't other links
+named gunzip to the binary (ok, that's lots of if's) you should be fine.
+I suppose you could make a shell that lies to exec, but the AppArmor
+code could certainly check for that in exec by enforcing the argv[0]
+convention. It would be perfectly reasonable for a system that is so
+dependent on pathnames to require that.
 
-Auke
+
+Casey Schaufler
+casey@schaufler-ca.com
