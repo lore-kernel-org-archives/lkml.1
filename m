@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbXEYLbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbXEYLi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761327AbXEYLbk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 07:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbXEYLbe
+	id S1755825AbXEYLi6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 07:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbXEYLiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 07:31:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36594 "EHLO mx2.mail.elte.hu"
+	Fri, 25 May 2007 07:38:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45460 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751842AbXEYLbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 07:31:33 -0400
-Date: Fri, 25 May 2007 13:31:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
+	id S1750776AbXEYLiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 07:38:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+Date: Fri, 25 May 2007 13:44:03 +0200
+User-Agent: KMail/1.9.5
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] x86_64: fix sched_clock()
-Message-ID: <20070525113124.GA31976@elte.hu>
-References: <20070525084109.GI8094@one.firstfloor.org> <20070525084426.GA29973@elte.hu> <20070525084547.GJ8094@one.firstfloor.org> <20070525015544.bce3cb99.akpm@linux-foundation.org> <20070525090315.GK8094@one.firstfloor.org> <20070525091928.GA3177@elte.hu> <20070525094640.GL8094@one.firstfloor.org> <20070525101248.GA7547@elte.hu> <20070525112020.GN8094@one.firstfloor.org> <20070525112600.GA27007@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+References: <1179870110.16656.2.camel@localhost> <20070524231638.GC29678@khazad-dum.debian.net> <20070524231950.GH9604@elf.ucw.cz>
+In-Reply-To: <20070524231950.GH9604@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070525112600.GA27007@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200705251344.04738.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > please send me your current sched-clock.c, i'll redo any remaining 
-> > > cleanups.
+On Friday, 25 May 2007 01:19, Pavel Machek wrote:
+> On Thu 2007-05-24 20:16:38, Henrique de Moraes Holschuh wrote:
+> > On Fri, 25 May 2007, Pavel Machek wrote:
+> > > My proposed solution is "fix pcmcia to load firmware before suspend
+> > > even starts"
 > > 
-> > It needs at least one new preliminary patch (to add on_cpu_single);
-> > please get the series from 
-> > ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches-2.6.22-rc2-git7-070525-1.tar.gz
-> > You need at least tsc-unstable upto paravirt-add-a-sched_clock-paravirt
-> > for everything
+> > s/pcmcia/all drivers that load firmware/ if you are going to go that way.
+> 
+> I'm not "going that way". It always was that way. If driver tries to
+> load firmware during suspend, it will deadlock.
 
-> i'm looking at the other things now.
+Exactly.
 
-your queue does not apply cleanly here:
+And the freezing of user land has _nothing_ to do with that.  The fact is
+the user land is not reliable while device drivers are being suspended,
+regardless of whether it's frozen at that point or not.
 
- Applying patch patches/paravirt-add-a-sched_clock-paravirt_op
+BTW, we are going (or at least I'm going) to untangle the hibernation and
+suspend code paths, but I have limited time for that and I just _can't_ do this
+any faster.  In the meantime, we have bugs like this one that need to be fixed
+_within_ the current limitations, because we just _can't_ remove these
+limitations overnight..
 
- patching file arch/i386/kernel/sched-clock.c
- Hunk #5 FAILED at 148.
- 1 out of 5 hunks FAILED -- rejects in file arch/i386/kernel/sched-clock.c
-
-could you please just send me your current sched-clock.c? (that's what 
-i'm interested in) I'll deal with the on_cpu_single() dependency. 
-Thanks,
-
-	Ingo
+Greetings,
+Rafael
