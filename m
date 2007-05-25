@@ -1,58 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763071AbXEYTk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbXEYTkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763071AbXEYTk0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 15:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbXEYTkT
+	id S1754119AbXEYTkx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 15:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764401AbXEYTko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 15:40:19 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:42823 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753088AbXEYTkR (ORCPT
+	Fri, 25 May 2007 15:40:44 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:45490 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1764383AbXEYTkn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 15:40:17 -0400
-Message-ID: <46573B23.1090700@zytor.com>
-Date: Fri, 25 May 2007 12:38:11 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 25 May 2007 15:40:43 -0400
+Date: Fri, 25 May 2007 21:40:42 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/7] ps3: Disk Storage Driver
+In-Reply-To: <200705251826.25572.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.62.0705252137230.2657@pademelon.sonytel.be>
+References: <20070525083607.784351000@sonycom.com> <20070525083632.575306000@sonycom.com>
+ <200705251826.25572.arnd@arndb.de>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] MIPS: Transform old-style macros to newer "__noreturn"
- standard.
-References: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain> <46572DAF.1000108@zytor.com> <Pine.LNX.4.64.0705251458440.13906@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705251458440.13906@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->
+On Fri, 25 May 2007, Arnd Bergmann wrote:
+> On Friday 25 May 2007, Geert.Uytterhoeven@sonycom.com wrote:
+> > +static void ps3disk_scatter_gather(struct ps3_storage_device *dev,
+> > +				   struct request *req, int gather)
+> > +{
+> > +	unsigned int sectors = 0, offset = 0;
+> > +	struct bio *bio;
+> > +	sector_t sector;
+> > +	struct bio_vec *bvec;
+> > +	unsigned int i = 0, j;
+> > +	size_t size;
+> > +	void *buf;
+> > +
+> > +	rq_for_each_bio(bio, req) {
+> > +		sector = bio->bi_sector;
+> > +		dev_dbg(&dev->sbd.core,
+> > +			"%s:%u: bio %u: %u segs %u sectors from %lu\n",
+> > +			__func__, __LINE__, i, bio_segments(bio),
+> > +			bio_sectors(bio), sector);
+> > +		bio_for_each_segment(bvec, bio, j) {
+> > +			size = bio_cur_sectors(bio)*KERNEL_SECTOR_SIZE;
+> > +			buf = __bio_kmap_atomic(bio, j, KM_USER0);
+> > +			if (gather)
+> > +				memcpy(dev->bounce_buf+offset, buf, size);
+> > +			else
+> > +				memcpy(buf, dev->bounce_buf+offset, size);
+> > +			offset += size;
+> > +			__bio_kunmap_atomic(bio, KM_USER0);
+> > +		}
+> > +		sectors += bio_sectors(bio);
+> > +		i++;
+> > +	}
+> > +}
 > 
->   f() __attribute__((noreturn)) ;
-> 
-> you get:
-> 
->   warning: data definition has no type or storage class
-> 
-> but gcc doesn't complain if you declare it thusly:
-> 
->   __attribute__((noreturn)) f() ;
-> 
-> that strikes me as a flaw in gcc, no?
-> 
+> So the hypervison uses guest-real addresses here? I would have expected
+> it to use the kernel page tables, which lets you use vmap() to do
+> scatter-gather.
 
-Doesn't matter.  gcc accepts "void __attribute__((noreturn)) f();", and
-thus, one can define:
+Yes, it uses logical partion addresses, so we cannot create a virtually
+contiguous mapping.
 
-#define __noreturn void __attribute__((noreturn))
+> > +static int ps3disk_thread(void *data)
+> > +{
+> > +	struct ps3_storage_device *dev = data;
+> > +	struct ps3disk_private *priv = ps3disk_priv(dev);
+> > +	request_queue_t *q = priv->queue;
+> > +	struct request *req;
+> > +
+> > +	dev_dbg(&dev->sbd.core, "%s thread init\n", __func__);
+> > +
+> > +	current->flags |= PF_NOFREEZE;
+> > +
+> > +	while (!kthread_should_stop()) {
+> > +		spin_lock_irq(&priv->lock);
+> > +		set_current_state(TASK_INTERRUPTIBLE);
+> > +		req = elv_next_request(q);
+> > +		if (!req) {
+> > +			spin_unlock_irq(&priv->lock);
+> > +			schedule();
+> > +			continue;
+> > +		}
+> > +		if (!blk_fs_request(req)) {
+> > +			blk_dump_rq_flags(req, DEVICE_NAME " bad request");
+> > +			end_request(req, 0);
+> > +			spin_unlock_irq(&priv->lock);
+> > +			continue;
+> > +		}
+> > +		spin_unlock_irq(&priv->lock);
+> > +		ps3disk_handle_request_sg(dev, req);
+> > +	}
+> > +
+> > +	dev_dbg(&dev->sbd.core, "%s thread exit\n", __func__);
+> > +	return 0;
+> > +}
+> 
+> I don't really understand what the kthread is needed for. You probably
+> thought about multiple options and ended up with this, but having
+> a comment in front of it might be helpful.
 
-... and declare functions as:
+I used a kthread because the request function of a block device driver must be
+non-blocking, and ps3stor_read_write_sectors() calls wait_for_completion().
 
-__noreturn f();
+Gr{oetje,eeting}s,
 
-... which is the syntactially sane way of doing it.
+						Geert
 
-	-hpa
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
