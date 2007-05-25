@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765407AbXEYVUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765507AbXEYVXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765407AbXEYVUv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 17:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXEYVUo
+	id S1765507AbXEYVXO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 17:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXEYVW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 17:20:44 -0400
-Received: from smtp.ono.com ([62.42.230.12]:60538 "EHLO resmaa05.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754625AbXEYVUo convert rfc822-to-8bit (ORCPT
+	Fri, 25 May 2007 17:22:59 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:46122 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753391AbXEYVW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 17:20:44 -0400
-Date: Fri, 25 May 2007 23:20:25 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: idle=poll burns my box [was Re: 2.6.22-rc2-mm1]
-Message-ID: <20070525232025.416b32d7@werewolf-wl>
-In-Reply-To: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.9.2cvs12 (GTK+ 2.10.12; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 25 May 2007 17:22:59 -0400
+Date: Fri, 25 May 2007 23:22:57 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/7] ps3: Disk Storage Driver
+In-Reply-To: <200705252243.41508.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.62.0705252318160.2657@pademelon.sonytel.be>
+References: <20070525083607.784351000@sonycom.com> <200705251826.25572.arnd@arndb.de>
+ <Pine.LNX.4.62.0705252137230.2657@pademelon.sonytel.be> <200705252243.41508.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 23 May 2007 00:42:33 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
-
+On Fri, 25 May 2007, Arnd Bergmann wrote:
+> On Friday 25 May 2007, Geert Uytterhoeven wrote:
+> > > I don't really understand what the kthread is needed for. You probably
+> > > thought about multiple options and ended up with this, but having
+> > > a comment in front of it might be helpful.
+> > 
+> > I used a kthread because the request function of a block device driver must be
+> > non-blocking, and ps3stor_read_write_sectors() calls wait_for_completion().
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
-> 
+> Ok, but why does it call wait_for_completion() then?
+> I thought you could end_that_request_* from the interrupt handler instead.
 
-Don't know if it's specific to this kernel, but as I have realized it now...
+Actually I tried that first, but I ran into other problems, like my request
+handler being called continuously and requests gotten stuck. But maybe it was
+just a locking bug on my side.
 
-I booted with idle=poll to check some issues (with nvidia driver, btw).
-And suddenly I noticed my box was running near 80ºC hot.
-I pulled out the lid, an try to see what happened.
+I can retry, but a disadvantage will be that there will be less code shared
+with ps3flash and ps3rom.
 
-In short, idle=poll rises the temperature about 20ºC.
-I have an ASUS PC-DL mobo, with a couple Xeon Northwood with HypertThreading
-at 2.4 GHz, for a total of 4 threads.
+Gr{oetje,eeting}s,
 
-If I boot the box with idle=poll, and let it doing _nothing_ but staring at
-the gnome desktop, I get this temperatures:
-(Time,VRM,CPU0,CPU1) (wihtout the side cover, remember...)
-
-15:46 64 56 54
-15:55 70 60 56
-16:02 71 62 57
-
-If I reboot without idle=poll, the box colds quickly:
-
-16:07 58 52 48
-16:12 50 43 42
-16:15 49 42 41
-
-I I put the box to do some multithreaded render, so all four cores stay
-above 98% usage, the box warms again:
-
-16:17 51 43 42
-16:24 67 57 54
-16:28 70 60 56
-16:30 72 61 57
-16:37 72 61 56
-
-And as soon as I stop the work, it colds again:
-
-16:41 71 60 56
-16:42 64 56 52
-16:43 60 54 50
-16:45 55 48 46
-16:46 53 46 44
-
-Left alone for awhile, it stays at 46 39 39 (for VRM and both CPUs, as I said).
-
-Is idle=poll a quick and dirty way to burn your box in flames ?
-To warm your cpu doing nothing ?
-Summer is coming, but this...
-
-Any ideas ?
+						Geert
 
 --
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.0 (Cooker) for i586
-Linux 2.6.21-jam03 (gcc 4.1.2 20070302 (4.1.2-1mdv2007.1)) SMP PREEMPT
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
