@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbXEYPLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762512AbXEYPUC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763106AbXEYPLM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 11:11:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762952AbXEYPKz
+	id S1762512AbXEYPUC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 11:20:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbXEYPTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 11:10:55 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:46478 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752021AbXEYPKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 11:10:54 -0400
-Message-ID: <4656FC87.6030901@cfl.rr.com>
-Date: Fri, 25 May 2007 11:11:03 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Fri, 25 May 2007 11:19:54 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38799 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbXEYPTx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 11:19:53 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <gregkh@suse.de>
+Cc: Jay Cliburn <jacliburn@bellsouth.net>,
+       Grzegorz Krzystek <ninex@NineX.eu.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       ninex@o2.pl, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Michael Ellerman <michael@ellerman.id.au>,
+       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
+References: <20070514093829.377e04bc@osprey.hogchain.net>
+	<m18xbrnyxi.fsf@ebiederm.dsl.xmission.com>
+	<20070514160005.627435e3@osprey.hogchain.net>
+	<m1odkmmft4.fsf@ebiederm.dsl.xmission.com>
+	<20070515212200.517fcba2@osprey.hogchain.net>
+	<m14pmcmz8r.fsf@ebiederm.dsl.xmission.com>
+	<20070516185225.3f3ac082@osprey.hogchain.net>
+	<m1sl9wl28m.fsf@ebiederm.dsl.xmission.com>
+	<20070522204103.134bf5a2@osprey.hogchain.net>
+	<m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070525052032.GB9386@suse.de>
+Date: Fri, 25 May 2007 09:17:35 -0600
+In-Reply-To: <20070525052032.GB9386@suse.de> (Greg KH's message of "Thu, 24
+	May 2007 22:20:32 -0700")
+Message-ID: <m1myztaq5s.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: device-mapper development <dm-devel@redhat.com>
-CC: linux-fsdevel@vger.kernel.org, linux-raid@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [dm-devel] [RFD] BIO_RW_BARRIER - what it means for devices,
- filesystems, and dm/md.
-References: <18006.38689.818186.221707@notabene.brown>
-In-Reply-To: <18006.38689.818186.221707@notabene.brown>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 May 2007 15:11:03.0451 (UTC) FILETIME=[E920AEB0:01C79EDE]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15198.000
-X-TM-AS-Result: No--11.764900-5.000000-31
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> There is no guarantee that a device can support BIO_RW_BARRIER - it is
-> always possible that a request will fail with EOPNOTSUPP.
+Greg KH <gregkh@suse.de> writes:
 
-Why is it not the job of the block layer to translate for broken devices 
-and send them a flush/write/flush?
+> Originally I would have thought this would be a good idea, but now that
+> Vista is out, which supports MSI, I don't think we are going to need
+> this in the future.  All new chipsets should support MSI fine and this
+> table will only grow in the future, while the blacklist should not need
+> to have many new entries added to it.
+>
+> So I don't think this is a good idea, sorry.
 
->    These devices would find it very hard to support BIO_RW_BARRIER.
->    Doing this would require keeping track of all in-flight requests
->    (which some, possibly all, of the above don't) and then:
+- The current situation is broken
+- In spec hardware does not require MSI to generate interrupts
+  Which leaves enabling MSI optional.
 
-The device mapper keeps track of in flight requests already.  When 
-switching tables it has to hold new requests and wait for in flight 
-requests to complete before switching to the new table.  When it gets a 
-barrier request it just needs to do the same thing, only not switch 
-tables.
+Do you have a better idea to solve the current brokenness?
 
->    I think the best approach for this class of devices is to return
->    -EOPNOSUP.  If the filesystem does the wait (which they all do
->    already) and the blkdev_issue_flush (which is easy to add), they
->    don't need to support BIO_RW_BARRIER.
+MSI appears to have enough problems that enabling it in a kernel
+that is supposed to run lots of different hardware (like a distro
+kernel) is a recipe for disaster.
 
-Why?  The personalities should just pass the BARRIER flag down to each 
-underlying device, and the dm common code should wait for all in flight 
-io to complete before sending the barrier to the personality.
-
-> For devices that don't support QUEUE_ORDERED_TAG (i.e. commands sent to
-> the controller can be tagged as barriers), SCSI will use the
-> SYNCHRONIZE_CACHE command to flush the cache after the barrier
-> request (a bit like the filesystem calling blkdev_issue_flush, but at
-
-Don't you have to flush the cache BEFORE the barrier to ensure that 
-previous IO is committed first, THEN the barrier write?
-
-
+Eric
