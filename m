@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbXEYFTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbXEYFW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbXEYFTi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 01:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbXEYFTb
+	id S1757908AbXEYFW7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 01:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbXEYFWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 01:19:31 -0400
-Received: from mx1.suse.de ([195.135.220.2]:58580 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751885AbXEYFTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 01:19:30 -0400
-Date: Thu, 24 May 2007 22:20:32 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@NineX.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       ninex@o2.pl, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>,
-       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
-Message-ID: <20070525052032.GB9386@suse.de>
-References: <20070514093829.377e04bc@osprey.hogchain.net> <m18xbrnyxi.fsf@ebiederm.dsl.xmission.com> <20070514160005.627435e3@osprey.hogchain.net> <m1odkmmft4.fsf@ebiederm.dsl.xmission.com> <20070515212200.517fcba2@osprey.hogchain.net> <m14pmcmz8r.fsf@ebiederm.dsl.xmission.com> <20070516185225.3f3ac082@osprey.hogchain.net> <m1sl9wl28m.fsf@ebiederm.dsl.xmission.com> <20070522204103.134bf5a2@osprey.hogchain.net> <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
+	Fri, 25 May 2007 01:22:52 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:33768 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbXEYFWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 01:22:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GL94jQW3VsBVVAiMLFe0Kq+QCQjbBEKi7T1DhIFlPeZUtjwWbDugI5uazcNXSW8IfMpmAiwdByVAPOB6/X3lk0pKMkLXhrcLktHLmZsE/zwFixUsMi3YxTLefi+N/N0CerJZt40ih0eiHfK5Q1YpvDv73oe3cvnu3ZKQ4H+7Kgw=
+Message-ID: <a8e1da0705242222n2414a66bo97d20c82c6a497e4@mail.gmail.com>
+Date: Fri, 25 May 2007 05:22:50 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: 2.6.22-rc2-mm1 NTFS & SLUB related fix
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705242202340.1327@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+References: <a8e1da0705242201r13a26d92hcb0059f55e15a24a@mail.gmail.com>
+	 <Pine.LNX.4.64.0705242202340.1327@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 10:19:09PM -0600, Eric W. Biederman wrote:
-> 
-> Currently we blacklist known bad msi configurations which means we
-> keep getting MSI enabled on chipsets that either do not support MSI,
-> or MSI is implemented improperly.  Since the normal IRQ routing
-> mechanism seems to works even when MSI does not, this is a bad default
-> and causes non-functioning systems for no good reason.
-> 
-> So this patch inverts the sense of the MSI bus flag to only enable
-> MSI on known good systems.  I am seeding that list with the set of
-> chipsets with an enabled hypertransport MSI mapping capability.  Which
-> is as close as I can come to an generic MSI enable.  So for actually
-> using MSI this patch is a regression, but for just having MSI enabled
-> in the kernel by default things should just work with this patch
-> applied.
-> 
-> People can still enable MSI on a per bus level for testing by writing
-> to sysfs so discovering chipsets that actually work (assuming we are
-> using modular drivers) should be pretty straight forward.
+Hi,
 
-Originally I would have thought this would be a good idea, but now that
-Vista is out, which supports MSI, I don't think we are going to need
-this in the future.  All new chipsets should support MSI fine and this
-table will only grow in the future, while the blacklist should not need
-to have many new entries added to it.
+> Is this ntfs_init_locked_inode?
 
-So I don't think this is a good idea, sorry.
+Yes, it is.
 
-greg k-h
+> >  Bytes b4 0xc2959e28:  00 00 00 00 00 00 00 00 5a 5a 5a 5a 5a 5a 5a
+> >    Object 0xc2959e38:  24 00 51 00 00 00 6b a5
+> >   Redzone 0xc2959e40:  00 00 cc cc
+>
+> First two bytes after the object overwritten. The allocation for this
+> object should have been two bytes longer.
+>
+> > Last alloc: ntfs_init_locked_inode+0x9e/0x110 jiffies_ago=5140 cpu=0 pid=1604
+>
+> This is the function that allocated a too short object.
+>
+
+Only the last one byte of  the string  is zeroed, but It malloced 2
+more byte appended the string because size of thentfschar type is 2
+bytes , is this the reason? But why?
+
+Regards
+dave
