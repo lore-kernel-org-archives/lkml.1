@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763360AbXEYQmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763684AbXEYQpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763360AbXEYQmQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 12:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbXEYQmE
+	id S1763684AbXEYQpX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 12:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760729AbXEYQpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 12:42:04 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:56682 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752107AbXEYQmD (ORCPT
+	Fri, 25 May 2007 12:45:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36552 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759279AbXEYQpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 12:42:03 -0400
-Date: Fri, 25 May 2007 09:41:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Yoann Padioleau <padator@wanadoo.fr>, kernel-janitors@lists.osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] potential parse error in ifdef
-Message-Id: <20070525094136.00be86ae.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705251349330.8531@twin.jikos.cz>
-References: <87abvtfi9w.fsf@wanadoo.fr>
-	<Pine.LNX.4.64.0705251349330.8531@twin.jikos.cz>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 25 May 2007 12:45:09 -0400
+Date: Fri, 25 May 2007 09:45:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, Chris Newport <crn@netunix.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux1394-devel@lists.sourceforge.net,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kristian H?gsberg <krh@bitplanet.net>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>, jlan@sgi.com
+Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
+In-Reply-To: <20070525093354.5dbe5f43.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705250939210.6292@schroedinger.engr.sgi.com>
+References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com>
+ <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>
+ <20070524193740.GA6787@elte.hu> <alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org>
+ <20070525101105.GA9268@elte.hu> <4656CE39.8050800@netunix.com>
+ <20070525123456.GA17238@elte.hu> <20070525093354.5dbe5f43.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 May 2007 13:50:37 +0200 (CEST) Jiri Kosina <jikos@jikos.cz> wrote:
+On Fri, 25 May 2007, Andrew Morton wrote:
 
-> On Fri, 25 May 2007, Yoann Padioleau wrote:
-> 
-> > I have made a tool to parse the kernel that does not pre-process the
-> > source. That means that my parser tries to parse all the code, including
-> > code in the #else branch or code that is not often compiled because
-> > the driver is not very used (or not used at all). So, my parser
-> > sometimes reports parse error not originally detected by gcc. 
-> > Here is my (first) patch.
-> >  drivers/char/watchdog/ixp2000_wdt.c |    2 +-
-> >  drivers/mtd/devices/pmc551.c        |    2 +-
-> >  drivers/mtd/nand/autcpu12.c         |    2 +-
-> >  drivers/mtd/nand/ppchameleonevb.c   |    2 +-
-> >  drivers/net/amd8111e.c              |    2 +-
-> >  drivers/net/skfp/smt.c              |    2 +-
-> >  drivers/scsi/aic7xxx/aic79xx_core.c |    2 +-
-> >  sound/arm/sa11xx-uda1341.c          |    2 +-
-> >  8 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> As these are totally independent fixes across various subsystems, you 
-> should probably split the patch into per-subsystem patches and submit them 
-> separately.
+> the image".  But we're not - kernel developers don't know how to turn the
+> thing on in $RANDOM_DISTRO, testers have no experience with the feature
+> and kernel developers don't have experience handling the crash images.
 
-That's normally true, yes.  But for a bunch of obviously-better one-line
-fixes in code which nobody has even compiled in ages, I think we can bend
-the rules a bit and just slam it in.
+Well, we for instance have problems with huge crash dumps. Its even a 
+challenge if the machine has only a few gigabytes of main memory.
+ 
+> And I'm not sure that the (required) "don't dump user memory and pagecache"
+> feature has been implemented yet?
+
+A colleague of mine is still working to get it to work just right on IA64.
+He does it full time. sigh. Jay what is the status on that?
 
