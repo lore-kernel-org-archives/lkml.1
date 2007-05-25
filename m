@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbXEYVrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765052AbXEYVr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932160AbXEYVrE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 17:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763340AbXEYVqn
+	id S1765052AbXEYVr0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 17:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbXEYVq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 17:46:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43161 "EHLO mx2.suse.de"
+	Fri, 25 May 2007 17:46:56 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43189 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762666AbXEYVql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 17:46:41 -0400
-Date: Fri, 25 May 2007 14:31:11 -0700
+	id S932119AbXEYVqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 17:46:55 -0400
+Date: Fri, 25 May 2007 14:40:40 -0700
 From: Greg KH <gregkh@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@NineX.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       ninex@o2.pl, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>,
-       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
-Message-ID: <20070525213111.GA6810@suse.de>
-References: <20070515212200.517fcba2@osprey.hogchain.net> <m14pmcmz8r.fsf@ebiederm.dsl.xmission.com> <20070516185225.3f3ac082@osprey.hogchain.net> <m1sl9wl28m.fsf@ebiederm.dsl.xmission.com> <20070522204103.134bf5a2@osprey.hogchain.net> <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com> <20070525052032.GB9386@suse.de> <m1myztaq5s.fsf@ebiederm.dsl.xmission.com> <20070525203501.GD5413@suse.de> <m1k5uwaa0h.fsf@ebiederm.dsl.xmission.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2 built on ppc (1)
+Message-ID: <20070525214040.GB6925@suse.de>
+References: <20070520110419.GB3253@aragorn.home.lxtec.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1k5uwaa0h.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <20070520110419.GB3253@aragorn.home.lxtec.de>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 03:06:22PM -0600, Eric W. Biederman wrote:
-> Greg KH <gregkh@suse.de> writes:
-> > It's a trade off, and I'd like to choose the one that over the long
-> > term, causes the least ammount of work and maintaiblity.  I think the
-> > current blacklist meets that goal.
+On Sun, May 20, 2007 at 01:04:19PM +0200, Elimar Riesebieter wrote:
+> Hi,
 > 
-> A reasonable goal.  I will come back to this after the long holiday
-> weekend here and see what makes sense.
+> FYI, building 2.6.22-rc2 with
+> gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+> on my powerbook (PPC) gives:
+> 
+> ...
+> arch/powerpc/kernel/pci_32.c: In function 'pcibios_assign_resources':
+> arch/powerpc/kernel/pci_32.c:562: warning: ignoring return value of 'pci_assign_resource', declared with attribute warn_unused_result
+> arch/powerpc/kernel/pci_32.c: In function 'pcibios_add_platform_entries':
+> arch/powerpc/kernel/pci_32.c:1053: warning: ignoring return value of 'device_create_file', declared with attribute warn_unused_result
+> arch/powerpc/mm/mem.c: In function 'paging_init':
+> arch/powerpc/mm/mem.c:313: warning: passing argument 1 of 'pmd_offset' from incompatible pointer type
+> arch/powerpc/mm/mem.c:316: warning: passing argument 1 of 'pmd_offset' from incompatible pointer type
+> ...
+> drivers/base/core.c: In function 'device_add':
+> drivers/base/core.c:714: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+> drivers/base/core.c:719: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+> drivers/base/core.c:722: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+> drivers/base/core.c: In function 'device_rename':
+> drivers/base/core.c:1197: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+> drivers/base/dd.c:211: warning: 'device_probe_drivers' defined but not used
+> ...
+> drivers/ide/setup-pci.c: In function 'ide_scan_pcibus':
+> drivers/ide/setup-pci.c:879: warning: ignoring return value of '__pci_register_driver', declared with attribute warn_unused_result
+> drivers/pci/search.c: In function 'pci_find_slot':
+> drivers/pci/search.c:99: warning: 'pci_find_device' is deprecated (declared at include/linux/pci.h:477)
+> drivers/pci/search.c: At top level:
+> drivers/pci/search.c:433: warning: 'pci_find_device' is deprecated (declared at drivers/pci/search.c:241)
+> drivers/pci/search.c:433: warning: 'pci_find_device' is deprecated (declared at drivers/pci/search.c:241)
+> ...
+> 
+> If more info is needed, please contact me via PM, as I am not
+> subscribed.
 
-Ok, if you still think after looking into it some more that it's still
-needed, please resend the patches, and I'll reconsider it.
+I see some warnings, but no errors, right?  The pci and driver core
+warnings are known and are being worked on...
 
 thanks,
 
