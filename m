@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbXEYAUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbXEYA1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbXEYAUz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 20:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbXEYAUo
+	id S1753311AbXEYA1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 20:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbXEYA1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 20:20:44 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:53215 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbXEYAUn (ORCPT
+	Thu, 24 May 2007 20:27:18 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:20503 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbXEYA1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 20:20:43 -0400
-Message-ID: <46562B5A.2070008@zytor.com>
-Date: Thu, 24 May 2007 17:18:34 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 24 May 2007 20:27:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=k4iZCikONZHjGfrdsXR7ueJrGCN+pmv66Hx2QIk21e88RJ8Rdvv0sMtib5cKMI+ZSuwNLyPH4SPeZpnRyei4ku9TBasZdx3uniu85WPTxjLSOWhlbjYWuJTlULmGYP8EGKACk27PRr+DTQamBILrRE9zVTNXt/KeipiB5GgcYfI=
+Message-ID: <46562D61.3000107@gmail.com>
+Date: Thu, 24 May 2007 17:27:13 -0700
+From: Wayne Sherman <wsherman@gmail.com>
+Organization: System Design Works
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: 2.6.22-rc1-mm1: IDE compile error
-References: <20070515201914.16944e04.akpm@linux-foundation.org>	<20070516185552.GA4086@stusta.de>	<200705240145.38055.bzolnier@gmail.com>	<20070524115549.01c0e1ca@the-village.bc.nu>	<4656284D.7080709@zytor.com> <20070525011403.20e77ee7@the-village.bc.nu>
-In-Reply-To: <20070525011403.20e77ee7@the-village.bc.nu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
+Subject: Re: PCI device problem - MMCONFIG, cannot allocate resource region,
+ resource collisions
+References: <46524A6D.5050601@gmail.com> <4654DA5E.2050003@gmail.com> <200705232008.23540.jbarnes@virtuousgeek.org> <200705232010.54184.jbarnes@virtuousgeek.org> <20070524140941.A21491@jurassic.park.msu.ru>
+In-Reply-To: <20070524140941.A21491@jurassic.park.msu.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> I believe the technical description for the comment is "bullshit" 8)
+Ivan Kokshaysky wrote:
+> Actually, it should be something like this (also untested).
 > 
-> Almost all MFM controllers and RLL controllers will only run at the
-> standard primary and secondary ATA address.
+> Ivan.
+> 
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -1690,6 +1690,14 @@ static void __devinit quirk_p64h2_1k_io(struct pci_dev 
+> *dev)
+>  }
+>  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	0x1460,		quirk_p64h2_1k_io);
+>  
+> +/* Give unknown D-Link network adapters a proper class */
+> +static void __devinit quirk_dlink_unknown(struct pci_dev *dev)
+> +{
+> +	if ((dev->class >> 8) == PCI_CLASS_NOT_DEFINED)
+> +		dev->class = PCI_CLASS_NETWORK_ETHERNET << 8;
+> +}
+> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_DLINK, 0x4901, quirk_dlink_unknown);
 
-Yes, but that doesn't (necessarily) apply to the controller that is
-likely to be the primary controller in a modern system.
+Ivan,
 
-The whole point is that what the BIOS considers primary isn't
-necessarily tied to the standard ATA addresses anymore, with SATA
-controllers being primary.
+   I tried a couple variations of the patch above.  It got me further, 
+but I still wasn't getting the base address assigned properly.  I 
+suspected a bad card, so I tried another one I have here.  It is likely 
+that I have been fighting with bad hardware all this time.  The other 
+card has a known device ID, a proper class code, and does not give 
+resource allocation errors.  I have an e-mail into D-Link to inquire 
+about the buggy card.
 
-The question I'm asking is: do you think it's better to remove this from
-hd.c, or do you think it's better to add it back boot code BIOS
-detection (and take the risk of poking an ST-506 disk with legacy data
-with parameters which may belong to another disk -- keep in mind this
-can permanently damage an ST-506 disk)?
+   I appreciate both yours and Jesse's help to troubleshoot this problem.
 
-> Given the intended use of the driver today I don't see a big problem in
-> requiring "hd=" although you have to question the point of this boot code
-> rewrite when it seems primarily to be removing features 
+Best Regards,
 
-I've been trying to remove features that are obsolete and/or broken.  I
-don't have access to this particular ancient hardware, nor any system
-that can even host them.   It's very easy to add the stuff back in the
-boot code; it's a much more tricky/annoying question if one *should* do
-so.  That's part of a rewrite/cleanup.
+Wayne Sherman
 
-	-hpa
