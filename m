@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbXEYCcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbXEYCiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbXEYCcq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 22:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXEYCcj
+	id S1755264AbXEYCiv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 24 May 2007 22:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXEYCim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 22:32:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:42290 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752809AbXEYCci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 22:32:38 -0400
-Subject: Re: [PATCH] msi: Fix the ordering of msix irqs.
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tom.l.nguyen@intel.com, iss_storagedev@hp.com, jens.axboe@oracle.com
-In-Reply-To: <m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
-References: <20070524160756.GA14083@beardog.cca.cpqcorp.net>
-	 <20070524102702.bca37396.akpm@linux-foundation.org>
-	 <m1r6p6dn3x.fsf@ebiederm.dsl.xmission.com>
-	 <20070524205900.GC14083@beardog.cca.cpqcorp.net>
-	 <m1hcq2dj5m.fsf_-_@ebiederm.dsl.xmission.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9PThvc5lqqLtTBYj+Rt0"
-Date: Fri, 25 May 2007 12:32:36 +1000
-Message-Id: <1180060356.8203.26.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 24 May 2007 22:38:42 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:63488 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbXEYCil (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 24 May 2007 22:38:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J6z9H7co6n0n4PkKaspLnNKiiioq/9mBJII4ht1GbEI2+LZaNqh+m0WQ9hQDhjIzG4GRNGcJsuCDxZqPGCvljbSsBteGuFFkxcuiQVM+uhsc6PtikQshNjGiejQuQSSmEFqn3bvm0/YphiM5tIUi72nlI1edJWUYwScxgcYzXvI=
+Message-ID: <dda83e780705241938h2dadeeb9p61c9294ddfd96990@mail.gmail.com>
+Date: Thu, 24 May 2007 19:38:40 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Nitin Gupta" <nitingupta910@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 3
+Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
+       linux-mm-cc@laptop.org, "Satyam Sharma" <satyam.sharma@gmail.com>
+In-Reply-To: <4cefeab80705240648k2f3c22ddw13374c9d6b2f521a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+	 <dda83e780705230750j43c9e89eh766fdaafb1d671f3@mail.gmail.com>
+	 <4cefeab80705240648k2f3c22ddw13374c9d6b2f521a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 5/24/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
+> On 5/23/07, Bret Towe <magnade@gmail.com> wrote:
+> > On 5/23/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
+>
+> > > For now, tested on x86 only.
+> >
+> > If you have a program to test this I can run it on an amd64 and a g4 ppc
+> >
+>
+> Attached is the kernel module (compress-test) to test this LZO code.
+> Just compile this module against 2.6.22-rc2 with this LZO patch. Then
+> testing can be done as:
+> 1- Mount DebugFS somewhere e.g:
+> mkdir /debug; mount -t debugfs debugfs /debug
+> 2- Load the module and do:
+> cat /path/to/some_file > /debug/compress_test/compress
+> (/var/log/messages should show that compression was successful)
+> 3- Then decompress this file as:
+> cat /debug/compress_test/decompress > /tmp/t
+> (/var/log/messages should show that decompression was successful)
+> 4- For extra verification do:
+> diff /tmp/t /path/to/some_file   -- O/P must be empty
+>
+>
+> Thanks!
+> Nitin
+>
+>
 
---=-9PThvc5lqqLtTBYj+Rt0
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+the test worked fine on amd64
+from dmesg:
+LZO compress successful: orig_size=17448, comp_size=8183
+LZO decompress successful: decomp_size=17448
 
-On Thu, 2007-05-24 at 15:08 -0600, Eric W. Biederman wrote:
-> Yours looks more complete then my test patch so:
->=20
-> From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> writes:
->=20
-> Found what seems the problem with our vectors being listed backward. In
-> drivers/pci/msi.c we should be using list_add_tail rather than list_add t=
-o
-> preserve the ordering across various kernels. Please consider this for
-> inclusion.
->=20
-> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
+and input and output files I gave it:
+sha1sum test-input output
+2221c586e3eb869af7f4333d4f56b441b9aa8414  test-input
+2221c586e3eb869af7f4333d4f56b441b9aa8414  output
 
-Screwed-up-by: Michael Ellerman <michael@ellerman.id.au>
+(will be giving the ppc box the same file to test btw when I get to it)
 
-The sad part is my earlier patches did use list_add_tail(), doh. :(
+and I don't know if it matters much but I tried feeding it a 260k file
+and it didn't like it
 
-Thanks for debugging it.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-9PThvc5lqqLtTBYj+Rt0
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGVkrEdSjSd0sB4dIRAoIBAJ48yi8lg1GvOZ3m/eYWWdPymZtqjQCeOPlx
-POem9fQCB69CnsHFv+O7b3I=
-=2A5N
------END PGP SIGNATURE-----
-
---=-9PThvc5lqqLtTBYj+Rt0--
-
+cat /usr/bin/yelp > /debug/compress_test/compress
+cat: write error: No space left on device
