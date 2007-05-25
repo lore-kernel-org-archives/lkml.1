@@ -1,232 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbXEYLQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbXEYLU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761465AbXEYLQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 07:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXEYLQY
+	id S1761465AbXEYLU3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 07:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXEYLUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 07:16:24 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45657 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751665AbXEYLQW (ORCPT
+	Fri, 25 May 2007 07:20:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34122 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbXEYLUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 07:16:22 -0400
-Date: Fri, 25 May 2007 21:15:58 +1000
-From: David Chinner <dgc@sgi.com>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-Message-ID: <20070525111557.GP85884050@sgi.com>
-References: <18006.38689.818186.221707@notabene.brown>
+	Fri, 25 May 2007 07:20:22 -0400
+Date: Fri, 25 May 2007 13:20:20 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] x86_64: fix sched_clock()
+Message-ID: <20070525112020.GN8094@one.firstfloor.org>
+References: <20070525082018.GF8094@one.firstfloor.org> <20070525083430.GB27236@elte.hu> <20070525084109.GI8094@one.firstfloor.org> <20070525084426.GA29973@elte.hu> <20070525084547.GJ8094@one.firstfloor.org> <20070525015544.bce3cb99.akpm@linux-foundation.org> <20070525090315.GK8094@one.firstfloor.org> <20070525091928.GA3177@elte.hu> <20070525094640.GL8094@one.firstfloor.org> <20070525101248.GA7547@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18006.38689.818186.221707@notabene.brown>
+In-Reply-To: <20070525101248.GA7547@elte.hu>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 05:58:25PM +1000, Neil Brown wrote:
-> We can think of there being three types of devices:
->  
-> 1/ SAFE.  With a SAFE device, there is no write-behind cache, or if
->           there is it is non-volatile.  Once a write completes it is 
->           completely safe.  Such a device does not require barriers
->           or ->issue_flush_fn, and can respond to them either by a
-> 	  no-op or with -EOPNOTSUPP (the former is preferred).
+On Fri, May 25, 2007 at 12:12:48PM +0200, Ingo Molnar wrote:
 > 
-> 2/ FLUSHABLE.
->           A FLUSHABLE device may have a volatile write-behind cache.
->           This cache can be flushed with a call to blkdev_issue_flush.
-> 	  It may not support barrier requests.
-
-So returns -EOPNOTSUPP to any barrier request?
-
-> 3/ BARRIER.
-> 	  A BARRIER device supports both blkdev_issue_flush and
->           BIO_RW_BARRIER.  Either may be used to synchronise any
-> 	  write-behind cache to non-volatile storage (media).
+> * Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> Handling of SAFE and FLUSHABLE devices is essentially the same and can
-> work on a BARRIER device.  The BARRIER device has the option of more
-> efficient handling.
+> > > please indicate that you've picked up my style cleanups, i dont want 
+> > > to redo all this a few days/weeks down the line ...
+> > 
+> > It's done slightly differently now due to conflicting earlier changes, 
+> > but the end result should be about what you intended. [...]
 > 
-> How does a filesystem use this?
-> ===============================
-....
-> 
-> The filesystem will want to ensure that all preceding writes are safe
-> before writing the barrier block.  There are two ways to achieve this.
+> please send me your current sched-clock.c, i'll redo any remaining 
+> cleanups.
 
-Three, actually.
+It needs at least one new preliminary patch (to add on_cpu_single);
+please get the series from 
+ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches-2.6.22-rc2-git7-070525-1.tar.gz
+You need at least tsc-unstable upto paravirt-add-a-sched_clock-paravirt
+for everything
 
-> 1/  Issue all 'preceding writes', wait for them to complete (bi_endio
->    called), call blkdev_issue_flush, issue the commit write, wait
->    for it to complete, call blkdev_issue_flush a second time.
->    (This is needed for FLUSHABLE)
+> But ... i find your approach curious, why didnt you just apply the 
+> cleanups i sent? You clearly started working on this as a reaction to my 
+> cleanup patches and to the bugfixes i sent ontop of the cleanup patches. 
+> Your "I'll do this differently" approach is totally unnecessary from a 
+> commit management point of view (this is new code after all and 
+> will/should go upstream in a single clean chunk anyway), the only effect 
+> this has is that that you are discouraging contributors like me from 
+> contributing cleanups to the x86_64 tree.
 
-*nod*
+Unfortunately right now it is a already a set of patches; e.g. due to 
+the paravirt ops change. I can merge back the cleanup change; but
+kept it separately due to your earlier complaint about not using
+your patch. I think one hunk of your original one is still in there :-)
 
-> 2/ Set the BIO_RW_BARRIER bit in the write request for the commit
->     block.
->    (This is more efficient on BARRIER).
+> so to me the impression is 
+> that deep in yourself you are (subconsciously) not happy about others 
+> contributing to the x86_64 tree. Please tell me that i'm wrong :-(
 
-*nod*
+You're reading too much into that. Of course I value contributions
+to x86-64, including cleanups. In general when I don't like it I complain
+so saying nothing is approval (or me being not reading email, but that
+doesn't happen that often) 
 
-3/ Use a SAFE device.
-
-> The second, while much easier, can fail.
-
-So we do a test I/O to see if the device supports them before
-enabling that mode.  But, as we've recently discovered, this is not
-sufficient to detect *correctly functioning* barrier support.
-
-> So a filesystem should be
-> prepared to deal with that failure by falling back to the first
-> option.
-
-I don't buy that argument.....
-
-> Thus the general sequence might be:
-> 
->   a/ issue all "preceding writes".
->   b/ issue the commit write with BIO_RW_BARRIER
-
-At this point, the filesystem has done everything it needs to ensure
-that the block layer has been informed of the I/O ordering
-requirements. Why should the filesystem now have to detect block
-layer breakage, and then use a different block layer API to issue
-the same I/O under the same constraints?
-
->   c/ wait for the commit to complete.
->          If it was successful - done.
->          If it failed other than with EOPNOTSUPP, abort
->          else continue
->   d/ wait for all 'preceding writes' to complete
->   e/ call blkdev_issue_flush
->   f/ issue commit write without BIO_RW_BARRIER
->   g/ wait for commit write to complete
->        if it failed, abort
->   h/ call blkdev_issue
-            ^^^^^^^^^^^^_flush?
-
->   DONE
-> 
-> steps b and c can be left out if it is known that the device does not
-> support barriers.  The only way to discover this to try and see if it
-> fails.
-
-That's a very linear, single-threaded way of looking at it... ;)
-
-> I don't think any filesystem follows all these steps.
-> 
->  ext3 has the right structure, but it doesn't include steps e and h.
->  reiserfs is similar.  It does have a call to blkdev_issue_flush, but 
->   that is only on the fsync path, so it isn't really protecting
->   general journal commits.
->  XFS - I'm less sure.  I think it does 'a' then 'd', then 'b' or 'f'
->    depending on a whether it thinks the device handles barriers,
->    and finally 'g'.
-
-That's right, except for the "g" (or "c") bit - commit writes are
-async and nothing waits for them - the io completion wakes anything
-waiting on it's completion....
-
-(yes, all XFS barrier I/Os are issued async which is why having to
-handle an -EOPNOTSUPP error is a real pain. The fix I currently
-have is to reissue the I/O from the completion handler with is
-ugly, ugly, ugly.....)
-
-> So for devices that support BIO_RW_BARRIER, and for devices that don't
-> need any flush, they work OK, but for device that need flushing, but
-> don't support BIO_RW_BARRIER, none of them work.  This should be easy
-> to fix.
-
-Right - XFS as it stands was designed to work on SAFE devices, and
-we've modified it to work on BARRIER devices. We don't support
-FLUSHABLE devices at all.
-
-But if the filesystem supports BARRIER devices, I don't see any
-reason why a filesystem needs to be modified to support FLUSHABLE
-devices - the key point being that by the time the filesystem
-has issued the "commit write" it has already waited for all it's
-dependent I/O, and so all the block device needs to do is
-issue flushes either side of the commit write....
-
-> HOW DO MD or DM USE THIS
-> ========================
-> 
-> 1/ striping devices.
->      This includes md/raid0 md/linear dm-linear dm-stripe and probably
->      others. 
-> 
->    These devices can easily support blkdev_issue_flush by simply
->    calling blkdev_issue_flush on all component devices.
-> 
->    These devices would find it very hard to support BIO_RW_BARRIER.
->    Doing this would require keeping track of all in-flight requests
->    (which some, possibly all, of the above don't) and then:
->      When a BIO_RW_BARRIER request arrives:
->         wait for all pending writes to complete
-
-A count of outstanding I/Os and a wait queue is sufficient to implement
-this, I think.
-
-.....
->    I think the best approach for this class of devices is to return
->    -EOPNOSUP.  If the filesystem does the wait (which they all do
->    already) and the blkdev_issue_flush (which is easy to add), they
->    don't need to support BIO_RW_BARRIER.
-
-So you want to define these as a FLUSHABLE device?
-
-> 2/ Mirror devices.  This includes md/raid1 and dm-raid1.
-......
->    Hopefully this is unlikely to happen.  What device would work
->    correctly with barriers once, and then not the next time?
->    The answer is md/raid1.  If you remove a failed device and add a
->    new device that doesn't support barriers, md/raid1 will notice and
->    stop supporting barriers.
-
-In case you hadn't already guess, I don't like this behaviour at
-all.  It makes async I/O completion of barrier I/O an ugly, messy
-business, and every place you do sync I/O completion you need to put
-special error handling.
-
-If this happens to md/raid1, then why can't it simply do a
-blkdev_issue_flush, write, blkdev_issue_flush sequence to the device
-that doesn't support barriers and then the md device *never changes
-behaviour*. Next time the filesystem is mounted, it will turn off
-barriers because they won't be supported....
-
-You do that, and suddenly there's 10 filesystems that no longer have
-to handle this extremely rare corner case.
-
-> So: some questions to help encourage response:
-> 
->  - Is the above substantial correct?  Totally correct?
-
-Mostly valid ;)
-
-I like the idea of clearly defining the different types of devices
-so we can say exactly what each device behaves like. It also
-points out (to me, anyway) that from a filesystem POV there is
-no logical difference between a BARRIER and a FLUSHABLE block device;
-the only difference is that filesystems are forced to use a
-different API to support them (and hence they are not supported).
-
->  - Should the various filesystems be "fixed" as suggested above?  Is 
->     someone willing to do that?
-
-Alternate viewpoint - should the block layer be fixed so that the
-filesystems only need to use one barrier API that provides static
-behaviour for the life of the mount?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+-Andi
