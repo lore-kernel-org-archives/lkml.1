@@ -1,42 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765237AbXEYToQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765392AbXEYTo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765237AbXEYToQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 15:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbXEYToH
+	id S1765392AbXEYTo3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 15:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbXEYToK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 15:44:07 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:54462 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753337AbXEYToG (ORCPT
+	Fri, 25 May 2007 15:44:10 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33562 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754172AbXEYToJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 15:44:06 -0400
-Message-ID: <46573C70.2070209@zytor.com>
-Date: Fri, 25 May 2007 12:43:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Auke Kok <auke-jan.h.kok@intel.com>, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] [CodingStyle] Add comment to not put spaces before
- tabs.
-References: <20070525172509.5138.56430.stgit@localhost.localdomain> <46571DA8.1000402@s5r6.in-berlin.de>
-In-Reply-To: <46571DA8.1000402@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 25 May 2007 15:44:09 -0400
+Date: Fri, 25 May 2007 20:48:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: jeff@garzik.org, akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] pata_hpt37x: Further improvements based on the IDE updates
+ and vendor drivers
+Message-ID: <20070525204855.4d72b9a4@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Auke Kok wrote:
->> +Don't put spaces before tabs or mix them.
-> 
-> Make it "Don't put spaces before tabs."
-> 
-> We do mix them if we combine tabs for indentation with spaces for alignment.
+Better DPLL use and calibration
 
-It would probably be good to add a pointer to the cleanfile/cleanpatch
-scripts here, too.
 
-	-hpa
+Signed-off-by: Alan Cox <alan@redhat.com>
+
+
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc2-mm1/drivers/ata/pata_hpt37x.c linux-2.6.22-rc2-mm1/drivers/ata/pata_hpt37x.c
+--- linux.vanilla-2.6.22-rc2-mm1/drivers/ata/pata_hpt37x.c	2007-05-25 17:39:06.000000000 +0100
++++ linux-2.6.22-rc2-mm1/drivers/ata/pata_hpt37x.c	2007-05-25 18:20:38.000000000 +0100
+@@ -26,7 +26,7 @@
+ #include <linux/libata.h>
+ 
+ #define DRV_NAME	"pata_hpt37x"
+-#define DRV_VERSION	"0.6.5"
++#define DRV_VERSION	"0.6.6"
+ 
+ struct hpt_clock {
+ 	u8	xfer_speed;
+@@ -931,15 +931,6 @@
+ 		.udma_mask = 0x7f,
+ 		.port_ops = &hpt372_port_ops
+ 	};
+-	/* HPT371, 372 and friends - UDMA100 at 50MHz clock */
+-	static const struct ata_port_info info_hpt372_50 = {
+-		.sht = &hpt37x_sht,
+-		.flags = ATA_FLAG_SLAVE_POSS|ATA_FLAG_SRST,
+-		.pio_mask = 0x1f,
+-		.mwdma_mask = 0x07,
+-		.udma_mask = 0x3f,
+-		.port_ops = &hpt372_port_ops
+-	};
+ 	/* HPT374 - UDMA133 */
+ 	static const struct ata_port_info info_hpt374 = {
+ 		.sht = &hpt37x_sht,
+@@ -1098,17 +1089,21 @@
+ 		 *	use a 50MHz DPLL by choice
+ 		 */
+ 		unsigned int f_low, f_high;
+-		int adjust;
++		int dpll, adjust;
+ 
+-		clock_slot = 2;
++		/* Compute DPLL */
++		dpll = 2;
+ 		if (port->udma_mask & 0xE0)
+-			clock_slot = 3;
++			dpll = 3;
+ 
+-		f_low = (MHz[clock_slot] * chip_table->base) / 192;
++		f_low = (MHz[clock_slot] * 48) / MHz[dpll];
+ 		f_high = f_low + 2;
++		if (clock_slot > 1)
++			f_high += 2;
+ 
+ 		/* Select the DPLL clock. */
+ 		pci_write_config_byte(dev, 0x5b, 0x21);
++		pci_write_config_dword(dev, 0x5C, (f_high << 16) | f_low);
+ 
+ 		for(adjust = 0; adjust < 8; adjust++) {
+ 			if (hpt37x_calibrate_dpll(dev))
+@@ -1124,12 +1119,12 @@
+ 			printk(KERN_WARNING "hpt37x: DPLL did not stabilize.\n");
+ 			return -ENODEV;
+ 		}
+-		if (clock_slot == 3)
++		if (dpll == 3)
+ 			private_data = (void *)hpt37x_timings_66;
+ 		else
+ 			private_data = (void *)hpt37x_timings_50;
+ 
+-		printk(KERN_INFO "hpt37x: Bus clock %dMHz, using DPLL.\n", MHz[clock_slot]);
++		printk(KERN_INFO "hpt37x: Bus clock %dMHz, using DPLL.\n", MHz[dpll]);
+ 	} else {
+ 		private_data = (void *)chip_table->clocks[clock_slot];
+ 		/*
