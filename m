@@ -1,186 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763055AbXEYQVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763422AbXEYQXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763055AbXEYQVO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 12:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbXEYQU7
+	id S1763422AbXEYQXV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 12:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbXEYQXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 12:20:59 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:5443 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751320AbXEYQU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 12:20:58 -0400
-Message-ID: <46570C70.4050209@sw.ru>
-Date: Fri, 25 May 2007 20:18:56 +0400
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
+	Fri, 25 May 2007 12:23:13 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:57437 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751830AbXEYQXM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 12:23:12 -0400
+Date: Fri, 25 May 2007 09:21:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux1394-devel@lists.sourceforge.net,
+       Kristian H?gsberg <krh@bitplanet.net>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
+In-Reply-To: <4656B7DF.6020005@s5r6.in-berlin.de>
+Message-ID: <alpine.LFD.0.98.0705250920300.26602@woody.linux-foundation.org>
+References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com>
+ <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com>
+ <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org>
+ <20070524193740.GA6787@elte.hu> <alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org>
+ <20070525101105.GA9268@elte.hu> <4656B7DF.6020005@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: vatsa@in.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>, kernel@kolivas.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, ckrm-tech@lists.sourceforge.net,
-       efault@gmx.de, pwil3058@bigpond.net.au, wli@holomorphy.com,
-       linux-kernel@vger.kernel.org, tingy@cs.umass.edu, tong.n.li@intel.com,
-       containers@lists.osdl.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, Guillaume Chazarain <guichaz@yahoo.fr>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
-References: <20070523164859.GA6595@in.ibm.com> <3d8471ca0705231112rfac9cfbt9145ac2da8ec1c85@mail.gmail.com> <20070523183824.GA7388@elte.hu> <4654BF88.3030404@yahoo.fr> <20070525074500.GD6157@in.ibm.com> <20070525082951.GA25280@elte.hu> <4656DF0C.9090306@sw.ru> <20070525153450.GA4679@in.ibm.com>
-In-Reply-To: <20070525153450.GA4679@in.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> On Fri, May 25, 2007 at 05:05:16PM +0400, Kirill Korotaev wrote:
+
+
+On Fri, 25 May 2007, Stefan Richter wrote:
+
+> Ingo Molnar wrote:
+> > i was adding WARN_ON()s that werent true 'warnings' but 'bugs'.
 > 
->>>That way the scheduler would first pick a "virtual CPU" to schedule, and 
->>>then pick a user from that virtual CPU, and then a task from the user. 
->>
->>don't you mean the vice versa:
->>first use to scheduler, then VCPU (which is essentially a runqueue or rbtree),
->>then a task from VCPU?
->>
->>this is the approach we use in OpenVZ [...]
-> 
-> 
-> So is this how it looks in OpenVZ?
-> 
-> 	CONTAINER1 => VCPU0 + VCPU1 
-> 	CONTAINER2 => VCPU2 + VCPU3
->
-> PCPU0 picks a container first, a vcpu next and then a task in it
-> PCPU1 also picks a container first, a vcpu next and then a task in it.
+> IME, the trace dump in the kernel log looks scary enough to be
+> eventually reported, even if prefixed with "WARNING:".
 
-correct.
+Oh, absolutely. It will stand out like a sore thumb. In fact, I think 
+WARNING: stands out more than BUG:, if only because it's longer!
 
-> Few questions:
-> 
-> 1. Are VCPU runqueues (on which tasks are present) global queues?
->   
->    That is, let's say that both PCPU0 and PCPU1 pick CONTAINER1 to schedule
->    (first level) at the same time and next (let's say) they pick same vcpu
->    VCPU0 to schedule (second level). Will the two pcpu's now have to be 
->    serialized for scanning task to schedule next (third level) within VCPU0 
->    using a spinlock?  Won't that shootup scheduling costs (esp on large
->    systems), compared to (local scheduling + balance across cpus once in a 
->    while, the way its done today)?
->    Or do you required that two pcpus don't schedule the same vcpu at the
->    same time (the way hypervisors normally work)? Even then I would
->    imagine a fair level of contention to be present in second step (pick
->    a virtual cpu from a container's list of vcpus).
-
-2 physical CPUs can't select the same VCPU at the same time.
-i.e. VCPU can be running on 1 PCPU only at the moment.
-and vice versa: PCPU can run only 1 VCPU at the given moment.
-
-So serialization is done when we need to assign VCPU to PCPU moment only,
-not when we select a particular task from the runqueue.
-
-About the contention: you can control how often VCPUs should be rescheduled,
-so the contention can be quite small. This contention is unavoidable in any fair
-scheduler since fairness implies across CPUs accounting and decision making at least
-with some period of time.
-
-Well it is possible to avoid contention at all - if we do fair scheduling
-separately on each CPU. But in this case we still do user-based balancing
-(which requires serialization) and precision can be nasty.
-
-> 2. How would this load balance at virtual cpu level and sched domain based
->    load balancing interact?
-> 
->    The current sched domain based balancing code has many HT/MC/SMT related 
->    optimizations, which ensure that tasks are spread across physical 
->    threads/cores/packages in a most efficient manner - so as to utilize 
->    hardware bandwidth to the maximum. You would now need to introduce
->    those optimizations essentially at schedule() time ..? Don't know
->    if that is a wise thing to do.
-
-load balancing is done taking into account *current* VCPUs assignments to PCPUs.
-i.e. sched domains are taken into account.
-nothing is introduces at schedule() time - not sure what you meant actually by this.
-
-> 3. How do you determine the number of VCPUs per container? Is there any
->    relation for number of virtual cpus exposed per user/container and
->    the number of available cpus? For ex: in case of user-driven
->    scheduling, we would want all users to see the same number of cpus
->    (which is the number available in the system).
-
-by default every user is given num_online_cpus() VCPUs, i.e. it can
-run on all physical CPUs at the same time. If needed a user can be limited.
-
-
-> 4. VCPU ids (namespace) - is it different for different containers?
-
-yes.
-
->    For ex: can id's of vcpus belonging to different containers (say VCPU0 and 
->    VCPU2), as seen by users thr' vgetcpu/smp_processor_id() that is, be same?
-
-yes.
-
->    If so, then potentially two threads belonging to different users may find
->    that they are running -truly simultaneously- on /same/ cpu 0 (one on
->    VCPU0/PCPU0 and another on VCPU2/PCPU1) which normally isn't possible!
-
-yes. but for user space this has no any implications. You see, there is no way for user space
-to determine whether it is "-truly simultaneously- running on /same/ cpu 0".
-
->    This may be ok for containers, with non-overlapping cpu id namespace,
->    but when applied to group scheduling for, say, users, which require a
->    global cpu id namespace, wondering how that would be addressed ..
-
-very simple imho.
-the only way from user space to get some task CPU id is /proc.
-All you need is to return *some* value there.
-For example, one can report PCPU id to which VCPU is assigned.
-
->>and if you don't mind I would propose to go this way for fair-scheduling in 
->>mainstream.
->>It has it's own advantages and disatvantages.
->>
->>This is not the easy way to go and I can outline the problems/disadvantages
->>which appear on this way:
->>- tasks which bind to CPU mask will bind to virtual CPUs.
->>  no problem with user tasks, [...]
-> 
-> 
-> Why is this not a problem for user tasks? Tasks which bind to different
-> CPUs for performance reason now can find that they are running on same
-> (physical) CPU unknowingly.
-
-if there is no high load - tasks will be running on different PCPUs
-as the author was planning, since VCPUs will get different PCPUs for sure.
-Otherwise - it is not performance critical, and moreover *controversial* to *fairness*.
-
-Let me provide an example why binding is controversial to fairness.
-Imagine that we have 2 USERs - USER1 and USER2 and 2 CPUs in the system.
-USER1 has 50 tasks binded to CPU0 and 50 tasks binded to CPU1.
-USER2 has 1 task.
-
-Let USER2 to be as important as USER1 is, so these USERs should
-share summary CPU time as 1:1.
-How will it work with your approach?
-
->>but some kernel threads
->>  use this to do CPU-related management (like cpufreq).
->>  This can be fixed using SMP IPI actually.
->>- VCPUs should no change PCPUs very frequently,
->>  otherwise there is some overhead. Solvable.
->>
->>Advantages:
->>- High precision and fairness.
-> 
-> 
-> I just don't know if this benefit of high degree of fairness is worth the 
-> complexity it introduces. Besides having some data which shows how much better 
-> is is with respect to fairness/overhead when compared with other approaches 
-> (like smpnice) would help I guess. I will however let experts like Ingo make 
-> the final call here  :)
-
-sure. The "perfect" solution doesn't exist :( So I would be happy to know Ingo
-opinion as well.
-
-Thanks,
-Kirill
-
+		Linus
