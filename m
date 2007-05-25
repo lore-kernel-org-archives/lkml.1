@@ -1,99 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbXEYNVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXEYNdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762834AbXEYNVg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 09:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758306AbXEYNV3
+	id S1760091AbXEYNdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 09:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbXEYNdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 09:21:29 -0400
-Received: from mail.windriver.com ([147.11.1.11]:59139 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756769AbXEYNV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 09:21:28 -0400
-Message-ID: <4656E2D3.4050106@windriver.com>
-Date: Fri, 25 May 2007 08:21:23 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@o2.pl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.21 hang in cancel_rearming_delayed_workqueue()
-References: <20070525081631.GB985@ff.dom.local>
-In-Reply-To: <20070525081631.GB985@ff.dom.local>
-Content-Type: multipart/mixed;
- boundary="------------070308060501090404050104"
-X-OriginalArrivalTime: 25 May 2007 13:21:23.0937 (UTC) FILETIME=[976E8510:01C79ECF]
+	Fri, 25 May 2007 09:33:01 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4948 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751312AbXEYNdA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 09:33:00 -0400
+Date: Fri, 25 May 2007 23:32:53 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: rmmod e1000 hangs (Was Re: 2.6.22-rc2-mm1)
+Message-ID: <20070525133253.GA30626@gondor.apana.org.au>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <46556AA6.7040503@goop.org> <20070524104713.GA9174@gondor.apana.org.au> <20070524105403.GA9285@gondor.apana.org.au> <4655A4CD.8010901@intel.com> <20070525125413.GA29433@gondor.apana.org.au> <20070525130404.GA30071@gondor.apana.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070525130404.GA30071@gondor.apana.org.au>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070308060501090404050104
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, May 25, 2007 at 11:04:04PM +1000, Herbert Xu wrote:
+> 
+> [E1000]: Call netif_poll_enable in e1000_open
 
-Jarek Poplawski wrote:
-> On 25-05-2007 05:21, Jason Wessel wrote:
->   
->> There is a problem with the calling cancel_rearming_delayed_work if the 
->> timer was not yet active.
->>
->>
->> It is possible that the problem exists else where, but I thought I would 
->> ask if this is expected?
->>
->>     
->
->
-> " * cancel_rearming_delayed_workqueue - reliably kill off a delayed
->  work whose handler rearms the delayed work."
->
-> So, it cannot be used in netpoll_cleanup() if there is no rearming
-> during this cancel at all. This is a tricky behaviour of course,
-> and is changed in 2.6.22-rc.
->
->   
+Here is a better one.
 
-I had read that as well.  It seems this the API for the cancel is 
-restricted such that you cannot call it if there is nothing to cancel.
+[E1000]: Restore netif_poll_enable call but make sure IRQs are off
 
-This means the netpoll code is incorrect and the simple fix is 
-attached.  With the change the netpoll_cleanup works correctly in 2.6.21.
+This restores the previously removed netif_poll_enable call in
+e1000_open.  It's needed on all but the first call to e1000_open
+for a NIC as e1000_close always calls netif_poll_disable.
 
-Thanks,
-Jason.
+netif_poll_enable can only be called safely if no polls have been
+scheduled.  This should be the case as long as we don't enter our
+IRQ handler.
 
---------------070308060501090404050104
-Content-Type: text/plain;
- name="netpoll_workqueue_fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="netpoll_workqueue_fix.patch"
+In order to guarantee this we explicitly disable IRQs as early
+as possible when we're probing the NIC.
 
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-Do not call cancel_rearming_delayed_work() if there is no
-pending work.
-
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-
----
- net/core/netpoll.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.21/net/core/netpoll.c
-===================================================================
---- linux-2.6.21.orig/net/core/netpoll.c
-+++ linux-2.6.21/net/core/netpoll.c
-@@ -781,8 +781,10 @@ void netpoll_cleanup(struct netpoll *np)
- 			if (atomic_dec_and_test(&npinfo->refcnt)) {
- 				skb_queue_purge(&npinfo->arp_tx);
- 				skb_queue_purge(&npinfo->txq);
--				cancel_rearming_delayed_work(&npinfo->tx_work);
--				flush_scheduled_work();
-+				if (delayed_work_pending(&npinfo->tx_work)) {
-+					cancel_rearming_delayed_work(&npinfo->tx_work);
-+					flush_scheduled_work();
-+				}
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
+index cbc7feb..9ec35b7 100644
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -1325,7 +1325,10 @@ e1000_sw_init(struct e1000_adapter *adapter)
+ 	spin_lock_init(&adapter->tx_queue_lock);
+ #endif
  
- 				kfree(npinfo);
- 			}
-
---------------070308060501090404050104--
+-	atomic_set(&adapter->irq_sem, 1);
++	/* Explicitly disable IRQ since the NIC can be in any state. */
++	atomic_set(&adapter->irq_sem, 0);
++	e1000_irq_disable(adapter);
++
+ 	spin_lock_init(&adapter->stats_lock);
+ 
+ 	set_bit(__E1000_DOWN, &adapter->flags);
+@@ -1431,6 +1434,10 @@ e1000_open(struct net_device *netdev)
+ 	/* From here on the code is the same as e1000_up() */
+ 	clear_bit(__E1000_DOWN, &adapter->flags);
+ 
++#ifdef CONFIG_E1000_NAPI
++	netif_poll_enable(netdev);
++#endif
++
+ 	e1000_irq_enable(adapter);
+ 
+ 	/* fire a link status change interrupt to start the watchdog */
