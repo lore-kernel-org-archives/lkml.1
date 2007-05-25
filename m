@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbXEYMyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762762AbXEYMyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762297AbXEYMyf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 08:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbXEYMy2
+	id S1762762AbXEYMyq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 08:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759020AbXEYMy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 08:54:28 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:57859
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751552AbXEYMy2 (ORCPT
+	Fri, 25 May 2007 08:54:29 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4722 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757353AbXEYMy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 25 May 2007 08:54:28 -0400
-Date: Fri, 25 May 2007 14:56:30 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 0/2] use list_for_each() for iteration in hostap and prism54 driver
-Message-ID: <20070525125630.GE31790@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-MIME-Version: 1.0
+Date: Fri, 25 May 2007 22:54:13 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: rmmod e1000 hangs (Was Re: 2.6.22-rc2-mm1)
+Message-ID: <20070525125413.GA29433@gondor.apana.org.au>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <46556AA6.7040503@goop.org> <20070524104713.GA9174@gondor.apana.org.au> <20070524105403.GA9285@gondor.apana.org.au> <4655A4CD.8010901@intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4655A4CD.8010901@intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset uses the list_for_each() macro instead of manual
-iteration in the following drivers:
+On Thu, May 24, 2007 at 07:44:29AM -0700, Kok, Auke wrote:
+>
+> I get the feeling that a recent change exposed us to this, our lab has been 
+> seeing similar OOPS's yesterday out of nothing.
 
-Host AP
-Prism54
+Yep you're right.  It was the change where we removed the
+netif_poll_enable call from e1000_open.  The problem is that
+e1000_close calls e1000_down which in turn calls netif_poll_disable.
+That means the next e1000_open won't reenable polling and the
+dev_close (or in fact any call to netif_poll_disable) after that
+will hang.
 
+In fact my original premise is completely wrong since netif_poll_enable
+can be safely called from dev_open *if* you can guarantee that no polls
+have already been scheduled.
+
+This should be the case as long as we keep IRQs disabled before
+netif_poll_enable.  So the problem is that somehow we're getting
+into e1000_open with IRQs enabled on the NIC which then causes a
+poll to be scheduled before the call to netif_poll_enable.
+
+So please revert my patch.
+
+We need to find out why we're getting IRQs before calling
+e1000_irq_enable in e1000_open.
+
+Cheers,
 -- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-
-  The salvation of mankind lies only in making everything the concern of all
-                         (Alexander Solzhenitsyn)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
