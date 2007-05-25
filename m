@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764296AbXEYQzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763643AbXEYQ5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764296AbXEYQzh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 12:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbXEYQza
+	id S1763643AbXEYQ5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 12:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXEYQ5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 12:55:30 -0400
-Received: from keil-draco.com ([216.193.185.50]:50138 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751292AbXEYQz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 12:55:29 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Richard Purdie <richard@openedhand.com>
-Subject: Re: [RFC] LZO de/compression support - take 4
-Date: Fri, 25 May 2007 12:55:21 -0400
-User-Agent: KMail/1.9.6
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Nitin Gupta <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm-cc@laptop.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andrey Panin <pazke@donpac.ru>, Bret Towe <magnade@gmail.com>,
-       Michael-Luke Jones <mlj28@cam.ac.uk>
-References: <4cefeab80705250445m51736a9aj8c89af893d8c242c@mail.gmail.com> <a781481a0705250537o768c609evaf32d517444f7aca@mail.gmail.com> <1180100304.5864.60.camel@localhost.localdomain>
-In-Reply-To: <1180100304.5864.60.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 25 May 2007 12:57:30 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:52324 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752150AbXEYQ53 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 12:57:29 -0400
+Date: Fri, 25 May 2007 09:56:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Uwe Bugla <uwe.bugla@gmx.de>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Message-Id: <20070525095618.1cd86672.akpm@linux-foundation.org>
+In-Reply-To: <200705251652.19911.mb@bu3sch.de>
+References: <20070524195616.234280@gmx.net>
+	<200705251512.09878.mb@bu3sch.de>
+	<200705251559.49807.uwe.bugla@gmx.de>
+	<200705251652.19911.mb@bu3sch.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705251255.22600.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 25 May 2007 09:38:24 Richard Purdie wrote:
-<snip>
-> > > I am however still strongly of the opinion that we should just use the
-> > > version in -mm (which is my latest version).
-> >
-> > Right, if the difference is anything >10%, code cleanup does lose
-> > its attractiveness.
->
-> Agreed, and I still have the security and maintainability concerns. Add
-> them all together and its more unattractive.
+On Fri, 25 May 2007 16:52:19 +0200 Michael Buesch <mb@bu3sch.de> wrote:
 
-I can understand the security concerns, but since none of the bounds checking 
-has been removed there shouldn't be any difference from a security  
-viewpoint. I have maintained the code to a MUD server at one point - I can 
-guarantee that it had a lot more code than the LZO code - and it was so 
-highly customized that no patches to the core code from anywhere *outside* 
-that games "coders" would apply. This means that every one of those patches 
-had to be done manually - sure, it was a massive PITA - but it was worth it.
+> I bet your bug is _not_ caused by ssb, but by some other breakage
+> in another subsystem. Maybe ACPI or APIC is broken? Try to boot
+> the machine without ACPI and/or APIC.
 
-In other words - yes, it will make maintaining the code harder, but the fact 
-that the code matches the kernels style and is "lightweight" compared to the 
-original userspace code *and* Richards "miniLZO" should mitigate this.
+It wouldn't be the first time.
 
-As to the performance - I can see absolutely no reason why the minimal version 
-shouldn't perform the same (or better). The kernel codes memset and memcpy 
-routines have been heavily tested *and* optimized over the years and moving 
-from macro's to inline functions shouldn't have impacted performance at all. 
-I will be testing the two code bases myself in a little bit - I'm more than a 
-little paranoid and don't like the idea of trusting anyone with a "competing 
-project" for all testing.
+Uwe, please generate the `dmesg -s 1000000' output for 2.6.22-rc2 and for
+2.6.22-rc2-mm1, feed them through `diff -u' and see if you can spot any
+interesting-looking differences in the PCI/ACPI/IRQ area.  Send both the
+files to me and I'll stick them on a server and then I'll see if we can
+hunt down the perpetrator.
 
-DRH
+Thanks.
