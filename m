@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765671AbXEYVFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765630AbXEYVGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765671AbXEYVFn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 17:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758732AbXEYVFI
+	id S1765630AbXEYVGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 17:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbXEYVFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 17:05:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55164 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758183AbXEYVFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 17:05:06 -0400
-Date: Fri, 25 May 2007 23:05:04 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       andi@firstfloor.org
-Subject: Re: [PATCH 1/2] non-string based tsc unstable reasons
-Message-ID: <20070525210504.GD24083@one.firstfloor.org>
-References: <20070525193209.607200255@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070525193209.607200255@mvista.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 25 May 2007 17:05:34 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:42724 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765610AbXEYVFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 17:05:33 -0400
+In-Reply-To: <20070522142305.bc3a0aeb.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jfannin@gmail.com (Joseph Fannin), kjhall@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, safford@us.ibm.com, sailer@us.ibm.com,
+       serue@us.ibm.com, zohar@us.ibm.com
+MIME-Version: 1.0
+Subject: Re: 2.6.22-rc1-mm1: evm BUG when reading sysfs file
+X-Mailer: Lotus Notes Release 7.0.1P March 16, 2007
+Message-ID: <OF3B8BF956.BB6E0AED-ON852572E6.0071D59F-852572E6.003202FD@us.ibm.com>
+From: Mimi Zohar <zohar@us.ibm.com>
+Date: Fri, 25 May 2007 17:05:34 -0400
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Build V80_M4_03042007|March 04, 2007) at
+ 05/25/2007 17:05:35,
+	Serialize complete at 05/25/2007 17:05:35
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 12:32:10PM -0700, Daniel Walker wrote:
-> Just passing a string to mark_tsc_unstable() doesn't allow real code to change
-> based on the reason for the instablility. I changed mark_tsc_unstable()
-> to accept a string and a flag which denotes a general reason why the tsc
-> is unstable, and can be evaluated in code.
+Andrew Morton <akpm@linux-foundation.org> wrote on 05/22/2007 05:23:05 PM:
+
+> On Tue, 22 May 2007 03:25:48 -0400
+> jfannin@gmail.com (Joseph Fannin) wrote:
 > 
+> >     This comes a bit after IMA bails out successfully, if that's 
+relevant:
+...
+> > 
+> > [    1.708761] ima (ima_init): No TPM chip found(rc = -19), activating
+> > TPM-bypass!
+> 
+> OK, thanks.  Does the crash go away if you disable IMA, SLIM, etc in 
+.config?
+> 
+> I think I'll drop all those patches, actually - they don't seem to be 
+going
+> anywhere.
 
-I still think that's the wrong way to do this. If there is any 
-special action that should be done on particular unstable events
-it should call a separate function or an addon function.
-First putting it all together and then try to distingush it again
-doesn't seem nice.
+You are absolutely right, we have been stalled on EVM/IMA/SLIM, while 
+trying
+to figure out the mtime and revocation issues. In retrospect we tried to 
+submit
+too much complex code all at once. 
 
--Andi
+We will resubmit in small functional pieces as the technical issues have 
+been
+resolved, starting with the LIM API and hooks, which are independent of 
+the 
+mtime and revocation issues.
+
+Mimi Zohar
+
+
