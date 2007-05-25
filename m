@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764281AbXEYRCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763457AbXEYRJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764281AbXEYRCc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 13:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761386AbXEYRCZ
+	id S1763457AbXEYRJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 13:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbXEYRJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 13:02:25 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:45386 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752668AbXEYRCY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 13:02:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gi/b/tvvOcNthXjvCor8uP+/s94nvMUqktdstnUurUlzPcJ6DhWc+OhVKoY558WIgQqcwJj/1d1SmnTJXjv9yIPNkhZbYLqB6pKDaD96SLMVa8XpAUp0aoEBqZ4mz1OgDgf162G+6LA5dFPUVaJSbghHiU7LMYChd9ABgFPzsyo=
-Message-ID: <dda83e780705251002hed0e861x26a0b0ea6260dd52@mail.gmail.com>
-Date: Fri, 25 May 2007 10:02:13 -0700
-From: "Bret Towe" <magnade@gmail.com>
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Subject: Re: [RFC] LZO de/compression support - take 3
-Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
-       linux-mm-cc@laptop.org, "Satyam Sharma" <satyam.sharma@gmail.com>
-In-Reply-To: <4cefeab80705242210k1169d85k97ce803de02dbc2a@mail.gmail.com>
+	Fri, 25 May 2007 13:09:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53478 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751588AbXEYRJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 13:09:02 -0400
+Message-ID: <465717BE.6070102@redhat.com>
+Date: Fri, 25 May 2007 13:07:10 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Chris Newport <crn@netunix.com>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <clameter@sgi.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
+       linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
+       linux1394-devel@lists.sourceforge.net,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kristian H?gsberg <krh@bitplanet.net>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
+References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com> <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org> <20070524193740.GA6787@elte.hu> <alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org> <20070525101105.GA9268@elte.hu> <4656CE39.8050800@netunix.com> <alpine.LFD.0.98.0705250937550.26602@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705250937550.26602@woody.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
-	 <dda83e780705230750j43c9e89eh766fdaafb1d671f3@mail.gmail.com>
-	 <4cefeab80705240648k2f3c22ddw13374c9d6b2f521a@mail.gmail.com>
-	 <dda83e780705241938h2dadeeb9p61c9294ddfd96990@mail.gmail.com>
-	 <4cefeab80705242210k1169d85k97ce803de02dbc2a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/24/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> On 5/25/07, Bret Towe <magnade@gmail.com> wrote:
-> > On 5/24/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> > > On 5/23/07, Bret Towe <magnade@gmail.com> wrote:
-> > > > On 5/23/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
-> > >
-> > > > > For now, tested on x86 only.
-> > > >
-> > > > If you have a program to test this I can run it on an amd64 and a g4 ppc
-> > > >
-> > >
-> > > Attached is the kernel module (compress-test) to test this LZO code.
-> > > Just compile this module against 2.6.22-rc2 with this LZO patch. Then
-> > > testing can be done as:
-> > > 1- Mount DebugFS somewhere e.g:
-> > > mkdir /debug; mount -t debugfs debugfs /debug
-> > > 2- Load the module and do:
-> > > cat /path/to/some_file > /debug/compress_test/compress
-> > > (/var/log/messages should show that compression was successful)
-> > > 3- Then decompress this file as:
-> > > cat /debug/compress_test/decompress > /tmp/t
-> > > (/var/log/messages should show that decompression was successful)
-> > > 4- For extra verification do:
-> > > diff /tmp/t /path/to/some_file   -- O/P must be empty
-> > >
-> > >
-> >
-> > the test worked fine on amd64
-> > from dmesg:
-> > LZO compress successful: orig_size=17448, comp_size=8183
-> > LZO decompress successful: decomp_size=17448
-> >
-> > and input and output files I gave it:
-> > sha1sum test-input output
-> > 2221c586e3eb869af7f4333d4f56b441b9aa8414  test-input
-> > 2221c586e3eb869af7f4333d4f56b441b9aa8414  output
-> >
->
-> Good to know it worked correctly on 64-bit system too. I will also
-> add exporting benchmarking figures soon.
->
-> > (will be giving the ppc box the same file to test btw when I get to it)
+On 05/25/2007 12:45 PM, Linus Torvalds wrote:
+> Yes, in a controlled environment, dumping the whole memory image to disk 
+> may be the right thing to do. BUT: in a controlled environment, you'll 
+> never get the kind of usage that Linux gets. Why do you think Linux (and 
+> Windows, for that matter) took away a lot of the market from traditional 
+> UNIX? 
+> 
 
-[  237.556167] LZO compress successful: orig_size=17448, comp_size=8183
-[  253.320760] LZO decompress successful: decomp_size=17448
+Windows can dump memory to the swap file on crash. Default is a "minidump"
+IIRC but you can set it to dump all memory (or none.)
 
-2221c586e3eb869af7f4333d4f56b441b9aa8414  test-input
-2e6c96b687274b629308b29835cebd3af989e0c7  output
-
-ppc however seems bust
-the computer is a g4 mini
-
-> > and I don't know if it matters much but I tried feeding it a 260k file
-> > and it didn't like it
-> >
-> > cat /usr/bin/yelp > /debug/compress_test/compress
-> > cat: write error: No space left on device
-> >
->
-> Ah! I forgot to mention that max file size to feed is 256K (this was
-> just for simplicity of compress-test module implementation).
-
-figured it might be something like that
-
-> Thanks for your testing.
-
-no problem
-
-> - Nitin
->
