@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbXEYJu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761143AbXEYJuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760587AbXEYJu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 05:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbXEYJuV
+	id S1761143AbXEYJuj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 05:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760722AbXEYJub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 05:50:21 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:37265 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751313AbXEYJuU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 05:50:20 -0400
-Message-ID: <4656B15A.6030006@s5r6.in-berlin.de>
-Date: Fri, 25 May 2007 11:50:18 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Fri, 25 May 2007 05:50:31 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:56537 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760677AbXEYJua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 05:50:30 -0400
+Date: Fri, 25 May 2007 11:50:16 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net, Zan Lynx <zlynx@acm.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [BUG] USB input death then system freeze
+In-Reply-To: <1180031903.4309.6.camel@rousalka.dyndns.org>
+Message-ID: <Pine.LNX.4.64.0705251143480.8531@twin.jikos.cz>
+References: <1180031903.4309.6.camel@rousalka.dyndns.org>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: =?UTF-8?B?SXNtYWlsIETDtm5tZXo=?= <ismail@pardus.org.tr>,
-       Diego Calleja <diegocg@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       video4linux-list@redhat.com
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-References: <2172422218943432279@wsc.cz>	 <20070524193805.1b5d37d9.diegocg@gmail.com>	 <200705242101.03537.ismail@pardus.org.tr>	 <46569C29.2050306@s5r6.in-berlin.de> <4af2d03a0705250127j3d05cd6bkb114cad0e6ecb449@mail.gmail.com>
-In-Reply-To: <4af2d03a0705250127j3d05cd6bkb114cad0e6ecb449@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> On 5/25/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> Ismail Dönmez wrote:
->> > On Thursday 24 May 2007 20:38:05 Diego Calleja wrote:
->> >> Maybe this is a too picky requeriment, but IMO it would be nice if the
->> >> module would be called "camera_stk11xx", or had any other prefix that gives
->> >> some meaning about what is doing. It's hard to decipher from the name when
->> >> you run lsmod.
->> >
->> > That would be too picky indeed since other camera modules have no camera_
->> > prefix like pwc,spca5xx, etc.
->>
->> Then how about adding that prefix to all of them and provide the current
->> name as module alias?
->>
->> Or at least, why not use better names for new modules?
-> 
-> Just because modules can serve more that one interface of the device?
-> (audio/mic, camera), (remote controller, dvb grabber). I didn't get
-> the point of having the prefix in the name, what's the matter?
+On Thu, 24 May 2007, Nicolas Mailhot wrote:
 
-A prefix which describes the function of a driver is of course only
-useful if it /correctly/ describes it.  What would be /correct/?  If a
-driver for a audio + video capable camera supports either both audio and
-video capture or only video capture, I don't see anything wrong with a
-prefix like "camera".
+> Most recent kernel where this bug did *NOT* occur: pre 2.6.21 mm
+> kernels, non-mm 2.6.22-rc2
+> Distribution: Fedora Devel
+> Hardware Environment: EHCI input on external powered hub with CK804 mainboard
+> Software Environment: Nothing specific
+> Problem Description:
+> After a few hours of activity 2.6.22-rc1-mm1 and 2.6.22-rc2-mm1 will lose USB
+> HID INPUT (keyboard or mice with no priority), then the system will freeze
+> drivers/hid/usbhid/hid-core.c: input irq status -75 received
 
-That said, we have "modinfo" at our disposal if we spot something
-nondescript in lsmod's listing.
+This is now handled in bugzilla [1]. Zan Lynx also reported this problem, 
+and from the HID_DEBUG output he provided is evident that it is caused by 
+HID layer receiving a report of size 4294967284 (which corresponds to 
+urb->actual_length of the URB received from USB core).
+
+Alan Stern suggested to reproduce the bug with CONFIG_USB_DEBUG and also 
+collect the usbmon trace, so that we can clearly understand what happens.
+
+I am now inclined to think that this is caused by USB core messing up the 
+URB somehow, HID core seems to receive the URB with already bogus values.
+
+[1] http://bugzilla.kernel.org/show_bug.cgi?id=8535
+
+Thanks,
+
 -- 
-Stefan Richter
--=====-=-=== -=-= ==--=
-http://arcgraph.de/sr/
+Jiri Kosina
