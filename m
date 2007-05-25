@@ -1,82 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbXEYIJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbXEYIP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbXEYIJv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXEYIJi
+	id S1753572AbXEYIP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXEYIPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:09:38 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:33989 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751565AbXEYIJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:09:37 -0400
-Date: Fri, 25 May 2007 10:16:31 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.21 hang in cancel_rearming_delayed_workqueue()
-Message-ID: <20070525081631.GB985@ff.dom.local>
+	Fri, 25 May 2007 04:15:13 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:58890 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751159AbXEYIPL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 04:15:11 -0400
+Subject: Re: [patch] x86_64: fix sched_clock()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070525075446.GA20140@elte.hu>
+References: <20070525071005.GA6431@elte.hu>
+	 <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com>
+	 <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu>
+	 <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu>
+	 <20070525075446.GA20140@elte.hu>
+Content-Type: text/plain
+Date: Fri, 25 May 2007 10:15:06 +0200
+Message-Id: <1180080906.7348.35.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4656564D.5030307@windriver.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25-05-2007 05:21, Jason Wessel wrote:
-> There is a problem with the calling cancel_rearming_delayed_work if the 
-> timer was not yet active.
+On Fri, 2007-05-25 at 09:54 +0200, Ingo Molnar wrote:
+> Subject: [patch] x86_64: fix sched_clock()
+> From: Ingo Molnar <mingo@elte.hu>
 > 
-> I see this problem when netpoll_cleanup() is called without having done 
-> any work because it had not processed any packets yet.  The problem 
-> appears to be a result of the loop check 
-> while(!cancel_delayed_work(dwork)).    This endlessly loops because 
-> del_timer_sync() can return 0 or 1 for success which is passed back as a 
-> result to the final invariant check for the loop.  In this particular 
-> case zero will always be returned because the timer is not active.
+> sched_clock() is totally broken on x86_64, because it is not defined by 
+> the architecture at all! It fell the victim to the opaqueness of 
+> __attribute__((weak)) and to non-testing.
 > 
-> It is possible that the problem exists else where, but I thought I would 
-> ask if this is expected?
+> the i386 version was supposed to be used. This patch fixes that. Booted 
+> and tested on x86_64 and i386.
 > 
-> #0  del_timer_sync (timer=0xc7ed90f8) at kernel/timer.c:530
-> #1  0xc012f08e in cancel_rearming_delayed_workqueue (wq=0xc7fee800,
->   dwork=0xc7ed90e8) at include/linux/workqueue.h:201
-> #2  0xc012f0af in cancel_rearming_delayed_work (dwork=0x20)
->   at kernel/workqueue.c:680
-> #3  0xc0312f78 in netpoll_cleanup (np=0xc880bf40) at net/core/netpoll.c:784
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+This does indeed solve my issue.
+
+> ---
+>  arch/x86_64/kernel/Makefile |    3 ++-
+>  include/asm-x86_64/tsc.h    |    5 +++++
+>  2 files changed, 7 insertions(+), 1 deletion(-)
 > 
-> Possible fix.
-> 
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> 
-> Index: linux-2.6.21/kernel/workqueue.c
+> Index: linux-cfs-2.6.22-rc2-mm1.q/arch/x86_64/kernel/Makefile
 > ===================================================================
-> --- linux-2.6.21.orig/kernel/workqueue.c
-> +++ linux-2.6.21/kernel/workqueue.c
-> @@ -666,7 +666,7 @@ EXPORT_SYMBOL(flush_scheduled_work);
-> void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
->                                      struct delayed_work *dwork)
-> {
-> -       while (!cancel_delayed_work(dwork))
-> +       while (cancel_delayed_work(dwork) > 0)
->               flush_workqueue(wq);
-> }
-> EXPORT_SYMBOL(cancel_rearming_delayed_workqueue);
+> --- linux-cfs-2.6.22-rc2-mm1.q.orig/arch/x86_64/kernel/Makefile
+> +++ linux-cfs-2.6.22-rc2-mm1.q/arch/x86_64/kernel/Makefile
+> @@ -9,7 +9,7 @@ obj-y	:= process.o signal.o entry.o trap
+>  		x8664_ksyms.o i387.o syscall.o vsyscall.o \
+>  		setup64.o bootflag.o e820.o reboot.o quirks.o i8237.o \
+>  		pci-dma.o pci-nommu.o alternative.o hpet.o tsc.o bugs.o \
+> -		perfctr-watchdog.o
+> +		perfctr-watchdog.o sched-clock.o
+>  
+>  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+>  obj-$(CONFIG_X86_MCE)		+= mce.o therm_throt.o
+> @@ -49,6 +49,7 @@ obj-y				+= pcspeaker.o
+>  
+>  CFLAGS_vsyscall.o		:= $(PROFILING) -g0
+>  
+> +sched-clock-y			+= ../../i386/kernel/sched-clock.o
+>  therm_throt-y                   += ../../i386/kernel/cpu/mcheck/therm_throt.o
+>  bootflag-y			+= ../../i386/kernel/bootflag.o
+>  legacy_serial-y			+= ../../i386/kernel/legacy_serial.o
+> Index: linux-cfs-2.6.22-rc2-mm1.q/include/asm-x86_64/tsc.h
+> ===================================================================
+> --- linux-cfs-2.6.22-rc2-mm1.q.orig/include/asm-x86_64/tsc.h
+> +++ linux-cfs-2.6.22-rc2-mm1.q/include/asm-x86_64/tsc.h
+> @@ -1 +1,6 @@
+>  #include <asm-i386/tsc.h>
+> +
+> +/*
+> + * To be able to share sched-clock.c between i386 and x86_64:
+> + */
+> +#define tsc_disable 0
+> 
 
-It's very optimistic change...
-
-I wonder, how this all could work so long (or how it is supposed
-to work now without breaking other callers) with (almost) reversed
-condition?
-
-According to this comment:
-
-" * cancel_rearming_delayed_workqueue - reliably kill off a delayed
- work whose handler rearms the delayed work."
-
-So, it cannot be used in netpoll_cleanup() if there is no rearming
-during this cancel at all. This is a tricky behaviour of course,
-and is changed in 2.6.22-rc.
-
-Regards,
-Jarek P.
