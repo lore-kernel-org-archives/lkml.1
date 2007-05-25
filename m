@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765285AbXEYSsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765372AbXEYSsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765285AbXEYSsE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 14:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764973AbXEYSrv
+	id S1765372AbXEYSsg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 14:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764066AbXEYSsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 14:47:51 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:33381 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764934AbXEYSrt (ORCPT
+	Fri, 25 May 2007 14:48:21 -0400
+Received: from mga03.intel.com ([143.182.124.21]:55119 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764044AbXEYSsS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 14:47:49 -0400
-Date: Fri, 25 May 2007 11:53:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] kconfig: no STRANGE misc. devices
-Message-Id: <20070525115347.c9d1ef64.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Fri, 25 May 2007 14:48:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,580,1170662400"; 
+   d="scan'208";a="232165277"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [patch] removes MAX_ARG_PAGES
+Date: Fri, 25 May 2007 11:48:09 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A018B17DE@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <1180020019.7019.133.camel@twins>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] removes MAX_ARG_PAGES
+Thread-Index: AceeFxRGD6tMziZvQSGRqcgfGRFVPQA5SQGg
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Cc: "Ollie Wild" <aaw@google.com>, <linux-kernel@vger.kernel.org>,
+       <parisc-linux@lists.parisc-linux.org>, <linux-mm@kvack.org>,
+       <linux-arch@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>
+X-OriginalArrivalTime: 25 May 2007 18:48:11.0087 (UTC) FILETIME=[3E342DF0:01C79EFD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> I just tried this on an Altix from the test lab, and ia32 bash just
+> started.
 
-This config symbol name is confusing and unneeded/unwanted, so just
-change it to MISC_DEVICES.
+I don't have any native x86 binaries on my Madison-based testbox, so my
+test case was to compile a simple program that counted total length of
+argument strings on an x86 box, and copy it to my ia64 box.  So that I
+wouldn't have to copy over a bunch of libraries too, I compiled it
+with -static.  This is the test case that "hung" my system (re-running
+it today from /dev/tty1 instead of from an xterm, I see that it actually
+oopsed in rb_next()).  I wasn't even running with a long arglist.  Just
+"*" for my home directory (19 files/directories = ~170 bytes).
 
-*
-* Misc devices
-*
-Misc devices (MISC_STRANGE_DEV) [Y/n] (NEW)
+-Tony
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/misc/Kconfig |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+My test program.  Compile on ia32 box with "cc -static -o args args.c"
 
---- linux-2.6.22-rc2-mm1.orig/drivers/misc/Kconfig
-+++ linux-2.6.22-rc2-mm1/drivers/misc/Kconfig
-@@ -2,11 +2,11 @@
- # Misc strange devices
- #
- 
--menuconfig MISC_STRANGE_DEV
-+menuconfig MISC_DEVICES
- 	bool "Misc devices"
- 	default y
- 
--if MISC_STRANGE_DEV
-+if MISC_DEVICES
- 
- config IBM_ASM
- 	tristate "Device driver for IBM RSA service processor"
-@@ -205,4 +205,4 @@ config EEPROM_93CX6
- 	  This is a driver for the EEPROM chipsets 93c46 and 93c66.
- 	  The driver supports both read as well as write commands.
- 
--endif # MISC_STRANGE_DEV
-+endif # MISC_DEVICES
+---- begin args.c ----
+main(int argc, char **argv)
+{
+	int n;
+
+	printf("argc = %d\n", argc);
+
+	n = 0;
+	while (--argc)
+		n += strlen(*++argv);
+
+	printf("bytes = %d\n", n);
+}
