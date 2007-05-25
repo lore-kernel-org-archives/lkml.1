@@ -1,86 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbXEYHvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbXEYHzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752819AbXEYHvg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 03:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbXEYHva
+	id S1752865AbXEYHzV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 03:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbXEYHzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 03:51:30 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53656 "EHLO e6.ny.us.ibm.com"
+	Fri, 25 May 2007 03:55:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35395 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbXEYHv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 03:51:29 -0400
-Date: Fri, 25 May 2007 13:29:36 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de, kernel@kolivas.org,
-       containers@lists.osdl.org, ckrm-tech@lists.sourceforge.net,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       pwil3058@bigpond.net.au, tingy@cs.umass.edu, tong.n.li@intel.com,
-       wli@holomorphy.com, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
-Message-ID: <20070525075936.GE6157@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070523164859.GA6595@in.ibm.com> <20070523183252.GB6253@elte.hu>
+	id S1750721AbXEYHzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 03:55:08 -0400
+Date: Fri, 25 May 2007 09:54:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [patch] x86_64: fix sched_clock()
+Message-ID: <20070525075446.GA20140@elte.hu>
+References: <20070525071005.GA6431@elte.hu> <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com> <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070523183252.GB6253@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070525074915.GA18400@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 23, 2007 at 08:32:52PM +0200, Ingo Molnar wrote:
-> > Here's an attempt to extend CFS (v13) to be fair at a group level, 
-> > rather than just at task level. The patch is in a very premature state 
-> > (passes simple tests, smp load balance not supported yet) at this 
-> > point. I am sending it out early to know if this is a good direction 
-> > to proceed.
-> 
-> cool patch! :-)
+Subject: [patch] x86_64: fix sched_clock()
+From: Ingo Molnar <mingo@elte.hu>
 
-Thanks!
+sched_clock() is totally broken on x86_64, because it is not defined by 
+the architecture at all! It fell the victim to the opaqueness of 
+__attribute__((weak)) and to non-testing.
 
-> > 1. This patch reuses CFS core to achieve fairness at group level also.
-> > 
-> >    To make this possible, CFS core has been abstracted to deal with 
-> >    generic schedulable "entities" (tasks, users etc).
-> 
-> yeah, i like this alot.
-> 
-> The "struct sched_entity" abstraction looks very clean, and that's the 
-> main thing that matters: it allows for a design that will only cost us 
-> performance if group scheduling is desired.
-> 
-> If you could do a -v14 port and at least add minimal SMP support: i.e. 
-> it shouldnt crash on SMP, but otherwise no extra load-balancing logic is 
-> needed for the first cut - then i could try to pick all these core 
-> changes up for -v15. (I'll let you know about any other thoughts/details 
-> when i do the integration.)
+the i386 version was supposed to be used. This patch fixes that. Booted 
+and tested on x86_64 and i386.
 
-Sure ..I will work on a -v14 port. I would like to target for something which:
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86_64/kernel/Makefile |    3 ++-
+ include/asm-x86_64/tsc.h    |    5 +++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-1. doesn't break performance/functionality of existing CFS scheduler
-  -if- CONFIG_FAIR_USER_SCHEDULER is disabled. This also means load
-  balance should work as it works today when the config option is
-  disabled.
+Index: linux-cfs-2.6.22-rc2-mm1.q/arch/x86_64/kernel/Makefile
+===================================================================
+--- linux-cfs-2.6.22-rc2-mm1.q.orig/arch/x86_64/kernel/Makefile
++++ linux-cfs-2.6.22-rc2-mm1.q/arch/x86_64/kernel/Makefile
+@@ -9,7 +9,7 @@ obj-y	:= process.o signal.o entry.o trap
+ 		x8664_ksyms.o i387.o syscall.o vsyscall.o \
+ 		setup64.o bootflag.o e820.o reboot.o quirks.o i8237.o \
+ 		pci-dma.o pci-nommu.o alternative.o hpet.o tsc.o bugs.o \
+-		perfctr-watchdog.o
++		perfctr-watchdog.o sched-clock.o
+ 
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-$(CONFIG_X86_MCE)		+= mce.o therm_throt.o
+@@ -49,6 +49,7 @@ obj-y				+= pcspeaker.o
+ 
+ CFLAGS_vsyscall.o		:= $(PROFILING) -g0
+ 
++sched-clock-y			+= ../../i386/kernel/sched-clock.o
+ therm_throt-y                   += ../../i386/kernel/cpu/mcheck/therm_throt.o
+ bootflag-y			+= ../../i386/kernel/bootflag.o
+ legacy_serial-y			+= ../../i386/kernel/legacy_serial.o
+Index: linux-cfs-2.6.22-rc2-mm1.q/include/asm-x86_64/tsc.h
+===================================================================
+--- linux-cfs-2.6.22-rc2-mm1.q.orig/include/asm-x86_64/tsc.h
++++ linux-cfs-2.6.22-rc2-mm1.q/include/asm-x86_64/tsc.h
+@@ -1 +1,6 @@
+ #include <asm-i386/tsc.h>
++
++/*
++ * To be able to share sched-clock.c between i386 and x86_64:
++ */
++#define tsc_disable 0
 
-  Do you recommend a set of tests that I need to run to ensure there
-  is no regression? I know that there is a bunch of scheduler
-  tests floating around on lkml ..Just need to dig to them (or if
-  someone has all these tests handy on a website, I will download from
-  that site!)
-
-2. Provides fairness at group (user) level at the cost of missing load
-   balance functionaility (missing until I get around to work on it that
-   is).
-
-> kernel builds dont really push scheduling micro-costs, rather try 
-> something like 'hackbench.c' to measure that. (kernel builds are of 
-> course one of our primary benchmarks.)
-
-sure i will try that on my next version.
-
--- 
-Regards,
-vatsa
