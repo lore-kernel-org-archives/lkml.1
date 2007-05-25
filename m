@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbXEYIIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbXEYIJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbXEYIIq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbXEYIIe
+	id S1757427AbXEYIJv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbXEYIJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:08:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57743 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbXEYIIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:08:32 -0400
-Date: Fri, 25 May 2007 10:08:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [patch] i386, numaq: enable TSCs again
-Message-ID: <20070525080827.GA22399@elte.hu>
-References: <20070525071005.GA6431@elte.hu> <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com> <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu> <20070525075446.GA20140@elte.hu>
+	Fri, 25 May 2007 04:09:38 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:33989 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751565AbXEYIJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 04:09:37 -0400
+Date: Fri, 25 May 2007 10:16:31 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.21 hang in cancel_rearming_delayed_workqueue()
+Message-ID: <20070525081631.GB985@ff.dom.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070525075446.GA20140@elte.hu>
+In-Reply-To: <4656564D.5030307@windriver.com>
 User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 25-05-2007 05:21, Jason Wessel wrote:
+> There is a problem with the calling cancel_rearming_delayed_work if the 
+> timer was not yet active.
+> 
+> I see this problem when netpoll_cleanup() is called without having done 
+> any work because it had not processed any packets yet.  The problem 
+> appears to be a result of the loop check 
+> while(!cancel_delayed_work(dwork)).    This endlessly loops because 
+> del_timer_sync() can return 0 or 1 for success which is passed back as a 
+> result to the final invariant check for the loop.  In this particular 
+> case zero will always be returned because the timer is not active.
+> 
+> It is possible that the problem exists else where, but I thought I would 
+> ask if this is expected?
+> 
+> #0  del_timer_sync (timer=0xc7ed90f8) at kernel/timer.c:530
+> #1  0xc012f08e in cancel_rearming_delayed_workqueue (wq=0xc7fee800,
+>   dwork=0xc7ed90e8) at include/linux/workqueue.h:201
+> #2  0xc012f0af in cancel_rearming_delayed_work (dwork=0x20)
+>   at kernel/workqueue.c:680
+> #3  0xc0312f78 in netpoll_cleanup (np=0xc880bf40) at net/core/netpoll.c:784
+> 
+> Possible fix.
+> 
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> 
+> Index: linux-2.6.21/kernel/workqueue.c
+> ===================================================================
+> --- linux-2.6.21.orig/kernel/workqueue.c
+> +++ linux-2.6.21/kernel/workqueue.c
+> @@ -666,7 +666,7 @@ EXPORT_SYMBOL(flush_scheduled_work);
+> void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,
+>                                      struct delayed_work *dwork)
+> {
+> -       while (!cancel_delayed_work(dwork))
+> +       while (cancel_delayed_work(dwork) > 0)
+>               flush_workqueue(wq);
+> }
+> EXPORT_SYMBOL(cancel_rearming_delayed_workqueue);
 
-Andi, Andrew, do you remember why we disabled TSCs on NUMAQ? It was 
-slightly async between CPUs, right? In that case we should try the patch 
-below.
+It's very optimistic change...
 
-	Ingo
+I wonder, how this all could work so long (or how it is supposed
+to work now without breaking other callers) with (almost) reversed
+condition?
 
---------------------->
-Subject: [patch] i386, numaq: enable TSCs again
-From: Ingo Molnar <mingo@elte.hu>
+According to this comment:
 
-enable TSCs on NUMAQ again. sched_clock() got improved and
-the scheduler treats it as a per-CPU clock, so there should
-be no issues from the slightly async TSCs on NUMAQ. Please
-holler if this is wrong ...
+" * cancel_rearming_delayed_workqueue - reliably kill off a delayed
+ work whose handler rearms the delayed work."
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/i386/kernel/numaq.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+So, it cannot be used in netpoll_cleanup() if there is no rearming
+during this cancel at all. This is a tricky behaviour of course,
+and is changed in 2.6.22-rc.
 
-Index: linux-cfs-2.6.22-rc2-mm1.q/arch/i386/kernel/numaq.c
-===================================================================
---- linux-cfs-2.6.22-rc2-mm1.q.orig/arch/i386/kernel/numaq.c
-+++ linux-cfs-2.6.22-rc2-mm1.q/arch/i386/kernel/numaq.c
-@@ -81,8 +81,7 @@ int __init get_memcfg_numaq(void)
- static int __init numaq_tsc_disable(void)
- {
- 	if (num_online_nodes() > 1) {
--		printk(KERN_DEBUG "NUMAQ: disabling TSC\n");
--		tsc_disable = 1;
-+		printk(KERN_DEBUG "NUMAQ: NOT disabling TSC. System still ok?\n");
- 	}
- 	return 0;
- }
-
+Regards,
+Jarek P.
