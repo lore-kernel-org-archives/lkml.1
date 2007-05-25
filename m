@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbXEYDpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbXEYED5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753627AbXEYDpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 24 May 2007 23:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbXEYDpe
+	id S1752054AbXEYED5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 00:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750724AbXEYEDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 24 May 2007 23:45:34 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:60917 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbXEYDpd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 24 May 2007 23:45:33 -0400
-Content-class: urn:content-classes:message
+	Fri, 25 May 2007 00:03:49 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:59877 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750715AbXEYEDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 00:03:49 -0400
+Message-ID: <4656602A.3010000@drzeus.cx>
+Date: Fri, 25 May 2007 06:03:54 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] Add select PHYLIB to the UCC_GETH Kconfig option
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Fri, 25 May 2007 11:47:15 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890B768B8@zch01exm26.fsl.freescale.net>
-In-Reply-To: <4656080F.4080006@garzik.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Add select PHYLIB to the UCC_GETH Kconfig option
-Thread-Index: AceeTZckXcAMaWOIRfaA1bAuUZR5/gAKj0cw
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Jeff Garzik" <jeff@garzik.org>,
-       "Jan Altenberg" <jan.altenberg@linutronix.de>
-Cc: "Phillips Kim-R1AAHA" <Kim.Phillips@freescale.com>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Make prepare_namespace() wait for devices
+References: <4655834F.3050301@drzeus.cx> <20070524170654.5d674474.akpm@linux-foundation.org>
+In-Reply-To: <20070524170654.5d674474.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: netdev-owner@vger.kernel.org
-[mailto:netdev-owner@vger.kernel.org] On
-> Behalf Of Jeff Garzik
-> Sent: Friday, May 25, 2007 5:48 AM
-> To: Jan Altenberg
-> Cc: Phillips Kim-R1AAHA; linux-kernel@vger.kernel.org;
-netdev@vger.kernel.org
-> Subject: Re: [PATCH] Add select PHYLIB to the UCC_GETH Kconfig option
-> 
-> Jan Altenberg wrote:
-> > ucc_geth has been migrated to use the common phylib code. So lets
-add a
-> > 'select PHYLIB' to the UCC_GETH Kconfig entry.
-> >
-> > Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
-> >
-> > ---
-> >  drivers/net/Kconfig |    1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > Index: linux-2.6/drivers/net/Kconfig
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/net/Kconfig
-> > +++ linux-2.6/drivers/net/Kconfig
-> > @@ -2280,6 +2280,7 @@ config GFAR_NAPI
-> >  config UCC_GETH
-> >  	tristate "Freescale QE Gigabit Ethernet"
-> >  	depends on QUICC_ENGINE
-> > +	select PHYLIB
-> >  	select UCC_FAST
-> 
-> Please fix the Kconfig warnings first.
-> 
+Andrew Morton wrote:
+> On Thu, 24 May 2007 14:21:35 +0200
+> Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+>
+>   
+>> +	/* wait for any asynchronous scanning to complete */
+>> +	if ((ROOT_DEV == 0) && root_wait) {
+>> +		printk(KERN_INFO "Waiting for root device %s...\n",
+>> +			saved_root_name);
+>> +		do {
+>> +			while (driver_probe_done() != 0)
+>> +				msleep(100);
+>> +			ROOT_DEV = name_to_dev_t(saved_root_name);
+>> +			if (ROOT_DEV == 0)
+>> +				msleep(100);
+>> +		} while (ROOT_DEV == 0);
+>> +	}
+>>     
+>
+> This seems overly complex.  Can't we simply do
+>
+>
+> 	while (driver_probe_done() || ROOT_DEV == 0)
+> 		msleep(100);
+>
+> ?
+>   
 
-I will follow up this.
+How would ROOT_DEV get updated in that loop?
 
-> Also, I ask again:  WHO IS THE MAINTAINER OF THIS DRIVER?
-> 
-> I am tired of five independent people patching the same driver.
+-- 
+     -- Pierre Ossman
 
-Sorry for the trouble, I will post a patch to the MAINTAINER file and
-help to maintain ucc_geth related patches.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-- Leo
