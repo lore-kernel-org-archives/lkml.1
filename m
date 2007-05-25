@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbXEYGB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759497AbXEYGDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759400AbXEYGB3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 02:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXEYGBW
+	id S1759497AbXEYGDD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 02:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbXEYGCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 02:01:22 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:32997 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbXEYGBV (ORCPT
+	Fri, 25 May 2007 02:02:54 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:21833 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752974AbXEYGCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 02:01:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: michael@ellerman.id.au
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@NineX.eu.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       ninex@o2.pl, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, David Miller <davem@davemloft.net>,
-       Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
-References: <200705122146.l4CLkH6q012322@fire-2.osdl.org>
-	<46470209.9000502@bellsouth.net> <46470515.50000@NineX.eu.org>
-	<464707F7.6080600@bellsouth.net>
-	<m1irawpwy2.fsf@ebiederm.dsl.xmission.com>
-	<20070513204407.7ba35010@osprey.hogchain.net>
-	<4647FA38.3090108@NineX.eu.org> <46480EA5.40400@NineX.eu.org>
-	<20070514053406.478bf93f@osprey.hogchain.net>
-	<m1d513oddj.fsf@ebiederm.dsl.xmission.com>
-	<20070514093829.377e04bc@osprey.hogchain.net>
-	<m18xbrnyxi.fsf@ebiederm.dsl.xmission.com>
-	<20070514160005.627435e3@osprey.hogchain.net>
-	<m1odkmmft4.fsf@ebiederm.dsl.xmission.com>
-	<20070515212200.517fcba2@osprey.hogchain.net>
-	<m14pmcmz8r.fsf@ebiederm.dsl.xmission.com>
-	<20070516185225.3f3ac082@osprey.hogchain.net>
-	<m1sl9wl28m.fsf@ebiederm.dsl.xmission.com>
-	<20070522204103.134bf5a2@osprey.hogchain.net>
-	<m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
-	<1180070050.8203.30.camel@concordia.ozlabs.ibm.com>
-Date: Thu, 24 May 2007 23:59:47 -0600
-In-Reply-To: <1180070050.8203.30.camel@concordia.ozlabs.ibm.com> (Michael
-	Ellerman's message of "Fri, 25 May 2007 15:14:10 +1000")
-Message-ID: <m1bqg9cujw.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 25 May 2007 02:02:53 -0400
+Date: Fri, 25 May 2007 08:02:51 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: <schwidefsky@de.ibm.com>, "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "NeilBrown" <neilb@suse.de>,
+       "linux-s390" <linux-s390@vger.kernel.org>
+Subject: Re: 2.6.22-rc1-mm1 - s390 vs. md
+Message-ID: <20070525080251.1bca37ee@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5201E703A5@azsmsx413.amr.corp.intel.com>
+References: <20070523104639.6bc0650e@gondolin.boeblingen.de.ibm.com>
+	<0C7297FA1D2D244A9C7F6959C0BF1E5201E703A5@azsmsx413.amr.corp.intel.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Ellerman <michael@ellerman.id.au> writes:
+On Thu, 24 May 2007 15:11:08 -0700,
+"Williams, Dan J" <dan.j.williams@intel.com> wrote:
 
-> On Thu, 2007-05-24 at 22:19 -0600, Eric W. Biederman wrote:
->> Currently we blacklist known bad msi configurations which means we
->> keep getting MSI enabled on chipsets that either do not support MSI,
->> or MSI is implemented improperly.  Since the normal IRQ routing
->> mechanism seems to works even when MSI does not, this is a bad default
->> and causes non-functioning systems for no good reason.
->> 
->> So this patch inverts the sense of the MSI bus flag to only enable
->> MSI on known good systems.  I am seeding that list with the set of
->> chipsets with an enabled hypertransport MSI mapping capability.  Which
->> is as close as I can come to an generic MSI enable.  So for actually
->> using MSI this patch is a regression, but for just having MSI enabled
->> in the kernel by default things should just work with this patch
->> applied.
->
-> I guess this is a good idea for random x86 machines. On powerpc I think
-> we'll just turn it on for every bus, and let the existing per-platform
-> logic decide.
 
-Yep.  That is pretty much what I expected.
+> --- a/async_tx/async_memcpy.c
+> +++ b/async_tx/async_memcpy.c
+> @@ -56,6 +56,7 @@ async_memcpy(struct page *dest, struct page *src,
+> unsigned int dest_offset,
+>  		int_en) : NULL;
+>  
+>  	if (tx) { /* run the memcpy asynchronously */
+> +		#ifdef CONFIG_HAS_DMA
+>  		dma_addr_t dma_addr;
+>  		enum dma_data_direction dir;
 
-Since you already have to detect how to implement the MSI methods
-you need a separate white list anyway.
+Can you factor out the async stuff into a function so you can use the
+#ifdefs to define different functions rather than put them in the middle
+of a complex function?
 
-Just a side note.  This only needs to be enabled for pci root
-busses.
-
-Eric
+(Maybe you should rather use #ifdef CONFIG_DMA_ENGINE, since the async
+part is not needed for !DMA_ENGINE either.)
