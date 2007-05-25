@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762560AbXEYNix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762654AbXEYNkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762560AbXEYNix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 09:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbXEYNir
+	id S1762654AbXEYNkh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 09:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbXEYNkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 09:38:47 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:37775 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751348AbXEYNiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 09:38:46 -0400
-Subject: Re: [RFC] LZO de/compression support - take 4
-From: Richard Purdie <richard@openedhand.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Nitin Gupta <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm-cc@laptop.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andrey Panin <pazke@donpac.ru>, Bret Towe <magnade@gmail.com>,
-       Michael-Luke Jones <mlj28@cam.ac.uk>
-In-Reply-To: <a781481a0705250537o768c609evaf32d517444f7aca@mail.gmail.com>
-References: <4cefeab80705250445m51736a9aj8c89af893d8c242c@mail.gmail.com>
-	 <1180095000.5864.48.camel@localhost.localdomain>
-	 <a781481a0705250537o768c609evaf32d517444f7aca@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 25 May 2007 14:38:24 +0100
-Message-Id: <1180100304.5864.60.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 25 May 2007 09:40:31 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54390 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751348AbXEYNka (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 09:40:30 -0400
+Date: Fri, 25 May 2007 06:40:29 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Oliver Xymoron <oxymoron@waste.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+In-Reply-To: <20070525061200.GG7653@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0705250639240.5199@schroedinger.engr.sgi.com>
+References: <376320.95285.qm@web52612.mail.re2.yahoo.com>
+ <Pine.LNX.4.64.0705221524490.16904@schroedinger.engr.sgi.com>
+ <20070523071103.GE4705@kernel.dk> <Pine.LNX.4.64.0705231003460.19822@schroedinger.engr.sgi.com>
+ <20070524072550.GC15375@kernel.dk> <Pine.LNX.4.64.0705240953270.28086@schroedinger.engr.sgi.com>
+ <20070525061200.GG7653@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-25 at 18:07 +0530, Satyam Sharma wrote:
-> On 5/25/07, Richard Purdie <richard@openedhand.com> wrote:
-> > On Fri, 2007-05-25 at 17:15 +0530, Nitin Gupta wrote:
-> > > Richard, can you please provide perf. results for this patch also?
-> > > Also, can you please mail back latest version of your LZO patch? In
-> > > meantime, I will try to include benchmarking support to the
-> > > 'compress-test' module.
-> >
-> > This version is 15% slower at decompression and about equal on
-> > compression.
-> 
-> I hope you tested your _safe variant against this, Nitin has done away
-> with the _unsafe version in this patch. 
+On Fri, 25 May 2007, Jens Axboe wrote:
 
-I am.
+> The .config I sent is the one that the last boot of the machine was
+> based on. The kernel is 2.6.22-rc2 with the patch moving the #ifdef from
+> you, and it works for me with or without CONFIG_SLUB_DEBUG set.
 
-> Also, are you using your crypto
-> lzo-support + tcrypt changes ( http://lkml.org/lkml/2007/5/1/303 ) to
-> benchmark these?
+I was not talking about your config but the .config that started this 
+thread.
 
-No, I'm putting the code into userspace and testing it there. Its not
-difficult since there is little support needed from the kernel for
-either set of code.
-
-The tester runs each one in turn under the same circumstances from the
-same binary and gives me a speed for each. Multiple runs return
-consistent values and I'm being careful to make sure its an otherwise
-idle machine and processes enough data to make sure there is no nasty
-cache effects.
-
-> > I am however still strongly of the opinion that we should just use the
-> > version in -mm (which is my latest version).
-> 
-> Right, if the difference is anything >10%, code cleanup does lose
-> its attractiveness.
-
-Agreed, and I still have the security and maintainability concerns. Add
-them all together and its more unattractive.
-
-Cheers,
-
-Richard
 
