@@ -1,155 +1,803 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761126AbXEYNwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761494AbXEYN5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761126AbXEYNwi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 09:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbXEYNw3
+	id S1761494AbXEYN5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 09:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbXEYN5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 09:52:29 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:56652 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbXEYNw1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 09:52:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=QGv++AyBUDyYYScTcac9OaoW6pwbkGtGyIB0zO92q4BW3GuS4iOs6r4zNzR1MW8HwQghsC93UX5AHJX1bgWkf03ToZ4CyHsNpM2br4UBUWtxMyxW+9rG91gkGrrqfOvYMQ2P6Dg1VBHNcdZwiAhY8cHWbQwBTeU35tNGUVBNDRk=
-Message-ID: <5201e28f0705250652mff2735dwd2c14f5ad130ae97@mail.gmail.com>
-Date: Fri, 25 May 2007 15:52:25 +0200
-From: "Stefan Bader" <Stefan.Bader@de.ibm.com>
-To: linux-fsdevel@vger.kernel.org
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
-       "David Chinner" <dgc@sgi.com>, "Neil Brown" <neilb@suse.de>
-In-Reply-To: <18006.38689.818186.221707@notabene.brown>
+	Fri, 25 May 2007 09:57:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55160 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752130AbXEYN5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 09:57:01 -0400
+Message-ID: <4656EB26.40504@garzik.org>
+Date: Fri, 25 May 2007 09:56:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <18006.38689.818186.221707@notabene.brown>
-X-Google-Sender-Auth: bdbe74a5c69cb949
+To: linux-ide@vger.kernel.org
+CC: Dave Dillow <dave@thedillows.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dean gaudet <dean@arctic.org>
+Subject: [PATCH, RFT, v3] sata_mv: convert to new EH
+References: <20070225233454.GA31282@havoc.gtf.org>	 <1173158201.3416.8.camel@obelisk.thedillows.org>	 <45ED039E.20608@garzik.org> <1173164261.3416.15.camel@obelisk.thedillows.org>
+In-Reply-To: <1173164261.3416.15.camel@obelisk.thedillows.org>
+Content-Type: multipart/mixed;
+ boundary="------------090304070906050505090602"
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/25, Neil Brown <neilb@suse.de>:
->
-> HOW DO MD or DM USE THIS
-> ========================
->
-> 1/ striping devices.
->      This includes md/raid0 md/linear dm-linear dm-stripe and probably
->      others.
->
->    These devices can easily support blkdev_issue_flush by simply
->    calling blkdev_issue_flush on all component devices.
->
+This is a multi-part message in MIME format.
+--------------090304070906050505090602
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This ensures that all of the previous requests have been processed but
-does this guarantee they where successful? This might be too paranoid
-but if I understood the concept correctly the success of a barrier
-request should indicate success of all previous request between this
-barrier and the last one.
+Hi, linux-ide (and Dave and dean).
 
->    These devices would find it very hard to support BIO_RW_BARRIER.
->    Doing this would require keeping track of all in-flight requests
->    (which some, possibly all, of the above don't) and then:
->      When a BIO_RW_BARRIER request arrives:
->         wait for all pending writes to complete
->         call blkdev_issue_flush on all devices
->         issue the barrier write to the target device(s)
->            as BIO_RW_BARRIER,
->         if that is -EOPNOTSUP, re-issue, wait, flush.
->
+I'm looking for some sata_mv testing feedback.  Version 2 of this patch 
+was reported to be triggering BUG_ON/WARN_ON messages in mv_qc_issue() 
+and mv_get_crpb_status().
 
-I guess just keep a count of submitted requests and errors since the
-last barrier might be enough. As long as all of the underlying device
-support at least support a flush the dm device could pretend to
-support BIO_RW_BARRIER.
+I'm looking for someone to be willing to give three sata_mv cases a 
+quick test:
+	vanilla 2.6.21.X		(latest 2.6.21)
+	vanilla 2.6.22-rc2-gitX		(latest release candidate)
+	2.6.22-rc2-gitX + attachment	(sata_mv new-EH test patch)
 
->
->     dm-linear and dm-stripe simply pass the BIO_RW_BARRIER flag down,
->      which means data may not be flushed correctly:  the commit block
->      might be written to one device before a preceding block is
->      written to another device.
->
-Hm, even worse: if the barrier requests accidentally end up on a
-device that does support barriers and another one on the map doesn't.
-Would any layer/fs above care to issue a flush call?
+sata_mv saw several changes go into 2.6.22-rc, and I want to make sure 
+the BUG_ON/WARN_ON messages do not trigger in the current -rc.  This 
+will help me narrow down the source of the dmesg spam.
 
->    I think the best approach for this class of devices is to return
->    -EOPNOSUP.  If the filesystem does the wait (which they all do
->    already) and the blkdev_issue_flush (which is easy to add), they
->    don't need to support BIO_RW_BARRIER.
->
-Without any additional code these really should report -EOPNOTSUPP. If
-disaster strikes there is no way to make assumptions on the real state
-on disk.
+To answer one of dean's questions about NCQ, check out 
+http://linux-ata.org/faq.html#ncq
 
-> 2/ Mirror devices.  This includes md/raid1 and dm-raid1.
->
->    These device can trivially implement blkdev_issue_flush much like
->    the striping devices, and can support BIO_RW_BARRIER to some
->    extent.
->    md/raid1 currently tries.  I'm not sure about dm-raid1.
->
-I fear this is more broken as with linear and stripe. There is no code
-to check the features of underlying devices and the request itself
-isn't sent forward but privately built ones (which do not have the
-barrier flag)...
+Thanks,
 
-3/ Multipath devices
+	Jeff
 
-Requests are sent to the same device but one different paths. So at
-least with them the chance of one path supporting barriers but not
-another one seems little (as long as the paths do not use completely
-different transport layers). But passing on a request with the barrier
-flag also doesn't seem to be a good idea since previous requests can
-arrive at the device later.
 
-IMHO the best way to handle barriers for dm would be to add the
-sequence described to the generic mapping layer of dm (before calling
-the targets mapping function). There is already some sort of counting
-in-flight requests (suspend/resume needs that) and I guess the
-downgrade could also be rather simple. If a flush call to the target
-(mapped device) fails report -EOPNOTSUPP and stay that way (until next
-boot).
 
-> So: some questions to help encourage response:
+--------------090304070906050505090602
+Content-Type: text/plain;
+ name="patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch"
 
->
->  - Is the approach to barriers taken by md appropriate?  Should dm
->     do the same?  Who will do that?
 
-If my assumption about barrier semantics is true, then also md has to
-somehow make sure all previous requests have _successfully_ completed.
-In the mirror case I guess it is valid to report success if the mirror
-itself is in a clean state. Which is all previous requests (and the
-barrier) where successful on at least one mirror half and this state
-can be recovered.
+Jeff Garzik (9):
+      [libata] sata_mv: first cut at new EH
+      [libata] sata_mv: move PCI error handling into separate function
+      [libata] sata_mv: handle PCI error properly, within new EH
+      [libata] sata_mv: convert IRQ handler over to new EH
+      [libata] sata_mv: clean up vestiges of old EH
+      [libata] sata_mv EH: 50xx fixes, fold non-EDMA EH into EDMA EH path
+      [libata] sata_mv: improve EH handling with additional hooks
+      [libata] sata_mv: more EH fixes
+      [libata mv-eh] sata_mv: build fix for cable detect
 
-Question to dm-devel: What do people there think of the possible
-generic implementation in dm.c?
+ drivers/ata/sata_mv.c |  457 ++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 314 insertions(+), 143 deletions(-)
 
->  - The comment above blkdev_issue_flush says "Caller must run
->    wait_for_completion() on its own".  What does that mean?
->
-Guess this means it initiates a flush but doesn't wait for completion.
-So the caller must wait for the completion of the separate requests on
-its own, doesn't it?
+diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+index 705a020..57f2345 100644
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -192,8 +192,10 @@ enum {
+ 	EDMA_ERR_DEV_DCON	= (1 << 3),
+ 	EDMA_ERR_DEV_CON	= (1 << 4),
+ 	EDMA_ERR_SERR		= (1 << 5),
+-	EDMA_ERR_SELF_DIS	= (1 << 7),
++	EDMA_ERR_SELF_DIS	= (1 << 7),	/* Gen II/IIE self-disable */
++	EDMA_ERR_SELF_DIS_5	= (1 << 8),	/* Gen I self-disable */
+ 	EDMA_ERR_BIST_ASYNC	= (1 << 8),
++	EDMA_ERR_TRANS_IRQ_7	= (1 << 8),	/* Gen IIE transprt layer irq */
+ 	EDMA_ERR_CRBQ_PAR	= (1 << 9),
+ 	EDMA_ERR_CRPB_PAR	= (1 << 10),
+ 	EDMA_ERR_INTRL_PAR	= (1 << 11),
+@@ -204,13 +206,33 @@ enum {
+ 	EDMA_ERR_LNK_CTRL_TX	= (0x1f << 21),
+ 	EDMA_ERR_LNK_DATA_TX	= (0x1f << 26),
+ 	EDMA_ERR_TRANS_PROTO	= (1 << 31),
+-	EDMA_ERR_FATAL		= (EDMA_ERR_D_PAR | EDMA_ERR_PRD_PAR |
+-				   EDMA_ERR_DEV_DCON | EDMA_ERR_CRBQ_PAR |
+-				   EDMA_ERR_CRPB_PAR | EDMA_ERR_INTRL_PAR |
+-				   EDMA_ERR_IORDY | EDMA_ERR_LNK_CTRL_RX_2 |
+-				   EDMA_ERR_LNK_DATA_RX |
+-				   EDMA_ERR_LNK_DATA_TX |
+-				   EDMA_ERR_TRANS_PROTO),
++	EDMA_ERR_OVERRUN_5	= (1 << 5),
++	EDMA_ERR_UNDERRUN_5	= (1 << 6),
++	EDMA_EH_FREEZE		= EDMA_ERR_D_PAR |
++				  EDMA_ERR_PRD_PAR |
++				  EDMA_ERR_DEV_DCON |
++				  EDMA_ERR_DEV_CON |
++				  EDMA_ERR_SERR |
++				  EDMA_ERR_SELF_DIS |
++				  EDMA_ERR_CRBQ_PAR |
++				  EDMA_ERR_CRPB_PAR |
++				  EDMA_ERR_INTRL_PAR |
++				  EDMA_ERR_IORDY |
++				  EDMA_ERR_LNK_CTRL_RX_2 |
++				  EDMA_ERR_LNK_DATA_RX |
++				  EDMA_ERR_LNK_DATA_TX |
++				  EDMA_ERR_TRANS_PROTO,
++	EDMA_EH_FREEZE_5	= EDMA_ERR_D_PAR |
++				  EDMA_ERR_PRD_PAR |
++				  EDMA_ERR_DEV_DCON |
++				  EDMA_ERR_DEV_CON |
++				  EDMA_ERR_OVERRUN_5 |
++				  EDMA_ERR_UNDERRUN_5 |
++				  EDMA_ERR_SELF_DIS_5 |
++				  EDMA_ERR_CRBQ_PAR |
++				  EDMA_ERR_CRPB_PAR |
++				  EDMA_ERR_INTRL_PAR |
++				  EDMA_ERR_IORDY,
+ 
+ 	EDMA_REQ_Q_BASE_HI_OFS	= 0x10,
+ 	EDMA_REQ_Q_IN_PTR_OFS	= 0x14,		/* also contains BASE_LO */
+@@ -244,6 +266,7 @@ enum {
+ 	/* Port private flags (pp_flags) */
+ 	MV_PP_FLAG_EDMA_EN	= (1 << 0),
+ 	MV_PP_FLAG_EDMA_DS_ACT	= (1 << 1),
++	MV_PP_FLAG_HAD_A_RESET	= (1 << 2),
+ };
+ 
+ #define IS_50XX(hpriv) ((hpriv)->hp_flags & MV_HP_50XX)
+@@ -340,14 +363,14 @@ static u32 mv_scr_read(struct ata_port *ap, unsigned int sc_reg_in);
+ static void mv_scr_write(struct ata_port *ap, unsigned int sc_reg_in, u32 val);
+ static u32 mv5_scr_read(struct ata_port *ap, unsigned int sc_reg_in);
+ static void mv5_scr_write(struct ata_port *ap, unsigned int sc_reg_in, u32 val);
+-static void mv_phy_reset(struct ata_port *ap);
+-static void __mv_phy_reset(struct ata_port *ap, int can_sleep);
+ static int mv_port_start(struct ata_port *ap);
+ static void mv_port_stop(struct ata_port *ap);
+ static void mv_qc_prep(struct ata_queued_cmd *qc);
+ static void mv_qc_prep_iie(struct ata_queued_cmd *qc);
+ static unsigned int mv_qc_issue(struct ata_queued_cmd *qc);
+-static void mv_eng_timeout(struct ata_port *ap);
++static void mv_error_handler(struct ata_port *ap);
++static void mv_eh_freeze(struct ata_port *ap);
++static void mv_eh_thaw(struct ata_port *ap);
+ static int mv_init_one(struct pci_dev *pdev, const struct pci_device_id *ent);
+ 
+ static void mv5_phy_errata(struct mv_host_priv *hpriv, void __iomem *mmio,
+@@ -371,7 +394,6 @@ static void mv6_reset_flash(struct mv_host_priv *hpriv, void __iomem *mmio);
+ static void mv_reset_pci_bus(struct pci_dev *pdev, void __iomem *mmio);
+ static void mv_channel_reset(struct mv_host_priv *hpriv, void __iomem *mmio,
+ 			     unsigned int port_no);
+-static void mv_stop_and_reset(struct ata_port *ap);
+ 
+ static struct scsi_host_template mv_sht = {
+ 	.module			= THIS_MODULE,
+@@ -400,19 +422,20 @@ static const struct ata_port_operations mv5_ops = {
+ 	.exec_command		= ata_exec_command,
+ 	.dev_select		= ata_std_dev_select,
+ 
+-	.phy_reset		= mv_phy_reset,
+ 	.cable_detect		= ata_cable_sata,
+ 
+ 	.qc_prep		= mv_qc_prep,
+ 	.qc_issue		= mv_qc_issue,
+ 	.data_xfer		= ata_data_xfer,
+ 
+-	.eng_timeout		= mv_eng_timeout,
+-
+ 	.irq_clear		= mv_irq_clear,
+ 	.irq_on			= ata_irq_on,
+ 	.irq_ack		= ata_irq_ack,
+ 
++	.error_handler		= mv_error_handler,
++	.freeze			= mv_eh_freeze,
++	.thaw			= mv_eh_thaw,
++
+ 	.scr_read		= mv5_scr_read,
+ 	.scr_write		= mv5_scr_write,
+ 
+@@ -429,19 +452,20 @@ static const struct ata_port_operations mv6_ops = {
+ 	.exec_command		= ata_exec_command,
+ 	.dev_select		= ata_std_dev_select,
+ 
+-	.phy_reset		= mv_phy_reset,
+ 	.cable_detect		= ata_cable_sata,
+ 
+ 	.qc_prep		= mv_qc_prep,
+ 	.qc_issue		= mv_qc_issue,
+ 	.data_xfer		= ata_data_xfer,
+ 
+-	.eng_timeout		= mv_eng_timeout,
+-
+ 	.irq_clear		= mv_irq_clear,
+ 	.irq_on			= ata_irq_on,
+ 	.irq_ack		= ata_irq_ack,
+ 
++	.error_handler		= mv_error_handler,
++	.freeze			= mv_eh_freeze,
++	.thaw			= mv_eh_thaw,
++
+ 	.scr_read		= mv_scr_read,
+ 	.scr_write		= mv_scr_write,
+ 
+@@ -458,19 +482,20 @@ static const struct ata_port_operations mv_iie_ops = {
+ 	.exec_command		= ata_exec_command,
+ 	.dev_select		= ata_std_dev_select,
+ 
+-	.phy_reset		= mv_phy_reset,
+ 	.cable_detect		= ata_cable_sata,
+ 
+ 	.qc_prep		= mv_qc_prep_iie,
+ 	.qc_issue		= mv_qc_issue,
+ 	.data_xfer		= ata_data_xfer,
+ 
+-	.eng_timeout		= mv_eng_timeout,
+-
+ 	.irq_clear		= mv_irq_clear,
+ 	.irq_on			= ata_irq_on,
+ 	.irq_ack		= ata_irq_ack,
+ 
++	.error_handler		= mv_error_handler,
++	.freeze			= mv_eh_freeze,
++	.thaw			= mv_eh_thaw,
++
+ 	.scr_read		= mv_scr_read,
+ 	.scr_write		= mv_scr_write,
+ 
+@@ -692,12 +717,12 @@ static void mv_start_dma(void __iomem *base, struct mv_port_priv *pp)
+  *      LOCKING:
+  *      Inherited from caller.
+  */
+-static void mv_stop_dma(struct ata_port *ap)
++static int mv_stop_dma(struct ata_port *ap)
+ {
+ 	void __iomem *port_mmio = mv_ap_base(ap);
+ 	struct mv_port_priv *pp	= ap->private_data;
+ 	u32 reg;
+-	int i;
++	int i, err = 0;
+ 
+ 	if (MV_PP_FLAG_EDMA_EN & pp->pp_flags) {
+ 		/* Disable EDMA if active.   The disable bit auto clears.
+@@ -717,10 +742,12 @@ static void mv_stop_dma(struct ata_port *ap)
+ 		udelay(100);
+ 	}
+ 
+-	if (EDMA_EN & reg) {
++	if (reg & EDMA_EN) {
+ 		ata_port_printk(ap, KERN_ERR, "Unable to stop eDMA\n");
+-		/* FIXME: Consider doing a reset here to recover */
++		err = -EIO;
+ 	}
++
++	return err;
+ }
+ 
+ #ifdef ATA_DEBUG
+@@ -1284,30 +1311,95 @@ static u8 mv_get_crpb_status(struct ata_port *ap)
+  *      LOCKING:
+  *      Inherited from caller.
+  */
+-static void mv_err_intr(struct ata_port *ap, int reset_allowed)
++static void mv_err_intr(struct ata_port *ap, struct ata_queued_cmd *qc,
++			unsigned int err_mask)
+ {
+ 	void __iomem *port_mmio = mv_ap_base(ap);
+-	u32 edma_err_cause, serr = 0;
++	u32 edma_err_cause, eh_freeze_mask, serr = 0;
++	struct mv_port_priv *pp = ap->private_data;
++	struct mv_host_priv *hpriv = ap->host->private_data;
++	unsigned int edma_enabled = (pp->pp_flags & MV_PP_FLAG_EDMA_EN);
++	unsigned int action = 0;
++	struct ata_eh_info *ehi = &ap->eh_info;
+ 
+-	edma_err_cause = readl(port_mmio + EDMA_ERR_IRQ_CAUSE_OFS);
++	ata_ehi_clear_desc(ehi);
+ 
+-	if (EDMA_ERR_SERR & edma_err_cause) {
++	if (!edma_enabled) {
++		/* just a guess: do we need to do this? should we
++		 * expand this, and do it in all cases?
++		 */
+ 		sata_scr_read(ap, SCR_ERROR, &serr);
+ 		sata_scr_write_flush(ap, SCR_ERROR, serr);
+ 	}
+-	if (EDMA_ERR_SELF_DIS & edma_err_cause) {
+-		struct mv_port_priv *pp	= ap->private_data;
+-		pp->pp_flags &= ~MV_PP_FLAG_EDMA_EN;
++
++	edma_err_cause = readl(port_mmio + EDMA_ERR_IRQ_CAUSE_OFS);
++
++	ata_ehi_push_desc(ehi, "edma_err 0x%08x", edma_err_cause);
++
++	/*
++	 * all generations share these EDMA error cause bits
++	 */
++
++	if (edma_err_cause & EDMA_ERR_DEV)
++		err_mask |= AC_ERR_DEV;
++	if (edma_err_cause & (EDMA_ERR_D_PAR | EDMA_ERR_PRD_PAR |
++			EDMA_ERR_CRBQ_PAR | EDMA_ERR_CRPB_PAR |
++			EDMA_ERR_INTRL_PAR)) {
++		err_mask |= AC_ERR_ATA_BUS;
++		action |= ATA_EH_HARDRESET;
++		ata_ehi_push_desc(ehi, ", parity error");
++	}
++	if (edma_err_cause & (EDMA_ERR_DEV_DCON | EDMA_ERR_DEV_CON)) {
++		ata_ehi_hotplugged(ehi);
++		ata_ehi_push_desc(ehi, edma_err_cause & EDMA_ERR_DEV_DCON ?
++			", dev disconnect" : ", dev connect");
++	}
++
++	if (IS_50XX(hpriv)) {
++		eh_freeze_mask = EDMA_EH_FREEZE_5;
++
++		if (edma_err_cause & EDMA_ERR_SELF_DIS_5) {
++			struct mv_port_priv *pp	= ap->private_data;
++			pp->pp_flags &= ~MV_PP_FLAG_EDMA_EN;
++			ata_ehi_push_desc(ehi, ", EDMA self-disable");
++		}
++	} else {
++		eh_freeze_mask = EDMA_EH_FREEZE;
++
++		if (edma_err_cause & EDMA_ERR_SELF_DIS) {
++			struct mv_port_priv *pp	= ap->private_data;
++			pp->pp_flags &= ~MV_PP_FLAG_EDMA_EN;
++			ata_ehi_push_desc(ehi, ", EDMA self-disable");
++		}
++
++		if (edma_err_cause & EDMA_ERR_SERR) {
++			sata_scr_read(ap, SCR_ERROR, &serr);
++			sata_scr_write_flush(ap, SCR_ERROR, serr);
++			err_mask = AC_ERR_ATA_BUS;
++			action |= ATA_EH_HARDRESET;
++		}
+ 	}
+-	DPRINTK(KERN_ERR "ata%u: port error; EDMA err cause: 0x%08x "
+-		"SERR: 0x%08x\n", ap->print_id, edma_err_cause, serr);
+ 
+ 	/* Clear EDMA now that SERR cleanup done */
+ 	writelfl(0, port_mmio + EDMA_ERR_IRQ_CAUSE_OFS);
+ 
+-	/* check for fatal here and recover if needed */
+-	if (reset_allowed && (EDMA_ERR_FATAL & edma_err_cause))
+-		mv_stop_and_reset(ap);
++	if (!err_mask) {
++		err_mask = AC_ERR_OTHER;
++		action |= ATA_EH_HARDRESET;
++	}
++
++	ehi->serror |= serr;
++	ehi->action |= action;
++
++	if (qc)
++		qc->err_mask |= err_mask;
++	else
++		ehi->err_mask |= err_mask;
++
++	if (edma_err_cause & eh_freeze_mask)
++		ata_port_freeze(ap);
++	else
++		ata_port_abort(ap);
+ }
+ 
+ /**
+@@ -1342,8 +1434,10 @@ static void mv_host_intr(struct ata_host *host, u32 relevant, unsigned int hc)
+ 
+ 	/* we'll need the HC success int register in most cases */
+ 	hc_irq_cause = readl(hc_mmio + HC_IRQ_CAUSE_OFS);
+-	if (hc_irq_cause)
+-		writelfl(~hc_irq_cause, hc_mmio + HC_IRQ_CAUSE_OFS);
++	if (!hc_irq_cause)
++		return;
++
++	writelfl(~hc_irq_cause, hc_mmio + HC_IRQ_CAUSE_OFS);
+ 
+ 	VPRINTK("ENTER, hc%u relevant=0x%08x HC IRQ cause=0x%08x\n",
+ 		hc,relevant,hc_irq_cause);
+@@ -1352,9 +1446,11 @@ static void mv_host_intr(struct ata_host *host, u32 relevant, unsigned int hc)
+ 		u8 ata_status = 0;
+ 		struct ata_port *ap = host->ports[port];
+ 		struct mv_port_priv *pp = ap->private_data;
++		int have_err_bits;
+ 
+ 		hard_port = mv_hardport_from_port(port); /* range 0..3 */
+ 		handled = 0;	/* ensure ata_status is set if handled++ */
++		err_mask = 0;
+ 
+ 		/* Note that DEV_IRQ might happen spuriously during EDMA,
+ 		 * and should be ignored in such cases.
+@@ -1382,32 +1478,62 @@ static void mv_host_intr(struct ata_host *host, u32 relevant, unsigned int hc)
+ 		if (ap && (ap->flags & ATA_FLAG_DISABLED))
+ 			continue;
+ 
+-		err_mask = ac_err_mask(ata_status);
++		if (handled)
++			err_mask = ac_err_mask(ata_status);
+ 
+ 		shift = port << 1;		/* (port * 2) */
+ 		if (port >= MV_PORTS_PER_HC) {
+ 			shift++;	/* skip bit 8 in the HC Main IRQ reg */
+ 		}
+-		if ((PORT0_ERR << shift) & relevant) {
+-			mv_err_intr(ap, 1);
+-			err_mask |= AC_ERR_OTHER;
+-			handled = 1;
+-		}
++		have_err_bits = ((PORT0_ERR << shift) & relevant);
++
++		qc = ata_qc_from_tag(ap, ap->active_tag);
++
++		if (have_err_bits || err_mask)
++			mv_err_intr(ap, qc, err_mask);
++		else if ((qc) && (!(qc->tf.flags & ATA_TFLAG_POLLING)))
++			ata_qc_complete(qc);
++	}
++	VPRINTK("EXIT\n");
++}
++
++static void mv_pci_error(struct ata_host *host, void __iomem *mmio)
++{
++	struct ata_port *ap;
++	struct ata_queued_cmd *qc;
++	struct ata_eh_info *ehi;
++	unsigned int i, err_mask, printed = 0;
++	u32 err_cause;
++
++	err_cause = readl(mmio + PCI_IRQ_CAUSE_OFS);
++
++	dev_printk(KERN_ERR, host->dev, "PCI ERROR; PCI IRQ cause=0x%08x\n",
++		   err_cause);
++
++	DPRINTK("All regs @ PCI error\n");
++	mv_dump_all_regs(mmio, -1, to_pci_dev(host->dev));
++
++	writelfl(0, mmio + PCI_IRQ_CAUSE_OFS);
+ 
+-		if (handled) {
++	for (i = 0; i < host->n_ports; i++) {
++		ap = host->ports[i];
++		if (!ata_port_offline(ap)) {
++			ehi = &ap->eh_info;
++			ata_ehi_clear_desc(ehi);
++			if (!printed++)
++				ata_ehi_push_desc(ehi,
++					"PCI err cause 0x%08x", err_cause);
++			err_mask = AC_ERR_HOST_BUS;
++			ehi->action = ATA_EH_HARDRESET;
+ 			qc = ata_qc_from_tag(ap, ap->active_tag);
+-			if (qc && (qc->flags & ATA_QCFLAG_ACTIVE)) {
+-				VPRINTK("port %u IRQ found for qc, "
+-					"ata_status 0x%x\n", port,ata_status);
+-				/* mark qc status appropriately */
+-				if (!(qc->tf.flags & ATA_TFLAG_POLLING)) {
+-					qc->err_mask |= err_mask;
+-					ata_qc_complete(qc);
+-				}
+-			}
++			if (qc)
++				qc->err_mask |= err_mask;
++			else
++				ehi->err_mask |= err_mask;
++
++			ata_port_freeze(ap);
+ 		}
+ 	}
+-	VPRINTK("EXIT\n");
+ }
+ 
+ /**
+@@ -1444,17 +1570,27 @@ static irqreturn_t mv_interrupt(int irq, void *dev_instance)
+ 	n_hcs = mv_get_hc_count(host->ports[0]->flags);
+ 	spin_lock(&host->lock);
+ 
++	if (unlikely(irq_stat & PCI_ERR)) {
++		mv_pci_error(host, mmio);
++		handled = 1;
++		goto out_unlock;	/* skip all other HC irq handling */
++	}
++
+ 	for (hc = 0; hc < n_hcs; hc++) {
+ 		u32 relevant = irq_stat & (HC0_IRQ_PEND << (hc * HC_SHIFT));
+ 		if (relevant) {
+ 			mv_host_intr(host, relevant, hc);
+-			handled++;
++			handled = 1;
+ 		}
+ 	}
+ 
+ 	hpriv = host->private_data;
+ 	if (IS_60XX(hpriv)) {
+-		/* deal with the interrupt coalescing bits */
++		/*
++		 * deal with the interrupt coalescing bits; they
++		 * are masked via HC_MAIN_MASKED_IRQS, so we shouldn't
++		 * need to do this.
++		 */
+ 		if (irq_stat & (TRAN_LO_DONE | TRAN_HI_DONE | PORTS_0_7_COAL_DONE)) {
+ 			writelfl(0, mmio + MV_IRQ_COAL_CAUSE_LO);
+ 			writelfl(0, mmio + MV_IRQ_COAL_CAUSE_HI);
+@@ -1462,16 +1598,7 @@ static irqreturn_t mv_interrupt(int irq, void *dev_instance)
+ 		}
+ 	}
+ 
+-	if (PCI_ERR & irq_stat) {
+-		printk(KERN_ERR DRV_NAME ": PCI ERROR; PCI IRQ cause=0x%08x\n",
+-		       readl(mmio + PCI_IRQ_CAUSE_OFS));
+-
+-		DPRINTK("All regs @ PCI error\n");
+-		mv_dump_all_regs(mmio, -1, to_pci_dev(host->dev));
+-
+-		writelfl(0, mmio + PCI_IRQ_CAUSE_OFS);
+-		handled++;
+-	}
++out_unlock:
+ 	spin_unlock(&host->lock);
+ 
+ 	return IRQ_RETVAL(handled);
+@@ -1880,28 +2007,8 @@ static void mv_channel_reset(struct mv_host_priv *hpriv, void __iomem *mmio,
+ 		mdelay(1);
+ }
+ 
+-static void mv_stop_and_reset(struct ata_port *ap)
+-{
+-	struct mv_host_priv *hpriv = ap->host->private_data;
+-	void __iomem *mmio = ap->host->iomap[MV_PRIMARY_BAR];
+-
+-	mv_stop_dma(ap);
+-
+-	mv_channel_reset(hpriv, mmio, ap->port_no);
+-
+-	__mv_phy_reset(ap, 0);
+-}
+-
+-static inline void __msleep(unsigned int msec, int can_sleep)
+-{
+-	if (can_sleep)
+-		msleep(msec);
+-	else
+-		mdelay(msec);
+-}
+-
+ /**
+- *      __mv_phy_reset - Perform eDMA reset followed by COMRESET
++ *      mv_phy_reset - Perform eDMA reset followed by COMRESET
+  *      @ap: ATA channel to manipulate
+  *
+  *      Part of this is taken from __sata_phy_reset and modified to
+@@ -1911,13 +2018,11 @@ static inline void __msleep(unsigned int msec, int can_sleep)
+  *      Inherited from caller.  This is coded to safe to call at
+  *      interrupt level, i.e. it does not sleep.
+  */
+-static void __mv_phy_reset(struct ata_port *ap, int can_sleep)
++static void mv_phy_reset(struct ata_port *ap, unsigned int *class)
+ {
+ 	struct mv_port_priv *pp	= ap->private_data;
+ 	struct mv_host_priv *hpriv = ap->host->private_data;
+ 	void __iomem *port_mmio = mv_ap_base(ap);
+-	struct ata_taskfile tf;
+-	struct ata_device *dev = &ap->device[0];
+ 	unsigned long timeout;
+ 	int retry = 5;
+ 	u32 sstatus;
+@@ -1931,10 +2036,10 @@ static void __mv_phy_reset(struct ata_port *ap, int can_sleep)
+ 	/* Issue COMRESET via SControl */
+ comreset_retry:
+ 	sata_scr_write_flush(ap, SCR_CONTROL, 0x301);
+-	__msleep(1, can_sleep);
++	msleep(1);
+ 
+ 	sata_scr_write_flush(ap, SCR_CONTROL, 0x300);
+-	__msleep(20, can_sleep);
++	msleep(20);
+ 
+ 	timeout = jiffies + msecs_to_jiffies(200);
+ 	do {
+@@ -1942,7 +2047,7 @@ comreset_retry:
+ 		if (((sstatus & 0x3) == 3) || ((sstatus & 0x3) == 0))
+ 			break;
+ 
+-		__msleep(1, can_sleep);
++		msleep(1);
+ 	} while (time_before(jiffies, timeout));
+ 
+ 	/* work around errata */
+@@ -1955,13 +2060,8 @@ comreset_retry:
+ 		"SCtrl 0x%08x\n", mv_scr_read(ap, SCR_STATUS),
+ 		mv_scr_read(ap, SCR_ERROR), mv_scr_read(ap, SCR_CONTROL));
+ 
+-	if (ata_port_online(ap)) {
+-		ata_port_probe(ap);
+-	} else {
+-		sata_scr_read(ap, SCR_STATUS, &sstatus);
+-		ata_port_printk(ap, KERN_INFO,
+-				"no device found (phy stat %08x)\n", sstatus);
+-		ata_port_disable(ap);
++	if (ata_port_offline(ap)) {
++		*class = ATA_DEV_NONE;
+ 		return;
+ 	}
+ 
+@@ -1975,68 +2075,139 @@ comreset_retry:
+ 		u8 drv_stat = ata_check_status(ap);
+ 		if ((drv_stat != 0x80) && (drv_stat != 0x7f))
+ 			break;
+-		__msleep(500, can_sleep);
++		msleep(500);
+ 		if (retry-- <= 0)
+ 			break;
+ 	}
+ 
+-	tf.lbah = readb(ap->ioaddr.lbah_addr);
+-	tf.lbam = readb(ap->ioaddr.lbam_addr);
+-	tf.lbal = readb(ap->ioaddr.lbal_addr);
+-	tf.nsect = readb(ap->ioaddr.nsect_addr);
+-
+-	dev->class = ata_dev_classify(&tf);
+-	if (!ata_dev_enabled(dev)) {
+-		VPRINTK("Port disabled post-sig: No device present.\n");
+-		ata_port_disable(ap);
+-	}
++	/* finally, read device signature from TF registers */
++	*class = ata_dev_try_classify(ap, 0, NULL);
+ 
+ 	writelfl(0, port_mmio + EDMA_ERR_IRQ_CAUSE_OFS);
+ 
+-	pp->pp_flags &= ~MV_PP_FLAG_EDMA_EN;
++	WARN_ON(pp->pp_flags & MV_PP_FLAG_EDMA_EN);
+ 
+ 	VPRINTK("EXIT\n");
+ }
+ 
+-static void mv_phy_reset(struct ata_port *ap)
++static int mv_prereset(struct ata_port *ap)
+ {
+-	__mv_phy_reset(ap, 1);
++	struct mv_port_priv *pp	= ap->private_data;
++	struct ata_eh_context *ehc = &ap->eh_context;
++	int rc;
++	
++	rc = mv_stop_dma(ap);
++	if (rc)
++		ehc->i.action |= ATA_EH_HARDRESET;
++
++	if (!(pp->pp_flags & MV_PP_FLAG_HAD_A_RESET)) {
++		pp->pp_flags |= MV_PP_FLAG_HAD_A_RESET;
++		ehc->i.action |= ATA_EH_HARDRESET;
++	}
++
++	/* if we're about to do hardreset, nothing more to do */
++	if (ehc->i.action & ATA_EH_HARDRESET)
++		return 0;
++
++	if (ata_port_online(ap))
++		ata_busy_sleep(ap, ATA_TMOUT_BOOT_QUICK,
++				ATA_TMOUT_BOOT_QUICK + 1);
++
++	return 0;
+ }
+ 
+-/**
+- *      mv_eng_timeout - Routine called by libata when SCSI times out I/O
+- *      @ap: ATA channel to manipulate
+- *
+- *      Intent is to clear all pending error conditions, reset the
+- *      chip/bus, fail the command, and move on.
+- *
+- *      LOCKING:
+- *      This routine holds the host lock while failing the command.
+- */
+-static void mv_eng_timeout(struct ata_port *ap)
++static int mv_hardreset(struct ata_port *ap, unsigned int *class)
+ {
++	struct mv_host_priv *hpriv = ap->host->private_data;
+ 	void __iomem *mmio = ap->host->iomap[MV_PRIMARY_BAR];
+-	struct ata_queued_cmd *qc;
+-	unsigned long flags;
+ 
+-	ata_port_printk(ap, KERN_ERR, "Entering mv_eng_timeout\n");
+-	DPRINTK("All regs @ start of eng_timeout\n");
+-	mv_dump_all_regs(mmio, ap->port_no, to_pci_dev(ap->host->dev));
++	mv_stop_dma(ap);
+ 
+-	qc = ata_qc_from_tag(ap, ap->active_tag);
+-        printk(KERN_ERR "mmio_base %p ap %p qc %p scsi_cmnd %p &cmnd %p\n",
+-	       mmio, ap, qc, qc->scsicmd, &qc->scsicmd->cmnd);
++	mv_channel_reset(hpriv, mmio, ap->port_no);
+ 
+-	spin_lock_irqsave(&ap->host->lock, flags);
+-	mv_err_intr(ap, 0);
+-	mv_stop_and_reset(ap);
+-	spin_unlock_irqrestore(&ap->host->lock, flags);
++	mv_phy_reset(ap, class);
+ 
+-	WARN_ON(!(qc->flags & ATA_QCFLAG_ACTIVE));
+-	if (qc->flags & ATA_QCFLAG_ACTIVE) {
+-		qc->err_mask |= AC_ERR_TIMEOUT;
+-		ata_eh_qc_complete(qc);
++	return 0;
++}
++
++static void mv_postreset(struct ata_port *ap, unsigned int *classes)
++{
++	u32 serr;
++
++	/* print link status */
++	sata_print_link_status(ap);
++
++	/* clear SError */
++	sata_scr_read(ap, SCR_ERROR, &serr);
++	sata_scr_write_flush(ap, SCR_ERROR, serr);
++
++	/* bail out if no device is present */
++	if (classes[0] == ATA_DEV_NONE && classes[1] == ATA_DEV_NONE) {
++		DPRINTK("EXIT, no device\n");
++		return;
++	}
++
++	/* set up device control */
++	iowrite8(ap->ctl, ap->ioaddr.ctl_addr);
++}
++
++static void mv_error_handler(struct ata_port *ap)
++{
++	ata_do_eh(ap, mv_prereset, ata_std_softreset,
++		  mv_hardreset, mv_postreset);
++}
++
++static void mv_eh_freeze(struct ata_port *ap)
++{
++	void __iomem *mmio = ap->host->iomap[MV_PRIMARY_BAR];
++	unsigned int hc = (ap->port_no > 3) ? 1 : 0;
++	u32 tmp, mask;
++	unsigned int shift;
++
++	/* FIXME: handle coalescing completion events properly */
++
++	shift = ap->port_no * 2;
++	if (hc > 0)
++		shift++;
++
++	mask = 0x3 << shift;
++
++	/* disable assertion of portN err, done events */
++	tmp = readl(mmio + HC_MAIN_IRQ_MASK_OFS);
++	writelfl(tmp & ~mask, mmio + HC_MAIN_IRQ_MASK_OFS);
++}
++
++static void mv_eh_thaw(struct ata_port *ap)
++{
++	void __iomem *mmio = ap->host->iomap[MV_PRIMARY_BAR];
++	unsigned int hc = (ap->port_no > 3) ? 1 : 0;
++	void __iomem *hc_mmio = mv_hc_base(mmio, hc);
++	void __iomem *port_mmio = mv_ap_base(ap);
++	u32 tmp, mask, hc_irq_cause;
++	unsigned int shift, hc_port_no = ap->port_no;
++
++	/* FIXME: handle coalescing completion events properly */
++
++	shift = ap->port_no * 2;
++	if (hc > 0) {
++		shift++;
++		hc_port_no -= 4;
+ 	}
++
++	mask = 0x3 << shift;
++
++	/* clear EDMA errors on this port */
++	writel(0, port_mmio + EDMA_ERR_IRQ_CAUSE_OFS);
++
++	/* clear pending irq events */
++	hc_irq_cause = readl(hc_mmio + HC_IRQ_CAUSE_OFS);
++	hc_irq_cause &= ~(1 << hc_port_no);	/* clear CRPB-done */
++	hc_irq_cause &= ~(1 << (hc_port_no + 8)); /* clear Device int */
++	writel(hc_irq_cause, hc_mmio + HC_IRQ_CAUSE_OFS);
++
++	/* enable assertion of portN err, done events */
++	tmp = readl(mmio + HC_MAIN_IRQ_MASK_OFS);
++	writelfl(tmp | mask, mmio + HC_MAIN_IRQ_MASK_OFS);
+ }
+ 
+ /**
 
->  - Are there other bit that we could handle better?
->     BIO_RW_FAILFAST?  BIO_RW_SYNC?  What exactly do they mean?
->
-BIO_RW_FAILFAST: means low-level driver shouldn't do much (or no)
-error recovery. Mainly used by mutlipath targets to avoid long SCSI
-recovery. This should just be propagated when passing requests on.
-
-BIO_RW_SYNC: means this is a bio of a synchronous request. I don't
-know whether there are more uses to it but this at least causes queues
-to be flushed immediately instead of waiting for more requests for a
-short time. Should also just be passed on. Otherwise performance gets
-poor since something above will rather wait for the current
-request/bio to complete instead of sending more.
-
-Stefan Bader
+--------------090304070906050505090602--
