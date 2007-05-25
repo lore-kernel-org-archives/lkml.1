@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXEYIBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbXEYIC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbXEYIBc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbXEYIBY
+	id S1756449AbXEYIC2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbXEYICM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:01:24 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:36801 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865AbXEYIBV (ORCPT
+	Fri, 25 May 2007 04:02:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57500 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751870AbXEYICK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:01:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MnfptnTiGTGMw8LDjw8YFs7vS/7+6uD/TGhDpRxU8gOWsOJgFwnMELystf9uI+nrHgPEXv8jAKc6nJ5+5B9oDltjHWLq6x8J8RTjtbWSJgEfktUPMKs/in5ZKdlTWOkb4JVz0A7jqghsy/6UXqn51bdW7McyrOeqUo3YaSb9lUw=
-Message-ID: <9d732d950705250101x13351c59y4afc4748aa73264b@mail.gmail.com>
-Date: Fri, 25 May 2007 17:01:20 +0900
-From: "Toshiharu Harada" <haradats@gmail.com>
-To: "James Morris" <jmorris@namei.org>
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-Cc: "Andreas Gruenbacher" <agruen@suse.de>, "Al Viro" <viro@ftp.linux.org.uk>,
-       jjohansen@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chrisw@sous-sol.org, "Tony Jones" <tonyj@suse.de>
-In-Reply-To: <Line.LNX.4.64.0705240858190.6121@d.namei>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 25 May 2007 04:02:10 -0400
+Date: Fri, 25 May 2007 10:02:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] x86_64: fix sched_clock()
+Message-ID: <20070525080209.GE8094@one.firstfloor.org>
+References: <20070525071005.GA6431@elte.hu> <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com> <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu> <20070525075446.GA20140@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070412090809.917795000@suse.de>
-	 <200705232106.28260.agruen@suse.de>
-	 <Line.LNX.4.64.0705232109030.3178@d.namei>
-	 <200705241112.41101.agruen@suse.de>
-	 <Line.LNX.4.64.0705240858190.6121@d.namei>
+In-Reply-To: <20070525075446.GA20140@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, May 25, 2007 at 09:54:46AM +0200, Ingo Molnar wrote:
+> Subject: [patch] x86_64: fix sched_clock()
+> From: Ingo Molnar <mingo@elte.hu>
+> 
+> sched_clock() is totally broken on x86_64, because it is not defined by 
+> the architecture at all! It fell the victim to the opaqueness of 
+> __attribute__((weak)) and to non-testing.
 
-2007/5/24, James Morris <jmorris@namei.org>:
-> I can restate my question and ask why you'd want a security policy like:
->
->  Subject 'sysadmin' has:
->     read access to /etc/shadow
->     read/write access to /views/sysadmin/etc/shadow
->
-> where the objects referenced by the paths are identical and visible to the
-> subject along both paths, in keeping with your description of "policy may
-> allow access to some locations but not to others" ?
+More non retesting.
 
-If I understand correctly, the original issue was whether to allow passing
-vfsmount to the inode_create LSM hook or not. Which is independent from
-AA or "pathname based MAC", I think.
+> 
+> the i386 version was supposed to be used. This patch fixes that. Booted 
+> and tested on x86_64 and i386.
 
-It is proven that Linux can be used without that change,　however it is
-also clear that current LSM cause the ambiguities as AA people has
-explained. Clearing ambiguities is a obvious gain to Linux and will make
-benefits for auditing besides "pathname based MAC".
+Hmm indeed. I actually had it correct at some point (i remember
+fixing 64bit compile errors in sched-clock ;-). I guess the Makefile hunk 
+accidentially dropped out during some later merging and this didn't get 
+noticed due to the weak attribute.
 
-So here's my opinion. If anybody can't explain clear reason (or needs)
-to keep these ambiguities unsolved,　we should consider to merge
-the proposal.
+That also explains the issue reported by Peter earlier I guess.
 
-Thanks.
+-Andi
 
--- 
-Toshiharu Harada
-haradats@gmail.com
