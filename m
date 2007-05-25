@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764614AbXEYSlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764797AbXEYSpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764614AbXEYSlA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 14:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763483AbXEYSky
+	id S1764797AbXEYSpc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 14:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763907AbXEYSpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 14:40:54 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:51543 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752773AbXEYSkx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 14:40:53 -0400
-Message-ID: <46572DAF.1000108@zytor.com>
-Date: Fri, 25 May 2007 11:40:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 25 May 2007 14:45:25 -0400
+Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50285 "EHLO mail"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763741AbXEYSpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 14:45:25 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Richard Purdie <richard@openedhand.com>
+Subject: Re: [RFC] LZO de/compression support - take 4
+Date: Fri, 25 May 2007 14:45:16 -0400
+User-Agent: KMail/1.9.6
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Nitin Gupta <nitingupta910@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm-cc@laptop.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andrey Panin <pazke@donpac.ru>, Bret Towe <magnade@gmail.com>,
+       Michael-Luke Jones <mlj28@cam.ac.uk>
+References: <4cefeab80705250445m51736a9aj8c89af893d8c242c@mail.gmail.com> <1180100304.5864.60.camel@localhost.localdomain> <200705251255.22600.dhazelton@enter.net>
+In-Reply-To: <200705251255.22600.dhazelton@enter.net>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] MIPS: Transform old-style macros to newer "__noreturn"
- standard.
-References: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705251445.18188.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> Convert old/obsolete NORET_TYPE and ATTRIB_NORET macros to use the
-> newer standard of "__noreturn" as defined in compiler-gcc.h.
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+On Friday 25 May 2007 12:55:21 Daniel Hazelton wrote:
+<snip>
+> As to the performance - I can see absolutely no reason why the minimal
+> version shouldn't perform the same (or better). The kernel codes memset and
+> memcpy routines have been heavily tested *and* optimized over the years and
+> moving from macro's to inline functions shouldn't have impacted performance
+> at all. I will be testing the two code bases myself in a little bit - I'm
+> more than a little paranoid and don't like the idea of trusting anyone with
+> a "competing project" for all testing.
 
-> 1) in a function declaration, the "__noreturn" will go at the end of
-> the declaration.
-> 
-> 2) in a definition, "__noreturn" will go between the return type and
-> the function name
-> 
-> 3) in a function typedef, "__noreturn" will go immediately after the
-> return type, just like with definitions.
-> 
-> 4) if a function definition already includes "__noreturn", there's no
-> point in having any external references to it also say the same thing.
-> (right?)
 
-This is dumb, though.
+I'll have to better instrument my test code (a real quick (userspace) hack) 
+using the minimized LZO1X implementation (take 4 :) and the complete LZOv2 
+library (lzo1x_1_11_compress and the *unsafe* version of the decompressor 
+used) but preliminary testing using just "time ./test" - the differences I've 
+seen might be because I'm directly including one version of the code and the 
+other is in a shared library. But even if I discount the system and user 
+time - going *only* by the "real" time value I get results across 10 runs 
+that differ by less than 0.001s - the average across 10 runs of the stripped 
+down LZO code is about 0.00133s where the LZO library (liblzo2) returns about 
+even performance - average is 0.001s.
 
-"void __noreturn" is redundant.  It would be much cleaner to have a
-macro which amounts to "void __attribute__((noreturn))" and use it
-instead of giving a return type.
+A total difference of *ONE* *THIRD* of *ONE* *THOUSANDTH* of a second. With 
+the better performance being in-kernel should bring, I can see no reason for 
+a "big" difference.
 
-Even "void" as the return type is bogus -- the function never returns so
-it doesn't *have* a return type...
+If anyone's interested in the code I used for the test, let me know and I'll 
+make it available.
 
-	-hpa
+DRH
