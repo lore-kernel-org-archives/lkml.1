@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765742AbXEYVqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbXEYVrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765742AbXEYVqq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 17:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759699AbXEYVqk
+	id S932160AbXEYVrE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 17:47:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763340AbXEYVqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 17:46:40 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:45310 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758951AbXEYVqj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 17:46:39 -0400
-Date: Fri, 25 May 2007 23:46:33 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: any value to "NORET_TYPE" macro?
-Message-ID: <20070525214633.GJ3899@stusta.de>
-References: <Pine.LNX.4.64.0705221616270.18792@localhost.localdomain> <m37ir0iodl.fsf@maximus.localdomain> <a781481a0705230137v4c8ba82fx263212a2958b55b9@mail.gmail.com> <Pine.LNX.4.64.0705230908180.4309@localhost.localdomain> <a781481a0705230646x9a0255ak4254d05ba5442cad@mail.gmail.com> <Pine.LNX.4.64.0705241239560.10926@localhost.localdomain> <a781481a0705241153m29781dd2u825c0e9bfdb6beb0@mail.gmail.com> <Pine.LNX.4.64.0705251335010.13229@localhost.localdomain> <a781481a0705251225g12d2cd8eya57df87fcbfd5eed@mail.gmail.com> <Pine.LNX.4.64.0705251539500.14140@localhost.localdomain>
+	Fri, 25 May 2007 17:46:43 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43161 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762666AbXEYVql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 17:46:41 -0400
+Date: Fri, 25 May 2007 14:31:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Jay Cliburn <jacliburn@bellsouth.net>,
+       Grzegorz Krzystek <ninex@NineX.eu.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       ninex@o2.pl, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Michael Ellerman <michael@ellerman.id.au>,
+       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
+Message-ID: <20070525213111.GA6810@suse.de>
+References: <20070515212200.517fcba2@osprey.hogchain.net> <m14pmcmz8r.fsf@ebiederm.dsl.xmission.com> <20070516185225.3f3ac082@osprey.hogchain.net> <m1sl9wl28m.fsf@ebiederm.dsl.xmission.com> <20070522204103.134bf5a2@osprey.hogchain.net> <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com> <20070525052032.GB9386@suse.de> <m1myztaq5s.fsf@ebiederm.dsl.xmission.com> <20070525203501.GD5413@suse.de> <m1k5uwaa0h.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705251539500.14140@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <m1k5uwaa0h.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 03:40:18PM -0400, Robert P. J. Day wrote:
-> On Sat, 26 May 2007, Satyam Sharma wrote:
+On Fri, May 25, 2007 at 03:06:22PM -0600, Eric W. Biederman wrote:
+> Greg KH <gregkh@suse.de> writes:
+> > It's a trade off, and I'd like to choose the one that over the long
+> > term, causes the least ammount of work and maintaiblity.  I think the
+> > current blacklist meets that goal.
 > 
-> > Hi Robert,
-> >
-> > On 5/25/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
-> > > On Fri, 25 May 2007, Satyam Sharma wrote:
-> > > ...
-> > > > 1. If this is a function _declaration_ (i.e. a prototype in some
-> > > > header or some .c file), then remove the NORET_TYPE macro. Also,
-> > > > if an ATTRIB_NORET or NORET_AND already exists then you're done.
-> > > > Else, introduce an ATTRIB_NORET after the arglist but before ;
-> > >
-> > > actually, what i would be introducing in all cases is "__noreturn",
-> > > the short form currently defined in compiler-gcc.h.  and i would be
-> > > removing every instance of ATTRIB_NORET and its buddies.
-> >
-> > Ummm ... you mean we're replacing all occurrences of ATTRIB_NORET
-> > as well? Note that NORET_TYPE and ATTRIB_NORET are both defined
-> > in the generic include/linux/linkage.h whereas __noreturn is in
-> > compiler-gcc.h which is included only for gcc builds -- hence, my
-> > preference for ATTRIB_NORET. Also, there is not even a single user of
-> > __noreturn anywhere in the kernel code whereas ATTRIB_NORET is used
-> > in all these places, which means it looks like to be the standard thing ...
-> > Anyway, I'm fine either way.
-> 
-> ah, i hadn't noticed that.  i must think on this more.  man, i thought
-> this was going to be so simple.  argh.
+> A reasonable goal.  I will come back to this after the long holiday
+> weekend here and see what makes sense.
 
-It's only an optimization, so defining __noreturn to nothing for other 
-compilers should work fine.
+Ok, if you still think after looking into it some more that it's still
+needed, please resend the patches, and I'll reconsider it.
 
-> rday
+thanks,
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+greg k-h
