@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbXEYFL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXEYFOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbXEYFL7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 01:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbXEYFLx
+	id S1757213AbXEYFOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 01:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbXEYFOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 01:11:53 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42357 "EHLO pasmtpB.tele.dk"
+	Fri, 25 May 2007 01:14:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:38471 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbXEYFLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 01:11:52 -0400
-Date: Fri, 25 May 2007 07:12:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Romano Giannetti <romano.giannetti@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk
-Subject: Re: Long delay in resume from RAM (Was Re: [patch 00/69] -stablereview)
-Message-ID: <20070525051245.GA4958@uranus.ravnborg.org>
-References: <20070521212522.GL3429@sequoia.sous-sol.org> <1179870110.16656.2.camel@localhost> <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> <1180008394.15600.26.camel@localhost> <1180019201.15600.57.camel@localhost> <alpine.LFD.0.98.0705240815530.26602@woody.linux-foundation.org> <1180037649.15241.6.camel@localhost> <20070524140154.c8e93d69.akpm@linux-foundation.org> <20070524211237.GC1372@uranus.ravnborg.org> <20070524142126.88e89900.akpm@linux-foundation.org>
+	id S1751519AbXEYFOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 01:14:14 -0400
+Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Jay Cliburn <jacliburn@bellsouth.net>,
+       Grzegorz Krzystek <ninex@NineX.eu.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       ninex@o2.pl, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, David Miller <davem@davemloft.net>,
+       Tony Luck <tony.luck@intel.com>
+In-Reply-To: <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
+References: <200705122146.l4CLkH6q012322@fire-2.osdl.org>
+	 <m1mz09p1t7.fsf@ebiederm.dsl.xmission.com>
+	 <20070513014622.c5702928.akpm@linux-foundation.org>
+	 <46470209.9000502@bellsouth.net> <46470515.50000@NineX.eu.org>
+	 <464707F7.6080600@bellsouth.net> <m1irawpwy2.fsf@ebiederm.dsl.xmission.com>
+	 <20070513204407.7ba35010@osprey.hogchain.net>
+	 <4647FA38.3090108@NineX.eu.org> <46480EA5.40400@NineX.eu.org>
+	 <20070514053406.478bf93f@osprey.hogchain.net>
+	 <m1d513oddj.fsf@ebiederm.dsl.xmission.com>
+	 <20070514093829.377e04bc@osprey.hogchain.net>
+	 <m18xbrnyxi.fsf@ebiederm.dsl.xmission.com>
+	 <20070514160005.627435e3@osprey.hogchain.net>
+	 <m1odkmmft4.fsf@ebiederm.dsl.xmission.com>
+	 <20070515212200.517fcba2@osprey.hogchain.net>
+	 <m14pmcmz8r.fsf@ebiederm.dsl.xmission.com>
+	 <20070516185225.3f3ac082@osprey.hogchain.net>
+	 <m1sl9wl28m.fsf@ebiederm.dsl.xmission.com>
+	 <20070522204103.134bf5a2@osprey.hogchain.net>
+	 <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mVyzzfotcJ1AsaZQXrOx"
+Date: Fri, 25 May 2007 15:14:10 +1000
+Message-Id: <1180070050.8203.30.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070524142126.88e89900.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 02:21:26PM -0700, Andrew Morton wrote:
-> 
-> It's not a matter of when it's evaluated.  The user is supposed to be
-> able to set EXTRA_CFLAGS on the command-line, yes?  If they do that then
-> the "=" in there will rub out their efforts.  The makefiles should be
-> appending new things to EXTRA_CFLAGS, rather than doing a replacement?
 
-There is no way to specify additional CFLAGS on the commandline today.
-For sparse we took the shorthand CF so you can do:
+--=-mVyzzfotcJ1AsaZQXrOx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-make C=2 CF=-warn-bitwise
+On Thu, 2007-05-24 at 22:19 -0600, Eric W. Biederman wrote:
+> Currently we blacklist known bad msi configurations which means we
+> keep getting MSI enabled on chipsets that either do not support MSI,
+> or MSI is implemented improperly.  Since the normal IRQ routing
+> mechanism seems to works even when MSI does not, this is a bad default
+> and causes non-functioning systems for no good reason.
+>=20
+> So this patch inverts the sense of the MSI bus flag to only enable
+> MSI on known good systems.  I am seeding that list with the set of
+> chipsets with an enabled hypertransport MSI mapping capability.  Which
+> is as close as I can come to an generic MSI enable.  So for actually
+> using MSI this patch is a regression, but for just having MSI enabled
+> in the kernel by default things should just work with this patch
+> applied.
 
-But we have no such thing for CFLAGS.
-If there is a real need I can cook up something.
-But frankly I have alway edited top-level Makefile and be doen with it.
+I guess this is a good idea for random x86 machines. On powerpc I think
+we'll just turn it on for every bus, and let the existing per-platform
+logic decide.
 
-I will fix it so Kbuild do not barf out if you set EXTRA_* on the commandline
-but silently ignore it instead.
+cheers
 
-	Sam
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-mVyzzfotcJ1AsaZQXrOx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGVnCidSjSd0sB4dIRAgb9AJkBJhLY1j8i+6rDcmDk9yzIDg/6IwCgnBBF
+/8JmNjOJsUHJLtZyOHsqEzo=
+=S3O6
+-----END PGP SIGNATURE-----
+
+--=-mVyzzfotcJ1AsaZQXrOx--
+
