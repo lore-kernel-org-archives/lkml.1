@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbXEYIP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbXEYIRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753572AbXEYIP2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXEYIPN
+	id S1755498AbXEYIRH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXEYIQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:15:13 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:58890 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751159AbXEYIPL (ORCPT
+	Fri, 25 May 2007 04:16:55 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:40706 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750936AbXEYIQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:15:11 -0400
-Subject: Re: [patch] x86_64: fix sched_clock()
+	Fri, 25 May 2007 04:16:54 -0400
+Subject: Re: [patch] sched_clock(): cleanups
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, Satyam Sharma <satyam.sharma@gmail.com>,
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070525075446.GA20140@elte.hu>
+In-Reply-To: <20070525075824.GD8094@one.firstfloor.org>
 References: <20070525071005.GA6431@elte.hu>
 	 <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com>
-	 <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu>
-	 <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu>
-	 <20070525075446.GA20140@elte.hu>
+	 <20070525072512.GA12683@elte.hu> <20070525072641.GA13025@elte.hu>
+	 <a781481a0705250035q2173234dp4f6cc4d103fced5c@mail.gmail.com>
+	 <1180078773.7348.31.camel@twins> <20070525075824.GD8094@one.firstfloor.org>
 Content-Type: text/plain
-Date: Fri, 25 May 2007 10:15:06 +0200
-Message-Id: <1180080906.7348.35.camel@twins>
+Date: Fri, 25 May 2007 10:16:39 +0200
+Message-Id: <1180081000.7348.39.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-25 at 09:54 +0200, Ingo Molnar wrote:
-> Subject: [patch] x86_64: fix sched_clock()
-> From: Ingo Molnar <mingo@elte.hu>
+On Fri, 2007-05-25 at 09:58 +0200, Andi Kleen wrote:
+> On Fri, May 25, 2007 at 09:39:33AM +0200, Peter Zijlstra wrote:
+> > On Fri, 2007-05-25 at 13:05 +0530, Satyam Sharma wrote:
+> > > On 5/25/07, Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > > call_r_s_f() still needs an urgent rerenaming though =B-)
+> > > 
+> > > So does "call_r_s_f_here()" :-)
+> > 
+> > That name makes me think of INTERCAL's 'DO COME FROM' statement.
+> > And any code that makes one think of INTERCAL is say,.. special.. :-)
 > 
-> sched_clock() is totally broken on x86_64, because it is not defined by 
-> the architecture at all! It fell the victim to the opaqueness of 
-> __attribute__((weak)) and to non-testing.
-> 
-> the i386 version was supposed to be used. This patch fixes that. Booted 
-> and tested on x86_64 and i386.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Propose a better way to code this then? It's not my fault that dealing with 
+> callbacks in C is so messy. _here just massages one callback
+> prototype (smp_call_function's) into another (cpufreq's) because
+> both callbacks do the same in this case.
 
-This does indeed solve my issue.
+I see you point; however a function called:
+call_<some_other_function>_here() just doesn't make sense. It says as
+much as: we should call some_other_function() but for some reason we
+dont.
 
-> ---
->  arch/x86_64/kernel/Makefile |    3 ++-
->  include/asm-x86_64/tsc.h    |    5 +++++
->  2 files changed, 7 insertions(+), 1 deletion(-)
-> 
-> Index: linux-cfs-2.6.22-rc2-mm1.q/arch/x86_64/kernel/Makefile
-> ===================================================================
-> --- linux-cfs-2.6.22-rc2-mm1.q.orig/arch/x86_64/kernel/Makefile
-> +++ linux-cfs-2.6.22-rc2-mm1.q/arch/x86_64/kernel/Makefile
-> @@ -9,7 +9,7 @@ obj-y	:= process.o signal.o entry.o trap
->  		x8664_ksyms.o i387.o syscall.o vsyscall.o \
->  		setup64.o bootflag.o e820.o reboot.o quirks.o i8237.o \
->  		pci-dma.o pci-nommu.o alternative.o hpet.o tsc.o bugs.o \
-> -		perfctr-watchdog.o
-> +		perfctr-watchdog.o sched-clock.o
->  
->  obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
->  obj-$(CONFIG_X86_MCE)		+= mce.o therm_throt.o
-> @@ -49,6 +49,7 @@ obj-y				+= pcspeaker.o
->  
->  CFLAGS_vsyscall.o		:= $(PROFILING) -g0
->  
-> +sched-clock-y			+= ../../i386/kernel/sched-clock.o
->  therm_throt-y                   += ../../i386/kernel/cpu/mcheck/therm_throt.o
->  bootflag-y			+= ../../i386/kernel/bootflag.o
->  legacy_serial-y			+= ../../i386/kernel/legacy_serial.o
-> Index: linux-cfs-2.6.22-rc2-mm1.q/include/asm-x86_64/tsc.h
-> ===================================================================
-> --- linux-cfs-2.6.22-rc2-mm1.q.orig/include/asm-x86_64/tsc.h
-> +++ linux-cfs-2.6.22-rc2-mm1.q/include/asm-x86_64/tsc.h
-> @@ -1 +1,6 @@
->  #include <asm-i386/tsc.h>
-> +
-> +/*
-> + * To be able to share sched-clock.c between i386 and x86_64:
-> + */
-> +#define tsc_disable 0
-> 
+> The r_s_f BTW stands for resync_sc_freq which is a function earlier 
+> in the file and should be familiar to a serious reader.
+
+It was.
 
