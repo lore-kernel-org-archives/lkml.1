@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbXEYWq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbXEYWrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbXEYWq6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 18:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbXEYWqs
+	id S1754147AbXEYWrt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 18:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbXEYWrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 18:46:48 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:53710 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbXEYWqr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 18:46:47 -0400
-Message-ID: <46576752.4090607@zytor.com>
-Date: Fri, 25 May 2007 15:46:42 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] MIPS: Transform old-style macros to newer "__noreturn"
- standard.
-References: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain>	 <46572DAF.1000108@zytor.com>	 <Pine.LNX.4.64.0705251458440.13906@localhost.localdomain>	 <46573B23.1090700@zytor.com>	 <Pine.LNX.4.64.0705251705510.14578@localhost.localdomain>	 <4657589F.7050509@zytor.com>	 <a781481a0705251516l5de0e95ayae45f7a65e25c8cf@mail.gmail.com>	 <4657626B.7010204@zytor.com> <a781481a0705251535g27bd38a5s496cc7b44f2d45d5@mail.gmail.com>
-In-Reply-To: <a781481a0705251535g27bd38a5s496cc7b44f2d45d5@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 May 2007 18:47:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58046 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751577AbXEYWrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 18:47:41 -0400
+Subject: Re: [patch 4/7] ps3: Storage Driver Probing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Geert.Uytterhoeven@sonycom.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200705251818.03964.arnd@arndb.de>
+References: <20070525083607.784351000@sonycom.com>
+	 <20070525083632.474400000@sonycom.com>  <200705251818.03964.arnd@arndb.de>
+Content-Type: text/plain
+Date: Sat, 26 May 2007 08:47:09 +1000
+Message-Id: <1180133229.19517.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
->>
->> Sorry to say, but weren't you the person who didn't recognize !! as the
->> idiomatic booleanizing operator?
+On Fri, 2007-05-25 at 18:18 +0200, Arnd Bergmann wrote:
+> > +static u64 ps3stor_wait_for_completion(u64 devid, u64 tag,
+> > +                                    unsigned int timeout)
+> > +{
+> > +     unsigned int retries = 0;
+> > +     u64 res = -1, status;
+> > +
+> > +     for (retries = 0; retries < timeout; retries++) {
+> > +             res =
+> lv1_storage_check_async_status(NOTIFICATION_DEVID, tag,
+> > +                                                  &status);
+> > +             if (!res)
+> > +                     break;
+> > +             set_current_state(TASK_INTERRUPTIBLE);
+> > +             schedule_timeout(1);
+> > +     }
 > 
-> Yes, of course, please prove a link / connection between that and this?
-> 
+> Any reason not to use msleep(1) instead of the schedule_timeout? 
 
-Very simple: it shows a lack of understanding of idiomatic use of C.
+Both look equally ugly though... do you really have to poll ?
 
-	-hpa
+Ben.
+
+
