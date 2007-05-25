@@ -1,46 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763908AbXEYTpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765329AbXEYTpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763908AbXEYTpk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 15:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXEYTpd
+	id S1765329AbXEYTpy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 15:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764788AbXEYTpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 15:45:33 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41788 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751105AbXEYTpd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 15:45:33 -0400
-Date: Fri, 25 May 2007 20:50:24 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: jeff@garzik.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] pata_sis: FIFO whack
-Message-ID: <20070525205024.2f83995d@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 25 May 2007 15:45:44 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53934 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1764384AbXEYTpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 15:45:42 -0400
+X-Authenticated: #8359428
+X-Provags-ID: V01U2FsdGVkX1+9NqJAE6W9Lk+Sn8nwJS5zwt4Op6JtcQkr8KCXda
+	IeMvHHBKX3dAs3
+From: Uwe Bugla <uwe.bugla@gmx.de>
+To: Maximilian Engelhardt <maxi@daemonizer.de>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Date: Fri, 25 May 2007 21:40:22 +0200
+User-Agent: KMail/1.9.5
+References: <20070524195616.234280@gmx.net> <200705251759.30065.uwe.bugla@gmx.de> <200705252048.11931.maxi@daemonizer.de>
+In-Reply-To: <200705252048.11931.maxi@daemonizer.de>
+Cc: linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "Buesch, Michael" <mb@bu3sch.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705252140.22635.uwe.bugla@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you are using a SiS controller and the BIOS didn't set it up then the
-FIFO may be left active when we try and set up the CD. Not convinced this
-matters but I'd prefer to be safe
+Am Freitag, 25. Mai 2007 20:48 schrieben Sie:
+> On Fri, 25 May 2007 17:59:29 +0200, Uwe Bugla wrote:
+> > Perhaps someone reading this could try to reproduce that problem on his
+> > machine.
+> > Now who of the readers owes a Broadcom 4401 NIC and can please try to
+> > test kernel 2.6.22-rc2-mm1?
+> >
+> > Those NICs have been used very very often as onboard controllers,
+> > especially on ASUS boards.
+>
+> I've been using 2.6.22-rc2 for some time and now I compiled 2.6.22-rc2-
+> mm1 and both work fine with the BCM4401 in my laptop.
+>
+> Maxi
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Hello Maxi,
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc2-mm1/drivers/ata/pata_sis.c linux-2.6.22-rc2-mm1/drivers/ata/pata_sis.c
---- linux.vanilla-2.6.22-rc2-mm1/drivers/ata/pata_sis.c	2007-05-25 17:39:06.000000000 +0100
-+++ linux-2.6.22-rc2-mm1/drivers/ata/pata_sis.c	2007-05-25 18:22:21.000000000 +0100
-@@ -149,6 +149,9 @@
- 	if (!pci_test_config_bits(pdev, &sis_enable_bits[ap->port_no]))
- 		return -ENOENT;
- 
-+	/* Clear the FIFO settings. We can't enable the FIFO until
-+	   we know we are poking at a disk */
-+	pci_write_config_byte(pdev, 0x4B, 0);
- 	return ata_std_prereset(ap, deadline);
- }
- 
+That may be true for your Laptop, but it unfortunately isn't true for my ASUS 
+mainboard onboard controller.
+
+Unfortunately I cannot confirm this:
+
+My broadcom 4401 driver is not part of a notebook, but instead part of an ASUS 
+P4PE mainboard.
+
+At my second attempt I went the conventional path (i. e. ignoring the fact 
+that
+"Broadcom 4400 ethernet support appears twice in section "Network device 
+support":
+
+Whether you leave out "EISA, VLB, PCI and on board controllers" or not it 
+simply appears twice in kernel config! This is bug number 1.
+
+Conventional path means:
+
+EISA, VLB, PCI and on board controllers Y
+
+Broadcom 4400 ethernet support m
+
+Broadcom 4400 PCI device support Y
+
+This configuration binds:
+
+Sonics Silicon Backplane Support m
+
+Support for SSB on PCI-bus host
+
+SSB PCI core driver
+
+This time I do get a "good" interrupt: IRQ 21 for the the device.
+
+BUT:
+
+Trying to ping another machine fails saying:
+
+"destination host unreachable"
+
+
+That means, Although the interrupt is fine now, the device is still not 
+functionable.
+
+This is bug number 2.
+
+Cheers
+
+Uwe
+
+P. S.: Michael, Andrew, if you need additional information to resolve that 
+issue please tell / ask me.
