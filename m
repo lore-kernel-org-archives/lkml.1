@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbXEYIey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760051AbXEYIff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbXEYIey (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbXEYIer
+	id S1760051AbXEYIff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbXEYIf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:34:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48502 "EHLO mx2.mail.elte.hu"
+	Fri, 25 May 2007 04:35:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48601 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751336AbXEYIeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:34:46 -0400
-Date: Fri, 25 May 2007 10:34:31 +0200
+	id S1751216AbXEYIf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 04:35:27 -0400
+Date: Fri, 25 May 2007 10:29:51 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] x86_64: fix sched_clock()
-Message-ID: <20070525083430.GB27236@elte.hu>
-References: <20070525071005.GA6431@elte.hu> <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com> <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu> <20070525075446.GA20140@elte.hu> <20070525080209.GE8094@one.firstfloor.org> <20070525080415.GB21446@elte.hu> <20070525082018.GF8094@one.firstfloor.org>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Guillaume Chazarain <guichaz@yahoo.fr>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, efault@gmx.de,
+       kernel@kolivas.org, containers@lists.osdl.org,
+       ckrm-tech@lists.sourceforge.net, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, pwil3058@bigpond.net.au, tingy@cs.umass.edu,
+       tong.n.li@intel.com, wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
+Message-ID: <20070525082951.GA25280@elte.hu>
+References: <20070523164859.GA6595@in.ibm.com> <3d8471ca0705231112rfac9cfbt9145ac2da8ec1c85@mail.gmail.com> <20070523183824.GA7388@elte.hu> <4654BF88.3030404@yahoo.fr> <20070525074500.GD6157@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070525082018.GF8094@one.firstfloor.org>
+In-Reply-To: <20070525074500.GD6157@in.ibm.com>
 User-Agent: Mutt/1.4.2.2i
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -2.0
@@ -35,20 +39,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+* Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
 
-> > > Hmm indeed. I actually had it correct at some point (i remember 
-> > > fixing 64bit compile errors in sched-clock ;-). I guess the 
-> > > Makefile hunk accidentially dropped out during some later merging 
-> > > and this didn't get noticed due to the weak attribute.
-> > 
-> > well the tsc.h bit was needed too.
+> Can you repeat your tests with this patch pls? With the patch applied, 
+> I am now getting the same split between nice 0 and nice 10 task as 
+> CFS-v13 provides (90:10 as reported by top )
 > 
-> It's not in defconfig at least. I just tried it.
+>  5418 guest     20   0  2464  304  236 R   90  0.0   5:41.40 3 hog
+>  5419 guest     30  10  2460  304  236 R   10  0.0   0:43.62 3 nice10hog
 
-what do you mean? The tsc.h bit is needed because 
-arch/i386/kernel/sched-clock.c (now built on x86_64 too with the patch i 
-sent) uses the tsc_disable global flag which is non-existent on x86_64. 
-So my tsc.h change adds that global flag, always-defined to 0.
+btw., what are you thoughts about SMP?
+
+it's a natural extension of your current code. I think the best approach 
+would be to add a level of 'virtual CPU' objects above struct user. (how 
+to set the attributes of those objects is open - possibly combine it 
+with cpusets?)
+
+That way the scheduler would first pick a "virtual CPU" to schedule, and 
+then pick a user from that virtual CPU, and then a task from the user. 
+
+To make group accounting scalable, the accounting object attached to the 
+user struct should/must be per-cpu (per-vcpu) too. That way we'd have a 
+clean hierarchy like:
+
+  CPU #0 => VCPU A [ 40% ] + VCPU B [ 60% ]
+  CPU #1 => VCPU C [ 30% ] + VCPU D [ 70% ]
+
+  VCPU A => USER X [ 10% ] + USER Y [ 90% ]
+  VCPU B => USER X [ 10% ] + USER Y [ 90% ]
+  VCPU C => USER X [ 10% ] + USER Y [ 90% ]
+  VCPU D => USER X [ 10% ] + USER Y [ 90% ]
+
+the scheduler first picks a vcpu, then a user from a vcpu. (the actual 
+external structure of the hierarchy should be opaque to the scheduler 
+core, naturally, so that we can use other hierarchies too)
+
+whenever the scheduler does accounting, it knows where in the hierarchy 
+it is and updates all higher level entries too. This means that the 
+accounting object for USER X is replicated for each VCPU it participates 
+in.
+
+SMP balancing is straightforward: it would fundamentally iterate through 
+the same hierarchy and would attempt to keep all levels balanced - i 
+abstracted away its iterators already.
+
+Hm? 
 
 	Ingo
