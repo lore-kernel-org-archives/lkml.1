@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764645AbXEYTgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763071AbXEYTk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764645AbXEYTgs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 15:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbXEYTgl
+	id S1763071AbXEYTk0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 15:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbXEYTkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 15:36:41 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:45467 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753273AbXEYTgl (ORCPT
+	Fri, 25 May 2007 15:40:19 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:42823 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753088AbXEYTkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 15:36:41 -0400
-Date: Fri, 25 May 2007 21:36:39 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Arnd Bergmann <arnd@arndb.de>
-cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
-In-Reply-To: <200705251850.30342.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.62.0705252135010.2657@pademelon.sonytel.be>
-References: <20070525083607.784351000@sonycom.com> <20070525083632.677742000@sonycom.com>
- <200705251850.30342.arnd@arndb.de>
+	Fri, 25 May 2007 15:40:17 -0400
+Message-ID: <46573B23.1090700@zytor.com>
+Date: Fri, 25 May 2007 12:38:11 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH] MIPS: Transform old-style macros to newer "__noreturn"
+ standard.
+References: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain> <46572DAF.1000108@zytor.com> <Pine.LNX.4.64.0705251458440.13906@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0705251458440.13906@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 May 2007, Arnd Bergmann wrote:
-> On Friday 25 May 2007, Geert.Uytterhoeven@sonycom.com wrote:
-> > Add a CD/DVD/BD Storage Driver for the PS3:
-> >   - Implemented as a SCSI device driver
+Robert P. J. Day wrote:
+>
 > 
-> I assume you tried implementing it as a block device driver,
-> like you PS3 disk driver does, and failed for some reason.
+>   f() __attribute__((noreturn)) ;
 > 
-> What is the problem? Is there infrastructure missing in the
-> CD-ROM layer?
+> you get:
+> 
+>   warning: data definition has no type or storage class
+> 
+> but gcc doesn't complain if you declare it thusly:
+> 
+>   __attribute__((noreturn)) f() ;
+> 
+> that strikes me as a flaw in gcc, no?
+> 
 
-As the CD/DVD/BD part just accepts SCSI/ATAPI commands (except for plain
-read/write), I was suggested to keep it as a SCSI driver.
+Doesn't matter.  gcc accepts "void __attribute__((noreturn)) f();", and
+thus, one can define:
 
-Gr{oetje,eeting}s,
+#define __noreturn void __attribute__((noreturn))
 
-						Geert
+... and declare functions as:
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+__noreturn f();
+
+... which is the syntactially sane way of doing it.
+
+	-hpa
