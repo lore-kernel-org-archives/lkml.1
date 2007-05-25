@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbXEYL0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760708AbXEYLaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762058AbXEYL0R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 07:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXEYL0M
+	id S1760708AbXEYLaZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 07:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbXEYLaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 07:26:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53656 "EHLO mx3.mail.elte.hu"
+	Fri, 25 May 2007 07:30:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54002 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbXEYL0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 07:26:11 -0400
-Date: Fri, 25 May 2007 13:26:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] x86_64: fix sched_clock()
-Message-ID: <20070525112600.GA27007@elte.hu>
-References: <20070525083430.GB27236@elte.hu> <20070525084109.GI8094@one.firstfloor.org> <20070525084426.GA29973@elte.hu> <20070525084547.GJ8094@one.firstfloor.org> <20070525015544.bce3cb99.akpm@linux-foundation.org> <20070525090315.GK8094@one.firstfloor.org> <20070525091928.GA3177@elte.hu> <20070525094640.GL8094@one.firstfloor.org> <20070525101248.GA7547@elte.hu> <20070525112020.GN8094@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070525112020.GN8094@one.firstfloor.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751312AbXEYLaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 07:30:11 -0400
+Message-ID: <4656C8BC.6060807@garzik.org>
+Date: Fri, 25 May 2007 07:30:04 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Henry Su <henry.su@amd.com>
+CC: alan@lxorguk.ukuu.org.uk, greg@kroah.com, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       xiaosuzi520@hotmail.com
+Subject: Re: [patch] Add the device IDs for AMD/ATI SB700
+References: <FFECF24D2A7F6D418B9511AF6F35860201B3658E@shacnexch2.atitech.com>
+In-Reply-To: <FFECF24D2A7F6D418B9511AF6F35860201B3658E@shacnexch2.atitech.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Henry Su wrote:
+> I check the latest kernel source code with git, and find out that the SMBus patch has not been applied yet, 
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+Correct.  When you don't see a patch in the upstream git tree 
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git 
+then the next step is consult the MAINTAINERS file, and determine to 
+whom you should send a follow-up patch, or simply contact about the 
+status of a patch you just sent.  In this case, SMBus is in drivers/i2c 
+sub-directory, which leads us to find in MAINTAINERS,
 
-> > please send me your current sched-clock.c, i'll redo any remaining 
-> > cleanups.
-> 
-> It needs at least one new preliminary patch (to add on_cpu_single);
-> please get the series from 
-> ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches-2.6.22-rc2-git7-070525-1.tar.gz
-> You need at least tsc-unstable upto paravirt-add-a-sched_clock-paravirt
-> for everything
+I2C SUBSYSTEM
+P:      Jean Delvare
+M:      khali@linux-fr.org
+L:      i2c@lm-sensors.org
+T:      quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
+S:      Maintained
 
-thanks.
+That tells us the maintainer of the subsystem, and also ("T:") an 
+external reference (a tree) to where the maintainer posts accepted 
+patches, prior to sending them upstream.
 
-you missed one patch: please pick up the NUMAQ change i did too. (i kept 
-the printk to make sure someone notices that and actually tests thing - 
-i dont have a NUMAQ machine to try this on.)
+So for SMBus, you should make sure your SMBus changes appear in Jean 
+Delvare's quilt tree.  If they do not, create a new patch and send it to 
+Jean and CC i2c@lm-sensors.org and linux-kernel@vger.kernel.org.
 
-i'm looking at the other things now.
 
-	Ingo
+> and the patch for IDE  has not been  applied completely.one more device id should be added to pata_atiixp.c,
+> l list the patch as following, or you can fetch it from the attached file, could you please apply this for me? 
+
+Actually it has been applied -- the part that I maintain (drivers/ata/*) 
+is currently stored in a secondary tree, as described above.  Your patch 
+has been stored on the 'upstream' branch of 
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+
+Currently, the upstream Linux kernel is only accepting bug fixes.  I 
+merge ATA bug fixes (and sometimes simple PCI ID additions) into 
+libata-dev.git#upstream-fixes during this phase of development.  These 
+changes are sent upstream in 24-48 hours, to ensure that they will be 
+included in the next release (kernel 2.6.22).
+
+All other ATA changes are merged into libata-dev.git#upstream.  When 
+Linus releases kernel 2.6.22, the "merge window" opens, allowing 
+non-bug-fix changes to be submitted upstream.  When the merge window 
+opens, I submit everything in libata-dev.git#upstream to Linus and 
+Andrew Morton for inclusion in the official upstream kernel tree.
+
+That is our development process in a nutshell.
+
+The kernel development process is conducted entirely via email, so you 
+see why it is so important to learn how to email patches in the proper 
+format.
+
+	Jeff
+
+
