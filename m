@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbXEYIRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbXEYIRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbXEYIRH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 04:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXEYIQz
+	id S1753885AbXEYIRf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 04:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXEYIRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 04:16:55 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:40706 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750936AbXEYIQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 04:16:54 -0400
-Subject: Re: [patch] sched_clock(): cleanups
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Fri, 25 May 2007 04:17:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36063 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750874AbXEYIRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 04:17:22 -0400
+Date: Fri, 25 May 2007 10:16:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andi Kleen <andi@firstfloor.org>, Satyam Sharma <satyam.sharma@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070525075824.GD8094@one.firstfloor.org>
-References: <20070525071005.GA6431@elte.hu>
-	 <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com>
-	 <20070525072512.GA12683@elte.hu> <20070525072641.GA13025@elte.hu>
-	 <a781481a0705250035q2173234dp4f6cc4d103fced5c@mail.gmail.com>
-	 <1180078773.7348.31.camel@twins> <20070525075824.GD8094@one.firstfloor.org>
-Content-Type: text/plain
-Date: Fri, 25 May 2007 10:16:39 +0200
-Message-Id: <1180081000.7348.39.camel@twins>
+Subject: Re: [patch] x86_64: fix sched_clock()
+Message-ID: <20070525081653.GA24308@elte.hu>
+References: <20070525071005.GA6431@elte.hu> <a781481a0705250022t3dec8f13u7c75d0ade40b0010@mail.gmail.com> <20070525073158.GB8094@one.firstfloor.org> <20070525073957.GA15207@elte.hu> <20070525074316.GA16821@elte.hu> <20070525074915.GA18400@elte.hu> <20070525075446.GA20140@elte.hu> <1180080906.7348.35.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1180080906.7348.35.camel@twins>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-25 at 09:58 +0200, Andi Kleen wrote:
-> On Fri, May 25, 2007 at 09:39:33AM +0200, Peter Zijlstra wrote:
-> > On Fri, 2007-05-25 at 13:05 +0530, Satyam Sharma wrote:
-> > > On 5/25/07, Ingo Molnar <mingo@elte.hu> wrote:
+
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Fri, 2007-05-25 at 09:54 +0200, Ingo Molnar wrote:
+> > Subject: [patch] x86_64: fix sched_clock()
+> > From: Ingo Molnar <mingo@elte.hu>
 > > 
-> > > > call_r_s_f() still needs an urgent rerenaming though =B-)
-> > > 
-> > > So does "call_r_s_f_here()" :-)
+> > sched_clock() is totally broken on x86_64, because it is not defined by 
+> > the architecture at all! It fell the victim to the opaqueness of 
+> > __attribute__((weak)) and to non-testing.
 > > 
-> > That name makes me think of INTERCAL's 'DO COME FROM' statement.
-> > And any code that makes one think of INTERCAL is say,.. special.. :-)
+> > the i386 version was supposed to be used. This patch fixes that. Booted 
+> > and tested on x86_64 and i386.
+> > 
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > 
-> Propose a better way to code this then? It's not my fault that dealing with 
-> callbacks in C is so messy. _here just massages one callback
-> prototype (smp_call_function's) into another (cpufreq's) because
-> both callbacks do the same in this case.
+> This does indeed solve my issue.
 
-I see you point; however a function called:
-call_<some_other_function>_here() just doesn't make sense. It says as
-much as: we should call some_other_function() but for some reason we
-dont.
+great! Btw., this is also accidental proof that CFS works well even with 
+a jiffies granularity sched_clock() ;-)
 
-> The r_s_f BTW stands for resync_sc_freq which is a function earlier 
-> in the file and should be familiar to a serious reader.
-
-It was.
-
+	Ingo
