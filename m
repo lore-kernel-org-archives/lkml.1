@@ -1,204 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbXEYNIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763077AbXEYNIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762949AbXEYNIQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 09:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXEYNIE
+	id S1763077AbXEYNIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 09:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbXEYNIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 09:08:04 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:50312 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbXEYNIB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 09:08:01 -0400
-Message-ID: <4656DF9F.6020203@hitachi.com>
-Date: Fri, 25 May 2007 22:07:43 +0900
-From: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Fri, 25 May 2007 09:08:44 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:34929 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755385AbXEYNIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 09:08:44 -0400
+Message-ID: <4656DF0C.9090306@sw.ru>
+Date: Fri, 25 May 2007 17:05:16 +0400
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, holt@sgi.com, alan@lxorguk.ukuu.org.uk,
-       masami.hiramatsu.pt@hitachi.com, yumiko.sugita.yf@hitachi.com,
-       soshima@redhat.com, haoki@redhat.com
-Subject: [PATCH 3/7] add an interface for core dump filter
-References: <4656DBFB.2050501@hitachi.com>
-In-Reply-To: <4656DBFB.2050501@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, tingy@cs.umass.edu,
+       wli@holomorphy.com, ckrm-tech@lists.sourceforge.net, efault@gmx.de,
+       pwil3058@bigpond.net.au, kernel@kolivas.org,
+       linux-kernel@vger.kernel.org, Guillaume Chazarain <guichaz@yahoo.fr>,
+       tong.n.li@intel.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC] [PATCH 0/3] Add group fairness to CFS
+References: <20070523164859.GA6595@in.ibm.com>	<3d8471ca0705231112rfac9cfbt9145ac2da8ec1c85@mail.gmail.com>	<20070523183824.GA7388@elte.hu> <4654BF88.3030404@yahoo.fr>	<20070525074500.GD6157@in.ibm.com> <20070525082951.GA25280@elte.hu>
+In-Reply-To: <20070525082951.GA25280@elte.hu>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds an interface to set/reset flags which determines
-each memory segment should be dumped or not when a core file is
-generated.
+Ingo Molnar wrote:
+> * Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+> 
+> 
+>>Can you repeat your tests with this patch pls? With the patch applied, 
+>>I am now getting the same split between nice 0 and nice 10 task as 
+>>CFS-v13 provides (90:10 as reported by top )
+>>
+>> 5418 guest     20   0  2464  304  236 R   90  0.0   5:41.40 3 hog
+>> 5419 guest     30  10  2460  304  236 R   10  0.0   0:43.62 3 nice10hog
+> 
+> 
+> btw., what are you thoughts about SMP?
+> 
+> it's a natural extension of your current code. I think the best approach 
+> would be to add a level of 'virtual CPU' objects above struct user. (how 
+> to set the attributes of those objects is open - possibly combine it 
+> with cpusets?)
 
-/proc/<pid>/coredump_filter file is provided to access the flags.
-You can change the flag status for a particular process by
-writing to or reading from the file.
+> That way the scheduler would first pick a "virtual CPU" to schedule, and 
+> then pick a user from that virtual CPU, and then a task from the user. 
 
-The flag status is inherited to the child process when it is created.
+don't you mean the vice versa:
+first use to scheduler, then VCPU (which is essentially a runqueue or rbtree),
+then a task from VCPU?
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- fs/proc/base.c        |   89 ++++++++++++++++++++++++++++++++++++++++
- include/linux/sched.h |   14 ++++++
- kernel/fork.c         |    2 
- 3 files changed, 105 insertions(+)
+this is the approach we use in OpenVZ and if you don't mind
+I would propose to go this way for fair-scheduling in mainstream.
+It has it's own advantages and disatvantages.
 
-Index: linux-2.6.22-rc2-mm1/fs/proc/base.c
-===================================================================
---- linux-2.6.22-rc2-mm1.orig/fs/proc/base.c
-+++ linux-2.6.22-rc2-mm1/fs/proc/base.c
-@@ -73,6 +73,7 @@
- #include <linux/poll.h>
- #include <linux/nsproxy.h>
- #include <linux/oom.h>
-+#include <linux/elf.h>
- #include "internal.h"
- 
- /* NOTE:
-@@ -1808,6 +1809,91 @@ static const struct inode_operations pro
- 
- #endif
- 
-+#if defined(USE_ELF_CORE_DUMP) && defined(CONFIG_ELF_CORE)
-+static ssize_t proc_coredump_filter_read(struct file *file, char __user *buf,
-+					 size_t count, loff_t *ppos)
-+{
-+	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
-+	struct mm_struct *mm;
-+	char buffer[PROC_NUMBUF];
-+	size_t len;
-+	int ret;
-+
-+	if (!task)
-+		return -ESRCH;
-+
-+	ret = 0;
-+	mm = get_task_mm(task);
-+	if (mm) {
-+		len = snprintf(buffer, sizeof(buffer), "%08lx\n",
-+			       ((mm->flags & MMF_DUMP_FILTER_MASK) >>
-+				MMF_DUMP_FILTER_SHIFT));
-+		mmput(mm);
-+		ret = simple_read_from_buffer(buf, count, ppos, buffer, len);
-+	}
-+
-+	put_task_struct(task);
-+
-+	return ret;
-+}
-+
-+static ssize_t proc_coredump_filter_write(struct file *file,
-+					  const char __user *buf,
-+					  size_t count,
-+					  loff_t *ppos)
-+{
-+	struct task_struct *task;
-+	struct mm_struct *mm;
-+	char buffer[PROC_NUMBUF], *end;
-+	unsigned int val;
-+	int ret;
-+	int i;
-+	unsigned long mask;
-+
-+	ret = -EFAULT;
-+	memset(buffer, 0, sizeof(buffer));
-+	if (count > sizeof(buffer) - 1)
-+		count = sizeof(buffer) - 1;
-+	if (copy_from_user(buffer, buf, count))
-+		goto out_no_task;
-+
-+	ret = -EINVAL;
-+	val = (unsigned int)simple_strtoul(buffer, &end, 0);
-+	if (*end == '\n')
-+		end++;
-+	if (end - buffer == 0)
-+		goto out_no_task;
-+
-+	ret = -ESRCH;
-+	task = get_proc_task(file->f_dentry->d_inode);
-+	if (!task)
-+		goto out_no_task;
-+
-+	ret = end - buffer;
-+	mm = get_task_mm(task);
-+	if (!mm)
-+		goto out_no_mm;
-+
-+	for (i = 0, mask = 1; i < MMF_DUMP_FILTER_BITS; i++, mask <<= 1) {
-+		if (val & mask)
-+			set_bit(i + MMF_DUMP_FILTER_SHIFT, &mm->flags);
-+		else
-+			clear_bit(i + MMF_DUMP_FILTER_SHIFT, &mm->flags);
-+	}
-+
-+	mmput(mm);
-+ out_no_mm:
-+	put_task_struct(task);
-+ out_no_task:
-+	return ret;
-+}
-+
-+static const struct file_operations proc_coredump_filter_operations = {
-+	.read		= proc_coredump_filter_read,
-+	.write		= proc_coredump_filter_write,
-+};
-+#endif
-+
- /*
-  * /proc/self:
-  */
-@@ -2036,6 +2122,9 @@ static const struct pid_entry tgid_base_
- #ifdef CONFIG_FAULT_INJECTION
- 	REG("make-it-fail", S_IRUGO|S_IWUSR, fault_inject),
- #endif
-+#if defined(USE_ELF_CORE_DUMP) && defined(CONFIG_ELF_CORE)
-+	REG("coredump_filter", S_IRUGO|S_IWUSR, coredump_filter),
-+#endif
- #ifdef CONFIG_TASK_IO_ACCOUNTING
- 	INF("io",	S_IRUGO, pid_io_accounting),
- #endif
-Index: linux-2.6.22-rc2-mm1/include/linux/sched.h
-===================================================================
---- linux-2.6.22-rc2-mm1.orig/include/linux/sched.h
-+++ linux-2.6.22-rc2-mm1/include/linux/sched.h
-@@ -328,8 +328,22 @@ extern void set_dumpable(struct mm_struc
- extern int get_dumpable(struct mm_struct *mm);
- 
- /* mm flags */
-+/* dumpable bits */
- #define MMF_DUMPABLE      0  /* core dump is permitted */
- #define MMF_DUMP_SECURELY 1  /* core file is readable only by root */
-+#define MMF_DUMPABLE_BITS 2
-+
-+/* coredump filter bits */
-+#define MMF_DUMP_ANON_PRIVATE	2
-+#define MMF_DUMP_ANON_SHARED	3
-+#define MMF_DUMP_MAPPED_PRIVATE	4
-+#define MMF_DUMP_MAPPED_SHARED	5
-+#define MMF_DUMP_FILTER_SHIFT	MMF_DUMPABLE_BITS
-+#define MMF_DUMP_FILTER_BITS	4
-+#define MMF_DUMP_FILTER_MASK \
-+	(((1 << MMF_DUMP_FILTER_BITS) - 1) << MMF_DUMP_FILTER_SHIFT)
-+#define MMF_DUMP_FILTER_DEFAULT \
-+	((1 << MMF_DUMP_ANON_PRIVATE) |	(1 << MMF_DUMP_ANON_SHARED))
- 
- struct mm_struct {
- 	struct vm_area_struct * mmap;		/* list of VMAs */
-Index: linux-2.6.22-rc2-mm1/kernel/fork.c
-===================================================================
---- linux-2.6.22-rc2-mm1.orig/kernel/fork.c
-+++ linux-2.6.22-rc2-mm1/kernel/fork.c
-@@ -335,6 +335,8 @@ static struct mm_struct * mm_init(struct
- 	atomic_set(&mm->mm_count, 1);
- 	init_rwsem(&mm->mmap_sem);
- 	INIT_LIST_HEAD(&mm->mmlist);
-+	mm->flags = (current->mm) ? current->mm->flags
-+				  : MMF_DUMP_FILTER_DEFAULT;
- 	mm->core_waiters = 0;
- 	mm->nr_ptes = 0;
- 	set_mm_counter(mm, file_rss, 0);
+This is not the easy way to go and I can outline the problems/disadvantages
+which appear on this way:
+- tasks which bind to CPU mask will bind to virtual CPUs.
+  no problem with user tasks, but some kernel threads
+  use this to do CPU-related management (like cpufreq).
+  This can be fixed using SMP IPI actually.
+- VCPUs should no change PCPUs very frequently,
+  otherwise there is some overhead. Solvable.
 
+Advantages:
+- High precision and fairness.
+- Allows to use different group scheduling algorithms
+  on top of VCPU concept.
+  OpenVZ uses fairscheduler with CPU limiting feature allowing
+  to set maximum CPU time given to a group of tasks.
 
+> To make group accounting scalable, the accounting object attached to the 
+> user struct should/must be per-cpu (per-vcpu) too. That way we'd have a 
+> clean hierarchy like:
+> 
+>   CPU #0 => VCPU A [ 40% ] + VCPU B [ 60% ]
+>   CPU #1 => VCPU C [ 30% ] + VCPU D [ 70% ]
+
+how did you select these 40%:60% and 30%:70% split?
+
+>   VCPU A => USER X [ 10% ] + USER Y [ 90% ]
+>   VCPU B => USER X [ 10% ] + USER Y [ 90% ]
+>   VCPU C => USER X [ 10% ] + USER Y [ 90% ]
+>   VCPU D => USER X [ 10% ] + USER Y [ 90% ]
+> 
+> the scheduler first picks a vcpu, then a user from a vcpu. (the actual 
+> external structure of the hierarchy should be opaque to the scheduler 
+> core, naturally, so that we can use other hierarchies too)
+> 
+> whenever the scheduler does accounting, it knows where in the hierarchy 
+> it is and updates all higher level entries too. This means that the 
+> accounting object for USER X is replicated for each VCPU it participates 
+> in.
+
+So if 2 VCPUs running on 2 physical CPUs do accounting the have to update the same
+user X accounting information which is not per-[v]cpu?
+
+> SMP balancing is straightforward: it would fundamentally iterate through 
+> the same hierarchy and would attempt to keep all levels balanced - i 
+> abstracted away its iterators already.
+
+Thanks,
+Kirill
