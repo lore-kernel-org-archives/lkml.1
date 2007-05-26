@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbXEZWgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbXEZWms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752149AbXEZWgA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 18:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbXEZWfw
+	id S1752550AbXEZWms (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 18:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbXEZWmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 18:35:52 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:48812 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbXEZWfv (ORCPT
+	Sat, 26 May 2007 18:42:40 -0400
+Received: from pool-72-92-171-78.albyny.east.verizon.net ([72.92.171.78]:50951
+	"EHLO posidon.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750743AbXEZWmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 18:35:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BA662zT2mWKRCeZJSw3isLFTY4fwGzThyJP/H6rW7CzxpV8E6erV2uZg/+8MDmPoLvqUhNZEYfEpQJQ5i0swE8ht/l4rJwK53JdjZOhl8kN9RJ370WATZHalyL4fr/x+gL4wU71+Z3O4QOh16itvLC40AwOgBoYWSIpjICd22h8=
-Message-ID: <7b69d1470705261535i207d55cei75c870cf3f86a459@mail.gmail.com>
-Date: Sat, 26 May 2007 15:35:51 -0700
-From: "Scott Preece" <sepreece@gmail.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Subject: Re: [PATCH] [condingstyle] Add chapter on tests
-Cc: "Auke Kok" <auke-jan.h.kok@intel.com>, randy.dunlap@oracle.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0705262213000.7344@yvahk01.tjqt.qr>
+	Sat, 26 May 2007 18:42:39 -0400
+Message-ID: <4658B7DD.3060309@tmr.com>
+Date: Sat, 26 May 2007 18:42:37 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
+To: Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: [2.6.21.1] resume doesn't run suspended kernel?
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070525172509.5138.56430.stgit@localhost.localdomain>
-	 <20070525172515.5138.13652.stgit@localhost.localdomain>
-	 <Pine.LNX.4.61.0705262121150.7344@yvahk01.tjqt.qr>
-	 <Pine.LNX.4.61.0705262213000.7344@yvahk01.tjqt.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/26/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
->
-> Based in part on Auke's patch.
->
-> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
->
-> ---
->  Documentation/CodingStyle |   74 +++++++++++++++++++++++++++++++++++++++-------
->  1 file changed, 64 insertions(+), 10 deletions(-)
->
-> Index: linux-2.6.22-rc3/Documentation/CodingStyle
-> ===================================================================
-> --- linux-2.6.22-rc3.orig/Documentation/CodingStyle
-> +++ linux-2.6.22-rc3/Documentation/CodingStyle
-> @@ -407,7 +407,61 @@ out:
->         return result;
->  }
->
-> -               Chapter 8: Commenting
-> +               Chapyer 8: Tests
----
+I was testing susp2disk in 2.6.21.1 under FC6, to support reliable 
+computing environment (RCE) needs. The idea is that if power fails, 
+after some short time on UPS the system does susp2disk with a time set, 
+and boots back every so often to see if power is stable.
 
-Fix the "Chapyer" spelling above.
+No, I don't want susp2mem until I debug it, console come up in useless 
+mode, console as kalidescope is not what I need.
 
-However, I think this set of rules is not universally agreed to and
-probably should not be added at this time. I'm not convinced that it
-makes the code more readable.
+Anyway, I pulled the plug on the UPS, and the system shut down. But when 
+it powered up, it booted the default kernel rather than the test kernel, 
+decided that it couldn't resume, and then did a cold boot.
 
-scott
+I can bypass this by making the debug kernel the default, but WHY? Is 
+the kernel not saved such that any kernel can be rolled back into memory 
+and run? Actually, the answer is HELL NO, so I really ask if this is the 
+intended mode of operation, that only the default boot kernel will restore.
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
