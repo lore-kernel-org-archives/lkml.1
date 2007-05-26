@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbXEZHnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbXEZHxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbXEZHnt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 03:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXEZHno
+	id S1754472AbXEZHxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 03:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbXEZHxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 03:43:44 -0400
-Received: from mail.suse.de ([195.135.220.2]:43925 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbXEZHnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 03:43:43 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH] x86: fix oprofile double free (was Re: Multiple free during oprofile unload)
-Date: Sat, 26 May 2007 09:43:21 +0200
-User-Agent: KMail/1.9.6
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <4656FA04.5000403@redhat.com> <20070525193737.34609de2@the-village.bc.nu> <20070526022741.GD3390@sequoia.sous-sol.org>
-In-Reply-To: <20070526022741.GD3390@sequoia.sous-sol.org>
+	Sat, 26 May 2007 03:53:09 -0400
+Received: from twinlark.arctic.org ([207.29.250.54]:47030 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751163AbXEZHxI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 03:53:08 -0400
+Date: Sat, 26 May 2007 00:53:07 -0700 (PDT)
+From: dean gaudet <dean@arctic.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: linux-ide@vger.kernel.org, Dave Dillow <dave@thedillows.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, RFT, v4] sata_mv: convert to new EH
+In-Reply-To: <4657A678.8090308@garzik.org>
+Message-ID: <Pine.LNX.4.64.0705252335590.8327@twinlark.arctic.org>
+References: <20070225233454.GA31282@havoc.gtf.org> 
+ <1173158201.3416.8.camel@obelisk.thedillows.org>  <45ED039E.20608@garzik.org>
+ <1173164261.3416.15.camel@obelisk.thedillows.org> <4656EB26.40504@garzik.org>
+ <4657A678.8090308@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705260943.21541.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 25 May 2007, Jeff Garzik wrote:
 
-> And, in this case we're in luck.  It's not released in any -stable tree
-> yet (it's queued for the next release).  So there's plenty of time to
-> fix it up before next -stable release.
+> Already uncovered and fixed a few bugs in v3.
 > 
-> Something like below should fix it.
+> Here's v4 of the sata_mv new-EH patch.
 
-I already got a similar patch, but not tested yet.
+you asked for test results with 2.6.21.3 ... that seems to boot fine,
+and i've tested reading from the disks only and it seems to be working
+fine.  ditto for 2.6.22-rc3.
 
--Andi
+but 2.6.22-rc3 + your v4 patch fails... i'll send you the serial console
+outputs offline.
+
+-dean
+
+
+
+
