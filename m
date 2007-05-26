@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbXEZIw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbXEZI4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758555AbXEZIw3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 04:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbXEZIwX
+	id S1758283AbXEZI4l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 04:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbXEZI4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 04:52:23 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:49965 "EHLO
+	Sat, 26 May 2007 04:56:34 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:49986 "EHLO
 	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753705AbXEZIwW (ORCPT
+	by vger.kernel.org with ESMTP id S1753815AbXEZI4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 04:52:22 -0400
-Date: Sat, 26 May 2007 10:52:20 +0200 (CEST)
+	Sat, 26 May 2007 04:56:33 -0400
+Date: Sat, 26 May 2007 10:56:32 +0200 (CEST)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Olaf Hering <olaf@aepfle.de>, linuxppc-dev@ozlabs.org,
+cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
-In-Reply-To: <1180133119.19517.11.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.62.0705261052110.2657@pademelon.sonytel.be>
-References: <20070525083607.784351000@sonycom.com> <20070525083632.677742000@sonycom.com>
- <20070525112414.GA32336@aepfle.de> <1180133119.19517.11.camel@localhost.localdomain>
+Subject: Re: [patch 4/7] ps3: Storage Driver Probing
+In-Reply-To: <1180133229.19517.13.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.62.0705261055180.2657@pademelon.sonytel.be>
+References: <20070525083607.784351000@sonycom.com> <20070525083632.474400000@sonycom.com>
+ <200705251818.03964.arnd@arndb.de> <1180133229.19517.13.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sat, 26 May 2007, Benjamin Herrenschmidt wrote:
-> On Fri, 2007-05-25 at 13:24 +0200, Olaf Hering wrote:
-> > On Fri, May 25, Geert.Uytterhoeven@sonycom.com wrote:
+> On Fri, 2007-05-25 at 18:18 +0200, Arnd Bergmann wrote:
+> > > +static u64 ps3stor_wait_for_completion(u64 devid, u64 tag,
+> > > +                                    unsigned int timeout)
+> > > +{
+> > > +     unsigned int retries = 0;
+> > > +     u64 res = -1, status;
+> > > +
+> > > +     for (retries = 0; retries < timeout; retries++) {
+> > > +             res =
+> > lv1_storage_check_async_status(NOTIFICATION_DEVID, tag,
+> > > +                                                  &status);
+> > > +             if (!res)
+> > > +                     break;
+> > > +             set_current_state(TASK_INTERRUPTIBLE);
+> > > +             schedule_timeout(1);
+> > > +     }
 > > 
-> > > +++ b/drivers/scsi/ps3rom.c
-> > 
-> > > +			kaddr = kmap_atomic(sgpnt->page, KM_USER0);
-> > 
-> > linux/highmem.h is not included to get the kmap_* prototypes.
+> > Any reason not to use msleep(1) instead of the schedule_timeout? 
 > 
-> Beside, I don't see the point of using kmap on ppc64...
+> Both look equally ugly though... do you really have to poll ?
 
-So what should I use instead?
+The special notification device (NOTIFICATION_DEVID = -1) is not in the
+repository and AFAIK it doesn't have an interrupt attached to it.
+Note that this is used during probing only.
 
 Gr{oetje,eeting}s,
 
