@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbXEYXxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbXEZACf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbXEYXxA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 19:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbXEYXwy
+	id S1755088AbXEZACf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 20:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbXEZAC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 19:52:54 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:33666 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752605AbXEYXwx (ORCPT
+	Fri, 25 May 2007 20:02:28 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:54204 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752580AbXEZAC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 19:52:53 -0400
-Message-ID: <465776CE.5070007@zytor.com>
-Date: Fri, 25 May 2007 16:52:46 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Ben Collins <ben.collins@ubuntu.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] i386/x86_64: Allow disabling the putstr's from	compressed
- boot wrapper
-References: <98cd38b5.git.bcollins@ubuntu.com>	 <1180097543.12570.396.camel@cunning> <46573CE4.8080300@zytor.com>	 <200705251623.55551.jbarnes@virtuousgeek.org>  <46577112.7090106@zytor.com> <1180137053.12570.446.camel@cunning>
-In-Reply-To: <1180137053.12570.446.camel@cunning>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 25 May 2007 20:02:27 -0400
+Date: Fri, 25 May 2007 17:02:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Matt Mackall <mpm@selenic.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, yi.zhu@intel.com,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: 2.6.22-rc2-mm1: NetworkManager fails to find ipw2200 again
+Message-Id: <20070525170209.40ad51d5.akpm@linux-foundation.org>
+In-Reply-To: <20070525231257.GA9616@suse.de>
+References: <20070525163621.GE11166@waste.org>
+	<20070525164842.GA6220@suse.de>
+	<3ae72650705251037p6b1632a5m45cdd999a294fcbd@mail.gmail.com>
+	<20070525175319.GK11115@waste.org>
+	<20070525210152.GL11115@waste.org>
+	<20070525230109.GN11115@waste.org>
+	<20070525231257.GA9616@suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Collins wrote:
-> On Fri, 2007-05-25 at 16:28 -0700, H. Peter Anvin wrote:
->> Jesse Barnes wrote:
->>> But how often do you have to debug bootloader or compressed boot code?  In 
->>> fact, most debug output like this isn't very useful after some initial 
->>> debugging, so we usually take it out.  I'm not sure why this would be any 
->>> different...
->>>
->> You're asking me this?
->>
->> I get to hear all the time about some new platform -- sometimes exotic,
->> sometimes not -- breaking early boot.
+On Fri, 25 May 2007 16:12:57 -0700 Greg KH <gregkh@suse.de> wrote:
+
+> On Fri, May 25, 2007 at 06:01:09PM -0500, Matt Mackall wrote:
+> > Bisect sequence went 56+ 84+ 98+ 105- 102- 100+ 101+. Looks like 102's
+> > to blame:
+> > 
+> > driver-core-check-return-code-of-sysfs_create_link.patch 
+> > 
+> > From: Cornelia Huck <cornelia.huck@de.ibm.com>
+> > 
+> > Check for return value of sysfs_create_link() in device_add() and
+> > device_rename().  Add helper functions device_add_class_symlinks() and
+> > device_remove_class_symlinks() to make the code easier to read.
 > 
-> Truth be told, I'd much rather just remove the informational pustr's and
-> leave the error ones enabled. If it's acceptable, I can just remove
-> those lines, or make them only work with -DDEBUG.
+> {sigh}
+> 
+> This wouldn't be the first time this patch has broken things :(
 
-The problem with that is you don't have any idea how far a boot
-proceeded before a hang.  That's actually a very important piece of
-information.
+Why does checking these errors cause ipw2200 to fail?
 
-	-hpa
+> Andrew, can you drop this from your tree?
+
+Would prefer that we debug things first.  It could be that ipw2200 is
+trying to create symlinks which already exist.  This might indicate a
+programming error in ipw2200, which is what the patch is *for*.  If it
+is indeed an ipw2200 bug then the lesson is that we should have been checking
+for errors on day one - that way, we'd never have shipped a buggy ipw2200 driver.
+
+I have an ipw2200 - I'll see if I can reproduce this and I'll add some
+debugging code in there.  Probably that debugging code should become
+permanent.
+
+> Cornelia, can you rework this to not break things?
+
+Things might be already broken?
