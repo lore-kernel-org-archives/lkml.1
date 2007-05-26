@@ -1,74 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbXEZAR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbXEZBAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbXEZAR6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 20:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbXEZARv
+	id S1754249AbXEZBAx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 21:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbXEZBAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 20:17:51 -0400
-Received: from omta03sl.mx.bigpond.com ([144.140.92.155]:43222 "EHLO
-	omta03sl.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753267AbXEZARv (ORCPT
+	Fri, 25 May 2007 21:00:45 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:47512 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750994AbXEZBAo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 20:17:51 -0400
-Message-ID: <46577CA6.8000807@bigpond.net.au>
-Date: Sat, 26 May 2007 10:17:42 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: vatsa@in.ibm.com
-CC: Kirill Korotaev <dev@sw.ru>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       tingy@cs.umass.edu, ckrm-tech@lists.sourceforge.net,
-       Balbir Singh <balbir@in.ibm.com>, efault@gmx.de, kernel@kolivas.org,
-       linux-kernel@vger.kernel.org, wli@holomorphy.com, tong.n.li@intel.com,
-       containers@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
-References: <20070523164859.GA6595@in.ibm.com> <3d8471ca0705231112rfac9cfbt9145ac2da8ec1c85@mail.gmail.com> <20070523183824.GA7388@elte.hu> <4654BF88.3030404@yahoo.fr> <20070525074500.GD6157@in.ibm.com> <20070525082951.GA25280@elte.hu> <4656DF0C.9090306@sw.ru> <20070525153450.GA4679@in.ibm.com> <46570C70.4050209@sw.ru> <20070525180850.GA26884@in.ibm.com>
-In-Reply-To: <20070525180850.GA26884@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta03sl.mx.bigpond.com from [60.231.45.148] using ID pwil3058@bigpond.net.au at Sat, 26 May 2007 00:17:47 +0000
+	Fri, 25 May 2007 21:00:44 -0400
+Message-Id: <200705260100.l4Q10e05030097@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Date: Fri, 25 May 2007 17:58:26 -0700
+Subject: [PATCH] scripts: Make cleanfile/cleanpatch warn about long lines
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> Good example :) USER2's single task will have to share its CPU with
-> USER1's 50 tasks (unless we modify the smpnice load balancer to
-> disregard cpu affinity that is - which I would not prefer to do).
+Make the "cleanfile" and "cleanpatch" script warn about long lines,
+by default lines whose visual width exceeds 79 characters.
 
-I don't think that ignoring cpu affinity is an option.  Setting the cpu 
-affinity of tasks is a deliberate policy action on the part of the 
-system administrator and has to be honoured.  Load balancing has to do 
-the best it can in these circumstances which may mean sub optimal 
-distribution of the load BUT it is result of a deliberate policy 
-decision by the system administrator.
+Per suggestion from Auke Kok.
 
-> 
-> Ingo/Peter, any thoughts here?  CFS and smpnice probably is "broken" 
-> with respect to such example as above albeit for nice-based tasks.
-> 
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ scripts/cleanfile  |   54 ++++++++++++++++++++++++++++++++++++++++++++++-
+ scripts/cleanpatch |   58 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 107 insertions(+), 5 deletions(-)
 
-See above.  I think that faced with cpu affinity use by the system 
-administrator that smpnice will tend towards a task to cpu allocation 
-that is (close to) the best that can be achieved without violating the 
-cpu affinity assignments.  (It may take a little longer than normal but 
-it should get there eventually.)
-
-You have to assume that the system administrator knows what (s)he's 
-doing and is willing to accept the impact of their policy decision on 
-the overall system performance.
-
-Having said that, if it was deemed necessary you could probably increase 
-the speed at which the load balancer converged on a good result in the 
-face of cpu affinity by keeping a "pinned weighted load" value for each 
-run queue and using that to modify find_busiest_group() and 
-find_busiest_queue() to be a bit smarter.   But I'm not sure that it 
-would be worth the added complexity.
-
-Peter
+diff --git a/scripts/cleanfile b/scripts/cleanfile
+index f1ba8aa..cefd29e 100755
+--- a/scripts/cleanfile
++++ b/scripts/cleanfile
+@@ -7,7 +7,9 @@
+ use bytes;
+ use File::Basename;
+ 
+-#
++# Default options
++$max_width = 79;
++
+ # Clean up space-tab sequences, either by removing spaces or
+ # replacing them with tabs.
+ sub clean_space_tabs($)
+@@ -48,9 +50,49 @@ sub clean_space_tabs($)
+     return $lo;
+ }
+ 
++# Compute the visual width of a string
++sub strwidth($) {
++    no bytes;			# Tab alignment depends on characters
++
++    my($li) = @_;
++    my($c, $i);
++    my $pos = 0;
++    my $mlen = 0;
++
++    for ($i = 0; $i < length($li); $i++) {
++	$c = substr($li,$i,1);
++	if ($c eq "\t") {
++	    $pos = ($pos+8) & ~7;
++	} elsif ($c eq "\n") {
++	    $mlen = $pos if ($pos > $mlen);
++	    $pos = 0;
++	} else {
++	    $pos++;
++	}
++    }
++
++    $mlen = $pos if ($pos > $mlen);
++    return $mlen;
++}
++
+ $name = basename($0);
+ 
+-foreach $f ( @ARGV ) {
++@files = ();
++
++while (defined($a = shift(@ARGV))) {
++    if ($a =~ /^-/) {
++	if ($a eq '-width' || $a eq '-w') {
++	    $max_width = shift(@ARGV)+0;
++	} else {
++	    print STDERR "Usage: $name [-width #] files...\n";
++	    exit 1;
++	}
++    } else {
++	push(@files, $a);
++    }
++}
++
++foreach $f ( @files ) {
+     print STDERR "$name: $f\n";
+ 
+     if (! -f $f) {
+@@ -90,8 +132,10 @@ foreach $f ( @ARGV ) {
+ 
+     @blanks = ();
+     @lines  = ();
++    $lineno = 0;
+ 
+     while ( defined($line = <FILE>) ) {
++	$lineno++;
+ 	$in_bytes += length($line);
+ 	$line =~ s/[ \t\r]*$//;		# Remove trailing spaces
+ 	$line = clean_space_tabs($line);
+@@ -107,6 +151,12 @@ foreach $f ( @ARGV ) {
+ 	    @blanks = ();
+ 	    $blank_bytes = 0;
+ 	}
++
++	$l_width = strwidth($line);
++	if ($max_width && $l_width > $max_width) {
++	    print STDERR
++		"$f:$lineno: line exceeds $max_width characters ($l_width)\n";
++	}
+     }
+ 
+     # Any blanks at the end of the file are discarded
+diff --git a/scripts/cleanpatch b/scripts/cleanpatch
+index a53f987..9680d03 100755
+--- a/scripts/cleanpatch
++++ b/scripts/cleanpatch
+@@ -7,7 +7,9 @@
+ use bytes;
+ use File::Basename;
+ 
+-#
++# Default options
++$max_width = 79;
++
+ # Clean up space-tab sequences, either by removing spaces or
+ # replacing them with tabs.
+ sub clean_space_tabs($)
+@@ -48,9 +50,49 @@ sub clean_space_tabs($)
+     return $lo;
+ }
+ 
++# Compute the visual width of a string
++sub strwidth($) {
++    no bytes;			# Tab alignment depends on characters
++
++    my($li) = @_;
++    my($c, $i);
++    my $pos = 0;
++    my $mlen = 0;
++
++    for ($i = 0; $i < length($li); $i++) {
++	$c = substr($li,$i,1);
++	if ($c eq "\t") {
++	    $pos = ($pos+8) & ~7;
++	} elsif ($c eq "\n") {
++	    $mlen = $pos if ($pos > $mlen);
++	    $pos = 0;
++	} else {
++	    $pos++;
++	}
++    }
++
++    $mlen = $pos if ($pos > $mlen);
++    return $mlen;
++}
++
+ $name = basename($0);
+ 
+-foreach $f ( @ARGV ) {
++@files = ();
++
++while (defined($a = shift(@ARGV))) {
++    if ($a =~ /^-/) {
++	if ($a eq '-width' || $a eq '-w') {
++	    $max_width = shift(@ARGV)+0;
++	} else {
++	    print STDERR "Usage: $name [-width #] files...\n";
++	    exit 1;
++	}
++    } else {
++	push(@files, $a);
++    }
++}
++
++foreach $f ( @files ) {
+     print STDERR "$name: $f\n";
+ 
+     if (! -f $f) {
+@@ -86,6 +128,7 @@ foreach $f ( @ARGV ) {
+ 
+     $in_bytes = 0;
+     $out_bytes = 0;
++    $lineno = 0;
+ 
+     @lines  = ();
+ 
+@@ -93,10 +136,12 @@ foreach $f ( @ARGV ) {
+     $err = 0;
+ 
+     while ( defined($line = <FILE>) ) {
++	$lineno++;
+ 	$in_bytes += length($line);
+ 
+ 	if (!$in_hunk) {
+-	    if ($line =~ /^\@\@\s+\-([0-9]+),([0-9]+)\s+\+([0-9]+),([0-9]+)\s\@\@/) {
++	    if ($line =~
++		/^\@\@\s+\-([0-9]+),([0-9]+)\s+\+([0-9]+),([0-9]+)\s\@\@/) {
+ 		$minus_lines = $2;
+ 		$plus_lines = $4;
+ 		if ($minus_lines || $plus_lines) {
+@@ -117,6 +162,13 @@ foreach $f ( @ARGV ) {
+ 		$text =~ s/[ \t\r]*$//;		# Remove trailing spaces
+ 		$text = clean_space_tabs($text);
+ 
++		$l_width = strwidth($text);
++		if ($max_width && $l_width > $max_width) {
++		    print STDERR
++			"$f:$lineno: adds line exceeds $max_width ",
++			"characters ($l_width)\n";
++		}
++
+ 		push(@hunk_lines, '+'.$text);
+ 	    } elsif ($line =~ /^\-/) {
+ 		$minus_lines--;
 -- 
-Peter Williams                                   pwil3058@bigpond.net.au
+1.5.2
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
