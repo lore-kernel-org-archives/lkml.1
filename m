@@ -1,97 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764257AbXEZUtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764095AbXEZU5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764257AbXEZUtY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 16:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757109AbXEZUtS
+	id S1764095AbXEZU5O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 16:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbXEZU46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 16:49:18 -0400
-Received: from outpost.ds9a.nl ([213.244.168.210]:51116 "EHLO outpost.ds9a.nl"
+	Sat, 26 May 2007 16:56:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36035 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755777AbXEZUtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 16:49:17 -0400
-X-Greylist: delayed 1822 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 May 2007 16:49:17 EDT
-Date: Sat, 26 May 2007 22:18:54 +0200
-From: bert hubert <bert.hubert@netherlabs.nl>
-To: linux-kernel@vger.kernel.org, gregkh@suse.de
-Cc: kay.sievers@vrfy.org
-Subject: udev regression? lsusb silent (no output) since 2.6.22-rc2 at least
-Message-ID: <20070526201854.GA20758@outpost.ds9a.nl>
-Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
-	linux-kernel@vger.kernel.org, gregkh@suse.de, kay.sievers@vrfy.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	id S1752783AbXEZU45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 16:56:57 -0400
+Message-ID: <46589F15.8080003@garzik.org>
+Date: Sat, 26 May 2007 16:56:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: dean gaudet <dean@arctic.org>, Dave Dillow <dave@thedillows.org>
+CC: linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, RFT, v4] sata_mv: convert to new EH
+References: <20070225233454.GA31282@havoc.gtf.org>  <1173158201.3416.8.camel@obelisk.thedillows.org>  <45ED039E.20608@garzik.org> <1173164261.3416.15.camel@obelisk.thedillows.org> <4656EB26.40504@garzik.org> <4657A678.8090308@garzik.org> <Pine.LNX.4.64.0705252335590.8327@twinlark.arctic.org>
+In-Reply-To: <Pine.LNX.4.64.0705252335590.8327@twinlark.arctic.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg, Kay, kernel people,
+dean gaudet wrote:
+> On Fri, 25 May 2007, Jeff Garzik wrote:
+> 
+>> Already uncovered and fixed a few bugs in v3.
+>>
+>> Here's v4 of the sata_mv new-EH patch.
+> 
+> you asked for test results with 2.6.21.3 ... that seems to boot fine,
+> and i've tested reading from the disks only and it seems to be working
+> fine.  ditto for 2.6.22-rc3.
+> 
+> but 2.6.22-rc3 + your v4 patch fails... i'll send you the serial console
+> outputs offline.
 
-Today I booted 2.6.22-rc2 on Ubunty Edgy Eft, and lsusb died on me:
+Well, I have the same hardware as dean, and do not see the 
+BUG_ON/WARN_ON traces that he sees.  These are the same two code 
+locations that caused spewage before.  This only difference I see is 
+that he is testing with an NCQ-capable disk, and I am not -- which could 
+be a very significant difference.  Dave also appears to have an 
+NCQ-capable disk.
 
-ahu@intel:~$ lsusb
-ahu@intel:~$ sudo lsusb
-ahu@intel:~$ 
+Dave's output (sent privately to me) was different -- errors and 
+corruption -- rather than the BUG_ON/WARN_ON stuff both he and dean sent 
+in March 2007, which is interesting.
 
-This behaviour persists in rc4. This might be udev related. I'm running:
-ii  udev                                   093-0ubuntu18.0edgy2 
+Dave, any chance you could try 2.6.22-rc3 + my v4 patch, on a different 
+hard drive?  Preferably a non-Maxtor, or at least not another Maxtor 
+6L200S0.  If that's a big deal, don't worry about it.  I just want to 
+rule out buggy firmware and/or bad hard drive in your case.
 
-USB does work fine.
+dean's output (backtraces matching March 2007 reports) was what I 
+expected, and if I can reproduce that with an NCQ-capable disk locally, 
+I should be able to fix it from there without trouble.  Probably just 
+some hardware bits accidentally kicking into NCQ mode, when they should not.
 
-Bit from strace:
+	Jeff
 
-open("/dev/bus/usb", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 3
-fstat64(3, {st_mode=S_IFDIR|0755, st_size=80, ...}) = 0
-fcntl64(3, F_SETFD, FD_CLOEXEC)         = 0
-getdents64(3, /* 4 entries */, 4096)    = 112
-close(3)                                = 0
-open("/dev/bus/usb", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 3
-fstat64(3, {st_mode=S_IFDIR|0755, st_size=80, ...}) = 0
-fcntl64(3, F_SETFD, FD_CLOEXEC)         = 0
-getdents64(3, /* 4 entries */, 4096)    = 112
-getdents64(3, /* 0 entries */, 4096)    = 0
-close(3)                                = 0
-(end of program)
 
-ahu@intel:~$ ls -l /dev/bus/usb -d
-drwxr-xr-x 3 root root 80 2007-05-26 21:58 /dev/bus/usb
 
-ahu@intel:~$ ls -l /dev/bus/usb/
-total 0
-lrwxrwxrwx 1 root root 14 2007-05-26 21:58 devices -> .usbfs/devices
 
-ahu@intel:~$ ls -l /dev/bus/usb/devices 
-lrwxrwxrwx 1 root root 14 2007-05-26 21:58 /dev/bus/usb/devices ->
-.usbfs/devices
 
-ahu@intel:~$ wc -l /dev/bus/usb/devices
-95 /dev/bus/usb/devices
-
-On another machine (debian etch), with an older kernel, where lsusb does
-work:
-
-open("/dev/bus/usb", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 3
-fstat64(3, {st_mode=S_IFDIR|0755, st_size=80, ...}) = 0
-fcntl64(3, F_SETFD, FD_CLOEXEC)         = 0
-getdents64(3, /* 4 entries */, 4096)    = 96
-close(3)                                = 0 
-open("/dev/bus/usb", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 3
-fstat64(3, {st_mode=S_IFDIR|0755, st_size=80, ...}) = 0
-fcntl64(3, F_SETFD, FD_CLOEXEC)         = 0
-getdents64(3, /* 4 entries */, 4096)    = 96
-getdents64(3, /* 0 entries */, 4096)    = 0 
-close(3)                                = 0 
-open("/dev/bus/usb/001", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 3
-fstat64(3, {st_mode=S_IFDIR|0755, st_size=60, ...}) = 0
-fcntl64(3, F_SETFD, FD_CLOEXEC)         = 0
-getdents64(3, /* 3 entries */, 4096)    = 72
-open("/dev/bus/usb/001/001", O_RDWR)    = -1 EACCES (Permission denied)
-open("/dev/bus/usb/001/001", O_RDONLY)  = 4
-
-Any clues? Please let me know how I can help solve this problem!
-
-	Bert
-
--- 
-http://www.PowerDNS.com      Open source, database driven DNS Software 
-http://netherlabs.nl              Open and Closed source services
