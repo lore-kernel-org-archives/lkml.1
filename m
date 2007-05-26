@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763968AbXEZUnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764332AbXEZUnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763968AbXEZUnT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 16:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759552AbXEZUnM
+	id S1764332AbXEZUnq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 16:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764063AbXEZUnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 16:43:12 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:35368 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755099AbXEZUnM (ORCPT
+	Sat, 26 May 2007 16:43:39 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:11427 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759552AbXEZUni convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 16:43:12 -0400
-Message-ID: <46589BCD.4040807@zytor.com>
-Date: Sat, 26 May 2007 13:42:53 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sat, 26 May 2007 16:43:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V6Q05SF8OhBFzYXkhWTtzb0LMxUeWO1UzpLCvL/9iPV6n3BXX+XkJ7DIQz9mYyDvmHUHcclvJ0tnl/vZmVPMngxN8rGf8aMZAH3QgwLNfTQImgB02SwjAInbGmMVqcwsV3rXTNURzaklOpQ7m3IAqtRVQelXvZ+JpkcGpA5Air0=
+Message-ID: <f56c1ba00705261343u597b1a7am6fdccbab840a4093@mail.gmail.com>
+Date: Sat, 26 May 2007 22:43:34 +0200
+From: "=?ISO-8859-1?Q?C=E9dric_Augonnet?=" <cedric.augonnet@gmail.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: 2.6.21-mm2: HDAPS? BUG: at kernel/mutex.c:311
+Cc: "Dmitry Torokhov" <dtor@insightbb.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Mackall" <mpm@selenic.com>, rlove@rlove.org,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <a781481a0705132040u1c4047f0xf953ccd13f622684@mail.gmail.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Extending boot protocol & bzImage for paravirt_ops
-References: <4656FB8F.4090604@goop.org>	 <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <1180174691.650.8.camel@localhost.localdomain>
-In-Reply-To: <1180174691.650.8.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20070512002115.GZ11166@waste.org>
+	 <200705120112.52859.dtor@insightbb.com>
+	 <a781481a0705112245u356759dcm9a550e432ed178fd@mail.gmail.com>
+	 <200705132257.07257.dtor@insightbb.com>
+	 <a781481a0705132040u1c4047f0xf953ccd13f622684@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
->>
->> +  Bit 6 (write): KEEP_SEGMENTS
->> +	Protocol: 2.07+
->> +	- if 0, reload the segment registers in the 32bit entry point.
->> +	- if 1, do not reload the segment registers in the 32bit entry point.
->> +		Assume that %cs %ds %ss %es are all set to flat segments with
->> +		a base of 0 (or the equivalent for their environment).
-> 
-> You also want to skip the cli: perhaps a separate flag for this is
-> appropriate though.
-> 
+2007/5/14, Satyam Sharma <satyam.sharma@gmail.com>:
+> On 5/14/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+> > Hi Satyam,
+> >
+> > On Saturday 12 May 2007 01:45, Satyam Sharma wrote:
+> > > Seems to be good-looking code!
+> >
+> > Thanks. Do you have the hardware? Were you able to test the patch?
+>
+> Oh, sorry, no. I was actually referring to the input-polldev code. Let's
+> hope Matt can test and ack this.
+>
+> Thanks,
+> Satyam
+> -
 
-Do we have *any* environment that enters the 32-bit code with interrupts
-enabled?  I would think that is unsafe no matter how you do it.
+Hi all,
 
-	-hpa
+Since i still had that BUG on my T43 running a 2.6.22-rc2-mm1 kernel,
+I tried that patch. It sounds like this has solved the bug since I
+can't find any trace of that issue anymore once the patch is applied.
+
+Thanks for the patch,
+Regards,
+Cédric
