@@ -1,187 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbXEZK1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbXEZK3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbXEZK1v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 06:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbXEZK1j
+	id S1755780AbXEZK3U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 06:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbXEZK3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 06:27:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:46714 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbXEZK1h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 06:27:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=PucSnTWJCy5mkgFVR3V8dZQBg4JitPetWF/wMjzGz2eflMLhFupySNPmd73S40xz1ljeH4hSmoQ1PIEUq/nRg8U7Yn8XqEux9/CEktqcMLaBkEFzycfhsMN+udIuY/VA37jkEloTM+lPLs4Pm5adQsFjdXznmrDmyM8dlEy94Kg=
-Message-ID: <46580B8A.1070009@gmail.com>
-Date: Sat, 26 May 2007 12:27:22 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
- and dm/md.
-References: <18006.38689.818186.221707@notabene.brown>
-In-Reply-To: <18006.38689.818186.221707@notabene.brown>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 26 May 2007 06:29:14 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:60253 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750837AbXEZK3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 06:29:13 -0400
+Subject: Re: [RFC] LZO de/compression support - take 4
+From: Richard Purdie <richard@openedhand.com>
+To: Nitin Gupta <nitingupta910@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm-cc@laptop.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>, Andrey Panin <pazke@donpac.ru>,
+       Bret Towe <magnade@gmail.com>, Michael-Luke Jones <mlj28@cam.ac.uk>
+In-Reply-To: <4cefeab80705250557w1baee0afn255e37436b6545a@mail.gmail.com>
+References: <4cefeab80705250445m51736a9aj8c89af893d8c242c@mail.gmail.com>
+	 <1180095000.5864.48.camel@localhost.localdomain>
+	 <4cefeab80705250557w1baee0afn255e37436b6545a@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 26 May 2007 11:28:45 +0100
+Message-Id: <1180175325.5856.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Neil Brown.
+Hi Nitin,
 
-Please cc me on blkdev barriers and, if you haven't yet, reading
-Documentation/block/barrier.txt can be helpful too.
-
-Neil Brown wrote:
-[--snip--]
-> 1/ SAFE.  With a SAFE device, there is no write-behind cache, or if
->           there is it is non-volatile.  Once a write completes it is 
->           completely safe.  Such a device does not require barriers
->           or ->issue_flush_fn, and can respond to them either by a
-> 	  no-op or with -EOPNOTSUPP (the former is preferred).
+On Fri, 2007-05-25 at 18:27 +0530, Nitin Gupta wrote:
+> On 5/25/07, Richard Purdie <richard@openedhand.com> wrote:
+> > On Fri, 2007-05-25 at 17:15 +0530, Nitin Gupta wrote:
+> > > Richard, can you please provide perf. results for this patch also?
+> > > Also, can you please mail back latest version of your LZO patch? In
+> > > meantime, I will try to include benchmarking support to the
+> > > 'compress-test' module.
+> >
+> > This version is 15% slower at decompression and about equal on
+> > compression.
+> >
 > 
-> 2/ FLUSHABLE.
->           A FLUSHABLE device may have a volatile write-behind cache.
->           This cache can be flushed with a call to blkdev_issue_flush.
-> 	  It may not support barrier requests.
+> If you don't mind, can you please try patch attached now? I have now
+> also rolled back that cpu_to_le16() change as Satyam suggested. I see
+> no other reason for this perf. loss as I made no other change!
 > 
-> 3/ BARRIER.
-> 	  A BARRIER device supports both blkdev_issue_flush and
->           BIO_RW_BARRIER.  Either may be used to synchronise any
-> 	  write-behind cache to non-volatile storage (media).
-> 
-> Handling of SAFE and FLUSHABLE devices is essentially the same and can
-> work on a BARRIER device.  The BARRIER device has the option of more
-> efficient handling.
+> Also, can you please verify if you are comparing your _safe_ version
+> with this patch? This patch does not include unsafe version and the
+> safe one is simply called lzo1x_decompress().
 
-Actually, all above three are handled by blkdev flush code.
+I've been looking at my benchmark figures and I think I've found why the
+figures for my version were different to yours. Its not your code which
+is at fault, its the way it was hooked into the benchmarking program.
+The compiler was inlining some parts which it shouldn't have been
+allowed to do, sorry :-/.
 
-> How does a filesystem use this?
-> ===============================
-> 
-[--snip--]
-> 2/ Set the BIO_RW_BARRIER bit in the write request for the commit
->     block.
->    (This is more efficient on BARRIER).
+With that issue corrected, decompression is the same speed however
+compression is showing about a 9% performance loss compared to my kernel
+patch.
 
-This really should be enough.
+I did some diffs of the assembler outputted by our two versions (mine
+matches minilzo). For decompression the output is effectively identical.
+For compression, there are significant differences. If I add a noinline
+attribute to lzo1x_compress_worker, that removes a lot of them (and
+boosts speed a bit) but there are still differences. Ideally, I'd like
+to understand why.
 
-> HOW DO MD or DM USE THIS
-> ========================
-> 
-> 1/ striping devices.
->      This includes md/raid0 md/linear dm-linear dm-stripe and probably
->      others. 
-> 
->    These devices can easily support blkdev_issue_flush by simply
->    calling blkdev_issue_flush on all component devices.
-> 
->    These devices would find it very hard to support BIO_RW_BARRIER.
->    Doing this would require keeping track of all in-flight requests
->    (which some, possibly all, of the above don't) and then:
->      When a BIO_RW_BARRIER request arrives:
->         wait for all pending writes to complete
->         call blkdev_issue_flush on all devices
->         issue the barrier write to the target device(s)
->            as BIO_RW_BARRIER,
->         if that is -EOPNOTSUP, re-issue, wait, flush.
+Regards,
 
-Hmm... What do you think about introducing zero-length BIO_RW_BARRIER
-for this case?
+Richard
 
-> 2/ Mirror devices.  This includes md/raid1 and dm-raid1.
-> 
->    These device can trivially implement blkdev_issue_flush much like
->    the striping devices, and can support BIO_RW_BARRIER to some
->    extent.
->    md/raid1 currently tries.  I'm not sure about dm-raid1.
-> 
->    md/raid1 determines if the underlying devices can handle
->    BIO_RW_BARRIER.  If any cannot, it rejects such requests (EOPNOTSUP)
->    itself.
->    If all underlying devices do appear to support barriers, md/raid1
->    will pass a barrier-write down to all devices.
->    The difficulty comes if it fails on one device, but not all
->    devices.  In this case it is not clear what to do.  Failing the
->    request is a lie, because some data has been written (possible too
->    early).  Succeeding the request (after re-submitting the failed
->    requests) is also a lie as the barrier wasn't really honoured.
->    md/raid1 currently takes the latter approach, but will only do it
->    once - after that it fails all barrier requests.
-> 
->    Hopefully this is unlikely to happen.  What device would work
->    correctly with barriers once, and then not the next time?
->    The answer is md/raid1.  If you remove a failed device and add a
->    new device that doesn't support barriers, md/raid1 will notice and
->    stop supporting barriers.
->    If md/raid1 can change from supporting barrier to not, then maybe
->    some other device could too?
-> 
->    I'm not sure what to do about this - maybe just ignore it...
 
-That sounds good.  :-)
-
-> 3/ Other modules
-> 
->    Other md and dm modules (raid5, mpath, crypt) do not add anything
->    interesting to the above.  Either handling BIO_RW_BARRIER is
->    trivial, or extremely difficult.
-> 
-> HOW DO LOW LEVEL DEVICES HANDLE THIS
-> ====================================
-> 
-> This is part of the picture that I haven't explored greatly.  My
-> feeling is that most if not all devices support blkdev_issue_flush
-> properly, and support barriers reasonably well providing that the
-> hardware does.
-> There in an exception I recently found though.
-> For devices that don't support QUEUE_ORDERED_TAG (i.e. commands sent to
-> the controller can be tagged as barriers), SCSI will use the
-> SYNCHRONIZE_CACHE command to flush the cache after the barrier
-> request (a bit like the filesystem calling blkdev_issue_flush, but at
-> a lower level). However it does this without setting the SYNC_NV bit.
-> This means that a device with a non-volatile cache will be required --
-> needlessly -- to flush that cache to media.
-
-Yeah, it probably needs updating but some devices might react badly too.
-
-> So: some questions to help encourage response:
-> 
->  - Is the above substantial correct?  Totally correct?
->  - Should the various filesystems be "fixed" as suggested above?  Is 
->     someone willing to do that?
-
-I don't think adding the complexity to each and every FS is necessary.
-Except for broken devices, the only reason barrier fails is when the
-device lied about its capability - either about ordered tag or FUA.
-It would be far nicer if we can do proper capability testing during
-device initialization but unfortunately barriers are writes and we can't
-test without side effects.
-
-While developing the current flush code, I had automatic fallback
-mechanism but removed it before submitting because 1. I wasn't sure
-whether it would be necessary and 2. it couldn't handle fall back from
-ordered tag properly (because ordered tag doesn't guarantee failure of
-latter requests when an earlier one fails, you're already too late when
-you get the error report from the device).  This can be solved by
-running the first sequence in more restrictive way (ie. we do capability
-probing at the first barrier from FS).
-
-So, if barrier failure due to devices lying about their capability is an
-actual problem (ATA hasn't seen much if any), it can be solved inside
-block layer proper.  No need to update filesystems.  Just issuing
-barrier when ordering is needed should be enough.
-
-If there have been actual reports of these failures, please point me to
-them.
-
-Thanks.
-
--- 
-tejun
