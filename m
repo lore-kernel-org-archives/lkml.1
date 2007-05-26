@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764095AbXEZU5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764384AbXEZVAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764095AbXEZU5O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 16:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbXEZU46
+	id S1764384AbXEZVAw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 17:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbXEZVAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 16:56:58 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36035 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783AbXEZU45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 16:56:57 -0400
-Message-ID: <46589F15.8080003@garzik.org>
-Date: Sat, 26 May 2007 16:56:53 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 26 May 2007 17:00:45 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:56042
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbXEZVAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 17:00:45 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Uwe Bugla <uwe.bugla@gmx.de>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Date: Sat, 26 May 2007 23:00:36 +0200
+User-Agent: KMail/1.9.6
+Cc: Larry Finger <larry.finger@lwfinger.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070524195616.234280@gmx.net> <46589133.9010608@lwfinger.net> <200705262233.15529.uwe.bugla@gmx.de>
+In-Reply-To: <200705262233.15529.uwe.bugla@gmx.de>
 MIME-Version: 1.0
-To: dean gaudet <dean@arctic.org>, Dave Dillow <dave@thedillows.org>
-CC: linux-ide@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, RFT, v4] sata_mv: convert to new EH
-References: <20070225233454.GA31282@havoc.gtf.org>  <1173158201.3416.8.camel@obelisk.thedillows.org>  <45ED039E.20608@garzik.org> <1173164261.3416.15.camel@obelisk.thedillows.org> <4656EB26.40504@garzik.org> <4657A678.8090308@garzik.org> <Pine.LNX.4.64.0705252335590.8327@twinlark.arctic.org>
-In-Reply-To: <Pine.LNX.4.64.0705252335590.8327@twinlark.arctic.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200705262300.36611.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dean gaudet wrote:
-> On Fri, 25 May 2007, Jeff Garzik wrote:
+On Saturday 26 May 2007 22:33:13 Uwe Bugla wrote:
+> Am Samstag, 26. Mai 2007 21:57 schrieben Sie:
+> > Uwe Bugla wrote:
+> > > OK, applied this one against 2.6.22-rc3, assuming a typo error by you,
+> > > Andrew.
+> > >
+> > > Result is: No change: non functionable b44 device!
+> >
+> > Could you please send the following:
+> >
+> > 1. the output of lsmod from the non-functioning kernel
 > 
->> Already uncovered and fixed a few bugs in v3.
->>
->> Here's v4 of the sata_mv new-EH patch.
-> 
-> you asked for test results with 2.6.21.3 ... that seems to boot fine,
-> and i've tested reading from the disks only and it seems to be working
-> fine.  ditto for 2.6.22-rc3.
-> 
-> but 2.6.22-rc3 + your v4 patch fails... i'll send you the serial console
-> outputs offline.
+> Nonsense!
+> As I stated already, both modules (i. e. b44 and ssb) are loaded correctly.
+> So please read the thread before you post that, not vice versa!
 
-Well, I have the same hardware as dean, and do not see the 
-BUG_ON/WARN_ON traces that he sees.  These are the same two code 
-locations that caused spewage before.  This only difference I see is 
-that he is testing with an NCQ-capable disk, and I am not -- which could 
-be a very significant difference.  Dave also appears to have an 
-NCQ-capable disk.
+Ok, Uwe. Now I show you some real life examples how you and how
+someone who is polite answers to the same question:
 
-Dave's output (sent privately to me) was different -- errors and 
-corruption -- rather than the BUG_ON/WARN_ON stuff both he and dean sent 
-in March 2007, which is interesting.
+You:
+> Nonsense!
+> As I stated already, both modules (i. e. b44 and ssb) are loaded correctly.
+> So please read the thread before you post that, not vice versa!
 
-Dave, any chance you could try 2.6.22-rc3 + my v4 patch, on a different 
-hard drive?  Preferably a non-Maxtor, or at least not another Maxtor 
-6L200S0.  If that's a big deal, don't worry about it.  I just want to 
-rule out buggy firmware and/or bad hard drive in your case.
-
-dean's output (backtraces matching March 2007 reports) was what I 
-expected, and if I can reproduce that with an NCQ-capable disk locally, 
-I should be able to fix it from there without trouble.  Probably just 
-some hardware bits accidentally kicking into NCQ mode, when they should not.
-
-	Jeff
+> They are already in the thread. So please leave me alone with those lazy
+> hints! Read bfore you post, not vice versa!
 
 
+Someone who is polite:
+> They are already in the thread.
 
 
+So you see the difference? And do you see why everybody in this
+thread is so pissed about you?
 
+-- 
+Greetings Michael.
