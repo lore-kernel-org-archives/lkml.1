@@ -1,81 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763687AbXEZTMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764220AbXEZTPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763687AbXEZTMw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 15:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbXEZTMq
+	id S1764220AbXEZTPF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 15:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXEZTO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 15:12:46 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:59623 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbXEZTMq (ORCPT
+	Sat, 26 May 2007 15:14:57 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:40525
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753554AbXEZTO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 15:12:46 -0400
-Message-ID: <007801c79fca$7f1066e0$eeeea8c0@aldipc>
-From: "roland" <devzero@web.de>
-To: <nitingupta910@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] LZO de/compression support - take 4
-Date: Sat, 26 May 2007 21:17:22 +0200
+	Sat, 26 May 2007 15:14:56 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Uwe Bugla <uwe.bugla@gmx.de>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Date: Sat, 26 May 2007 21:14:48 +0200
+User-Agent: KMail/1.9.6
+Cc: "Benoit Boissinot" <bboissin@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Maximilian Engelhardt" <maxi@daemonizer.de>,
+       linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070524195616.234280@gmx.net> <40f323d00705261141m7c32d2b8h7059b4b35ed066c9@mail.gmail.com> <200705262058.37454.uwe.bugla@gmx.de>
+In-Reply-To: <200705262058.37454.uwe.bugla@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2869
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2869
-X-Provags-ID: V01U2FsdGVkX1/ry53GnMq+ZiE2DWKCiqXPyCM+Z6QtjlJhOHLl
-	FfYUs9UuAYc36mWTZuzOfGbkfLClTqOl/8A09LLUWXPHZG+vbx
-	APmvinucw=
+Content-Disposition: inline
+Message-Id: <200705262114.48825.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-btw - does in-kernel lzo scale on SMP systems ?
+On Saturday 26 May 2007 20:58:37 Uwe Bugla wrote:
+> Am Samstag, 26. Mai 2007 20:41 schrieben Sie:
+> > On 5/26/07, Michael Buesch <mb@bu3sch.de> wrote:
+> > > On Saturday 26 May 2007 19:04:04 Uwe Bugla wrote:
+> > > > Yes, sure! But the help text is very unlucky and humble, and it is not
+> > > > clear enough in the sense of being distinctive enough, just clear and
+> > > > comprehensive.
+> > >
+> > > Why don't you simply submit a patch to change the helptext then?
+> >
+> > Is that ok ?
+> >
+> > Discourage people from deselecting B44_PCI
+> >
+> > Signed-off-by: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
+> >
+> > --- kernel.orig/drivers/net/Kconfig	2007-05-26 20:38:02.000000000 +0200
+> > +++ kernel/drivers/net/Kconfig	2007-05-26 20:38:15.000000000 +0200
+> > @@ -1449,7 +1449,7 @@
+> >  	help
+> >  	  Support for b44 PCI devices.
+> >
+> > -	  Say Y
+> > +	  Unless you know what you are doing, say Y here.
+> >
+> >  config FORCEDETH
+> >  	tristate "nForce Ethernet support"
+> 
+> No, That is NOT OK! That's nothing but a joke, and if it is a joke : )
+> it hits well in Mister Buesches direction. In so far it's 
+> well-done : ) : ) : )
 
-is it a matter of lzo builtin compression or a matter of the component using 
-in-kernel lzo compression ?
+See what I meant, Benoit?
 
-if i write/read data on reiser4 filesystem with lzo compression on - will 
-all CPUs being used ?
+> To be honest:
+> 
+> I expect at least TWO explained cases:
+> 
+> A. The case in which the b44 module is a PCI module (onboard, additional PCI 
+> card etc.).
+> 
+> B. At least one well described case in which the b44 module is a bus 
+> independent one.
 
-just curious here, because i remember reading about a scale problem with zfs 
-filesystem and gzip compression on solaris, so i'm just curious what to 
-expect on linux.
+You still didn't get it, right?
+b44-ssb is a SSB device driver. No PCI, nothing. To get this working
+on PCI you need to enable the PCI glue. Which is enabled by default.
+It even includes the comment "Say Y". If you say N nevertheless it's
+your fault.
+What's so hard to understand about this? We have LOTS of drivers in the
+kernel that work _exactly_ the same way. There is a base module to drive
+the hardware and several glue drivers. If you de-select the glue driver
+it doesn't work.
+If you use your old config and do not DISABLE some option you will
+not experience a regression (at least regarding to the kconfig stuff.
+There's still your transmission bug left).
 
-regards
-roland
+> Apart from that, it is Michael's task to explain the what and why, not mine 
+> and not yours! It is him that wants his stuff being pulled into mainline, and 
 
-ps:
-btw - there is a smp aware lzop utility at lemley.net/lzop_patches/lzop.html
+My task is _nothing_. This is opensource. If you don't like
+something about it, go and fix it. But don't say it's the _task_ of others
+to fix things you don't like. I am not payed to do this for you.
+Though, I'd like to resolve it.
 
+> in so far he very well can do the "dirty work" of documentation, explanation.
 
+I explained it several times now. I'm not sure what else I should
+say about it.
 
-
->Hi,
->
->This is kernel port of LZO1X compressor and LZO1X decompressor (safe
->version only).
->
->* Changes since 'take 3' (Full Changelog after this):
->1) Removed 'unsafe' decompressor - hence also do away with symlinks in
->Makefiles.
->2) Rolled back changes where I replaced COPY4 with memcpy() calls.
->This seemed to be causing too much perf. loss as shown by Richard's
->tests. Need perf. testing again to confirm that this patch has perf.
->comparable to original LZO code/Richard's patch.
->3) Some functions were inlined (DX2, DX3 etc.) - this also seemed to
->be one of factors for perf. loss. Changed them back Macros.
->4) Added back the 'register' keyword - again seemed to me one of
->factors for perf. loss.
->
->Once I pinpoint exact reason for bad perf., I will do above cleanups
->again. But this should not be reason for non-inclusion in mainline.
->These are only minor cleanups.
->
->Richard, can you please provide perf. results for this patch also?
->Also, can you please mail back latest version of your LZO patch? In
->meantime, I will try to include benchmarking support to the
->'compress-test' module. 
-
+-- 
+Greetings Michael.
