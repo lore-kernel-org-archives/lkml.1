@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbXEZBkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbXEZBwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbXEZBkt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 21:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbXEZBkk
+	id S1756103AbXEZBwk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 21:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbXEZBwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 21:40:40 -0400
-Received: from wine.ocn.ne.jp ([220.111.47.146]:56137 "EHLO
-	smtp.wine.ocn.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752653AbXEZBkj (ORCPT
+	Fri, 25 May 2007 21:52:33 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56493 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752653AbXEZBwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 21:40:39 -0400
-To: casey@schaufler-ca.com, jbms@cmu.edu
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-From: Tetsuo Handa <penguin-fsdevel@I-love.SAKURA.ne.jp>
-References: <87fy5kpye6.fsf@jbms.ath.cx>
-	<770093.5988.qm@web36601.mail.mud.yahoo.com>
-In-Reply-To: <770093.5988.qm@web36601.mail.mud.yahoo.com>
-Message-Id: <200705261040.ACB55702.FEtVMFOOHFQTWGJ@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50]
-X-Accept-Language: ja,en
-Date: Sat, 26 May 2007 10:40:44 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 25 May 2007 21:52:33 -0400
+Date: Fri, 25 May 2007 18:52:30 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>,
+       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Oliver Xymoron <oxymoron@waste.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+In-Reply-To: <20070525061200.GG7653@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0705251850350.9013@schroedinger.engr.sgi.com>
+References: <376320.95285.qm@web52612.mail.re2.yahoo.com>
+ <Pine.LNX.4.64.0705221524490.16904@schroedinger.engr.sgi.com>
+ <20070523071103.GE4705@kernel.dk> <Pine.LNX.4.64.0705231003460.19822@schroedinger.engr.sgi.com>
+ <20070524072550.GC15375@kernel.dk> <Pine.LNX.4.64.0705240953270.28086@schroedinger.engr.sgi.com>
+ <20070525061200.GG7653@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+I finally figured out the second issue. Took some time to get that figure 
+out. Sorry. But now all the bug reports make sense.
 
-Casey Schaufler wrote:
-> Sorry, but I don't understand your objection. If AppArmor is configured
-> to allow everyone access to /bin/gzip but only some people access to
-> /bin/gunzip and (important detail) the single binary uses argv[0]
-> as documented and (another important detail) there aren't other links
-> named gunzip to the binary (ok, that's lots of if's) you should be fine.
+Here is the fix
 
-The argv[0] defines the default behavior of hard linked or symbolic linked programs,
-but the behavior can be overridden using commandline options.
-If you want to allow access to /bin/gzip but deny access to /bin/gunzip ,
-you also need to deny access to "/bin/gzip -d" "/bin/gzip --decompress" "/bin/gzip --uncompress".
-It is impossible to do so because options to override the default behavior
-depends on program's design and you can't know
-what programs and what options are there in the system.
-Even if you know all programs and all options in the system,
-it is a too tough job to find and reject options
-that override the default behavior in the kernel space.
 
-> > Well, my point was exactly that App Armor doesn't (as far as I know) do
-> > anything to enforce the argv[0] convention,
-> Sounds like an opportunity for improvement then.
+SLUB: Fix NUMA / SYSFS bootstrap issue
 
-There are (I think) three types of program invocation.
+The kmem_cache_node cache is very special because it is needed for
+NUMA bootstrap. Under certain conditions (like for example if lockdep is
+enabled and significantly increases the size of spinlock_t) the structure
+may become exactly the size as one of the larger caches in the kmalloc array.
 
-(1) Invocation of hard linked programs.
+That early during bootstrap we cannot perform merging properly. The unique
+id for the kmem_cache_node cache will match one of the kmalloc array. Sysfs
+will complain about a duplicate directory entry. All of this occurs while
+the console is not yet fully operational. Thus boot may appear to be
+silently failing.
 
-    /bin/gzip and /bin/gunzip and /bin/zcat are hard links.
+The kmem_cache_node cache is very special. During early boostrap the main
+allocation function is not operational yet and so we have to run our
+own small special alloc function during early boot. It is also special in
+that it is never freed.
 
-    There is no problem because you can know which pathname was requested
-    using d_namespace_path() with "struct linux_binprm"->file .
+We really do not want any merging on that cache. Set the refcount -1 and
+forbid merging of slabs that have a negative refcount.
 
-(2) Invocation of symbolic linked programs.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-    /sbin/pidof is a symbolic link to /sbin/killall .
+---
+ mm/slub.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-    There is a problem because you can't know which pathname was requested
-    using d_namespace_path() with "struct linux_binprm"->file
-    because the symbolic links were already derefernced inside open_exec().
-    To know which pathname was requested, you need to lookup
-    using "struct linux_binprm"->filename without LOOKUP_FOLLOW
-    and then use d_namespace_path().
-    Although there is a race condition that the pathname
-    the symbolic link "struct linux_binprm"->filename points to
-    may change, but it is inevitable because you can't get
-    dentry and vfsmount of both "without LOOKUP_FOLLOW flag" and
-    "with LOOKUP_FOLLOW flag" at the same time.
-
-(3) Invocation of dynamically created programs with random names.
-
-    /usr/sbin/logrotate creates files patterned /tmp/logrotate.??????
-    and executes these dynamically created files.
-
-    To keep execution of these dynamically created files under control,
-    you need to aggregate pathnames of these files.
-    AppArmor can't define profile if the pathname of programs is random, can it?
-
-Usually the argv[0] and the "struct linux_binprm"->filename are the same,
-but if you want to do something with argv[0], you will need to handle the (2) case
-to see whether the argv[0] and "struct linux_binprm"->filename are the same.
-
-Thanks.
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-05-25 18:28:42.000000000 -0700
++++ slub/mm/slub.c	2007-05-25 18:29:46.000000000 -0700
+@@ -2473,6 +2473,7 @@ void __init kmem_cache_init(void)
+ 	 */
+ 	create_kmalloc_cache(&kmalloc_caches[0], "kmem_cache_node",
+ 		sizeof(struct kmem_cache_node), GFP_KERNEL);
++	kmalloc_caches[0].refcount = -1;
+ #endif
+ 
+ 	/* Able to allocate the per node structures */
+@@ -2520,6 +2521,12 @@ static int slab_unmergeable(struct kmem_
+ 	if (s->ctor)
+ 		return 1;
+ 
++	/*
++	 * We may have set a slab to be unmergeable during bootstrap.
++	 */
++	if (s->refcount < 0)
++		return 1;
++
+ 	return 0;
+ }
+ 
