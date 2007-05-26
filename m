@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760509AbXEZNxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbXEZOF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760509AbXEZNxU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 09:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbXEZNxN
+	id S1760265AbXEZOF3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 10:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbXEZOFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 09:53:13 -0400
-Received: from aa014msr.fastwebnet.it ([85.18.95.74]:52385 "EHLO
-	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026AbXEZNxM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 09:53:12 -0400
-Date: Sat, 26 May 2007 15:52:23 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Tommy Vercetti <vercetti@zlew.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21.1 - 97% wait time on IDE operations
-Message-ID: <20070526155223.1bedba5a@localhost>
-In-Reply-To: <200705261505.38109@gj-laptop>
-References: <200705261505.38109@gj-laptop>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 26 May 2007 10:05:21 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:49740 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751716AbXEZOFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 10:05:21 -0400
+Date: Sat, 26 May 2007 07:03:13 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Chris Wright <chrisw@sous-sol.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Dave Jones <davej@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix oprofile double free (was Re: Multiple free
+	during oprofile unload)
+Message-ID: <20070526140313.GP3429@sequoia.sous-sol.org>
+References: <4656FA04.5000403@redhat.com> <20070525193737.34609de2@the-village.bc.nu> <20070526022741.GD3390@sequoia.sous-sol.org> <200705260943.21541.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705260943.21541.ak@suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 May 2007 15:05:38 +0200
-Tommy Vercetti <vercetti@zlew.org> wrote:
+* Andi Kleen (ak@suse.de) wrote:
+> 
+> > And, in this case we're in luck.  It's not released in any -stable tree
+> > yet (it's queued for the next release).  So there's plenty of time to
+> > fix it up before next -stable release.
+> > 
+> > Something like below should fix it.
+> 
+> I already got a similar patch, but not tested yet.
 
-> I was trying to get answer to my question around, but no one knows.
-> I do have DMA turned on, etc, yet - on extensive harddrive operations wait 
-> time is 90+% , which means that machine is waiting, rather than doing 
-> something meanwhile. (I guess). 
-> Can someone describe to me , in more detail why is that happening, and what 
-> steps should I consider to avoid it ? I couldn't find any answers that would 
-> have help me on net.
-
-It means that the disk is slow and the CPU is fast... so while the disk
-is busy seeking and reading data the CPU has nothing to do but wait for
-it.
-
-Idle == CPU has nothing to do
-Waiting == CPU has nothing to do, but it will have as soon as the slow
-	disk (or whatever) delivers data
-
-
-Anyway 97% is quite high... what CPU / Hard Disk do you have?
-
-What kernel version?
-I/O scheduler? (cat /sys/block/DEVICE/queue/scheduler)
-Filesystem?
-
-And what time of "operations" are you doing?
-
--- 
-	Paolo Ornati
-	Linux 2.6.22-rc3-cfs-v14-gf193016a on x86_64
+OK.  I tested the one I sent, on Opteron.
