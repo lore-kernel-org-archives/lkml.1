@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbXEZTtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbXEZUC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761993AbXEZTtX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 15:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbXEZTtR
+	id S1761993AbXEZUC7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 16:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbXEZUCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 15:49:17 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:45795
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026AbXEZTtQ (ORCPT
+	Sat, 26 May 2007 16:02:52 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:43577 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753841AbXEZUCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 15:49:16 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Uwe Bugla <uwe.bugla@gmx.de>
-Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
-Date: Sat, 26 May 2007 21:49:09 +0200
-User-Agent: KMail/1.9.6
-Cc: "Benoit Boissinot" <bboissin@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Maximilian Engelhardt" <maxi@daemonizer.de>,
-       linux-wireless@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070524195616.234280@gmx.net> <200705262119.19675.mb@bu3sch.de> <200705262139.54353.uwe.bugla@gmx.de>
-In-Reply-To: <200705262139.54353.uwe.bugla@gmx.de>
+	Sat, 26 May 2007 16:02:51 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 May 2007 16:02:51 EDT
+Message-ID: <46589133.9010608@lwfinger.net>
+Date: Sat, 26 May 2007 14:57:39 -0500
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Uwe Bugla <uwe.bugla@gmx.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+References: <20070524195616.234280@gmx.net> <200705262003.17403.mb@bu3sch.de> <20070526111934.e4650b6f.akpm@linux-foundation.org> <200705262138.05501.uwe.bugla@gmx.de>
+In-Reply-To: <200705262138.05501.uwe.bugla@gmx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705262149.09948.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 26 May 2007 21:39:54 Uwe Bugla wrote:
-> Am Samstag, 26. Mai 2007 21:19 schrieben Sie:
-> > Uwe, please try the following patch:
-> >
-> > Index: bu3sch-wireless-dev/drivers/net/b44.c
-> > ===================================================================
-> > --- bu3sch-wireless-dev.orig/drivers/net/b44.c	2007-05-18
-> > 18:09:50.000000000 +0200 +++
-> > bu3sch-wireless-dev/drivers/net/b44.c	2007-05-26 21:18:28.000000000 +0200
-> > @@ -2201,10 +2201,12 @@ static int __devinit b44_init_one(struct
-> >  		printk("%2.2x%c", dev->dev_addr[i],
-> >  		       i == 5 ? '\n' : ':');
-> >
-> > +#if 0
-> >  	/* Initialize phy */
-> >  	spin_lock_irq(&bp->lock);
-> >  	b44_chip_reset(bp);
-> >  	spin_unlock_irq(&bp->lock);
-> > +#endif
-> >
-> >  	return 0;
+Uwe Bugla wrote:
 > 
-> Against what kernel please?
-> Just try to be a bit more eloquent, man!
+> OK, applied this one against 2.6.22-rc3, assuming a typo error by you, Andrew.
+> 
+> Result is: No change: non functionable b44 device!
 
-Against a kernel which does not work for you, of course.
+Could you please send the following:
 
-Sometimes I wonder... (no better not say that).
+1. the output of lsmod from the non-functioning kernel
 
--- 
-Greetings Michael.
+2. the output of dmesg from the non-functioning kernel
+
+3. your .config used to create your non-functioning kernel.
+
+Thanks,
+
+Larry
+
