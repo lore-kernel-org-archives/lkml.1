@@ -1,100 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbXEZPF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbXEZPJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761614AbXEZPF4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 11:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761320AbXEZPFs
+	id S1761346AbXEZPJT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 11:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbXEZPJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 11:05:48 -0400
-Received: from stinky.trash.net ([213.144.137.162]:60430 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754915AbXEZPFr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 11:05:47 -0400
-Message-ID: <46584CC6.3020705@trash.net>
-Date: Sat, 26 May 2007 17:05:42 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
+	Sat, 26 May 2007 11:09:13 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:55092 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752875AbXEZPJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 11:09:12 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v14
+Date: Sat, 26 May 2007 18:08:55 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, pranith-kumar_d@mentorg.com
+References: <20070523120616.GA23407@elte.hu> <200705261758.26956.caglar@pardus.org.tr>
+In-Reply-To: <200705261758.26956.caglar@pardus.org.tr>
 MIME-Version: 1.0
-To: Ingo Oeser <ioe-lkml@rameria.de>
-CC: Adam Osuchowski <adwol@zonk.pl>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Bart De Schuymer <bdschuym@pandora.be>
-Subject: Re: [Bridge] [BUG] Dropping fragmented IP packets within VLAN frames
- on bridge
-References: <20070525081750.5ba4a411@zonk.pl> <20070525174925.41bd6b2e@zonk.pl> <4657EC24.1030407@trash.net> <200705261621.00385.ioe-lkml@rameria.de>
-In-Reply-To: <200705261621.00385.ioe-lkml@rameria.de>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: multipart/signed;
+  boundary="nextPart1604955.BIWbijiMyt";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705261808.58445.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Oeser wrote:
-> On Saturday 26 May 2007, Patrick McHardy wrote:
-> 
->>net/8021q ignores the VLAN header overhead, so we should probably do the
->>same here for consistency. Using IS_VLAN_IP (and IS_PPPOE_IP for current
->>-rc) looks fine, additionally we should probably also check for
->>skb->nfct != NULL to make sure that at least without connection tracking
->>the bridge doesn't perform fragmentation.
-> 
-> 
-> And could we separe the conditions for that into a static helper function
-> explaining each of these conditions? e.g. sth. like that:
+--nextPart1604955.BIWbijiMyt
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+26 May 2007 Cts tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 yazm=
+=C4=B1=C5=9Ft=C4=B1:=20
+> 23 May 2007 =C3=87ar tarihinde, Ingo Molnar =C5=9Funlar=C4=B1 yazm=C4=B1=
+=C5=9Ft=C4=B1:
+> > As usual, any sort of feedback, bugreport, fix and suggestion is more
+> > than welcome!
+>
+> I have another kaffeine [0.8.4]/xine-lib [1.1.6] problem with CFS for you
+> :)
+>
+> Under load (compiling any Qt app. or kernel with -j1 or -j2) audio always
+> goes sync with time (and i'm sure it never skips) but video starts slowdo=
+wn
+> and loses its sync with audio (like for the 10th sec. of a movie, audio is
+> at 10th sec. also, but the shown video is from 7th sec.).
+>
+> After some time video suddenly wants to sync with audio and starts to play
+> really fast (like fast-forward) and syncs with audio. But it will lose its
+> audio/video sync after a while and loop continues like that.
+>
+> I also reproduced that behaviour with CFS-13, i'm not sure its reproducib=
+le
+> with mainline cause for a long time i only use CFS (but i'm pretty sure
+> that problem not exists or not hit me with CFS-1 to CFS-11). And its only
+> reproducible with some load and mplayer plays same video without losing i=
+ts
+> audio/video sync with same load.
 
-The MTU checks are self-explanatory. Just a comment above the function
-stating that it tries to find out whether a packet needs to be
-refragmented because it was defragmented by IPv4 connection tracking
-and exceeds the MTU should be enough.
+Ah, i forgot to add you can find the "strace -o kaffine.log -f -tttTTT=20
+kaffeine" and ps output while that problem exists at [1]
 
-> static bool br_nf_need_fragment(struct sk_buff *skb)
-> {
-> 	/* Plain IP packet does not fit in MTU */
-> 	if (!(skb->protocol == htons(ETH_P_IP) && skb->len > skb->dev->mtu))
-> 		return true;
-> 
-> 	/* VLAN encapsulated IP packet does not fit in MTU */
-> 	if (IS_VLAN_IP(skb) && skb->len > skb->dev->mtu - VLAN_HLEN)
-> 		return true;
-> 
-> 	/* PPPoE encapsulated IP packet does not fit in MTU */
-> 	if (IS_PPPOE_IP(skb) && skb->len > skb->dev->mtu - PPPOE_SES_HLEN)
-> 		return true;
-> 
-> 	return false;
-> }
+[1] http://cekirdek.pardus.org.tr/~caglar/kaffeine/
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
 
-As I said, I don't think we should account for the VLAN header overhead,
-the VLAN code itself doesn't even do it. And we should exclude packets
-that don't have a connection tracking reference attached since we are
-only undoing the damage connection tracking did by defragmenting it
-and should avoid fragmenting other packets as good as possible.
+--nextPart1604955.BIWbijiMyt
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> and then br_nf_dev_queue_xmit() becomes:
-> 
-> static int br_nf_dev_queue_xmit(struct sk_buff *skb)
-> {
->         if (br_nf_need_fragment(skb) &&  !skb_is_gso(skb))
->                 return ip_fragment(skb, br_dev_queue_push_xmit);
->         else
->                 return br_dev_queue_push_xmit(skb);
-> }
-> 
-> which is much more readable, more documented and doesn't contain a condition monster :-)
-> 
-> @Patrick: Could you check, wether the PPPoE case is correct?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4 (GNU/Linux)
 
+iD8DBQBGWE2Ky7E6i0LKo6YRAhSoAJ0b9CBxrZvOMdbGyn4W6FrEfOjwrwCffrhg
+Uw2DEo1xb+sJ+oP4z9njW28=
+=L/1g
+-----END PGP SIGNATURE-----
 
-It looks OK. But there is another problem, ip_fragment doesn't care
-about the PPPoE overhead and produces a packet that will be too large
-after restoring the PPPoE header. A second __fake_rtable that accounts
-for the PPPoE overhead could probably fix that ..
-
-> What do you think? Should I submit a patch for that?
-
-
-Sure :)
+--nextPart1604955.BIWbijiMyt--
