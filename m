@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762360AbXEZSDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761163AbXEZSKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762360AbXEZSDd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 14:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXEZSD0
+	id S1761163AbXEZSKu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 14:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbXEZSKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 14:03:26 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:57918
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752783AbXEZSDZ (ORCPT
+	Sat, 26 May 2007 14:10:42 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:59322 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753554AbXEZSKl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 14:03:25 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Uwe Bugla <uwe.bugla@gmx.de>
-Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
-Date: Sat, 26 May 2007 20:03:17 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       linux-wireless@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <20070524195616.234280@gmx.net> <200705261918.09469.mb@bu3sch.de> <200705261924.33802.uwe.bugla@gmx.de>
-In-Reply-To: <200705261924.33802.uwe.bugla@gmx.de>
+	Sat, 26 May 2007 14:10:41 -0400
+Message-ID: <4658781D.5070108@zytor.com>
+Date: Sat, 26 May 2007 11:10:37 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] MIPS: Transform old-style macros to newer "__noreturn"
+ standard.
+References: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain> <46572DAF.1000108@zytor.com> <Pine.LNX.4.64.0705251458440.13906@localhost.localdomain> <46573B23.1090700@zytor.com> <Pine.LNX.4.64.0705260924370.19438@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0705260924370.19438@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705262003.17403.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 26 May 2007 19:24:33 Uwe Bugla wrote:
-> Am Samstag, 26. Mai 2007 19:18 schrieben Sie:
-> > On Saturday 26 May 2007 19:04:04 Uwe Bugla wrote:
-> > > Yes, sure! But the help text is very unlucky and humble, and it is not
-> > > clear enough in the sense of being distinctive enough, just clear and
-> > > comprehensive.
-> >
-> > Why don't you simply submit a patch to change the helptext then?
-> > I'm not sure why you refuse to DO anything about the "mess", but
-> > instead keep poking me that I am responsible somehow to fix it up
-> > for you...
+Robert P. J. Day wrote:
 > 
-> I need exception examples for doing so. What are the exception examples?
+> It does not make sense for a noreturn function to have a return type
+> other than void.
+> ^^^^^ ^^^^ ^^^^
+> ===============================================================
 > 
-> Apart from that you have don nothing except than guessing around.
-
-Admit it. You don't know how debugging is done in the real world.
-Debugging _IS_ guessing around.
-
-> Now here comes the LAST proof that your code is buggy:
+>   so I'm just going to stick with the pattern that's been used so far.
+> i realize it offends your sense of syntactic sensibility, but it's
+> just not worth treating that one attribute so differently from the
+> rest of them.
 > 
-> A. It's not mm-implementation
-> B. It's not user behaviour or fault
-> C. It's not an ACPI issue
-> 
-> BUT ONE AND ONLY:
-> 
-> D. It's your code that is buggy, without any doubt!
 
-Blahblah. Did you even read the mail I CCed to you?
-It "proves" (to use your wording) the exact opposite.
+Why are you so hung up over the fact that the *implementation* of this
+is an attribute?  You're totally confusing interface and implementation.
 
-> OK, went Andrew's path: patched 2.6.22-rc3 with wireless tree:
-> 
-> Result: The NIC driver b44 and ssb are loaded correctly, but refuse to work
-> (no network communication possible).
-
-Ok, please take git and get my development tree and try with that:
-
-git clone http://bu3sch.de/git/wireless-dev.git
-
-It's based on 2.6.22-rc1 and it works fine for me.
-
-> dmesg:
-> 
-...
-
-Ok, config and dmesg looks OK to me, now.
-
-
--- 
-Greetings Michael.
+	-hpa
