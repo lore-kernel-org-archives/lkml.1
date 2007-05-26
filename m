@@ -1,98 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbXEZC2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbXEZCtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbXEZC2e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 22:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbXEZC2Y
+	id S1753179AbXEZCtk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 22:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750859AbXEZCtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 22:28:24 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34176 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbXEZC2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 22:28:23 -0400
-To: jfannin@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       safford@us.ibm.com, zohar@us.ibm.com, serue@us.ibm.com
+	Fri, 25 May 2007 22:49:32 -0400
+Received: from web52606.mail.re2.yahoo.com ([206.190.48.209]:36858 "HELO
+	web52606.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750821AbXEZCtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 22:49:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=DntptJGEIpsA3ha1qXPoFwDLI8m3DSJ6jMHlrmpXFG00s9hd3uRjwJQcAwOosHH8rgQ/myXERvR7NhG7WYVRTgBM1VqTr4x/4FLWGXkcqfbDGw05mg7gkTjV6gex2kB/0DKj8rufqIbodmo8ZMDCvDkyRAUyM0vK6kNtxgvpNjM=;
+X-YMail-OSG: gZAe_lgVM1mPMtb5eKobz0GKtm565lDrmwqe2k8SWP5eoagi0AOv0u2LpfwFXONGjnXsMtoXkZ9AWlwHne8gMUY_DRoiGaJ7.Omwii95W8zfI0MOjFIq3Qtb1vRDZg--
+Date: Sat, 26 May 2007 12:49:30 +1000 (EST)
+From: Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au>
+Subject: Re: [PROBLEM] 2.6.22-rc2 panics on x86-64 with slub
+To: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Oliver Xymoron <oxymoron@waste.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705251850350.9013@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Subject: Re: 2.6.22-rc1-mm1: evm BUG when reading sysfs file
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF221AC3A7.91DF97D1-ON852572E6.007E756B-852572E7.000D90F8@us.ibm.com>
-From: Reiner Sailer <sailer@us.ibm.com>
-Date: Fri, 25 May 2007 22:28:22 -0400
-X-MIMETrack: Serialize by Router on D01ML605/01/M/IBM(Build V80_M4_03042007|March 04, 2007) at
- 05/25/2007 22:28:25,
-	Serialize complete at 05/25/2007 22:28:25
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <95208.131.qm@web52606.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 May 2007 03:25:48 -0400
-jfannin@gmail.com (Joseph Fannin) wrote:
+--- Christoph Lameter <clameter@sgi.com> wrote:
+> I finally figured out the second issue. Took some time to get that figure 
+> out. Sorry. But now all the bug reports make sense.
 
+[...]
+
+Impressive Christoph. Indeed, this fixes my problem on latest -git (its hg
+equivalent :-)). Well done.
+
+(Tested with CONFIG_SLAB_DEBUG without slub_debug; all was well. Then with
+slub_debug & slabinfo -v also; again all was well. I had many LOCKDEP and its
+relatives also compiled in.)
+
+Now hoping it'll be in 2.6.22-rc3 :-)).
+
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
 > 
-> I've been getting this since 2.6.21-rc7-mm1:
+> ---
+>  mm/slub.c |    7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
-> [    2.379310] BUG: unable to handle kernel paging request at virtual 
-address 4400d340
-> [    2.379491]  printing eip:
-> [    2.379573] c021c978
-> [    2.379656] *pdpt = 000000000353c001
-> [    2.379739] *pde = 0000000000000000
-> [    2.379824] Oops: 0000 [#1]
-> [    2.379906] PREEMPT SMP
-> [    2.380059] Modules linked in: thermal processor dm_mod
-> [    2.380288] CPU:    0
-> [    2.380289] EIP:    0060:[<c021c978>]    Not tainted VLI
-> [    2.380291] EFLAGS: 00010297   (2.6.22-rc1-mm1 #2)
-> [    2.380547] EIP is at vsnprintf+0x448/0x5d0
-> [    2.380633] eax: 4400d340   ebx: c348f034   ecx: 4400d340   edx: 
-fffffffe
-> [    2.380721] esi: c03e0100   edi: 4400d340   ebp: c357ecc0   esp: 
-c357ec68
-> [    2.380810] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> [    2.380898] Process udevtrigger (pid: 686, ti=c357e000 task=c1876df0 
-task.ti=c357e000)
-> [    2.380987] Stack: c348f014 00000fec c03e1c60 c03e3cec c357eccc 
-c0499b88 c357ece0 c0282513
-> [    2.381428]        c348f014 00000fec 3cb70fcb c348f034 ffffffff 
-00000000 ffffffff ffffffff
-> [    2.381867]        ffffffff fffffffe c03e017c c357ed18 00000034 
-c0494a20 c357ece0 c021cb9f
-> [    2.382305] Call Trace:
-> [    2.382470]  [<c021cb9f>] sprintf+0x1f/0x30
-> [    2.382594]  [<c02815ed>] show_uevent+0xed/0x130
-> [    2.382720]  [<c0281163>] dev_attr_show+0x23/0x30
-> [    2.382843]  [<c01dc077>] sysfs_read_file+0x97/0x140
-> [    2.382968]  [<c019502f>] vfs_read+0xaf/0x180
-> [    2.383096]  [<c0198c3a>] kernel_read+0x3a/0x50
-> [    2.383221]  [<c01f126c>] evm_calc_hash+0x11c/0x240
-> [    2.383347]  [<c01efd39>] evm_file_free+0xb9/0x330
-> [    2.383470]  [<c0195a3a>] __fput+0xba/0x180
-> [    2.383593]  [<c0195c32>] fput+0x22/0x40
-> [    2.383715]  [<c0192e07>] filp_close+0x47/0x70
-> [    2.383839]  [<c0194109>] sys_close+0x69/0xc0
-> [    2.383965]  [<c01043c8>] syscall_call+0x7/0xb
-> [    2.384092]  [<b7ebd0a7>] 0xb7ebd0a7
-> [    2.384212]  =======================
-> [    2.384295] INFO: lockdep is turned off.
-> [    2.384379] Code: 21 fd ff ff c6 03 25 e9 19 fd ff ff 8d 4f 04 b8
-> 3b a2 3d c0 8b 55 e4 89 4d 08 8b 3f 81 ff ff 0f 00 00 0f 46 f8 89 f9
-> 89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 89 c6 8b 45 e0
-> f6 45
-> [    2.386787] EIP: [<c021c978>] vsnprintf+0x448/0x5d0 SS:ESP 
-0068:c357ec68
-> 
->     This comes a bit after IMA bails out successfully, if that's 
-relevant:
-> 
-> [    1.708761] ima (ima_init): No TPM chip found(rc = -19), activating
-> TPM-bypass!
+> Index: slub/mm/slub.c
+> ===================================================================
+> --- slub.orig/mm/slub.c	2007-05-25 18:28:42.000000000 -0700
+> +++ slub/mm/slub.c	2007-05-25 18:29:46.000000000 -0700
+> @@ -2473,6 +2473,7 @@ void __init kmem_cache_init(void)
+>  	 */
+>  	create_kmalloc_cache(&kmalloc_caches[0], "kmem_cache_node",
+>  		sizeof(struct kmem_cache_node), GFP_KERNEL);
+> +	kmalloc_caches[0].refcount = -1;
+>  #endif
+>  
+>  	/* Able to allocate the per node structures */
+> @@ -2520,6 +2521,12 @@ static int slab_unmergeable(struct kmem_
+>  	if (s->ctor)
+>  		return 1;
+>  
+> +	/*
+> +	 * We may have set a slab to be unmergeable during bootstrap.
+> +	 */
+> +	if (s->refcount < 0)
+> +		return 1;
+> +
+>  	return 0;
+>  }
 
-Joseph,
 
-thank you for posting this problem. I cannot reconstruct it on my machine.
 
-Could you tell us which kernel configuration you used (drivers/char/tpm 
-and security settings) ?
-Does it disappear when IMA is disabled in the kernel config?
+      ___________________________________________________________________________________
+How would you spend $50,000 to create a more sustainable environment in Australia?  Go to Yahoo!7 Answers and share your idea.
+http://advision.webevents.yahoo.com/aunz/lifestyle/answers/y7ans-babp_reg.html
 
-Reiner
