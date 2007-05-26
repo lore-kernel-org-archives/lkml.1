@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbXEZLVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbXEZLaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758338AbXEZLVZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 07:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXEZLVS
+	id S1758636AbXEZLaW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 07:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbXEZLaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 07:21:18 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:38278 "EHLO
+	Sat, 26 May 2007 07:30:10 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:43898 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751105AbXEZLVS (ORCPT
+	with ESMTP id S1751105AbXEZLaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 07:21:18 -0400
+	Sat, 26 May 2007 07:30:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CzUXKjjzst66lFbkYfE9tCGCn66YdLMPEC7hVcKjPvdWnxQewOW8n5lzTN1dQ13StJQsjhO/czfPkN7pUwo0GPeHYJPzEZ5Y+EbWsZx+LqkbqDMtqtAN6Qopq/hSFtB1cAjI6CiLrJfivmKsYrpUPMa/BtlrHpjYUS2qnEZQ320=
-Message-ID: <4cefeab80705260421x2af3d65bi868a1cb37c6bd633@mail.gmail.com>
-Date: Sat, 26 May 2007 16:51:17 +0530
+        b=UxZSzyYOfXWsiVw4svEMliPlk09dc1I2Q76UTPBzVNt26EI6d5uWEd+Z1y69yqT6APFNa7LcgZnRivvJRdLPeI9X6+RHpuSH40VTZFe58/EJ7fE//I5DI2Lj/EfKwjYqAryjiXCNM+/nhMF6Bb20GPet/NWkYPAJgN3IFbZjBM4=
+Message-ID: <4cefeab80705260430y7fbfb6e1wdcab1222611d1509@mail.gmail.com>
+Date: Sat, 26 May 2007 17:00:07 +0530
 From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Richard Purdie" <richard@openedhand.com>
-Subject: Re: [RFC] LZO de/compression support - take 4
-Cc: linux-kernel@vger.kernel.org, linux-mm-cc@laptop.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Andrey Panin" <pazke@donpac.ru>, "Bret Towe" <magnade@gmail.com>,
-       "Michael-Luke Jones" <mlj28@cam.ac.uk>
-In-Reply-To: <1180175325.5856.23.camel@localhost.localdomain>
+To: "Bret Towe" <magnade@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 3
+Cc: linux-kernel@vger.kernel.org, "Richard Purdie" <richard@openedhand.com>,
+       linux-mm-cc@laptop.org, "Satyam Sharma" <satyam.sharma@gmail.com>
+In-Reply-To: <dda83e780705251002hed0e861x26a0b0ea6260dd52@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <4cefeab80705250445m51736a9aj8c89af893d8c242c@mail.gmail.com>
-	 <1180095000.5864.48.camel@localhost.localdomain>
-	 <4cefeab80705250557w1baee0afn255e37436b6545a@mail.gmail.com>
-	 <1180175325.5856.23.camel@localhost.localdomain>
+References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+	 <dda83e780705230750j43c9e89eh766fdaafb1d671f3@mail.gmail.com>
+	 <4cefeab80705240648k2f3c22ddw13374c9d6b2f521a@mail.gmail.com>
+	 <dda83e780705241938h2dadeeb9p61c9294ddfd96990@mail.gmail.com>
+	 <4cefeab80705242210k1169d85k97ce803de02dbc2a@mail.gmail.com>
+	 <dda83e780705251002hed0e861x26a0b0ea6260dd52@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Richard,
+Hi Bret,
 
-On 5/26/07, Richard Purdie <richard@openedhand.com> wrote:
+On 5/25/07, Bret Towe <magnade@gmail.com> wrote:
 >
-> I've been looking at my benchmark figures and I think I've found why the
-> figures for my version were different to yours. Its not your code which
-> is at fault, its the way it was hooked into the benchmarking program.
-> The compiler was inlining some parts which it shouldn't have been
-> allowed to do, sorry :-/.
+> [  237.556167] LZO compress successful: orig_size=17448, comp_size=8183
+> [  253.320760] LZO decompress successful: decomp_size=17448
 >
-> With that issue corrected, decompression is the same speed however
-> compression is showing about a 9% performance loss compared to my kernel
-> patch.
+> 2221c586e3eb869af7f4333d4f56b441b9aa8414  test-input
+> 2e6c96b687274b629308b29835cebd3af989e0c7  output
 >
-> I did some diffs of the assembler outputted by our two versions (mine
-> matches minilzo). For decompression the output is effectively identical.
-> For compression, there are significant differences. If I add a noinline
-> attribute to lzo1x_compress_worker, that removes a lot of them (and
-> boosts speed a bit) but there are still differences. Ideally, I'd like
-> to understand why.
+> ppc however seems bust
+> the computer is a g4 mini
 >
 
-I will look more closely into compression code to see why you are
-getting this perf. difference here.
+Can you please test the 'take 4' version on ppc?
+Just one line change: Please replace call to lzo1x_decompress_safe()
+to lzo1x_decompress() in compress-test module.
 
-Thanks for your tests.
-
-- Nitin
+Thanks,
+Nitin
