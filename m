@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbXEZSRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762125AbXEZSTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761366AbXEZSRG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 14:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbXEZSQ5
+	id S1762125AbXEZSTj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 14:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbXEZSTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 14:16:57 -0400
-Received: from smtpout.mac.com ([17.250.248.177]:63902 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783AbXEZSQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 14:16:55 -0400
-In-Reply-To: <200705262344.HGG92040.QtGFWFTOJMHOEFV@I-love.SAKURA.ne.jp>
-References: <309300.41401.qm@web36615.mail.mud.yahoo.com> <200705261346.20712.agruen@suse.de> <200705262109.JJB99189.TFHFGQEOtVOMWJF@I-love.SAKURA.ne.jp> <200705261541.09891.agruen@suse.de> <200705262344.HGG92040.QtGFWFTOJMHOEFV@I-love.SAKURA.ne.jp>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5630E353-1556-4A0F-8618-D885B5BC1842@mac.com>
-Cc: agruen@suse.de, casey@schaufler-ca.com, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
+	Sat, 26 May 2007 14:19:32 -0400
+Received: from www.sf-tec.de ([62.27.20.187]:36758 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753592AbXEZSTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 14:19:31 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Richard Mittendorfer <delist@gmx.net>
+Subject: Re: [BUG] Warning in mm/slab.c:777
+Date: Sat, 26 May 2007 20:19:19 +0200
+User-Agent: KMail/1.9.7
+References: <200705260849.00356.eike-kernel@sf-tec.de> <20070526184622.cfdba54a.delist@gmx.net>
+In-Reply-To: <20070526184622.cfdba54a.delist@gmx.net>
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1302086.fzkjkjTNo7";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Pass struct vfsmount to the inode_create LSM hook
-Date: Sat, 26 May 2007 14:16:26 -0400
-To: Tetsuo Handa <penguin-fsdevel@I-love.SAKURA.ne.jp>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+Message-Id: <200705262019.24816.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 26, 2007, at 10:44:46, Tetsuo Handa wrote:
-> Andreas Gruenbacher wrote:
->> Tetsuo Handa wrote:
->>> Therefore, TOMOYO Linux checks the combination of filename and  
->>> argv[0] passed to execve().
->>
->> So you are indeed trying to control the value of argv[0]? Well,  
->> good luck with that, but it's totally insane. You are guaranteed  
->> to break some applications.
+--nextPart1302086.fzkjkjTNo7
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+You wrote:
+> Also sprach Rolf Eike Beer <eike-kernel@sf-tec.de> (Sat, 26 May 2007=20
+08:48:55 +0200):
+> > After bootup (runlevel 5) I found this in dmesg:
+> >
+> > WARNING: at mm/slab.c:777 __find_general_cachep()
+> >  [<c0165fe1>] __kmalloc+0x40/0xc3
+> >  [<f8f4d5ed>] drm_rmdraw+0x126/0x24e [drm]
+> >  [<c023e68b>] skb_dequeue+0x39/0x3f
+> >  [<f8f4d4c7>] drm_rmdraw+0x0/0x24e [drm]
+> >  [<f8f4e10e>] drm_ioctl+0x14c/0x192 [drm]
+> >  [<c0172cb0>] do_ioctl+0x4c/0x62
+> >  [<c0172efd>] vfs_ioctl+0x237/0x249
+> >  [<c017aff3>] mntput_no_expire+0x11/0x68
+> >  [<c0172f5b>] sys_ioctl+0x4c/0x65
+> >  [<c0103cde>] sysenter_past_esp+0x5f/0x85
+> >  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >
+> > Kernel is Linus' git of yesterday, the first occurence of this in my lo=
+gs
+> > was on May 16th.
 >
-> TOMOYO Linux ristricts argv[0] using allow_argv0 syntax.   
-> "allow_argv0 /bin/bash -bash" to allow passing "/bin/bash" to  
-> filename and "-bash" to argv[0].  "allow_argv0 /bin/gzip gunzip" to  
-> allow passing "/bin/gzip" to filename and "gunzip" to argv[0].   
-> "allow_argv0 /sbin/busybox cat" to allow passing "/sbin/busybox" to  
-> filename and "cat" to argv[0].  No need to use allow_argv0 syntax  
-> if the basename of filename and basename of argv[0] are the same  
-> (i.e. "allow_argv0 /bin/bash bash" is not required).  TOMOYO Linux  
-> doesn't unconditionally forbid passing different values for  
-> filename and argv[0].  TOMOYO Linux allows passing different values  
-> for filename and argv[0] only if it is allowed by allow_argv0 syntax.
->
-> Could you please explain me why this approach breaks applications?
+> It may be the same zero request I hit in slub, and according to
+> http://bugzilla.kernel.org/show_bug.cgi?id=3D8476 people care about. Also
+> I remember a mail from Linus, where he meant it's handled quite well
+> (currently no link cause fetching thze whole IMAP quite takes some
+> time, sry).
 
-One of my servers runs 3 different instances of the "kadmind"  
-Kerberos daemon, one for each realm which I need to be able to modify/ 
-change-passwords/etc.  In order to differentiate and stop/restart the  
-appropriate daemon, I have a simple starter script which runs each  
-kadmind process with a unique name derived from the realm (EG:  
-"kadmind(EXAMPLE.COM)", "kadmind(OTHER.EXAMPLE.COM)").  Since this is  
-a Kerberos server I use a very strict SELinux-based policy, yet my  
-management tools need to be able to easily add and remove realms in a  
-secure fashion.  It sounds like TOMOYO Linux would not be able to  
-handle this situation at all;  I would either have to completely turn  
-off that security "feature" and lose most of the functionality of  
-TOMOYO Linux, or hard-code the list of realms into the policy file  
-and have to completely reload policy every time I need to add/remove  
-realms (big gaping security hole).
+Thank you for your information. It may be the same alloc, but it's independ=
+ent=20
+of SLUB:
 
-Cheers,
-Kyle Moffett
+CONFIG_SLAB=3Dy
+# CONFIG_SLUB is not set
+# CONFIG_SLOB is not set
 
+Eike
 
+--nextPart1302086.fzkjkjTNo7
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGWHosXKSJPmm5/E4RAge/AJ9UA+gp2MB1acyP3BqqBAX89A1ifwCglLLq
+ThdQlEjXJPAVPzKlM73vwNo=
+=6Dl1
+-----END PGP SIGNATURE-----
+
+--nextPart1302086.fzkjkjTNo7--
