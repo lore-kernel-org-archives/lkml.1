@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbXEZIIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbXEZINt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756406AbXEZIIz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 04:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbXEZIIn
+	id S1758050AbXEZINt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 04:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbXEZINh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 04:08:43 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:23547 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbXEZIIl (ORCPT
+	Sat, 26 May 2007 04:13:37 -0400
+Received: from stinky.trash.net ([213.144.137.162]:52420 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbXEZINg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 04:08:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZY7hrb2QBRVjIXDYdhpr/oRVMkLyXqbkywo47JFwEr+McEgf3ZtDniL9xyQ7SrCLGOPzoR0Bud5Zqok7E0vbTH54b72KoEYWElUu/NozPlAuKDR3/wE4UZ5ukZad2QZOF+6Xqadt3+oqiTVG+Upe5N+MMNtNbNKFZCHoElTAgMo=
-Message-ID: <2bd9ebfa0705260108t67f33613p1e31683741c7507@mail.gmail.com>
-Date: Sat, 26 May 2007 04:08:39 -0400
-From: "Tej Parkash" <tejparkash.d@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: reg: modules make in Ubuntu
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070526065835.GA22020@uranus.ravnborg.org>
+	Sat, 26 May 2007 04:13:36 -0400
+Message-ID: <4657EC24.1030407@trash.net>
+Date: Sat, 26 May 2007 10:13:24 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Adam Osuchowski <adwol@zonk.pl>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [Bridge] [BUG] Dropping fragmented IP packets within VLAN frames
+ on bridge
+References: <20070525081750.5ba4a411@zonk.pl>	<20070525085947.12841835@freepuppy> <20070525174925.41bd6b2e@zonk.pl>
+In-Reply-To: <20070525174925.41bd6b2e@zonk.pl>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2bd9ebfa0705252228u65b62ddbta2337ce56e77618a@mail.gmail.com>
-	 <20070526065835.GA22020@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/26/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Sat, May 26, 2007 at 01:28:56AM -0400, Tej Parkash wrote:
-> > make[1]: Entering directory `/usr/src/linux-headers-2.6.20-15-generic'
-> >  CHK     include/linux/version.h
-> >  CHK     include/linux/utsrelease.h
-> > make[2]: *** No rule to make target `arch/i386/kernel/msr.c', needed
-> > by `arch/i386/kernel/msr.o'.  Stop.
-> > make[1]: *** [arch/i386/kernel] Error 2
-> > make[1]: Leaving directory `/usr/src/linux-headers-2.6.20-15-generic'
-> > make: *** [all] Error 2
-> >
-> > what the hack is this. no kernel version is having this file in this
-> > particular location as asked in error. then why this error is coming
-> > in this kernel version.
-> Looks like you are trying to build a kernel but have only headers
-> judging from the directoryname.
-yaa u r correct
-but i am wondering like how those file can be missed from the required
-location. if they are so important to build the module.. even if it is
-missed is there any other procedure to build the module
-i am trying it on other kernel version.
+Adam Osuchowski wrote:
+> Stephen Hemminger wrote:
+> 
+>>It would be better to account for the tag in the length check.
+>>Something like
+>>	if (skb->protocol == htons(ETH_P_IP) &&
+>>	    skb->len > skb->dev->mtu - (IS_VLAN_IP(skb) ? VLAN_HLEN : 0) &&
+>>	    !skb_is_gso(skb))
+>>		return ip_fragment ...
+> 
+> 
+> It isn't good solution because one of IS_VLAN_IP() necessary condition is
+> 
+>     skb->protocol == htons(ETH_P_8021Q)
+> 
+> which is, of course, mutually exclusive with
+> 
+>     skb->protocol == htons(ETH_P_IP)
+> 
+> from br_nf_dev_queue_xmit(). IMHO, one should check length of ETH_P_IP
+> and ETH_P_8021Q frames separately:
+> 
+>     if (((skb->protocol == htons(ETH_P_IP) && skb->len > skb->dev->mtu) ||
+>         (IS_VLAN_IP(skb) && skb->len > skb->dev->mtu - VLAN_HLEN)) &&
+> 	!skb_is_gso(skb))
+> 	    return ip_fragment ...
 
->
-> Could you please prove a bit more context if you need additional help.
-> Like (but not limited to):
-> -> Actual commandline
-> -> Any own kbuild/Makefiles
-> -> .config
->
->         Sam
->
-thanks
-tej
+
+net/8021q ignores the VLAN header overhead, so we should probably do the
+same here for consistency. Using IS_VLAN_IP (and IS_PPPOE_IP for current
+-rc) looks fine, additionally we should probably also check for
+skb->nfct != NULL to make sure that at least without connection tracking
+the bridge doesn't perform fragmentation.
+
