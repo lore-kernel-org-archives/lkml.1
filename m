@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762120AbXEZQB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762446AbXEZQCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762120AbXEZQB2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 12:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbXEZQBW
+	id S1762446AbXEZQCj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 12:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXEZQCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 12:01:22 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:60488 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752885AbXEZQBV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 12:01:21 -0400
-Date: Sat, 26 May 2007 09:01:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1
-Message-Id: <20070526090117.dda72286.akpm@linux-foundation.org>
-In-Reply-To: <46585953.80200@imap.cc>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-	<46585953.80200@imap.cc>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 26 May 2007 12:02:33 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49407 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751434AbXEZQCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 12:02:32 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Indan Zupancic" <indan@nul.nu>
+Subject: Re: [PATCH] x86: fix section mismatch warnings in mtrr
+Date: Sat, 26 May 2007 18:02:08 +0200
+User-Agent: KMail/1.9.6
+Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Andrey Borzenkov" <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org,
+       "Bernhard Walle" <bwalle@suse.de>
+References: <200705191443.27161.arvidjaar@mail.ru> <20070521151139.GA1929@uranus.ravnborg.org> <4498.81.207.0.53.1180181244.squirrel@secure.samage.net>
+In-Reply-To: <4498.81.207.0.53.1180181244.squirrel@secure.samage.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705261802.08573.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 May 2007 17:59:15 +0200 Tilman Schmidt <tilman@imap.cc> wrote:
+On Saturday 26 May 2007 14:07:24 Indan Zupancic wrote:
 
-> Am 23.05.2007 09:42 schrieb Andrew Morton:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
 > 
-> This breaks network initialization on my SuSE 10.0 box once
-> again although I compiled with CONFIG_SYSFS_DEPRECATED=y.
-> Acquisition of the IP address via DHCP times out.
-> Manual start (rcnetwork restart) doesn't help either.
-> 
-> I'll start bisecting as soon as the machine is free.
+> Did the patches reach 2.6.22-rc3 yet?
 
-Thanks.  I think others have seen similar things and it was attributed to
-driver-core-check-return-code-of-sysfs_create_link.patch.
+No.
+
+> 
+> If they did, then the following warnings might need fixing:
+
+There is already one patch queued for it. But actually in my experience I cannot
+remember a single real bug showed by these warnings. All were false positives
+and there are always more of them.
+
+Maybe it would be best to disable these warnings again; not much good 
+seems to come from them.
+
+-Andi
+
+> WARNING: arch/i386/kernel/built-in.o(.text+0x84bc): Section mismatch: reference to
+>.init.text:amd_init_mtrr (between 'mtrr_bp_init' and 'mtrr_attrib_to_str')
+>WARNING: arch/i386/kernel/built-in.o(.text+0x84c1): Section mismatch: reference to
+>.init.text:cyrix_init_mtrr (between 'mtrr_bp_init' and 'mtrr_attrib_to_str')
