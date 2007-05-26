@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbXEZC2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbXEZC2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbXEZC2S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 22:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbXEZC2I
+	id S1756713AbXEZC2e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 22:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbXEZC2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 22:28:08 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:45240 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750814AbXEZC2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 22:28:06 -0400
-Date: Fri, 25 May 2007 19:27:42 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix oprofile double free (was Re: Multiple free
-	during oprofile unload)
-Message-ID: <20070526022741.GD3390@sequoia.sous-sol.org>
-References: <4656FA04.5000403@redhat.com> <200705251913.53097.ak@suse.de> <20070525173813.GA2875@redhat.com> <200705252002.58967.ak@suse.de> <20070525193737.34609de2@the-village.bc.nu>
+	Fri, 25 May 2007 22:28:24 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34176 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753536AbXEZC2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 22:28:23 -0400
+To: jfannin@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       safford@us.ibm.com, zohar@us.ibm.com, serue@us.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070525193737.34609de2@the-village.bc.nu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Subject: Re: 2.6.22-rc1-mm1: evm BUG when reading sysfs file
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF221AC3A7.91DF97D1-ON852572E6.007E756B-852572E7.000D90F8@us.ibm.com>
+From: Reiner Sailer <sailer@us.ibm.com>
+Date: Fri, 25 May 2007 22:28:22 -0400
+X-MIMETrack: Serialize by Router on D01ML605/01/M/IBM(Build V80_M4_03042007|March 04, 2007) at
+ 05/25/2007 22:28:25,
+	Serialize complete at 05/25/2007 22:28:25
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> I'd agree entirely with Dave - if you are applying a fix to something
-> that is currently totally broken which may make it work and which doesn't
-> affect any other bit of code then it goes into the stable tree.
+On Tue, 22 May 2007 03:25:48 -0400
+jfannin@gmail.com (Joseph Fannin) wrote:
 
-And, in this case we're in luck.  It's not released in any -stable tree
-yet (it's queued for the next release).  So there's plenty of time to
-fix it up before next -stable release.
+> 
+> I've been getting this since 2.6.21-rc7-mm1:
+> 
+> [    2.379310] BUG: unable to handle kernel paging request at virtual 
+address 4400d340
+> [    2.379491]  printing eip:
+> [    2.379573] c021c978
+> [    2.379656] *pdpt = 000000000353c001
+> [    2.379739] *pde = 0000000000000000
+> [    2.379824] Oops: 0000 [#1]
+> [    2.379906] PREEMPT SMP
+> [    2.380059] Modules linked in: thermal processor dm_mod
+> [    2.380288] CPU:    0
+> [    2.380289] EIP:    0060:[<c021c978>]    Not tainted VLI
+> [    2.380291] EFLAGS: 00010297   (2.6.22-rc1-mm1 #2)
+> [    2.380547] EIP is at vsnprintf+0x448/0x5d0
+> [    2.380633] eax: 4400d340   ebx: c348f034   ecx: 4400d340   edx: 
+fffffffe
+> [    2.380721] esi: c03e0100   edi: 4400d340   ebp: c357ecc0   esp: 
+c357ec68
+> [    2.380810] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> [    2.380898] Process udevtrigger (pid: 686, ti=c357e000 task=c1876df0 
+task.ti=c357e000)
+> [    2.380987] Stack: c348f014 00000fec c03e1c60 c03e3cec c357eccc 
+c0499b88 c357ece0 c0282513
+> [    2.381428]        c348f014 00000fec 3cb70fcb c348f034 ffffffff 
+00000000 ffffffff ffffffff
+> [    2.381867]        ffffffff fffffffe c03e017c c357ed18 00000034 
+c0494a20 c357ece0 c021cb9f
+> [    2.382305] Call Trace:
+> [    2.382470]  [<c021cb9f>] sprintf+0x1f/0x30
+> [    2.382594]  [<c02815ed>] show_uevent+0xed/0x130
+> [    2.382720]  [<c0281163>] dev_attr_show+0x23/0x30
+> [    2.382843]  [<c01dc077>] sysfs_read_file+0x97/0x140
+> [    2.382968]  [<c019502f>] vfs_read+0xaf/0x180
+> [    2.383096]  [<c0198c3a>] kernel_read+0x3a/0x50
+> [    2.383221]  [<c01f126c>] evm_calc_hash+0x11c/0x240
+> [    2.383347]  [<c01efd39>] evm_file_free+0xb9/0x330
+> [    2.383470]  [<c0195a3a>] __fput+0xba/0x180
+> [    2.383593]  [<c0195c32>] fput+0x22/0x40
+> [    2.383715]  [<c0192e07>] filp_close+0x47/0x70
+> [    2.383839]  [<c0194109>] sys_close+0x69/0xc0
+> [    2.383965]  [<c01043c8>] syscall_call+0x7/0xb
+> [    2.384092]  [<b7ebd0a7>] 0xb7ebd0a7
+> [    2.384212]  =======================
+> [    2.384295] INFO: lockdep is turned off.
+> [    2.384379] Code: 21 fd ff ff c6 03 25 e9 19 fd ff ff 8d 4f 04 b8
+> 3b a2 3d c0 8b 55 e4 89 4d 08 8b 3f 81 ff ff 0f 00 00 0f 46 f8 89 f9
+> 89 c8 eb 06 <80> 38 00 74 07 40 4a 83 fa ff 75 f4 29 c8 89 c6 8b 45 e0
+> f6 45
+> [    2.386787] EIP: [<c021c978>] vsnprintf+0x448/0x5d0 SS:ESP 
+0068:c357ec68
+> 
+>     This comes a bit after IMA bails out successfully, if that's 
+relevant:
+> 
+> [    1.708761] ima (ima_init): No TPM chip found(rc = -19), activating
+> TPM-bypass!
 
-Something like below should fix it.
+Joseph,
 
-thanks,
--chris
---
+thank you for posting this problem. I cannot reconstruct it on my machine.
 
-Subject: [PATCH] x86: fix oprofile double free
+Could you tell us which kernel configuration you used (drivers/char/tpm 
+and security settings) ?
+Does it disappear when IMA is disabled in the kernel config?
 
-From: Chris Wright <chrisw@sous-sol.org>
-
-Chuck reports that the recent fix from Andi to oprofile
-6c977aad03a18019015035958c65b6729cd0574c introduces a double
-free.  Each cpu's cpu_msrs is setup to point to cpu 0's, which
-causes free_msrs to free cpu 0's pointers for_each_possible_cpu.
-Rather than copy the pointers, do a deep copy instead.
-
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
-
- arch/i386/oprofile/nmi_int.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/arch/i386/oprofile/nmi_int.c b/arch/i386/oprofile/nmi_int.c
-index a7c0783..0c39443 100644
---- a/arch/i386/oprofile/nmi_int.c
-+++ b/arch/i386/oprofile/nmi_int.c
-@@ -211,8 +211,14 @@ static int nmi_setup(void)
- 	/* Assume saved/restored counters are the same on all CPUs */
- 	model->fill_in_addresses(&cpu_msrs[0]);
- 	for_each_possible_cpu (cpu) {
--		if (cpu != 0)
--			cpu_msrs[cpu] = cpu_msrs[0];
-+		if (cpu != 0) {
-+			memcpy(cpu_msrs[cpu].counters, cpu_msrs[0].counters,
-+				sizeof(struct op_msr) * model->num_counters);
-+				
-+			memcpy(cpu_msrs[cpu].controls, cpu_msrs[0].controls,
-+				sizeof(struct op_msr) * model->num_controls);
-+		}
-+
- 	}
- 	on_each_cpu(nmi_save_registers, NULL, 0, 1);
- 	on_each_cpu(nmi_cpu_setup, NULL, 0, 1);
+Reiner
