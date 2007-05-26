@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbXEZF4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbXEZF7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756425AbXEZF4S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 01:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbXEZF4J
+	id S1757129AbXEZF7j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 01:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbXEZF7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 01:56:09 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:34863 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751762AbXEZF4I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 01:56:08 -0400
-Message-ID: <4657CBEC.7070609@zytor.com>
-Date: Fri, 25 May 2007 22:55:56 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sat, 26 May 2007 01:59:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34021 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752359AbXEZF7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 01:59:32 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX18wPBc9CWUw2Jk2LiLdokDvG4oMSNK3ZPCZ5tYxOJ
+	+bwTtXph6vmSXm
+Date: Sat, 26 May 2007 07:59:30 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: e1000 in 2.6.21.2 and even older, like 2.6.13: eth0 does not exist but eth1 does
+Message-ID: <20070526055930.GA8647@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Martin =?utf-8?Q?MOKREJ=C5=A0?= <mmokrejs@ribosome.natur.cuni.cz>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <46560AE6.10307@ribosome.natur.cuni.cz>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Auke Kok <auke-jan.h.kok@intel.com>, Andy Whitcroft <apw@shadowen.org>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: [PATCH] scripts: Make cleanfile/cleanpatch warn about long lines
-References: <200705260100.l4Q10e05030097@tazenda.hos.anvin.org> <20070525224124.5d0a310b.akpm@linux-foundation.org>
-In-Reply-To: <20070525224124.5d0a310b.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46560AE6.10307@ribosome.natur.cuni.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 25 May 2007 17:58:26 -0700 "H. Peter Anvin" <hpa@zytor.com> wrote:
-> 
->> Make the "cleanfile" and "cleanpatch" script warn about long lines,
->> by default lines whose visual width exceeds 79 characters.
->>
->> Per suggestion from Auke Kok.
->>
->> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
->> ---
->>  scripts/cleanfile  |   54 ++++++++++++++++++++++++++++++++++++++++++++++-
->>  scripts/cleanpatch |   58 +++++++++++++++++++++++++++++++++++++++++++++++++--
-> 
-> This functionality wholly duplicates the patch-sanity-checking script
-> which Andy, Randy and others are working on.
-> 
-> The plan is to merge that script into the tree and, once it's looking
-> reasonably accurate, we wire a copy of it up to the email lists so that it
-> autonags patch-senders over the usual trivial junk.  Think of it as an
-> akpm-over-SMTP server.
+Hi,
 
-LOL.
+On 2007.05.25 00:00:06 +0200, Martin MOKREJŠ wrote:
+>  Let me emphasize ifconfig(1) does only show loopback device all the time.
+> Finally I found that in /proc/net/dev there is a row for "lo:" and "eth1".
+> Yes, the network card is recognized as eth1. Blindly running 'ifconfig eth1 
+> $IP'
 
-	-hpa
+ifconfig shows only interfaces that are "up" unless you run it with -a
+
+> I think there is sometimes logged wrong device name to syslog, I do not 
+> know why.
+> But it always shows eth0 after inserting the e1000 module? Removing the 
+> module
+> disables the IRQ for the device, re-inserting the module again claims it is
+> eth0 ... but it is eth1, I know now. The network card is wired into the 
+> motherboard,
+
+The log entries are probably right, but userspace renames the device
+shortly after. Check /etc/iftab and/or your udev rules.
+
+HTH
+Björn
