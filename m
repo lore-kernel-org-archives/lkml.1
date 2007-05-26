@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760717AbXEZOo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760779AbXEZOwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760717AbXEZOo6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 10:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbXEZOot
+	id S1760779AbXEZOwQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 10:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbXEZOwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 10:44:49 -0400
-Received: from wine.ocn.ne.jp ([220.111.47.146]:51126 "EHLO
-	smtp.wine.ocn.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754050AbXEZOos (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 10:44:48 -0400
-To: agruen@suse.de
-Cc: mrmacman_g4@mac.com, casey@schaufler-ca.com, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Pass struct vfsmount to the inode_create LSM hook
-From: Tetsuo Handa <penguin-fsdevel@I-love.SAKURA.ne.jp>
-References: <309300.41401.qm@web36615.mail.mud.yahoo.com>
-	<200705261346.20712.agruen@suse.de>
-	<200705262109.JJB99189.TFHFGQEOtVOMWJF@I-love.SAKURA.ne.jp>
-	<200705261541.09891.agruen@suse.de>
-In-Reply-To: <200705261541.09891.agruen@suse.de>
-Message-Id: <200705262344.HGG92040.QtGFWFTOJMHOEFV@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50]
-X-Accept-Language: ja,en
-Date: Sat, 26 May 2007 23:44:46 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 26 May 2007 10:52:06 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:51944 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754349AbXEZOwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 10:52:05 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] Warning in mm/slab.c:777
+Date: Sat, 26 May 2007 08:48:55 +0200
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart8087035.aFPaOeNA8f";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705260849.00356.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+--nextPart8087035.aFPaOeNA8f
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Andreas Gruenbacher wrote:
-> > Therefore, TOMOYO Linux checks the combination of filename and argv[0]
-> > passed to execve().
-> So you are indeed trying to control the value of argv[0]? Well, good luck with 
-> that, but it's totally insane. You are guaranteed to break some applications.
-TOMOYO Linux ristricts argv[0] using allow_argv0 syntax.
-"allow_argv0 /bin/bash -bash" to allow passing "/bin/bash" to filename and "-bash" to argv[0] .
-"allow_argv0 /bin/gzip gunzip" to allow passing "/bin/gzip" to filename and "gunzip" to argv[0] .
-"allow_argv0 /sbin/busybox cat" to allow passing "/sbin/busybox" to filename and "cat" to argv[0] .
-No need to use allow_argv0 syntax if the basename of filename and basename of argv[0] are the same
-(i.e. "allow_argv0 /bin/bash bash" is not required).
-TOMOYO Linux doesn't unconditionally forbid passing different values for filename and argv[0].
-TOMOYO Linux allows passing different values for filename and argv[0] only if it is allowed by allow_argv0 syntax.
-Could you please explain me why this approach breaks applications?
+After bootup (runlevel 5) I found this in dmesg:
 
-> If /bin/cat and /bin/rm are binaries or hardlinks to the same busybox binary 
-> (rather than symlinks), different profiles could be used for each of them.
-It is true if all processes are kept under control (e.g. strict policy in SELinux).
-If there is a process that is not kept under control (e.g. targeted policy in SELinux),
-you can't protect the application.
-For example, an administrator may wish to allow users run /bin/ls without applying profiles
-because /bin/ls won't read/write the content of files. But a malicious user may pass
-"/bin/ls" to filename and "rm" to argv[0] and "/etc/shadow" to argv[1].
-A malicious user may pass "/bin/ls" to filename and "/usr/sbin/httpd" to argv[0],
-resulting behave as /usr/sbin/httpd without applying profiles for /usr/sbin/httpd .
+WARNING: at mm/slab.c:777 __find_general_cachep()
+ [<c0165fe1>] __kmalloc+0x40/0xc3
+ [<f8f4d5ed>] drm_rmdraw+0x126/0x24e [drm]
+ [<c023e68b>] skb_dequeue+0x39/0x3f
+ [<f8f4d4c7>] drm_rmdraw+0x0/0x24e [drm]
+ [<f8f4e10e>] drm_ioctl+0x14c/0x192 [drm]
+ [<c0172cb0>] do_ioctl+0x4c/0x62
+ [<c0172efd>] vfs_ioctl+0x237/0x249
+ [<c017aff3>] mntput_no_expire+0x11/0x68
+ [<c0172f5b>] sys_ioctl+0x4c/0x65
+ [<c0103cde>] sysenter_past_esp+0x5f/0x85
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-Thanks.
+Kernel is Linus' git of yesterday, the first occurence of this in my logs w=
+as=20
+on May 16th.
+
+Greetings,
+
+Eike
+
+--nextPart8087035.aFPaOeNA8f
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGV9hcXKSJPmm5/E4RAiVhAKCWv2od0miQaSiAbbucFlKfvAM//gCgp8fr
+oIlh4+bu3WhRM0xMkR1yZtg=
+=R/HZ
+-----END PGP SIGNATURE-----
+
+--nextPart8087035.aFPaOeNA8f--
