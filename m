@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762914AbXEZQVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbXEZQVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762914AbXEZQVQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 12:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbXEZQVE
+	id S1763531AbXEZQVd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 12:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763191AbXEZQVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 12:21:04 -0400
-Received: from mail.tmr.com ([64.65.253.246]:47750 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753783AbXEZQVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 12:21:02 -0400
-Message-ID: <46585F02.6060806@tmr.com>
-Date: Sat, 26 May 2007 12:23:30 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 26 May 2007 12:21:24 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:42729
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762798AbXEZQVX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 12:21:23 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Date: Sat, 26 May 2007 18:21:16 +0200
+User-Agent: KMail/1.9.6
+Cc: Uwe Bugla <uwe.bugla@gmx.de>, Maximilian Engelhardt <maxi@daemonizer.de>,
+       linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <20070524195616.234280@gmx.net> <200705261750.48816.mb@bu3sch.de> <20070526091309.0af20971.akpm@linux-foundation.org>
+In-Reply-To: <20070526091309.0af20971.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21.1 on Fedora Core 6 breaks LVM/vgscan
-References: <200705210632.l4L6Wkt0004225@turbo.physics.adelaide.edu.au>
-In-Reply-To: <200705210632.l4L6Wkt0004225@turbo.physics.adelaide.edu.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705261821.16355.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Woithe wrote:
-> On 21 May 2007 I wrote:
+On Saturday 26 May 2007 18:13:09 Andrew Morton wrote:
+> > I already tried your -mm kernel, but it crashes on my machine
+> > for other reasons. (Yeah, I should look into them, too :P )
 > 
->> Attempting to compile a 2.6.21.1 kernel for use on a Fedora Core 6 box
->> results in a panic at boot because the root filesystem can't be found.
-> 
-> I have just compiled 2.6.22-rc2 with the configuration file given in my
-> previous post and the resulting kernel successfully boots on the machine
-> concerned.  Whatever broke LVM for this machine in between 2.6.18 and
-> 2.6.21.1 has now been fixed.
-> 
-I haven't had any problem booting with any of the kernels, but when I 
-try to build a kernel with a Fedora config from /boot, it builds fine 
-but doesn't boot after install. I started by building a very basic 
-kernel for testing, and then started adding features to get everything I 
-need. But just using the latest FC6 config file gets me a kernel which 
-fails in just the way you mention.
+> err, please do.  Just the oops trace would be a start.
 
-> There is still a problem with the CDROM but I will follow up in another
-> thread about that.
+Yes, I will look into it. I think it was related to my
+onboard RTL networking chip. When trying to bring it down,
+it oopses the machine. But I'm not sure what happens exactly, yet.
+I'll take a look at it.
+
+> > Andrew, is it possible that the breakage was introduced in the
+> > merge process somehow? Didn't the patch apply cleanly? Are there
+> > other changes to b44 I should know about in your tree?
 > 
-Happy to say I don't see that, I'm using PATA optical devices, and USB 
-on some machines, both work. I can't get scanning to work even after 
-buying a "supported" scanner, so I may have to go back to Slackware and 
-a 2.4 kernel on one machine, but boot and run does fine.
+> Only git-wireless.net modifies b44.c but if we're having IRQ assignment
+> problems then we'd need to look elsewhere.
+
+I think we don't have IRQ assignment problems. Uwe simply disabled
+b44-PCI support in his first bugreport (I guess). So there was
+no b44-PCI driver loaded.
+Later on he said that it does magically work now...
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Greetings Michael.
