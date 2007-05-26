@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762393AbXEZS2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761917AbXEZSlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762393AbXEZS2o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 14:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbXEZS2h
+	id S1761917AbXEZSlV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 14:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbXEZSlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 14:28:37 -0400
-Received: from colo.lackof.org ([198.49.126.79]:41938 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753554AbXEZS2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 14:28:36 -0400
-Date: Sat, 26 May 2007 12:28:28 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Greg KH <greg@kroah.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
+	Sat, 26 May 2007 14:41:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:33748 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753592AbXEZSlL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 14:41:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rV06HdYPHzfRVJGYm0hX8RVGX3+CUhsaE73cv2r8s94pa7C+P5f0IC8wqgxTWlqvy7Bu+PpUY3XAnlCYJ7+bg+Pi649ze1XYCPNz6RipNV3x6xqi0u5brrsK65TB5EkoM0/QFCuDjIXJNcAU3J/DrDu1lFFs1M+CpoMeQZWs+UM=
+Message-ID: <40f323d00705261141m7c32d2b8h7059b4b35ed066c9@mail.gmail.com>
+Date: Sat, 26 May 2007 20:41:09 +0200
+From: "Benoit Boissinot" <bboissin@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Cc: "Uwe Bugla" <uwe.bugla@gmx.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Maximilian Engelhardt" <maxi@daemonizer.de>,
+       linux-wireless@vger.kernel.org,
        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIE
-Message-ID: <20070526182828.GA7080@colo.lackof.org>
-References: <20070523155958.GA5282@kroah.com> <4654AB40.6060208@gmail.com> <adaejl79rh0.fsf@cisco.com> <4654BC10.2000808@gmail.com> <adazm3v89hv.fsf@cisco.com> <4654C85B.6060505@gmail.com> <adatzu385g1.fsf@cisco.com> <46561287.8020103@gmail.com> <ada1wh560u1.fsf@cisco.com> <46584C30.4030206@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200705261918.09469.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46584C30.4030206@gmail.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.9i
+References: <20070524195616.234280@gmx.net> <200705261840.45896.mb@bu3sch.de>
+	 <200705261904.04496.uwe.bugla@gmx.de>
+	 <200705261918.09469.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 26, 2007 at 07:03:12PM +0400, Manu Abraham wrote:
-> Roland Dreier wrote:
-> >  > I am now wondering whether the usage of MSI would help in this case and
-> >  > that i should be using enable_msi before request_irq ?
-> > 
-> > MSI interrupts are never shared.  So if pci_enable_msi() succeeds, you
-> > can be sure that the interrupts you get with that IRQ number are
-> > coming from your device.
-> > 
-> 
-> i presume then i shouldn't be using IRQF_SHARED, if using MSI.
+On 5/26/07, Michael Buesch <mb@bu3sch.de> wrote:
+> On Saturday 26 May 2007 19:04:04 Uwe Bugla wrote:
+> > Yes, sure! But the help text is very unlucky and humble, and it is not clear
+> > enough in the sense of being distinctive enough, just clear and
+> > comprehensive.
+>
+> Why don't you simply submit a patch to change the helptext then?
 
-I'm not sure...but my guess is not. Who ever "just knows", could you
-please submit a patch to Documentation/MSI-HOWTO.txt ?
+Is that ok ?
 
-> Another question would be if the device supports multiple messages, MSIX
-> should be used ?
+Discourage people from deselecting B44_PCI
 
-Yes. Assuming the device supports multiple MSI-X messages.
+Signed-off-by: Benoit Boissinot <benoit.boissinot@ens-lyon.org>
 
+--- kernel.orig/drivers/net/Kconfig	2007-05-26 20:38:02.000000000 +0200
++++ kernel/drivers/net/Kconfig	2007-05-26 20:38:15.000000000 +0200
+@@ -1449,7 +1449,7 @@
+ 	help
+ 	  Support for b44 PCI devices.
 
-> In such a context, if i request for say more than the messages that i
-> need, say i request 16 messages, but use only 1 or 2, that does bear any
-> consequences ?
+-	  Say Y
++	  Unless you know what you are doing, say Y here.
 
-Yes. One is allocating IRQ vectors from a finite number of vectors.
-But this normally isn't a problem until one gets to larger machines that
-have more than 4-8 PCI-e or PCI-X slots.
-
-Typically, one will limit the number of vectors to the number of CPUs
-in the system or to how many different events the device can signal.
-
-> > But using MSI does not work on all systems, so your driver needs to
-> > work with standard (possibly shared) INTx interrupts too.  And you
-> > should probably provide at least a module flag to disable the use of
-> > MSI, to avoid problems on buggy systems.
-> 
-> I should probably look for CONFIG_PCI_MSI and check whether the system
-> supports MSI pci_enable_msi() ?
-
-pci_enable_msi() will fail if the system doesn't support MSI or something
-else goes wrong with the call (e.g. already setup).
-
-hth,
-grant
+ config FORCEDETH
+ 	tristate "nForce Ethernet support"
