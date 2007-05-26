@@ -1,121 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762594AbXEZRJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762927AbXEZRMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762594AbXEZRJg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 13:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbXEZRJ3
+	id S1762927AbXEZRMk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 13:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbXEZRMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 13:09:29 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37802 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752783AbXEZRJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 13:09:28 -0400
-X-Authenticated: #8359428
-X-Provags-ID: V01U2FsdGVkX1/iMjQQ3Vji9ocQYleRTgYEylOWgCHG7+5v7jb6Yp
-	n+HlbzCK/czRL2
-From: Uwe Bugla <uwe.bugla@gmx.de>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
-Date: Sat, 26 May 2007 19:04:04 +0200
-User-Agent: KMail/1.9.5
-References: <20070524195616.234280@gmx.net> <200705261826.06796.uwe.bugla@gmx.de> <200705261840.45896.mb@bu3sch.de>
-In-Reply-To: <200705261840.45896.mb@bu3sch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       linux-wireless@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
+	Sat, 26 May 2007 13:12:33 -0400
+Received: from keetweej.vanheusden.com ([213.84.46.114]:40965 "EHLO
+	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753583AbXEZRMd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 13:12:33 -0400
+Date: Sat, 26 May 2007 19:12:31 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.21.1] soft lockup when removing netconsole module
+Message-ID: <20070526171231.GG11760@vanheusden.com>
+References: <20070526154011.GB3735@vanheusden.com> <465857DF.2020603@gmail.com> <1180195927.4264.11.camel@chaos> <20070526161645.GA11760@vanheusden.com> <1180197324.4264.23.camel@chaos> <20070526164934.GE11760@vanheusden.com> <1180199188.4883.0.camel@chaos>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200705261904.04496.uwe.bugla@gmx.de>
-X-Y-GMX-Trusted: 0
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1180199188.4883.0.camel@chaos>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Sun May 27 17:52:04 CEST 2007
+X-Message-Flag: PGP key-id: 0x1f28d8ae - consider encrypting your e-mail to me with PGP!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, 26. Mai 2007 18:40 schrieben Sie:
-> On Saturday 26 May 2007 18:26:06 Uwe Bugla wrote:
-> > > I think we don't have IRQ assignment problems. Uwe simply disabled
-> > > b44-PCI support in his first bugreport (I guess).
-> >
-> > Yes!
-> >
-> > > So there was
-> > > no b44-PCI driver loaded.
-> >
-> > Well, not exactly: b44 plus ssb were in fact produced, but did not
-> > function, at least in that case, due to the misleading / superficial
-> > information in the Kconfig menu......
-> >
-> > > Later on he said that it does magically work now...
-> >
-> > NO!
-> >
-> > Later on I said I did chose that b44-PCI driver, got the right
-> > dependencies, and there was no interrupt problem at all. So the driver
-> > got loaded as expected but simply did not work at all......
->
-> One small sidenote:
-> If you did _not_ play around with the b44/ssb kconfig options at all,
-> it would have selected the right options _automatically_ for you.
-> That means:
->
-> cp ../old_kernel_without_ssb/.config .
-> make oldconfig
-> make
-> be done.
->
-> You intentionaly disabled PCI device support for b44 and you
-> still wonder why it doesn't work on your PCI device?
-> I'm not sure how to make the helptext any clearer on the b44-PCI
-> option. 
+> > > > > > Seems to be hrtimers related - CC'ed Thomas.
+> > > > > I doubt that. The tick interrupt just finds out, that the machine is
+> > > > > stuck in rmmod.
+> > > > > > > Also the rmmod hangs and would not exit even with kill -9. It also
+> > > > > > > sucks up 100% cpu.
+> > > > > Can you please enable CONFIG_PROVE_LOCKING ?
+> > > > Luckily I already had :-)
+> > > > Here is its output:
+> > > So there is no output from lockdep, during the rmmod hang ? The rmmod
+> > Nope, just other subsystems (nfs, usb) minutes before that.
+> Hmm. Can you provide the output of that ? Might be some stale stuff
+> leading to the hang later.
 
-A. Up to 2.6.21 there was only a b44 PCI driver. So you get used to it working 
-with the same machine for years and compiling kernels for it.
-B. Now there are obviously some changes due to the "bus-glue". OK so far!
+It is output like:
+[  843.122782] usb 7-2: usbfs: USBDEVFS_CONTROL failed cmd newhidups rqt 161 rq 1 len 10 ret -110
+[ 1292.121131] usb 7-2: usbfs: USBDEVFS_CONTROL failed cmd newhidups rqt 161 rq 1 len 10 ret -110
 
-But: The help text in both cases is exactly the same. And exactly that is the 
-misleading point!
-The best way to put up a very clear distinction is to use some examples to 
-explain the different cases. Now if you can offer me enough info on that I 
-can try to do write a patch for that.
-So we got the Broadcom PCI b44 NIC driver (as card, as onboard device)
-and we got additionally what please as a new extension??
-Just two or three examples would do it!
-Above that perhaps the dependencies could be a bit more precise:
+and about the nfs server temporarily not available. Please note that I
+did not do the rmmod from a nfs mountpoint.
 
-Wouldn't you get confused if you deselcted the PCI or Ethernet option, but 
-still retaining the same b44 driver selected as module with the identical 
-help text?
 
-Is that so hard to understand?
+Folkert van Heusden
 
-> We have _lots_ of other drivers in the tree that work 
-> EXACTLY the same way, regarding to kconfig. There are _lots_
-> of drivers where there are seperate options for a "bus-glue".
-> b44-ssb is no different. And additionally it automatically
-> selects the right options for 99.9% of the users (you included).
+-- 
 
-Yes, sure! But the help text is very unlucky and humble, and it is not clear 
-enough in the sense of being distinctive enough, just clear and 
-comprehensive.
-
->
-> So I'm not sure why you keep bashing the kconfig implementation
-> here. It's common practice to have seperate config options for
-> bus-glues and it _automatically_ selects the right options for
-> you.
-
-Yes! But you need to EXPLAIN that "bus-glue" in the Kconfig help text in some 
-two or three sentences. That shouldn't be that hard, should it?
-
-And that is exactly the basic function of a Kconfig help text: To explain 
-kernel compilation choices to users!
-
-It is very very easy to simply ignore that fact and then, afterwards, call all 
-people dumb who are not "omniscient" at all to see the differences through.
-Where should they know from if they are not identical with your personality?
-
-Cheers
-
-Uwe
+Multitail - gibkaja utilita po sledovaniju log-fajlov i vyvoda
+kommand. Fil'trovanie, raskrašivanie, slijanie, vizual'noe sravnenie,
+i t.d.  http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
