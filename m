@@ -1,93 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbXEZPJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbXEZPNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761346AbXEZPJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 11:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbXEZPJN
+	id S1761416AbXEZPNR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 11:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbXEZPNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 11:09:13 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:55092 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752875AbXEZPJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 11:09:12 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v14
-Date: Sat, 26 May 2007 18:08:55 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, pranith-kumar_d@mentorg.com
-References: <20070523120616.GA23407@elte.hu> <200705261758.26956.caglar@pardus.org.tr>
-In-Reply-To: <200705261758.26956.caglar@pardus.org.tr>
+	Sat, 26 May 2007 11:13:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:46260 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753608AbXEZPNI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 11:13:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=XgOQE4G1D7BSruiII3sTygoBPtDfXJe/2DVPB4JcIFPeKslBKju4z+U777rDraDicKiUwVUg3Nd7128UtMTZ5f4xKOKai2+CRamVdE4ShISPELosyH8WE+C1PUU/AFcaQw8sigv2lm10RdRUw0T7kLfG8y0MT9aVl8PAEhZ7eAQ=
+Message-ID: <2c0942db0705260813g6aeedbfepc0afa94ba3550e5b@mail.gmail.com>
+Date: Sat, 26 May 2007 08:13:06 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Tommy Vercetti" <vercetti@zlew.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21.1 - 97% wait time on IDE operations
+In-Reply-To: <200705261505.38109@gj-laptop>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1604955.BIWbijiMyt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705261808.58445.caglar@pardus.org.tr>
+Content-Disposition: inline
+References: <200705261505.38109@gj-laptop>
+X-Google-Sender-Auth: cb493464140605a6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1604955.BIWbijiMyt
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On 5/26/07, Tommy Vercetti <vercetti@zlew.org> wrote:
+> I was trying to get answer to my question around, but no one knows.
+> I do have DMA turned on, etc, yet - on extensive harddrive operations wait
 
-26 May 2007 Cts tarihinde, S.=C3=87a=C4=9Flar Onur =C5=9Funlar=C4=B1 yazm=
-=C4=B1=C5=9Ft=C4=B1:=20
-> 23 May 2007 =C3=87ar tarihinde, Ingo Molnar =C5=9Funlar=C4=B1 yazm=C4=B1=
-=C5=9Ft=C4=B1:
-> > As usual, any sort of feedback, bugreport, fix and suggestion is more
-> > than welcome!
->
-> I have another kaffeine [0.8.4]/xine-lib [1.1.6] problem with CFS for you
-> :)
->
-> Under load (compiling any Qt app. or kernel with -j1 or -j2) audio always
-> goes sync with time (and i'm sure it never skips) but video starts slowdo=
-wn
-> and loses its sync with audio (like for the 10th sec. of a movie, audio is
-> at 10th sec. also, but the shown video is from 7th sec.).
->
-> After some time video suddenly wants to sync with audio and starts to play
-> really fast (like fast-forward) and syncs with audio. But it will lose its
-> audio/video sync after a while and loop continues like that.
->
-> I also reproduced that behaviour with CFS-13, i'm not sure its reproducib=
-le
-> with mainline cause for a long time i only use CFS (but i'm pretty sure
-> that problem not exists or not hit me with CFS-1 to CFS-11). And its only
-> reproducible with some load and mplayer plays same video without losing i=
-ts
-> audio/video sync with same load.
+You may have DMA turned on, but it may be ineffectual if you don't
+have the right IDE driver handing your disk.
 
-Ah, i forgot to add you can find the "strace -o kaffine.log -f -tttTTT=20
-kaffeine" and ps output while that problem exists at [1]
+> time is 90+% , which means that machine is waiting, rather than doing
+> something meanwhile. (I guess).
 
-[1] http://cekirdek.pardus.org.tr/~caglar/kaffeine/
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart1604955.BIWbijiMyt
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-
-iD8DBQBGWE2Ky7E6i0LKo6YRAhSoAJ0b9CBxrZvOMdbGyn4W6FrEfOjwrwCffrhg
-Uw2DEo1xb+sJ+oP4z9njW28=
-=L/1g
------END PGP SIGNATURE-----
-
---nextPart1604955.BIWbijiMyt--
+What does hdparm -tT /dev/hda say? If the numbers are reasonable
+(~400MB/s for cache reads, ~25MB/s for buffered disk reads), then
+you're just doing a lot of seeking on the drive, and that takes a long
+time. (Drives can seek about 100 times a second. If every seek reads
+only 4k of data, that's 400k of data processed per second, or a lot of
+time spent with the CPU waiting on I/O.)
