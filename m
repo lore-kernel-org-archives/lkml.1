@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbXEZF3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbXEZFmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbXEZF3I (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 01:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbXEZF25
+	id S1754915AbXEZFmT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 01:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXEZFmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 01:28:57 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:57495 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbXEZF24 (ORCPT
+	Sat, 26 May 2007 01:42:10 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:55572 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751697AbXEZFmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 01:28:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=dc5T7fk3W7B6z1F14tz1xe2ZI3KLjIlOQDIKhtEhQWMwijvjzVcs71jFaB+A5UzL/oMNGeFs8NcH3ECAE87zV/Ro/QRyvsN4LHoMPoq8ldYubS83gimW2UsFCOMSbqqUg8VYm0QrH3e8qlwqqTZTrZRUnvVNjZal8CGLb/VTLe8=
-Message-ID: <2bd9ebfa0705252228u65b62ddbta2337ce56e77618a@mail.gmail.com>
-Date: Sat, 26 May 2007 01:28:56 -0400
-From: "Tej Parkash" <tejparkash.d@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: reg: modules make in Ubuntu
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 26 May 2007 01:42:09 -0400
+Date: Fri, 25 May 2007 22:41:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Auke Kok <auke-jan.h.kok@intel.com>, Andy Whitcroft <apw@shadowen.org>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: [PATCH] scripts: Make cleanfile/cleanpatch warn about long
+ lines
+Message-Id: <20070525224124.5d0a310b.akpm@linux-foundation.org>
+In-Reply-To: <200705260100.l4Q10e05030097@tazenda.hos.anvin.org>
+References: <200705260100.l4Q10e05030097@tazenda.hos.anvin.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-make[1]: Entering directory `/usr/src/linux-headers-2.6.20-15-generic'
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-make[2]: *** No rule to make target `arch/i386/kernel/msr.c', needed
-by `arch/i386/kernel/msr.o'.  Stop.
-make[1]: *** [arch/i386/kernel] Error 2
-make[1]: Leaving directory `/usr/src/linux-headers-2.6.20-15-generic'
-make: *** [all] Error 2
+On Fri, 25 May 2007 17:58:26 -0700 "H. Peter Anvin" <hpa@zytor.com> wrote:
 
-what the hack is this. no kernel version is having this file in this
-particular location as asked in error. then why this error is coming
-in this kernel version.
+> Make the "cleanfile" and "cleanpatch" script warn about long lines,
+> by default lines whose visual width exceeds 79 characters.
+> 
+> Per suggestion from Auke Kok.
+> 
+> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> ---
+>  scripts/cleanfile  |   54 ++++++++++++++++++++++++++++++++++++++++++++++-
+>  scripts/cleanpatch |   58 +++++++++++++++++++++++++++++++++++++++++++++++++--
 
-TEJ
+This functionality wholly duplicates the patch-sanity-checking script
+which Andy, Randy and others are working on.
+
+The plan is to merge that script into the tree and, once it's looking
+reasonably accurate, we wire a copy of it up to the email lists so that it
+autonags patch-senders over the usual trivial junk.  Think of it as an
+akpm-over-SMTP server.
