@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbXEZALW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbXEZAPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbXEZALW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 20:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXEZALM
+	id S1756846AbXEZAPe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 25 May 2007 20:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbXEZAP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 20:11:12 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4256 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751866AbXEZALL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 20:11:11 -0400
-Date: Sat, 26 May 2007 10:10:28 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-net <linux-net@vger.kernel.org>
-Subject: Re: rmmod e1000 hangs (Was Re: 2.6.22-rc2-mm1)
-Message-ID: <20070526001028.GA3787@gondor.apana.org.au>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <46556AA6.7040503@goop.org> <20070524104713.GA9174@gondor.apana.org.au> <20070524105403.GA9285@gondor.apana.org.au> <4655A4CD.8010901@intel.com> <20070525125413.GA29433@gondor.apana.org.au> <20070525130404.GA30071@gondor.apana.org.au> <20070525133253.GA30626@gondor.apana.org.au> <46575F5A.1030003@intel.com> <465775BE.5040306@pobox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465775BE.5040306@pobox.com>
-User-Agent: Mutt/1.5.9i
+	Fri, 25 May 2007 20:15:27 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59289 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752801AbXEZAP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 25 May 2007 20:15:26 -0400
+Message-ID: <46577C18.8000602@garzik.org>
+Date: Fri, 25 May 2007 20:15:20 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [git patches] libata fixes
+References: <200705260006.l4Q06GsK020585@harpo.it.uu.se>
+In-Reply-To: <200705260006.l4Q06GsK020585@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 07:48:14PM -0400, Jeff Garzik wrote:
+Mikael Pettersson wrote:
+> On Fri, 25 May 2007 18:03:07 -0400, Jeff Garzik wrote:
+>> Jeff Garzik (4):
+>>      [libata] sata_promise: fix flags typo
+> ...
+>> --- a/drivers/ata/sata_promise.c
+>> +++ b/drivers/ata/sata_promise.c
+>> @@ -297,7 +297,7 @@ static const struct ata_port_info pdc_port_info[] = {
+>>
+>> 	/* board_2057x_pata */
+>> 	{
+>> -		.flags		= PDC_COMMON_FLAGS | ATA_FLAG_SLAVE_POSS,
+>> +		.flags		= PDC_COMMON_FLAGS | ATA_FLAG_SLAVE_POSS |
+>> 				  PDC_FLAG_GEN_II,
+>> 		.pio_mask	= 0x1f, /* pio0-4 */
+>> 		.mwdma_mask	= 0x07, /* mwdma0-2 */
 > 
-> Is this for -stable or upstream?  I got confused with all the patches 
-> flying about.
+> Acked-by: Mikael Pettersson <mikpe@it.uu.se>
 > 
-> Send it to me, if it's for upstream.
+> Good catch. This typo would have prevented pdc_host_intr()
+> from detecting GEN_II-specific errors on the PATA port.
 
-It's for upstream.  Once you take then I'll rediff it for stable.
+Oops -- I should have credited Al Viro for the catch, in the changelog.
 
-[E1000]: Restore netif_poll_enable call but make sure IRQs are off
+This email hereby corrects the record :)
 
-This restores the previously removed netif_poll_enable call in
-e1000_open.  It's needed on all but the first call to e1000_open
-for a NIC as e1000_close always calls netif_poll_disable.
+	Jeff
 
-netif_poll_enable can only be called safely if no polls have been
-scheduled.  This should be the case as long as we don't enter our
-IRQ handler.
 
-In order to guarantee this we explicitly disable IRQs as early
-as possible when we're probing the NIC.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index cbc7feb..9ec35b7 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -1325,7 +1325,10 @@ e1000_sw_init(struct e1000_adapter *adapter)
- 	spin_lock_init(&adapter->tx_queue_lock);
- #endif
- 
--	atomic_set(&adapter->irq_sem, 1);
-+	/* Explicitly disable IRQ since the NIC can be in any state. */
-+	atomic_set(&adapter->irq_sem, 0);
-+	e1000_irq_disable(adapter);
-+
- 	spin_lock_init(&adapter->stats_lock);
- 
- 	set_bit(__E1000_DOWN, &adapter->flags);
-@@ -1431,6 +1434,10 @@ e1000_open(struct net_device *netdev)
- 	/* From here on the code is the same as e1000_up() */
- 	clear_bit(__E1000_DOWN, &adapter->flags);
- 
-+#ifdef CONFIG_E1000_NAPI
-+	netif_poll_enable(netdev);
-+#endif
-+
- 	e1000_irq_enable(adapter);
- 
- 	/* fire a link status change interrupt to start the watchdog */
