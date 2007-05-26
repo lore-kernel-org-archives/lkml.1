@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbXEZGwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbXEZG5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756456AbXEZGwh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 02:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbXEZGw3
+	id S1757089AbXEZG5n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 02:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbXEZG5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 02:52:29 -0400
-Received: from colo.lackof.org ([198.49.126.79]:55278 "EHLO colo.lackof.org"
+	Sat, 26 May 2007 02:57:37 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57220 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752680AbXEZGw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 02:52:29 -0400
-Date: Sat, 26 May 2007 00:52:20 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Jonathan Lundell <linux@lundell-bros.com>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Jay Cliburn <jacliburn@bellsouth.net>,
-       Grzegorz Krzystek <ninex@ninex.eu.org>, ninex@o2.pl,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       Michael Ellerman <michael@ellerman.id.au>,
-       David Miller <davem@davemloft.net>, Tony Luck <tony.luck@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/2] msi: Invert the sense of the MSI enables.
-Message-ID: <20070526065220.GB19177@colo.lackof.org>
-References: <200705122146.l4CLkH6q012322@fire-2.osdl.org> <m1veehcz7m.fsf_-_@ebiederm.dsl.xmission.com> <20070524213157.1d39458f.akpm@linux-foundation.org> <200705250751.45738.ak@suse.de> <036B6511-FC30-4F81-98E7-C86F6993D618@lundell-bros.com>
+	id S1752887AbXEZG5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 02:57:37 -0400
+Date: Sat, 26 May 2007 08:58:35 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tej Parkash <tejparkash.d@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: reg: modules make in Ubuntu
+Message-ID: <20070526065835.GA22020@uranus.ravnborg.org>
+References: <2bd9ebfa0705252228u65b62ddbta2337ce56e77618a@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <036B6511-FC30-4F81-98E7-C86F6993D618@lundell-bros.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <2bd9ebfa0705252228u65b62ddbta2337ce56e77618a@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 01:16:57PM -0700, Jonathan Lundell wrote:
-> On May 24, 2007, at 10:51 PM, Andi Kleen wrote:
+On Sat, May 26, 2007 at 01:28:56AM -0400, Tej Parkash wrote:
+> make[1]: Entering directory `/usr/src/linux-headers-2.6.20-15-generic'
+>  CHK     include/linux/version.h
+>  CHK     include/linux/utsrelease.h
+> make[2]: *** No rule to make target `arch/i386/kernel/msr.c', needed
+> by `arch/i386/kernel/msr.o'.  Stop.
+> make[1]: *** [arch/i386/kernel] Error 2
+> make[1]: Leaving directory `/usr/src/linux-headers-2.6.20-15-generic'
+> make: *** [all] Error 2
 > 
-> >>Do we have a feel for how much performace we're losing on those
-> >>systems which _could_ do MSI, but which will end up defaulting
-> >>to not using it?
-> >
-> >At least on 10GB ethernet it is a significant difference; you usually
-> >cannot go anywhere near line speed without MSI
-> >
-> >I suspect it is visible on high performance / multiple GB NICs too.
-> 
-> Why would that be? As the packet rate goes up and NAPI polling kicks  
-> in, wouldn't MSI make less and less difference?
+> what the hack is this. no kernel version is having this file in this
+> particular location as asked in error. then why this error is coming
+> in this kernel version.
+Looks like you are trying to build a kernel but have only headers
+judging from the directoryname.
 
-CPUs are so fast now that we never even get into polling mode.
-So MSI makes even more of a difference.
+Could you please prove a bit more context if you need additional help.
+Like (but not limited to):
+-> Actual commandline
+-> Any own kbuild/Makefiles
+-> .config
 
-davem and jamal hadi salim were already years ago seeing workloads
-(packet rates) where the CPU utilization would peak at packet rates
-that were just high enough for NAPI to occasionally be used.
-IIRC, Jamal's OLS 2005 or 2006 paper talks about this behavior.
-
-
-> I like the fact that MSI gives us finer control over CPU affinity  
-> than many INTx implementations, but that's a different issue.
-
-Yes, I agree.
-
-thanks,
-grant
+	Sam
