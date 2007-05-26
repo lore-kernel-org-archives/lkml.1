@@ -1,253 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760337AbXEZKoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbXEZKq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760337AbXEZKoa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 06:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbXEZKoH
+	id S1758806AbXEZKq0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 06:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbXEZKqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 06:44:07 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:35300 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760097AbXEZKoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 06:44:04 -0400
-Date: Sat, 26 May 2007 12:41:27 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Takashi Iwai <tiwai@suse.de>, Uwe Bugla <uwe.bugla@gmx.de>,
-       linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>
-Subject: [PATCH 04/04] Use menuconfig objects 3 - sound/oss
-In-Reply-To: <Pine.LNX.4.61.0705260947130.7344@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0705261241140.7344@yvahk01.tjqt.qr>
-References: <20070524200052.234330@gmx.net> <20070524130921.8dbd3777.akpm@linux-foundation.org>
- <s5hiragopsx.wl%tiwai@suse.de> <20070525102806.77ee9c0c.akpm@linux-foundation.org>
- <Pine.LNX.4.61.0705260947130.7344@yvahk01.tjqt.qr>
+	Sat, 26 May 2007 06:46:17 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52814 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751043AbXEZKqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 06:46:15 -0400
+X-Authenticated: #8359428
+X-Provags-ID: V01U2FsdGVkX1+geZpNGFygWfTE5AvafuQzXs7AOMGBg4EBgmAcZy
+	eWP+lAFSUwwp8e
+From: Uwe Bugla <uwe.bugla@gmx.de>
+To: Michael Buesch <mb@bu3sch.de>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Date: Sat, 26 May 2007 12:40:54 +0200
+User-Agent: KMail/1.9.5
+References: <20070524195616.234280@gmx.net> <200705252140.22635.uwe.bugla@gmx.de> <200705260700.28777.mb@bu3sch.de>
+In-Reply-To: <200705260700.28777.mb@bu3sch.de>
+Cc: Maximilian Engelhardt <maxi@daemonizer.de>, linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	0.0 UPPERCASE_25_50        message body is 25-50% uppercase
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705261240.55153.uwe.bugla@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Samstag, 26. Mai 2007 07:00 schrieben Sie:
+> On Friday 25 May 2007 21:40, Uwe Bugla wrote:
+> > Am Freitag, 25. Mai 2007 20:48 schrieben Sie:
+> > > On Fri, 25 May 2007 17:59:29 +0200, Uwe Bugla wrote:
+> > > > Perhaps someone reading this could try to reproduce that problem on
+> > > > his machine.
+> > > > Now who of the readers owes a Broadcom 4401 NIC and can please try to
+> > > > test kernel 2.6.22-rc2-mm1?
+> > > >
+> > > > Those NICs have been used very very often as onboard controllers,
+> > > > especially on ASUS boards.
+> > >
+> > > I've been using 2.6.22-rc2 for some time and now I compiled 2.6.22-rc2-
+> > > mm1 and both work fine with the BCM4401 in my laptop.
+> > >
+> > > Maxi
+> >
+> > Hello Maxi,
+> >
+> > That may be true for your Laptop, but it unfortunately isn't true for my
+> > ASUS mainboard onboard controller.
+> >
+> > Unfortunately I cannot confirm this:
+> >
+> > My broadcom 4401 driver is not part of a notebook, but instead part of an
+> > ASUS P4PE mainboard.
+> >
+> > At my second attempt I went the conventional path (i. e. ignoring the
+> > fact that
+> > "Broadcom 4400 ethernet support appears twice in section "Network device
+> > support":
+> >
+> > Whether you leave out "EISA, VLB, PCI and on board controllers" or not it
+> > simply appears twice in kernel config! This is bug number 1.
+>
+> No it is NOT a bug.
+> It simply shows again that you don't know how b44, ssb or anything related
+> works.
+>
+> Would you _please_ take a look at the code, before calling features bugs.
+> And yes, this IS a feature. It is a feature to get b44 running on an
+> OpenWRT embedded device. These devices don't have a PCI bus. So b44 MUST
+> NOT depend on "EISA, VLB, PCI and on board controllers".
 
-CONFIG_SOUND, CONFIG_SND, CONFIG_SOUND_PRIME, ...:
-Change Kconfig objects from "menu, config" into "menuconfig" so
-that the user can disable the whole feature without having to
-enter the menu first.
+Thanks for the descriptive lesson! But this explanation is displaced HERE.
+It should be part of the Kconfig text instead, as the b44 running on an 
+OpenWRT embedded device simply does not show up in Kernel configuration of 
+2.6.21.2 and earlier kernels.
+In so far there is a bug that I would call superficial and incomplete 
+explanation of b44 features in Kconfig!
 
-CONFIG_SND_*_DRIVERS:
-Make a "menuconfig" out of the Kconfig objects "menu, ..., endmenu",
-so that the user can disable all the options in that menu at once
-instead of having to disable each option separately.
+Just two or three explaining sentences at the appropriate place would do well 
+instead of singing this aria again an again:
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+"It simply shows again that you don't know how b44, ssb or anything related 
+works."
 
----
- sound/Kconfig     |   11 +++++------
- sound/oss/Kconfig |   39 +++++++++++++++++++--------------------
- 2 files changed, 24 insertions(+), 26 deletions(-)
+It's NOT MY task to be omnicient. Above that, the b44 modules have never been 
+documented at all. So how can you expect me and others to know about the 
+latest features of version 2? Very strange behaviour of yours ) :
 
-Index: linux-2.6.22-rc3/sound/Kconfig
-===================================================================
---- linux-2.6.22-rc3.orig/sound/Kconfig
-+++ linux-2.6.22-rc3/sound/Kconfig
-@@ -80,19 +80,18 @@ source "sound/soc/Kconfig"
- 
- endif # SND
- 
--menu "Open Sound System"
--	depends on SOUND!=n
--
--config SOUND_PRIME
-+menuconfig SOUND_PRIME
- 	tristate "Open Sound System (DEPRECATED)"
- 	help
- 	  Say 'Y' or 'M' to enable Open Sound System drivers.
- 
-+if SOUND_PRIME
-+
- source "sound/oss/Kconfig"
- 
--endmenu
-+endif # SOUND_PRIME
- 
--endif
-+endif # !M68K
- 
- config AC97_BUS
- 	tristate
-Index: linux-2.6.22-rc3/sound/oss/Kconfig
-===================================================================
---- linux-2.6.22-rc3.orig/sound/oss/Kconfig
-+++ linux-2.6.22-rc3/sound/oss/Kconfig
-@@ -7,7 +7,6 @@
- 
- config OSS_OBSOLETE
- 	bool "Obsolete OSS drivers"
--	depends on SOUND_PRIME
- 	help
- 	  This option enables support for obsolete OSS drivers that
- 	  are scheduled for removal in the near future.
-@@ -20,7 +19,7 @@ config OSS_OBSOLETE
- 
- config SOUND_BT878
- 	tristate "BT878 audio dma"
--	depends on SOUND_PRIME && PCI && OSS_OBSOLETE
-+	depends on PCI && OSS_OBSOLETE
- 	---help---
- 	  Audio DMA support for bt878 based grabber boards.  As you might have
- 	  already noticed, bt878 is listed with two functions in /proc/pci.
-@@ -36,7 +35,7 @@ config SOUND_BT878
- 
- config SOUND_BCM_CS4297A
- 	tristate "Crystal Sound CS4297a (for Swarm)"
--	depends on SOUND_PRIME && SIBYTE_SWARM
-+	depends on SIBYTE_SWARM
- 	help
- 	  The BCM91250A has a Crystal CS4297a on synchronous serial
- 	  port B (in addition to the DB-9 serial port).  Say Y or M
-@@ -46,14 +45,14 @@ config SOUND_BCM_CS4297A
- 
- config SOUND_ICH
- 	tristate "Intel ICH (i8xx) audio support"
--	depends on SOUND_PRIME && PCI && OSS_OBSOLETE
-+	depends on PCI && OSS_OBSOLETE
- 	help
- 	  Support for integral audio in Intel's I/O Controller Hub (ICH)
- 	  chipset, as used on the 810/820/840 motherboards.
- 
- config SOUND_VWSND
- 	tristate "SGI Visual Workstation Sound"
--	depends on SOUND_PRIME && X86_VISWS
-+	depends on X86_VISWS
- 	help
- 	  Say Y or M if you have an SGI Visual Workstation and you want to be
- 	  able to use its on-board audio.  Read
-@@ -62,14 +61,14 @@ config SOUND_VWSND
- 
- config SOUND_HAL2
- 	tristate "SGI HAL2 sound (EXPERIMENTAL)"
--	depends on SOUND_PRIME && SGI_IP22 && EXPERIMENTAL
-+	depends on SGI_IP22 && EXPERIMENTAL
- 	help
- 	  Say Y or M if you have an SGI Indy or Indigo2 system and want to be able to
- 	  use its on-board A2 audio system.
- 
- config SOUND_VRC5477
- 	tristate "NEC Vrc5477 AC97 sound"
--	depends on SOUND_PRIME && DDB5477
-+	depends on DDB5477
- 	help
- 	  Say Y here to enable sound support for the NEC Vrc5477 chip, an
- 	  integrated, multi-function controller chip for MIPS CPUs.  Works
-@@ -78,11 +77,11 @@ config SOUND_VRC5477
- config SOUND_AU1550_AC97
- 	tristate "Au1550/Au1200 AC97 Sound"
- 	select SND_AC97_CODEC
--	depends on SOUND_PRIME && (SOC_AU1550 || SOC_AU1200)
-+	depends on SOC_AU1550 || SOC_AU1200
- 
- config SOUND_TRIDENT
- 	tristate "Trident 4DWave DX/NX, SiS 7018 or ALi 5451 PCI Audio Core"
--	depends on SOUND_PRIME && PCI
-+	depends on PCI
- 	---help---
- 	  Say Y or M if you have a PCI sound card utilizing the Trident
- 	  4DWave-DX/NX chipset or your mother board chipset has SiS 7018
-@@ -123,7 +122,7 @@ config SOUND_TRIDENT
- 
- config SOUND_MSNDCLAS
- 	tristate "Support for Turtle Beach MultiSound Classic, Tahiti, Monterey"
--	depends on SOUND_PRIME && (m || !STANDALONE)
-+	depends on m || !STANDALONE
- 	help
- 	  Say M here if you have a Turtle Beach MultiSound Classic, Tahiti or
- 	  Monterey (not for the Pinnacle or Fiji).
-@@ -134,7 +133,7 @@ config SOUND_MSNDCLAS
- 	  at <http://www.turtlebeach.com/site/kb_ftp/790.asp>.
- 
- comment "Compiled-in MSND Classic support requires firmware during compilation."
--	depends on SOUND_PRIME && SOUND_MSNDCLAS=y
-+	depends on SOUND_MSNDCLAS=y
- 
- config MSNDCLAS_HAVE_BOOT
- 	bool
-@@ -187,7 +186,7 @@ config MSNDCLAS_IO
- 
- config SOUND_MSNDPIN
- 	tristate "Support for Turtle Beach MultiSound Pinnacle, Fiji"
--	depends on SOUND_PRIME && (m || !STANDALONE)
-+	depends on m || !STANDALONE
- 	help
- 	  Say M here if you have a Turtle Beach MultiSound Pinnacle or Fiji.
- 	  See <file:Documentation/sound/oss/MultiSound> for important information
-@@ -196,7 +195,7 @@ config SOUND_MSNDPIN
- 	  at <http://www.turtlebeach.com/site/kb_ftp/600.asp>.
- 
- comment "Compiled-in MSND Pinnacle support requires firmware during compilation."
--	depends on SOUND_PRIME && SOUND_MSNDPIN=y
-+	depends on SOUND_MSNDPIN=y
- 
- config MSNDPIN_HAVE_BOOT
- 	bool
-@@ -273,7 +272,7 @@ config MSNDPIN_NONPNP
- 	  configure the card's resources.
- 
- comment "MSND Pinnacle DSP section will be configured to above parameters."
--	depends on SOUND_PRIME && SOUND_MSNDPIN=y && MSNDPIN_NONPNP
-+	depends on SOUND_MSNDPIN=y && MSNDPIN_NONPNP
- 
- config MSNDPIN_CFG
- 	hex "MSND Pinnacle config port 250,260,270"
-@@ -286,7 +285,7 @@ config MSNDPIN_CFG
- 	  Mode".
- 
- comment "Pinnacle-specific Device Configuration (0 disables)"
--	depends on SOUND_PRIME && SOUND_MSNDPIN=y && MSNDPIN_NONPNP
-+	depends on SOUND_MSNDPIN=y && MSNDPIN_NONPNP
- 
- config MSNDPIN_MPU_IO
- 	hex "MSND Pinnacle MPU I/O (e.g. 330)"
-@@ -338,7 +337,7 @@ config MSNDPIN_JOYSTICK_IO
- 
- config MSND_FIFOSIZE
- 	int "MSND buffer size (kB)"
--	depends on SOUND_PRIME && (SOUND_MSNDPIN=y || SOUND_MSNDCLAS=y)
-+	depends on SOUND_MSNDPIN=y || SOUND_MSNDCLAS=y
- 	default "128"
- 	help
- 	  Configures the size of each audio buffer, in kilobytes, for
-@@ -348,7 +347,7 @@ config MSND_FIFOSIZE
- 
- config SOUND_VIA82CXXX
- 	tristate "VIA 82C686 Audio Codec"
--	depends on SOUND_PRIME && PCI && OSS_OBSOLETE
-+	depends on PCI && OSS_OBSOLETE
- 	help
- 	  Say Y here to include support for the audio codec found on VIA
- 	  82Cxxx-based chips. Typically these are built into a motherboard.
-@@ -368,7 +367,7 @@ config MIDI_VIA82CXXX
- 
- config SOUND_OSS
- 	tristate "OSS sound modules"
--	depends on SOUND_PRIME && ISA_DMA_API
-+	depends on ISA_DMA_API
- 	help
- 	  OSS is the Open Sound System suite of sound card drivers.  They make
- 	  sound programming easier since they provide a common API.  Say Y or
-@@ -721,7 +720,7 @@ config SOUND_WAVEARTIST
- 
- config SOUND_TVMIXER
- 	tristate "TV card (bt848) mixer support"
--	depends on SOUND_PRIME && I2C && VIDEO_V4L1 && OSS_OBSOLETE
-+	depends on I2C && VIDEO_V4L1 && OSS_OBSOLETE
- 	help
- 	  Support for audio mixer facilities on the BT848 TV frame-grabber
- 	  card.
-@@ -732,7 +731,7 @@ config SOUND_KAHLUA
- 
- config SOUND_SH_DAC_AUDIO
- 	tristate "SuperH DAC audio support"
--	depends on SOUND_PRIME && CPU_SH3
-+	depends on CPU_SH3
- 
- config SOUND_SH_DAC_AUDIO_CHANNEL
- 	int "DAC channel"
+> "Broadcom 4400 PCI device support" does depend on "EISA, VLB, PCI and on
+> board controllers".
+
+Thanks, now I know. But the dependencies chaos plus the PCI disfunctionality 
+stays unfortunately!
+
+>
+> Everything is correct.
+> Bug number 1 is solved.
+
+NO! See above please and DO NOT IGNORE!
+
+> qed
+>
+> > This time I do get a "good" interrupt: IRQ 21 for the the device.
+> >
+> > BUT:
+> >
+> > Trying to ping another machine fails saying:
+> >
+> > "destination host unreachable"
+> >
+> >
+> > That means, Although the interrupt is fine now, the device is still not
+> > functionable.
+>
+> And it's completely impossible that you did a mistake when configuring
+> the device? Typo in the IP? Typo in the gateway or DNS entries?
+
+Yes! This sort of mistakes is completely impossible, as I use to work with 
+aliases rather than IP adresses. The machine I tried to ping (i. e. my 
+router) is called Jerry (as a reminiscence to Mr. "Captan Trips" from 
+Grateful Dead), and thus "ping jerry" returned the following:
+
+"destination host unreachable"
+
+Above that, I state for the second time now that I reverted your patches in 
+2.6.22-rc2-mm1 with the effect that everything worked perfectly!
+Maxi said something at least similar. So how many proofs do you need, Mister 
+Buesch, to finally pick up patchworking now?? 
+
+So, the ball has been in your court for two days now, and you simply keep on 
+hesitating to take action now. Instead you are playing a 
+nonsense "I-am-not-responsible-and-you-don't-know-Ping-Pong game"
+ignoring every hint, criticism that you are offered.
+REAL GREAT!
+
+> Try it again, please.
+
+NO!
+
+> And please try with current wireless-dev tree.
+
+A. I do not know where to download that wireless-dev tree.
+B. I do not know how to implement it into mm or mainline
+C. I have given enough sophisticated proof that your stuff in mm-tree is 
+highly incomplete / buggy.
+
+>
+> And I simply do not get it why you suddenly get a good IRQ number, like
+> everybody else does, without fixing The Bug (tm).
+
+That consequence I already explained:
+But it's a pleasure for me to repeat it once more:
+
+When you are saying Y to "EISA, VLB, PCI and on board controllers"
+
+you simply do get not only completely different interrupts for the b4401 
+device, but you get also completely different module dependencies.
+
+If the module dependencies are correct the IRQ number is also correct,
+If the module dependencies are broken the IRQ number is also broken.
+
+It's as easy as that simply!
+
+In other words, UTMOST CLEAR:
+
+Runningh a PCI B4401 NIC:
+
+A. If you declare the b4401 device in Kconfig as a non PCI device (well, how 
+should you know if there is neither documenatary nor appropriate kconfig 
+text) you get a disfunctionable b44 PLUS a BROKEN interrupt number.
+
+B. If you declare the b4401 device in Kconfig as a PCI device you get a 
+disfunctionable b44 PLUS a CORRECT interrupt number.
+
+The ball is in your court, Michael.
+
+Instead of playing verbal ping pong you would better send me info about debug 
+parameters for ssb AND b44 and tell me what specific log you need afterwards. 
+If b44 misses debug printks or dprintks then please send me an appropriate 
+patch to apply against the mm-tree.
+
+But, this stuff in the current state IS PROVEN to be highly buggy / 
+experimental / incomplete / bad described in Kconfig! It should NEVER be 
+pulled into vanilla in the current state!
+
+So, Michael, you got two choices now:
+
+A. Either you offer debug parameters now / and / or appropriate patches OR
+
+B. I will stop answering on that issue with the consequence that your stuff 
+will never reach vanilla mainline. For this case I will ask Andrew to throw 
+your stuff into the trashcan.
+
+I've wasted enough time on that buggy crap now with output zero. It's enough 
+now, Michael!
+
+Cheers
+
+Uwe
+
+Hint: Broadcom 4401 is NOT equal to Broadcom 4401!
+
+I got two nearly identical machines owing that onboard controller.
+
+There in fact has been a buggy / incomplete driver who did well on the one 
+machine, but did not work on the other one..... : (
+Don't ask me which 2.6 kernel that was, I do not remember. Must have been 
+2.6.9 or an earlier one.
