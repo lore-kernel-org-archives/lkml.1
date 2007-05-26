@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbXEZNmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760509AbXEZNxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbXEZNmT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 09:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbXEZNmI
+	id S1760509AbXEZNxU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 09:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbXEZNxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 09:42:08 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:56399 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757494AbXEZNmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 09:42:07 -0400
-Date: Sat, 26 May 2007 15:41:16 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: David Miller <davem@davemloft.net>
-cc: satyam.sharma@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: double exclamation (!!) suckage in the kernel
-In-Reply-To: <20070525.141421.73699719.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.61.0705261535240.7344@yvahk01.tjqt.qr>
-References: <a781481a0705251323s6b5c8014t48e8d2ad63e8434a@mail.gmail.com>
- <20070525.141421.73699719.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Sat, 26 May 2007 09:53:13 -0400
+Received: from aa014msr.fastwebnet.it ([85.18.95.74]:52385 "EHLO
+	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753026AbXEZNxM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 09:53:12 -0400
+Date: Sat, 26 May 2007 15:52:23 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: Tommy Vercetti <vercetti@zlew.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21.1 - 97% wait time on IDE operations
+Message-ID: <20070526155223.1bedba5a@localhost>
+In-Reply-To: <200705261505.38109@gj-laptop>
+References: <200705261505.38109@gj-laptop>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 26 May 2007 15:05:38 +0200
+Tommy Vercetti <vercetti@zlew.org> wrote:
 
-On May 25 2007 14:14, David Miller wrote:
->
->WHat is with multiple people asking about "!!" all of a
->sudden today?
->
->> Are all these occurrences merely the debris of
->> s/something/!notsomething/g kind of patches or is there some
->> dark, unknown C / gcc wizardry I have absolutely no clue of?
->
->"!!" is used in contexts where pointers might be being
->tested as well as plain integers, the "!!" turns a pointer
->into the equivalent integer boolean for testing.
->
->NULL pointers become 0
->non-NULL pointers become 1
+> I was trying to get answer to my question around, but no one knows.
+> I do have DMA turned on, etc, yet - on extensive harddrive operations wait 
+> time is 90+% , which means that machine is waiting, rather than doing 
+> something meanwhile. (I guess). 
+> Can someone describe to me , in more detail why is that happening, and what 
+> steps should I consider to avoid it ? I couldn't find any answers that would 
+> have help me on net.
 
-Though,
-	if(!!ptr)
-is effectively the same as
-	if(ptr)
+It means that the disk is slow and the CPU is fast... so while the disk
+is busy seeking and reading data the CPU has nothing to do but wait for
+it.
 
-!! is mostly used where non-zero values need to be mapped to 1.
-Not so much in logic expressions (if,while,etc.) but in arithmetic
-(who'd do that?).
+Idle == CPU has nothing to do
+Waiting == CPU has nothing to do, but it will have as soon as the slow
+	disk (or whatever) delivers data
 
-	Jan
+
+Anyway 97% is quite high... what CPU / Hard Disk do you have?
+
+What kernel version?
+I/O scheduler? (cat /sys/block/DEVICE/queue/scheduler)
+Filesystem?
+
+And what time of "operations" are you doing?
+
 -- 
+	Paolo Ornati
+	Linux 2.6.22-rc3-cfs-v14-gf193016a on x86_64
