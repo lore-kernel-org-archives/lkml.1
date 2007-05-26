@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753038AbXEZW6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbXEZW7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753038AbXEZW6c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 18:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbXEZW6Z
+	id S1753898AbXEZW7F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 18:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbXEZW6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 18:58:25 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:26429 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750800AbXEZW6Y (ORCPT
+	Sat, 26 May 2007 18:58:53 -0400
+Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:22489 "HELO
+	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750800AbXEZW6v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 18:58:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=IRLH9nY90T0KfW9Afgm/ecAaHlRy8ElNBy9alwUcYbCuBN7d4EfHiMwmP9O9ZcRgl1QAew93zfvjKHm4Djj30wl4oCMmPqTDtQZHQO92znMtV0kDWhUXZVHZoo+f7NnCH7hPKythUY4MwVBeEsH4HmZeQK05XQIhiQ9DyS8OXsI=
-Message-ID: <4658BB6D.5030603@gmail.com>
-Date: Sun, 27 May 2007 02:57:49 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Sat, 26 May 2007 18:58:51 -0400
+X-YMail-OSG: VVwIecMVM1nsFKOz1uVG0qEEATbQvq_F2IyZ0h3qlectrzuh1_YSYGwSu6t9JrKOTGRGvgZ13Q--
+X-RocketYMMF: rancidfat
+Date: Sat, 26 May 2007 15:58:50 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <200705261410.19541.agruen@suse.de>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: rdreier@cisco.com, greg@kroah.com, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: PCIE
-References: <46561287.8020103@gmail.com>	<ada1wh560u1.fsf@cisco.com>	<46584C30.4030206@gmail.com> <20070526.154910.78725926.davem@davemloft.net>
-In-Reply-To: <20070526.154910.78725926.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <990795.7773.qm@web36612.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Manu Abraham <abraham.manu@gmail.com>
-> Date: Sat, 26 May 2007 19:03:12 +0400
-> 
->> i presume then i shouldn't be using IRQF_SHARED, if using MSI.
-> 
-> That's actually a really good question.
-> 
-> It is likely architecture dependant whether the PCI controller wires
-> unique MSI interrupts to shared cpu interrupt lines.
-> 
-> I can imagine many systems where the cpu simply doesn't have enough
-> interrupt pins to uniquely identify every possible MSI interrupt
-> source.
-> 
 
-Ok, that explains it a bit, but i am pulling out a bit of hair on the
-other aspects i wrote in this thread, of course i am a bit new to PCIe
-and hence all my questions/doubts. Hope someone can clear them.
+--- Andreas Gruenbacher <agruen@suse.de> wrote:
 
-Thanks,
-Manu
+> On Friday 25 May 2007 21:06, Casey Schaufler wrote:
+> > --- Jeremy Maitin-Shepard <jbms@cmu.edu> wrote:
+> > > ...
+> > > Well, my point was exactly that App Armor doesn't (as far as I know) do
+> > > anything to enforce the argv[0] convention,
+> >
+> > Sounds like an opportunity for improvement then.
+> 
+> Jeez, what argv[0] convention are you both talking about?
 
+>From the exec(3) man page:
+
+   "The first argument, by convention, should point to the
+    file name associated with the file being executed."
+
+since the man page calls it a convention, so do I.
+
+> argv[0] is not guaranteed to have any association with the
+> name of the executable. Feel free to have any discussion
+> about argv[0] you want, but *please* keep it away from
+> AppArmor, which really has nothing to do with it.
+
+As I pointed out, if you wanted to trust the argv[0] value
+(which I understand AppArmor makes no claims about) and you
+wanted to use the argv[0] value to determine application
+behavior (which several people claim is a Bad Idea) you could
+use Name Based Access Control to provide different access
+to the common binary. As I pointed out before, that's a lot
+of "if's".
+
+> It would be nice if you could stop calling argv[0] checks ``name-based access
+> 
+> control'': from the point of view of the kernel no access control is 
+> involved, and even application-level argv[0] based access control makes no 
+> sense whatsoever.
+ 
+Fair enough, I don't believe that an argv[0] check ought to
+be used as a security mechanism. I am not convinced that everyone
+would agree with us.
+
+
+
+Casey Schaufler
+casey@schaufler-ca.com
