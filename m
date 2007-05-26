@@ -1,55 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbXEZD5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbXEZFAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbXEZD5J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 25 May 2007 23:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXEZD45
+	id S1754795AbXEZFAk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 01:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbXEZFAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 25 May 2007 23:56:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37731 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751441AbXEZD44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 25 May 2007 23:56:56 -0400
-Date: Fri, 25 May 2007 23:56:51 -0400
-From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200705260356.l4Q3upEK007514@devserv.devel.redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix compat futex code for private futexes
-Cc: akpm@linux-foundation.org
+	Sat, 26 May 2007 01:00:32 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:44339
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741AbXEZFAb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 01:00:31 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Uwe Bugla <uwe.bugla@gmx.de>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Date: Sat, 26 May 2007 07:00:28 +0200
+User-Agent: KMail/1.9.5
+Cc: Maximilian Engelhardt <maxi@daemonizer.de>, linux-wireless@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20070524195616.234280@gmx.net> <200705252048.11931.maxi@daemonizer.de> <200705252140.22635.uwe.bugla@gmx.de>
+In-Reply-To: <200705252140.22635.uwe.bugla@gmx.de>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200705260700.28777.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the private futex support was added the compat code wasn't changed.
-The result is that code using compat code which fail, e.g., because the
-timeout values are not correctly passed.  The following patch should
-fix that.
+On Friday 25 May 2007 21:40, Uwe Bugla wrote:
+> Am Freitag, 25. Mai 2007 20:48 schrieben Sie:
+> > On Fri, 25 May 2007 17:59:29 +0200, Uwe Bugla wrote:
+> > > Perhaps someone reading this could try to reproduce that problem on his
+> > > machine.
+> > > Now who of the readers owes a Broadcom 4401 NIC and can please try to
+> > > test kernel 2.6.22-rc2-mm1?
+> > >
+> > > Those NICs have been used very very often as onboard controllers,
+> > > especially on ASUS boards.
+> >
+> > I've been using 2.6.22-rc2 for some time and now I compiled 2.6.22-rc2-
+> > mm1 and both work fine with the BCM4401 in my laptop.
+> >
+> > Maxi
+> 
+> Hello Maxi,
+> 
+> That may be true for your Laptop, but it unfortunately isn't true for my ASUS 
+> mainboard onboard controller.
+> 
+> Unfortunately I cannot confirm this:
+> 
+> My broadcom 4401 driver is not part of a notebook, but instead part of an ASUS 
+> P4PE mainboard.
+> 
+> At my second attempt I went the conventional path (i. e. ignoring the fact 
+> that
+> "Broadcom 4400 ethernet support appears twice in section "Network device 
+> support":
+> 
+> Whether you leave out "EISA, VLB, PCI and on board controllers" or not it 
+> simply appears twice in kernel config! This is bug number 1.
 
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+No it is NOT a bug.
+It simply shows again that you don't know how b44, ssb or anything related works.
 
---- kernel/futex_compat.c	2007-05-09 15:01:23.000000000 -0700
-+++ kernel/futex_compat.c-save	2007-05-25 20:53:35.000000000 -0700
-@@ -144,20 +144,21 @@ asmlinkage long compat_sys_futex(u32 __u
- 	struct timespec ts;
- 	ktime_t t, *tp = NULL;
- 	int val2 = 0;
-+	int cmd = op & FUTEX_CMD_MASK;
- 
--	if (utime && (op == FUTEX_WAIT || op == FUTEX_LOCK_PI)) {
-+	if (utime && (cmd == FUTEX_WAIT || cmd == FUTEX_LOCK_PI)) {
- 		if (get_compat_timespec(&ts, utime))
- 			return -EFAULT;
- 		if (!timespec_valid(&ts))
- 			return -EINVAL;
- 
- 		t = timespec_to_ktime(ts);
--		if (op == FUTEX_WAIT)
-+		if (cmd == FUTEX_WAIT)
- 			t = ktime_add(ktime_get(), t);
- 		tp = &t;
- 	}
--	if (op == FUTEX_REQUEUE || op == FUTEX_CMP_REQUEUE
--	    || op == FUTEX_CMP_REQUEUE_PI)
-+	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE
-+	    || cmd == FUTEX_CMP_REQUEUE_PI)
- 		val2 = (int) (unsigned long) utime;
- 
- 	return do_futex(uaddr, op, val, tp, uaddr2, val2, val3);
+Would you _please_ take a look at the code, before calling features bugs.
+And yes, this IS a feature. It is a feature to get b44 running on an OpenWRT
+embedded device. These devices don't have a PCI bus. So b44 MUST NOT depend
+on "EISA, VLB, PCI and on board controllers".
+"Broadcom 4400 PCI device support" does depend on "EISA, VLB, PCI and on board controllers".
+
+Everything is correct.
+Bug number 1 is solved.
+qed
+
+> This time I do get a "good" interrupt: IRQ 21 for the the device.
+> 
+> BUT:
+> 
+> Trying to ping another machine fails saying:
+> 
+> "destination host unreachable"
+> 
+> 
+> That means, Although the interrupt is fine now, the device is still not 
+> functionable.
+
+And it's completely impossible that you did a mistake when configuring
+the device? Typo in the IP? Typo in the gateway or DNS entries?
+Try it again, please.
+And please try with current wireless-dev tree.
+
+And I simply do not get it why you suddenly get a good IRQ number, like everybody
+else does, without fixing The Bug (tm).
