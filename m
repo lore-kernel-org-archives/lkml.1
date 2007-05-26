@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbXEZLOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbXEZLRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbXEZLOQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 07:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbXEZLOG
+	id S1758808AbXEZLRi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 07:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXEZLRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 07:14:06 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:59964 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbXEZLOF (ORCPT
+	Sat, 26 May 2007 07:17:32 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:37216 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751716AbXEZLRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 07:14:05 -0400
-Subject: Re: software suspend doesn't work with 2.6.22-rc3
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Maximilian Engelhardt <maxi@daemonizer.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070526110818.GA7918@gondor.apana.org.au>
-References: <200705261128.57332.maxi@daemonizer.de>
-	 <1180173233.9773.79.camel@nigel.suspend2.net>
-	 <20070526110818.GA7918@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-COtTWeSpbGhL0e+JOm44"
-Date: Sat, 26 May 2007 21:14:00 +1000
-Message-Id: <1180178040.5493.5.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sat, 26 May 2007 07:17:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=In8lvshl28gir2o5T2sLjU3KMF2/0osXNklPQpb+KR12wC0b6mYEE0YaMVdiviNzazx2Fq44tlaV+TSogJ4hRA8bHDwPtoQ9QEfH02L76vFl+OYBS0O3rTUqrxHJeROYocJ3u8uLHaICX8GkzmSeM9gJkhhkzsaQdp5/7spMHvQ=
+Message-ID: <4cefeab80705260417h43d4d8a9s3f55b7eb3c19396c@mail.gmail.com>
+Date: Sat, 26 May 2007 16:47:30 +0530
+From: "Nitin Gupta" <nitingupta910@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [RFC] LZO de/compression support - take 3
+Cc: "Richard Purdie" <richard@openedhand.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Michael-Luke Jones" <mlj28@cam.ac.uk>, linux-kernel@vger.kernel.org,
+       linux-mm-cc@laptop.org
+In-Reply-To: <20070525104253.GA4555@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4cefeab80705230127r58e8f9e1sa644092e95eb81eb@mail.gmail.com>
+	 <4cefeab80705230439n6bbb1259le3c3b9704ce49b75@mail.gmail.com>
+	 <624FD7A7-5552-415F-96D8-4353453EA2A3@cam.ac.uk>
+	 <4cefeab80705230703vdb3c414s250a61c4c2d70c51@mail.gmail.com>
+	 <1CF43BBC-79EF-449B-A398-AE374E399573@cam.ac.uk>
+	 <4cefeab80705230721i492b5f1ehfa2d775344b1c04e@mail.gmail.com>
+	 <20070523091601.f8c6b833.akpm@linux-foundation.org>
+	 <1179938960.5864.26.camel@localhost.localdomain>
+	 <4cefeab80705232104n54b23b9bi8b5db8e6a6dd1c0a@mail.gmail.com>
+	 <20070525104253.GA4555@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Pavel,
 
---=-COtTWeSpbGhL0e+JOm44
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Just did some benchmarking; results below.
 
-Hi.
+On 5/25/07, Pavel Machek <pavel@ucw.cz> wrote:
+>
+> What is the performance difference between safe and unsafe version?
+>
 
-On Sat, 2007-05-26 at 21:08 +1000, Herbert Xu wrote:
-> On Sat, May 26, 2007 at 07:53:53PM +1000, Nigel Cunningham wrote:
-> >=20
-> > Herbert, is this right? If cryptd is going to be used for block devs,
-> > the task should probably be PF_NOFREEZE (or whatever it is today)
-> > instead.
->=20
-> Probably.  However, I don't think this is responsible for the reported
-> problem because the code to use cryptd in dm-crypt hasn't been merged
-> yet :)
+File size: 256K
+- Following as tests for original test code - not any kernel port of this.
+- Test with each block size repeated 5 times - taken avg. of these 5 runs.
+- Same file used for each test.
+- Used lzotest utility (included with LZO 2.02) for testing.
 
-You have the cryptd Kconfig option in (at least in rc3) - presumably
-Maximillian has been too keen and turned it on before you were ready :)
-It does make sense for it to be the problem. Without PF_NOFREEZE set,
-the refrigerator code will try to get it to enter the freezer, and
-without the try_to_freeze(), it will just loop and freezing will fail.
+Blocksize	Comp*		DU*		DS*		Speed%
+4		59.356		211.526		195.260		7.689
+8		54.623		202.712		188.369		7.075
+16		50.342		196.482		183.988		6.358
+32		47.499		189.800		177.455		6.504
+64		44.148		178.724		167.201		6.447
+128		42.125		170.229		159.257		6.445
+256		41.830		155.035		146.115		5.753
 
-Regards,
+* All speeds in MB/sec
+Comp = LZO1X-1
+DU = Decompress (unsafe)
+DS = Decompress (safe)
+Speed% = ((DU-DS)/DU)*100
 
-Nigel
+I have yet to see how the kernel ports compare against this original version.
 
---=-COtTWeSpbGhL0e+JOm44
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGWBZ4N0y+n1M3mo0RAnsLAKC5rbohnZcxXadiL1bMn8GStCwDTwCfXuTM
-Kt33ZOTdU6Z2rGAJHn4boJg=
-=hDml
------END PGP SIGNATURE-----
-
---=-COtTWeSpbGhL0e+JOm44--
-
+Cheers,
+Nitin
