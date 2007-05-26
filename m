@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763042AbXEZUit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763968AbXEZUnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763042AbXEZUit (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 16:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758298AbXEZUik
+	id S1763968AbXEZUnT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 16:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759552AbXEZUnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 16:38:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53901 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752783AbXEZUik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 16:38:40 -0400
-X-Authenticated: #8359428
-X-Provags-ID: V01U2FsdGVkX1/uv4ZDhePuC29VU/MkAkmOunL1jPF3KFcMI8vTJM
-	n9CwZPdD8yqJ/g
-From: Uwe Bugla <uwe.bugla@gmx.de>
-To: Larry Finger <larry.finger@lwfinger.net>
-Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
-Date: Sat, 26 May 2007 22:33:13 +0200
-User-Agent: KMail/1.9.5
-References: <20070524195616.234280@gmx.net> <200705262138.05501.uwe.bugla@gmx.de> <46589133.9010608@lwfinger.net>
-In-Reply-To: <46589133.9010608@lwfinger.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       linux-wireless@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Michael Buesch <mb@bu3sch.de>
+	Sat, 26 May 2007 16:43:12 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:35368 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755099AbXEZUnM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 16:43:12 -0400
+Message-ID: <46589BCD.4040807@zytor.com>
+Date: Sat, 26 May 2007 13:42:53 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Extending boot protocol & bzImage for paravirt_ops
+References: <4656FB8F.4090604@goop.org>	 <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <1180174691.650.8.camel@localhost.localdomain>
+In-Reply-To: <1180174691.650.8.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705262233.15529.uwe.bugla@gmx.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, 26. Mai 2007 21:57 schrieben Sie:
-> Uwe Bugla wrote:
-> > OK, applied this one against 2.6.22-rc3, assuming a typo error by you,
-> > Andrew.
-> >
-> > Result is: No change: non functionable b44 device!
->
-> Could you please send the following:
->
-> 1. the output of lsmod from the non-functioning kernel
+Rusty Russell wrote:
+>>
+>> +  Bit 6 (write): KEEP_SEGMENTS
+>> +	Protocol: 2.07+
+>> +	- if 0, reload the segment registers in the 32bit entry point.
+>> +	- if 1, do not reload the segment registers in the 32bit entry point.
+>> +		Assume that %cs %ds %ss %es are all set to flat segments with
+>> +		a base of 0 (or the equivalent for their environment).
+> 
+> You also want to skip the cli: perhaps a separate flag for this is
+> appropriate though.
+> 
 
-Nonsense!
-As I stated already, both modules (i. e. b44 and ssb) are loaded correctly.
-So please read the thread before you post that, not vice versa!
+Do we have *any* environment that enters the 32-bit code with interrupts
+enabled?  I would think that is unsafe no matter how you do it.
 
->
-> 2. the output of dmesg from the non-functioning kernel
->
-> 3. your .config used to create your non-functioning kernel.
->
-They are already in the thread. So please leave me alone with those lazy 
-hints! Read bfore you post, not vice versa!
-
-> Thanks,
->
-> Larry
-
-Cheers
-
-Uwe
+	-hpa
