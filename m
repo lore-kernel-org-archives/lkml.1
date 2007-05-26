@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbXEZWms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbXEZWnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbXEZWms (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 18:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbXEZWmk
+	id S1753702AbXEZWnA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 18:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbXEZWmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 18:42:40 -0400
-Received: from pool-72-92-171-78.albyny.east.verizon.net ([72.92.171.78]:50951
-	"EHLO posidon.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750743AbXEZWmj (ORCPT
+	Sat, 26 May 2007 18:42:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38115
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751625AbXEZWmq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 18:42:39 -0400
-Message-ID: <4658B7DD.3060309@tmr.com>
-Date: Sat, 26 May 2007 18:42:37 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: [2.6.21.1] resume doesn't run suspended kernel?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 26 May 2007 18:42:46 -0400
+Date: Sat, 26 May 2007 15:42:50 -0700 (PDT)
+Message-Id: <20070526.154250.92569699.davem@davemloft.net>
+To: uwe.bugla@gmx.de
+Cc: mb@bu3sch.de, maxi@daemonizer.de, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200705261240.55153.uwe.bugla@gmx.de>
+References: <200705252140.22635.uwe.bugla@gmx.de>
+	<200705260700.28777.mb@bu3sch.de>
+	<200705261240.55153.uwe.bugla@gmx.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was testing susp2disk in 2.6.21.1 under FC6, to support reliable 
-computing environment (RCE) needs. The idea is that if power fails, 
-after some short time on UPS the system does susp2disk with a time set, 
-and boots back every so often to see if power is stable.
+From: Uwe Bugla <uwe.bugla@gmx.de>
+Date: Sat, 26 May 2007 12:40:54 +0200
 
-No, I don't want susp2mem until I debug it, console come up in useless 
-mode, console as kalidescope is not what I need.
+> Am Samstag, 26. Mai 2007 07:00 schrieben Sie:
+> > Try it again, please.
+> 
+> NO!
 
-Anyway, I pulled the plug on the UPS, and the system shut down. But when 
-it powered up, it booted the default kernel rather than the test kernel, 
-decided that it couldn't resume, and then did a cold boot.
-
-I can bypass this by making the debug kernel the default, but WHY? Is 
-the kernel not saved such that any kernel can be rolled back into memory 
-and run? Actually, the answer is HELL NO, so I really ask if this is the 
-intended mode of operation, that only the default boot kernel will restore.
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Your not a nice person, and consistently so, therefore you can't post
+to the mailing lists I run any more.
