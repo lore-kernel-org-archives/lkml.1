@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbXEZXAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbXEZXBD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756549AbXEZXAr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 19:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbXEZW75
+	id S1754968AbXEZXBD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 19:01:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbXEZXAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 18:59:57 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:8902 "EHLO
+	Sat, 26 May 2007 19:00:06 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:28453 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbXEZW7z (ORCPT
+	with ESMTP id S1753547AbXEZXAA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 18:59:55 -0400
+	Sat, 26 May 2007 19:00:00 -0400
 From: divy@chelsio.com
-Subject: [PATCH 2/7] cxgb3 - fix netpoll hanlder
+Subject: [PATCH 3/7] cxgb3 - Fix direct XAUI support
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Sat, 26 May 2007 15:59:52 -0700
-Message-ID: <20070526225952.12115.30971.stgit@localhost.localdomain>
+Date: Sat, 26 May 2007 15:59:58 -0700
+Message-ID: <20070526225958.12133.84586.stgit@localhost.localdomain>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,48 +26,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Fix netpoll handler to work with line interrupt, msi and msi-x.
+Check all lanes for link status on direct XAUI cards.
+Don't assume that direct XAUI always uses XGMAC 1.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/cxgb3_main.c |   12 +++++++++---
- drivers/net/cxgb3/sge.c        |    1 -
- 2 files changed, 9 insertions(+), 4 deletions(-)
+ drivers/net/cxgb3/ael1002.c |   10 ++++++++--
+ drivers/net/cxgb3/regs.h    |    2 ++
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 67b4b21..e0ef724 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -2076,10 +2076,16 @@ static void vlan_rx_kill_vid(struct net_
- static void cxgb_netpoll(struct net_device *dev)
+diff --git a/drivers/net/cxgb3/ael1002.c b/drivers/net/cxgb3/ael1002.c
+index 73a41e6..ee140e6 100644
+--- a/drivers/net/cxgb3/ael1002.c
++++ b/drivers/net/cxgb3/ael1002.c
+@@ -219,7 +219,13 @@ static int xaui_direct_get_link_status(s
+ 		unsigned int status;
+ 
+ 		status = t3_read_reg(phy->adapter,
+-				     XGM_REG(A_XGM_SERDES_STAT0, phy->addr));
++				     XGM_REG(A_XGM_SERDES_STAT0, phy->addr)) |
++		    t3_read_reg(phy->adapter,
++				XGM_REG(A_XGM_SERDES_STAT1, phy->addr)) |
++		    t3_read_reg(phy->adapter,
++				XGM_REG(A_XGM_SERDES_STAT2, phy->addr)) |
++		    t3_read_reg(phy->adapter,
++				XGM_REG(A_XGM_SERDES_STAT3, phy->addr));
+ 		*link_ok = !(status & F_LOWSIG0);
+ 	}
+ 	if (speed)
+@@ -247,5 +253,5 @@ static struct cphy_ops xaui_direct_ops =
+ void t3_xaui_direct_phy_prep(struct cphy *phy, struct adapter *adapter,
+ 			     int phy_addr, const struct mdio_ops *mdio_ops)
  {
- 	struct adapter *adapter = dev->priv;
--	struct sge_qset *qs = dev2qset(dev);
-+	struct port_info *pi = netdev_priv(dev);
-+	int qidx;
- 
--	t3_intr_handler(adapter, qs->rspq.polling) (adapter->pdev->irq,
--						    adapter);
-+	for (qidx = pi->first_qset; qidx < pi->first_qset + pi->nqsets; qidx++) {
-+		struct sge_qset *qs = &adapter->sge.qs[qidx];
-+		
-+		t3_intr_handler(adapter, qs->rspq.polling) (0, 
-+					(adapter->flags & USING_MSIX) ?
-+					(void *)qs : (void *)adapter);
-+	}
+-	cphy_init(phy, adapter, 1, &xaui_direct_ops, mdio_ops);
++	cphy_init(phy, adapter, phy_addr, &xaui_direct_ops, mdio_ops);
  }
- #endif
+diff --git a/drivers/net/cxgb3/regs.h b/drivers/net/cxgb3/regs.h
+index e5a5534..bf9d6be 100644
+--- a/drivers/net/cxgb3/regs.h
++++ b/drivers/net/cxgb3/regs.h
+@@ -2128,6 +2128,8 @@
+ #define F_RESETPLL01    V_RESETPLL01(1U)
  
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index 8dd5b1e..a2cfd68 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -2228,7 +2228,6 @@ irqreturn_t t3_sge_intr_msix_napi(int ir
- 	struct sge_rspq *q = &qs->rspq;
+ #define A_XGM_SERDES_STAT0 0x8f0
++#define A_XGM_SERDES_STAT1 0x8f4
++#define A_XGM_SERDES_STAT2 0x8f8
  
- 	spin_lock(&q->lock);
--	BUG_ON(napi_is_scheduled(qs->netdev));
- 
- 	if (handle_responses(adap, q) < 0)
- 		q->unhandled_irqs++;
+ #define S_LOWSIG0    0
+ #define V_LOWSIG0(x) ((x) << S_LOWSIG0)
