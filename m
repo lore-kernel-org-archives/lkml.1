@@ -1,132 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761114AbXEZNfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760424AbXEZNlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761114AbXEZNfF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 09:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbXEZNex
+	id S1760424AbXEZNlm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 09:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbXEZNld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 09:34:53 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:49670 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753815AbXEZNew (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 09:34:52 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Sat, 26 May 2007 09:33:40 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] MIPS: Transform old-style macros to newer "__noreturn"
- standard.
-In-Reply-To: <46573B23.1090700@zytor.com>
-Message-ID: <Pine.LNX.4.64.0705260924370.19438@localhost.localdomain>
-References: <Pine.LNX.4.64.0705251418050.13623@localhost.localdomain>
- <46572DAF.1000108@zytor.com> <Pine.LNX.4.64.0705251458440.13906@localhost.localdomain>
- <46573B23.1090700@zytor.com>
+	Sat, 26 May 2007 09:41:33 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40687 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754954AbXEZNlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 09:41:32 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Tetsuo Handa <penguin-fsdevel@i-love.sakura.ne.jp>
+Subject: Re: Pass struct vfsmount to the inode_create LSM hook
+Date: Sat, 26 May 2007 15:41:09 +0200
+User-Agent: KMail/1.9.5
+Cc: mrmacman_g4@mac.com, casey@schaufler-ca.com, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <309300.41401.qm@web36615.mail.mud.yahoo.com> <200705261346.20712.agruen@suse.de> <200705262109.JJB99189.TFHFGQEOtVOMWJF@I-love.SAKURA.ne.jp>
+In-Reply-To: <200705262109.JJB99189.TFHFGQEOtVOMWJF@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705261541.09891.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 May 2007, H. Peter Anvin wrote:
-
-> Robert P. J. Day wrote:
-> >
-> >
-> >   f() __attribute__((noreturn)) ;
-> >
-> > you get:
-> >
-> >   warning: data definition has no type or storage class
-> >
-> > but gcc doesn't complain if you declare it thusly:
-> >
-> >   __attribute__((noreturn)) f() ;
-> >
-> > that strikes me as a flaw in gcc, no?
-> >
+On Saturday 26 May 2007 14:09, Tetsuo Handa wrote:
+> Hello.
 >
-> Doesn't matter.  gcc accepts "void __attribute__((noreturn)) f();", and
-> thus, one can define:
+> Andreas Gruenbacher wrote:
+> > > exec { "/usr/bin/gunzip" } "gzip", "-9", "some/file/to.gz";
+> >
+> > The above Perl code executes /usr/bin/gunzip and sets argv[0] to "gzip",
+> > so this confirms that the value of argv[0] is arbitrary. Well great, we
+> > already knew.
+> >
+> > AppArmor does not look at argv[0] for anything, and doing so would be
+> > insane. So please don't jump to the wrong conclusions.
 >
-> #define __noreturn void __attribute__((noreturn))
+> I agree that argv[0] checking is different from pathname-based access
+> control or label-based access control, but I want to say argv[0] checking
+> is still needed.
 >
-> ... and declare functions as:
+> If you don't check argv[0], an attacker can request everything like
 >
-> __noreturn f();
+> exec { "/bin/ls" } "/sbin/busybox", "cat", "/etc/shadow";
+> exec { "/bin/ls" } "/sbin/busybox", "rm", "/etc/shadow";
 >
-> ... which is the syntactially sane way of doing it.
+> if /bin/ls and /bin/cat and /bin/rm are hardlinks of /sbin/busybox (e.g.
+> embedded systems).
+>
+> Therefore, TOMOYO Linux checks the combination of filename and argv[0]
+> passed to execve().
 
-i've thought about this and, while i philosophically agree with you,
-i'm not going down that road for a couple reasons.
+So you are indeed trying to control the value of argv[0]? Well, good luck with 
+that, but it's totally insane. You are guaranteed to break some applications. 
+AppArmor is not going to go down that route.
 
-first, there is the fact that there is already a macro definition for
-__noreturn in include/linux/compiler-gcc.h:
+If /bin/cat and /bin/rm are binaries or hardlinks to the same busybox binary 
+(rather than symlinks), different profiles could be used for each of them. 
+The cat profile could have no more than read access anywhere, so this would 
+prevent it from removing files. That's an effective access control mechanism.
 
-#define __noreturn                      __attribute__((noreturn))
+Conspiring with busybox in the kernel and making it do the right thing (and 
+just that) at the application level is not an effective security mechanism: 
+the kernel would still allow busybox to do anything, and there could be bugs 
+in the application, busybox's calling convention could change to allow more 
+than one command per invocation (e.g., ``cat /etc/shadow ; rm /etc/shadow''), 
+etc.
 
-second, and more importantly, defining __noreturn as you suggest is
-now mixing two fundamental pieces of information.  "void" is a return
-type, plain and simple.  an attribute, OTOH, as i read it, is more of
-a suggestion to the compiler to allow better checking of your code
-and, based on future compilers, it may not even be meaningful.
-
-all of the short forms for attributes defined in compiler-gcc.h are
-exactly that -- short forms.  by adding in a return type, you're
-fundamentally changing the way that short cut can be used.
-
-yes, i *know* that __noreturn makes the return type irrelevant.  but
-even the gcc manual doesn't try to take that extra step:
-
-================================================================
-A few standard library functions, such as abort and exit, cannot
-return. GCC knows this automatically. Some programs define their own
-functions that never return. You can declare them noreturn to tell the
-compiler this fact. For example,
-
-
-
-void fatal () __attribute__ ((noreturn));
-
-void
-fatal (...)
-{
-  ... /* Print error message. */ ...
-  exit (1);
-}
-
-The noreturn keyword tells the compiler to assume that fatal cannot
-return. It can then optimize without regard to what would happen if
-fatal ever did return. This makes slightly better code. More
-importantly, it helps avoid spurious warnings of uninitialized
-variables.
-
-Do not assume that registers saved by the calling function are
-restored before calling the noreturn function.
-
-It does not make sense for a noreturn function to have a return type
-other than void.
-^^^^^ ^^^^ ^^^^
-===============================================================
-
-  so I'm just going to stick with the pattern that's been used so far.
-i realize it offends your sense of syntactic sensibility, but it's
-just not worth treating that one attribute so differently from the
-rest of them.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Andreas
