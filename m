@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbXEZPNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761068AbXEZPYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761416AbXEZPNR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 11:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbXEZPNJ
+	id S1761068AbXEZPYO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 11:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbXEZPYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 11:13:09 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:46260 "EHLO
+	Sat, 26 May 2007 11:24:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:56372 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753608AbXEZPNI (ORCPT
+	with ESMTP id S1751716AbXEZPYB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 11:13:08 -0400
+	Sat, 26 May 2007 11:24:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=XgOQE4G1D7BSruiII3sTygoBPtDfXJe/2DVPB4JcIFPeKslBKju4z+U777rDraDicKiUwVUg3Nd7128UtMTZ5f4xKOKai2+CRamVdE4ShISPELosyH8WE+C1PUU/AFcaQw8sigv2lm10RdRUw0T7kLfG8y0MT9aVl8PAEhZ7eAQ=
-Message-ID: <2c0942db0705260813g6aeedbfepc0afa94ba3550e5b@mail.gmail.com>
-Date: Sat, 26 May 2007 08:13:06 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Tommy Vercetti" <vercetti@zlew.org>, LKML <linux-kernel@vger.kernel.org>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=WcRJJ/4GegplRHobJg9GAvgY0DX0oJDLA2n4KiPAN9nQbnM4aVd6369mjuARvjlugTuoUAq9+PevR8BzYqaL8QMLDlrRl0j0VKK7GAIInKQkY+LaMsYKHJ67EWH0sdB6VF5lglEv5GlbIwGi4sgAhoxitOriGTXWubmugZnwTIg=
+Message-ID: <3d8471ca0705260823j2d6b312fkd72fe8d3f5b9673f@mail.gmail.com>
+Date: Sat, 26 May 2007 17:23:59 +0200
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Tommy Vercetti" <vercetti@zlew.org>
 Subject: Re: 2.6.21.1 - 97% wait time on IDE operations
+Cc: linux-kernel@vger.kernel.org
 In-Reply-To: <200705261505.38109@gj-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <200705261505.38109@gj-laptop>
-X-Google-Sender-Auth: cb493464140605a6
+X-Google-Sender-Auth: 6f60c45a002a82d4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/26/07, Tommy Vercetti <vercetti@zlew.org> wrote:
-> I was trying to get answer to my question around, but no one knows.
-> I do have DMA turned on, etc, yet - on extensive harddrive operations wait
+Hi,
 
-You may have DMA turned on, but it may be ineffectual if you don't
-have the right IDE driver handing your disk.
-
-> time is 90+% , which means that machine is waiting, rather than doing
+> wait time is 90+% , which means that machine is waiting, rather than doing
 > something meanwhile. (I guess).
 
-What does hdparm -tT /dev/hda say? If the numbers are reasonable
-(~400MB/s for cache reads, ~25MB/s for buffered disk reads), then
-you're just doing a lot of seeking on the drive, and that takes a long
-time. (Drives can seek about 100 times a second. If every seek reads
-only 4k of data, that's 400k of data processed per second, or a lot of
-time spent with the CPU waiting on I/O.)
+Yes, the machine spends its time waiting for the disk to do its things
+as it does not have anything else to do. Nothing to worry about. If
+you want, launch some CPU bound process at the same time and the wait
+time will be replaced by some user+system time but you'll gain
+nothing.
+
+Hope this helps.
+
+-- 
+Guillaume
