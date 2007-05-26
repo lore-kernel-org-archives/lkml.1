@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbXEZOkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760717AbXEZOo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbXEZOkJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 10:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbXEZOj6
+	id S1760717AbXEZOo6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 10:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbXEZOot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 10:39:58 -0400
-Received: from gw.ac.upc.edu ([147.83.30.3]:57399 "EHLO gw.ac.upc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754349AbXEZOj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 10:39:57 -0400
-In-Reply-To: <200705261505.38109@gj-laptop>
-References: <200705261505.38109@gj-laptop>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EC7004A7-D0AC-47F1-8FB7-84B8071515D2@ac.upc.edu>
-Cc: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: "Julio M. Merino Vidal" <jmerino@ac.upc.edu>
-Subject: Re: 2.6.21.1 - 97% wait time on IDE operations
-Date: Sat, 26 May 2007 16:39:52 +0200
-To: Tommy Vercetti <vercetti@zlew.org>
-X-Mailer: Apple Mail (2.752.3)
+	Sat, 26 May 2007 10:44:49 -0400
+Received: from wine.ocn.ne.jp ([220.111.47.146]:51126 "EHLO
+	smtp.wine.ocn.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754050AbXEZOos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 10:44:48 -0400
+To: agruen@suse.de
+Cc: mrmacman_g4@mac.com, casey@schaufler-ca.com, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Pass struct vfsmount to the inode_create LSM hook
+From: Tetsuo Handa <penguin-fsdevel@I-love.SAKURA.ne.jp>
+References: <309300.41401.qm@web36615.mail.mud.yahoo.com>
+	<200705261346.20712.agruen@suse.de>
+	<200705262109.JJB99189.TFHFGQEOtVOMWJF@I-love.SAKURA.ne.jp>
+	<200705261541.09891.agruen@suse.de>
+In-Reply-To: <200705261541.09891.agruen@suse.de>
+Message-Id: <200705262344.HGG92040.QtGFWFTOJMHOEFV@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50]
+X-Accept-Language: ja,en
+Date: Sat, 26 May 2007 23:44:46 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/05/2007, at 15:05, Tommy Vercetti wrote:
+Hello.
 
-> Hi folks,
->
-> I was trying to get answer to my question around, but no one knows.
-> I do have DMA turned on, etc, yet - on extensive harddrive  
-> operations wait
-> time is 90+% , which means that machine is waiting, rather than doing
-> something meanwhile. (I guess).
-> Can someone describe to me , in more detail why is that happening,  
-> and what
-> steps should I consider to avoid it ? I couldn't find any answers  
-> that would
-> have help me on net.
+Andreas Gruenbacher wrote:
+> > Therefore, TOMOYO Linux checks the combination of filename and argv[0]
+> > passed to execve().
+> So you are indeed trying to control the value of argv[0]? Well, good luck with 
+> that, but it's totally insane. You are guaranteed to break some applications.
+TOMOYO Linux ristricts argv[0] using allow_argv0 syntax.
+"allow_argv0 /bin/bash -bash" to allow passing "/bin/bash" to filename and "-bash" to argv[0] .
+"allow_argv0 /bin/gzip gunzip" to allow passing "/bin/gzip" to filename and "gunzip" to argv[0] .
+"allow_argv0 /sbin/busybox cat" to allow passing "/sbin/busybox" to filename and "cat" to argv[0] .
+No need to use allow_argv0 syntax if the basename of filename and basename of argv[0] are the same
+(i.e. "allow_argv0 /bin/bash bash" is not required).
+TOMOYO Linux doesn't unconditionally forbid passing different values for filename and argv[0].
+TOMOYO Linux allows passing different values for filename and argv[0] only if it is allowed by allow_argv0 syntax.
+Could you please explain me why this approach breaks applications?
 
-I see in your other post that you have a laptop disk drive and, based  
-on its specs, it is a 4200RPM one.  Laptop drives are incredibly slow  
-for random disk access -- I have one and hate it with passion... even  
-though it is slightly better (5400RPM)...
+> If /bin/cat and /bin/rm are binaries or hardlinks to the same busybox binary 
+> (rather than symlinks), different profiles could be used for each of them.
+It is true if all processes are kept under control (e.g. strict policy in SELinux).
+If there is a process that is not kept under control (e.g. targeted policy in SELinux),
+you can't protect the application.
+For example, an administrator may wish to allow users run /bin/ls without applying profiles
+because /bin/ls won't read/write the content of files. But a malicious user may pass
+"/bin/ls" to filename and "rm" to argv[0] and "/etc/shadow" to argv[1].
+A malicious user may pass "/bin/ls" to filename and "/usr/sbin/httpd" to argv[0],
+resulting behave as /usr/sbin/httpd without applying profiles for /usr/sbin/httpd .
 
-You mention that you are doing expensive disk operations.  If these  
-involve a lot of disk seeks (such as, for example, a "cvs update" on  
-a large source tree), disk performance will be very very poor and any  
-other operation you attempt on it will be slow as well.  These kind  
-of drives are the major bottleneck of current laptop machines, in my  
-opinion.
-
-(I just wanted to make this clear wrt the hardware.  I do not know if  
-Linux is also involved or not.)
-
--- 
-Julio M. Merino Vidal <jmerino@ac.upc.edu>
-
-
+Thanks.
