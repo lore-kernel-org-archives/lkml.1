@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbXEZQVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763313AbXEZQWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763531AbXEZQVd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 12:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763191AbXEZQVY
+	id S1763313AbXEZQWj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 12:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbXEZQWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 12:21:24 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:42729
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762798AbXEZQVX (ORCPT
+	Sat, 26 May 2007 12:22:33 -0400
+Received: from keetweej.vanheusden.com ([213.84.46.114]:47837 "EHLO
+	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753055AbXEZQWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 12:21:23 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
-Date: Sat, 26 May 2007 18:21:16 +0200
-User-Agent: KMail/1.9.6
-Cc: Uwe Bugla <uwe.bugla@gmx.de>, Maximilian Engelhardt <maxi@daemonizer.de>,
-       linux-wireless@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <20070524195616.234280@gmx.net> <200705261750.48816.mb@bu3sch.de> <20070526091309.0af20971.akpm@linux-foundation.org>
-In-Reply-To: <20070526091309.0af20971.akpm@linux-foundation.org>
+	Sat, 26 May 2007 12:22:32 -0400
+Date: Sat, 26 May 2007 18:22:31 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: mpm@selenic.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Fw: Re: [2.6.21.1] soft lockup when removing netconsole module
+Message-ID: <20070526162231.GC11760@vanheusden.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705261821.16355.mb@bu3sch.de>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Sun May 27 17:52:04 CEST 2007
+X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a key-signing at www.biglumber.com
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 26 May 2007 18:13:09 Andrew Morton wrote:
-> > I already tried your -mm kernel, but it crashes on my machine
-> > for other reasons. (Yeah, I should look into them, too :P )
+Hi,
+
+> > Seems to be hrtimers related - CC'ed Thomas.
 > 
-> err, please do.  Just the oops trace would be a start.
+> I doubt that. The tick interrupt just finds out, that the machine is
+> stuck in rmmod.
 
-Yes, I will look into it. I think it was related to my
-onboard RTL networking chip. When trying to bring it down,
-it oopses the machine. But I'm not sure what happens exactly, yet.
-I'll take a look at it.
+Can you please make netconsole unloadable via rmmod? My system seems to
+hang every time I do rmmod on netconsole (rmmod using 100% cpu and not
+returning). Because now when the destination system gets a new
+network-card or anything else changes I need to reboot the complete
+(sending) machine.
 
-> > Andrew, is it possible that the breakage was introduced in the
-> > merge process somehow? Didn't the patch apply cleanly? Are there
-> > other changes to b44 I should know about in your tree?
-> 
-> Only git-wireless.net modifies b44.c but if we're having IRQ assignment
-> problems then we'd need to look elsewhere.
 
-I think we don't have IRQ assignment problems. Uwe simply disabled
-b44-PCI support in his first bugreport (I guess). So there was
-no b44-PCI driver loaded.
-Later on he said that it does magically work now...
+Folkert van Heusden
 
 -- 
-Greetings Michael.
+MultiTail est un flexible tool pour suivre de logfiles et execution de
+commandements. Filtrer, pourvoir de couleur, merge, 'diff-view', etc.
+http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
