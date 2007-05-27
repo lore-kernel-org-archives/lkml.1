@@ -1,112 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbXE1JH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761323AbXE1JHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758499AbXE1JH3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 05:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbXE1JHU
+	id S1761323AbXE1JHl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 05:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbXE1JHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 05:07:20 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:57691 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbXE1JHT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 05:07:19 -0400
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before
-	hibernation/suspend
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Michael-Luke Jones <mlj28@cam.ac.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       Rob Landley <rob@landley.net>
-In-Reply-To: <9D3FC259-8391-4C2F-9F0F-AEF6CB3030E8@cam.ac.uk>
-References: <200705272229.21263.rjw@sisk.pl>
-	 <20070527220412.GC22687@srcf.ucam.org>
-	 <1180304166.3131.66.camel@lov.localdomain> <200705280943.54312.rjw@sisk.pl>
-	 <9D3FC259-8391-4C2F-9F0F-AEF6CB3030E8@cam.ac.uk>
+	Mon, 28 May 2007 05:07:25 -0400
+Received: from m12-13.163.com ([220.181.12.13]:41820 "HELO m12-13.163.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753876AbXE1JHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 05:07:23 -0400
+Subject: Re: 2.6.17-rc6 No volume groups found
+From: freegnu <freegnu@163.com>
+Reply-To: freegnu@163.com
+To: Barry Scott <barry.scott@onelan.co.uk>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4656AE10.4070104@onelan.co.uk>
+References: <4491540A.6050806@onelan.co.uk>
+	 <1180020784.9086.0.camel@localhost.localdomain>
+	 <4656AE10.4070104@onelan.co.uk>
 Content-Type: text/plain
-Date: Mon, 28 May 2007 11:06:11 +0200
-Message-Id: <1180343171.4242.15.camel@lov.localdomain>
+Organization: gnu
+Date: Mon, 28 May 2007 01:08:13 +0800
+Message-Id: <1180285693.4209.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19DOYsUIXh28nOpfJUAbbFIwt/BRWLV/Tbl79R
- jwk1D8zoiwHfKM4h2K/u9Ryz1Q6Yz2b2ONgqeakN1xX1uRMUM6
- RLa6r4ur9CFgquTUICKhwo/7Aj/7ko3
+X-Coremail-Antispam: 1U3Yxn0WfASr-VFAUDIcSsGvfJ-kc8Ir4CE8sxKj4xv1VAv77
+	x28xy5McIj6xIIjxv20xvE14v26r1j6r18MxCjnVAqn7xvrwAv7VC2z280aVAFwI0_Jr0_
+	Gr1l14x267AKxVWUJVW8JwCjxxvEa2IrM7kC6x804xWl1IIY67AEw4v_Jr0_Jr4l5I8CrV
+	ACY4xI64kE6c02F40Ex7xfMxkFs20EY4vEwck0b40E8IxJM7k0a2IF6F4Un29KB7ZKAUJU
+	UUUUnxnvy29KBjDU0xZFpf9x07be38nUUUUU129KBjvJXoW7KrWkur1UZr18tF45CFW5GF
+	g_yoW8AryxpF43KF1YkF1qyanrAw1Iv3Wj9342y3s3J3WUXrn0gr95Jrn09F4Iv34Yvw43
+	uFyqqw4SkF1jkr1rXa4xu3WUZFJ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-28 at 09:48 +0100, Michael-Luke Jones wrote:
-> On 28 May 2007, at 08:43, Rafael J. Wysocki wrote:
-> 
-> >> Seems, that's just the broken synchronous firmware loading interface
-> >> with the useless timeout handling. The nowait version of the same  
-> >> loader
-> >> doesn't time out, and should not have that problem. The sync version
-> >> should be removed from the kernel, it just causes all sorts of  
-> >> problems
-> >> since it exists.
-> >>
-> >> Userspace should handle the async request just fine when it comes  
-> >> back
-> >> running, regardless of the time it was submitted.
+yes, i have rebuilt the initrd by the command: /sbin/mkinitrd
+--builtin=ata_piix /boot/initrd-2.6.14.img initrd-2.6.14
+
+On Fri, 2007-05-25 at 10:36 +0100, Barry Scott wrote:
+> freegnu wrote:
+> > i have the same problem when i built kernel 2.6.14.
+> > and the previous working kernel is 2.6.11 form Fedora Code 4
 > >
-> > Okay, so the solution is to convert the drivers to use
-> > request_firmware_nowait() instead of request_firmware() in  
-> > their .resume()
-> > routines.
+> > anyone give me any adviece? thanks
+> >
+> >
+> > On Thu, 2006-06-15 at 13:35 +0100, Barry Scott wrote:
+> >   
+> >> On my HP dc7600U having patch around the MCG problem
+> >> I now get a bit further. Previous working kernel was 2.6.16
+> >> from Fedora Code 4.
+> >>
+> >> I see:
+> >>
+> >> Uncompressing Linux... Ok, botinh the kernel.
+> >> Red Hat nash version 4.2.15 starting
+> >>   Reading all physical volumes.  This may take a while...
+> >>   No volume groups found
+> >>   Unable to find volume group "VolGroup00"
+> >> ERROR: /bin/lvm exited abnormally with value 5 ! (pid 351)
+> >>
+> >> Then a few more errors and Kernel panic
+> >>
+> >> Where would the problem be?
+> >>
+> >> Barry
+> >>
+> >>     
+> You have to rebuild the initrd to match the kernel and its modules.
+> As the kernel develops the initrd scripts need to change to match changes
+> in modules required to support the disks for the new kernel.
+> I've no experience with 2.6.11 to 2.6.14. We now use 2.6.21
+> and know a bit about how to support it on FC4.
+
+yes, i have rebuilt the initrd by the command: 
+/sbin/mkinitrd --builtin=ata_piix /boot/initrd-2.6.14.img initrd-2.6.14
 > 
-> [added Rob Landley to CC]
+> What we did to find differences was to run later versions of Fedora Core
+> that support the kernel we want to use out of the box. Then we break open
+> the initrd and see what the differences are between the old and new initrd
+> files.
+how did you analysis the differences? the constent of the file is scale
+of two. 
 > 
-> I think asynchronous loading should be made the default behaviour.  
-> However, we need to think and document how to do firmware loading.
+> Barry
 > 
-> Firmware loading can be done at two different times:
-> Device Driver Load
-> First use of Device Driver
 > 
-> For a network device, this correlates to when the driver is first  
-> loaded into memory or at 'ifconfig up' respectively.
-> 
-> At device driver load, firmware loading must be asynchronous. This is  
-> because device driver init can occur before userspace runs and  
-> registers a hotplug/uevent event handler. If device use is attempted  
-> before firmware loads, a -ENOFIRMWARE call would be great so that  
-> userspace and thus the user can be clearly informed what the problem is.
 
-Why would a driver create an interface before it has the needed
-firmware loaded?
-
-> However, at 'first use' firmware loading, the synchronous interface  
-> should remain. 'ifconfig up' either works or it doesn't, and as I see  
-> it, has to just hang around until firmware turns up.
-
-What kind of network driver does create an interface for a
-non-functioning device? That sounds like a bug on its own.
-
-If a driver binds to a device, it should just have the firmware already
-loaded, and not wait until its used. What's the reason for such a
-behavior, to let a driver pretend it can handle a device, but it doesn't
-even know if all the needed pieces are available on the system?
-
-> One more thing, it seems that the asynchronous firmware loading  
-> thread just spawns a _request_firmware() call which then times out at  
-> 60 seconds. I think, if the first request fails it spawns another. 60  
-> seconds is *far* too long for this type of thing, and this was set at  
-> 10 seconds before the last two kernel releases (which is even a bit  
-> slow itself). Unfortunately, this appears to a case of quite senior  
-> kernel developers pushing a bodge upstream rather than fixing the  
-> underlying issue :( [1] [2]
-
-The underlying issue are the driver authors, that's not so easy to
-fix. :)
-
-Well, 10 seconds are just to short for userspace to react on some
-setups, from tiny boxes which are busy, to 512 CPU boxes enumerating
-thousands of devices, all had problems here. Any timeout for a
-firmware-request is just a broken concept, the request should wait
-forever, to be fulfilled or canceled from userspace when it's ready.
-
-Kay
 
