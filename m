@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbXE0Uba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759429AbXE0UdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759272AbXE0Uba (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXE0UbW
+	id S1759429AbXE0UdW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbXE0UdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:31:22 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:62466 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbXE0UbV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:31:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=kXjoeM82c/Eluon1JCDWP3Du0ei/uEulcAFAvWvhVCHW3B27j3sMxLmPVyDpZuajIF0hkReNx+Z/K47zmkFlPr3AV8fqDCox7kOplYnIgMsgsvApgFWb2bPNZmWMEhk2QrWEMCCshZcUM3754a6/03eU7lgkjuTsgbgRBCbYEqI=
-Message-ID: <4659EA85.2010700@gmail.com>
-Date: Mon, 28 May 2007 00:31:01 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Sun, 27 May 2007 16:33:15 -0400
+Received: from waste.org ([66.93.16.53]:37804 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755490AbXE0UdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 16:33:15 -0400
+Date: Sun, 27 May 2007 15:32:21 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Folkert van Heusden <folkert@vanheusden.com>,
+       Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [2.6.21.1] soft lockup when removing netconsole module
+Message-ID: <20070527203221.GF11166@waste.org>
+References: <20070526154011.GB3735@vanheusden.com> <465857DF.2020603@gmail.com> <1180195927.4264.11.camel@chaos> <20070526161645.GA11760@vanheusden.com> <1180197324.4264.23.camel@chaos>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: hpa@zytor.com, rdreier@cisco.com, greg@kroah.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: PCIE
-References: <46584C30.4030206@gmail.com>	<20070526.154910.78725926.davem@davemloft.net>	<4658EE32.5080506@zytor.com> <20070527.004019.41635814.davem@davemloft.net>
-In-Reply-To: <20070527.004019.41635814.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1180197324.4264.23.camel@chaos>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: "H. Peter Anvin" <hpa@zytor.com>
-> Date: Sat, 26 May 2007 19:34:26 -0700
+On Sat, May 26, 2007 at 06:35:24PM +0200, Thomas Gleixner wrote:
+> On Sat, 2007-05-26 at 18:17 +0200, Folkert van Heusden wrote:
+> > > > Seems to be hrtimers related - CC'ed Thomas.
+> > > I doubt that. The tick interrupt just finds out, that the machine is
+> > > stuck in rmmod.
+> > > > > Also the rmmod hangs and would not exit even with kill -9. It also
+> > > > > sucks up 100% cpu.
+> > > Can you please enable CONFIG_PROVE_LOCKING ?
+> >
+> > Luckily I already had :-)
+> > Here is its output:
 > 
->> There are systems which only get a single bit indication that an MSI has
->> happened.
->>
->> Presumably we need something like IRQF_MSI which can be set as
->> appropriate depending on the architecture?
+> So there is no output from lockdep, during the rmmod hang ? The rmmod
+> sucks 100% cpu, so it busy loops at some place. Looking at the stack
+> trace this seems to be in:
 > 
-> Although I don't want to make the IRQ handling subsystems any more
-> complicated than they already are, one idea I floated around is that
-> we could seperate CPU irq numbers (the things we pass around today)
-> and MSI vector numbers.
 > 
-> But I immediately understand how that is unnecessary to some extent,
-> any platform which needs to deal with that kind of distinction can use
-> virtual IRQ numbers like sparc64 and powerpc do.
+> void cancel_rearming_delayed_workqueue(struct workqueue_struct *wq,                                                                                                                 
+>                                        struct delayed_work *dwork)                                                                                                                  
+> {                                                                                                                                                                                   
+>         while (!cancel_delayed_work(dwork))                                                                                                                                         
+>                 flush_workqueue(wq);                                                                                                                                                
+> }
 > 
-> Sparc64 PCI-E controllers, for example, allow you to group several
-> MSIs into a 'group', and the interrupt source is for the group rather
-> than the individual MSIs.  When the MSI group interrupt arrives, you
-> get a descriptor in a per-MSI-group ring buffer that describes the MSI
-> that arrived.
-> 
-> This descriptor in fact passes on a ton of interesting information,
-> see arch/sparc64/kernel/pci_sun4v.c:pci_sun4v_msiq_entry.
-> 
-> It gives you the type, the system TSC value at the time of interrupt
-> arrival (so you could do incredibly cool profiling with this),
-> the PCI bus/device/fn that generated the MSI vector, the MSI address
-> that was signalled, the MSI data field, and full information for PCI-E
-> MSG packets including bus/dev/fn of target, the message routing code,
-> and the message code.
-> 
-> But we use none of these facilities currently because it's either
-> impossible or too cumbersome to be useful at the moment.
-> 
+> which is not really related to timers :)
 
-I think it is better to use IRQF_MSI as HPA suggested, since IRQF_SHARED
-is a bit confusing thing altogether since MSI doesn't share interrupts.
+Looks like Steve added the delayed work bits, though I never saw any
+of his patches.
 
-
+-- 
+Mathematics is the supreme nostalgia of our time.
