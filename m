@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXE0Ups@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759676AbXE0Urp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759526AbXE0Ups (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbXE0Upk
+	id S1759676AbXE0Urp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbXE0Urf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:45:40 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:54865 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753571AbXE0Upk (ORCPT
+	Sun, 27 May 2007 16:47:35 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:60763
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753801AbXE0Ure (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:45:40 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <200705272231.54535.rjw@sisk.pl>
-References: <200705272229.21263.rjw@sisk.pl> <200705272231.54535.rjw@sisk.pl>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6BD5252F-96CD-49D9-86C7-18115294D913@cam.ac.uk>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>
+	Sun, 27 May 2007 16:47:34 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Maximilian Engelhardt <maxi@daemonizer.de>
+Subject: Re: b44: regression in 2.6.22 (resend)
+Date: Sun, 27 May 2007 22:46:16 +0200
+User-Agent: KMail/1.9.6
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20070525172431.60affaca@freepuppy> <200705272145.00796.mb@bu3sch.de> <200705272236.42628.maxi@daemonizer.de>
+In-Reply-To: <200705272236.42628.maxi@daemonizer.de>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200705272246.16960.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
-Date: Sun, 27 May 2007 21:45:35 +0100
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27 May 2007, at 21:31, Rafael J. Wysocki wrote:
+On Sunday 27 May 2007 22:36:39 Maximilian Engelhardt wrote:
+> When I ran 2.6.21.1 or 2.6.22-rc3 without any debugging tools just in normal 
+> use I didn't notice any problems. It did work fine as I would expect it.
+> I think the wget and ping tests here are as they should be.
+> 
+> With 2.6.22-rc2-mm1 I noticed that connections seem to be slower. The ping 
+> test does confirm this, because here response times are very high. As far as 
+> I can remember the wget download rate was a bit slower than 2.6.21.1 or 
+> 2.6.22-rc3 till it stalled.
+> I would expect it to be someting like the other two kernels. The two problems 
+> I see are the high ping times and the fact that the card stopped working.
+> 
+> I don't know why the iperf results are so different from my personal 
+> experience. I guess the fact that I get so bad results with 2.6.21.1 and 
+> 2.6.22-rc3 is that iperf does something that causes the system to be 
+> extremely slow and thus degrading performance. This could be a bug somewhere 
+> in the b44 driver of 2.6.21.1 and 2.6.22-RC3 that has unintended been fixed 
+> by the ssb switch, but that's only a roughly guess.
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Use a hibernation and suspend notifier to disable the firmware  
-> requesting
-> mechanism before a hibernation/suspend and enable it after the  
-> operation.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->
->  drivers/base/firmware_class.c |   36 ++++++++++++++++++++++++++++++ 
-> ++++++
->  1 file changed, 36 insertions(+)
+Ok. I guess (Yes I do :D) that there is an IRQ storm or something like that,
+because you say that your system is becoming very slow and unresponsive.
+It sounds like an IRQ is not ACKed correctly and so keeps triggering and
+stalling the system. I'll take a look at a few diffs...
+Do you see significant differences in the "hi" and/or "si" times in top?
+Do you see a significant difference in the /proc/interrupts count. For
+example that the kernel that works worse generates 10 times the IRQ count
+for the same amount of data.
 
-I don't like this approach, as I feel that the firmware loading  
-interface should be able to detect if a firmware load request is not  
-being handled, due to absence of userspace / hotplug handler presence.
-
-Other circumstances in which this can be a problem is during bootup  
-when request_firmware() calls can be made before userspace is up and  
-init has run (even in the presence of an initramfs).
-
-(Slightly OT: A particularly nasty race is when an initramfs  
-userspace is present, but firmware loading cannot occur because init  
-has not run, so proc hasn't been mounted, so a hotplug event handler  
-cannot be registered, despite the fact that the firmware is sitting  
-on the ramdisk mounted correctly...)
-
-In short, a more general solution would be preferred, and preferably  
-one which allows firmware loading to *actually* occur once userspace  
-has actually turned up and registered a handler :)
-
-Michael-Luke Jones
-
+-- 
+Greetings Michael.
