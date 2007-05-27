@@ -1,97 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760695AbXE0VvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbXE0Vvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760695AbXE0VvP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758823AbXE0Vu4
+	id S1760784AbXE0Vvl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbXE0Vvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:50:56 -0400
-Received: from daemonizer.de ([87.230.16.230]:52434 "EHLO daemonizer.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758624AbXE0Vuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:50:54 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: b44: regression in 2.6.22 (resend)
-Date: Sun, 27 May 2007 23:50:42 +0200
-User-Agent: KMail/1.9.7
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070525172431.60affaca@freepuppy> <200705272313.33129.mb@bu3sch.de> <200705272316.07338.mb@bu3sch.de>
-In-Reply-To: <200705272316.07338.mb@bu3sch.de>
+	Sun, 27 May 2007 17:51:31 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:33414 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756506AbXE0Vva (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 17:51:30 -0400
+Date: Sun, 27 May 2007 22:51:23 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Message-ID: <20070527215123.GA22687@srcf.ucam.org>
+References: <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <1180016213.16396.74.camel@queen.suse.de> <20070524143644.GA27364@srcf.ucam.org> <20070525063815.GA3989@ucw.cz>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1803652.zZzKimUVej";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705272350.45843.maxi@daemonizer.de>
-X-Spam-Score: -4.1 (----)
-X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.3 AWL AWL: From: address is in the auto white-list
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070525063815.GA3989@ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.22-rc1-mm1 Implementing fan/thermal control in userspace - Was: [cannot change thermal trip points]
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1803652.zZzKimUVej
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, May 25, 2007 at 06:38:15AM +0000, Pavel Machek wrote:
+> Hi!
+> > Because, as Len has pointed out, you end up with two different ideas 
+> > about what the trip points are - the kernel's and the hardware's. That 
+> > works fine until some event in the firmware either forcibly 
+> > resynchronises the two or makes assumptions about the spec-compliance of 
+> > the interpreter.
+> 
+> ...and suggested workaround is to drive fans directly from userspace,
+> which not only violates the specs and has all the problems with
+> desynchronized state, but ALSO FAILS TO WORK IN PRACTICE.
 
-On Sunday 27 May 2007, Michael Buesch wrote:
-> On Sunday 27 May 2007 23:13:32 Michael Buesch wrote:
-> > On Sunday 27 May 2007 21:25:17 Maximilian Engelhardt wrote:
-> > > 2.6.21.1:
-> > > [  5] local 192.168.1.2 port 58414 connected with 192.168.1.1 port 50=
-01
-> > > [  5]  0.0-60.6 sec  1.13 MBytes    157 Kbits/sec
-> > > [  4] local 192.168.1.2 port 5001 connected with 192.168.1.1 port 578=
-37
-> > > [  4]  0.0-63.1 sec  2.82 MBytes    375 Kbits/sec
-> > >
-> > > 2.6.22-rc3:
-> > > [  5] local 192.168.1.2 port 46557 connected with 192.168.1.1 port 50=
-01
-> > > [  5]  0.0-60.4 sec  58.9 MBytes  8.18 Mbits/sec
-> > > [  4] local 192.168.1.2 port 5001 connected with 192.168.1.1 port 516=
-33
-> > > [  4]  0.0-63.1 sec  7.27 MBytes    967 Kbits/sec
-> >
-> > This is the diff between these two kernels.
-> > I'm not sure why you see a much better TX throughput here.
-> >
-> > Can you re-check to make sure it's not just some test-jitter?
->
-> Oh, eh, and what I forgot to ask:
-> Do you know an old kernel that works perfectly well for you,
-> so I can look at a diff between this one and anything >=3D2.6.21.1.
+I don't think that's obviously true. 11.3.2 of the 3.0 spec states:
 
-I don't know any, most older kernels did work fine for me, but I never user=
-=20
-iperf there so I guess if the bug is there also I simply didn't trigger it.
-If you think it's usefull I could go back and try different kernels, but th=
-at=20
-would take some time.
-Except the iperf bug 2.6.21.1 and 2.6.22-rc3 work fine.
+"A package consisting of references to all active cooling devices that 
+should be engaged when the associated active cooling threshold (_ACx) is 
+exceeded." 
 
-Maxi
+(referring to _ALx objects).
 
---nextPart1803652.zZzKimUVej
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> > The interface would need to be more complicated than that if you wanted 
+> > to be able to implement hysteresis, and there's the potential for 
+> > hardware damage if paramaters are set inappropriately. Even then, 
+> > there's no easy way of programatically determining whether it would work 
+> > on any given hardware.
+> 
+> Not sure why you try to scare people with 'hardware damage'. HP XE3
+> bios already _was_ damaging hardware (it cooked the hard drive using
+> cpu as a heater), and no acpi magic can damage correctly working
+> machine.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Given that this presumably didn't occur under Windows, I think it would 
+be significantly better to figure out why and then fix that. 
+Alternatively, if the firmware tables are actually genuinely broken in a 
+way that's impossible to repair, you can replace the table. That has the 
+advantage that there's no risk of the platform and the OS becoming 
+confused.
 
-iD8DBQBGWf01Oimwv528XGERAngXAJ9DNgcgpf07I00M7q4QlJnNcczVxACgyAdG
-gWUkTYXKcBvO2SfHY5PP5u0=
-=GPEv
------END PGP SIGNATURE-----
-
---nextPart1803652.zZzKimUVej--
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
