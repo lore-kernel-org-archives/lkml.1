@@ -1,38 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXE0AMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbXE0AO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbXE0AMh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 20:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbXE0AM3
+	id S1756461AbXE0AO5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 20:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbXE0AOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 20:12:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39008 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751107AbXE0AM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 20:12:28 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <A02B7736-39AA-4B50-B682-756C387AEDEC@mac.com>
-References: <A02B7736-39AA-4B50-B682-756C387AEDEC@mac.com> <20070524165554.22292.38887.stgit@warthog.cambridge.redhat.com> <20070526022342.GA20905@fieldses.org>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] AFS: Implement file locking
-X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
-Date: Sun, 27 May 2007 01:12:19 +0100
-Message-ID: <7957.1180224739@redhat.com>
+	Sat, 26 May 2007 20:14:51 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:56350 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160AbXE0AOu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 20:14:50 -0400
+Message-ID: <4658CD70.2080702@zytor.com>
+Date: Sat, 26 May 2007 17:14:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Extending boot protocol & bzImage for paravirt_ops
+References: <4656FB8F.4090604@goop.org> <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com> <4658C704.2050405@goop.org>
+In-Reply-To: <4658C704.2050405@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett <mrmacman_g4@mac.com> wrote:
+Jeremy Fitzhardinge wrote:
+> 
+> I'd really prefer to keep an intact embedded ELF file rather than have a
+> semi-ELF file.  That way it would be easier to simply load the image and
+> point the normal ELF machinery at some offset into the file rather than
+> having to have a special handler for "\x7fBZE" or whatever.
+> 
 
-> I was actually under the impression that OpenAFS had support for byte- 
-> range locking (as well as lock upgrade/downgrade);
+Pardon me for saying it, but it's hardly a hardship to add support for a
+single additional constant in existing code.  I'm starting to think this
+argument is approaching not just the silly, but downright ridiculous.
 
-As far as I know, there is no support for byte-range locking at all in the AFS
-protocol itself.  The client can try to emulate byte-range locking locally,
-but that's about it.
+Another option is to have the ELF header at a nonzero offset.
 
-David
+	-hpa
