@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbXE0PgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbXE0Ph3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbXE0PgT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 11:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbXE0PgL
+	id S1757945AbXE0Ph3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 11:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbXE0PhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 11:36:11 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:56961 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753613AbXE0PgK (ORCPT
+	Sun, 27 May 2007 11:37:20 -0400
+Received: from art-generator.com ([87.106.74.240]:43719 "EHLO
+	s15225674.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754774AbXE0PhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 11:36:10 -0400
-Date: Sun, 27 May 2007 16:35:54 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-Message-ID: <20070527153553.GA19853@srcf.ucam.org>
-References: <4658C807.9040005@tmr.com> <200705271253.03396.rjw@sisk.pl> <46597F37.5050107@tmr.com> <200705271506.45714.rjw@sisk.pl> <465984E5.10506@tmr.com>
-MIME-Version: 1.0
+	Sun, 27 May 2007 11:37:19 -0400
+X-Greylist: delayed 1963 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 May 2007 11:37:19 EDT
+Date: Sun, 27 May 2007 17:04:58 +0200
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: bert hubert <bert.hubert@netherlabs.nl>, linux-kernel@vger.kernel.org
+Subject: USB: set default y for CONFIG_USB_DEVICE_CLASS
+Message-ID: <20070527150458.GA3803@vrfy.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <465984E5.10506@tmr.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: Documentation on /sys/power/resume
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 27, 2007 at 09:17:25AM -0400, Bill Davidsen wrote:
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: USB: set default y for CONFIG_USB_DEVICE_CLASS
 
-> Sounds like sispend2 is still needed, I haven't needed a suspending 
-> kernel in a few years, and I was hoping that with suspend working in 
-> mainline that resume would have been implemented. Sounds as if that's 
-> not the case, my swap is RAID1, I was hoping to resume from one of the 
-> mirrors, since they are based on a partition. No joy wit or without 
-> /sys/power/resume, so I'll look further.
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
 
-Should work absolutely fine as long as you set up the RAID before 
-attempting to resume.
+diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
+index f493fb1..346fc03 100644
+--- a/drivers/usb/core/Kconfig
++++ b/drivers/usb/core/Kconfig
+@@ -40,21 +40,25 @@ config USB_DEVICEFS
+ config USB_DEVICE_CLASS
+ 	bool "USB device class-devices (DEPRECATED)"
+ 	depends on USB
+-	default n
++	default y
+ 	---help---
+ 	  Userspace access to USB devices is granted by device-nodes exported
+ 	  directly from the usbdev in sysfs. Old versions of the driver
+ 	  core and udev needed additional class devices to export device nodes.
+ 
+ 	  These additional devices are difficult to handle in userspace, if
+-	  information about USB interfaces must be available. One device contains
+-	  the device node, the other device contains the interface data. Both
+-	  devices are at the same level in sysfs (siblings) and one can't access
+-	  the other. The device node created directly by the usbdev is the parent
+-	  device of the interface and therefore easily accessible from the interface
+-	  event.
+-
+-	  This option provides backward compatibility if needed.
++	  information about USB interfaces must be available. One device
++	  contains the device node, the other device contains the interface
++	  data. Both devices are at the same level in sysfs (siblings) and one
++	  can't access the other. The device node created directly by the
++	  usb device is the parent device of the interface and therefore
++	  easily accessible from the interface event.
++
++	  This option provides backward compatibility for libusb device
++	  nodes (lsusb) when usbfs is not used, and the following udev rule
++	  doesn't exist:
++	    SUBSYSTEM=="usb", ACTION=="add", ENV{DEVTYPE}=="usb_device", \
++	    NAME="bus/usb/$env{BUSNUM}/$env{DEVNUM}", MODE="0644"
+ 
+ config USB_DYNAMIC_MINORS
+ 	bool "Dynamic USB minor allocation (EXPERIMENTAL)"
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
