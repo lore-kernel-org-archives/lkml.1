@@ -1,175 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbXE0UmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXE0Ups@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759198AbXE0UmT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbXE0UmL
+	id S1759526AbXE0Ups (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbXE0Upk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:42:11 -0400
-Received: from daemonizer.de ([87.230.16.230]:51762 "EHLO daemonizer.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752808AbXE0UmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:42:11 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: software suspend doesn't work with 2.6.22-rc3
-Date: Sun, 27 May 2007 22:41:57 +0200
-User-Agent: KMail/1.9.7
-Cc: nigel@nigel.suspend2.net, Herbert Xu <herbert@gondor.apana.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200705261128.57332.maxi@daemonizer.de> <200705271801.30119.maxi@daemonizer.de> <200705272019.08860.rjw@sisk.pl>
-In-Reply-To: <200705272019.08860.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2081905.WbzSF3SI8C";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Sun, 27 May 2007 16:45:40 -0400
+Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:54865 "EHLO
+	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753571AbXE0Upk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 16:45:40 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <200705272231.54535.rjw@sisk.pl>
+References: <200705272229.21263.rjw@sisk.pl> <200705272231.54535.rjw@sisk.pl>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6BD5252F-96CD-49D9-86C7-18115294D913@cam.ac.uk>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705272242.00309.maxi@daemonizer.de>
-X-Spam-Score: -4.0 (----)
-X-Spam-Report: No, hits=-4.0 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.4 AWL AWL: From: address is in the auto white-list
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Date: Sun, 27 May 2007 21:45:35 +0100
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2081905.WbzSF3SI8C
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On 27 May 2007, at 21:31, Rafael J. Wysocki wrote:
 
-On Sunday 27 May 2007, Rafael J. Wysocki wrote:
-> On Sunday, 27 May 2007 18:01, Maximilian Engelhardt wrote:
-> > On Saturday 26 May 2007, Nigel Cunningham wrote:
-> > > Hi.
-> > >
-> > > On Sat, 2007-05-26 at 14:49 +0200, Maximilian Engelhardt wrote:
-> > > > On Saturday 26 May 2007, Nigel Cunningham wrote:
-> > > > > Hi.
-> > > > >
-> > > > > On Sat, 2007-05-26 at 11:28 +0200, Maximilian Engelhardt wrote:
-> > > > > > Hello,
-> > > > > >
-> > > > > > When I try software suspend on my laptop it always returns to my
-> > > > > > running system after some time.
-> > > > > > This is what's logged by the kernel:
-> > > > > >
-> > > > > > swsusp: Basic memory bitmaps created
-> > > > > > Stopping tasks ...
-> > > > > > Stopping kernel threads timed out after 20 seconds (1 tasks
-> > > > > > refusing to freeze):
-> > > > > >  cryptd
-> > > > > > Restarting tasks ... done.
-> > > > > > swsusp: Basic memory bitmaps freed
-> > > > > >
-> > > > > > I have no idea what's the problem, but if you tell me what I
-> > > > > > should do I can create debugging information and/or test patche=
-s.
-> > > > >
-> > > > > Could you try this patch, please? It should help.
-> > > > >
-> > > > > Herbert, is this right? If cryptd is going to be used for block
-> > > > > devs, the task should probably be PF_NOFREEZE (or whatever it is
-> > > > > today) instead.
-> > > > >
-> > > > > Regards,
-> > > > >
-> > > > > Nigel
-> > > > >
-> > > > >  crypto/cryptd.c         |    1 +
-> > > > >  include/linux/freezer.h |    3 +++
-> > > > >  kernel/power/process.c  |    2 +-
-> > > > >  3 files changed, 5 insertions(+), 1 deletion(-)
-> > > > > diff -ruNp 991-fix-cryptd.patch-old/crypto/cryptd.c
-> > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c ---
-> > > > > 991-fix-cryptd.patch-old/crypto/cryptd.c	2007-05-19
-> > > > > 18:16:47.000000000 +1000 +++
-> > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c	2007-05-26
-> > > > > 19:45:42.000000000 +1000 @@ -341,6 +341,7 @@ static int
-> > > > > cryptd_thread(void *data)
-> > > > >
-> > > > >  		mutex_unlock(&state->mutex);
-> > > > >
-> > > > > +		try_to_freeze();
-> > > > >  		schedule();
-> > > > >  	} while (!stop);
-> > > >
-> > > > I tried your patch, but when I apply it my kernel doesn't compile a=
-ny
-> > > > more. I get these warnings/errors:
-> > > >
-> > > > [...]
-> > > >   CC      crypto/cryptd.o
-> > > > crypto/cryptd.c: In function =E2=80=98cryptd_thread=E2=80=99:
-> > > > crypto/cryptd.c:344: warning: implicit declaration of function
-> > > > =E2=80=98try_to_freeze=E2=80=99 [...]
-> > > >   LD      init/built-in.o
-> > > >   LD      .tmp_vmlinux1
-> > > > crypto/built-in.o: In function `cryptd_thread':
-> > > > cryptd.c:(.text+0xd7f5): undefined reference to `try_to_freeze'
-> > > > make: *** [.tmp_vmlinux1] Error 1
-> > >
-> > > Ah. You'll need to add #include <linux/freezer.h> near that start of
-> > > crypto/cryptd.c. Sorry for forgetting that.
-> > >
-> > > Nigel
-> >
-> > I added the include line and now I could compile the kernel, but
-> > suspending still doesn't work.
-> >
-> > swsusp: Basic memory bitmaps created
-> > Stopping tasks ...
-> > Stopping kernel threads timed out after 20 seconds (1 tasks refusing to
-> > freeze):
-> > cryptd
-> > Restarting tasks ... done.
-> > swsusp: Basic memory bitmaps freed
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 >
-> OK, this means that cryptd doesn't execute the try_to_freeze() for some
-> reason.
+> Use a hibernation and suspend notifier to disable the firmware  
+> requesting
+> mechanism before a hibernation/suspend and enable it after the  
+> operation.
 >
-> Please apply the appended patch on top of 2.6.22-rc3 and see if that help=
-s.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 >
-> Greetings,
-> Rafael
->
-> ---
->  crypto/cryptd.c |    1 +
->  1 file changed, 1 insertion(+)
->
-> Index: linux-2.6.22-rc3/crypto/cryptd.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.22-rc3.orig/crypto/cryptd.c
-> +++ linux-2.6.22-rc3/crypto/cryptd.c
-> @@ -316,6 +316,7 @@ static int cryptd_thread(void *data)
->  	struct cryptd_state *state =3D data;
->  	int stop;
->
-> +	current->flags |=3D PF_NOFREEZE;
->  	do {
->  		struct crypto_async_request *req, *backlog;
+>  drivers/base/firmware_class.c |   36 ++++++++++++++++++++++++++++++ 
+> ++++++
+>  1 file changed, 36 insertions(+)
 
-Even with this patch suspending doesn't work, dmesg shows the same error=20
-message.
-I also did build a kernel without cryptd and suspending does work there.
+I don't like this approach, as I feel that the firmware loading  
+interface should be able to detect if a firmware load request is not  
+being handled, due to absence of userspace / hotplug handler presence.
 
-Maxi
+Other circumstances in which this can be a problem is during bootup  
+when request_firmware() calls can be made before userspace is up and  
+init has run (even in the presence of an initramfs).
 
---nextPart2081905.WbzSF3SI8C
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+(Slightly OT: A particularly nasty race is when an initramfs  
+userspace is present, but firmware loading cannot occur because init  
+has not run, so proc hasn't been mounted, so a hotplug event handler  
+cannot be registered, despite the fact that the firmware is sitting  
+on the ramdisk mounted correctly...)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+In short, a more general solution would be preferred, and preferably  
+one which allows firmware loading to *actually* occur once userspace  
+has actually turned up and registered a handler :)
 
-iD8DBQBGWe0YOimwv528XGERAgxUAJ42KaR8DnaDWVs1lMpt87Iw4V0ESACgwCxs
-P1JHjUPjMU9eJdmiIVnkplo=
-=PyC3
------END PGP SIGNATURE-----
+Michael-Luke Jones
 
---nextPart2081905.WbzSF3SI8C--
