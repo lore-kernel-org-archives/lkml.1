@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbXE0Tqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXE0UCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758851AbXE0Tqx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 15:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbXE0Tqn
+	id S1757511AbXE0UCT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbXE0UCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 15:46:43 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:43870 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751280AbXE0Tqm (ORCPT
+	Sun, 27 May 2007 16:02:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:54606 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751280AbXE0UCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 15:46:42 -0400
-Subject: Re: [PATCH] [scsi] Remove __GFP_DMA
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
-       Aubrey Li <aubreylee@gmail.com>, Christoph Lameter <clameter@sgi.com>,
-       Bernhard Walle <bwalle@suse.de>, linux-scsi@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070523203846.41ac5011@the-village.bc.nu>
-References: <20070521151525.GA581@suse.de>
-	 <Pine.LNX.4.64.0705221443030.16285@schroedinger.engr.sgi.com>
-	 <6d6a94c50705221941y63f4db7bj174a2265d9eaa61a@mail.gmail.com>
-	 <1179933494.3700.16.camel@mulgrave.il.steeleye.com>
-	 <AE4F746F2AECFC4DA4AADD66A1DFEF019E1BDA@otce2k301.adaptec.com>
-	 <20070523203846.41ac5011@the-village.bc.nu>
-Content-Type: text/plain
-Date: Sun, 27 May 2007 14:46:39 -0500
-Message-Id: <1180295199.3711.24.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Sun, 27 May 2007 16:02:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=W5cv+1mdIXkm6mVVCjkIvBHXQUD67dViVwvX9rMFInpj2Da6VOzuv5aSTvUBvkUxPi5JaU00EEv/E/zdjanqk8vl8PXTudIFZStj5JESQq1rFUgJR1k217BO1aaGs64nK592ZcVXt4Cv+po32iV92NIZf5kHqG9BqtiOkccD5Mw=
+From: Denis Vlasenko <vda.linux@googlemail.com>
+To: "Uwe Bugla" <uwe.bugla@gmx.de>
+Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
+Date: Sun, 27 May 2007 22:02:04 +0200
+User-Agent: KMail/1.8.2
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20070524195616.234280@gmx.net>
+In-Reply-To: <20070524195616.234280@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705272202.04764.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-23 at 20:38 +0100, Alan Cox wrote:
-> On Wed, 23 May 2007 15:17:08 -0400
-> "Salyzyn, Mark" <mark_salyzyn@adaptec.com> wrote:
+On Thursday 24 May 2007 21:56, Uwe Bugla wrote:
+> Please note:
 > 
-> > The 31 bit limit for some of these cards is a problem, we currently only
-> > do __GFP_DMA for bounce buffer sg elements allocated for user supplied
-> > references in ioctls.
-> > 
-> > I figure we should be using pci_alloc_consistent calls for these
-> > allocations to more accurately acquire memory within the 31 bit limit if
-> > necessary, we could switch to these to remove the need for the __GFP_DMA
-> > flag in the aacraid driver?
+> 1. IRQ 255 looks very idiotic, doesn't it? It does not exist at all, does it?
 > 
-> That didn't used to work right on the AMD boards when I tried it last as
-> we ended up with a buffer that was mapped by the IOMMU for some reason
-> and that was not below 2GB.
+> Questions:
+> 
+> 1. What is the technical need / progress of module ssb please?
+> 
+> 2. If Andrew Morton's guidelines clearly say: "Do test your patches on three different machines" and this guideline seems to be strictly ignored by some sparetime hackers:
+> 
+> What is the master plan then to avoid the fact that such a crap is being sent in to Andrew?
+> 
+> Yours sincerely
+> 
+> Uwe
+> 
+> P. S.: There is an important saying going like this:
+> 
+> Too many cooks do mess up the pap.
+> 
+> Regarding the patch in mm-tree I can see SIX (!) Copyright owners.
+> The last one of them (i. e. the one of 2007) obviuosly does not seem to understand what he is doing (see that nonsense interrupt please, just incredible!) :(
+> 
+> In so far I would deeply appreciate Andrew Morton to throw that b44.c patch into the trashbox as soon as possible :)
 
-Is that a bug in the x86_64 subsystem ... or just a bug in the HW?
+Uwe, you are an arrogant idiot and I think it's best
+for everybody to just ignore all your mails, regardless
+of their technical merits.
 
-I'm assuming what happened is that the GART aperture was placed above
-the 2GB limit making the GART unable to act as an IOMMU for any devices
-with a dma_mask < 32bit?
+Even if your mail reports a real bug, added shitload of insults
+to developers far outweights any possible useful info.
 
-This does show up a problem in our dma_ functions: namely that if the
-system says it has an IOMMU then we assume it's fully functional (i.e.
-able to reach all addresses).  There was a move afoot a while ago to
-replace the single PCI_DMA_BUS_IS_PHYS macro which is used to tell the
-system globally if we have an IOMMU with something like
-dma_dev_uses_iommu(struct device *) which would do the same thing but on
-a per-device basis.  Does this need to be resurrected?
-
-James
-
-
+Developers can save a lot of time and nerver by just waiting for
+someone else to hit the same bug, if it exists, and then debug it
+as usual.
+--
+vda
