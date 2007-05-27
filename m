@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbXE0Vr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759894AbXE0Vtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759504AbXE0Vr3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759971AbXE0Vq5
+	id S1759894AbXE0Vtm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756738AbXE0Vte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:46:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49864
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1759951AbXE0Vq4 (ORCPT
+	Sun, 27 May 2007 17:49:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:8751 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757226AbXE0Vtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:46:56 -0400
-Date: Sun, 27 May 2007 14:47:02 -0700 (PDT)
-Message-Id: <20070527.144702.55507425.davem@davemloft.net>
-To: jengelh@linux01.gwdg.de
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Linux always started with 9600 8N1
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070527.141622.30184020.davem@davemloft.net>
-References: <20070526.154745.30164056.davem@davemloft.net>
-	<Pine.LNX.4.61.0705271816310.7344@yvahk01.tjqt.qr>
-	<20070527.141622.30184020.davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 27 May 2007 17:49:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=VKdpWrxKfRFj16RJ3HIyvWasgd6VDVb+OQEUEuuX+WAobxCHvyqoaKac+TU/ruINlK/Sv4UrubfxZ8lBUJlUQjIUrHei5VDTJshKSNZAx5Gwrtd0BzlahsI3orV6eYCfYCEF0Eos0GmcHb4JZVIgrI2gOu+2/fMtT1QasXk2tco=
+Message-ID: <3ae72650705271449q37f523c3t5980541122ab871@mail.gmail.com>
+Date: Sun, 27 May 2007 23:49:30 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Matthew Garrett" <mjg59@srcf.ucam.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "pm list" <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
+       "Pavel Machek" <pavel@ucw.cz>, "Alan Stern" <stern@rowland.harvard.edu>,
+       "Oliver Neukum" <oliver@neukum.org>
+In-Reply-To: <20070527204955.GA22202@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705272229.21263.rjw@sisk.pl> <200705272231.54535.rjw@sisk.pl>
+	 <20070527204955.GA22202@srcf.ucam.org>
+X-Google-Sender-Auth: c24ddbea45f237bb
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Sun, 27 May 2007 14:16:22 -0700 (PDT)
+On 5/27/07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> On Sun, May 27, 2007 at 10:31:53PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > Use a hibernation and suspend notifier to disable the firmware requesting
+> > mechanism before a hibernation/suspend and enable it after the operation.
+>
+> This avoids the problem of .resume methods calling userspace while
+> userspace is frozen and a resulting hang, but does it actually result in
+> the drivers beginning to work again? If we remove process freezing in
+> STR, this should just work[1] without the need to complicate things. On
+> the other hand, if we don't want to support these functions in the
+> suspend and resume methods we could just audit the kernel and remove
+> them all.
 
-> So even writes to so-called 'read-only' sections of the kernel image
-> will work and therefore I don't understand what the bug could be other
-> than the compiler "optimizing" away the write to the constant string
-> in which case the compiler should have warned about it.
+What exactly is the problem we see here? The timeout of the firmware loader?
+What goes wrong with frozen userspace, usually there is only a netlink
+message sent from the kernel, which should be received and handled
+just fine when userspace is running again.
 
-I just stared at the drivers/serial/suncore.s assembler a little
-bit and this is indeed what appears to be happening, the compiler
-is optimizing the stores away completely yet not doing so much
-as emitting a warning, how rude :-)
-
-Perhaps there is some warning option that isn't enabled which
-would have caught this...
-
-Thanks a lot for your patch, I'll apply it.
+Thanks,
+Kay
