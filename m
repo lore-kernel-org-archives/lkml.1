@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbXE0LBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbXE0LJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbXE0LBR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 07:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbXE0LAS
+	id S1753997AbXE0LJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 07:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbXE0LJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 07:00:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53017 "EHLO ogre.sisk.pl"
+	Sun, 27 May 2007 07:09:20 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:33214 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbXE0LAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 07:00:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm 3/3] Freezer: Remove redundant check in try_to_freeze_tasks
-Date: Sun, 27 May 2007 13:04:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>
-References: <200705271300.18443.rjw@sisk.pl>
-In-Reply-To: <200705271300.18443.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+	id S1751282AbXE0LJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 07:09:20 -0400
+Date: Sun, 27 May 2007 07:09:18 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Kristian Hoegsberg <krh@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] firewire: fix return code
+Message-ID: <20070527110918.GA11367@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705271304.48177.rjw@sisk.pl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-We don't need to check if todo is positive before calling time_after() in
-try_to_freeze_tasks(), because if todo is zero at this point, the loop will
-be broken anyway due to the while () condition being false.
+Fix this warning on x86-64
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- kernel/power/process.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+drivers/firewire/fw-cdev.c:798: warning: initialization from incompatible pointer type
 
-Index: linux-2.6.22-rc2/kernel/power/process.c
-===================================================================
---- linux-2.6.22-rc2.orig/kernel/power/process.c
-+++ linux-2.6.22-rc2/kernel/power/process.c
-@@ -149,7 +149,7 @@ static int try_to_freeze_tasks(int freez
- 		} while_each_thread(g, p);
- 		read_unlock(&tasklist_lock);
- 		yield();			/* Yield is okay here */
--		if (todo && time_after(jiffies, end_time))
-+		if (time_after(jiffies, end_time))
- 			break;
- 	} while (todo);
+by making the return code of ioctl_send_request() the same as all the
+other ioctl_xxx() return codes.
+
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+diff --git a/drivers/firewire/fw-cdev.c b/drivers/firewire/fw-cdev.c
+index 0fa5bd5..3ab3585 100644
+--- a/drivers/firewire/fw-cdev.c
++++ b/drivers/firewire/fw-cdev.c
+@@ -365,7 +365,7 @@ complete_transaction(struct fw_card *card, int rcode,
+ 		    response->response.data, response->response.length);
+ }
  
+-static ssize_t ioctl_send_request(struct client *client, void *buffer)
++static int ioctl_send_request(struct client *client, void *buffer)
+ {
+ 	struct fw_device *device = client->device;
+ 	struct fw_cdev_send_request *request = buffer;
