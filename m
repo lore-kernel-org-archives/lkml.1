@@ -1,54 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbXE0XHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbXE0XLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759446AbXE0XHg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 19:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbXE0XH3
+	id S1759969AbXE0XLT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 19:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbXE0XLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 19:07:29 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:51898 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752729AbXE0XH2 (ORCPT
+	Sun, 27 May 2007 19:11:11 -0400
+Received: from bay0-omc3-s37.bay0.hotmail.com ([65.54.246.237]:47028 "EHLO
+	bay0-omc3-s37.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752219AbXE0XLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 19:07:28 -0400
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200705272307.l4RN7Ltk012112@turbo.physics.adelaide.edu.au>
-Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
-To: davidsen@tmr.com (Bill Davidsen)
-Date: Mon, 28 May 2007 08:37:21 +0930 (CST)
-Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46585FAC.80208@tmr.com> from "Bill Davidsen" at May 26, 2007 12:26:20 PM
-X-Mailer: ELM [version 2.5 PL6]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 27 May 2007 19:11:11 -0400
+Message-ID: <BAY116-F10E4D273DF25FA6F793188AD290@phx.gbl>
+X-Originating-IP: [190.48.20.71]
+X-Originating-Email: [aehtiopicus@hotmail.com]
+From: "Javier Vega" <aehtiopicus@hotmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: troubles in kernel 2.69
+Date: Sun, 27 May 2007 23:11:05 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+X-OriginalArrivalTime: 27 May 2007 23:11:10.0061 (UTC) FILETIME=[500809D0:01C7A0B4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bill
+si funca bien
 
-> > A collegue of mine has an Intel mainboard with the i865 chipset onboard
-> > (DQ965).  All kernels up to and including 2.6.22-rc2 do not detect the IDE
-> > CDROM/DVDROM when booting.  The SATA hard drive is found without any
-> > problems.
-> > 
-> Let me belatedly ask if the device shows up in POST at cold boot. It may 
-> need some BIOS setting to be visible.
+_________________________________________________________________
+De todo para la Mujer Latina http://latino.msn.com/mujer/
 
-The CDROM was showing up in the POST in all cases.
-
-It turns out the problem (as I outlined in a followup post) resulted from a
-combination of issues.
-
- 1) This board uses a Marvell PATA controller, so the relevant driver must
-    be configured.
-
- 2) Unless the "Configure SATA as" setting in the BIOS is set to "AHCI" the
-    PATA controller won't be found.  Sounds a bit odd and counter-intuitive,
-    but that's what's happening.  Originally this item was set to IDE; the
-    other option is RAID but I haven't tested that.
-
-Regards
-  jonathan
---
-"Time is an illusion; lunchtime doubly so"
