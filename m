@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbXE0TEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbXE0TEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758624AbXE0TEQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 15:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXE0TEE
+	id S1756241AbXE0TEk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 15:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbXE0TEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 15:04:04 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:51905 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752806AbXE0TED (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 15:04:03 -0400
-Date: Sun, 27 May 2007 20:03:51 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Cc: david-b@pacbell.net
-Message-ID: <20070527190351.GA21387@srcf.ucam.org>
+	Sun, 27 May 2007 15:04:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54299 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753799AbXE0TEb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 15:04:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+Date: Sun, 27 May 2007 21:09:48 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+References: <1180008394.15600.26.camel@localhost> <200705272032.15971.rjw@sisk.pl> <20070527184402.GA21161@srcf.ucam.org>
+In-Reply-To: <20070527184402.GA21161@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: RTC_DRV_CMOS can break userspace interface
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Message-Id: <200705272109.50378.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-f5f72b46c349fefcfd4421b2213c6ffb324c5e56 appears to break the userspace 
-interface to the CMOS alarm. This could previously be accessed via 
-/proc/acpi/alarm, but if RTC_DRV_CMOS is enabled that vanishes. The help 
-text for the module doesn't mention this, which makes tracking it down a 
-touch irritating.
+On Sunday, 27 May 2007 20:44, Matthew Garrett wrote:
+> On Sun, May 27, 2007 at 08:32:14PM +0200, Rafael J. Wysocki wrote:
+> 
+> > In particular, please see this message:
+> > 
+> > https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012301.html
+> 
+> Yes, there's also the notifier chain for the hardware. However, very few 
+> drivers seem to use that - adb seems to be the only one still in the 
+> tree. For everything else, the device tree is used in exactly the same 
+> way as on x86. If it's safe on Macs but not on x86, then (as far as I 
+> can tell) it looks like it's only by luck.
+> 
+> Anyway. I've tested the following patch on a dual-core x86. No obvious 
+> issues yet, but I'll try to put it through a few hundred cycles.
 
-I'm not actually sure why this is the case. It doesn't look like the two 
-interfaces are fundamentally incompatible. I agree that removing the 
-proc code is a good long-term aim, but it'd be nice to be able to test 
-the new RTC code without removing existing functionality.
+OK
 
-(It doesn't really help that rtc-cmos doesn't load on this machine, but 
-I'll try to track that down later - right now I suspect some sort of PNP 
-issue)
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I'm working on a patch that introduces hibernation/suspend notifiers.  It will
+conflict with this one a bit, but OTOH it might be useful here too.
+
+I'll post it in a while in a separate thread.
+
+Greetings,
+Rafael
