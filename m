@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbXE0JLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbXE0JNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752431AbXE0JLR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 05:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXE0JLH
+	id S1752599AbXE0JNw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 05:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbXE0JNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 05:11:07 -0400
-Received: from wec196.rmc.de ([213.155.82.196]:56682 "EHLO pop3mail.sitec.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbXE0JLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 05:11:05 -0400
-X-Greylist: delayed 955 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 May 2007 05:11:04 EDT
-Message-Id: <200705270855.l4R8t4rs020001@pop3mail.sitec.net>
-Content-Type: multipart/mixed; boundary="----------=_1180256104-19959-0"
-Content-Transfer-Encoding: binary
+	Sun, 27 May 2007 05:13:45 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:58397 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbXE0JNo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 05:13:44 -0400
+Date: Sun, 27 May 2007 01:57:41 -0700
+From: Greg KH <greg@kroah.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Mark Lord <lkml@rtr.ca>, Dmitry Torokhov <dtor@insightbb.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Race free attributes in sysfs
+Message-ID: <20070527085741.GA14141@kroah.com>
+References: <46502A8B.70803@drzeus.cx> <200705202312.19191.dtor@insightbb.com> <46535F7F.1040504@rtr.ca> <200705222243.56007.dtor@insightbb.com> <20070523042145.GA27329@kroah.com> <46544130.1010901@rtr.ca> <20070523151426.GB26046@kroah.com> <46585C52.7020808@tmr.com>
 MIME-Version: 1.0
-X-Mailer: MIME-tools 5.417 (Entity 5.417)
-Date: Sun, 27 May 2007 10:54:57 +0200
-From: "Stefan Helbing" <sth@wecltd.eu>
-To: linux-kernel@vger.kernel.org
-Subject: =?iso-8859-1?q?Oops in kernel 2.6.21?=
-X-Spam-Score: -0.275 () ALL_TRUSTED,AWL,BAD_ENC_HEADER,BAYES_50,SPF_HELO_PASS,SPF_PASS,SUBJECT_EXCESS_QP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46585C52.7020808@tmr.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format...
+On Sat, May 26, 2007 at 12:12:02PM -0400, Bill Davidsen wrote:
+>  Greg KH wrote:
+> > On Wed, May 23, 2007 at 09:27:12AM -0400, Mark Lord wrote:
+> >>  Greg KH wrote:
+> >>> And yes, it only starts to look for things when it recieves an event, it
+> >>> does not "scan" sysfs at all.
+> >>  Does it "look for" only that one event, or does it "scan" at that point?
+> > udev will act on that event, and as I mentioned, not read anything from
+> > sysfs at all, unless a custom rule is in the rules file asking it to
+> > read a specific sysfs file in the tree.
+> > So no "scanning" happens unless specificically asked for.
+> > And as mentioned, udev can work just fine without sysfs enabled at all
+> > now, with the exception of some custom rules for some devices.
+>  I think what Mark is asking is about the case where udev gets an event, is 
+>  told to look in sysfs, and while looking encounters a partially described 
+>  device.
+> 
+>  Now that the "this won't happen unless..." cases, could someone cover this 
+>  and state that it either can't happen because {reason} or that if it does 
+>  the result will be {description}.
 
-------------=_1180256104-19959-0
-Content-Type: text/plain
-Content-Disposition: inline
-Content-Transfer-Encoding: binary
-MIME-Version: 1.0
-X-Mailer: MIME-tools 5.417 (Entity 5.417)
+It can happen if the attributes are added after the device is created,
+so you need to add your attributes to the default groups before it is
+registered with the driver core.
 
-Hello,
+thanks,
 
-I'm really unsure if you can help me with this problem, so I choosed this address from oops-tracing.txt.
-I get an Oops in kernel 2.6.21 very often. One of the Oops logs is attached to this email.
-I believe (but I only believe - because until now the system is not doing more than this) that the Oops occurs during longer NFS transfers over a WAN connection.
-I took the source code from the current Debian unstable version.
-
-Do you have a suggestion? More information necessary?
-Thank you very much!
-
-Best regards
-Stefan Helbing
-------------=_1180256104-19959-0
-Content-Type: text/plain; name="oops.txt"
-Content-Disposition: inline; filename="oops.txt"
-Content-Transfer-Encoding: 7bit
-
-May 27 10:24:49 kassandra kernel: BUG: unable to handle kernel paging request at virtual address 00b00000
-May 27 10:24:49 kassandra kernel:  printing eip:
-May 27 10:24:49 kassandra kernel: c015d5ce
-May 27 10:24:49 kassandra kernel: *pde = 2aebf001
-May 27 10:24:49 kassandra kernel: *pte = 00000000
-May 27 10:24:49 kassandra kernel: Oops: 0000 [#1]
-May 27 10:24:49 kassandra kernel: SMP
-May 27 10:24:49 kassandra kernel: Modules linked in: ipt_REJECT ipt_LOG xt_limit xt_tcpudp iptable_filter ip_tables x_tables it87 hwmon_vid hwmon i2c_isa i2c_dev nfsd exportfs nfs lockd sunrpc i2c_i801 3c59x unix
-May 27 10:24:49 kassandra kernel: CPU:    0
-May 27 10:24:49 kassandra kernel: EIP:    0060:[__d_lookup+97/244]    Not tainted VLI
-May 27 10:24:49 kassandra kernel: EFLAGS: 00010206   (2.6.21-i386 #1)
-May 27 10:24:49 kassandra kernel: EIP is at __d_lookup+0x61/0xf4
-May 27 10:24:49 kassandra kernel: eax: 000126d5   ebx: 00003354   ecx: 00000011   edx: c36a6120
-May 27 10:24:49 kassandra kernel: esi: dde75d48   edi: cb71a194   ebp: 00b00000   esp: dde75cdc
-May 27 10:24:49 kassandra kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-May 27 10:24:49 kassandra kernel: Process cp (pid: 5465, ti=dde74000 task=ec2a5070 task.ti=dde74000)
-May 27 10:24:49 kassandra kernel: Stack: 00000000 ffcaa7dc b93cff31 00000027 dde75d48 cb71a194 00003354 dde75d48
-May 27 10:24:49 kassandra kernel:        cb71a194 dde75f00 c015d54c ffcaa803 00000000 b93cff31 f8e5477a f8e60f35
-May 27 10:24:49 kassandra kernel:        00000000 00000001 cb71a194 0007b847 dde75f00 d8b52e9c dde75f30 00000000
-May 27 10:24:49 kassandra kernel: Call Trace:
-May 27 10:24:49 kassandra kernel:  [d_lookup+28/61] d_lookup+0x1c/0x3d
-May 27 10:24:49 kassandra kernel:  [pg0+950245242/1069429760] nfs_readdir_lookup+0xfc/0x2ca [nfs]
-May 27 10:24:49 kassandra kernel:  [pg0+950296373/1069429760] nfs3_decode_dirent+0xe0/0x190 [nfs]
-May 27 10:24:49 kassandra kernel:  [pg0+950241074/1069429760] nfs_do_filldir+0x70/0x187 [nfs]
-May 27 10:24:49 kassandra kernel:  [filldir64+0/234] filldir64+0x0/0xea
-May 27 10:24:49 kassandra kernel:  [pg0+950243017/1069429760] nfs_readdir+0x680/0x6d9 [nfs]
-May 27 10:24:49 kassandra kernel:  [do_lookup+69/157] do_lookup+0x45/0x9d
-May 27 10:24:49 kassandra kernel:  [filldir64+0/234] filldir64+0x0/0xea
-May 27 10:24:49 kassandra kernel:  [pg0+949935784/1069429760] rpcauth_lookup_credcache+0x85/0x1af [sunrpc]
-May 27 10:24:49 kassandra kernel:  [alloc_super+173/304] alloc_super+0xad/0x130
-May 27 10:24:49 kassandra kernel:  [pg0+950256250/1069429760] nfs_file_set_open_context+0x1f/0x3d [nfs]
-May 27 10:24:49 kassandra kernel:  [pg0+950256580/1069429760] nfs_open+0x5d/0x63 [nfs]
-May 27 10:24:49 kassandra kernel:  [copy_to_user+47/55] copy_to_user+0x2f/0x37
-May 27 10:24:49 kassandra kernel:  [cp_new_stat64+246/267] cp_new_stat64+0xf6/0x10b
-May 27 10:24:49 kassandra kernel:  [pg0+950296149/1069429760] nfs3_decode_dirent+0x0/0x190 [nfs]
-May 27 10:24:49 kassandra kernel:  [sys_fstat64+30/35] sys_fstat64+0x1e/0x23
-May 27 10:24:49 kassandra kernel:  [filldir64+0/234] filldir64+0x0/0xea
-May 27 10:24:49 kassandra kernel:  [vfs_readdir+71/106] vfs_readdir+0x47/0x6a
-May 27 10:24:49 kassandra kernel:  [sys_getdents64+103/174] sys_getdents64+0x67/0xae
-May 27 10:24:49 kassandra kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
-May 27 10:24:49 kassandra kernel:  =======================
-May 27 10:24:49 kassandra kernel: Code: 01 c8 8b 0d 80 67 3b c0 89 c2 81 f2 01 00 37 9e d3 ea 31 d0 8b 15 84 67 3b c0 23 05 7c 67 3b c0 8b 2c 82 85 ed 0f 84 88 00 00 00 <8b> 45 00 0f 18 00 90 8b 4c 24 08 8d 5d f0 39 4b 1c 75 6a 8b 44
-May 27 10:24:49 kassandra kernel: EIP: [__d_lookup+97/244] __d_lookup+0x61/0xf4 SS:ESP 0068:dde75cdc
-
-------------=_1180256104-19959-0--
+greg k-h
