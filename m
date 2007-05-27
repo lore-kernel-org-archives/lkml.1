@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbXE0QIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbXE0QKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758530AbXE0QIt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 12:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbXE0QIl
+	id S1758345AbXE0QKu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 12:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbXE0QKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 12:08:41 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:10464 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755367AbXE0QIk (ORCPT
+	Sun, 27 May 2007 12:10:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:65385 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755367AbXE0QKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 12:08:40 -0400
+	Sun, 27 May 2007 12:10:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=afSLevktnvGIR7vk99CgHWL2ZQgGHAOssBAhBEWn1puIUZBW2vL/hszzB4YeYfyeN99/KHbkLpHfOrQ5zOT3xcnOoJgd72nx3Ec52czNawbMdEpuZyue2RCm9HGmNlbBDw70khH0tv3UZH9pg0x4puPSgUtny1Adv/PDwIBJwPI=
-Message-ID: <9a8748490705270908l8ecf621wfcd164f87fe5a22e@mail.gmail.com>
-Date: Sun, 27 May 2007 18:08:39 +0200
+        b=D19r2jsWZg6YGes813dH8LcZYBqpW2LwtFGMUiFiMqji2GLmAPhc8w6VmcNVEcigE3W1oxQGZLwiVcjlbJirw4euclHU1Wob5Kmjk+EKBu8ymsk1D0krBECY3WOlopS6WwO52pnKVIbI0noRs8VfD4gvuF735fPaB4cC6kW5W1E=
+Message-ID: <9a8748490705270910q2fde0e19i1e60393cef7b86d4@mail.gmail.com>
+Date: Sun, 27 May 2007 18:10:41 +0200
 From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Auke Kok" <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH 2/2] [condingstyle] Add chapter on tests
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20070525172515.5138.13652.stgit@localhost.localdomain>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: USB: set default y for CONFIG_USB_DEVICE_CLASS
+Cc: "Greg KH" <greg@kroah.com>, "bert hubert" <bert.hubert@netherlabs.nl>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070527150458.GA3803@vrfy.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070525172509.5138.56430.stgit@localhost.localdomain>
-	 <20070525172515.5138.13652.stgit@localhost.localdomain>
+References: <20070527150458.GA3803@vrfy.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 25/05/07, Auke Kok <auke-jan.h.kok@intel.com> wrote:
-> Several standards have been established on how to format tests and use
-> NULL/false/true tests.
+On 27/05/07, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: USB: set default y for CONFIG_USB_DEVICE_CLASS
 >
-Hmm, this may or may not be a good idea for CodingStyle, I'll leave
-that up to others.
-But, if you are going to renumber chapters then please also fix up the
-references to those chapter numbers elsewhere in the file - like this
-one
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> ---
+>
+> diff --git a/drivers/usb/core/Kconfig b/drivers/usb/core/Kconfig
+> index f493fb1..346fc03 100644
+> --- a/drivers/usb/core/Kconfig
+> +++ b/drivers/usb/core/Kconfig
+> @@ -40,21 +40,25 @@ config USB_DEVICEFS
+>  config USB_DEVICE_CLASS
+>         bool "USB device class-devices (DEPRECATED)"
+>         depends on USB
+> -       default n
+> +       default y
 
-"... (for example as a means of replacing macros, see Chapter 12) ..."
-
-After your patch that now points to the wrong chapter.
-
+It puzzles me why a deprecated option should be default 'Y'...
 
 -- 
 Jesper Juhl <jesper.juhl@gmail.com>
