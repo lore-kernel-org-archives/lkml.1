@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbXE0SSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXE0S1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758363AbXE0SSP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 14:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbXE0SSE
+	id S1758157AbXE0S1J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 14:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbXE0S05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 14:18:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:50757 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbXE0SSB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 14:18:01 -0400
-Message-ID: <4659CB4C.7080105@anagramm.de>
-Date: Sun, 27 May 2007 20:17:48 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sun, 27 May 2007 14:26:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54160 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751954AbXE0S05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 14:26:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+Date: Sun, 27 May 2007 20:32:14 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+References: <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org> <20070527164300.GA20355@srcf.ucam.org>
+In-Reply-To: <20070527164300.GA20355@srcf.ucam.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Tommy Vercetti <vercetti@zlew.org>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21.1 - 97% wait time on IDE operations
-References: <200705261505.38109@gj-laptop>	<200705261746.01568@gj-laptop>	<2c0942db0705260907g4e37d4avcc652d2b7368edd5@mail.gmail.com>	<200705271222.30169@gj-laptop> <20070527130228.3731ff4d@the-village.bc.nu>
-In-Reply-To: <20070527130228.3731ff4d@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/8UvvK+44dOooJvf0G72JYUpsYvdKRsKi1RoU
- 0W4qoddl/cX6rnmv20pfVHITmbMKPBvofI9oGg1y6ePJNCq6p/
- zjy+frX/gb2h22sba++6Q==
+Content-Disposition: inline
+Message-Id: <200705272032.15971.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Alan!
-
-Alan Cox schrieb:
->> yeah, and they say unix FSes don't need defragmentation.... my bottom...
+On Sunday, 27 May 2007 18:43, Matthew Garrett wrote:
+> On Sun, May 27, 2007 at 09:26:00AM -0700, Linus Torvalds wrote:
 > 
-> Provided they don't get within about 5-10% of full a lot of the time Unix
-> file systems generally don't  - especially with preallocators. Reiser3 is
-> not a traditional unix file system, its very different to almost any
-> other fs, and it does need defragmenting.
+> > And by "disabling the freezer", I think we should just not call it at all. 
+> > However, sadly, right now it's called from common code. I'll happily take 
+> > a tested patch to split that code sequence up, and try to do it in 2.6.23, 
+> > if somebody has the energy (I'm getting to the point where I may just do 
+> > it myself, but my lazy nature still hopes for a STR person to step 
+> > forward).
+> 
+> I'll take a look at this. It probably makes sense to build on Rafael's 
+> work on splitting the codepaths up.
 
-Just FYI:
-http://ck.kolivas.org/apps/defrag/
-http://sourceforge.net/projects/davtools/
-defragmentation seems to be a minor issue.
+Actaully, removing the freezer from the suspend code path is simple.  You only
+need to remove calls to freeze_processes() and thaw_processes() from
+kernel/power/main.c .
 
-After reiser3 (kernel 2.6.18.1 or so) crashed(*) badly with
-some data loss on a production server can you recommed
-a _safe_ and good performing filesystem for an
-compile and test server (lots of small files).
+That said, I don't think that PPC does what you say only.  We've discussed this
+a bit on linux-pm, in this thread:
 
-(*) rm ~/Maildir while it was fed with courier-imap and
-pressed CTRL-C to interrupt that trashed some of the files in
-~/Maildir. It needed a --rebuild-tree.
+https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012242.html
 
+In particular, please see this message:
 
-Best greets,
+https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012301.html
 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm-technology.com
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+Greetings,
+Rafael
