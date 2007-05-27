@@ -1,74 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760308AbXE0VuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbXE0Vug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760308AbXE0VuS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759359AbXE0VuF
+	id S1758755AbXE0Vug (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbXE0VuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:50:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54836 "EHLO ogre.sisk.pl"
+	Sun, 27 May 2007 17:50:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51432 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756738AbXE0VuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:50:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
-Date: Sun, 27 May 2007 23:55:19 +0200
-User-Agent: KMail/1.9.5
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>
-References: <200705272229.21263.rjw@sisk.pl> <200705272231.54535.rjw@sisk.pl> <6BD5252F-96CD-49D9-86C7-18115294D913@cam.ac.uk>
-In-Reply-To: <6BD5252F-96CD-49D9-86C7-18115294D913@cam.ac.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1757367AbXE0VuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 17:50:03 -0400
+Date: Sun, 27 May 2007 17:49:33 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add a trivial patch style checker
+Message-ID: <20070527214933.GA28930@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@osdl.org>,
+	Randy Dunlap <rdunlap@xenotime.net>,
+	Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+References: <9a1288909c10f2935af82ec5cea0c46b@pinky>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705272355.20840.rjw@sisk.pl>
+In-Reply-To: <9a1288909c10f2935af82ec5cea0c46b@pinky>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 27 May 2007 22:45, Michael-Luke Jones wrote:
-> On 27 May 2007, at 21:31, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > Use a hibernation and suspend notifier to disable the firmware  
-> > requesting
-> > mechanism before a hibernation/suspend and enable it after the  
-> > operation.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> >  drivers/base/firmware_class.c |   36 ++++++++++++++++++++++++++++++ 
-> > ++++++
-> >  1 file changed, 36 insertions(+)
-> 
-> I don't like this approach, as I feel that the firmware loading  
-> interface should be able to detect if a firmware load request is not  
-> being handled, due to absence of userspace / hotplug handler presence.
+On Sun, May 27, 2007 at 06:11:25PM +0100, Andy Whitcroft wrote:
+ > +# (c) 2001, Dave Jones. <davej@suse.de> (the file handling bit)
 
-In principle, I agree.  In practice, though, I don't know how to make this
-happen.
+dead email address.
 
-> Other circumstances in which this can be a problem is during bootup  
-> when request_firmware() calls can be made before userspace is up and  
-> init has run (even in the presence of an initramfs).
-> 
-> (Slightly OT: A particularly nasty race is when an initramfs  
-> userspace is present, but firmware loading cannot occur because init  
-> has not run, so proc hasn't been mounted, so a hotplug event handler  
-> cannot be registered, despite the fact that the firmware is sitting  
-> on the ramdisk mounted correctly...)
-> 
-> In short, a more general solution would be preferred, and preferably  
-> one which allows firmware loading to *actually* occur once userspace  
-> has actually turned up and registered a handler :)
+	Dave
 
-I agree, but well ... ;-)
-
-Greetings,
-Rafael
+-- 
+http://www.codemonkey.org.uk
