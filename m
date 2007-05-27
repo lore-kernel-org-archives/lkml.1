@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751798AbXE0HkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbXE0Ila@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751798AbXE0HkZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 03:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbXE0HkP
+	id S1751805AbXE0Ila (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 04:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXE0IlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 03:40:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49409
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750857AbXE0HkO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 03:40:14 -0400
-Date: Sun, 27 May 2007 00:40:19 -0700 (PDT)
-Message-Id: <20070527.004019.41635814.davem@davemloft.net>
-To: hpa@zytor.com
-Cc: abraham.manu@gmail.com, rdreier@cisco.com, greg@kroah.com,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: PCIE
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4658EE32.5080506@zytor.com>
-References: <46584C30.4030206@gmail.com>
-	<20070526.154910.78725926.davem@davemloft.net>
-	<4658EE32.5080506@zytor.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 27 May 2007 04:41:21 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:44133 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751114AbXE0IlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 04:41:20 -0400
+Message-ID: <4659442E.2060307@dgreaves.com>
+Date: Sun, 27 May 2007 09:41:18 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
+References: <4658B7DD.3060309@tmr.com>
+In-Reply-To: <4658B7DD.3060309@tmr.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Sat, 26 May 2007 19:34:26 -0700
+Bill Davidsen wrote:
+> Anyway, I pulled the plug on the UPS, and the system shut down. But when
+> it powered up, it booted the default kernel rather than the test kernel,
+> decided that it couldn't resume, and then did a cold boot.
 
-> There are systems which only get a single bit indication that an MSI has
-> happened.
-> 
-> Presumably we need something like IRQF_MSI which can be set as
-> appropriate depending on the architecture?
+Booting the machine isn't the kernel's job, it's the bootloader's job.
 
-Although I don't want to make the IRQ handling subsystems any more
-complicated than they already are, one idea I floated around is that
-we could seperate CPU irq numbers (the things we pass around today)
-and MSI vector numbers.
+> I can bypass this by making the debug kernel the default, but WHY? Is
+> the kernel not saved such that any kernel can be rolled back into memory
+> and run? Actually, the answer is HELL NO, so I really ask if this is the
+> intended mode of operation, that only the default boot kernel will restore.
 
-But I immediately understand how that is unnecessary to some extent,
-any platform which needs to deal with that kind of distinction can use
-virtual IRQ numbers like sparc64 and powerpc do.
+Yes.
 
-Sparc64 PCI-E controllers, for example, allow you to group several
-MSIs into a 'group', and the interrupt source is for the group rather
-than the individual MSIs.  When the MSI group interrupt arrives, you
-get a descriptor in a per-MSI-group ring buffer that describes the MSI
-that arrived.
+It is very dangerous to attempt a resume with a different kernel than the one
+that has gone to sleep.
+Different kernels may be compiled with different options that affect where or
+how in-memory structures are saved.
 
-This descriptor in fact passes on a ton of interesting information,
-see arch/sparc64/kernel/pci_sun4v.c:pci_sun4v_msiq_entry.
+So you suspend with a kernel which holds your filesystem data/cache/inodes at
+0x1234000 and restore with a kernel that expects to see your filesystem data at
+0x1235000.
 
-It gives you the type, the system TSC value at the time of interrupt
-arrival (so you could do incredibly cool profiling with this),
-the PCI bus/device/fn that generated the MSI vector, the MSI address
-that was signalled, the MSI data field, and full information for PCI-E
-MSG packets including bus/dev/fn of target, the message routing code,
-and the message code.
+Ouch.
 
-But we use none of these facilities currently because it's either
-impossible or too cumbersome to be useful at the moment.
+Personally I think the kernel suspend should write a signature - similar to a
+hash of the bzImage - into the suspend image so it won't even attempt a resume
+if there's a mismatch. (Yes, I made this mistake once whilst playing with suspend).
+
+David
+
 
