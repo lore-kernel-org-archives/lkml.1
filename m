@@ -1,151 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbXE0VWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbXE0VkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760168AbXE0VWI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbXE0VV5
+	id S1759059AbXE0VkE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbXE0Vjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:21:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54726 "EHLO ogre.sisk.pl"
+	Sun, 27 May 2007 17:39:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54780 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756596AbXE0VV4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:21:56 -0400
+	id S1754824AbXE0Vjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 17:39:53 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maximilian Engelhardt <maxi@daemonizer.de>
-Subject: Re: software suspend doesn't work with 2.6.22-rc3
-Date: Sun, 27 May 2007 23:27:22 +0200
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Date: Sun, 27 May 2007 23:45:03 +0200
 User-Agent: KMail/1.9.5
-Cc: nigel@nigel.suspend2.net, Herbert Xu <herbert@gondor.apana.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200705261128.57332.maxi@daemonizer.de> <200705272019.08860.rjw@sisk.pl> <200705272242.00309.maxi@daemonizer.de>
-In-Reply-To: <200705272242.00309.maxi@daemonizer.de>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
+References: <200705272229.21263.rjw@sisk.pl> <200705272231.54535.rjw@sisk.pl> <20070527204955.GA22202@srcf.ucam.org>
+In-Reply-To: <20070527204955.GA22202@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705272327.23291.rjw@sisk.pl>
+Message-Id: <200705272345.04518.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 27 May 2007 22:41, Maximilian Engelhardt wrote:
-> On Sunday 27 May 2007, Rafael J. Wysocki wrote:
-> > On Sunday, 27 May 2007 18:01, Maximilian Engelhardt wrote:
-> > > On Saturday 26 May 2007, Nigel Cunningham wrote:
-> > > > Hi.
-> > > >
-> > > > On Sat, 2007-05-26 at 14:49 +0200, Maximilian Engelhardt wrote:
-> > > > > On Saturday 26 May 2007, Nigel Cunningham wrote:
-> > > > > > Hi.
-> > > > > >
-> > > > > > On Sat, 2007-05-26 at 11:28 +0200, Maximilian Engelhardt wrote:
-> > > > > > > Hello,
-> > > > > > >
-> > > > > > > When I try software suspend on my laptop it always returns to my
-> > > > > > > running system after some time.
-> > > > > > > This is what's logged by the kernel:
-> > > > > > >
-> > > > > > > swsusp: Basic memory bitmaps created
-> > > > > > > Stopping tasks ...
-> > > > > > > Stopping kernel threads timed out after 20 seconds (1 tasks
-> > > > > > > refusing to freeze):
-> > > > > > >  cryptd
-> > > > > > > Restarting tasks ... done.
-> > > > > > > swsusp: Basic memory bitmaps freed
-> > > > > > >
-> > > > > > > I have no idea what's the problem, but if you tell me what I
-> > > > > > > should do I can create debugging information and/or test patches.
-> > > > > >
-> > > > > > Could you try this patch, please? It should help.
-> > > > > >
-> > > > > > Herbert, is this right? If cryptd is going to be used for block
-> > > > > > devs, the task should probably be PF_NOFREEZE (or whatever it is
-> > > > > > today) instead.
-> > > > > >
-> > > > > > Regards,
-> > > > > >
-> > > > > > Nigel
-> > > > > >
-> > > > > >  crypto/cryptd.c         |    1 +
-> > > > > >  include/linux/freezer.h |    3 +++
-> > > > > >  kernel/power/process.c  |    2 +-
-> > > > > >  3 files changed, 5 insertions(+), 1 deletion(-)
-> > > > > > diff -ruNp 991-fix-cryptd.patch-old/crypto/cryptd.c
-> > > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c ---
-> > > > > > 991-fix-cryptd.patch-old/crypto/cryptd.c	2007-05-19
-> > > > > > 18:16:47.000000000 +1000 +++
-> > > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c	2007-05-26
-> > > > > > 19:45:42.000000000 +1000 @@ -341,6 +341,7 @@ static int
-> > > > > > cryptd_thread(void *data)
-> > > > > >
-> > > > > >  		mutex_unlock(&state->mutex);
-> > > > > >
-> > > > > > +		try_to_freeze();
-> > > > > >  		schedule();
-> > > > > >  	} while (!stop);
-> > > > >
-> > > > > I tried your patch, but when I apply it my kernel doesn't compile any
-> > > > > more. I get these warnings/errors:
-> > > > >
-> > > > > [...]
-> > > > >   CC      crypto/cryptd.o
-> > > > > crypto/cryptd.c: In function ‘cryptd_thread’:
-> > > > > crypto/cryptd.c:344: warning: implicit declaration of function
-> > > > > ‘try_to_freeze’ [...]
-> > > > >   LD      init/built-in.o
-> > > > >   LD      .tmp_vmlinux1
-> > > > > crypto/built-in.o: In function `cryptd_thread':
-> > > > > cryptd.c:(.text+0xd7f5): undefined reference to `try_to_freeze'
-> > > > > make: *** [.tmp_vmlinux1] Error 1
-> > > >
-> > > > Ah. You'll need to add #include <linux/freezer.h> near that start of
-> > > > crypto/cryptd.c. Sorry for forgetting that.
-> > > >
-> > > > Nigel
-> > >
-> > > I added the include line and now I could compile the kernel, but
-> > > suspending still doesn't work.
-> > >
-> > > swsusp: Basic memory bitmaps created
-> > > Stopping tasks ...
-> > > Stopping kernel threads timed out after 20 seconds (1 tasks refusing to
-> > > freeze):
-> > > cryptd
-> > > Restarting tasks ... done.
-> > > swsusp: Basic memory bitmaps freed
-> >
-> > OK, this means that cryptd doesn't execute the try_to_freeze() for some
-> > reason.
-> >
-> > Please apply the appended patch on top of 2.6.22-rc3 and see if that helps.
-> >
-> > Greetings,
-> > Rafael
-> >
-> > ---
-> >  crypto/cryptd.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > Index: linux-2.6.22-rc3/crypto/cryptd.c
-> > ===================================================================
-> > --- linux-2.6.22-rc3.orig/crypto/cryptd.c
-> > +++ linux-2.6.22-rc3/crypto/cryptd.c
-> > @@ -316,6 +316,7 @@ static int cryptd_thread(void *data)
-> >  	struct cryptd_state *state = data;
-> >  	int stop;
-> >
-> > +	current->flags |= PF_NOFREEZE;
-> >  	do {
-> >  		struct crypto_async_request *req, *backlog;
+On Sunday, 27 May 2007 22:49, Matthew Garrett wrote:
+> On Sun, May 27, 2007 at 10:31:53PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Use a hibernation and suspend notifier to disable the firmware requesting
+> > mechanism before a hibernation/suspend and enable it after the operation.
 > 
-> Even with this patch suspending doesn't work, dmesg shows the same error 
-> message.
-> I also did build a kernel without cryptd and suspending does work there.
+> This avoids the problem of .resume methods calling userspace while 
+> userspace is frozen and a resulting hang, but does it actually result in 
+> the drivers beginning to work again?
 
-Well, that's strange, because in that case the freezer shouldn't even wait
-for cryptd.
+Well, this was acutally invented before you've decided to remove the freezing
+of tasks from the suspend code path (which I think is a mistake, but that's
+only my personal opinion, so it doesn't matter very much ;-)) and I regard it
+as a workaround.
 
-Can you please try the patch at http://lkml.org/lkml/2007/5/26/169 ?
+> If we remove process freezing in STR, this should just work[1] without the
+> need to complicate things. 
+
+Under the (optimistic, IMO) assumption that the relevant user space task won't
+block on I/O with a suspended device involved or something like this.
+
+BTW, I know of two subsystems that want their kernel threads to be frozen for
+synchronization purposes.  Please see these messages:
+
+1) https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012592.html
+(plus follow up)
+
+2) http://marc.info/?l=linux-kernel&m=117919066830575&w=2
+
+Your patch breaks them and I suspect there are more cases like these.
+
+Besides, there's the hibernation that needs to freeze tasks for another reason,
+so it needs some way to ensure that drivers won't request firmware while
+the user land is frozen.
+
+> On the other hand, if we don't want to support these functions in the 
+> suspend and resume methods we could just audit the kernel and remove 
+> them all.
+
+Yes, I think we should do this.
 
 Greetings,
 Rafael
