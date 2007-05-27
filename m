@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbXE0VBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759792AbXE0VBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760049AbXE0VBE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbXE0VA2
+	id S1759792AbXE0VBa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbXE0VAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:00:28 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2052 "EHLO spitz.ucw.cz"
+	Sun, 27 May 2007 17:00:30 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2056 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751316AbXE0VA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:00:27 -0400
-Date: Fri, 25 May 2007 06:46:44 +0000
+	id S1756860AbXE0VA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 17:00:29 -0400
+Date: Sun, 27 May 2007 20:39:55 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Greg KH <greg@kroah.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [stable] Wanted: Allow adding new device IDs during the	-stable cycle
-Message-ID: <20070525064644.GC3989@ucw.cz>
-References: <46533314.10206@redhat.com> <20070522184733.GA9357@kroah.com> <46533EA8.7020602@garzik.org> <20070524100455.GB7444@ucw.cz> <465563B4.5040301@garzik.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Richard Hughes <hughsient@gmail.com>,
+       Julian Sikorski <belegdol@gmail.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH} x86_64 PM_TRACE support.
+Message-ID: <20070527203955.GE3989@ucw.cz>
+References: <1180161174.9773.60.camel@nigel.suspend2.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <465563B4.5040301@garzik.org>
+In-Reply-To: <1180161174.9773.60.camel@nigel.suspend2.net>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >Well, in 2.6.73.1 we add 'trivial' one line to add new 
-> >pci id, and in
-> >2.6.73.2 we have data corruption, because that driver 
-> >needed some
-> >quirk we did not know about...?
+> As promised I took another look at the patch and at what Randy had
+> prepared to fix the IA64 compilation error. I did some more work on it,
+> and believe that the following is the tidiest correct solution I can
+> come up with. It differs from the version that caused the compilation
+> error primarily in that:
 > 
-> False argument.  -stable should only be merging patches 
-> that are already upstream, and known.
+> * the #include <asm/resume-trace.h> is inside the #ifdef 
+>   CONFIG_PM_TRACE.
+> * now-unnecessary protection for multiple #includes and ifdef testing of
+>   CONFIG_PM_TRACE in the asm code were removed.
+> * do-nothing definitions for !PM_TRACE restored to
+>   include/linux/resume-trace.h.
+> 
+> We're therefore depending upon kernel/power/Kconfig having the right
+> depends condition. As far as I can see, IA64 doesn't define CONFIG_X86.
+> Is that correct, or do we need to have (X86 && !IA64)?
 
-Well, then we should have some more requirements. 'Has been in
--rc2-git1 for 8 hours' is technically upstream, but it does not make
-the patch 'known-enough' for stable. 'Have been in three release
-candidates' seems like a rule we want here.
-							Pavel
+ia64? did you mean x86-64?
+
+Otherwise looks ok to me.
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
