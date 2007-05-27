@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbXE0AK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXE0AMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbXE0AK3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 20:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbXE0AKX
+	id S1755593AbXE0AMh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 20:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbXE0AM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 20:10:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:39810 "EHLO ozlabs.org"
+	Sat, 26 May 2007 20:12:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39008 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbXE0AKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 20:10:22 -0400
-Subject: Re: Extending boot protocol & bzImage for paravirt_ops
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chris Wright <chrisw@sous-sol.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4658C72E.9030205@goop.org>
-References: <4656FB8F.4090604@goop.org>
-	 <m14pm0c0m2.fsf@ebiederm.dsl.xmission.com>
-	 <1180174691.650.8.camel@localhost.localdomain>  <4658C72E.9030205@goop.org>
-Content-Type: text/plain
-Date: Sun, 27 May 2007 10:10:04 +1000
-Message-Id: <1180224604.29340.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1751107AbXE0AM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 20:12:28 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <A02B7736-39AA-4B50-B682-756C387AEDEC@mac.com>
+References: <A02B7736-39AA-4B50-B682-756C387AEDEC@mac.com> <20070524165554.22292.38887.stgit@warthog.cambridge.redhat.com> <20070526022342.GA20905@fieldses.org>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement file locking
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Sun, 27 May 2007 01:12:19 +0100
+Message-ID: <7957.1180224739@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-05-27 at 00:47 +0100, Jeremy Fitzhardinge wrote:
-> Rusty Russell wrote:
-> > You also want to skip the cli: perhaps a separate flag for this is
-> > appropriate though.
-> >   
-> 
-> Not a problem for Xen; it will be trapped+emulated (ie, ignored).
+Kyle Moffett <mrmacman_g4@mac.com> wrote:
 
-Well, I could do that for lguest as a special case, I guess.  Seems icky
-tho.
+> I was actually under the impression that OpenAFS had support for byte- 
+> range locking (as well as lock upgrade/downgrade);
 
-hpa wrote:
-> Do we have *any* environment that enters the 32-bit code with interrupts
-> enabled?  I would think that is unsafe no matter how you do it.
+As far as I know, there is no support for byte-range locking at all in the AFS
+protocol itself.  The client can try to emulate byte-range locking locally,
+but that's about it.
 
-Yeah, the cli there seems strange: maybe it's safe to simply delete it?
-
-Cheers,
-Rusty.
-
+David
