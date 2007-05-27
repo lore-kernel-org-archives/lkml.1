@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbXE0JwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbXE0Jwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752693AbXE0JwS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 05:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXE0JwF
+	id S1753383AbXE0Jwb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 05:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbXE0JwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 05:52:05 -0400
+	Sun, 27 May 2007 05:52:10 -0400
 Received: from py-out-1112.google.com ([64.233.166.183]:26475 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750840AbXE0JwB (ORCPT
+	with ESMTP id S1751303AbXE0JwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 05:52:01 -0400
+	Sun, 27 May 2007 05:52:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=HiFZlRVCp+3Jko50JBQ+yxwG6pA77QSY5o58Fb7ooTn7IGb+N6t5nNMfg5zjc7tvaW+e7lADQWZeXVoD4Ze+ErCN1O12V2Chhn4QwKMbY4DpptHj2jmr84SY10TNLMuOETrEZDNfLLPvMv+8HomttnROjWmIYG9RP4vkesxkFIo=
-Message-ID: <4658D8E2.3020608@gmail.com>
-Date: Sun, 27 May 2007 09:03:30 +0800
+        b=U34ZFx4+YPwTk51O0ys7e+1eY2vHDQ3g1UTPKClfcUJkaCqatVGZZAKj62veaQsU34rNxKc2UotkR9KGVdBlQQ17zZBG2YVve/Ls4DXtRc5uPMRKtZjCk1QaSTRtWN+j8jEPIcrDqLVmVtEyUihhiBcF9P8UY15zUj+Wg5BC1ck=
+Message-ID: <465952CD.2040409@gmail.com>
+Date: Sun, 27 May 2007 17:43:41 +0800
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
@@ -24,265 +24,577 @@ CC: Linux Fbdev development list
 	<linux-fbdev-devel@lists.sourceforge.net>,
        Linux Kernel Development <linux-kernel@vger.kernel.org>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 9/9] fbcon: Allow fbcon to use the primary display driver
+Subject: [PATCH 8/9] fbdev: Detect primary display device
 X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow fbcon to select the primary display adapter using the
-fb_is_primary_device() arch-specific helper.  If a a primary adapter is
-detected, fbcon will unbind the old adapter from the VT layer, then rebind
-using the new adapter. This requires that bind_/unbind_con_driver() be made
-public.
+Add function helper, fb_is_display_device().  Given struct fb_info, it will
+return a nonzero value if the device is the primary display.
 
-Because this feature may produce unexpected behavior (from the user's POV),
-this must be explicitly enabled in Kconfig.
+Currently, only the i386 is supported, other platforms only have stubs. For 
+the i386, the function checks for the IORESOURCE_ROM_SHADOW flag.
 
 Signed-off-by: Antonino Daplas <adaplas@gmail.com>
 ---
 
- arch/i386/video/fbdev.c       |    4 +-
- drivers/char/vt.c             |    6 +--
- drivers/video/console/Kconfig |   20 ++++++++++
- drivers/video/console/fbcon.c |   80 +++++++++++++++++++++++++++++++++++++----
- include/linux/vt_kern.h       |    4 ++
- 5 files changed, 100 insertions(+), 14 deletions(-)
+ arch/i386/Makefile         |    1 +
+ arch/i386/video/Makefile   |    1 +
+ arch/i386/video/fbdev.c    |   34 ++++++++++++++++++++++++++++++++++
+ include/asm-alpha/fb.h     |    6 ++++++
+ include/asm-arm/fb.h       |    6 ++++++
+ include/asm-arm26/fb.h     |    6 ++++++
+ include/asm-avr32/fb.h     |    6 ++++++
+ include/asm-blackfin/fb.h  |    6 ++++++
+ include/asm-cris/fb.h      |    6 ++++++
+ include/asm-frv/fb.h       |    6 ++++++
+ include/asm-h8300/fb.h     |    6 ++++++
+ include/asm-i386/fb.h      |    3 +++
+ include/asm-ia64/fb.h      |    6 ++++++
+ include/asm-m32r/fb.h      |    6 ++++++
+ include/asm-m68k/fb.h      |    6 ++++++
+ include/asm-m68knommu/fb.h |    6 ++++++
+ include/asm-mips/fb.h      |    6 ++++++
+ include/asm-parisc/fb.h    |    6 ++++++
+ include/asm-powerpc/fb.h   |    6 ++++++
+ include/asm-s390/fb.h      |    6 ++++++
+ include/asm-sh/fb.h        |    6 ++++++
+ include/asm-sh64/fb.h      |    6 ++++++
+ include/asm-sparc/fb.h     |    6 ++++++
+ include/asm-sparc64/fb.h   |    6 ++++++
+ include/asm-v850/fb.h      |    6 ++++++
+ include/asm-x86_64/fb.h    |    7 ++++++-
+ include/asm-xtensa/fb.h    |    6 ++++++
+ 27 files changed, 177 insertions(+), 1 deletions(-)
 
+diff --git a/arch/i386/Makefile b/arch/i386/Makefile
+index 3eb063e..01f0ff0 100644
+--- a/arch/i386/Makefile
++++ b/arch/i386/Makefile
+@@ -111,6 +111,7 @@ drivers-$(CONFIG_PCI)			+= arch/i386/pci
+ # must be linked after kernel/
+ drivers-$(CONFIG_OPROFILE)		+= arch/i386/oprofile/
+ drivers-$(CONFIG_PM)			+= arch/i386/power/
++drivers-$(CONFIG_FB)                    += arch/i386/video/
+ 
+ CFLAGS += $(mflags-y)
+ AFLAGS += $(mflags-y)
+diff --git a/arch/i386/video/Makefile b/arch/i386/video/Makefile
+new file mode 100644
+index 0000000..2c447c9
+--- /dev/null
++++ b/arch/i386/video/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_FB)               += fbdev.o
 diff --git a/arch/i386/video/fbdev.c b/arch/i386/video/fbdev.c
-index 7fc712c..48fb38d 100644
---- a/arch/i386/video/fbdev.c
+new file mode 100644
+index 0000000..7fc712c
+--- /dev/null
 +++ b/arch/i386/video/fbdev.c
-@@ -13,13 +13,11 @@ #include <linux/pci.h>
- 
- int fb_is_primary_device(struct fb_info *info)
- {
--	struct device *device;
-+	struct device *device = info->device;
- 	struct pci_dev *pci_dev = NULL;
- 	struct resource *res = NULL;
- 	int retval = 0;
- 
--	device = info->device;
--
- 	if (device)
- 		pci_dev = to_pci_dev(device);
- 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index bbd9fc4..45baf04 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -2863,8 +2863,7 @@ #include <linux/device.h>
- 
- static struct class *vtconsole_class;
- 
--static int bind_con_driver(const struct consw *csw, int first, int last,
--			   int deflt)
-+int bind_con_driver(const struct consw *csw, int first, int last, int deflt)
- {
- 	struct module *owner = csw->owner;
- 	const char *desc = NULL;
-@@ -2981,8 +2980,7 @@ static int con_is_graphics(const struct 
- 	return retval;
- }
- 
--static int unbind_con_driver(const struct consw *csw, int first, int last,
--			     int deflt)
-+int unbind_con_driver(const struct consw *csw, int first, int last, int deflt)
- {
- 	struct module *owner = csw->owner;
- 	const struct consw *defcsw = NULL;
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 63b85bf..1e11d30 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -118,6 +118,26 @@ config FRAMEBUFFER_CONSOLE
- 	help
- 	  Low-level framebuffer-based console driver.
- 
-+config FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
-+       bool "Map the console to the primary display device"
-+       depends on FRAMEBUFFER_CONSOLE && VT_HW_CONSOLE_BINDING
-+       default n
-+       ---help---
-+         If this option is selected, the framebuffer console will
-+         automatically select the primary display device (if the architecture
-+	 supports this feature).  Otherwise, the framebuffer console will
-+         always select the first framebuffer driver that is loaded. The latter
-+         is the default behavior.
+@@ -0,0 +1,34 @@
++/*
++ * arch/i386/video/fbdev.c - i386 Framebuffer
++ *
++ * Copyright (C) 2007 Antonino Daplas <adaplas@gmail.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
++ *
++ */
++#include <linux/fb.h>
++#include <linux/pci.h>
 +
-+	 You can always override the automatic selection of the primary device
-+	 by using the fbcon=map: boot option.
++int fb_is_primary_device(struct fb_info *info)
++{
++	struct device *device;
++	struct pci_dev *pci_dev = NULL;
++	struct resource *res = NULL;
++	int retval = 0;
 +
-+	 To select this feature, "Support for binding and unbinding console
-+         drivers", under "Device Drivers"->"Character Devices" must be set to
-+	 y.
++	device = info->device;
 +
-+	 If unsure, select n.
++	if (device)
++		pci_dev = to_pci_dev(device);
 +
- config FRAMEBUFFER_CONSOLE_ROTATION
-        bool "Framebuffer Console Rotation"
-        depends on FRAMEBUFFER_CONSOLE
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 7f4ed79..7ba21eb 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -75,6 +75,7 @@ #include <linux/smp.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/crc32.h> /* For counting font checksums */
-+#include <asm/fb.h>
- #include <asm/irq.h>
- #include <asm/system.h>
- #include <asm/uaccess.h>
-@@ -125,6 +126,8 @@ static int first_fb_vc;
- static int last_fb_vc = MAX_NR_CONSOLES - 1;
- static int fbcon_is_default = 1; 
- static int fbcon_has_exited;
-+static int primary_device = -1;
-+static int map_override;
++	if (pci_dev)
++		res = &pci_dev->resource[PCI_ROM_RESOURCE];
++
++	if (res && res->flags & IORESOURCE_ROM_SHADOW)
++		retval = 1;
++
++	return retval;
++}
++EXPORT_SYMBOL(fb_is_primary_device);
+diff --git a/include/asm-alpha/fb.h b/include/asm-alpha/fb.h
+index ca714a4..f87e4ca 100644
+--- a/include/asm-alpha/fb.h
++++ b/include/asm-alpha/fb.h
+@@ -1,7 +1,13 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/device.h>
  
- /* font data */
- static char fontname[40];
-@@ -497,13 +500,17 @@ static int __init fb_console_setup(char 
- 		
- 		if (!strncmp(options, "map:", 4)) {
- 			options += 4;
--			if (*options)
-+			if (*options) {
- 				for (i = 0, j = 0; i < MAX_NR_CONSOLES; i++) {
- 					if (!options[j])
- 						j = 0;
- 					con2fb_map_boot[i] =
- 						(options[j++]-'0') % FB_MAX;
- 				}
-+
-+				map_override = 1;
-+			}
-+
- 			return 1;
- 		}
+ /* Caching is off in the I/O space quadrant by design.  */
+ #define fb_pgprotect(...) do {} while (0)
  
-@@ -3004,9 +3011,9 @@ static int fbcon_mode_deleted(struct fb_
- 	return found;
- }
- 
--static int fbcon_fb_unregistered(int idx)
-+static int fbcon_fb_unregistered(struct fb_info *info)
- {
--	int i;
-+	int i, idx = info->node;
- 
- 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
- 		if (con2fb_map[i] == idx)
-@@ -3034,12 +3041,70 @@ static int fbcon_fb_unregistered(int idx
- 	if (!num_registered_fb)
- 		unregister_con_driver(&fb_con);
- 
-+
-+	if (primary_device == idx)
-+		primary_device = -1;
-+
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
 +	return 0;
 +}
 +
-+#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
-+static int fbcon_select_primary(struct fb_info *info)
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-arm/fb.h b/include/asm-arm/fb.h
+index 4bf5b88..43fb2bc 100644
+--- a/include/asm-arm/fb.h
++++ b/include/asm-arm/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
 +{
-+	int ret = 0;
-+
-+	if (!map_override && primary_device == -1 &&
-+	    fb_is_primary_device(info)) {
-+		int i, err;
-+
-+		printk(KERN_INFO "fbcon: %s is primary device\n",
-+		       info->fix.id);
-+		primary_device = info->node;
-+
-+		if (!con_is_bound(&fb_con))
-+			goto done;
-+
-+		printk(KERN_INFO "fbcon: Unbinding old driver\n");
-+		unbind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
-+				  fbcon_is_default);
-+		info_idx = primary_device;
-+
-+		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-+			con2fb_map_boot[i] = primary_device;
-+			con2fb_map[i] = primary_device;
-+		}
-+
-+		printk(KERN_INFO "fbcon: Selecting new driver\n");
-+		err = bind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
-+				      fbcon_is_default);
-+
-+		if (err) {
-+			for (i = first_fb_vc; i <= last_fb_vc; i++)
-+				con2fb_map[i] = -1;
-+
-+			info_idx = -1;
-+		}
-+
-+		ret = 1;
-+	}
-+
-+done:
-+	return ret;
++	return 0;
 +}
-+#else
-+static inline int fbcon_select_primary(struct fb_info *info)
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-arm26/fb.h b/include/asm-arm26/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-arm26/fb.h
++++ b/include/asm-arm26/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
 +{
- 	return 0;
- }
-+#endif /* CONFIG_FRAMEBUFFER_DETECT_PRIMARY */
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-avr32/fb.h b/include/asm-avr32/fb.h
+index d22a4a8..b39a0f0 100644
+--- a/include/asm-avr32/fb.h
++++ b/include/asm-avr32/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
  
--static int fbcon_fb_registered(int idx)
-+static int fbcon_fb_registered(struct fb_info *info)
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -12,4 +13,9 @@ static inline void fb_pgprotect(struct f
+ 				     | (_PAGE_BUFFER | _PAGE_DIRTY));
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-blackfin/fb.h b/include/asm-blackfin/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-blackfin/fb.h
++++ b/include/asm-blackfin/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-cris/fb.h b/include/asm-cris/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-cris/fb.h
++++ b/include/asm-cris/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-frv/fb.h b/include/asm-frv/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-frv/fb.h
++++ b/include/asm-frv/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-h8300/fb.h b/include/asm-h8300/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-h8300/fb.h
++++ b/include/asm-h8300/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-i386/fb.h b/include/asm-i386/fb.h
+index d30073c..d1c6297 100644
+--- a/include/asm-i386/fb.h
++++ b/include/asm-i386/fb.h
+@@ -1,9 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
++extern int fb_is_primary_device(struct fb_info *info);
++
+ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+ 				unsigned long off)
  {
--	int ret = 0, i;
-+	int ret = 0, i, idx = info->node;
-+
-+	if (fbcon_select_primary(info))
-+		goto done;
-+
+diff --git a/include/asm-ia64/fb.h b/include/asm-ia64/fb.h
+index c06b45b..9150ebd 100644
+--- a/include/asm-ia64/fb.h
++++ b/include/asm-ia64/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
  
- 	if (info_idx == -1) {
- 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-@@ -3059,6 +3124,7 @@ static int fbcon_fb_registered(int idx)
- 		}
- 	}
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
  
-+done:
- 	return ret;
+@@ -13,4 +14,9 @@ static inline void fb_pgprotect(struct f
+ 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
  }
  
-@@ -3182,10 +3248,10 @@ static int fbcon_event_notify(struct not
- 		ret = fbcon_mode_deleted(info, mode);
- 		break;
- 	case FB_EVENT_FB_REGISTERED:
--		ret = fbcon_fb_registered(info->node);
-+		ret = fbcon_fb_registered(info);
- 		break;
- 	case FB_EVENT_FB_UNREGISTERED:
--		ret = fbcon_fb_unregistered(info->node);
-+		ret = fbcon_fb_unregistered(info);
- 		break;
- 	case FB_EVENT_SET_CONSOLE_MAP:
- 		con2fb = event->data;
-diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
-index d961635..0d034d8 100644
---- a/include/linux/vt_kern.h
-+++ b/include/linux/vt_kern.h
-@@ -75,6 +75,10 @@ int con_copy_unimap(struct vc_data *dst_
- int vt_waitactive(int vt);
- void change_console(struct vc_data *new_vc);
- void reset_vc(struct vc_data *vc);
-+extern int bind_con_driver(const struct consw *csw, int first, int last,
-+			   int deflt);
-+extern int unbind_con_driver(const struct consw *csw, int first, int last,
-+			     int deflt);
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-m32r/fb.h b/include/asm-m32r/fb.h
+index 4bf5b88..43fb2bc 100644
+--- a/include/asm-m32r/fb.h
++++ b/include/asm-m32r/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
  
- /*
-  * vc_screen.c shares this temporary buffer with the console write code so that
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-m68k/fb.h b/include/asm-m68k/fb.h
+index dc12b5a..e51656f 100644
+--- a/include/asm-m68k/fb.h
++++ b/include/asm-m68k/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ #include <asm/setup.h>
+@@ -24,4 +25,9 @@ static inline void fb_pgprotect(struct f
+ }
+ #endif /* CONFIG_SUN3 */
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-m68knommu/fb.h b/include/asm-m68knommu/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-m68knommu/fb.h
++++ b/include/asm-m68knommu/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-mips/fb.h b/include/asm-mips/fb.h
+index ac23d96..cc740a9 100644
+--- a/include/asm-mips/fb.h
++++ b/include/asm-mips/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-parisc/fb.h b/include/asm-parisc/fb.h
+index d5e47ed..be603ee 100644
+--- a/include/asm-parisc/fb.h
++++ b/include/asm-parisc/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-powerpc/fb.h b/include/asm-powerpc/fb.h
+index e13d6eb..0f124d0 100644
+--- a/include/asm-powerpc/fb.h
++++ b/include/asm-powerpc/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -12,4 +13,9 @@ static inline void fb_pgprotect(struct f
+ 						 vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-s390/fb.h b/include/asm-s390/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-s390/fb.h
++++ b/include/asm-s390/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-sh/fb.h b/include/asm-sh/fb.h
+index 4bf5b88..43fb2bc 100644
+--- a/include/asm-sh/fb.h
++++ b/include/asm-sh/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-sh64/fb.h b/include/asm-sh64/fb.h
+index 4bf5b88..43fb2bc 100644
+--- a/include/asm-sh64/fb.h
++++ b/include/asm-sh64/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-sparc/fb.h b/include/asm-sparc/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-sparc/fb.h
++++ b/include/asm-sparc/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-sparc64/fb.h b/include/asm-sparc64/fb.h
+index 8703c70..175f0fb 100644
+--- a/include/asm-sparc64/fb.h
++++ b/include/asm-sparc64/fb.h
+@@ -1,5 +1,6 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -9,4 +10,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-v850/fb.h b/include/asm-v850/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-v850/fb.h
++++ b/include/asm-v850/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-x86_64/fb.h b/include/asm-x86_64/fb.h
+index d30073c..2e66064 100644
+--- a/include/asm-x86_64/fb.h
++++ b/include/asm-x86_64/fb.h
+@@ -1,6 +1,6 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+-
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -11,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 		pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
+ }
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-xtensa/fb.h b/include/asm-xtensa/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-xtensa/fb.h
++++ b/include/asm-xtensa/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_screeninfo *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+
 
