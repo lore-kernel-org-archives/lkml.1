@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757738AbXE0Pzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbXE0P6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757738AbXE0Pzq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 11:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbXE0Pzi
+	id S1758206AbXE0P6L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 11:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbXE0P56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 11:55:38 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:51149 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754774AbXE0Pzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 11:55:38 -0400
-Date: Sun, 27 May 2007 17:52:53 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Auke Kok <auke-jan.h.kok@intel.com>, randy.dunlap@oracle.com,
+	Sun, 27 May 2007 11:57:58 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:56959 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754826AbXE0P55 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 11:57:57 -0400
+Date: Sun, 27 May 2007 16:57:38 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Scott Preece <sepreece@gmail.com>
-Subject: Re: [PATCH] [condingstyle] Add chapter on tests
-In-Reply-To: <4659A258.9070400@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.61.0705271751480.7344@yvahk01.tjqt.qr>
-References: <20070525172509.5138.56430.stgit@localhost.localdomain>
- <20070525172515.5138.13652.stgit@localhost.localdomain>
- <Pine.LNX.4.61.0705262121150.7344@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0705262213000.7344@yvahk01.tjqt.qr> <4659978D.6020802@s5r6.in-berlin.de>
- <Pine.LNX.4.61.0705271655450.7344@yvahk01.tjqt.qr> <4659A258.9070400@s5r6.in-berlin.de>
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
+Message-ID: <20070527155738.GA20006@srcf.ucam.org>
+References: <1179870110.16656.2.camel@localhost> <alpine.LFD.0.98.0705221452290.3890@woody.linux-foundation.org> <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org> <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org> <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org> <20070524221743.GD9604@elf.ucw.cz> <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 24, 2007 at 03:53:28PM -0700, Linus Torvalds wrote:
 
-On May 27 2007 17:23, Stefan Richter wrote:
->Jan Engelhardt wrote:
->> 	if (!p)		/* Everytime you shorten it, God kills a kitten */
->
->Very bad news for felines, judging from current coding practice.
+> And I repeat: PowerPC had working and stable suspend five _years_ ago, 
+> without any of that freezing crud. We should rip it out.
 
-Don't worry. There are far worse codingstyles around, like the GNU 'standard'.
-(Indent is the premier element of any style.)
+As far as I can tell the PPC code simply shuts down the devices without 
+worrying about userspace at all. If this was reliable, what prevents us 
+from simply disabling the freezer for STR?
 
-
-	Jan
 -- 
+Matthew Garrett | mjg59@srcf.ucam.org
