@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbXE0UP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbXE0USB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbXE0UP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXE0UPQ
+	id S1758781AbXE0USB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXE0URy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:15:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:2084 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbXE0UPO (ORCPT
+	Sun, 27 May 2007 16:17:54 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:13266 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752101AbXE0URx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:15:14 -0400
+	Sun, 27 May 2007 16:17:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NGmSRVfUPMZdX7qWtgGeMFvyDY50I7oz0RmL7Wi2hLlo6hqSX6dyNBMBJlnw+2N3Hyur5MZXyg/KfrLMvGPWd/v/TViKKiP9Ee2WIdHfVzJ9z1buV7ZxZcUD7Mco3mdts+qbf5HCULE9G68FTFbI2FCKY+NKoAaK1jlLZjqRJZg=
-Message-ID: <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com>
-Date: Sun, 27 May 2007 22:15:12 +0200
-From: "Gregor Jasny" <gjasny@googlemail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux v2.6.22-rc3
-Cc: "Jeff Garzik" <jgarzik@pobox.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Tejun Heo" <htejun@gmail.com>
-In-Reply-To: <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ZQI//ruHqnu7HjAfxk95fp+//0/pAvoe6Bav+ZyS3EC4OSmLyeyrfHC4tSwXKAJ9n3Q8Zs4nOWZQgNVAckoLNMqsbfSi2qS/PweJpuK7EJ+ExQn02tbSX118nv5PxtdwlXtyfNFS7Q+Z3CWb3H06t37/BL9sljs+1it/9HeVR4M=
+Message-ID: <84144f020705271317q3e46fd88u58058686edf71829@mail.gmail.com>
+Date: Sun, 27 May 2007 23:17:51 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH 2/2] [condingstyle] Add chapter on tests
+Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4659C828.80503@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
-	 <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>
-	 <46599E6B.1000209@pobox.com>
-	 <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com>
-	 <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>
+References: <20070525172509.5138.56430.stgit@localhost.localdomain>
+	 <20070525172515.5138.13652.stgit@localhost.localdomain>
+	 <Pine.LNX.4.61.0705262121150.7344@yvahk01.tjqt.qr>
+	 <4659C828.80503@intel.com>
+X-Google-Sender-Auth: 993f5f8bde25e61c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/27, Linus Torvalds <torvalds@linux-foundation.org>:
-> But if it doesn't help for you, you have some other issue (which is not
-> surprising - yours wasn't a SETFXSR error, and I don't think it would have
-> worked very well before either).
->
-> So since it apparently _did_ work for you before, can you bisect it?
+On 5/27/07, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
+> that piece is a copy of mm/slab.c, and all over the core components of the
+> kernel (even fs/inode.c written by Linus). I strongly think that "== NULL"
+> doesn't add anything and that well-written functions and well-named variables
+> really do not need the extra fluff.
 
-git bisect told me that this is the first bad commit:
-commit d4b2bab4f26345ea1803feb23ea92fbe3f6b77bc
-Author: Tejun Heo <htejun@gmail.com>
-Date:   Fri Feb 2 16:50:52 2007 +0900
-
-libata: add deadline support to prereset and reset methods
-
-I suspected my unstable timing source and booted with acpi=off. Now
-the printk timestamps are in sequence but the bug is still there.
-
-The drive worked flawlessly with the old ide-cd. So what's the
-difference between libata and ide-cd?
-
-Is there a kernel parameter to completely disable probing the cdrom?
-
-Thanks,
-Gregor
+Yup, I we really don't use "== NULL" in core code that much. But I am
+not convinced this should be in CodingStyle either. It's more of a
+maintainer preference thing above all.
