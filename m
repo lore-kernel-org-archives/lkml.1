@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbXE0WE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbXE0WNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760168AbXE0WE2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 18:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbXE0WEW
+	id S1759487AbXE0WNR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 18:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbXE0WNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 18:04:22 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:43494 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757456AbXE0WEV (ORCPT
+	Sun, 27 May 2007 18:13:06 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:41582 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754003AbXE0WNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 18:04:21 -0400
-Date: Sun, 27 May 2007 23:04:12 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>
-Message-ID: <20070527220412.GC22687@srcf.ucam.org>
-References: <200705272229.21263.rjw@sisk.pl> <200705272231.54535.rjw@sisk.pl> <20070527204955.GA22202@srcf.ucam.org> <3ae72650705271449q37f523c3t5980541122ab871@mail.gmail.com>
+	Sun, 27 May 2007 18:13:05 -0400
+X-Sasl-enc: KkMQiAcAkZf8rkmUIJVrcqYEqlIRwFkn7TfMaVtv8NSX 1180303982
+Message-ID: <465A033C.3070400@imap.cc>
+Date: Mon, 28 May 2007 00:16:28 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3ae72650705271449q37f523c3t5980541122ab871@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>	<46585953.80200@imap.cc> <20070526090117.dda72286.akpm@linux-foundation.org>
+In-Reply-To: <20070526090117.dda72286.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig69B9A30669CC6BE75A7D14F9"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 27, 2007 at 11:49:30PM +0200, Kay Sievers wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig69B9A30669CC6BE75A7D14F9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> What exactly is the problem we see here? The timeout of the firmware loader?
-> What goes wrong with frozen userspace, usually there is only a netlink
-> message sent from the kernel, which should be received and handled
-> just fine when userspace is running again.
+Am 26.05.2007 18:01 schrieb Andrew Morton:
+> On Sat, 26 May 2007 17:59:15 +0200 Tilman Schmidt <tilman@imap.cc> wrot=
+e:
 
-Driver calls request_firmware in the resume method. The userspace helper 
-can't be run because it's been frozen, so the firmware never gets loaded 
-and the call times out. The driver then fails to resume. While all this 
-is happening, the rest of the kernel is blocking on that resume method. 
-The firmware can be loaded once userspace has been started again, but by 
-that time the driver has given up.
+>> This breaks network initialization on my SuSE 10.0 box [...]
+>=20
+> Thanks.  I think others have seen similar things and it was attributed =
+to
+> driver-core-check-return-code-of-sysfs_create_link.patch.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+That's it. After reverting that patch, the Ethernet interface
+comes up fine again.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig69B9A30669CC6BE75A7D14F9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGWgM8MdB4Whm86/kRAu1ZAJ0adXqJlzde0eRaR35cl+IYe4MVugCggejM
+d5qfi5fMIik7eYE7Vt6y8hc=
+=WwCW
+-----END PGP SIGNATURE-----
+
+--------------enig69B9A30669CC6BE75A7D14F9--
