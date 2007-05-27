@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbXE0QnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbXE0QpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758140AbXE0QnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 12:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbXE0QnN
+	id S1758367AbXE0QpT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 12:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbXE0QpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 12:43:13 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:36476 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755367AbXE0QnM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 12:43:12 -0400
-Date: Sun, 27 May 2007 17:43:00 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-Message-ID: <20070527164300.GA20355@srcf.ucam.org>
-References: <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org> <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org> <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org> <20070524221743.GD9604@elf.ucw.cz> <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org> <20070527155738.GA20006@srcf.ucam.org> <alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org>
+	Sun, 27 May 2007 12:45:10 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:50613 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755367AbXE0QpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 12:45:08 -0400
+Date: Sun, 27 May 2007 18:44:18 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: David Miller <davem@davemloft.net>
+cc: sparclinux@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Linux always started with 9600 8N1
+In-Reply-To: <20070526.154745.30164056.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.61.0705271816310.7344@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705261649590.7344@yvahk01.tjqt.qr>
+ <20070526.154745.30164056.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 27, 2007 at 09:26:00AM -0700, Linus Torvalds wrote:
 
-> And by "disabling the freezer", I think we should just not call it at all. 
-> However, sadly, right now it's called from common code. I'll happily take 
-> a tested patch to split that code sequence up, and try to do it in 2.6.23, 
-> if somebody has the energy (I'm getting to the point where I may just do 
-> it myself, but my lazy nature still hopes for a STR person to step 
-> forward).
+On May 26 2007 15:47, David Miller wrote:
+>> I have set the OBP to run at 115200, also set agetty on ttyS0 to do the 
+>> same, and also added console=ttyS0,115200 to silo.conf (and also tried 
+>> console=ttyS0,115200n8). But! Linux still gives me 9600 8N1. The ominous 
+>> double screen blanking (why is that done anyway?) already takes place 
+>> with 9600. I smell a bug. What do you think?
+>
+>The code in drivers/serial/suncore.c:sunserial_console_termios()
+>should be parsing your OBP settings, add some tracing and see why it
+>isn't working.
+>
+>Please track the bug down for us, thanks :-)
 
-I'll take a look at this. It probably makes sense to build on Rafael's 
-work on splitting the codepaths up.
+Just why did no one get a kernel oops? After all, the code tried to
+write to constant memory.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+This is the first patch of two. There is yet another section of Linux 
+code that runs in 9600-only, and I need to figure out which.
+
+---
+
+The Linux kernel ignored the PROM's serial settings (115200,n,8,1 in
+my case). This was because mode_prop remained "ttyX-mode" (expected:
+"ttya-mode") due to the constness of string literals when used with 
+"char *". Since there is no "ttyX-mode" property in the PROM, Linux
+always used the default 9600.
+
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
+---
+ drivers/serial/suncore.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.21.sparc64/drivers/serial/suncore.c
+===================================================================
+--- linux-2.6.21.sparc64.orig/drivers/serial/suncore.c
++++ linux-2.6.21.sparc64/drivers/serial/suncore.c
+@@ -30,9 +30,9 @@ void
+ sunserial_console_termios(struct console *con)
+ {
+ 	char mode[16], buf[16], *s;
+-	char *mode_prop = "ttyX-mode";
+-	char *cd_prop = "ttyX-ignore-cd";
+-	char *dtr_prop = "ttyX-rts-dtr-off";
++	char mode_prop[] = "ttyX-mode";
++	char cd_prop[]   = "ttyX-ignore-cd";
++	char dtr_prop[]  = "ttyX-rts-dtr-off";
+ 	char *ssp_console_modes_prop = "ssp-console-modes";
+ 	int baud, bits, stop, cflag;
+ 	char parity;
+#<EOF>
