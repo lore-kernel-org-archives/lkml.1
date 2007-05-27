@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbXE0QMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbXE0QNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758614AbXE0QMa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 12:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbXE0QMV
+	id S1758806AbXE0QNM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 12:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756456AbXE0QM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 12:12:21 -0400
-Received: from web36612.mail.mud.yahoo.com ([209.191.85.29]:35968 "HELO
-	web36612.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755367AbXE0QMT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 12:12:19 -0400
-X-YMail-OSG: qyyjeGkVM1kon3xDayTM00qqaVJQrT3JL4XYDoU50oUfeFJt2RCS.pcFAu8GWwNd97xrHp.l2g--
-X-RocketYMMF: rancidfat
-Date: Sun, 27 May 2007 09:12:18 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-To: Cliffe <cliffe@iinet.net.au>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <46594282.8010307@iinet.net.au>
+	Sun, 27 May 2007 12:12:58 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:51163 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755994AbXE0QM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 12:12:57 -0400
+Date: Sun, 27 May 2007 12:12:52 -0400
+To: David Howells <dhowells@redhat.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement file locking
+Message-ID: <20070527161252.GA12804@fieldses.org>
+References: <20070527022502.GB10867@fieldses.org> <20070526022342.GA20905@fieldses.org> <20070524165554.22292.38887.stgit@warthog.cambridge.redhat.com> <7436.1180223730@redhat.com> <18750.1180255870@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Message-ID: <653438.15244.qm@web36612.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18750.1180255870@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Cliffe <cliffe@iinet.net.au> wrote:
-
->  >> On the other hand, if you actually want to protect the _data_, then 
-> tagging the _name_ is flawed; tag the *DATA* instead.
+On Sun, May 27, 2007 at 09:51:10AM +0100, David Howells wrote:
+> J. Bruce Fields <bfields@fieldses.org> wrote:
+> > So if I request a write lock while holding a read lock, my request will
+> > be denied?
 > 
-> Would it make sense to label the data (resource) with a list of paths 
-> (names) that can be used to access it?
+> At the moment, yes.  Don't the POSIX and flock lock-handling routines in the
+> kernel normally do that anyway?
 
-Program Access Lists (PALs) were* a feature of UNICOS. PALs could
-contain not only the list of programs that could use them, but what
-attributes the processes required as well. Further, you could
-restrict or raise privilege based on the uid, gid, MAC label, and
-privilege state of the process during exec based on the PAL. 
+No, they'd upgrade in that case.
 
-> Therefore the data would be protected against being accessed via 
-> alternative arbitrary names. This may be a simple label to maintain and 
-> (possibly to) enforce, allowing path based confinement to protect a 
-> resource. This may allow for the benefits of pathname based confinement 
-> while avoiding some of its problems.
+> > This is a little strange, though--if there's somebody waiting for a
+> > write lock on an inode (because somebody else already holds a read lock
+> > on it), that shouldn't block requests for read locks.
+> 
+> That depends on whether you want fairness or not.
 
-Yep, but you still have the label based system issues, the classic
-case being the text editor that uses "creat new", "unlink old",
-"rename new to old". When the labeling scheme is more sopisticated
-than "object gets label of subject" label management becomes a major
-issue.
+Neither posix nor flock locks delay a lock because of pending
+conflicting locks.  SUS, as I read it, wouldn't allow that.
 
-> Obviously this would not protect against a pathname pointing to 
-> arbitrary data…
+> Allowing read locks to jump the queue like this can lead to starvation
+> for your writers.
 
-Protecting special data is easy. Protecting arbitrary data is the
-problem.
+If you want fairness the best that you can do is to ensure that when
+more than one pending lock can be applied, the one that has been waiting
+longest will be chosen.  But you can't make all such lock requests wait
+for a lock that hasn't even been applied yet.
 
-> Just a thought.
+You can contrive examples of applications that would be correct given
+the standard fcntl behavior, but that would deadlock on a system that
+didn't allow read locks to jump the queue in the above situation.  I
+have no idea whether such applications actually exist in practice, but
+I'd be uneasy about changing the standard behavior without inventing
+some new kind of lock.
 
-Not a bad one, and it would be an easy and fun LSM to create.
-If I were teaching a Linux kernel programming course I would
-consider it for a class project.
-
------
-* I have used the past tense here in spite of the many
-  instances of UNICOS still in operation. I don't believe
-  that there is any current development on UNICOS.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+--b.
