@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbXE0KVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbXE0KW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbXE0KVB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 06:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbXE0KUx
+	id S1753176AbXE0KW1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 06:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbXE0KWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 06:20:53 -0400
-Received: from il.qumranet.com ([82.166.9.18]:42240 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbXE0KUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 06:20:53 -0400
-Message-ID: <46595B7F.9030006@qumranet.com>
-Date: Sun, 27 May 2007 13:20:47 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sun, 27 May 2007 06:22:21 -0400
+Received: from v6.netlin.pl ([62.121.136.6]:44831 "EHLO pointblue.com.pl"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751300AbXE0KWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 06:22:20 -0400
+From: Tommy Vercetti <vercetti@zlew.org>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: 2.6.21.1 - 97% wait time on IDE operations
+Date: Sun, 27 May 2007 12:22:29 +0200
+User-Agent: KMail/1.9.3
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200705261505.38109@gj-laptop> <200705261746.01568@gj-laptop> <2c0942db0705260907g4e37d4avcc652d2b7368edd5@mail.gmail.com>
+In-Reply-To: <2c0942db0705260907g4e37d4avcc652d2b7368edd5@mail.gmail.com>
 MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       lhcs-devel@lists.sourceforge.net
-Subject: Re: [PATCH 0/7] KVM: Suspend and cpu hotplug fixes
-References: <1180008615579-git-send-email-avi@qumranet.com> <1180055432.9919.3.camel@sli10-conroe.sh.intel.com> <46569E23.6010101@qumranet.com>
-In-Reply-To: <46569E23.6010101@qumranet.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705271222.30169@gj-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> I estimate that that take_cpu_down will run for about a millisecond if
-> there are a few hundred vcpus which have last run on the dying cpu (and
-> that's an extreme case, which is not expected in normal operation).
+On Saturday 26 May 2007 18:07, Ray Lee wrote:
+> On 5/26/07, Tommy Vercetti <vercetti@zlew.org> wrote:
+> > in terms of driver, what do you mean ?
+>
+> The software driver that handles the specific chipset for that drive.
+> The thing that shows up when you do an lsmod, assuming you have the
+> driver compiled as a module.
 
-I measured vmclear time on an uncached vmcs (which would be all except 
-for a handful which are cached on the cpu core) at 144 cycles.  Assuming 
-a couple of cache misses for walking the list and accessing the vmcs, 
-we're at about 500 cycles per vcpu, or 250us @ 2GHz.  So worst case is 
-significantly less than 1 ms.
+root@puppet:~# dmesg |grep -i ide
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+ICH4: IDE controller at PCI slot 0000:00:1f.1
+    ide0: BM-DMA at 0x1840-0x1847, BIOS settings: hda:DMA, hdb:pio
+    ide1: BM-DMA at 0x1848-0x184f, BIOS settings: hdc:DMA, hdd:pio
+Probing IDE interface ide0...
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+Probing IDE interface ide1...
+ide1 at 0x170-0x177,0x376 on irq 15
 
-Is this acceptable for take_cpu_down()?
+it's compiled in. 
+you reckon I should use something else for this platform ? 
+
+> > /dev/hda:
+> >  Timing cached reads:   732 MB in  2.00 seconds = 365.74 MB/sec
+> >  Timing buffered disk reads:   76 MB in  3.00 seconds =  25.31 MB/sec
+>
+> That looks fine. Your filesystem may just be very fragmented. I'm not
+> familiar with how reiser3 filesystems age, so if you've had the system
+> installed for quite some time, it may be time to back it up and
+> reinstall. Dunno.
+yeah, and they say unix FSes don't need defragmentation.... my bottom...
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Vercetti
