@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbXE0Wpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbXE0XHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760246AbXE0Wpc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 18:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbXE0WpZ
+	id S1759446AbXE0XHg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 19:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbXE0XH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 18:45:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49010
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752503AbXE0WpY (ORCPT
+	Sun, 27 May 2007 19:07:29 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:51898 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752729AbXE0XH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 18:45:24 -0400
-Date: Sun, 27 May 2007 15:45:31 -0700 (PDT)
-Message-Id: <20070527.154531.39158567.davem@davemloft.net>
-To: adaplas@gmail.com
-Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net,
+	Sun, 27 May 2007 19:07:28 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200705272307.l4RN7Ltk012112@turbo.physics.adelaide.edu.au>
+Subject: Re: IDE/ATA: Intel i865-based mainboard, CDROM not detected
+To: davidsen@tmr.com (Bill Davidsen)
+Date: Mon, 28 May 2007 08:37:21 +0930 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/9] fbdev: Detect primary display device
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <465952CD.2040409@gmail.com>
-References: <465952CD.2040409@gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+In-Reply-To: <46585FAC.80208@tmr.com> from "Bill Davidsen" at May 26, 2007 12:26:20 PM
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Date: Sun, 27 May 2007 17:43:41 +0800
+Hi Bill
 
-> Add function helper, fb_is_display_device().  Given struct fb_info, it will
-> return a nonzero value if the device is the primary display.
-> 
-> Currently, only the i386 is supported, other platforms only have stubs. For 
-> the i386, the function checks for the IORESOURCE_ROM_SHADOW flag.
-> 
-> Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+> > A collegue of mine has an Intel mainboard with the i865 chipset onboard
+> > (DQ965).  All kernels up to and including 2.6.22-rc2 do not detect the IDE
+> > CDROM/DVDROM when booting.  The SATA hard drive is found without any
+> > problems.
+> > 
+> Let me belatedly ask if the device shows up in POST at cold boot. It may 
+> need some BIOS setting to be visible.
 
-Thank you so much for following up on this work.
+The CDROM was showing up in the POST in all cases.
 
-I'll try to get the sparc side implemented some time this
-coming week.
+It turns out the problem (as I outlined in a followup post) resulted from a
+combination of issues.
 
-Thanks again.
+ 1) This board uses a Marvell PATA controller, so the relevant driver must
+    be configured.
+
+ 2) Unless the "Configure SATA as" setting in the BIOS is set to "AHCI" the
+    PATA controller won't be found.  Sounds a bit odd and counter-intuitive,
+    but that's what's happening.  Originally this item was set to IDE; the
+    other option is RAID but I haven't tested that.
+
+Regards
+  jonathan
+--
+"Time is an illusion; lunchtime doubly so"
