@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbXE0JZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752071AbXE0JsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbXE0JZy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 05:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbXE0JZt
+	id S1752071AbXE0JsQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 05:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbXE0JsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 05:25:49 -0400
-Received: from outpost.ds9a.nl ([213.244.168.210]:60005 "EHLO outpost.ds9a.nl"
+	Sun, 27 May 2007 05:48:08 -0400
+Received: from nicole.bmts.com ([216.183.128.225]:51819 "EHLO nicole.bmts.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbXE0JZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 05:25:48 -0400
-Date: Sun, 27 May 2007 11:25:46 +0200
-From: bert hubert <bert.hubert@netherlabs.nl>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: udev regression? lsusb silent (no output) since 2.6.22-rc2 at  least
-Message-ID: <20070527092546.GA10912@outpost.ds9a.nl>
-Mail-Followup-To: bert hubert <bert.hubert@netherlabs.nl>,
-	Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-	gregkh@suse.de
-References: <20070526201854.GA20758@outpost.ds9a.nl> <1180233755.3131.4.camel@lov.localdomain>
+	id S1751114AbXE0JsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 05:48:07 -0400
+Date: Sun, 27 May 2007 05:47:46 -0400
+From: Mike Houston <mikeserv@bmts.com>
+To: linux-kernel@vger.kernel.org
+Cc: zach@vmware.com
+Subject: 2.6.22-rc3 - VMI does not compile unless himem enabled
+Message-Id: <20070527054746.632f06f8.mikeserv@bmts.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1180233755.3131.4.camel@lov.localdomain>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
+X-brucetelecom.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 27, 2007 at 04:42:35AM +0200, Kay Sievers wrote:
-> > Any clues? Please let me know how I can help solve this problem!
-> 
-> It works fine for me here. Do you have CONFIG_USB_DEVICE_CLASS=y set?
+While building kernels for vmware guests, I noticed that the
+paravirt VMI driver in 2.6.22-rc3 does not compile when highmem
+support is disabled. This did not occur in 2.6.21
 
-Ah, I have not. However, this setting was not present in 2.6.21-rc3, from
-which configuration I ran 'make oldconfig'.
+  CC      arch/i386/kernel/vmi.o
+arch/i386/kernel/vmi.c: In function `vmi_update_pte':
+arch/i386/kernel/vmi.c:422: error: dereferencing pointer to
+incomplete type
+arch/i386/kernel/vmi.c:422: error: `init_mm' undeclared (first use in
+this function)
+arch/i386/kernel/vmi.c:422: error: (Each undeclared identifier is
+reported only once
+arch/i386/kernel/vmi.c:422: error: for each function it appears in.)
+arch/i386/kernel/vmi.c: In function `vmi_update_pte_defer':
+arch/i386/kernel/vmi.c:428: error: dereferencing pointer to
+incomplete type
+arch/i386/kernel/vmi.c:428: error: `init_mm' undeclared (first use in
+this function)
+arch/i386/kernel/vmi.c: In function `vmi_set_pte_at':
+arch/i386/kernel/vmi.c:441: error: dereferencing pointer to
+incomplete type
+arch/i386/kernel/vmi.c:441: error: `init_mm' undeclared (first use in
+this function)
+make[1]: *** [arch/i386/kernel/vmi.o] Error 1
+make: *** [arch/i386/kernel] Error 2
 
-Make oldconfig does ask for this feature:
-  USB device class-devices (DEPRECATED) (USB_DEVICE_CLASS) [N/y/?] (NEW) 
+This does not occur if himem support is enabled.
 
-And I chose the default, breaking (my version of) lsusb, on Ubuntu Edgy Eft.
-I enabled USB_DEVICE_CLASS, and lsusb worked again.
-
-Thank you both for your quick answers!
-
-Please consider this patch which clarifies the need for USB_DEVICE_CLASS:
-
---- ./drivers/usb/core/Kconfig~	2007-05-27 11:22:22.000000000 +0200
-+++ ./drivers/usb/core/Kconfig	2007-05-27 11:22:22.000000000 +0200
-@@ -54,7 +54,8 @@
- 	  device of the interface and therefore easily accessible from the interface
- 	  event.
- 
--	  This option provides backward compatibility if needed.
-+	  This option provides backward compatibility and is required on
-+	  many distributions to keep lsusb working.
- 
- config USB_DYNAMIC_MINORS
- 	bool "Dynamic USB minor allocation (EXPERIMENTAL)"
-
--- 
-http://www.PowerDNS.com      Open source, database driven DNS Software 
-http://netherlabs.nl              Open and Closed source services
+Mike Houston
