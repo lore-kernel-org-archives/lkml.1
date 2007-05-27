@@ -1,135 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbXE0So0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbXE0Sok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbXE0So0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 14:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbXE0SoR
+	id S1758840AbXE0Sok (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 14:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbXE0SoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 14:44:17 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:46953 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbXE0SoQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 14:44:16 -0400
-Date: Sun, 27 May 2007 19:44:02 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Message-ID: <20070527184402.GA21161@srcf.ucam.org>
-References: <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org> <20070527164300.GA20355@srcf.ucam.org> <200705272032.15971.rjw@sisk.pl>
+	Sun, 27 May 2007 14:44:20 -0400
+Received: from posti6.jyu.fi ([130.234.4.43]:53589 "EHLO posti6.jyu.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752643AbXE0SoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 14:44:18 -0400
+X-Greylist: delayed 34644 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 May 2007 14:44:17 EDT
+Date: Sun, 27 May 2007 12:06:40 +0300 (EEST)
+From: Tero Roponen <teanropo@jyu.fi>
+X-X-Sender: teanropo@jalava.cc.jyu.fi
+To: linux-kernel@vger.kernel.org
+cc: akpm@linux-foundation.org
+Subject: tty-related oops in latest kernel(s)?
+Message-ID: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705272032.15971.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 27, 2007 at 08:32:14PM +0200, Rafael J. Wysocki wrote:
+Hi,
 
-> In particular, please see this message:
-> 
-> https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012301.html
+2.6.22-rc3 (with Reiser4 patch) oopses when watching videos with
+mplayer using neofb console.
 
-Yes, there's also the notifier chain for the hardware. However, very few 
-drivers seem to use that - adb seems to be the only one still in the 
-tree. For everything else, the device tree is used in exactly the same 
-way as on x86. If it's safe on Macs but not on x86, then (as far as I 
-can tell) it looks like it's only by luck.
+When mplayer starts I get these messages
+(this is normal, repeating lines omitted):
 
-Anyway. I've tested the following patch on a dual-core x86. No obvious 
-issues yet, but I'll try to put it through a few hundred cycles.
+  neofb: no support for 32bpp
+  Mode (1024x768) larger than the LCD panel (800x600)
+  Mode (1152x864) larger than the LCD panel (800x600)
+  Mode (1024x1024) larger than the LCD panel (800x600)
+  Mode (1280x1024) larger than the LCD panel (800x600)
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 8812985..1db3012 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -19,7 +19,6 @@
- #include <linux/console.h>
- #include <linux/cpu.h>
- #include <linux/resume-trace.h>
--#include <linux/freezer.h>
- #include <linux/vmstat.h>
- 
- #include "power.h"
-@@ -66,9 +65,10 @@ static inline void pm_finish(suspend_state_t state)
-  *	suspend_prepare - Do prep work before entering low-power state.
-  *	@state:		State we're entering.
-  *
-- *	This is common code that is called for each state that we're 
-- *	entering. Allocate a console, stop all processes, then make sure
-- *	the platform can enter the requested state.
-+ *	This is common code that is called for each state that we're
-+ *	entering. Allocate a console, then make sure the platform can
-+ *	enter the requested state. This is not called for
-+ *	suspend-to-disk.
-  */
- 
- static int suspend_prepare(suspend_state_t state)
-@@ -81,11 +81,6 @@ static int suspend_prepare(suspend_state_t state)
- 
- 	pm_prepare_console();
- 
--	if (freeze_processes()) {
--		error = -EAGAIN;
--		goto Thaw;
--	}
--
- 	if ((free_pages = global_page_state(NR_FREE_PAGES))
- 			< FREE_PAGE_NUMBER) {
- 		pr_debug("PM: free some memory\n");
-@@ -93,7 +88,7 @@ static int suspend_prepare(suspend_state_t state)
- 		if (nr_free_pages() < FREE_PAGE_NUMBER) {
- 			error = -ENOMEM;
- 			printk(KERN_ERR "PM: No enough memory\n");
--			goto Thaw;
-+			goto Exit;
- 		}
- 	}
- 
-@@ -118,8 +113,7 @@ static int suspend_prepare(suspend_state_t state)
- 	device_resume();
-  Resume_console:
- 	resume_console();
-- Thaw:
--	thaw_processes();
-+ Exit:
- 	pm_restore_console();
- 	return error;
- }
-@@ -160,8 +154,8 @@ int suspend_enter(suspend_state_t state)
-  *	suspend_finish - Do final work before exiting suspend sequence.
-  *	@state:		State we're coming out of.
-  *
-- *	Call platform code to clean up, restart processes, and free the 
-- *	console that we've allocated. This is not called for suspend-to-disk.
-+ *	Call platform code to clean up and free the console that we've
-+ *	allocated. This is not called for suspend-to-disk.
-  */
- 
- static void suspend_finish(suspend_state_t state)
-@@ -170,7 +164,6 @@ static void suspend_finish(suspend_state_t state)
- 	pm_finish(state);
- 	device_resume();
- 	resume_console();
--	thaw_processes();
- 	pm_restore_console();
- }
- 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Ok, everything seems to work and I can watch the video.
+However, when the mplayer stops I get these warnings:
+
+  release_dev: driver.table[3] not tty for (tty4)
+  Warning: dev (tty4) tty->count(3) != #fd's(2) in release_dev
+  release_dev: driver.table[3] not tty for (tty4)
+
+When I try to repeat the previous step the kernel oopses:
+
+  neofb: no support for 32bpp
+  Mode (1024x768) larger than the LCD panel (800x600)
+  Mode (1152x864) larger than the LCD panel (800x600)
+  Mode (1024x1024) larger than the LCD panel (800x600)
+  Mode (1280x1024) larger than the LCD panel (800x600)
+  BUG: unable to handle kernel NULL pointer dereference at virtual address 00000731
+   printing eip:
+  c021e50e
+  *pde = 00000000
+  Oops: 0000 [#1]
+  Modules linked in: binfmt_misc floppy loop xirc2ps_cs pcmcia usb_storage parport_pc parport yenta_socket rsrc_nonstatic pcmcia_core evdev uhci_hcd usbcore
+  CPU:    0
+  EIP:    0060:[<c021e50e>]    Not tainted VLI
+  EFLAGS: 00010202   (2.6.22-rc3-atr #4)
+  EIP is at vt_ioctl+0xda8/0x1482
+  eax: 00000679   ebx: 00005600   ecx: c3d41200   edx: 00000000
+  esi: 0893159c   edi: c0386a2f   ebp: 00000003   esp: c26a5e28
+  ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+  Process mplayer (pid: 1502, ti=c26a5000 task=c3a22500 task.ti=c26a5000)
+  Stack: fffffffe c26a5f30 c0149fd9 c29fe400 c3d68600 00000001 4642f7b0 c3d0bcc0 
+         c3c32464 00000101 00000001 00000000 4644793c 4642f7b0 00000002 00000005 
+         0000001b 00000005 c34ad240 c3d0bcc0 c1386000 00000002 00000000 c021d766 
+  Call Trace:
+   [<c0149fd9>] link_path_walk+0xa5/0xaf
+   [<c021d766>] vt_ioctl+0x0/0x1482
+   [<c021a395>] tty_ioctl+0xa01/0xa87
+   [<c0143c5a>] get_empty_filp+0x4f/0xc9
+   [<c01439bf>] put_filp+0x14/0x31
+   [<c014ab93>] __path_lookup_intent_open+0x6c/0x75
+   [<c014ac10>] path_lookup_open+0x20/0x25
+   [<c014acd9>] open_namei+0x6e/0x51d
+   [<c0141b0c>] do_filp_open+0x25/0x39
+   [<c0219994>] tty_ioctl+0x0/0xa87
+   [<c014ba8a>] do_ioctl+0x3e/0x4d
+   [<c014bc84>] vfs_ioctl+0x1eb/0x202
+   [<c014bcce>] sys_ioctl+0x33/0x4d
+   [<c01022c2>] sysenter_past_esp+0x5f/0x85
+   =======================
+  Code: 0f b7 c8 7f 04 85 c9 75 cd 8d 4e 04 89 d8 e8 aa 11 fd ff e9 20 f8 ff ff 8d 04 95 00 00 00 00 03 81 b8 00 00 00 8b 00 85 c0 74 16 <83> b8 b8 00 00 00 00 74 0d 42 83 fa 3f 75 de b0 ff e9 88 f7 ff 
+  EIP: [<c021e50e>] vt_ioctl+0xda8/0x1482 SS:ESP 0068:c26a5e28
+  BUG: unable to handle kernel NULL pointer dereference at virtual address 0000072d
+   printing eip:
+  c021820c
+  *pde = 00000000
+  Oops: 0000 [#2]
+  Modules linked in: binfmt_misc floppy loop xirc2ps_cs pcmcia usb_storage parport_pc parport yenta_socket rsrc_nonstatic pcmcia_core evdev uhci_hcd usbcore
+  CPU:    0
+  EIP:    0060:[<c021820c>]    Not tainted VLI
+  EFLAGS: 00210202   (2.6.22-rc3-atr #4)
+  EIP is at init_dev+0x38c/0x497
+  eax: c10ba40c   ebx: c3d41200   ecx: c1f5fecc   edx: 00000003
+  esi: 00000679   edi: 00400004   ebp: c3d41200   esp: c1f5fe7c
+  ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+  Process syslogd (pid: 1503, ti=c1f5f000 task=c3a22500 task.ti=c1f5f000)
+  Stack: 00000102 00000000 c1fe7aa0 c1f5fecc 00000003 ffffffe9 c1f5ff30 c014a217 
+         c1386000 00000005 c3a5b95c 00002190 c01159ec c3d41200 c1fe7aa0 00400004 
+         00000100 c021a519 00000101 00000003 c01ebea4 00000000 c3d41204 c3a5b95c 
+  Call Trace:
+   [<c014a217>] do_path_lookup+0x131/0x14c
+   [<c01159ec>] __capable+0x8/0x1b
+   [<c021a519>] tty_open+0xfe/0x271
+   [<c01ebea4>] kobject_get+0xf/0x13
+   [<c0144ba6>] chrdev_open+0xc1/0xf6
+   [<c014aec5>] open_namei+0x25a/0x51d
+   [<c0144ae5>] chrdev_open+0x0/0xf6
+   [<c01419a8>] __dentry_open+0xb7/0x16d
+   [<c0141ad8>] nameidata_to_filp+0x24/0x33
+   [<c0141b19>] do_filp_open+0x32/0x39
+   [<c0141b62>] do_sys_open+0x42/0xc3
+   [<c0141c1c>] sys_open+0x1c/0x1e
+   [<c01022c2>] sysenter_past_esp+0x5f/0x85
+   =======================
+  Code: c0 89 c3 74 14 8b 56 20 85 d2 0f 84 de 00 00 00 89 f0 ff d2 e9 d5 00 00 00 8b 44 24 14 e8 eb f8 ff ff 89 f0 e8 e4 f8 ff ff eb 48 <8b> 86 b4 00 00 00 84 c0 78 4b 81 7d 78 04 00 01 00 75 15 83 be 
+  EIP: [<c021820c>] init_dev+0x38c/0x497 SS:ESP 0068:c1f5fe7c
+
+I have been busy and just upgraded from 2.6.19.2, so this bug may have
+been introduced anytime since that kernel. Unfortunately, I have a slow
+connection and therefore can't bisect this.
+
+--
+Tero Roponen
