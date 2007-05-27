@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759676AbXE0Urp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbXE0UuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759676AbXE0Urp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbXE0Urf
+	id S1757367AbXE0UuX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbXE0UuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:47:35 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:60763
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753801AbXE0Ure (ORCPT
+	Sun, 27 May 2007 16:50:12 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:45003 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751316AbXE0UuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:47:34 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Maximilian Engelhardt <maxi@daemonizer.de>
-Subject: Re: b44: regression in 2.6.22 (resend)
-Date: Sun, 27 May 2007 22:46:16 +0200
-User-Agent: KMail/1.9.6
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070525172431.60affaca@freepuppy> <200705272145.00796.mb@bu3sch.de> <200705272236.42628.maxi@daemonizer.de>
-In-Reply-To: <200705272236.42628.maxi@daemonizer.de>
+	Sun, 27 May 2007 16:50:10 -0400
+Date: Sun, 27 May 2007 21:49:56 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
+Message-ID: <20070527204955.GA22202@srcf.ucam.org>
+References: <200705272229.21263.rjw@sisk.pl> <200705272231.54535.rjw@sisk.pl>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705272246.16960.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200705272231.54535.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 27 May 2007 22:36:39 Maximilian Engelhardt wrote:
-> When I ran 2.6.21.1 or 2.6.22-rc3 without any debugging tools just in normal 
-> use I didn't notice any problems. It did work fine as I would expect it.
-> I think the wget and ping tests here are as they should be.
+On Sun, May 27, 2007 at 10:31:53PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> With 2.6.22-rc2-mm1 I noticed that connections seem to be slower. The ping 
-> test does confirm this, because here response times are very high. As far as 
-> I can remember the wget download rate was a bit slower than 2.6.21.1 or 
-> 2.6.22-rc3 till it stalled.
-> I would expect it to be someting like the other two kernels. The two problems 
-> I see are the high ping times and the fact that the card stopped working.
-> 
-> I don't know why the iperf results are so different from my personal 
-> experience. I guess the fact that I get so bad results with 2.6.21.1 and 
-> 2.6.22-rc3 is that iperf does something that causes the system to be 
-> extremely slow and thus degrading performance. This could be a bug somewhere 
-> in the b44 driver of 2.6.21.1 and 2.6.22-RC3 that has unintended been fixed 
-> by the ssb switch, but that's only a roughly guess.
+> Use a hibernation and suspend notifier to disable the firmware requesting
+> mechanism before a hibernation/suspend and enable it after the operation.
 
-Ok. I guess (Yes I do :D) that there is an IRQ storm or something like that,
-because you say that your system is becoming very slow and unresponsive.
-It sounds like an IRQ is not ACKed correctly and so keeps triggering and
-stalling the system. I'll take a look at a few diffs...
-Do you see significant differences in the "hi" and/or "si" times in top?
-Do you see a significant difference in the /proc/interrupts count. For
-example that the kernel that works worse generates 10 times the IRQ count
-for the same amount of data.
+This avoids the problem of .resume methods calling userspace while 
+userspace is frozen and a resulting hang, but does it actually result in 
+the drivers beginning to work again? If we remove process freezing in 
+STR, this should just work[1] without the need to complicate things. On 
+the other hand, if we don't want to support these functions in the 
+suspend and resume methods we could just audit the kernel and remove 
+them all.
 
 -- 
-Greetings Michael.
+Matthew Garrett | mjg59@srcf.ucam.org
