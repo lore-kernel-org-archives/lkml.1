@@ -1,137 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbXE0KiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbXE0Kkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbXE0KiH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 06:38:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXE0Kh4
+	id S1753929AbXE0Kkb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 06:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbXE0KkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 06:37:56 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:38334
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751154AbXE0Khz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 06:37:55 -0400
-Date: Sun, 27 May 2007 12:39:51 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: developers@islsm.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 2/2] use list_for_each_entry() for iteration in Prism 54 driver
-Message-ID: <20070527103951.GK31790@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	developers@islsm.org, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20070525125630.GE31790@traven> <20070525130444.GG31790@traven>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 27 May 2007 06:40:22 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:33176 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751154AbXE0KkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 06:40:21 -0400
+Date: Sun, 27 May 2007 06:40:20 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>, chas@cmf.nrl.navy.mil
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-atm-general@lists.sourceforge.net
+Subject: [PATCH] ATM: fix warning
+Message-ID: <20070527104020.GA10665@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070525130444.GG31790@traven>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri, May 25, 2007 at 03:04:44PM +0200 Matthias Kaehlcke ha dit:
 
-> Use list_for_each() in the Prism54 driver to iterate over the MAC list
+The compiler warning
 
-In response to a similar patch Christoph Hellwig suggests the use of
-list_for_each_entry() instead of list_for_each(). Here is a evolution
-of the patch that takes into account Christophs' suggestion
+drivers/atm/firestream.c: In function ‘top_off_fp’:
+drivers/atm/firestream.c:1505: warning: cast to pointer from integer of different size
 
---
+does indicate a bug, albeit a minor one.  Fixed, by using a 32-bit
+temporary prior to the call to bus_to_virt().
 
-Prism54 driver: Use list_for_each_entry() instead of manual iteration
-and substitute a list_for_each_safe() loop with
-list_for_each_entry_safe()
+The larger bug is still present:  the entire driver assumes that machine
+pointers are 32-bit, as it stores pointers in 32-bit hardware registers.
+This is obvious to anyone who knows the driver well, but for the casual
+readers it is helpfully noted with FIXME.
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
---
-
-diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
-index 283be4a..585f599 100644
---- a/drivers/net/wireless/prism54/isl_ioctl.c
-+++ b/drivers/net/wireless/prism54/isl_ioctl.c
-@@ -1853,7 +1853,6 @@ prism54_del_mac(struct net_device *ndev, struct iw_request_info *info,
- 	islpci_private *priv = netdev_priv(ndev);
- 	struct islpci_acl *acl = &priv->acl;
- 	struct mac_entry *entry;
--	struct list_head *ptr;
- 	struct sockaddr *addr = (struct sockaddr *) extra;
+diff --git a/drivers/atm/firestream.c b/drivers/atm/firestream.c
+index 9c67df5..7f6d02c 100644
+--- a/drivers/atm/firestream.c
++++ b/drivers/atm/firestream.c
+@@ -1475,6 +1475,7 @@ static void top_off_fp (struct fs_dev *dev, struct freepool *fp,
+ 	struct FS_BPENTRY *qe, *ne;
+ 	struct sk_buff *skb;
+ 	int n = 0;
++	u32 qe_tmp;
  
- 	if (addr->sa_family != ARPHRD_ETHER)
-@@ -1861,11 +1860,9 @@ prism54_del_mac(struct net_device *ndev, struct iw_request_info *info,
+ 	fs_dprintk (FS_DEBUG_QUEUE, "Topping off queue at %x (%d-%d/%d)\n", 
+ 		    fp->offset, read_fs (dev, FP_CNT (fp->offset)), fp->n, 
+@@ -1502,10 +1503,16 @@ static void top_off_fp (struct fs_dev *dev, struct freepool *fp,
+ 		ne->skb = skb;
+ 		ne->fp = fp;
  
- 	if (down_interruptible(&acl->sem))
- 		return -ERESTARTSYS;
--	for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
--		entry = list_entry(ptr, struct mac_entry, _list);
--
-+	list_for_each_entry(entry, &acl->mac_list, _list) {
- 		if (memcmp(entry->addr, addr->sa_data, ETH_ALEN) == 0) {
--			list_del(ptr);
-+			list_del(&entry->_list);
- 			acl->size--;
- 			kfree(entry);
- 			up(&acl->sem);
-@@ -1883,7 +1880,6 @@ prism54_get_mac(struct net_device *ndev, struct iw_request_info *info,
- 	islpci_private *priv = netdev_priv(ndev);
- 	struct islpci_acl *acl = &priv->acl;
- 	struct mac_entry *entry;
--	struct list_head *ptr;
- 	struct sockaddr *dst = (struct sockaddr *) extra;
- 
- 	dwrq->length = 0;
-@@ -1891,9 +1887,7 @@ prism54_get_mac(struct net_device *ndev, struct iw_request_info *info,
- 	if (down_interruptible(&acl->sem))
- 		return -ERESTARTSYS;
- 
--	for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
--		entry = list_entry(ptr, struct mac_entry, _list);
--
-+	list_for_each_entry(entry, &acl->mac_list, _list) {
- 		memcpy(dst->sa_data, entry->addr, ETH_ALEN);
- 		dst->sa_family = ARPHRD_ETHER;
- 		dwrq->length++;
-@@ -1960,7 +1954,6 @@ prism54_get_policy(struct net_device *ndev, struct iw_request_info *info,
- static int
- prism54_mac_accept(struct islpci_acl *acl, char *mac)
- {
--	struct list_head *ptr;
- 	struct mac_entry *entry;
- 	int res = 0;
- 
-@@ -1972,8 +1965,7 @@ prism54_mac_accept(struct islpci_acl *acl, char *mac)
- 		return 1;
- 	}
- 
--	for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
--		entry = list_entry(ptr, struct mac_entry, _list);
-+	list_for_each_entry(entry, &acl->mac_list, _list) {
- 		if (memcmp(entry->addr, mac, ETH_ALEN) == 0) {
- 			res = 1;
- 			break;
-@@ -2216,11 +2208,9 @@ prism54_wpa_bss_ie_init(islpci_private *priv)
- void
- prism54_wpa_bss_ie_clean(islpci_private *priv)
- {
--	struct list_head *ptr, *n;
-+	struct islpci_bss_wpa_ie *bss, *n;
- 
--	list_for_each_safe(ptr, n, &priv->bss_wpa_list) {
--		struct islpci_bss_wpa_ie *bss;
--		bss = list_entry(ptr, struct islpci_bss_wpa_ie, list);
-+	list_for_each_entry_safe(bss, n, &priv->bss_wpa_list, list) {
- 		kfree(bss);
- 	}
- }
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-    I am incapable of conceiving infinity, and yet I do not accept finity
-                          (Simone de Beauvoir)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+-		qe = (struct FS_BPENTRY *) (read_fs (dev, FP_EA(fp->offset)));
+-		fs_dprintk (FS_DEBUG_QUEUE, "link at %p\n", qe);
+-		if (qe) {
+-			qe = bus_to_virt ((long) qe);
++		/*
++		 * FIXME: following code encodes and decodes
++		 * machine pointers (could be 64-bit) into a
++		 * 32-bit register.
++		 */
++
++		qe_tmp = read_fs (dev, FP_EA(fp->offset));
++		fs_dprintk (FS_DEBUG_QUEUE, "link at %x\n", qe_tmp);
++		if (qe_tmp) {
++			qe = bus_to_virt ((long) qe_tmp);
+ 			qe->next = virt_to_bus(ne);
+ 			qe->flags &= ~FP_FLAGS_EPI;
+ 		} else
