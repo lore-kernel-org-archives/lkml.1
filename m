@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXE0S1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbXE0S1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758157AbXE0S1J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 14:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbXE0S05
+	id S1758891AbXE0S1Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 14:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbXE0S1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 14:26:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54160 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbXE0S05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 14:26:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-Date: Sun, 27 May 2007 20:32:14 +0200
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-References: <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org> <20070527164300.GA20355@srcf.ucam.org>
-In-Reply-To: <20070527164300.GA20355@srcf.ucam.org>
+	Sun, 27 May 2007 14:27:02 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:61471 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755464AbXE0S1A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 14:27:00 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [patch 1/7] ps3: Preallocate bootmem memory for the PS3 FLASH ROM storage driver
+Date: Sun, 27 May 2007 20:24:57 +0200
+User-Agent: KMail/1.9.6
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       linux-kernel@vger.kernel.org
+References: <20070525083607.784351000@sonycom.com> <Pine.LNX.4.62.0705261050140.2657@pademelon.sonytel.be> <1180217870.19517.39.camel@localhost.localdomain>
+In-Reply-To: <1180217870.19517.39.camel@localhost.localdomain>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705272032.15971.rjw@sisk.pl>
+Message-Id: <200705272024.57460.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/Zg4jBRvpDFV80DCu9yOnLhU/ngmkWWQVyGy2
+ pIQDLFS3KmvKmamgbRumUW0bXq1+8kxh/1pcHByIG+ZSwV2pKB
+ X2yTNP8wFK1INeA14cPHg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 27 May 2007 18:43, Matthew Garrett wrote:
-> On Sun, May 27, 2007 at 09:26:00AM -0700, Linus Torvalds wrote:
+On Sunday 27 May 2007, Benjamin Herrenschmidt wrote:
+> On Sat, 2007-05-26 at 10:51 +0200, Geert Uytterhoeven wrote:
+> > Do you know another way to allocate an aligned chunk of 256 KiB of
+> > physically
+> > contiguous memory, possibly a long time after boot up?
 > 
-> > And by "disabling the freezer", I think we should just not call it at all. 
-> > However, sadly, right now it's called from common code. I'll happily take 
-> > a tested patch to split that code sequence up, and try to do it in 2.6.23, 
-> > if somebody has the energy (I'm getting to the point where I may just do 
-> > it myself, but my lazy nature still hopes for a STR person to step 
-> > forward).
-> 
-> I'll take a look at this. It probably makes sense to build on Rafael's 
-> work on splitting the codepaths up.
+> kmalloc & a good prayer ? :-0
 
-Actaully, removing the freezer from the suspend code path is simple.  You only
-need to remove calls to freeze_processes() and thaw_processes() from
-kernel/power/main.c .
+s/kmalloc/get_free_pages/
 
-That said, I don't think that PPC does what you say only.  We've discussed this
-a bit on linux-pm, in this thread:
+kmalloc is limited to 128kb.
 
-https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012242.html
-
-In particular, please see this message:
-
-https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012301.html
-
-Greetings,
-Rafael
+	Arnd <><
