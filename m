@@ -1,55 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbXE0RKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbXE0RMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152AbXE0RKk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 13:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbXE0RKd
+	id S1757909AbXE0RMx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 13:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbXE0RMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 13:10:33 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:35548 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755396AbXE0RKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 13:10:32 -0400
-Date: Sun, 27 May 2007 19:09:43 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: David Miller <davem@davemloft.net>
-cc: sparclinux@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Linux always started with 9600 8N1
-In-Reply-To: <Pine.LNX.4.61.0705271816310.7344@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0705271909140.7344@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0705261649590.7344@yvahk01.tjqt.qr>
- <20070526.154745.30164056.davem@davemloft.net> <Pine.LNX.4.61.0705271816310.7344@yvahk01.tjqt.qr>
+	Sun, 27 May 2007 13:12:47 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:26788 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbXE0RMq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 13:12:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PR/+BijItmWyCw5BEfActFchr1Vy5K9k2f4WYdALRQUttXjV8J99nee9PNtXxX1H3VYRN6MbaXazETa8nNel0H/cYGHQjBOsi7tLf4Fq7ReOeVqIJqYYliA6SU/XiC8X8yhd6bnuc7mEDAcQGpxt+ln2XnontC9JqciWjK1k+m4=
+Message-ID: <91b13c310705271012j6c73f539t8e993b21d51c64a9@mail.gmail.com>
+Date: Mon, 28 May 2007 01:12:44 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Matthias Kaehlcke" <matthias.kaehlcke@gmail.com>, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Block device elevator: use list_for_each_entry() instead of list_for_each()
+In-Reply-To: <20070527164302.GL31790@traven>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070527164302.GL31790@traven>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+it makes sense to what it does.
 
-On May 27 2007 18:44, Jan Engelhardt wrote:
->On May 26 2007 15:47, David Miller wrote:
->>> I have set the OBP to run at 115200, also set agetty on ttyS0 to do the 
->>> same, and also added console=ttyS0,115200 to silo.conf (and also tried 
->>> console=ttyS0,115200n8). But! Linux still gives me 9600 8N1. The ominous 
->>> double screen blanking (why is that done anyway?) already takes place 
->>> with 9600. I smell a bug. What do you think?
->>
->>The code in drivers/serial/suncore.c:sunserial_console_termios()
->>should be parsing your OBP settings, add some tracing and see why it
->>isn't working.
->>
->>Please track the bug down for us, thanks :-)
+On 5/28/07, Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
+> Use list_for_each_entry() instead of list_for_each() in the block
+> device elevator
 >
->Just why did no one get a kernel oops? After all, the code tried to
->write to constant memory.
+> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 >
->This is the first patch of two. There is yet another section of Linux 
->code that runs in 9600-only, and I need to figure out which.
+> --
+>
+> diff --git a/block/elevator.c b/block/elevator.c
+> index ce866eb..4769a25 100644
+> --- a/block/elevator.c
+> +++ b/block/elevator.c
+> @@ -112,12 +112,8 @@ static inline int elv_try_merge(struct request *__rq, struct bio *bio)
+>  static struct elevator_type *elevator_find(const char *name)
+>  {
+>         struct elevator_type *e;
+> -       struct list_head *entry;
+> -
+> -       list_for_each(entry, &elv_list) {
+> -
+> -               e = list_entry(entry, struct elevator_type, list);
+>
+> +       list_for_each_entry(e, &elv_list, list) {
+>                 if (!strcmp(e->elevator_name, name))
+>                         return e;
+>         }
+> @@ -1116,14 +1112,11 @@ ssize_t elv_iosched_show(request_queue_t *q, char *name)
+>  {
+>         elevator_t *e = q->elevator;
+>         struct elevator_type *elv = e->elevator_type;
+> -       struct list_head *entry;
+> +       struct elevator_type *__e;
+>         int len = 0;
+>
+>         spin_lock(&elv_list_lock);
+> -       list_for_each(entry, &elv_list) {
+> -               struct elevator_type *__e;
+> -
+> -               __e = list_entry(entry, struct elevator_type, list);
+> +       list_for_each_entry(__e, &elv_list, list) {
+>                 if (!strcmp(elv->elevator_name, __e->elevator_name))
+>                         len += sprintf(name+len, "[%s] ", elv->elevator_name);
+>                 else
+>
+> --
+> Matthias Kaehlcke
+> Linux Application Developer
+> Barcelona
+>
+>
+>    Usually when people are sad, they don't do anything. They just cry over
+>      their condition. But when they get angry, they bring about a change
+>                               (Malcolm X)
+>                                                                  .''`.
+>     using free software / Debian GNU/Linux | http://debian.org  : :'  :
+>                                                                 `. `'`
+> gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Ok no second patch. The issue (double blanking at boot, which I presumed
-also ran at 9600) was recently fixed too.
 
-
-	Jan
 -- 
+Denis Cheng
+Linux Application Developer
