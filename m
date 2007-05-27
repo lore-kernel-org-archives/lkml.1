@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXE0Ppt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbXE0Pu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbXE0Ppt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 11:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbXE0Ppl
+	id S1758061AbXE0Pu5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 11:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbXE0Puv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 11:45:41 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40249 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754723AbXE0Ppk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 11:45:40 -0400
-Message-ID: <4659A7A1.2070100@garzik.org>
-Date: Sun, 27 May 2007 11:45:37 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sun, 27 May 2007 11:50:51 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:5200 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754774AbXE0Puu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 11:50:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eOuizVzUtPxPRNn2KE4RIPIL4BgoDvj60CqrAfKiqctqHR+e7Q2j0BXM/j/7IQHIrucKfXonBMn4UpARfAVFC2+/UOkgLjOubHqVq0vSVm/WWUtkYv91QyoP9+VYO89YkeGH5/g1tIm11GJKynxqK8a8Ve0i7L/iqXv9QB9zyj0=
+Message-ID: <b6a2187b0705270850i5f3ac752w470407e8db031b3f@mail.gmail.com>
+Date: Sun, 27 May 2007 23:50:46 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux v2.6.22-rc3
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 5/5] SCSI/initio conversion to PCI driver API
-References: <20070527145200.GA17017@havoc.gtf.org>	 <20070527145955.GE17085@havoc.gtf.org>  <46599DD9.4020408@garzik.org> <1180278739.3711.16.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1180278739.3711.16.camel@mulgrave.il.steeleye.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2007-05-27 at 11:03 -0400, Jeff Garzik wrote:
->> Jeff Garzik wrote:
->>> Prior simplifications in this patchset now permit a minimal conversion
->>> to the new PCI API.
->>>
->>> Further improvements and simplifications are certainly possible; those
->>> should be presented in a separate patchset.
->>>
->>> DO NOT APPLY (yet).  For feedback (and testers?) only.
->>
->> This only applies to patch #5.
->>
->> Patches 1 through 4 should go upstream, IMO.
-> 
-> Erm, actually, you're treading all over Alan:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=72d39fea9017bbb1407620bf89dfe8d1fb658e35
-> 
-> Could you rebase your patches to scsi-misc-2.6 and resubmit (if there's
-> anything Alan hasn't covered)?
+On 5/26/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> But now you _can_ do something: you can download the latest -rc kernel,
+> and smile smugly to yourself, knowing that you are running the latest and
+> greatest on your machine.
+
+Got this only after "recompile". "make clean" will make the warnings go away.
+
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  MODPOST vmlinux
+WARNING: arch/i386/kernel/built-in.o(.text+0xa677): Section mismatch:
+reference to .init.text: (between 'init_intel_cacheinfo' and
+'cache_shared_cpu_map_setup')
+WARNING: arch/i386/kernel/built-in.o(.text+0xb8c0): Section mismatch:
+reference to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0xba79): Section mismatch:
+reference to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0xba7e): Section mismatch:
+reference to .init.text: (between 'mtrr_bp_init' and 'mtrr_ap_init')
+WARNING: arch/i386/kernel/built-in.o(.text+0xc4a0): Section mismatch:
+reference to .init.text: (between 'get_mtrr_state' and 'mtrr_wrmsr')
+WARNING: kernel/built-in.o(.text+0x17437): Section mismatch: reference
+to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
+  AS      arch/i386/boot/setup.o
+  LD      arch/i386/boot/setup
+  OBJCOPY arch/i386/boot/compressed/vmlinux.bin
 
 
-Hey, if it's tested at least minimally that's the minimum I hoped to 
-achieve.  It sounds like you can drop all patches, though if it takes 
-forever for scsi-misc-2.6 to go upstream, users in the interim will be 
-denied the make-it-actually-work fix provided in patch #1, if that matters.
-
-	Jeff
-
-
+Thanks,
+Jeff.
