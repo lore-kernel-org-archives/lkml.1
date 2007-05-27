@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbXE0CZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbXE0Cen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757080AbXE0CZT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 22:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXE0CZI
+	id S1757526AbXE0Cen (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 22:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbXE0Ceg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 22:25:08 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:37480 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbXE0CZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 22:25:07 -0400
-Date: Sat, 26 May 2007 22:25:02 -0400
-To: David Howells <dhowells@redhat.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] AFS: Implement file locking
-Message-ID: <20070527022502.GB10867@fieldses.org>
-References: <20070526022342.GA20905@fieldses.org> <20070524165554.22292.38887.stgit@warthog.cambridge.redhat.com> <7436.1180223730@redhat.com>
+	Sat, 26 May 2007 22:34:36 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:43304 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbXE0Cef (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 22:34:35 -0400
+Message-ID: <4658EE32.5080506@zytor.com>
+Date: Sat, 26 May 2007 19:34:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7436.1180223730@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: David Miller <davem@davemloft.net>
+CC: abraham.manu@gmail.com, rdreier@cisco.com, greg@kroah.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: PCIE
+References: <46561287.8020103@gmail.com>	<ada1wh560u1.fsf@cisco.com>	<46584C30.4030206@gmail.com> <20070526.154910.78725926.davem@davemloft.net>
+In-Reply-To: <20070526.154910.78725926.davem@davemloft.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 27, 2007 at 12:55:30AM +0100, David Howells wrote:
-> J. Bruce Fields <bfields@fieldses.org> wrote:
+David Miller wrote:
 > 
-> > > +	if (!afs_lock_manager) {
-> > > +		afs_lock_manager = create_singlethread_workqueue("kafs_lockd");
-> > > +		if (!afs_lock_manager)
-> > > +			return -ENOMEM;
-> > > +	}
-> > > +	return 0;
-> > 
-> > Doesn't this need some locking?
+>> i presume then i shouldn't be using IRQF_SHARED, if using MSI.
 > 
-> Oops.  Yes.  It used to be inside the lock_kernel() section, but has since
-> escaped.
-
-The BKL wouldn't help, since create_singlethread_workqueue() can sleep.
-Or am I missing something?
-
-> > Do you allow upgrades and downgrades?  (Just curious.)
+> That's actually a really good question.
 > 
-> AFS does not, as far as I know.
-
-So if I request a write lock while holding a read lock, my request will
-be denied?
-
-> > > +		/* if we've already got a readlock on the server and no waiting
-> > > +		 * writelocks, then we might be able to instantly grant another
-> > 
-> > Is that comment correct?  (You don't really test for "waiting
-> > writelocks", do you?)
+> It is likely architecture dependant whether the PCI controller wires
+> unique MSI interrupts to shared cpu interrupt lines.
 > 
-> Locally, yes.  'if (list_empty(&vnode->pending_locks))' covers it quite
-> handily.
+> I can imagine many systems where the cpu simply doesn't have enough
+> interrupt pins to uniquely identify every possible MSI interrupt
+> source.
 
-Oops, right, I was overlooking that check.
+There are systems which only get a single bit indication that an MSI has
+happened.
 
-This is a little strange, though--if there's somebody waiting for a
-write lock on an inode (because somebody else already holds a read lock
-on it), that shouldn't block requests for read locks.
+Presumably we need something like IRQF_MSI which can be set as
+appropriate depending on the architecture?
 
---b.
+	-hpa
