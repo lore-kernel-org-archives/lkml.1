@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbXE0Vvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760083AbXE0Vzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760784AbXE0Vvl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbXE0Vvb
+	id S1760083AbXE0Vzi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbXE0Vzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:51:31 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:33414 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756506AbXE0Vva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:51:30 -0400
-Date: Sun, 27 May 2007 22:51:23 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Message-ID: <20070527215123.GA22687@srcf.ucam.org>
-References: <20070521132711.GA7540@srcf.ucam.org> <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <1180016213.16396.74.camel@queen.suse.de> <20070524143644.GA27364@srcf.ucam.org> <20070525063815.GA3989@ucw.cz>
+	Sun, 27 May 2007 17:55:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54876 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757102AbXE0Vza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 17:55:30 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Date: Mon, 28 May 2007 00:01:12 +0200
+User-Agent: KMail/1.9.5
+Cc: "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "pm list" <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
+       "Pavel Machek" <pavel@ucw.cz>, "Alan Stern" <stern@rowland.harvard.edu>,
+       "Oliver Neukum" <oliver@neukum.org>
+References: <200705272229.21263.rjw@sisk.pl> <20070527204955.GA22202@srcf.ucam.org> <3ae72650705271449q37f523c3t5980541122ab871@mail.gmail.com>
+In-Reply-To: <3ae72650705271449q37f523c3t5980541122ab871@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070525063815.GA3989@ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.22-rc1-mm1 Implementing fan/thermal control in userspace - Was: [cannot change thermal trip points]
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Message-Id: <200705280001.13461.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 06:38:15AM +0000, Pavel Machek wrote:
-> Hi!
-> > Because, as Len has pointed out, you end up with two different ideas 
-> > about what the trip points are - the kernel's and the hardware's. That 
-> > works fine until some event in the firmware either forcibly 
-> > resynchronises the two or makes assumptions about the spec-compliance of 
-> > the interpreter.
+On Sunday, 27 May 2007 23:49, Kay Sievers wrote:
+> On 5/27/07, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > On Sun, May 27, 2007 at 10:31:53PM +0200, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > >
+> > > Use a hibernation and suspend notifier to disable the firmware requesting
+> > > mechanism before a hibernation/suspend and enable it after the operation.
+> >
+> > This avoids the problem of .resume methods calling userspace while
+> > userspace is frozen and a resulting hang, but does it actually result in
+> > the drivers beginning to work again? If we remove process freezing in
+> > STR, this should just work[1] without the need to complicate things. On
+> > the other hand, if we don't want to support these functions in the
+> > suspend and resume methods we could just audit the kernel and remove
+> > them all.
 > 
-> ...and suggested workaround is to drive fans directly from userspace,
-> which not only violates the specs and has all the problems with
-> desynchronized state, but ALSO FAILS TO WORK IN PRACTICE.
+> What exactly is the problem we see here? The timeout of the firmware loader?
+> What goes wrong with frozen userspace, usually there is only a netlink
+> message sent from the kernel, which should be received and handled
+> just fine when userspace is running again.
 
-I don't think that's obviously true. 11.3.2 of the 3.0 spec states:
+Users report the timeout as a problem and it's not that straightforward to
+figure out what happens.
 
-"A package consisting of references to all active cooling devices that 
-should be engaged when the associated active cooling threshold (_ACx) is 
-exceeded." 
+Still, I agree it's much better if drivers don't use request_firmware() in
+their .resume() routines at all, because they shouldn't rely upon user land at
+this point.
 
-(referring to _ALx objects).
-
-> > The interface would need to be more complicated than that if you wanted 
-> > to be able to implement hysteresis, and there's the potential for 
-> > hardware damage if paramaters are set inappropriately. Even then, 
-> > there's no easy way of programatically determining whether it would work 
-> > on any given hardware.
-> 
-> Not sure why you try to scare people with 'hardware damage'. HP XE3
-> bios already _was_ damaging hardware (it cooked the hard drive using
-> cpu as a heater), and no acpi magic can damage correctly working
-> machine.
-
-Given that this presumably didn't occur under Windows, I think it would 
-be significantly better to figure out why and then fix that. 
-Alternatively, if the firmware tables are actually genuinely broken in a 
-way that's impossible to repair, you can replace the table. That has the 
-advantage that there's no risk of the platform and the OS becoming 
-confused.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Greetings,
+Rafael
