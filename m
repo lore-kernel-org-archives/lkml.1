@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbXE0U1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbXE0U2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758477AbXE0U1U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXE0U1M
+	id S1759044AbXE0U2W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbXE0U2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:27:12 -0400
-Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:54253 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752101AbXE0U1M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:27:12 -0400
-Date: Sun, 27 May 2007 22:28:29 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: [GIT PULL] hwmon fixes for 2.6.22
-Message-ID: <20070527222829.28e193c9@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 27 May 2007 16:28:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54528 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753012AbXE0U2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 16:28:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [RFC][PATCH -mm 0/3] PM: Hibernation and suspend notifiers
+Date: Sun, 27 May 2007 22:29:20 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705272229.21263.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi,
 
-Please pull the hwmon subsystem fixes for Linux 2.6.22 from:
+The first of the following three patches introduces notifier chaing that can be
+used by subsystems to prefore some hibernation-related or suspend-related
+operations independent of device drivers' .suspend() and .resume() callbacks.
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
+The next two patches use this mechanism for disabling/enabling the usermode
+helper and firmware requesting functionality before/after (respectively) the
+hibernation or suspend.
 
- drivers/hwmon/Kconfig     |    2 +-
- drivers/hwmon/applesmc.c  |    7 ++++++-
- drivers/hwmon/coretemp.c  |   32 +++++++++++++++++++++++++++++---
- drivers/hwmon/ds1621.c    |    8 ++++----
- drivers/hwmon/hwmon-vid.c |    4 +++-
- drivers/hwmon/w83627hf.c  |    4 +++-
- 6 files changed, 46 insertions(+), 11 deletions(-)
+Comments welcome.
 
----------------
+Greetings,
+Rafael
 
-Jean Delvare (4):
-      hwmon/ds1621: Fix swapped temperature limits
-      hwmon/w83627hf: Be quiet when no chip is found
-      hwmon-vid: Don't spam the logs when VRM version is missing
-      hwmon/applesmc: Simplify dependencies
-
-Nicolas Boichat (1):
-      hwmon/applesmc: Handle name file creation error and deletion
-
-Rudolf Marek (1):
-      hwmon/coretemp: Add more safety checks
-
-Thanks,
--- 
-Jean Delvare
