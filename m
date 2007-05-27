@@ -1,33 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbXE0Gkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751482AbXE0HST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038AbXE0Gkk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 02:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbXE0Gkc
+	id S1751482AbXE0HST (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 03:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbXE0HSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 02:40:32 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:51549 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbXE0Gkb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 02:40:31 -0400
-Date: Sat, 26 May 2007 23:33:23 -0700
-From: Greg KH <greg@kroah.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ieee1394: eth1394: bring back a parent device
-Message-ID: <20070527063323.GA21622@kroah.com>
-References: <tkrat.9bca5c4cc2183f71@s5r6.in-berlin.de>
+	Sun, 27 May 2007 03:18:11 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:33759 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750790AbXE0HSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 03:18:09 -0400
+Date: Sun, 27 May 2007 09:17:17 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sparclinux@vger.kernel.org
+Subject: Re: BUG in kcryptd?
+In-Reply-To: <Pine.LNX.4.61.0705161751020.9570@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0705270916370.7344@yvahk01.tjqt.qr>
+References: <464B1F2B.3030009@xs4all.nl> <Pine.LNX.4.61.0705161751020.9570@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tkrat.9bca5c4cc2183f71@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 26, 2007 at 12:08:35PM +0200, Stefan Richter wrote:
-> I will submit this for 2.6.22-rc and 2.6.21.y if nobody objects.
 
-No objection from me, thanks for fixing this.
+On May 16 2007 17:52, Jan Engelhardt wrote:
+>On May 16 2007 17:11, Udo van den Heuvel wrote:
+>>
+>>While opening an encrypted partition and trying to fsck it:
+>
+>Yeah, somewhere is a bug in it, I also get an oops with
+>kcryptd in 2.6.20 on sparc64 after a few minutes (though,
+>it's a NULL dereference there).
 
-greg k-h
+...which also seems to be gone for me with some 2.6.21.
+
+
+
+	Jan
+-- 
