@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbXE0NIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbXE0NI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418AbXE0NIJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 09:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbXE0NH4
+	id S1756559AbXE0NI2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 09:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbXE0NIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 09:07:56 -0400
-Received: from mail.tmr.com ([64.65.253.246]:48277 "EHLO gaimboi.tmr.com"
+	Sun, 27 May 2007 09:08:01 -0400
+Received: from smtpout.mac.com ([17.250.248.178]:58760 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751807AbXE0NHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 09:07:55 -0400
-Message-ID: <4659834E.4070506@tmr.com>
-Date: Sun, 27 May 2007 09:10:38 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: David Greaves <david@dgreaves.com>
-CC: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
-References: <4658B7DD.3060309@tmr.com> <4659442E.2060307@dgreaves.com>
-In-Reply-To: <4659442E.2060307@dgreaves.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753176AbXE0NH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 09:07:59 -0400
+In-Reply-To: <46594282.8010307@iinet.net.au>
+References: <309300.41401.qm@web36615.mail.mud.yahoo.com> <B4A3C582-68F9-4077-B058-03B79A5577EB@mac.com> <46594282.8010307@iinet.net.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <35FC8780-88BD-4FF0-AF0D-17A9A0E1BF1F@mac.com>
+Cc: Andreas Gruenbacher <agruen@suse.de>,
+       LKML Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
+Date: Sun, 27 May 2007 09:07:35 -0400
+To: Cliffe <cliffe@iinet.net.au>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Greaves wrote:
-> Bill Davidsen wrote:
->> Anyway, I pulled the plug on the UPS, and the system shut down. But when
->> it powered up, it booted the default kernel rather than the test kernel,
->> decided that it couldn't resume, and then did a cold boot.
-> 
-> Booting the machine isn't the kernel's job, it's the bootloader's job.
-> 
-And resume is not the the bootloader's job... if memory and registers 
-are restored, and a jump is made to the resume address, a resumed system 
-should result. clearly some part of that didn't happen :-(
+CC trimmed to remove a few poor overloaded inboxes from this tangent.
 
->> I can bypass this by making the debug kernel the default, but WHY? Is
->> the kernel not saved such that any kernel can be rolled back into memory
->> and run? Actually, the answer is HELL NO, so I really ask if this is the
->> intended mode of operation, that only the default boot kernel will restore.
-> 
-> Yes.
-> 
-> It is very dangerous to attempt a resume with a different kernel than the one
-> that has gone to sleep.
-> Different kernels may be compiled with different options that affect where or
-> how in-memory structures are saved.
-> 
-If the mainline resume is depending on that no wonder resume is so 
-fragile. User action can change order of module loads, kmalloc calls 
-move allocated structures, etc. Counting on anything to be locked in 
-place seems naive.
+On May 27, 2007, at 04:34:10, Cliffe wrote:
+> Kyle wrote:
+>> On the other hand, if you actually want to protect the _data_,  
+>> then tagging the _name_ is flawed; tag the *DATA* instead.
+>
+> Would it make sense to label the data (resource) with a list of  
+> paths (names) that can be used to access it?
+>
+> Therefore the data would be protected against being accessed via  
+> alternative arbitrary names. This may be a simple label to maintain  
+> and (possibly to) enforce, allowing path based confinement to  
+> protect a resource. This may allow for the benefits of pathname  
+> based confinement while avoiding some of its problems.
 
-> So you suspend with a kernel which holds your filesystem data/cache/inodes at
-> 0x1234000 and restore with a kernel that expects to see your filesystem data at
-> 0x1235000.
-> 
-> Ouch.
-> 
-I would hope that the data used by the resumed kernel would be the same 
-data that was suspended, not something from another kernel.
+The primary problem with that is that "mv somefile otherfile" must  
+change the labels, which means that every process that issues a rename 
+() syscall needs to have special handling of labels.  The other  
+problem is that many of the features and capabilities of SELinux get  
+left by the wayside.  On an SELinux system 90% of the programs don't  
+need to be modified to understand labels, since the policy can define  
+automatic label transitions.  SELinux also allows you to have  
+conditional label privileges based on boolean variables, something  
+that cannot be done if the privileges themselves are stored in the  
+filesystem.  Finally, such an approach does not allow you to  
+differentiate between programs.
 
-> Personally I think the kernel suspend should write a signature - similar to a
-> hash of the bzImage - into the suspend image so it won't even attempt a resume
-> if there's a mismatch. (Yes, I made this mistake once whilst playing with suspend).
-> 
-Someone else dropped a note saying the FC kernels use suspend2, and work 
-fine. I'm off to look at the FC source and see if that's the case. That 
-would explain why suspend works and resume doesn't, hopefully there's a 
-2.6.21 suspend2 patch in that case.
+Cheers,
+Kyle Moffett
 
-Thanks for the feedback in any case.
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
