@@ -1,52 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbXE0MvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbXE0MwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbXE0MvR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 08:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbXE0MvI
+	id S1755366AbXE0MwX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 08:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbXE0MwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 08:51:08 -0400
-Received: from mail.tmr.com ([64.65.253.246]:48270 "EHLO gaimboi.tmr.com"
+	Sun, 27 May 2007 08:52:14 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:33346 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752019AbXE0MvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 08:51:07 -0400
-Message-ID: <46597F37.5050107@tmr.com>
-Date: Sun, 27 May 2007 08:53:11 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel M/L <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: Documentation on /sys/power/resume
-References: <4658C807.9040005@tmr.com> <200705271253.03396.rjw@sisk.pl>
-In-Reply-To: <200705271253.03396.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752019AbXE0MwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 08:52:13 -0400
+Date: Sun, 27 May 2007 08:52:12 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>, faith@cs.unc.edu,
+       linux-scsi@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SCSI/fdomain: fix PCMCIA-related warnings
+Message-ID: <20070527125212.GA13893@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Sunday, 27 May 2007 01:51, Bill Davidsen wrote:
->> Not in the ABI doc, is there and doc at all, and if not could someone 
->> who knows where it's used might give me a hint, as a quick look didn't 
->> bring enlightenment. Or is it a future hook which doesn't work yet?
-> 
-> That's something that in theory may allow you to resume the system from
-> and initrd script.
-> 
-> Basically, you write your resume device's major and minor numbers
-> into it as the "MAJ:MIN" string (eg. "8:3" for /dev/sda3 on my box) and the
-> kernel will try to read the image from this device and restore it.
-> 
-> It only works with partitions and the use of it us discouraged, so it's
-> deliberately undocumented.
-> 
-Thanks, that's just different enough from what little info I had to make 
-what I have not work. I'm looking at resume from a non-swap location.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+fdomain is one of those drivers that is compiled twice, once for PCMCIA
+and once for non-PCMCIA.  The resultant two-driver setup leaves a bit of
+dead code and data in the non-PCMCIA case, which gcc complains about.
+
+Shuffle ifdefs a bit to eliminate the conditionally-dead code, and
+the compiler warnings.
+
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+diff --git a/drivers/scsi/fdomain.c b/drivers/scsi/fdomain.c
+index 5d4ea6f..02801b9 100644
+--- a/drivers/scsi/fdomain.c
++++ b/drivers/scsi/fdomain.c
+@@ -410,6 +410,8 @@ static irqreturn_t       do_fdomain_16x0_intr( int irq, void *dev_id );
+ static char * fdomain = NULL;
+ module_param(fdomain, charp, 0);
+ 
++#ifndef PCMCIA
++
+ static unsigned long addresses[] = {
+    0xc8000,
+    0xca000,
+@@ -426,6 +428,8 @@ static unsigned short ports[] = { 0x140, 0x150, 0x160, 0x170 };
+ 
+ static unsigned short ints[] = { 3, 5, 10, 11, 12, 14, 15, 0 };
+ 
++#endif /* !PCMCIA */
++
+ /*
+ 
+   READ THIS BEFORE YOU ADD A SIGNATURE!
+@@ -458,6 +462,8 @@ static unsigned short ints[] = { 3, 5, 10, 11, 12, 14, 15, 0 };
+ 
+ */
+ 
++#ifndef PCMCIA
++
+ static struct signature {
+    const char *signature;
+    int  sig_offset;
+@@ -503,6 +509,8 @@ static struct signature {
+ 
+ #define SIGNATURE_COUNT ARRAY_SIZE(signatures)
+ 
++#endif /* !PCMCIA */
++
+ static void print_banner( struct Scsi_Host *shpnt )
+ {
+    if (!shpnt) return;		/* This won't ever happen */
+@@ -633,6 +641,8 @@ static int fdomain_test_loopback( void )
+    return 0;
+ }
+ 
++#ifndef PCMCIA
++
+ /* fdomain_get_irq assumes that we have a valid MCA ID for a
+    TMC-1660/TMC-1680 Future Domain board.  Now, check to be sure the
+    bios_base matches these ports.  If someone was unlucky enough to have
+@@ -667,7 +677,6 @@ static int fdomain_get_irq( int base )
+ 
+ static int fdomain_isa_detect( int *irq, int *iobase )
+ {
+-#ifndef PCMCIA
+    int i, j;
+    int base = 0xdeadbeef;
+    int flag = 0;
+@@ -786,11 +795,22 @@ found:
+    *iobase = base;
+ 
+    return 1;			/* success */
+-#else
+-   return 0;
+-#endif
+ }
+ 
++#else /* PCMCIA */
++
++static int fdomain_isa_detect( int *irq, int *iobase )
++{
++	if (irq)
++		*irq = 0;
++	if (iobase)
++		*iobase = 0;
++	return 0;
++}
++
++#endif /* !PCMCIA */
++
++
+ /* PCI detection function: int fdomain_pci_bios_detect(int* irq, int*
+    iobase) This function gets the Interrupt Level and I/O base address from
+    the PCI configuration registers. */
