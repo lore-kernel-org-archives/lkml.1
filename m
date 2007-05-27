@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXE0Tpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbXE0Tqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbXE0Tpy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 15:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbXE0Tpn
+	id S1758851AbXE0Tqx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 15:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbXE0Tqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 15:45:43 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:42904
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbXE0Tpm (ORCPT
+	Sun, 27 May 2007 15:46:43 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:43870 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751280AbXE0Tqm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 15:45:42 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Maximilian Engelhardt <maxi@daemonizer.de>
-Subject: Re: b44: regression in 2.6.22 (resend)
-Date: Sun, 27 May 2007 21:45:00 +0200
-User-Agent: KMail/1.9.6
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070525172431.60affaca@freepuppy> <200705261901.18110.mb@bu3sch.de> <200705272125.25506.maxi@daemonizer.de>
-In-Reply-To: <200705272125.25506.maxi@daemonizer.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Sun, 27 May 2007 15:46:42 -0400
+Subject: Re: [PATCH] [scsi] Remove __GFP_DMA
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>,
+       Aubrey Li <aubreylee@gmail.com>, Christoph Lameter <clameter@sgi.com>,
+       Bernhard Walle <bwalle@suse.de>, linux-scsi@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070523203846.41ac5011@the-village.bc.nu>
+References: <20070521151525.GA581@suse.de>
+	 <Pine.LNX.4.64.0705221443030.16285@schroedinger.engr.sgi.com>
+	 <6d6a94c50705221941y63f4db7bj174a2265d9eaa61a@mail.gmail.com>
+	 <1179933494.3700.16.camel@mulgrave.il.steeleye.com>
+	 <AE4F746F2AECFC4DA4AADD66A1DFEF019E1BDA@otce2k301.adaptec.com>
+	 <20070523203846.41ac5011@the-village.bc.nu>
+Content-Type: text/plain
+Date: Sun, 27 May 2007 14:46:39 -0500
+Message-Id: <1180295199.3711.24.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705272145.00796.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 27 May 2007 21:25:17 Maximilian Engelhardt wrote:
-> 2.6.22-rc3:
+On Wed, 2007-05-23 at 20:38 +0100, Alan Cox wrote:
+> On Wed, 23 May 2007 15:17:08 -0400
+> "Salyzyn, Mark" <mark_salyzyn@adaptec.com> wrote:
 > 
-> [  5] local 192.168.1.2 port 46557 connected with 192.168.1.1 port 5001
-> [  5]  0.0-60.4 sec  58.9 MBytes  8.18 Mbits/sec
-> [  4] local 192.168.1.2 port 5001 connected with 192.168.1.1 port 51633
-> [  4]  0.0-63.1 sec  7.27 MBytes    967 Kbits/sec
+> > The 31 bit limit for some of these cards is a problem, we currently only
+> > do __GFP_DMA for bounce buffer sg elements allocated for user supplied
+> > references in ioctls.
+> > 
+> > I figure we should be using pci_alloc_consistent calls for these
+> > allocations to more accurately acquire memory within the 31 bit limit if
+> > necessary, we could switch to these to remove the need for the __GFP_DMA
+> > flag in the aacraid driver?
+> 
+> That didn't used to work right on the AMD boards when I tried it last as
+> we ended up with a buffer that was mapped by the IOMMU for some reason
+> and that was not below 2GB.
 
-Why do we have two different measurements here? Is one TX and one RX?
-Which one?
+Is that a bug in the x86_64 subsystem ... or just a bug in the HW?
 
-> koala:~# ping -c10 192.168.1.1
-> PING 192.168.1.1 (192.168.1.1) 56(84) bytes of data.
-> 64 bytes from 192.168.1.1: icmp_seq=1 ttl=64 time=0.243 ms
-> 64 bytes from 192.168.1.1: icmp_seq=2 ttl=64 time=0.234 ms
-> 64 bytes from 192.168.1.1: icmp_seq=3 ttl=64 time=0.238 ms
-> 64 bytes from 192.168.1.1: icmp_seq=4 ttl=64 time=0.235 ms
-> 64 bytes from 192.168.1.1: icmp_seq=5 ttl=64 time=0.230 ms
-> 64 bytes from 192.168.1.1: icmp_seq=6 ttl=64 time=0.317 ms
-> 64 bytes from 192.168.1.1: icmp_seq=7 ttl=64 time=0.232 ms
-> 64 bytes from 192.168.1.1: icmp_seq=8 ttl=64 time=0.232 ms
-> 64 bytes from 192.168.1.1: icmp_seq=9 ttl=64 time=0.228 ms
-> 64 bytes from 192.168.1.1: icmp_seq=10 ttl=64 time=0.238 ms
-> 
-> --- 192.168.1.1 ping statistics ---
-> 10 packets transmitted, 10 received, 0% packet loss, time 8997ms
-> rtt min/avg/max/mdev = 0.228/0.242/0.317/0.031 ms
-> 
-> System responsiveness was the same as with 2.6.21.1.
-> 
-> wget got 11.23M/s, again same as 2.6.21.1.
-> 
-> 
-> 2.6.22-rc2-mm1:
-> 
-> [  5] local 192.168.1.2 port 42198 connected with 192.168.1.1 port 5001
-> [  5]  0.0-60.1 sec    402 MBytes  56.1 Mbits/sec
-> [  4] local 192.168.1.2 port 5001 connected with 192.168.1.1 port 48598
-> [  4]  0.0-63.0 sec    177 MBytes  23.6 Mbits/sec
+I'm assuming what happened is that the GART aperture was placed above
+the 2GB limit making the GART unable to act as an IOMMU for any devices
+with a dma_mask < 32bit?
 
-So with -mm (with ssb) you actually get better performace
-then with plain 2.6.22-rc3?
+This does show up a problem in our dma_ functions: namely that if the
+system says it has an IOMMU then we assume it's fully functional (i.e.
+able to reach all addresses).  There was a move afoot a while ago to
+replace the single PCI_DMA_BUS_IS_PHYS macro which is used to tell the
+system globally if we have an IOMMU with something like
+dma_dev_uses_iommu(struct device *) which would do the same thing but on
+a per-device basis.  Does this need to be resurrected?
 
-Can you elaborate a bit more about what you get an what you expect
-on which kernel?
+James
 
--- 
-Greetings Michael.
+
