@@ -1,50 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbXE0VUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbXE0VWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759987AbXE0VUZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757367AbXE0VUP
+	id S1760168AbXE0VWI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbXE0VV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:20:15 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4010 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756738AbXE0VUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:20:14 -0400
-Date: Sun, 27 May 2007 21:20:03 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: David Greaves <david@dgreaves.com>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
-Message-ID: <20070527212002.GI3989@ucw.cz>
-References: <4658B7DD.3060309@tmr.com> <4659442E.2060307@dgreaves.com> <4659834E.4070506@tmr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 27 May 2007 17:21:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54726 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756596AbXE0VV4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 17:21:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maximilian Engelhardt <maxi@daemonizer.de>
+Subject: Re: software suspend doesn't work with 2.6.22-rc3
+Date: Sun, 27 May 2007 23:27:22 +0200
+User-Agent: KMail/1.9.5
+Cc: nigel@nigel.suspend2.net, Herbert Xu <herbert@gondor.apana.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <200705261128.57332.maxi@daemonizer.de> <200705272019.08860.rjw@sisk.pl> <200705272242.00309.maxi@daemonizer.de>
+In-Reply-To: <200705272242.00309.maxi@daemonizer.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <4659834E.4070506@tmr.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200705272327.23291.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> >It is very dangerous to attempt a resume with a 
-> >different kernel than the one
-> >that has gone to sleep.
-> >Different kernels may be compiled with different 
-> >options that affect where or
-> >how in-memory structures are saved.
+On Sunday, 27 May 2007 22:41, Maximilian Engelhardt wrote:
+> On Sunday 27 May 2007, Rafael J. Wysocki wrote:
+> > On Sunday, 27 May 2007 18:01, Maximilian Engelhardt wrote:
+> > > On Saturday 26 May 2007, Nigel Cunningham wrote:
+> > > > Hi.
+> > > >
+> > > > On Sat, 2007-05-26 at 14:49 +0200, Maximilian Engelhardt wrote:
+> > > > > On Saturday 26 May 2007, Nigel Cunningham wrote:
+> > > > > > Hi.
+> > > > > >
+> > > > > > On Sat, 2007-05-26 at 11:28 +0200, Maximilian Engelhardt wrote:
+> > > > > > > Hello,
+> > > > > > >
+> > > > > > > When I try software suspend on my laptop it always returns to my
+> > > > > > > running system after some time.
+> > > > > > > This is what's logged by the kernel:
+> > > > > > >
+> > > > > > > swsusp: Basic memory bitmaps created
+> > > > > > > Stopping tasks ...
+> > > > > > > Stopping kernel threads timed out after 20 seconds (1 tasks
+> > > > > > > refusing to freeze):
+> > > > > > >  cryptd
+> > > > > > > Restarting tasks ... done.
+> > > > > > > swsusp: Basic memory bitmaps freed
+> > > > > > >
+> > > > > > > I have no idea what's the problem, but if you tell me what I
+> > > > > > > should do I can create debugging information and/or test patches.
+> > > > > >
+> > > > > > Could you try this patch, please? It should help.
+> > > > > >
+> > > > > > Herbert, is this right? If cryptd is going to be used for block
+> > > > > > devs, the task should probably be PF_NOFREEZE (or whatever it is
+> > > > > > today) instead.
+> > > > > >
+> > > > > > Regards,
+> > > > > >
+> > > > > > Nigel
+> > > > > >
+> > > > > >  crypto/cryptd.c         |    1 +
+> > > > > >  include/linux/freezer.h |    3 +++
+> > > > > >  kernel/power/process.c  |    2 +-
+> > > > > >  3 files changed, 5 insertions(+), 1 deletion(-)
+> > > > > > diff -ruNp 991-fix-cryptd.patch-old/crypto/cryptd.c
+> > > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c ---
+> > > > > > 991-fix-cryptd.patch-old/crypto/cryptd.c	2007-05-19
+> > > > > > 18:16:47.000000000 +1000 +++
+> > > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c	2007-05-26
+> > > > > > 19:45:42.000000000 +1000 @@ -341,6 +341,7 @@ static int
+> > > > > > cryptd_thread(void *data)
+> > > > > >
+> > > > > >  		mutex_unlock(&state->mutex);
+> > > > > >
+> > > > > > +		try_to_freeze();
+> > > > > >  		schedule();
+> > > > > >  	} while (!stop);
+> > > > >
+> > > > > I tried your patch, but when I apply it my kernel doesn't compile any
+> > > > > more. I get these warnings/errors:
+> > > > >
+> > > > > [...]
+> > > > >   CC      crypto/cryptd.o
+> > > > > crypto/cryptd.c: In function ‘cryptd_thread’:
+> > > > > crypto/cryptd.c:344: warning: implicit declaration of function
+> > > > > ‘try_to_freeze’ [...]
+> > > > >   LD      init/built-in.o
+> > > > >   LD      .tmp_vmlinux1
+> > > > > crypto/built-in.o: In function `cryptd_thread':
+> > > > > cryptd.c:(.text+0xd7f5): undefined reference to `try_to_freeze'
+> > > > > make: *** [.tmp_vmlinux1] Error 1
+> > > >
+> > > > Ah. You'll need to add #include <linux/freezer.h> near that start of
+> > > > crypto/cryptd.c. Sorry for forgetting that.
+> > > >
+> > > > Nigel
+> > >
+> > > I added the include line and now I could compile the kernel, but
+> > > suspending still doesn't work.
+> > >
+> > > swsusp: Basic memory bitmaps created
+> > > Stopping tasks ...
+> > > Stopping kernel threads timed out after 20 seconds (1 tasks refusing to
+> > > freeze):
+> > > cryptd
+> > > Restarting tasks ... done.
+> > > swsusp: Basic memory bitmaps freed
 > >
-> If the mainline resume is depending on that no wonder 
-> resume is so fragile. User action can change order of 
-> module loads, kmalloc calls move allocated structures, 
-> etc. Counting on anything to be locked in place seems 
-> naive.
+> > OK, this means that cryptd doesn't execute the try_to_freeze() for some
+> > reason.
+> >
+> > Please apply the appended patch on top of 2.6.22-rc3 and see if that helps.
+> >
+> > Greetings,
+> > Rafael
+> >
+> > ---
+> >  crypto/cryptd.c |    1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > Index: linux-2.6.22-rc3/crypto/cryptd.c
+> > ===================================================================
+> > --- linux-2.6.22-rc3.orig/crypto/cryptd.c
+> > +++ linux-2.6.22-rc3/crypto/cryptd.c
+> > @@ -316,6 +316,7 @@ static int cryptd_thread(void *data)
+> >  	struct cryptd_state *state = data;
+> >  	int stop;
+> >
+> > +	current->flags |= PF_NOFREEZE;
+> >  	do {
+> >  		struct crypto_async_request *req, *backlog;
+> 
+> Even with this patch suspending doesn't work, dmesg shows the same error 
+> message.
+> I also did build a kernel without cryptd and suspending does work there.
 
-Look at code before spreading FUD. (suspend and suspend2 are same in
-this matter).
+Well, that's strange, because in that case the freezer shouldn't even wait
+for cryptd.
 
-							Pavel
+Can you please try the patch at http://lkml.org/lkml/2007/5/26/169 ?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Greetings,
+Rafael
