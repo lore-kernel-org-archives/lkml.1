@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759853AbXE0U3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbXE0Uba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759853AbXE0U3Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759627AbXE0U3H
+	id S1759272AbXE0Uba (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbXE0UbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:29:07 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:61683 "EHLO
+	Sun, 27 May 2007 16:31:22 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:62466 "EHLO
 	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759609AbXE0U3G (ORCPT
+	with ESMTP id S1752101AbXE0UbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:29:06 -0400
+	Sun, 27 May 2007 16:31:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=cviueRbbP5oy6tGSUxsECCeBQNyD2aoF+EetWvv0t3Z4n+Y7LGAnghF+E9cbvsMxKktUQN/zmey6wm5d0rHbRdijdgi8kB0QZhQXtx9dDIFAahkAwT9GQ56djbLxifyKMmTRvOH6zWJ9xnK0+Qkj49S5yv5GjNCQE4ZacVMaC+4=
-Message-ID: <4659EA05.6070402@gmail.com>
-Date: Mon, 28 May 2007 00:28:53 +0400
+        b=kXjoeM82c/Eluon1JCDWP3Du0ei/uEulcAFAvWvhVCHW3B27j3sMxLmPVyDpZuajIF0hkReNx+Z/K47zmkFlPr3AV8fqDCox7kOplYnIgMsgsvApgFWb2bPNZmWMEhk2QrWEMCCshZcUM3754a6/03eU7lgkjuTsgbgRBCbYEqI=
+Message-ID: <4659EA85.2010700@gmail.com>
+Date: Mon, 28 May 2007 00:31:01 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-To: Grant Grundler <grundler@parisc-linux.org>
-CC: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+To: David Miller <davem@davemloft.net>
+CC: hpa@zytor.com, rdreier@cisco.com, greg@kroah.com,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
 Subject: Re: PCIE
-References: <20070526235515.GA31023@colo.lackof.org> <20070526.170039.119261389.davem@davemloft.net> <20070527001631.GC31023@colo.lackof.org> <20070526.173037.45196275.davem@davemloft.net> <4658D84E.6050807@gmail.com> <20070527014945.GE31023@colo.lackof.org>
-In-Reply-To: <20070527014945.GE31023@colo.lackof.org>
+References: <46584C30.4030206@gmail.com>	<20070526.154910.78725926.davem@davemloft.net>	<4658EE32.5080506@zytor.com> <20070527.004019.41635814.davem@davemloft.net>
+In-Reply-To: <20070527.004019.41635814.davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Grundler wrote:
-> On Sun, May 27, 2007 at 05:01:02AM +0400, Manu Abraham wrote:
->> David Miller wrote:
->>> True, on sparc64 PCI-E controllers, for example, the MSI vector is
->>> received by the PCI-E host controller, and the host controller turns
->>> this into a cpu format interrupt packet for the system bus.
->> Err .. why would a PCIe controller be CPU specific ? Looking at Figure
->> 1-6 of the spec, i think it should be CPU independent ?
+David Miller wrote:
+> From: "H. Peter Anvin" <hpa@zytor.com>
+> Date: Sat, 26 May 2007 19:34:26 -0700
 > 
-> To be pedantic, the PCIe controller isn't really CPU specific.
-> It's host bus specific. ie the PCI-e controller is a bridge between
-> whatever chipset defines the "cache coherency domain" and the PCI-e devices.
+>> There are systems which only get a single bit indication that an MSI has
+>> happened.
+>>
+>> Presumably we need something like IRQF_MSI which can be set as
+>> appropriate depending on the architecture?
 > 
->> Excuse me for my ignorance, just that my head has begun to reel after
->> reading through PCIe 1.0 and the device specs, still being inconclusive
->> how to proceed.
+> Although I don't want to make the IRQ handling subsystems any more
+> complicated than they already are, one idea I floated around is that
+> we could seperate CPU irq numbers (the things we pass around today)
+> and MSI vector numbers.
 > 
-> no problem...I suspect you need to figure out why DTL-MMIO isn't working.
-> I have never touched DTL and can't be of much help with that.
+> But I immediately understand how that is unnecessary to some extent,
+> any platform which needs to deal with that kind of distinction can use
+> virtual IRQ numbers like sparc64 and powerpc do.
+> 
+> Sparc64 PCI-E controllers, for example, allow you to group several
+> MSIs into a 'group', and the interrupt source is for the group rather
+> than the individual MSIs.  When the MSI group interrupt arrives, you
+> get a descriptor in a per-MSI-group ring buffer that describes the MSI
+> that arrived.
+> 
+> This descriptor in fact passes on a ton of interesting information,
+> see arch/sparc64/kernel/pci_sun4v.c:pci_sun4v_msiq_entry.
+> 
+> It gives you the type, the system TSC value at the time of interrupt
+> arrival (so you could do incredibly cool profiling with this),
+> the PCI bus/device/fn that generated the MSI vector, the MSI address
+> that was signalled, the MSI data field, and full information for PCI-E
+> MSG packets including bus/dev/fn of target, the message routing code,
+> and the message code.
+> 
+> But we use none of these facilities currently because it's either
+> impossible or too cumbersome to be useful at the moment.
 > 
 
-Have been reading a bit about DTL and so on. Haven't reached anything
-much solid yet. Will have something soon i presume.
+I think it is better to use IRQF_MSI as HPA suggested, since IRQF_SHARED
+is a bit confusing thing altogether since MSI doesn't share interrupts.
 
-Thanks for the comments.
 
-Regards,
-Manu
