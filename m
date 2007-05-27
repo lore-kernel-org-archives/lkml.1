@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759153AbXE0VKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbXE0VOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759153AbXE0VKq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbXE0VKh
+	id S1759411AbXE0VOk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756446AbXE0VOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:10:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:52153 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbXE0VKh (ORCPT
+	Sun, 27 May 2007 17:14:30 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:36374
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753693AbXE0VO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:10:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=KSxU+SHmR4tpo09A3zaeMH9uiovuq1NW3MSZVJoKm8vH2N0zIWZUU02xuLPOwVxMpvamHAnJIZEDATAfJZVqNvQl4ftu+03yuXnhEK6Ej97noU8Kjq2mfloNwau32ul/ZgmJLN88NVXZ8X5NtX6mdZBu5Hvtys28mJu5tV/K+QY=
-Message-ID: <4659F3C8.8080606@gmail.gom>
-Date: Sun, 27 May 2007 22:10:32 +0100
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 27 May 2007 17:14:29 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Maximilian Engelhardt <maxi@daemonizer.de>
+Subject: Re: b44: regression in 2.6.22 (resend)
+Date: Sun, 27 May 2007 23:13:32 +0200
+User-Agent: KMail/1.9.6
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20070525172431.60affaca@freepuppy> <200705261901.18110.mb@bu3sch.de> <200705272125.25506.maxi@daemonizer.de>
+In-Reply-To: <200705272125.25506.maxi@daemonizer.de>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Richard Hughes <hughsient@gmail.com>,
-       Julian Sikorski <belegdol@gmail.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH} x86_64 PM_TRACE support.
-References: <1180161174.9773.60.camel@nigel.suspend2.net> <20070527203955.GE3989@ucw.cz>
-In-Reply-To: <20070527203955.GE3989@ucw.cz>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-From: Julian Sikorski <belegdol@gmail.com>
+Content-Disposition: inline
+Message-Id: <200705272313.33129.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek pisze:
-> Hi!
-> 
->> As promised I took another look at the patch and at what Randy had
->> prepared to fix the IA64 compilation error. I did some more work on it,
->> and believe that the following is the tidiest correct solution I can
->> come up with. It differs from the version that caused the compilation
->> error primarily in that:
->>
->> * the #include <asm/resume-trace.h> is inside the #ifdef 
->>   CONFIG_PM_TRACE.
->> * now-unnecessary protection for multiple #includes and ifdef testing of
->>   CONFIG_PM_TRACE in the asm code were removed.
->> * do-nothing definitions for !PM_TRACE restored to
->>   include/linux/resume-trace.h.
->>
->> We're therefore depending upon kernel/power/Kconfig having the right
->> depends condition. As far as I can see, IA64 doesn't define CONFIG_X86.
->> Is that correct, or do we need to have (X86 && !IA64)?
-> 
-> ia64? did you mean x86-64?
-> 
-> Otherwise looks ok to me.
-> 
-IIRC enabling pm_trace on x86_64 was breaking compilation on ia64, so I
-think Nigel meant the latter.
+On Sunday 27 May 2007 21:25:17 Maximilian Engelhardt wrote:
+> 2.6.21.1:
+> [  5] local 192.168.1.2 port 58414 connected with 192.168.1.1 port 5001
+> [  5]  0.0-60.6 sec  1.13 MBytes    157 Kbits/sec
+> [  4] local 192.168.1.2 port 5001 connected with 192.168.1.1 port 57837
+> [  4]  0.0-63.1 sec  2.82 MBytes    375 Kbits/sec
+
+> 2.6.22-rc3:
+> [  5] local 192.168.1.2 port 46557 connected with 192.168.1.1 port 5001
+> [  5]  0.0-60.4 sec  58.9 MBytes  8.18 Mbits/sec
+> [  4] local 192.168.1.2 port 5001 connected with 192.168.1.1 port 51633
+> [  4]  0.0-63.1 sec  7.27 MBytes    967 Kbits/sec
+
+This is the diff between these two kernels.
+I'm not sure why you see a much better TX throughput here.
+
+Can you re-check to make sure it's not just some test-jitter?
+
+
+--- linux-2.6.21.1/drivers/net/b44.c    2007-05-27 22:58:01.000000000 +0200
++++ linux-2.6.22-rc3/drivers/net/b44.c  2007-05-27 23:01:44.000000000 +0200
+@@ -825,12 +825,11 @@
+                        if (copy_skb == NULL)
+                                goto drop_it_no_recycle;
+ 
+-                       copy_skb->dev = bp->dev;
+                        skb_reserve(copy_skb, 2);
+                        skb_put(copy_skb, len);
+                        /* DMA sync done above, copy just the actual packet */
+-                       memcpy(copy_skb->data, skb->data+bp->rx_offset, len);
+-
++                       skb_copy_from_linear_data_offset(skb, bp->rx_offset,
++                                                        copy_skb->data, len);
+                        skb = copy_skb;
+                }
+                skb->ip_summed = CHECKSUM_NONE;
+@@ -1007,7 +1006,8 @@
+                        goto err_out;
+                }
+ 
+-               memcpy(skb_put(bounce_skb, len), skb->data, skb->len);
++               skb_copy_from_linear_data(skb, skb_put(bounce_skb, len),
++                                         skb->len);
+                dev_kfree_skb_any(skb);
+                skb = bounce_skb;
+        }
+
+-- 
+Greetings Michael.
