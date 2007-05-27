@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbXE0CLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbXE0CZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757297AbXE0CLU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 26 May 2007 22:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXE0CLI
+	id S1757080AbXE0CZT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 26 May 2007 22:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXE0CZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 26 May 2007 22:11:08 -0400
-Received: from smtpout.mac.com ([17.250.248.177]:55744 "EHLO smtpout.mac.com"
+	Sat, 26 May 2007 22:25:08 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:37480 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbXE0CLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 26 May 2007 22:11:06 -0400
-In-Reply-To: <9d732d950705261608j4bc72cd4s4378df9848101c84@mail.gmail.com>
-References: <309300.41401.qm@web36615.mail.mud.yahoo.com> <B4A3C582-68F9-4077-B058-03B79A5577EB@mac.com> <Line.LNX.4.64.0705261442000.23020@d.namei> <9d732d950705261608j4bc72cd4s4378df9848101c84@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EC769668-ED57-4D6D-80B2-1BFD039E113C@mac.com>
-Cc: James Morris <jmorris@namei.org>, casey@schaufler-ca.com,
-       Andreas Gruenbacher <agruen@suse.de>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSM hook
-Date: Sat, 26 May 2007 22:10:34 -0400
-To: Toshiharu Harada <haradats@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	id S1750855AbXE0CZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 26 May 2007 22:25:07 -0400
+Date: Sat, 26 May 2007 22:25:02 -0400
+To: David Howells <dhowells@redhat.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement file locking
+Message-ID: <20070527022502.GB10867@fieldses.org>
+References: <20070526022342.GA20905@fieldses.org> <20070524165554.22292.38887.stgit@warthog.cambridge.redhat.com> <7436.1180223730@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7436.1180223730@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 26, 2007, at 19:08:56, Toshiharu Harada wrote:
-> 2007/5/27, James Morris <jmorris@namei.org>:
->> On Sat, 26 May 2007, Kyle Moffett wrote:
->>> AppArmor).  On the other hand, if you actually want to protect  
->>> the _data_, then tagging the _name_ is flawed; tag the *DATA*  
->>> instead.
->>
->> Bingo.
->>
->> (This is how traditional Unix DAC has always functioned, and is  
->> what SELinux does: object labeling).
->
-> Object labeling (or labeled security) looks simple and straight  
-> forward way, but it's not.
->
-> (1) Object labeling has a assumption that labels are always  
-> properly defined and maintained. This can not be easily achieved.
+On Sun, May 27, 2007 at 12:55:30AM +0100, David Howells wrote:
+> J. Bruce Fields <bfields@fieldses.org> wrote:
+> 
+> > > +	if (!afs_lock_manager) {
+> > > +		afs_lock_manager = create_singlethread_workqueue("kafs_lockd");
+> > > +		if (!afs_lock_manager)
+> > > +			return -ENOMEM;
+> > > +	}
+> > > +	return 0;
+> > 
+> > Doesn't this need some locking?
+> 
+> Oops.  Yes.  It used to be inside the lock_kernel() section, but has since
+> escaped.
 
-That's a circular argument, and a fairly trivial one at that.  If you  
-can't properly manage your labels, then how do you expect any  
-security at all?  If you can't manage your "labels", then pathname- 
-based security won't work either.  This is analogous to saying  
-"Pathname-based security has an assumption that path-permissions are  
-always properly defined and maintained", which is equally obvious.   
-If you can't achieve the first with reasonable security, then you  
-probably can't achieve the second either.  Also, if you can't manage  
-correct object labeling then I'm very interested in how you are  
-maintaining secure Linux systems without standard DAC.
+The BKL wouldn't help, since create_singlethread_workqueue() can sleep.
+Or am I missing something?
 
-> (2) Also, assigning a label is something like inventing and  
-> assigning a *new* name (label name) to objects which can cause flaws.
+> > Do you allow upgrades and downgrades?  (Just curious.)
+> 
+> AFS does not, as far as I know.
 
-I don't understand how assigning new attributes to objects "can cause  
-flaws", nor what flaws those might be; could you elaborate further?   
-In particular, I don't see how this is really all that more  
-complicated than defining additional access control in  
-apache .htaccess files.  The principle is the same:  by stacking  
-multiple independent security-verification mechanisms (Classical UNIX  
-DAC and Apache permissions) you can increase security, albeit at an  
-increased management cost.  You might also note that ".htaccess"  
-files are yet another form of successful "label-based" security; the  
-security context for a directory depends on the .htaccess "label"  
-file found within.  The *exact* same principles apply to SELinux: you  
-add additional attributes backed by a simple and powerful state- 
-machine.  The cross-checks are lower-level than those from .htaccess  
-files, but the principles are the same.
+So if I request a write lock while holding a read lock, my request will
+be denied?
 
-Cheers,
-Kyle Moffett
+> > > +		/* if we've already got a readlock on the server and no waiting
+> > > +		 * writelocks, then we might be able to instantly grant another
+> > 
+> > Is that comment correct?  (You don't really test for "waiting
+> > writelocks", do you?)
+> 
+> Locally, yes.  'if (list_empty(&vnode->pending_locks))' covers it quite
+> handily.
 
+Oops, right, I was overlooking that check.
 
+This is a little strange, though--if there's somebody waiting for a
+write lock on an inode (because somebody else already holds a read lock
+on it), that shouldn't block requests for read locks.
 
+--b.
