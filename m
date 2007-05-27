@@ -1,88 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbXE0P1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbXE0PgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbXE0P1Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 11:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbXE0P1E
+	id S1757230AbXE0PgT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 11:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbXE0PgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 11:27:04 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:36129 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754802AbXE0P1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 11:27:03 -0400
-Message-ID: <4659A343.80500@dgreaves.com>
-Date: Sun, 27 May 2007 16:26:59 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
+	Sun, 27 May 2007 11:36:11 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:56961 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753613AbXE0PgK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 11:36:10 -0400
+Date: Sun, 27 May 2007 16:35:54 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 To: Bill Davidsen <davidsen@tmr.com>
-Cc: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
-References: <4658B7DD.3060309@tmr.com> <4659442E.2060307@dgreaves.com> <4659834E.4070506@tmr.com>
-In-Reply-To: <4659834E.4070506@tmr.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+Message-ID: <20070527153553.GA19853@srcf.ucam.org>
+References: <4658C807.9040005@tmr.com> <200705271253.03396.rjw@sisk.pl> <46597F37.5050107@tmr.com> <200705271506.45714.rjw@sisk.pl> <465984E5.10506@tmr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465984E5.10506@tmr.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: Documentation on /sys/power/resume
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> David Greaves wrote:
->> Bill Davidsen wrote:
->>> Anyway, I pulled the plug on the UPS, and the system shut down. But when
->>> it powered up, it booted the default kernel rather than the test kernel,
->>> decided that it couldn't resume, and then did a cold boot.
->>
->> Booting the machine isn't the kernel's job, it's the bootloader's job.
->>
-> And resume is not the the bootloader's job... if memory and registers
-> are restored, and a jump is made to the resume address, a resumed system
-> should result. clearly some part of that didn't happen :-(
+On Sun, May 27, 2007 at 09:17:25AM -0400, Bill Davidsen wrote:
 
-Well, what if you wanted to boot a 2nd, dual-boot OS?
-The bootloader needs to boot the kernel which may choose to resume.
+> Sounds like sispend2 is still needed, I haven't needed a suspending 
+> kernel in a few years, and I was hoping that with suspend working in 
+> mainline that resume would have been implemented. Sounds as if that's 
+> not the case, my swap is RAID1, I was hoping to resume from one of the 
+> mirrors, since they are based on a partition. No joy wit or without 
+> /sys/power/resume, so I'll look further.
 
-Is there a misunderstanding here?
+Should work absolutely fine as long as you set up the RAID before 
+attempting to resume.
 
-I read your OP as saying that you booted kernel B (configured to have suspend
-support) and then hit suspend. When the machine rebooted the "default kernel"
-ie, kernel A, not kernel B was selected by the bootloader. Since the default
-kernel didn't have or couldn't resume, it simply booted.
-Just what I'd expect.
-
->> It is very dangerous to attempt a resume with a different kernel than
->> the one
->> that has gone to sleep.
->> Different kernels may be compiled with different options that affect
->> where or
->> how in-memory structures are saved.
->>
-> If the mainline resume is depending on that no wonder resume is so
-> fragile. User action can change order of module loads, kmalloc calls
-> move allocated structures, etc. Counting on anything to be locked in
-> place seems naive.
-Err, no. It's a lot more sophisticated. However it does ask that you not resume
-with a different kernel than you suspended with - not unreasonable!!
-
->> So you suspend with a kernel which holds your filesystem
->> data/cache/inodes at
->> 0x1234000 and restore with a kernel that expects to see your
->> filesystem data at
->> 0x1235000.
->>
->> Ouch.
->>
-> I would hope that the data used by the resumed kernel would be the same
-> data that was suspended, not something from another kernel.
-
-Linux based OSes provide enough rope to build a harness or a noose. Choose wisely :)
-
-As you suggest you are about to, it may be best to get a distro-configured
-system or do some more background research. Mainline doesn't provide scripts to
-interact with bootloaders etc.
-
-Nb I replied because I've just done some work configuring s2d and now have 3
-desktop/server machines doing suspend2disk on 2.6.21 quite nicely - thanks all
-around.
-
-David
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
