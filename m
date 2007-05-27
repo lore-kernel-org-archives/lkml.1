@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXE0UCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbXE0UP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbXE0UCT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbXE0UCM
+	id S1757493AbXE0UP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXE0UPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:02:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:54606 "EHLO
+	Sun, 27 May 2007 16:15:16 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:2084 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751280AbXE0UCK (ORCPT
+	with ESMTP id S1752101AbXE0UPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:02:10 -0400
+	Sun, 27 May 2007 16:15:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=W5cv+1mdIXkm6mVVCjkIvBHXQUD67dViVwvX9rMFInpj2Da6VOzuv5aSTvUBvkUxPi5JaU00EEv/E/zdjanqk8vl8PXTudIFZStj5JESQq1rFUgJR1k217BO1aaGs64nK592ZcVXt4Cv+po32iV92NIZf5kHqG9BqtiOkccD5Mw=
-From: Denis Vlasenko <vda.linux@googlemail.com>
-To: "Uwe Bugla" <uwe.bugla@gmx.de>
-Subject: Re: BUG in 2.6.22-rc2-mm1: NIC module b44.c broken (Broadcom 4400)
-Date: Sun, 27 May 2007 22:02:04 +0200
-User-Agent: KMail/1.8.2
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20070524195616.234280@gmx.net>
-In-Reply-To: <20070524195616.234280@gmx.net>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NGmSRVfUPMZdX7qWtgGeMFvyDY50I7oz0RmL7Wi2hLlo6hqSX6dyNBMBJlnw+2N3Hyur5MZXyg/KfrLMvGPWd/v/TViKKiP9Ee2WIdHfVzJ9z1buV7ZxZcUD7Mco3mdts+qbf5HCULE9G68FTFbI2FCKY+NKoAaK1jlLZjqRJZg=
+Message-ID: <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com>
+Date: Sun, 27 May 2007 22:15:12 +0200
+From: "Gregor Jasny" <gjasny@googlemail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux v2.6.22-rc3
+Cc: "Jeff Garzik" <jgarzik@pobox.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Tejun Heo" <htejun@gmail.com>
+In-Reply-To: <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705272202.04764.vda.linux@googlemail.com>
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
+	 <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>
+	 <46599E6B.1000209@pobox.com>
+	 <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com>
+	 <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 24 May 2007 21:56, Uwe Bugla wrote:
-> Please note:
-> 
-> 1. IRQ 255 looks very idiotic, doesn't it? It does not exist at all, does it?
-> 
-> Questions:
-> 
-> 1. What is the technical need / progress of module ssb please?
-> 
-> 2. If Andrew Morton's guidelines clearly say: "Do test your patches on three different machines" and this guideline seems to be strictly ignored by some sparetime hackers:
-> 
-> What is the master plan then to avoid the fact that such a crap is being sent in to Andrew?
-> 
-> Yours sincerely
-> 
-> Uwe
-> 
-> P. S.: There is an important saying going like this:
-> 
-> Too many cooks do mess up the pap.
-> 
-> Regarding the patch in mm-tree I can see SIX (!) Copyright owners.
-> The last one of them (i. e. the one of 2007) obviuosly does not seem to understand what he is doing (see that nonsense interrupt please, just incredible!) :(
-> 
-> In so far I would deeply appreciate Andrew Morton to throw that b44.c patch into the trashbox as soon as possible :)
+2007/5/27, Linus Torvalds <torvalds@linux-foundation.org>:
+> But if it doesn't help for you, you have some other issue (which is not
+> surprising - yours wasn't a SETFXSR error, and I don't think it would have
+> worked very well before either).
+>
+> So since it apparently _did_ work for you before, can you bisect it?
 
-Uwe, you are an arrogant idiot and I think it's best
-for everybody to just ignore all your mails, regardless
-of their technical merits.
+git bisect told me that this is the first bad commit:
+commit d4b2bab4f26345ea1803feb23ea92fbe3f6b77bc
+Author: Tejun Heo <htejun@gmail.com>
+Date:   Fri Feb 2 16:50:52 2007 +0900
 
-Even if your mail reports a real bug, added shitload of insults
-to developers far outweights any possible useful info.
+libata: add deadline support to prereset and reset methods
 
-Developers can save a lot of time and nerver by just waiting for
-someone else to hit the same bug, if it exists, and then debug it
-as usual.
---
-vda
+I suspected my unstable timing source and booted with acpi=off. Now
+the printk timestamps are in sequence but the bug is still there.
+
+The drive worked flawlessly with the old ide-cd. So what's the
+difference between libata and ide-cd?
+
+Is there a kernel parameter to completely disable probing the cdrom?
+
+Thanks,
+Gregor
