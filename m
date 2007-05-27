@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759792AbXE0VBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbXE0VB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759792AbXE0VBa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 17:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbXE0VAa
+	id S1759776AbXE0VB4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 17:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbXE0VBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 17:00:30 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2056 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756860AbXE0VA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 17:00:29 -0400
-Date: Sun, 27 May 2007 20:39:55 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Richard Hughes <hughsient@gmail.com>,
-       Julian Sikorski <belegdol@gmail.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH} x86_64 PM_TRACE support.
-Message-ID: <20070527203955.GE3989@ucw.cz>
-References: <1180161174.9773.60.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1180161174.9773.60.camel@nigel.suspend2.net>
-User-Agent: Mutt/1.5.9i
+	Sun, 27 May 2007 17:01:46 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50049 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755512AbXE0VBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 17:01:45 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/7T11LjbX7d5gd8I8iFp8pegpQ80Uby/D/1OrGV3
+	Fia1R6KqBdGu4q
+Date: Sun, 27 May 2007 23:01:46 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+cc: Auke Kok <auke-jan.h.kok@intel.com>, randy.dunlap@oracle.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [condingstyle] Add chapter on tests
+In-Reply-To: <Pine.LNX.4.61.0705262213000.7344@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.60.0705272256240.4530@poirot.grange>
+References: <20070525172509.5138.56430.stgit@localhost.localdomain>
+ <20070525172515.5138.13652.stgit@localhost.localdomain>
+ <Pine.LNX.4.61.0705262121150.7344@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0705262213000.7344@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, 26 May 2007, Jan Engelhardt wrote:
 
-> As promised I took another look at the patch and at what Randy had
-> prepared to fix the IA64 compilation error. I did some more work on it,
-> and believe that the following is the tidiest correct solution I can
-> come up with. It differs from the version that caused the compilation
-> error primarily in that:
-> 
-> * the #include <asm/resume-trace.h> is inside the #ifdef 
->   CONFIG_PM_TRACE.
-> * now-unnecessary protection for multiple #includes and ifdef testing of
->   CONFIG_PM_TRACE in the asm code were removed.
-> * do-nothing definitions for !PM_TRACE restored to
->   include/linux/resume-trace.h.
-> 
-> We're therefore depending upon kernel/power/Kconfig having the right
-> depends condition. As far as I can see, IA64 doesn't define CONFIG_X86.
-> Is that correct, or do we need to have (X86 && !IA64)?
+> +Testing for a flag, as done in the following example, is redundant and
+> +can be shortened.
+> +
+> +	if ((v & GFP_KERNEL) == GFP_KERNEL)
+> +		return;
+> +
+> +should become
+> +
+> +	if (v & GFP_KERNEL)
+> +		return;
 
-ia64? did you mean x86-64?
+This looks wrong to me. These two are only equivalent if the "flag" only 
+has 1 bit. And already here you fall into this trap:
 
-Otherwise looks ok to me.
+#define GFP_KERNEL	(__GFP_WAIT | __GFP_IO | __GFP_FS)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
