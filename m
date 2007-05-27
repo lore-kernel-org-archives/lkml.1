@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbXE0Ila@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752071AbXE0IvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751805AbXE0Ila (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 04:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXE0IlV
+	id S1752071AbXE0IvZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 04:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXE0IvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 04:41:21 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:44133 "EHLO mail.ukfsn.org"
+	Sun, 27 May 2007 04:51:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38481 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751114AbXE0IlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 04:41:20 -0400
-Message-ID: <4659442E.2060307@dgreaves.com>
-Date: Sun, 27 May 2007 09:41:18 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
-References: <4658B7DD.3060309@tmr.com>
-In-Reply-To: <4658B7DD.3060309@tmr.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1751114AbXE0IvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 04:51:19 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070527022502.GB10867@fieldses.org>
+References: <20070527022502.GB10867@fieldses.org> <20070526022342.GA20905@fieldses.org> <20070524165554.22292.38887.stgit@warthog.cambridge.redhat.com> <7436.1180223730@redhat.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement file locking
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Sun, 27 May 2007 09:51:10 +0100
+Message-ID: <18750.1180255870@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> Anyway, I pulled the plug on the UPS, and the system shut down. But when
-> it powered up, it booted the default kernel rather than the test kernel,
-> decided that it couldn't resume, and then did a cold boot.
+J. Bruce Fields <bfields@fieldses.org> wrote:
 
-Booting the machine isn't the kernel's job, it's the bootloader's job.
+> > > Do you allow upgrades and downgrades?  (Just curious.)
+> > 
+> > AFS does not, as far as I know.
+> 
+> So if I request a write lock while holding a read lock, my request will
+> be denied?
 
-> I can bypass this by making the debug kernel the default, but WHY? Is
-> the kernel not saved such that any kernel can be rolled back into memory
-> and run? Actually, the answer is HELL NO, so I really ask if this is the
-> intended mode of operation, that only the default boot kernel will restore.
+At the moment, yes.  Don't the POSIX and flock lock-handling routines in the
+kernel normally do that anyway?
 
-Yes.
+> This is a little strange, though--if there's somebody waiting for a
+> write lock on an inode (because somebody else already holds a read lock
+> on it), that shouldn't block requests for read locks.
 
-It is very dangerous to attempt a resume with a different kernel than the one
-that has gone to sleep.
-Different kernels may be compiled with different options that affect where or
-how in-memory structures are saved.
-
-So you suspend with a kernel which holds your filesystem data/cache/inodes at
-0x1234000 and restore with a kernel that expects to see your filesystem data at
-0x1235000.
-
-Ouch.
-
-Personally I think the kernel suspend should write a signature - similar to a
-hash of the bzImage - into the suspend image so it won't even attempt a resume
-if there's a mismatch. (Yes, I made this mistake once whilst playing with suspend).
+That depends on whether you want fairness or not.  Allowing read locks to jump
+the queue like this can lead to starvation for your writers.
 
 David
-
-
