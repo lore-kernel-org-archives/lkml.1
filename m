@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbXE0USB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbXE0U1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758781AbXE0USB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 16:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXE0URy
+	id S1758477AbXE0U1U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 16:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXE0U1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 16:17:54 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:13266 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752101AbXE0URx (ORCPT
+	Sun, 27 May 2007 16:27:12 -0400
+Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:54253 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752101AbXE0U1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 16:17:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ZQI//ruHqnu7HjAfxk95fp+//0/pAvoe6Bav+ZyS3EC4OSmLyeyrfHC4tSwXKAJ9n3Q8Zs4nOWZQgNVAckoLNMqsbfSi2qS/PweJpuK7EJ+ExQn02tbSX118nv5PxtdwlXtyfNFS7Q+Z3CWb3H06t37/BL9sljs+1it/9HeVR4M=
-Message-ID: <84144f020705271317q3e46fd88u58058686edf71829@mail.gmail.com>
-Date: Sun, 27 May 2007 23:17:51 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH 2/2] [condingstyle] Add chapter on tests
-Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4659C828.80503@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 27 May 2007 16:27:12 -0400
+Date: Sun, 27 May 2007 22:28:29 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LM Sensors <lm-sensors@lm-sensors.org>
+Subject: [GIT PULL] hwmon fixes for 2.6.22
+Message-ID: <20070527222829.28e193c9@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070525172509.5138.56430.stgit@localhost.localdomain>
-	 <20070525172515.5138.13652.stgit@localhost.localdomain>
-	 <Pine.LNX.4.61.0705262121150.7344@yvahk01.tjqt.qr>
-	 <4659C828.80503@intel.com>
-X-Google-Sender-Auth: 993f5f8bde25e61c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/27/07, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
-> that piece is a copy of mm/slab.c, and all over the core components of the
-> kernel (even fs/inode.c written by Linus). I strongly think that "== NULL"
-> doesn't add anything and that well-written functions and well-named variables
-> really do not need the extra fluff.
+Linus,
 
-Yup, I we really don't use "== NULL" in core code that much. But I am
-not convinced this should be in CodingStyle either. It's more of a
-maintainer preference thing above all.
+Please pull the hwmon subsystem fixes for Linux 2.6.22 from:
+
+git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
+
+ drivers/hwmon/Kconfig     |    2 +-
+ drivers/hwmon/applesmc.c  |    7 ++++++-
+ drivers/hwmon/coretemp.c  |   32 +++++++++++++++++++++++++++++---
+ drivers/hwmon/ds1621.c    |    8 ++++----
+ drivers/hwmon/hwmon-vid.c |    4 +++-
+ drivers/hwmon/w83627hf.c  |    4 +++-
+ 6 files changed, 46 insertions(+), 11 deletions(-)
+
+---------------
+
+Jean Delvare (4):
+      hwmon/ds1621: Fix swapped temperature limits
+      hwmon/w83627hf: Be quiet when no chip is found
+      hwmon-vid: Don't spam the logs when VRM version is missing
+      hwmon/applesmc: Simplify dependencies
+
+Nicolas Boichat (1):
+      hwmon/applesmc: Handle name file creation error and deletion
+
+Rudolf Marek (1):
+      hwmon/coretemp: Add more safety checks
+
+Thanks,
+-- 
+Jean Delvare
