@@ -1,154 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932547AbXE1VNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbXE1VOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932547AbXE1VNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 17:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbXE1VNM
+	id S932506AbXE1VOq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 17:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbXE1VOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 17:13:12 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:44756 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbXE1VNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 17:13:11 -0400
-Message-ID: <465B45E0.3040007@simon.arlott.org.uk>
-Date: Mon, 28 May 2007 22:13:04 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	Mon, 28 May 2007 17:14:39 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:48250 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762278AbXE1VOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 17:14:38 -0400
+Date: Mon, 28 May 2007 17:14:36 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: stuff ready to be deleted?
+In-Reply-To: <9a8748490705281324u509d9019qa7e60e446ca509b9@mail.gmail.com>
+Message-ID: <alpine.DEB.0.99.0705281712190.10522@sigma.j-a-k-j.com>
+References: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
+ <9a8748490705281324u509d9019qa7e60e446ca509b9@mail.gmail.com>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       davem@davemloft.net
-CC: stable@kernel.org, yoshfuji@linux-ipv6.org, berni@birkenwald.de,
-       linkfanel@yahoo.fr
-Subject: "[IPV6]: Fix routing round-robin locking." breaks manual default
- route (bug 8349)
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initial state - address, no routes:
-# ip -6 a
-2: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qlen 1000
-    inet6 2001:4b10:1005:0:202:44ff:fe50:91af/64 scope global
-       valid_lft forever preferred_lft forever
-    inet6 fe80::202:44ff:fe50:91af/64 scope link
-       valid_lft forever preferred_lft forever
-# ip -6 r
-fe80::/64 dev eth0  metric 256  expires 21332290sec mtu 1500 advmss 1440
-ff00::/8 dev eth0  metric 256  expires 21332290sec mtu 1500 advmss 1440
-unreachable default dev lo  proto none  metric -1  error -101
-# ping6 -c 1 2001:4b10:1005:0:205:b4ff:fe12:530
-connect: Network is unreachable
+> >   i'm trying to keep track of kernel janitor projects that involve
+> > removing dead content from the tree:
+> > 
+> > http://fsdev.net/wiki/index.php?title=Kernel_Janitor%27s_Todo_List
+> > 
+> > currently, the list contains the items:
+> > 
+> >     * 1 Legacy power management
+> >     * 2 PCMCIA IOCTL support
+> >     * 3 Traffic shaper
+> >     * 4 Traffic policing
+> >     * 5 Userspace queueing via NETLINK
+> >     * 6 ebt: ulog support
+> >     * 7 MOXA SmartIO support
+> >     * 8 Old I2O ioctls
+> >     * 9 Stallion drivers
+> >     * 10 SDL RISCom/8 support
+> >     * 11 Macintosh M68K support
+> >     * 12 Commodore A2232 serial support
+> >     * 13 CONFIG_FORCED_INLINING
+> >     * 14 kernel_thread()
+> > 
+> > which of the above are legitimate candidates for removal?  which are
+> > already underway in someone's local tree?  anything else that can
+> > be added?  etc, etc.
+> > 
+> 
+> Take a look at Documentation/feature-removal-schedule.txt
+> Some of that stuff is already listed there along with who is in charge
+> of removing it and when.
 
-Adding a 2000::/3 route works:
-# ip -6 r a 2000::/3 via fe80::230:18ff:feb0:25c2 dev eth0
-# ping6 -c 1 2001:4b10:1005:0:205:b4ff:fe12:530
-64 bytes from 2001:4b10:1005:0:205:b4ff:fe12:530: icmp_seq=1 ttl=64 time=0.921 ms
-# ip -6 r d 2000::/3 via fe80::230:18ff:feb0:25c2 dev eth0
+Let's not get in that catfight again. That file has been demonstrated to 
+be half too premature and half completely obsolete. He's asking for which 
+things should he start generating and sending patches and expect them to 
+not be ignored or angrily shot down. feature-removal-schedule.txt does not 
+provide this information, again as has been demonstrated.
 
-Adding a ::/0 route doesn't work:
-# ip -6 r a ::/0 via fe80::230:18ff:feb0:25c2 dev eth0
-# ping6 -c 1 2001:4b10:1005:0:205:b4ff:fe12:530
-connect: Network is unreachable
-
-A route assigned by addrconf works.
-
-
-Reverting this patch from 2.6.22-rc3 fixes it:
-	commit f11e6659ce9058928d73ff440f9b40a818d628ab
-	Author: David S. Miller <davem@sunset.davemloft.net>
-	Date:   Sat Mar 24 20:36:25 2007 -0700
-	    [IPV6]: Fix routing round-robin locking.
-
-This patch is was added to 2.6.20.5, breaking -stable too.
-
-
-With RT6_DEBUG 3 in route.c (plus some additional debug statements):
-
-Manual default route:
-[  535.981000] fib6_add_rt2node
-[  535.981000] fib6_add_rt2node fn->fn_flags = 00000007 (RTN_TL_ROOT=00000001)
-[  535.981000] fib6_add_rt2node fn->leaf = b0697be0 (ip6_null_entry = b0697be0)
-[  535.981000] fib6_add_rt2node rt->rt6i_flags = 00000003 (RTF_DEFAULT = 00010000, RTF_ADDRCONF = 00040000)
-[  535.981000] fib6_add_rt2node goto out...
-[  535.981000] fib6_add_rt2node out:
-
-Ping6:
-[  570.903000] rt6_select(fn->leaf=b1b63140, oif=0)
-[  570.903000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
-[  570.903000] find_match m = 10, *mpri = -1
-[  570.904000] rt6_select() => b0697be0
-[  570.904000] rt6_select(fn->leaf=b1b63140, oif=0)
-[  570.904000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
-[  570.904000] find_match m = 10, *mpri = -1
-[  570.904000] rt6_select() => b0697be0
-
-
-Addrconf default route:
-[  624.846000] rt6_select(fn->leaf=b1b63300, oif=2)
-[  624.846000] find_match rt->rt6i_gateway = 000002ff 00000000 00000000 01000000
-[  624.846000] find_match m = 10, *mpri = -1
-[  624.846000] rt6_select() => b1b63300
-[  624.846000] rt6_select(fn->leaf=b1b63300, oif=2)
-[  624.846000] find_match rt->rt6i_gateway = 000002ff 00000000 00000000 01000000
-[  624.846000] find_match m = 10, *mpri = -1
-[  624.846000] rt6_select() => b1b63300
-[  624.846000] fib6_add_rt2node
-[  624.846000] fib6_add_rt2node fn->fn_flags = 00000007 (RTN_TL_ROOT=00000001)
-[  624.846000] fib6_add_rt2node fn->leaf = b0697be0 (ip6_null_entry = b0697be0)
-[  624.846000] fib6_add_rt2node rt->rt6i_flags = 00450003 (RTF_DEFAULT = 00010000, RTF_ADDRCONF = 00040000)
-[  624.846000] fib6_add_rt2node out:
-
-Ping6:
-[  689.245000] rt6_select(fn->leaf=b1b63140, oif=0)
-[  689.245000] find_match rt->rt6i_gateway = 104b0120 00000510 ffb40502 300512fe
-[  689.245000] find_match m = 10, *mpri = -1
-[  689.245000] rt6_select() => b1b63140
-[  689.245000] rt6_select(fn->leaf=b1b63140, oif=0)
-[  689.245000] find_match rt->rt6i_gateway = 104b0120 00000510 ffb40502 300512fe
-[  689.245000] find_match m = 10, *mpri = -1
-[  689.245000] rt6_select() => b1b63140
-[  689.248000] rt6_select(fn->leaf=b1b63140, oif=0)
-[  689.248000] find_match rt->rt6i_gateway = 104b0120 00000510 ffb40502 300512fe
-[  689.248000] find_match m = 10, *mpri = -1
-[  689.248000] rt6_select() => b1b63140
-[  689.248000] rt6_select(fn->leaf=b1b63140, oif=0)
-[  689.248000] find_match rt->rt6i_gateway = 104b0120 00000510 ffb40502 300512fe
-[  689.248000] find_match m = 10, *mpri = -1
-[  689.248000] rt6_select() => b1b63140
-[  689.248000] rt6_select(fn->leaf=b1b63ae0, oif=2)
-[  689.248000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
-[  689.248000] find_match m = 9, *mpri = -1
-[  689.248000] rt6_select() => b1b63ae0
-[  689.702000] rt6_select(fn->leaf=b1b63ae0, oif=2)
-[  689.702000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
-[  689.702000] find_match m = 9, *mpri = -1
-[  689.702000] rt6_select() => b1b63ae0
-
-
-Manual 2000::/3 route:
-[  765.424000] fib6_add_rt2node
-[  765.424000] fib6_add_rt2node fn->fn_flags = 00000000 (RTN_TL_ROOT=00000001)
-[  765.424000] fib6_add_rt2node fn->leaf = 00000000 (ip6_null_entry = b0697be0)
-[  765.424000] fib6_add_rt2node rt->rt6i_flags = 00000003 (RTF_DEFAULT = 00010000, RTF_ADDRCONF = 00040000)
-[  765.424000] fib6_add_rt2node out:
-[  765.424000] fib6_add_rt2node fn->fn_flags |= RTN_RTINFO;
-
-Ping6:
-[  779.705000] rt6_select(fn->leaf=b1b63060, oif=0)
-[  779.705000] find_match rt->rt6i_gateway = 000080fe 00000000 ff183002 c225b0fe
-[  779.705000] find_match m = 10, *mpri = -1
-[  779.705000] rt6_select() => b1b63060
-[  779.713000] rt6_select(fn->leaf=b1b63060, oif=0)
-[  779.713000] find_match rt->rt6i_gateway = 000080fe 00000000 ff183002 c225b0fe
-[  779.713000] find_match m = 10, *mpri = -1
-[  779.713000] rt6_select() => b1b63060
-[  779.714000] rt6_select(fn->leaf=b1b63ae0, oif=2)
-[  779.714000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
-[  779.714000] find_match m = 9, *mpri = -1
-[  779.714000] rt6_select() => b1b63ae0
-
--- 
-Simon Arlott
+Of course, it would be great if it were accurate and -did- provide that 
+information.
