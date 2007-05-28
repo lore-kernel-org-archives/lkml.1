@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763281AbXE1QiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763286AbXE1QiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763281AbXE1QiB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 12:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758589AbXE1Qgl
+	id S1763286AbXE1QiZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 12:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759028AbXE1Qgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 12:36:41 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:60242 "EHLO
+	Mon, 28 May 2007 12:36:42 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:61264 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756014AbXE1Qgg (ORCPT
+	with ESMTP id S1758011AbXE1Qgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 12:36:36 -0400
+	Mon, 28 May 2007 12:36:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=TZLxdQYLirOmaacnjwTrONGzAGYQimigy9W7ZlbO7tLJSdhEgGSVrXcwqNxkNdRVqV3TnJhbY8OWujPxC9uNb4LkfvDtQHQiWgzfJ1PPRQO4gdOhzVSSqkJ4Od+UNRCuG4p5INTZsJ7l+awfXQMKJhmraOO4ZJl3ruWydnGr1n8=
+        b=AWxSYP5MjKMvtBV9Yx/Tq6vx4tXKyJQp44A/2Q780RLSpZVqJMIpDMSMrDkmaUfVv1XEnwkNSv2KaxMa75SzQy0bt4k67rv8F+MG3z06BSe+Su6NSR8eDbCjzV3rcQfYxHvHTBIHxfVKyQdsCXL0jM6GFzr1A+v4/EaHr5XIKTw=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 3/6] sysfs: make kobj point to sysfs_dirent instead of dentry
+Subject: [PATCH 6/6] sysfs: make directory dentries and inodes reclaimable
 In-Reply-To: <11803701861778-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Tue, 29 May 2007 01:36:27 +0900
-Message-Id: <11803701872334-git-send-email-htejun@gmail.com>
+Message-Id: <11803701872730-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,840 +31,668 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As kobj sysfs dentries and inodes are gonna be made reclaimable,
-dentry can't be used as naming token for sysfs file/directory, replace
-kobj->dentry with kobj->sd.  The only external interface change is
-shadow directory handling.  All other changes are contained in kobj
-and sysfs.
+This patch makes dentries and inodes for sysfs directories
+reclaimable.
+
+* sysfs_notify() is modified to walk sysfs_dirent tree instead of
+  dentry tree.
+* sysfs_update_file() and sysfs_chmod_file() use sysfs_get_dentry() to
+  grab the victim dentry.
+* sysfs_rename_dir() and sysfs_move_dir() grab all dentries using
+  sysfs_get_dentry() on startup.
+* Dentries for all shadowed directories are pinned in memory to serve
+  as lookup start point.
+* parent mtime/ctime update on inode instantiation is dropped.  I' not
+  sure what to do about it yet.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/bin.c          |    6 +-
- fs/sysfs/dir.c          |  119 +++++++++++++++++++++++------------------------
- fs/sysfs/file.c         |   47 +++++++++---------
- fs/sysfs/group.c        |   54 ++++++++++-----------
- fs/sysfs/inode.c        |    9 +--
- fs/sysfs/symlink.c      |   22 ++++-----
- fs/sysfs/sysfs.h        |   10 ++--
- include/linux/kobject.h |    9 ++--
- include/linux/sysfs.h   |   19 ++++---
- lib/kobject.c           |   10 ++--
- 10 files changed, 152 insertions(+), 153 deletions(-)
+ fs/sysfs/dir.c        |  238 ++++++++++++++++++++++++++++---------------------
+ fs/sysfs/file.c       |  134 ++++++++++++---------------
+ fs/sysfs/inode.c      |   15 +--
+ fs/sysfs/mount.c      |    2 +-
+ fs/sysfs/sysfs.h      |    1 +
+ include/linux/sysfs.h |    1 -
+ 6 files changed, 202 insertions(+), 189 deletions(-)
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index 3c5574a..55796bd 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -234,9 +234,9 @@ const struct file_operations bin_fops =
- 
- int sysfs_create_bin_file(struct kobject * kobj, struct bin_attribute * attr)
- {
--	BUG_ON(!kobj || !kobj->dentry || !attr);
-+	BUG_ON(!kobj || !kobj->sd || !attr);
- 
--	return sysfs_add_file(kobj->dentry, &attr->attr, SYSFS_KOBJ_BIN_ATTR);
-+	return sysfs_add_file(kobj->sd, &attr->attr, SYSFS_KOBJ_BIN_ATTR);
- }
- 
- 
-@@ -248,7 +248,7 @@ int sysfs_create_bin_file(struct kobject
- 
- void sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr)
- {
--	if (sysfs_hash_and_remove(kobj->dentry, attr->attr.name) < 0) {
-+	if (sysfs_hash_and_remove(kobj->sd, attr->attr.name) < 0) {
- 		printk(KERN_ERR "%s: "
- 			"bad dentry or inode or no such file: \"%s\"\n",
- 			__FUNCTION__, attr->attr.name);
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index c05d04a..58a92aa 100644
+index 0242cbd..ae1f379 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -368,9 +368,10 @@ struct sysfs_dirent *sysfs_get_dirent(st
- 	return sd;
- }
- 
--static int create_dir(struct kobject *kobj, struct dentry *parent,
--		      const char *name, struct dentry **p_dentry)
-+static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
-+		      const char *name, struct sysfs_dirent **p_sd)
+@@ -482,73 +482,46 @@ struct sysfs_dirent *sysfs_get_dirent(st
+ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
+ 		      const char *name, struct sysfs_dirent **p_sd)
  {
-+	struct dentry *parent = parent_sd->s_dentry;
- 	int error;
+-	struct dentry *parent = parent_sd->s_dentry;
+-	int error;
  	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;
- 	struct dentry *dentry;
-@@ -409,14 +410,14 @@ static int create_dir(struct kobject *ko
+-	struct dentry *dentry;
+-	struct inode *inode;
++	struct dentry *parent_dentry = NULL;
+ 	struct sysfs_dirent *sd;
+-
+-	mutex_lock(&parent->d_inode->i_mutex);
++	int error;
  
+ 	/* allocate */
+-	dentry = lookup_one_len(name, parent, strlen(name));
+-	if (IS_ERR(dentry)) {
+-		error = PTR_ERR(dentry);
+-		goto out_unlock;
+-	}
+-
+-	error = -EEXIST;
+-	if (dentry->d_inode)
+-		goto out_dput;
+-
+-	error = -ENOMEM;
+ 	sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
+ 	if (!sd)
+-		goto out_drop;
++		return -ENOMEM;
+ 	sd->s_elem.dir.kobj = kobj;
+ 
+-	inode = sysfs_get_inode(sd);
+-	if (!inode)
+-		goto out_sput;
+-
+-	if (inode->i_state & I_NEW) {
+-		inode->i_op = &sysfs_dir_inode_operations;
+-		inode->i_fop = &sysfs_dir_operations;
+-		/* directory inodes start off with i_nlink == 2 (for ".") */
+-		inc_nlink(inode);
+-	}
+-
  	/* link in */
- 	error = -EEXIST;
--	if (sysfs_find_dirent(parent->d_fsdata, name))
-+	if (sysfs_find_dirent(parent_sd, name))
- 		goto out_iput;
++	error = -EEXIST;
+ 	spin_lock(&sysfs_lock);
++	if (!sysfs_find_dirent(parent_sd, name)) {
++		sysfs_attach_dirent(sd, parent_sd, NULL);
++		error = 0;
  
- 	sysfs_instantiate(dentry, inode);
- 	inc_nlink(parent->d_inode);
--	sysfs_attach_dirent(sd, parent->d_fsdata, dentry);
-+	sysfs_attach_dirent(sd, parent_sd, dentry);
+-	error = -EEXIST;
+-	if (sysfs_find_dirent(parent_sd, name)) {
+-		spin_unlock(&sysfs_lock);
+-		goto out_iput;
++		spin_lock(&dcache_lock);
++		if (parent_sd->s_dentry && parent_sd->s_dentry->d_inode)
++			parent_dentry = dget_locked(parent_sd->s_dentry);
++		spin_unlock(&dcache_lock);
+ 	}
++	spin_unlock(&sysfs_lock);
  
--	*p_dentry = dentry;
-+	*p_sd = sd;
- 	error = 0;
- 	goto out_unlock;	/* pin directory dentry in core */
+-	sysfs_instantiate(dentry, inode);
+-	inc_nlink(parent->d_inode);
+-	sysfs_attach_dirent(sd, parent_sd, dentry);
++	if (error) {
++		sysfs_put(sd);
++		return error;
++	}
  
-@@ -433,38 +434,37 @@ static int create_dir(struct kobject *ko
- 	return error;
+-	spin_unlock(&sysfs_lock);
++	/* adjust nlink of parent */
++	if (parent_dentry) {
++		mutex_lock(&parent_dentry->d_inode->i_mutex);
++		inc_nlink(parent_dentry->d_inode);
++		mutex_unlock(&parent_dentry->d_inode->i_mutex);
++		dput(parent_dentry);
++	}
+ 
+ 	*p_sd = sd;
+-	error = 0;
+-	goto out_unlock;	/* pin directory dentry in core */
+-
+- out_iput:
+-	iput(inode);
+- out_sput:
+-	sysfs_put(sd);
+- out_drop:
+-	d_drop(dentry);
+- out_dput:
+-	dput(dentry);
+- out_unlock:
+-	mutex_unlock(&parent->d_inode->i_mutex);
+-	return error;
++	return 0;
  }
  
--
--int sysfs_create_subdir(struct kobject * k, const char * n, struct dentry ** d)
-+int sysfs_create_subdir(struct kobject *kobj, const char *name,
-+			struct sysfs_dirent **p_sd)
- {
--	return create_dir(k,k->dentry,n,d);
-+	return create_dir(kobj, kobj->sd, name, p_sd);
- }
- 
- /**
-  *	sysfs_create_dir - create a directory for an object.
-  *	@kobj:		object we're creating directory for. 
-- *	@shadow_parent:	parent parent object.
-+ *	@shadow_parent:	parent object.
-  */
--
--int sysfs_create_dir(struct kobject * kobj, struct dentry *shadow_parent)
-+int sysfs_create_dir(struct kobject * kobj,
-+		     struct sysfs_dirent *shadow_parent_sd)
- {
--	struct dentry * dentry = NULL;
--	struct dentry * parent;
-+	struct sysfs_dirent *parent_sd, *sd;
- 	int error = 0;
- 
- 	BUG_ON(!kobj);
- 
--	if (shadow_parent)
--		parent = shadow_parent;
-+	if (shadow_parent_sd)
-+		parent_sd = shadow_parent_sd;
- 	else if (kobj->parent)
--		parent = kobj->parent->dentry;
-+		parent_sd = kobj->parent->sd;
- 	else if (sysfs_mount && sysfs_mount->mnt_sb)
--		parent = sysfs_mount->mnt_sb->s_root;
-+		parent_sd = sysfs_mount->mnt_sb->s_root->d_fsdata;
- 	else
- 		return -EFAULT;
- 
--	error = create_dir(kobj,parent,kobject_name(kobj),&dentry);
-+	error = create_dir(kobj, parent_sd, kobject_name(kobj), &sd);
+ int sysfs_create_subdir(struct kobject *kobj, const char *name,
+@@ -582,9 +555,21 @@ int sysfs_create_dir(struct kobject * ko
+ 	error = create_dir(kobj, parent_sd, kobject_name(kobj), &sd);
  	if (!error)
--		kobj->dentry = dentry;
-+		kobj->sd = sd;
+ 		kobj->sd = sd;
++
  	return error;
  }
  
-@@ -525,18 +525,16 @@ const struct inode_operations sysfs_dir_
- 	.setattr	= sysfs_setattr,
- };
- 
--static void remove_dir(struct dentry * d)
-+static void remove_dir(struct sysfs_dirent *sd)
- {
--	struct dentry *parent = d->d_parent;
--	struct sysfs_dirent *sd = d->d_fsdata;
-+	struct dentry *parent = sd->s_parent->s_dentry;
- 
- 	mutex_lock(&parent->d_inode->i_mutex);
- 
- 	sysfs_unlink_sibling(sd);
- 	sd->s_flags |= SYSFS_FLAG_REMOVED;
- 
--	pr_debug(" o %s removing done (%d)\n",d->d_name.name,
--		 atomic_read(&d->d_count));
-+	pr_debug(" o %s removing done\n", sd->s_name);
- 
- 	mutex_unlock(&parent->d_inode->i_mutex);
- 
-@@ -545,25 +543,26 @@ static void remove_dir(struct dentry * d
- 	sysfs_put(sd);
- }
- 
--void sysfs_remove_subdir(struct dentry * d)
-+void sysfs_remove_subdir(struct sysfs_dirent *sd)
- {
--	remove_dir(d);
-+	remove_dir(sd);
- }
- 
- 
--static void __sysfs_remove_dir(struct dentry *dentry)
-+static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
- {
- 	struct sysfs_dirent *removed = NULL;
--	struct sysfs_dirent *parent_sd;
- 	struct sysfs_dirent **pos;
-+	struct dentry *dir;
- 
--	if (!dentry)
-+	if (!dir_sd)
- 		return;
- 
--	pr_debug("sysfs %s: removing dir\n",dentry->d_name.name);
--	mutex_lock(&dentry->d_inode->i_mutex);
--	parent_sd = dentry->d_fsdata;
--	pos = &parent_sd->s_children;
-+	dir = dir_sd->s_dentry;
++static int sysfs_nr_subdirs(struct sysfs_dirent *sd)
++{
++	struct sysfs_dirent *child;
++	int nr = 0;
 +
-+	pr_debug("sysfs %s: removing dir\n", dir_sd->s_name);
-+	mutex_lock(&dir->d_inode->i_mutex);
-+	pos = &dir_sd->s_children;
++	for (child = sd->s_children; child; child = child->s_sibling)
++		if (sysfs_type(child) & SYSFS_DIR)
++			nr++;
++	return nr;
++}
++
+ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
+ 				struct nameidata *nd)
+ {
+@@ -595,7 +580,7 @@ static struct dentry * sysfs_lookup(stru
+ 	int found = 0;
+ 
+ 	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
+-		if ((sysfs_type(sd) & SYSFS_NOT_PINNED) &&
++		if (sysfs_type(sd) &&
+ 		    !strcmp(sd->s_name, dentry->d_name.name)) {
+ 			found = 1;
+ 			break;
+@@ -616,6 +601,11 @@ static struct dentry * sysfs_lookup(stru
+ 	if (inode->i_state & I_NEW) {
+ 		/* initialize inode according to type */
+ 		switch (sysfs_type(sd)) {
++		case SYSFS_DIR:
++			inode->i_op = &sysfs_dir_inode_operations;
++			inode->i_fop = &sysfs_dir_operations;
++			inode->i_nlink = 2 + sysfs_nr_subdirs(sd);
++			break;
+ 		case SYSFS_KOBJ_ATTR:
+ 			inode->i_size = PAGE_SIZE;
+ 			inode->i_fop = &sysfs_file_operations;
+@@ -680,7 +670,7 @@ static void __sysfs_remove_dir(struct sy
  	while (*pos) {
  		struct sysfs_dirent *sd = *pos;
  
-@@ -575,7 +574,7 @@ static void __sysfs_remove_dir(struct de
- 		} else
- 			pos = &(*pos)->s_sibling;
- 	}
--	mutex_unlock(&dentry->d_inode->i_mutex);
-+	mutex_unlock(&dir->d_inode->i_mutex);
- 
- 	while (removed) {
- 		struct sysfs_dirent *sd = removed;
-@@ -588,7 +587,7 @@ static void __sysfs_remove_dir(struct de
- 		sysfs_put(sd);
- 	}
- 
--	remove_dir(dentry);
-+	remove_dir(dir_sd);
- }
- 
- /**
-@@ -602,25 +601,25 @@ static void __sysfs_remove_dir(struct de
- 
- void sysfs_remove_dir(struct kobject * kobj)
- {
--	struct dentry *d = kobj->dentry;
-+	struct sysfs_dirent *sd = kobj->sd;
- 
- 	spin_lock(&kobj_sysfs_assoc_lock);
--	kobj->dentry = NULL;
-+	kobj->sd = NULL;
- 	spin_unlock(&kobj_sysfs_assoc_lock);
- 
--	__sysfs_remove_dir(d);
-+	__sysfs_remove_dir(sd);
- }
- 
--int sysfs_rename_dir(struct kobject * kobj, struct dentry *new_parent,
-+int sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
+-		if (sysfs_type(sd) && (sysfs_type(sd) & SYSFS_NOT_PINNED)) {
++		if (sysfs_type(sd) && !(sysfs_type(sd) & SYSFS_DIR)) {
+ 			sd->s_flags |= SYSFS_FLAG_REMOVED;
+ 			*pos = sd->s_sibling;
+ 			sd->s_sibling = removed;
+@@ -728,14 +718,25 @@ int sysfs_rename_dir(struct kobject *kob
  		     const char *new_name)
  {
--	struct sysfs_dirent *sd = kobj->dentry->d_fsdata;
--	struct sysfs_dirent *parent_sd = new_parent->d_fsdata;
-+	struct sysfs_dirent *sd = kobj->sd;
-+	struct dentry *new_parent = new_parent_sd->s_dentry;
- 	struct dentry *new_dentry;
- 	char *dup_name;
+ 	struct sysfs_dirent *sd = kobj->sd;
+-	struct dentry *new_parent = new_parent_sd->s_dentry;
+-	struct dentry *new_dentry;
+-	char *dup_name;
++	struct dentry *new_parent = NULL;
++	struct dentry *old_dentry = NULL, *new_dentry = NULL;
++	const char *dup_name = NULL;
  	int error;
  
--	if (!new_parent)
-+	if (!new_parent_sd)
- 		return -EFAULT;
+-	if (!new_parent_sd)
+-		return -EFAULT;
++	/* get dentries */
++	old_dentry = sysfs_get_dentry(sd);
++	if (IS_ERR(old_dentry)) {
++		error = PTR_ERR(old_dentry);
++		goto out_dput;
++	}
++
++	new_parent = sysfs_get_dentry(new_parent_sd);
++	if (IS_ERR(new_parent)) {
++		error = PTR_ERR(new_parent);
++		goto out_dput;
++	}
  
- 	down_write(&sysfs_rename_sem);
-@@ -637,9 +636,9 @@ int sysfs_rename_dir(struct kobject * ko
++	/* lock new_parent and get dentry for new name */
+ 	mutex_lock(&new_parent->d_inode->i_mutex);
+ 
+ 	new_dentry = lookup_one_len(new_name, new_parent, strlen(new_name));
+@@ -749,14 +750,14 @@ int sysfs_rename_dir(struct kobject *kob
  	 * shadows of the same directory
  	 */
  	error = -EINVAL;
--	if (kobj->dentry->d_parent->d_inode != new_parent->d_inode ||
-+	if (sd->s_parent->s_dentry->d_inode != new_parent->d_inode ||
+-	if (sd->s_parent->s_dentry->d_inode != new_parent->d_inode ||
++	if (old_dentry->d_parent->d_inode != new_parent->d_inode ||
  	    new_dentry->d_parent->d_inode != new_parent->d_inode ||
--	    new_dentry == kobj->dentry)
-+	    new_dentry == sd->s_dentry)
- 		goto out_dput;
+-	    new_dentry == sd->s_dentry)
+-		goto out_dput;
++	    old_dentry == new_dentry)
++		goto out_unlock;
  
  	error = -EEXIST;
-@@ -661,12 +660,12 @@ int sysfs_rename_dir(struct kobject * ko
+ 	if (new_dentry->d_inode)
+-		goto out_dput;
++		goto out_unlock;
+ 
+ 	/* rename kobject and sysfs_dirent */
+ 	error = -ENOMEM;
+@@ -766,9 +767,9 @@ int sysfs_rename_dir(struct kobject *kob
+ 
+ 	error = kobject_set_name(kobj, "%s", new_name);
+ 	if (error)
+-		goto out_free;
++		goto out_drop;
+ 
+-	kfree(sd->s_name);
++	dup_name = sd->s_name;
+ 	sd->s_name = new_name;
  
  	/* move under the new parent */
- 	d_add(new_dentry, NULL);
--	d_move(kobj->dentry, new_dentry);
-+	d_move(sd->s_dentry, new_dentry);
- 
- 	sysfs_unlink_sibling(sd);
--	sysfs_get(parent_sd);
-+	sysfs_get(new_parent_sd);
- 	sysfs_put(sd->s_parent);
--	sd->s_parent = parent_sd;
-+	sd->s_parent = new_parent_sd;
- 	sysfs_link_sibling(sd);
- 
+@@ -788,45 +789,58 @@ int sysfs_rename_dir(struct kobject *kob
  	error = 0;
-@@ -691,9 +690,9 @@ int sysfs_move_dir(struct kobject *kobj,
+ 	goto out_unlock;
+ 
+- out_free:
+-	kfree(dup_name);
+  out_drop:
+ 	d_drop(new_dentry);
+- out_dput:
+-	dput(new_dentry);
+  out_unlock:
+ 	mutex_unlock(&new_parent->d_inode->i_mutex);
++ out_dput:
++	kfree(dup_name);
++	dput(new_parent);
++	dput(old_dentry);
++	dput(new_dentry);
+ 	return error;
+ }
+ 
+-int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent)
++int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
+ {
+-	struct dentry *old_parent_dentry, *new_parent_dentry, *new_dentry;
+-	struct sysfs_dirent *new_parent_sd, *sd;
++	struct sysfs_dirent *sd = kobj->sd;
++	struct sysfs_dirent *new_parent_sd;
++	struct dentry *old_parent, *new_parent = NULL;
++	struct dentry *old_dentry = NULL, *new_dentry = NULL;
  	int error;
  
- 	old_parent_dentry = kobj->parent ?
--		kobj->parent->dentry : sysfs_mount->mnt_sb->s_root;
-+		kobj->parent->sd->s_dentry : sysfs_mount->mnt_sb->s_root;
- 	new_parent_dentry = new_parent ?
--		new_parent->dentry : sysfs_mount->mnt_sb->s_root;
-+		new_parent->sd->s_dentry : sysfs_mount->mnt_sb->s_root;
+-	old_parent_dentry = kobj->parent ?
+-		kobj->parent->sd->s_dentry : sysfs_mount->mnt_sb->s_root;
+-	new_parent_dentry = new_parent ?
+-		new_parent->sd->s_dentry : sysfs_mount->mnt_sb->s_root;
++	BUG_ON(!sd->s_parent);
++	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
++
++	/* get dentries */
++	old_dentry = sysfs_get_dentry(sd);
++	if (IS_ERR(old_dentry)) {
++		error = PTR_ERR(old_dentry);
++		goto out_dput;
++	}
++	old_parent = sd->s_parent->s_dentry;
++
++	new_parent = sysfs_get_dentry(new_parent_sd);
++	if (IS_ERR(new_parent)) {
++		error = PTR_ERR(new_parent);
++		goto out_dput;
++	}
  
- 	if (old_parent_dentry->d_inode == new_parent_dentry->d_inode)
- 		return 0;	/* nothing to move */
-@@ -705,7 +704,7 @@ again:
+-	if (old_parent_dentry->d_inode == new_parent_dentry->d_inode)
+-		return 0;	/* nothing to move */
++	if (old_parent->d_inode == new_parent->d_inode) {
++		error = 0;
++		goto out_dput;	/* nothing to move */
++	}
+ again:
+-	mutex_lock(&old_parent_dentry->d_inode->i_mutex);
+-	if (!mutex_trylock(&new_parent_dentry->d_inode->i_mutex)) {
+-		mutex_unlock(&old_parent_dentry->d_inode->i_mutex);
++	mutex_lock(&old_parent->d_inode->i_mutex);
++	if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
++		mutex_unlock(&old_parent->d_inode->i_mutex);
+ 		goto again;
  	}
  
- 	new_parent_sd = new_parent_dentry->d_fsdata;
--	sd = kobj->dentry->d_fsdata;
-+	sd = kobj->sd;
- 
- 	new_dentry = lookup_one_len(kobj->name, new_parent_dentry,
- 				    strlen(kobj->name));
-@@ -715,7 +714,7 @@ again:
+-	new_parent_sd = new_parent_dentry->d_fsdata;
+-	sd = kobj->sd;
+-
+-	new_dentry = lookup_one_len(kobj->name, new_parent_dentry,
+-				    strlen(kobj->name));
++	new_dentry = lookup_one_len(kobj->name, new_parent, strlen(kobj->name));
+ 	if (IS_ERR(new_dentry)) {
+ 		error = PTR_ERR(new_dentry);
+-		goto out;
++		goto out_unlock;
  	} else
  		error = 0;
  	d_add(new_dentry, NULL);
--	d_move(kobj->dentry, new_dentry);
-+	d_move(sd->s_dentry, new_dentry);
- 	dput(new_dentry);
+@@ -843,10 +857,14 @@ again:
+ 	sysfs_link_sibling(sd);
  
- 	/* Remove from old parent's list and insert into new parent's list. */
-@@ -885,7 +884,7 @@ int sysfs_make_shadowed_dir(struct kobje
+ 	spin_unlock(&sysfs_lock);
+-out:
+-	mutex_unlock(&new_parent_dentry->d_inode->i_mutex);
+-	mutex_unlock(&old_parent_dentry->d_inode->i_mutex);
+ 
++ out_unlock:
++	mutex_unlock(&new_parent->d_inode->i_mutex);
++	mutex_unlock(&old_parent->d_inode->i_mutex);
++ out_dput:
++	dput(new_parent);
++	dput(old_dentry);
++	dput(new_dentry);
+ 	return error;
+ }
+ 
+@@ -1006,12 +1024,20 @@ static loff_t sysfs_dir_lseek(struct fil
+ int sysfs_make_shadowed_dir(struct kobject *kobj,
+ 	void * (*follow_link)(struct dentry *, struct nameidata *))
+ {
++	struct dentry *dentry;
  	struct inode *inode;
  	struct inode_operations *i_op;
  
--	inode = kobj->dentry->d_inode;
-+	inode = kobj->sd->s_dentry->d_inode;
- 	if (inode->i_op != &sysfs_dir_inode_operations)
+-	inode = kobj->sd->s_dentry->d_inode;
+-	if (inode->i_op != &sysfs_dir_inode_operations)
++	/* get dentry for @kobj->sd, dentry of a shadowed dir is pinned */
++	dentry = sysfs_get_dentry(kobj->sd);
++	if (IS_ERR(dentry))
++		return PTR_ERR(dentry);
++
++	inode = dentry->d_inode;
++	if (inode->i_op != &sysfs_dir_inode_operations) {
++		dput(dentry);
  		return -EINVAL;
++	}
  
-@@ -912,16 +911,16 @@ int sysfs_make_shadowed_dir(struct kobje
-  *	directory.
-  */
+ 	i_op = kmalloc(sizeof(*i_op), GFP_KERNEL);
+ 	if (!i_op)
+@@ -1038,16 +1064,22 @@ int sysfs_make_shadowed_dir(struct kobje
  
--struct dentry *sysfs_create_shadow_dir(struct kobject *kobj)
-+struct sysfs_dirent *sysfs_create_shadow_dir(struct kobject *kobj)
+ struct sysfs_dirent *sysfs_create_shadow_dir(struct kobject *kobj)
  {
--	struct dentry *dir = kobj->dentry;
-+	struct dentry *dir = kobj->sd->s_dentry;
- 	struct inode *inode = dir->d_inode;
- 	struct dentry *parent = dir->d_parent;
- 	struct sysfs_dirent *parent_sd = parent->d_fsdata;
- 	struct dentry *shadow;
+-	struct dentry *dir = kobj->sd->s_dentry;
+-	struct inode *inode = dir->d_inode;
+-	struct dentry *parent = dir->d_parent;
+-	struct sysfs_dirent *parent_sd = parent->d_fsdata;
+-	struct dentry *shadow;
++	struct sysfs_dirent *parent_sd = kobj->sd->s_parent;
++	struct dentry *dir, *parent, *shadow;
++	struct inode *inode;
  	struct sysfs_dirent *sd;
  
--	shadow = ERR_PTR(-EINVAL);
-+	sd = ERR_PTR(-EINVAL);
++	dir = sysfs_get_dentry(kobj->sd);
++	if (IS_ERR(dir)) {
++		sd = (void *)dir;
++		goto out;
++	}
++	parent = dir->d_parent;
++
++	inode = dir->d_inode;
+ 	sd = ERR_PTR(-EINVAL);
  	if (!sysfs_is_shadowed_inode(inode))
- 		goto out;
+-		goto out;
++		goto out_dput;
  
-@@ -944,25 +943,25 @@ struct dentry *sysfs_create_shadow_dir(s
+ 	shadow = d_alloc(parent, &dir->d_name);
+ 	if (!shadow)
+@@ -1066,15 +1098,17 @@ struct sysfs_dirent *sysfs_create_shadow
+ 	d_instantiate(shadow, igrab(inode));
+ 	inc_nlink(inode);
+ 	inc_nlink(parent->d_inode);
+-
  	dget(shadow);		/* Extra count - pin the dentry in core */
  
- out:
--	return shadow;
-+	return sd;
- nomem:
+-out:
+-	return sd;
+-nomem:
++	goto out_dput;
++
++ nomem:
  	dput(shadow);
--	shadow = ERR_PTR(-ENOMEM);
-+	sd = ERR_PTR(-ENOMEM);
- 	goto out;
+ 	sd = ERR_PTR(-ENOMEM);
+-	goto out;
++ out_dput:
++	dput(dir);
++ out:
++	return sd;
  }
  
  /**
-  *	sysfs_remove_shadow_dir - remove an object's directory.
-- *	@shadow: dentry of shadow directory
-+ *	@shadow_sd: sysfs_dirent of shadow directory
-  *
-  *	The only thing special about this is that we remove any files in
-  *	the directory before we remove the directory, and we've inlined
-  *	what used to be sysfs_rmdir() below, instead of calling separately.
-  */
- 
--void sysfs_remove_shadow_dir(struct dentry *shadow)
-+void sysfs_remove_shadow_dir(struct sysfs_dirent *shadow_sd)
- {
--	__sysfs_remove_dir(shadow);
-+	__sysfs_remove_dir(shadow_sd);
- }
- 
- const struct file_operations sysfs_dir_operations = {
 diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index e448b88..acc9890 100644
+index f2e3c88..1b0c441 100644
 --- a/fs/sysfs/file.c
 +++ b/fs/sysfs/file.c
-@@ -385,7 +385,7 @@ static struct dentry *step_down(struct d
+@@ -362,43 +362,22 @@ static unsigned int sysfs_poll(struct fi
+ 	return POLLERR|POLLPRI;
+ }
  
+-
+-static struct dentry *step_down(struct dentry *dir, const char * name)
+-{
+-	struct dentry * de;
+-
+-	if (dir == NULL || dir->d_inode == NULL)
+-		return NULL;
+-
+-	mutex_lock(&dir->d_inode->i_mutex);
+-	de = lookup_one_len(name, dir, strlen(name));
+-	mutex_unlock(&dir->d_inode->i_mutex);
+-	dput(dir);
+-	if (IS_ERR(de))
+-		return NULL;
+-	if (de->d_inode == NULL) {
+-		dput(de);
+-		return NULL;
+-	}
+-	return de;
+-}
+-
  void sysfs_notify(struct kobject * k, char *dir, char *attr)
  {
--	struct dentry *de = k->dentry;
-+	struct dentry *de = k->sd->s_dentry;
- 	if (de)
- 		dget(de);
- 	if (de && dir)
-@@ -412,16 +412,17 @@ const struct file_operations sysfs_file_
- };
- 
- 
--int sysfs_add_file(struct dentry * dir, const struct attribute * attr, int type)
-+int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
-+		   int type)
- {
--	struct sysfs_dirent * parent_sd = dir->d_fsdata;
-+	struct dentry *dir = dir_sd->s_dentry;
- 	umode_t mode = (attr->mode & S_IALLUGO) | S_IFREG;
- 	struct sysfs_dirent *sd;
- 	int error = 0;
- 
- 	mutex_lock(&dir->d_inode->i_mutex);
- 
--	if (sysfs_find_dirent(parent_sd, attr->name)) {
-+	if (sysfs_find_dirent(dir_sd, attr->name)) {
- 		error = -EEXIST;
- 		goto out_unlock;
- 	}
-@@ -432,7 +433,7 @@ int sysfs_add_file(struct dentry * dir,
- 		goto out_unlock;
- 	}
- 	sd->s_elem.attr.attr = (void *)attr;
--	sysfs_attach_dirent(sd, parent_sd, NULL);
-+	sysfs_attach_dirent(sd, dir_sd, NULL);
- 
-  out_unlock:
- 	mutex_unlock(&dir->d_inode->i_mutex);
-@@ -448,9 +449,9 @@ int sysfs_add_file(struct dentry * dir,
- 
- int sysfs_create_file(struct kobject * kobj, const struct attribute * attr)
- {
--	BUG_ON(!kobj || !kobj->dentry || !attr);
-+	BUG_ON(!kobj || !kobj->sd || !attr);
- 
--	return sysfs_add_file(kobj->dentry, attr, SYSFS_KOBJ_ATTR);
-+	return sysfs_add_file(kobj->sd, attr, SYSFS_KOBJ_ATTR);
- 
- }
- 
-@@ -464,16 +465,16 @@ int sysfs_create_file(struct kobject * k
- int sysfs_add_file_to_group(struct kobject *kobj,
- 		const struct attribute *attr, const char *group)
- {
--	struct dentry *dir;
-+	struct sysfs_dirent *dir_sd;
- 	int error;
- 
--	dir = lookup_one_len(group, kobj->dentry, strlen(group));
--	if (IS_ERR(dir))
--		error = PTR_ERR(dir);
--	else {
--		error = sysfs_add_file(dir, attr, SYSFS_KOBJ_ATTR);
--		dput(dir);
--	}
-+	dir_sd = sysfs_get_dirent(kobj->sd, group);
-+	if (!dir_sd)
-+		return -ENOENT;
+-	struct dentry *de = k->sd->s_dentry;
+-	if (de)
+-		dget(de);
+-	if (de && dir)
+-		de = step_down(de, dir);
+-	if (de && attr)
+-		de = step_down(de, attr);
+-	if (de) {
+-		struct sysfs_dirent * sd = de->d_fsdata;
+-		if (sd)
+-			atomic_inc(&sd->s_event);
++	struct sysfs_dirent *sd = k->sd;
 +
-+	error = sysfs_add_file(dir_sd, attr, SYSFS_KOBJ_ATTR);
-+	sysfs_put(dir_sd);
++	spin_lock(&sysfs_lock);
 +
- 	return error;
++	if (sd && dir)
++		sd = sysfs_find_dirent(sd, dir);
++	if (sd && attr)
++		sd = sysfs_find_dirent(sd, attr);
++	if (sd) {
++		atomic_inc(&sd->s_event);
+ 		wake_up_interruptible(&k->poll);
+-		dput(de);
+ 	}
++
++	spin_unlock(&sysfs_lock);
  }
- EXPORT_SYMBOL_GPL(sysfs_add_file_to_group);
-@@ -486,7 +487,7 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_grou
+ EXPORT_SYMBOL_GPL(sysfs_notify);
+ 
+@@ -486,30 +465,31 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_grou
   */
  int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
  {
--	struct dentry * dir = kobj->dentry;
-+	struct dentry * dir = kobj->sd->s_dentry;
- 	struct dentry * victim;
- 	int res = -ENOENT;
+-	struct dentry * dir = kobj->sd->s_dentry;
+-	struct dentry * victim;
+-	int res = -ENOENT;
+-
+-	mutex_lock(&dir->d_inode->i_mutex);
+-	victim = lookup_one_len(attr->name, dir, strlen(attr->name));
+-	if (!IS_ERR(victim)) {
+-		/* make sure dentry is really there */
+-		if (victim->d_inode && 
+-		    (victim->d_parent->d_inode == dir->d_inode)) {
+-			victim->d_inode->i_mtime = CURRENT_TIME;
+-			fsnotify_modify(victim);
+-			res = 0;
+-		} else
+-			d_drop(victim);
+-		
+-		/**
+-		 * Drop the reference acquired from lookup_one_len() above.
+-		 */
+-		dput(victim);
++	struct sysfs_dirent *victim_sd = NULL;
++	struct dentry *victim = NULL;
++	int rc;
++
++	rc = -ENOENT;
++	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
++	if (!victim_sd)
++		goto out;
++
++	victim = sysfs_get_dentry(victim_sd);
++	if (IS_ERR(victim)) {
++		rc = PTR_ERR(victim);
++		victim = NULL;
++		goto out;
+ 	}
+-	mutex_unlock(&dir->d_inode->i_mutex);
  
-@@ -522,7 +523,7 @@ int sysfs_update_file(struct kobject * k
+-	return res;
++	mutex_lock(&victim->d_inode->i_mutex);
++	victim->d_inode->i_mtime = CURRENT_TIME;
++	fsnotify_modify(victim);
++	mutex_unlock(&victim->d_inode->i_mutex);
++	rc = 0;
++ out:
++	dput(victim);
++	sysfs_put(victim_sd);
++	return rc;
+ }
+ 
+ 
+@@ -522,30 +502,34 @@ int sysfs_update_file(struct kobject * k
   */
  int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
  {
--	struct dentry *dir = kobj->dentry;
-+	struct dentry *dir = kobj->sd->s_dentry;
- 	struct dentry *victim;
+-	struct dentry *dir = kobj->sd->s_dentry;
+-	struct dentry *victim;
++	struct sysfs_dirent *victim_sd = NULL;
++	struct dentry *victim = NULL;
  	struct inode * inode;
  	struct iattr newattrs;
-@@ -560,7 +561,7 @@ EXPORT_SYMBOL_GPL(sysfs_chmod_file);
- 
- void sysfs_remove_file(struct kobject * kobj, const struct attribute * attr)
- {
--	sysfs_hash_and_remove(kobj->dentry, attr->name);
-+	sysfs_hash_and_remove(kobj->sd, attr->name);
- }
- 
- 
-@@ -573,12 +574,12 @@ void sysfs_remove_file(struct kobject *
- void sysfs_remove_file_from_group(struct kobject *kobj,
- 		const struct attribute *attr, const char *group)
- {
--	struct dentry *dir;
-+	struct sysfs_dirent *dir_sd;
- 
--	dir = lookup_one_len(group, kobj->dentry, strlen(group));
--	if (!IS_ERR(dir)) {
--		sysfs_hash_and_remove(dir, attr->name);
--		dput(dir);
-+	dir_sd = sysfs_get_dirent(kobj->sd, group);
-+	if (dir_sd) {
-+		sysfs_hash_and_remove(dir_sd, attr->name);
-+		sysfs_put(dir_sd);
- 	}
- }
- EXPORT_SYMBOL_GPL(sysfs_remove_file_from_group);
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index 52eed2a..383946e 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -18,26 +18,25 @@
- #include "sysfs.h"
- 
- 
--static void remove_files(struct dentry * dir, 
--			 const struct attribute_group * grp)
-+static void remove_files(struct sysfs_dirent *dir_sd,
-+			 const struct attribute_group *grp)
- {
- 	struct attribute *const* attr;
- 
- 	for (attr = grp->attrs; *attr; attr++)
--		sysfs_hash_and_remove(dir,(*attr)->name);
-+		sysfs_hash_and_remove(dir_sd, (*attr)->name);
- }
- 
--static int create_files(struct dentry * dir,
--			const struct attribute_group * grp)
-+static int create_files(struct sysfs_dirent *dir_sd,
-+			const struct attribute_group *grp)
- {
- 	struct attribute *const* attr;
- 	int error = 0;
- 
--	for (attr = grp->attrs; *attr && !error; attr++) {
--		error = sysfs_add_file(dir, *attr, SYSFS_KOBJ_ATTR);
--	}
-+	for (attr = grp->attrs; *attr && !error; attr++)
-+		error = sysfs_add_file(dir_sd, *attr, SYSFS_KOBJ_ATTR);
- 	if (error)
--		remove_files(dir,grp);
-+		remove_files(dir_sd, grp);
- 	return error;
- }
- 
-@@ -45,44 +44,43 @@ static int create_files(struct dentry *
- int sysfs_create_group(struct kobject * kobj, 
- 		       const struct attribute_group * grp)
- {
--	struct dentry * dir;
-+	struct sysfs_dirent *sd;
- 	int error;
- 
--	BUG_ON(!kobj || !kobj->dentry);
-+	BUG_ON(!kobj || !kobj->sd);
- 
- 	if (grp->name) {
--		error = sysfs_create_subdir(kobj,grp->name,&dir);
-+		error = sysfs_create_subdir(kobj, grp->name, &sd);
- 		if (error)
- 			return error;
- 	} else
--		dir = kobj->dentry;
--	dir = dget(dir);
--	if ((error = create_files(dir,grp))) {
-+		sd = kobj->sd;
-+	sysfs_get(sd);
-+	if ((error = create_files(sd, grp))) {
- 		if (grp->name)
--			sysfs_remove_subdir(dir);
-+			sysfs_remove_subdir(sd);
- 	}
--	dput(dir);
-+	sysfs_put(sd);
- 	return error;
- }
- 
- void sysfs_remove_group(struct kobject * kobj, 
- 			const struct attribute_group * grp)
- {
--	struct dentry * dir;
-+	struct sysfs_dirent *dir_sd = kobj->sd;
-+	struct sysfs_dirent *sd;
- 
- 	if (grp->name) {
--		dir = lookup_one_len_kern(grp->name, kobj->dentry,
--				strlen(grp->name));
--		BUG_ON(IS_ERR(dir));
--	}
--	else
--		dir = dget(kobj->dentry);
-+		sd = sysfs_get_dirent(dir_sd, grp->name);
-+		BUG_ON(!sd);
-+	} else
-+		sd = sysfs_get(dir_sd);
- 
--	remove_files(dir,grp);
-+	remove_files(sd, grp);
- 	if (grp->name)
--		sysfs_remove_subdir(dir);
--	/* release the ref. taken in this routine */
--	dput(dir);
-+		sysfs_remove_subdir(sd);
+-	int res = -ENOENT;
+-
+-	mutex_lock(&dir->d_inode->i_mutex);
+-	victim = lookup_one_len(attr->name, dir, strlen(attr->name));
+-	if (!IS_ERR(victim)) {
+-		if (victim->d_inode &&
+-		    (victim->d_parent->d_inode == dir->d_inode)) {
+-			inode = victim->d_inode;
+-			mutex_lock(&inode->i_mutex);
+-			newattrs.ia_mode = (mode & S_IALLUGO) |
+-						(inode->i_mode & ~S_IALLUGO);
+-			newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-			res = notify_change(victim, &newattrs);
+-			mutex_unlock(&inode->i_mutex);
+-		}
+-		dput(victim);
++	int rc;
 +
-+	sysfs_put(sd);
- }
++	rc = -ENOENT;
++	victim_sd = sysfs_get_dirent(kobj->sd, attr->name);
++	if (!victim_sd)
++		goto out;
++
++	victim = sysfs_get_dentry(victim_sd);
++	if (IS_ERR(victim)) {
++		rc = PTR_ERR(victim);
++		victim = NULL;
++		goto out;
+ 	}
+-	mutex_unlock(&dir->d_inode->i_mutex);
  
+-	return res;
++	inode = victim->d_inode;
++	mutex_lock(&inode->i_mutex);
++	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
++	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
++	rc = notify_change(victim, &newattrs);
++	mutex_unlock(&inode->i_mutex);
++ out:
++	dput(victim);
++	sysfs_put(victim_sd);
++	return rc;
+ }
+ EXPORT_SYMBOL_GPL(sysfs_chmod_file);
  
 diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index b67623d..4077ab5 100644
+index 705c03d..e71d763 100644
 --- a/fs/sysfs/inode.c
 +++ b/fs/sysfs/inode.c
-@@ -281,21 +281,18 @@ void sysfs_drop_dentry(struct sysfs_dire
- 		dput(parent);
- }
- 
--int sysfs_hash_and_remove(struct dentry * dir, const char * name)
-+int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
+@@ -190,15 +190,9 @@ void sysfs_instantiate(struct dentry *de
  {
-+	struct dentry *dir = dir_sd->s_dentry;
- 	struct sysfs_dirent **pos, *sd;
--	struct sysfs_dirent *parent_sd = dir->d_fsdata;
- 	int found = 0;
+ 	BUG_ON(!dentry || dentry->d_inode);
  
--	if (!dir)
--		return -ENOENT;
+-	if (inode->i_state & I_NEW) {
++	if (inode->i_state & I_NEW)
+ 		unlock_new_inode(inode);
+ 
+-		if (dentry->d_parent && dentry->d_parent->d_inode) {
+-			struct inode *p_inode = dentry->d_parent->d_inode;
+-			p_inode->i_mtime = p_inode->i_ctime = CURRENT_TIME;
+-		}
+-	}
 -
- 	if (dir->d_inode == NULL)
- 		/* no inode means this hasn't been made visible yet */
- 		return -ENOENT;
- 
- 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
--	for (pos = &parent_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
-+	for (pos = &dir_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
- 		sd = *pos;
- 
- 		if (!sysfs_type(sd))
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index 45b62e2..43cc522 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -66,7 +66,6 @@ static int sysfs_add_link(struct sysfs_d
-  */
- int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
- {
--	struct dentry *dentry = NULL;
- 	struct sysfs_dirent *parent_sd = NULL;
- 	struct sysfs_dirent *target_sd = NULL;
- 	int error = -EEXIST;
-@@ -75,29 +74,28 @@ int sysfs_create_link(struct kobject * k
- 
- 	if (!kobj) {
- 		if (sysfs_mount && sysfs_mount->mnt_sb)
--			dentry = sysfs_mount->mnt_sb->s_root;
-+			parent_sd = sysfs_mount->mnt_sb->s_root->d_fsdata;
- 	} else
--		dentry = kobj->dentry;
-+		parent_sd = kobj->sd;
- 
--	if (!dentry)
-+	if (!parent_sd)
- 		return -EFAULT;
--	parent_sd = dentry->d_fsdata;
- 
--	/* target->dentry can go away beneath us but is protected with
-+	/* target->sd can go away beneath us but is protected with
- 	 * kobj_sysfs_assoc_lock.  Fetch target_sd from it.
- 	 */
- 	spin_lock(&kobj_sysfs_assoc_lock);
--	if (target->dentry)
--		target_sd = sysfs_get(target->dentry->d_fsdata);
-+	if (target->sd)
-+		target_sd = sysfs_get(target->sd);
- 	spin_unlock(&kobj_sysfs_assoc_lock);
- 
- 	if (!target_sd)
- 		return -ENOENT;
- 
--	mutex_lock(&dentry->d_inode->i_mutex);
--	if (!sysfs_find_dirent(dentry->d_fsdata, name))
-+	mutex_lock(&parent_sd->s_dentry->d_inode->i_mutex);
-+	if (!sysfs_find_dirent(parent_sd, name))
- 		error = sysfs_add_link(parent_sd, name, target_sd);
--	mutex_unlock(&dentry->d_inode->i_mutex);
-+	mutex_unlock(&parent_sd->s_dentry->d_inode->i_mutex);
- 
- 	if (error)
- 		sysfs_put(target_sd);
-@@ -114,7 +112,7 @@ int sysfs_create_link(struct kobject * k
- 
- void sysfs_remove_link(struct kobject * kobj, const char * name)
- {
--	sysfs_hash_and_remove(kobj->dentry,name);
-+	sysfs_hash_and_remove(kobj->sd, name);
+ 	d_instantiate(dentry, inode);
  }
  
- static int sysfs_get_target_path(struct sysfs_dirent * parent_sd,
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index f1629b4..27a5f4b 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -69,12 +69,14 @@ extern void sysfs_attach_dirent(struct s
- 				struct sysfs_dirent *parent_sd,
- 				struct dentry *dentry);
+@@ -232,7 +226,7 @@ void sysfs_drop_dentry(struct sysfs_dire
+ 		/* get dentry if it's there and dput() didn't kill it yet */
+ 		dentry = dget_locked(sd->s_dentry);
+ 		parent = dentry->d_parent;
+-	} else if (sd->s_parent->s_dentry->d_inode) {
++	} else if (sd->s_parent->s_dentry && sd->s_parent->s_dentry->d_inode) {
+ 		/* We need to update the parent even if dentry for the
+ 		 * victim itself doesn't exist.
+ 		 */
+@@ -267,8 +261,9 @@ void sysfs_drop_dentry(struct sysfs_dire
+ 		if (sysfs_type(sd) & SYSFS_DIR) {
+ 			drop_nlink(dentry->d_inode);
+ 			drop_nlink(dir);
+-			/* XXX: unpin if directory, this will go away soon */
+-			dput(dentry);
++			/* dentries for shadowed inode are pinned, unpin */
++			if (sysfs_is_shadowed_inode(dentry->d_inode))
++				dput(dentry);
+ 		}
+ 	}
  
--extern int sysfs_add_file(struct dentry *, const struct attribute *, int);
--extern int sysfs_hash_and_remove(struct dentry * dir, const char * name);
-+extern int sysfs_add_file(struct sysfs_dirent *dir_sd,
-+			  const struct attribute *attr, int type);
-+extern int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
- extern struct sysfs_dirent *sysfs_find(struct sysfs_dirent *dir, const char * name);
- 
--extern int sysfs_create_subdir(struct kobject *, const char *, struct dentry **);
--extern void sysfs_remove_subdir(struct dentry *);
-+extern int sysfs_create_subdir(struct kobject *kobj, const char *name,
-+			       struct sysfs_dirent **p_sd);
-+extern void sysfs_remove_subdir(struct sysfs_dirent *sd);
- 
- extern void sysfs_drop_dentry(struct sysfs_dirent *sd);
- extern int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index c288e41..06cbf41 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -55,7 +55,7 @@ struct kobject {
- 	struct kobject		* parent;
- 	struct kset		* kset;
- 	struct kobj_type	* ktype;
--	struct dentry		* dentry;
-+	struct sysfs_dirent	* sd;
- 	wait_queue_head_t	poll;
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index d5ce3aa..f82c345 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -22,7 +22,7 @@ static const struct super_operations sys
+ 	.drop_inode	= sysfs_delete_inode,
  };
  
-@@ -71,13 +71,14 @@ extern void kobject_init(struct kobject
- extern void kobject_cleanup(struct kobject *);
+-static struct sysfs_dirent sysfs_root = {
++struct sysfs_dirent sysfs_root = {
+ 	.s_count	= ATOMIC_INIT(1),
+ 	.s_flags	= SYSFS_ROOT,
+ 	.s_mode		= S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO,
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index b11c448..0aa4b18 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -45,6 +45,7 @@ struct sysfs_dirent {
+ #define SD_DEACTIVATED_BIAS	INT_MIN
  
- extern int __must_check kobject_add(struct kobject *);
--extern int __must_check kobject_shadow_add(struct kobject *, struct dentry *);
-+extern int __must_check kobject_shadow_add(struct kobject *kobj,
-+					   struct sysfs_dirent *shadow_parent);
- extern void kobject_del(struct kobject *);
+ extern struct vfsmount * sysfs_mount;
++extern struct sysfs_dirent sysfs_root;
+ extern struct kmem_cache *sysfs_dir_cachep;
  
- extern int __must_check kobject_rename(struct kobject *, const char *new_name);
- extern int __must_check kobject_shadow_rename(struct kobject *kobj,
--						struct dentry *new_parent,
--						const char *new_name);
-+					      struct sysfs_dirent *new_parent,
-+					      const char *new_name);
- extern int __must_check kobject_move(struct kobject *, struct kobject *);
- 
- extern int __must_check kobject_register(struct kobject *);
+ extern struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
 diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 2a6df64..4c43030 100644
+index 4c43030..2f58ca1 100644
 --- a/include/linux/sysfs.h
 +++ b/include/linux/sysfs.h
-@@ -19,6 +19,7 @@ struct kobject;
- struct module;
- struct nameidata;
- struct dentry;
-+struct sysfs_dirent;
+@@ -81,7 +81,6 @@ struct sysfs_ops {
+ #define SYSFS_KOBJ_ATTR 	0x0004
+ #define SYSFS_KOBJ_BIN_ATTR	0x0008
+ #define SYSFS_KOBJ_LINK 	0x0020
+-#define SYSFS_NOT_PINNED	(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR | SYSFS_KOBJ_LINK)
+ #define SYSFS_COPY_NAME		(SYSFS_DIR | SYSFS_KOBJ_LINK)
  
- /* FIXME
-  * The *owner field is no longer used, but leave around
-@@ -92,13 +93,14 @@ extern int sysfs_schedule_callback(struc
- 		void (*func)(void *), void *data, struct module *owner);
- 
- extern int __must_check
--sysfs_create_dir(struct kobject *, struct dentry *);
-+sysfs_create_dir(struct kobject *kobj, struct sysfs_dirent *shadow_parent_sd);
- 
- extern void
- sysfs_remove_dir(struct kobject *);
- 
- extern int __must_check
--sysfs_rename_dir(struct kobject *, struct dentry *, const char *new_name);
-+sysfs_rename_dir(struct kobject *kobj, struct sysfs_dirent *new_parent_sd,
-+		 const char *new_name);
- 
- extern int __must_check
- sysfs_move_dir(struct kobject *, struct kobject *);
-@@ -138,8 +140,8 @@ void sysfs_notify(struct kobject * k, ch
- 
- extern int sysfs_make_shadowed_dir(struct kobject *kobj,
- 	void * (*follow_link)(struct dentry *, struct nameidata *));
--extern struct dentry *sysfs_create_shadow_dir(struct kobject *kobj);
--extern void sysfs_remove_shadow_dir(struct dentry *dir);
-+extern struct sysfs_dirent *sysfs_create_shadow_dir(struct kobject *kobj);
-+extern void sysfs_remove_shadow_dir(struct sysfs_dirent *shadow_sd);
- 
- extern int __must_check sysfs_init(void);
- 
-@@ -151,7 +153,8 @@ static inline int sysfs_schedule_callbac
- 	return -ENOSYS;
- }
- 
--static inline int sysfs_create_dir(struct kobject * k, struct dentry *shadow)
-+static inline int sysfs_create_dir(struct kobject *kobj,
-+				   struct sysfs_dirent *shadow_parent_sd)
- {
- 	return 0;
- }
-@@ -161,9 +164,9 @@ static inline void sysfs_remove_dir(stru
- 	;
- }
- 
--static inline int sysfs_rename_dir(struct kobject * k,
--					struct dentry *new_parent,
--					const char *new_name)
-+static inline int sysfs_rename_dir(struct kobject *kobj,
-+				   struct sysfs_dirent *new_parent_sd,
-+				   const char *new_name)
- {
- 	return 0;
- }
-diff --git a/lib/kobject.c b/lib/kobject.c
-index a85708c..2d26f07 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -46,7 +46,7 @@ static int populate_dir(struct kobject *
- 	return error;
- }
- 
--static int create_dir(struct kobject * kobj, struct dentry *shadow_parent)
-+static int create_dir(struct kobject * kobj, struct sysfs_dirent *shadow_parent)
- {
- 	int error = 0;
- 	if (kobject_name(kobj)) {
-@@ -206,7 +206,7 @@ static void unlink(struct kobject * kobj
-  *	@shadow_parent: sysfs directory to add to.
-  */
- 
--int kobject_shadow_add(struct kobject * kobj, struct dentry *shadow_parent)
-+int kobject_shadow_add(struct kobject *kobj, struct sysfs_dirent *shadow_parent)
- {
- 	int error = 0;
- 	struct kobject * parent;
-@@ -382,7 +382,7 @@ int kobject_rename(struct kobject * kobj
- 	/* Note : if we want to send the new name alone, not the full path,
- 	 * we could probably use kobject_name(kobj); */
- 
--	error = sysfs_rename_dir(kobj, kobj->parent->dentry, new_name);
-+	error = sysfs_rename_dir(kobj, kobj->parent->sd, new_name);
- 
- 	/* This function is mostly/only used for network interface.
- 	 * Some hotplug package track interfaces by their name and
-@@ -405,8 +405,8 @@ out:
-  *	@new_name: object's new name
-  */
- 
--int kobject_shadow_rename(struct kobject * kobj, struct dentry *new_parent,
--			  const char *new_name)
-+int kobject_shadow_rename(struct kobject * kobj,
-+			  struct sysfs_dirent *new_parent, const char *new_name)
- {
- 	int error = 0;
- 
+ #define SYSFS_FLAG_MASK		~SYSFS_TYPE_MASK
 -- 
 1.4.3.4
 
