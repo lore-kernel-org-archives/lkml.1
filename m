@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbXE1K7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762331AbXE1K7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756980AbXE1K7i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 06:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750700AbXE1K73
+	id S1762331AbXE1K7v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 06:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbXE1K7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 06:59:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44533 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750699AbXE1K72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 06:59:28 -0400
-Date: Mon, 28 May 2007 12:58:51 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.22-rc1-mm1 Implementing fan/thermal control in userspace - Was: [cannot change thermal trip points]
-Message-ID: <20070528105851.GE18807@elf.ucw.cz>
-References: <20070521132948.GD8332@elf.ucw.cz> <20070521133608.GB7540@srcf.ucam.org> <20070521134046.GE8332@elf.ucw.cz> <20070521134553.GA7911@srcf.ucam.org> <20070521224200.GF10714@elf.ucw.cz> <20070522003153.GA18162@srcf.ucam.org> <1180016213.16396.74.camel@queen.suse.de> <20070524143644.GA27364@srcf.ucam.org> <20070525063815.GA3989@ucw.cz> <20070527215123.GA22687@srcf.ucam.org>
+	Mon, 28 May 2007 06:59:33 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:51696 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751199AbXE1K7c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 06:59:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ayitEa50nDncY9aXN38PJbI0iwif6jZYSFD+u47tRl5ZwQzBSXFdtrVDSoB/XE/WjmDHzFb/e7TSVDBr5BxLNH5I8EEz67XjMzPAnuJ8ROtaHrJR8WH18DsqE+xsjWoD71o3NYIAAX8dOBLmfTVQnCUok082INxsO8OmHsd8g2E=
+Message-ID: <4a3acf9f0705280359s2d4d507bs97d060889f44ba41@mail.gmail.com>
+Date: Mon, 28 May 2007 18:59:31 +0800
+From: "=?GB2312?B?xNq6y9e319k=?=" <kerneltrack@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: question about __block_commit_write
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070527215123.GA22687@srcf.ucam.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi, all.
+   In the snippet code, I add a printk into block_commit_write, I want
+to get the bh's block number and device number . I recompiled it in
+2.4.20. But I surprise that mutliple output lines are the same.
 
-> > > Because, as Len has pointed out, you end up with two different ideas 
-> > > about what the trip points are - the kernel's and the hardware's. That 
-> > > works fine until some event in the firmware either forcibly 
-> > > resynchronises the two or makes assumptions about the spec-compliance of 
-> > > the interpreter.
-> > 
-> > ...and suggested workaround is to drive fans directly from userspace,
-> > which not only violates the specs and has all the problems with
-> > desynchronized state, but ALSO FAILS TO WORK IN PRACTICE.
-> 
-> I don't think that's obviously true. 11.3.2 of the 3.0 spec states:
+static int __block_commit_write(struct inode *inode, struct page
+*page,  unsigned from, unsigned to)
+{
+ unsigned block_start, block_end;
+ int partial = 0, need_balance_dirty = 0;
+ unsigned blocksize;
+ struct buffer_head *bh, *head;
 
-> "A package consisting of references to all active cooling devices that 
-> should be engaged when the associated active cooling threshold (_ACx) is 
-> exceeded." 
+ blocksize = 1 << inode->i_blkbits;
 
-We'd need:
+ for(bh = head = page->buffers, block_start = 0;
+     bh != head || !block_start;
+     block_start=block_end, bh = bh->b_this_page) {
+  block_end = block_start + blocksize;
+  if (block_end <= from || block_start >= to) {
+   if (!buffer_uptodate(bh))
+    partial = 1;
+  } else {
+@+   printk(KERN_ERR"dev is %d, blocknr is %d\n", bh->b_dev, bh->b_blocknr);
+   set_bit(BH_Uptodate, &bh->b_state);
+   if (!atomic_set_buffer_dirty(bh)) {
+    __mark_dirty(bh);
+    buffer_insert_inode_data_queue(bh, inode);
+    need_balance_dirty = 1;
+   }
+  }
+ }
 
-a) way to tell acpi not to control fans any more
+ if (need_balance_dirty)
+  balance_dirty();
+ /*
+  * is this a partial write that happened to make all buffers
+  * uptodate then we can optimize away a bogus readpage() for
+  * the next read(). Here we 'discover' wether the page went
+  * uptodate as a result of this (potentially partial) write.
+  */
+ if (!partial)
+  SetPageUptodate(page);
+ return 0;
+}
 
-b) in kernel watchdog so that acpi starts controlling fans after oom
-killer
 
-c) way to control passive cooling from userspace.
+The ouput is following :
+dev is 5640, blocknr is 14223
+dev is 5640, blocknr is 14223
+dev is 5640, blocknr is 14223
+dev is 5640, blocknr is 14223
+dev is 5640, blocknr is 14223
+dev is 5640, blocknr is 14223
+.....
 
-Not something doable for 2.6.22.  
 
 
-> > > The interface would need to be more complicated than that if you wanted 
-> > > to be able to implement hysteresis, and there's the potential for 
-> > > hardware damage if paramaters are set inappropriately. Even then, 
-> > > there's no easy way of programatically determining whether it would work 
-> > > on any given hardware.
-> > 
-> > Not sure why you try to scare people with 'hardware damage'. HP XE3
-> > bios already _was_ damaging hardware (it cooked the hard drive using
-> > cpu as a heater), and no acpi magic can damage correctly working
-> > machine.
-> 
-> Given that this presumably didn't occur under Windows, I think it would
-> be significantly better to figure out why and then fix that. 
 
-It would happily occur under Windows. You just needed to load machine
-in a way that cpu stayed ~80C.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I do not know why happened like these?
