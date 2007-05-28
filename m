@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbXE1TYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763425AbXE1T0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763288AbXE1TYI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 15:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbXE1TXy
+	id S1763425AbXE1T0J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 15:26:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXE1TZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 15:23:54 -0400
-Received: from www.osadl.org ([213.239.205.134]:59760 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751554AbXE1TXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 15:23:52 -0400
-Subject: Re: b44: regression in 2.6.22 (resend)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Maximilian Engelhardt <maxi@daemonizer.de>
-Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200705281944.05030.maxi@daemonizer.de>
-References: <20070525172431.60affaca@freepuppy>
-	 <200705281714.25841.mb@bu3sch.de> <1180366371.4952.5.camel@chaos>
-	 <200705281944.05030.maxi@daemonizer.de>
-Content-Type: text/plain
-Date: Mon, 28 May 2007 21:23:50 +0200
-Message-Id: <1180380230.3657.3.camel@chaos>
+	Mon, 28 May 2007 15:25:57 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4046 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751452AbXE1TZ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 15:25:57 -0400
+Date: Mon, 28 May 2007 20:25:48 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ARM: Section mismatch warnings
+Message-ID: <20070528192548.GD5737@flint.arm.linux.org.uk>
+Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20070528163253.GA29174@uranus.ravnborg.org> <20070528170430.GB5737@flint.arm.linux.org.uk> <20070528183629.GA30821@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070528183629.GA30821@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-28 at 19:44 +0200, Maximilian Engelhardt wrote:
-> > Can you please keep CONFIG_HIGH_RES_TIMERS and CONFIG_NOHZ and try the
-> > following combinations on the kernel command line:
-> >
-> > 1) highres=off nohz=off (should be the same as your working config)
-> > 2) highres=off
-> > 3) nohz=off
+On Mon, May 28, 2007 at 08:36:29PM +0200, Sam Ravnborg wrote:
+> > 
+> > > o-arm-neponset/log.out:WARNING: arch/arm/mach-sa1100/built-in.o(.text+0x1748):
+> >  Section mismatch: reference to .init.text:sa1110_mb_disable
+> >  (between 'neponset_init' and 'neponset_resume')
+> > 
+> > This one looks quite bogus.  sa1110_mb_disable() is marked __init, and
+> > it's called from neponset_init() which is also marked __init.
 > 
-> I tested this with my 2.6.22-rc3 kernel, here are the results:
+> Created a neponset.i file - output:
 > 
-> without any special boot parameters: problem does appear
-> highres=off nohz=off: problem does not appear
-> highres=off: problem does not appear
-> nohz=off: problem does appear
+> static int neponset_init(void)
+> {
+>  platform_driver_register(&neponset_device_driver);
+> 
+> So we loose the __init marker during preprocessing.
+> Which is due the the buggy part of my path that adds __devinit.
+> 
+> There was a reason I noted the devinit markers should be reviewed
+> carefully - this one seems wrong.
 
-Is there any other strange behavior of the high res enabled kernel than
-the b44 problem ?
+I don't understand why you added that __devinit in the first place.
+What happens if you leave it as a mere __init function, as it should be?
 
-> I additionally built my 2.6.22-rc2-mm1 kernel without High Resolution Timer, 
-> but the high ping problem is still there.
-
-Hmm, that's mysterious. Wild guess is that highres exposes the hidden
-"feature" in a different way than rc2-mm1 does.
-
-	tglx
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
