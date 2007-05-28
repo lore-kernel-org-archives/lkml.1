@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbXE1KoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbXE1KtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbXE1KoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 06:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbXE1KoA
+	id S1752779AbXE1KtE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 06:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbXE1Ksy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 06:44:00 -0400
-Received: from ozlabs.org ([203.10.76.45]:33003 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757431AbXE1Kn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 06:43:58 -0400
-Subject: Re: [patch] x86_64: fix sched_clock()
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20070525110543.GM8094@one.firstfloor.org>
-References: <20070525075446.GA20140@elte.hu>
-	 <20070525080209.GE8094@one.firstfloor.org> <20070525080415.GB21446@elte.hu>
-	 <20070525082018.GF8094@one.firstfloor.org> <20070525083430.GB27236@elte.hu>
-	 <20070525084109.GI8094@one.firstfloor.org> <20070525084426.GA29973@elte.hu>
-	 <20070525084547.GJ8094@one.firstfloor.org>
-	 <20070525015544.bce3cb99.akpm@linux-foundation.org>
-	 <20070525090315.GK8094@one.firstfloor.org>
-	 <20070525110543.GM8094@one.firstfloor.org>
-Content-Type: text/plain
-Date: Mon, 28 May 2007 13:12:47 +1000
-Message-Id: <1180321967.29566.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 28 May 2007 06:48:54 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1331 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbXE1Ksx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 06:48:53 -0400
+Message-ID: <465AB38E.4020604@shadowen.org>
+Date: Mon, 28 May 2007 11:48:46 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add a trivial patch style checker
+References: <9a1288909c10f2935af82ec5cea0c46b@pinky> <20070527101023.9c4f5952.randy.dunlap@oracle.com>
+In-Reply-To: <20070527101023.9c4f5952.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-25 at 13:05 +0200, Andi Kleen wrote:
-> On Fri, May 25, 2007 at 11:03:15AM +0200, Andi Kleen wrote:
-> > > This?    I sent it to you earlier this week:
-> > 
-> > Sorry haven't processed those yet.
-> > 
-> > Ah. The correct fix here is to clear the tsc flag in boot_cpu_data
-> > when the option is set. Will do that.
+Randy Dunlap wrote:
+> On Sun, 27 May 2007 18:11:25 +0100 Andy Whitcroft wrote:
 > 
-> Hmm I double checked this now; tsc_disable indeed clears
-> X86_FEATURE_TSC in identify_cpu and that should be always
-> called before anything sched_clock related runs on a CPU.
-
-Yes, agreed.
-
-> Also the only possibly faulting division is protected
-> by a cpu_has_tsc which even checks boot_cpu_data. this means
-> even if the resync frequency code was called for
-> some reason before the identify_cpu of a AP it should
-> still work. For the BP this definitely cannot happen.
+>> 	Also if either Joel or Randy want to be on on the MAINTAINERS
+>> 	entry yell and we'll get it updated, wouldn't want to list
+>> 	anyone without permission.
 > 
-> I also tried it with qemu myself (both one and two cpus) and it worked
+> Yes, please.
 > 
-> Rusty, was this really on a standard kernel? Was it with multiple
-> CPUs? 
+>> 	I have the infrastructure in place to for the automated robot
+>> 	if and when its deemed ready.
+>>
+>> diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
+>> index a417b25..23637e8 100644
+>> --- a/Documentation/SubmittingPatches
+>> +++ b/Documentation/SubmittingPatches
+> 
+> It needs to be added to Documentation/SubmitChecklist also...
+> (but I'm working in yard/house this holiday-not weekend).
 
-No, will re-check.  Drop it for now, if I can reproduce I'll produce the
-real fix or a decent explanation.
+So true.
 
-Thanks,
-Rusty.
+I've sorted this one out, but there seems to be a number of little
+changes trickling in so I will roll them all up and send up a V2 pretty
+soon.
 
-
+-apw
