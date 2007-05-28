@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbXE1QJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbXE1QKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760572AbXE1QJj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 12:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXE1QJc
+	id S1758945AbXE1QKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 12:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbXE1QKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 12:09:32 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:4633 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750844AbXE1QJb (ORCPT
+	Mon, 28 May 2007 12:10:33 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:40387 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbXE1QKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 12:09:31 -0400
-Date: Mon, 28 May 2007 12:09:30 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before
- hibernation/suspend
-In-Reply-To: <20070527220158.GB22687@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0705281156470.22682-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 May 2007 12:10:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
+        b=Q5XvateXDgIekHC8PSgg8agUrTuNBG+Uvv5xjT6yGl5RpqPTuwjjJal5h8KlEN/Am+/eQi1l2c3nZ4LOG9pxaZWJIo6wOZFju2esuHtKsC6b5bx3vA8O6BCT5TgCt1F19X8Figm4vCHHxHVxU3DIT+owg9n3ZzELXniX2I759/M=
+Subject: [PATCHSET 2.6.22-rc2-mm1] sysfs: assorted fixes
+In-Reply-To: 
+X-Mailer: git-send-email
+Date: Tue, 29 May 2007 01:10:25 +0900
+Message-Id: <1180368625600-git-send-email-htejun@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Tejun Heo <htejun@gmail.com>
+To: gregkh@suse.de, dmitry.torokhov@gmail.com, cornelia.huck@de.ibm.com,
+       oneukum@suse.de, rpurdie@rpsys.net, stern@rowland.harvard.edu,
+       maneesh@in.ibm.com, linux-kernel@vger.kernel.org, htejun@gmail.com
+Content-Transfer-Encoding: 7BIT
+From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 May 2007, Matthew Garrett wrote:
+Hello, all.
 
-> > BTW, I know of two subsystems that want their kernel threads to be frozen for
-> > synchronization purposes.  Please see these messages:
-> > 
-> > 1) https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012592.html
-> > (plus follow up)
-> > 
-> > 2) http://marc.info/?l=linux-kernel&m=117919066830575&w=2
-> 
-> I'm not entirely sold on this. The issue is that there's the possibility 
-> of races during suspend/resume? It sounds like that should be 
-> implemented in the driver, rather than depending on a side-effect of 
-> process freezing. Otherwise there's no way of selectively suspending 
-> that device.
+This patchset contains two cleanups and three fixes.
 
-I can't speak for the second example, but there's a good reason the
-first example works this way.  It's not a matter of races; the problem
-is that the kernel thread's job is to selectively suspend and resume
-devices.  We don't want it doing this while a system sleep is in 
-progress; it would (and in fact has, before the thread was made 
-freezable) cause the sleep transition to abort.
+#01: make-sysfs_alloc_ino-static, cleanup
+#02: fix-parent-refcounting, fix
+#03: reorganize-sysfs_new_inode-and-sysfs_create, cleanup and prep for #04
+#04: use-iget_locked-instead-of-new_inode, fix
+#05: fix-root-sysfs_dirent-root-dentry-association, fix
 
-Handling it entirely from within the drivers is possible in theory.  
-Unfortunately the design of the PM core has not leant itself to such an 
-approach.  Using separate callbacks for hibernation vs. STR will help, 
-as will Raphael's notifiers.
+ fs/sysfs/dir.c   |  143 +++++++++++++++++++++++--------------------------------
+ fs/sysfs/inode.c |  114 ++++++++++++++++++++++++-------------------
+ fs/sysfs/mount.c |   19 ++++---
+ fs/sysfs/sysfs.h |    6 +-
+ 4 files changed, 137 insertions(+), 145 deletions(-)
 
-Alan Stern
+Please apply.  Thanks.
+
+--
+tejun
+
 
