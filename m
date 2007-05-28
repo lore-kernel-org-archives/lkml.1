@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbXE1Sfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763301AbXE1Sfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762898AbXE1Sfd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 14:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbXE1Sf0
+	id S1763301AbXE1Sfq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 14:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760276AbXE1Sfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 14:35:26 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:37503 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbXE1SfZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 14:35:25 -0400
-Date: Mon, 28 May 2007 19:35:14 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Message-ID: <20070528183513.GA2815@srcf.ucam.org>
-References: <200701051001.58472.david-b@pacbell.net>
-MIME-Version: 1.0
+	Mon, 28 May 2007 14:35:30 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56138 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759919AbXE1Sfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 14:35:30 -0400
+Date: Mon, 28 May 2007 20:36:29 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-arm-kernel@lists.arm.linux.org.uk,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ARM: Section mismatch warnings
+Message-ID: <20070528183629.GA30821@uranus.ravnborg.org>
+References: <20070528163253.GA29174@uranus.ravnborg.org> <20070528170430.GB5737@flint.arm.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200701051001.58472.david-b@pacbell.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [patch 2.6.20-rc3 1/3] rtc-cmos driver
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <20070528170430.GB5737@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 05, 2007 at 10:01:57AM -0800, David Brownell wrote:
-> This is an "RTC framework" driver for the "CMOS" RTCs which are standard
-> on PCs and some other platforms.  That's MC146818 compatible silicon.
-> Advantages of this vs. drivers/char/rtc.c (use one _or_ the other, only
-> one will be able to claim the RTC irq) include:
+> 
+> > o-arm-neponset/log.out:WARNING: arch/arm/mach-sa1100/built-in.o(.text+0x1748):
+>  Section mismatch: reference to .init.text:sa1110_mb_disable
+>  (between 'neponset_init' and 'neponset_resume')
+> 
+> This one looks quite bogus.  sa1110_mb_disable() is marked __init, and
+> it's called from neponset_init() which is also marked __init.
 
-Sorry for getting to this so late - I've only just started playing with 
-this driver.
+Created a neponset.i file - output:
 
-> +static int cmos_read_alarm(struct device *dev, struct rtc_wkalrm *t)
+static int neponset_init(void)
+{
+ platform_driver_register(&neponset_device_driver);
 
-This is awkward. At the very least, year will be set to -1. This then 
-gets passed through to rtc_tm_to_time, which results in reading 
-wakealarm providing very odd feedback. I guess the "right" fix is for 
-rtc_tm_to_time to use the current values for anything that's -1?
+So we loose the __init marker during preprocessing.
+Which is due the the buggy part of my path that adds __devinit.
 
-> +	rtc_control = CMOS_READ(RTC_CONTROL);
-> +	rtc_control &= ~(RTC_PIE | RTC_AIE | RTC_UIE);
+There was a reason I noted the devinit markers should be reviewed carefully -
+this one seems wrong.
 
-Do you really want to clobber RTC_AIE on probe? If an alarm has been set 
-by the BIOS, it seems a little unfair to disable it on boot.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> 
+> > o-arm-neponset/log.out:WARNING: arch/arm/mach-sa1100/built-in.o(.text+0x17ac):
+>  Section mismatch: reference to .init.data:devices
+>  (between 'neponset_init' and 'neponset_resume')
+> 
+> No reference to 'devices' (marked __initdata) in neponset_resume but there
+> is in neponset_init(), which is the only reference to it, and it is marked
+> __init.  Another false positive?
+It is between the symbols so the rference will never be in the latter function.
+In this case it is due to my wrong __devinit marking (again).
+
+> 
+> > o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2410/built-in.o(.text+0x80):
+>  Section mismatch: reference to .init.data:s3c2410_dma_order
+>  (between 's3c2410_dma_add' and 's3c2410_pm_add')
+> 
+> Don't know enough about s3c stuff, but this one looks like a false positive
+> as well - it's registering a sysdev driver at boot time, and the class
+> and sysdev is only ever also registered at boot time and never unregistered.
+> Adding __init to s3c2410_dma_add would probably be the right thing to do
+> but will move the problem to be a reference to s3c2410_dma_add from
+> s3c2410_dma_driver instead.
+> 
+> Once that's done, might need an annotation of some sort?  Not sure.
+modpost allows references to .init.text from variables named *_driver - so that
+would work out.
+And it is not a 'false positive' in the sense that there is indeed a
+reference from a .text section to a .init.text section - so the calling
+function ougth to be marked __init.
+
+
+So conclusion is that most of these were caused by a wrong marking from my side.
+But at least I had requested special attention to that part in my patch
+submission because I knew I was not sure.
+
+I did not see any wrong-doings by modpost.
+
+	Sam
