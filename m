@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbXE1Van@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762771AbXE1VhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932456AbXE1Van (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 17:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbXE1Vag
+	id S1762771AbXE1VhE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 17:37:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbXE1Vg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 17:30:36 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:41073 "EHLO mailer.gwdg.de"
+	Mon, 28 May 2007 17:36:56 -0400
+Received: from mail.tmr.com ([64.65.253.246]:32797 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbXE1Vaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 17:30:35 -0400
-Date: Mon, 28 May 2007 23:30:18 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: stuff ready to be deleted?
-In-Reply-To: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
-Message-ID: <Pine.LNX.4.61.0705282326480.11140@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
+	id S1752011AbXE1Vgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 17:36:55 -0400
+Message-ID: <465B4B75.2040602@tmr.com>
+Date: Mon, 28 May 2007 17:36:53 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
+Subject: What causes iowait other than waiting for i/o?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I recently noted that my system was spending a lot of time in i/o wait 
+when doing some tasks which I thought didn't involve i/o, as noted by 
+the lack of disk light activity most of the time. I thought of network, 
+certainly the NIC had no activity for this job. So I set up a little 
+loop to capture all disk i/o and network activity (including loopback). 
+That was no obvious help, and the program doesn't use pipes.
 
-On May 28 2007 16:15, Robert P. J. Day wrote:
->removing dead content from the tree:
->
->http://fsdev.net/wiki/index.php?title=Kernel_Janitor%27s_Todo_List
->
->currently, the list contains the items:
->
->    * 4 Traffic policing
+At this point I'm really curious, does someone have a good clue?
 
-CONFIG_NET_SCHED? CONFIG_NET_ACT_POLICE? Neither seems
-marked as deprecated/obsoleted in Kconfig.
+Note: I don't think this is a bug or performance issue, unless the 
+kernel is doing something and charging time to iowait instead of system 
+I don't see anything to fix, but I would like to understand.
 
-
-
-	Jan
 -- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
+
