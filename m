@@ -1,96 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760276AbXE1OMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbXE1OP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760276AbXE1OMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 10:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbXE1OMW
+	id S1758959AbXE1OP7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 10:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbXE1OPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 10:12:22 -0400
-Received: from daemonizer.de ([87.230.16.230]:33695 "EHLO daemonizer.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753071AbXE1OMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 10:12:20 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: b44: regression in 2.6.22 (resend)
-Date: Mon, 28 May 2007 16:12:12 +0200
-User-Agent: KMail/1.9.7
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070525172431.60affaca@freepuppy> <200705280240.17910.maxi@daemonizer.de> <200705281249.56106.mb@bu3sch.de>
-In-Reply-To: <200705281249.56106.mb@bu3sch.de>
+	Mon, 28 May 2007 10:15:52 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:28691 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbXE1OPv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 10:15:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=qFBn9RqNiZ2inY4SN4N/4h+E87PA3hSGK9s2anH4hrggJc05QvTm4qSrqoecSz07cdavlQr5p6ef7O7STvnJ2gnadsv6Pkhupg6aDNWVub2vxXNsf4vzwvwRqDzD8f516UAa5H1MIWmNVmC1JnFbgv8I4VJGl3BCbpvInNK1t38=
+Message-ID: <465AE410.6020408@gmail.com>
+Date: Mon, 28 May 2007 10:15:44 -0400
+From: Parag Warudkar <parag.warudkar@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart131155292.T37GDDYD6P";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Stefan Helbing <sth@wecltd.eu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Re-2: Oops in kernel 2.6.21
+References: <200705280626.l4S6QFpC015101@pop3mail.sitec.net>
+In-Reply-To: <200705280626.l4S6QFpC015101@pop3mail.sitec.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705281612.15649.maxi@daemonizer.de>
-X-Spam-Score: -4.1 (----)
-X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.3 AWL AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart131155292.T37GDDYD6P
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+No problem. I would suggest you try out the latest prepatch stable 
+kernel - v 2.6.22-rc3 as 2.6.21.3 does not have any relevant changes 
+over 2.6.21.1 in the NFS area that I can see.
 
-On Monday 28 May 2007, Michael Buesch wrote:
-> Can you also test the following patch?
-> I think there's a bug in b44 that is doesn't properly discard
-> shared IRQs, so it might possibly generate a NAPI storm, dunno.
-> Worth a try.
->
-> Index: linux-2.6.22-rc3/drivers/net/b44.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.22-rc3.orig/drivers/net/b44.c	2007-05-27 23:01:44.000000000
-> +0200 +++ linux-2.6.22-rc3/drivers/net/b44.c	2007-05-28 12:48:27.000000000
-> +0200 @@ -911,6 +911,8 @@ static irqreturn_t b44_interrupt(int irq
->  	spin_lock(&bp->lock);
->
->  	istat =3D br32(bp, B44_ISTAT);
-> +	if (istat =3D=3D 0xFFFFFFFF)
-> +		goto out; /* Shared IRQ not for us */
->  	imask =3D br32(bp, B44_IMASK);
->
->  	/* The interrupt mask register controls which interrupt bits
-> @@ -942,6 +944,7 @@ irq_ack:
->  		bw32(bp, B44_ISTAT, istat);
->  		br32(bp, B44_ISTAT);
->  	}
-> +out:
->  	spin_unlock(&bp->lock);
->  	return IRQ_RETVAL(handled);
->  }
+Thanks!
 
-I did try this patch on a affected kernel, but I didn't notice any big=20
-difference. Perhaps the kernel is a bit less slow during the test, but It's=
-=20
-hard to tell.
+Parag
 
-Maxi
+Stefan Helbing wrote:
+> Hello Parag -
+> 
+> shame on me - it's a very new system, so I don't have a comparable kernel. I've got only a similar, very stable, system running kernel 2.6.18-mm3.
+> I will try out the last stable version from www.kernel.org (2.6.21.3) and give you further information.
+> 
+> Bye
+> Stefan
+> 
+> ======Originalnachricht======
+> Von: "Parag Warudkar" <parag.warudkar@gmail.com>
+> Datum: 2007-05-28 00:45:38
+> An: "Stefan Helbing" <sth@wecltd.eu>
+> Betreff: Re: Oops in kernel 2.6.21
+> 
+> [ It's NFS - CCing Trond ]
+> 
+> Hi Stefan,
+> 
+> What was the last kernel that worked for you without giving this 
+> problem? Also is it possible for you to try the latest kernel 
+> (http://kernel.org/) to see if the problem is still reproducible?
+> 
+> 
+> Parag
+> 
+> Stefan Helbing wrote:
+>> Hello,
+>>
+>> I'm really unsure if you can help me with this problem, so I choosed this address from oops-tracing.txt.
+>> I get an Oops in kernel 2.6.21 very often. One of the Oops logs is attached to this email.
+>> I believe (but I only believe - because until now the system is not doing more than this) that the Oops occurs during longer NFS transfers over a WAN connection.
+>> I took the source code from the current Debian unstable version.
+>>
+>> Do you have a suggestion? More information necessary?
+>> Thank you very much!
+>>
+>> Best regards
+>> Stefan Helbing
+>>
+> 
+>> May 27 10:24:49 kassandra kernel: BUG: unable to handle kernel paging request at virtual address 00b00000
+>> May 27 10:24:49 kassandra kernel:  printing eip:
+>> May 27 10:24:49 kassandra kernel: c015d5ce
+>> May 27 10:24:49 kassandra kernel: *pde = 2aebf001
+>> May 27 10:24:49 kassandra kernel: *pte = 00000000
+>> May 27 10:24:49 kassandra kernel: Oops: 0000 [#1]
+>> May 27 10:24:49 kassandra kernel: SMP
+>> May 27 10:24:49 kassandra kernel: Modules linked in: ipt_REJECT ipt_LOG xt_limit xt_tcpudp iptable_filter ip_tables x_tables it87 hwmon_vid hwmon i2c_isa i2c_dev nfsd exportfs nfs lockd sunrpc i2c_i801 3c59x unix
+>> May 27 10:24:49 kassandra kernel: CPU:    0
+>> May 27 10:24:49 kassandra kernel: EIP:    0060:[__d_lookup+97/244]    Not tainted VLI
+>> May 27 10:24:49 kassandra kernel: EFLAGS: 00010206   (2.6.21-i386 #1)
+>> May 27 10:24:49 kassandra kernel: EIP is at __d_lookup+0x61/0xf4
+>> May 27 10:24:49 kassandra kernel: eax: 000126d5   ebx: 00003354   ecx: 00000011   edx: c36a6120
+>> May 27 10:24:49 kassandra kernel: esi: dde75d48   edi: cb71a194   ebp: 00b00000   esp: dde75cdc
+>> May 27 10:24:49 kassandra kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+>> May 27 10:24:49 kassandra kernel: Process cp (pid: 5465, ti=dde74000 task=ec2a5070 task.ti=dde74000)
+>> May 27 10:24:49 kassandra kernel: Stack: 00000000 ffcaa7dc b93cff31 00000027 dde75d48 cb71a194 00003354 dde75d48
+>> May 27 10:24:49 kassandra kernel:        cb71a194 dde75f00 c015d54c ffcaa803 00000000 b93cff31 f8e5477a f8e60f35
+>> May 27 10:24:49 kassandra kernel:        00000000 00000001 cb71a194 0007b847 dde75f00 d8b52e9c dde75f30 00000000
+>> May 27 10:24:49 kassandra kernel: Call Trace:
+>> May 27 10:24:49 kassandra kernel:  [d_lookup+28/61] d_lookup+0x1c/0x3d
+>> May 27 10:24:49 kassandra kernel:  [pg0+950245242/1069429760] nfs_readdir_lookup+0xfc/0x2ca [nfs]
+>> May 27 10:24:49 kassandra kernel:  [pg0+950296373/1069429760] nfs3_decode_dirent+0xe0/0x190 [nfs]
+>> May 27 10:24:49 kassandra kernel:  [pg0+950241074/1069429760] nfs_do_filldir+0x70/0x187 [nfs]
+>> May 27 10:24:49 kassandra kernel:  [filldir64+0/234] filldir64+0x0/0xea
+>> May 27 10:24:49 kassandra kernel:  [pg0+950243017/1069429760] nfs_readdir+0x680/0x6d9 [nfs]
+>> May 27 10:24:49 kassandra kernel:  [do_lookup+69/157] do_lookup+0x45/0x9d
+>> May 27 10:24:49 kassandra kernel:  [filldir64+0/234] filldir64+0x0/0xea
+>> May 27 10:24:49 kassandra kernel:  [pg0+949935784/1069429760] rpcauth_lookup_credcache+0x85/0x1af [sunrpc]
+>> May 27 10:24:49 kassandra kernel:  [alloc_super+173/304] alloc_super+0xad/0x130
+>> May 27 10:24:49 kassandra kernel:  [pg0+950256250/1069429760] nfs_file_set_open_context+0x1f/0x3d [nfs]
+>> May 27 10:24:49 kassandra kernel:  [pg0+950256580/1069429760] nfs_open+0x5d/0x63 [nfs]
+>> May 27 10:24:49 kassandra kernel:  [copy_to_user+47/55] copy_to_user+0x2f/0x37
+>> May 27 10:24:49 kassandra kernel:  [cp_new_stat64+246/267] cp_new_stat64+0xf6/0x10b
+>> May 27 10:24:49 kassandra kernel:  [pg0+950296149/1069429760] nfs3_decode_dirent+0x0/0x190 [nfs]
+>> May 27 10:24:49 kassandra kernel:  [sys_fstat64+30/35] sys_fstat64+0x1e/0x23
+>> May 27 10:24:49 kassandra kernel:  [filldir64+0/234] filldir64+0x0/0xea
+>> May 27 10:24:49 kassandra kernel:  [vfs_readdir+71/106] vfs_readdir+0x47/0x6a
+>> May 27 10:24:49 kassandra kernel:  [sys_getdents64+103/174] sys_getdents64+0x67/0xae
+>> May 27 10:24:49 kassandra kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
+>> May 27 10:24:49 kassandra kernel:  =======================
+>> May 27 10:24:49 kassandra kernel: Code: 01 c8 8b 0d 80 67 3b c0 89 c2 81 f2 01 00 37 9e d3 ea 31 d0 8b 15 84 67 3b c0 23 05 7c 67 3b c0 8b 2c 82 85 ed 0f 84 88 00 00 00 <8b> 45 00 0f 18 00 90 8b 4c 24 08 8d 5d f0 39 4b 1c 75 6a 8b 44
+>> May 27 10:24:49 kassandra kernel: EIP: [__d_lookup+97/244] __d_lookup+0x61/0xf4 SS:ESP 0068:dde75cdc
+> 
+> 
 
---nextPart131155292.T37GDDYD6P
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGWuM/Oimwv528XGERAoUpAJ9FKsdLlvEpiWlkV2IhB/Xz3G+nWwCfUKiZ
-GmNPAZpmjrs+C8scjd2yxM8=
-=Pqqs
------END PGP SIGNATURE-----
-
---nextPart131155292.T37GDDYD6P--
