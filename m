@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761219AbXE1HrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbXE1Hz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761219AbXE1HrS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 03:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXE1HrK
+	id S1760845AbXE1Hz1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 03:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbXE1HzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 03:47:10 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:35052 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752523AbXE1HrJ (ORCPT
+	Mon, 28 May 2007 03:55:19 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:55715
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751866AbXE1HzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 03:47:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=M2hGFBzreEq4oi8sWVndoVAiA7emmIdeasAqTB9Qijvy/5JnE8DCWedFHf49Mc1Bh0UEWNsXAmoePN54ZlUaG1VWLuRhhNATNNf/+xMwVh53fBcmJO/mR6LtobTn2TUEmYxRrbHtlnNNrHR0/je6PwEw2nVPjpkKpgSh/CfSNPg=
-Message-ID: <84144f020705280047t55cec1c3hb7b1921b9478a954@mail.gmail.com>
-Date: Mon, 28 May 2007 10:47:06 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Tero Roponen" <teanropo@jyu.fi>
-Subject: Re: tty-related oops in latest kernel(s)?
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
+	Mon, 28 May 2007 03:55:18 -0400
+Date: Mon, 28 May 2007 09:57:12 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: mingo@elte.hu, rml@tech9.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kernel/sched.c: use list_for_each_entry_safe() in __wake_up_common()
+Message-ID: <20070528075712.GA7201@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	mingo@elte.hu, rml@tech9.net, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
-	 <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
-X-Google-Sender-Auth: 1978a39faec89176
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/28/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Can we have your .config please? Also, could you work out the file and
-> line number of vt_ioctl+0xda8/0x1482 like this:
->
-> gdb vmlinux
-> (gdb) l *0xc021e50e
+Use list_for_each_entry_safe() instead of list_for_each_safe() in
+__wake_up_common()
 
-Btw, this only works if you have CONFIG_DEBUG_INFO set. In case it
-wasn't, please do:
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-- Enable CONFIG_DEBUG_INFO
-- make vmlinux
-- gdb vmlinux
-(gdb) p vt_ioctl
-(gdb) l *(0x<address of vt_ioctl> + 0xda8)
+-- 
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 799d23b..38723b7 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3775,10 +3775,9 @@ EXPORT_SYMBOL(default_wake_function);
+ static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
+ 			     int nr_exclusive, int sync, void *key)
+ {
+-	struct list_head *tmp, *next;
++	wait_queue_t *curr, *next;
+ 
+-	list_for_each_safe(tmp, next, &q->task_list) {
+-		wait_queue_t *curr = list_entry(tmp, wait_queue_t, task_list);
++	list_for_each_entry_safe(curr, next, &q->task_list, task_list) {
+ 		unsigned flags = curr->flags;
+ 
+ 		if (curr->func(curr, mode, sync, key) &&
+
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+      In itself, homosexuality is as limiting as heterosexuality: the
+     ideal should be to be capable of loving a woman or a man; either,
+      a human being, without  feeling fear, restraint, or obligation
+                          (Simone de Beauvoir)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
