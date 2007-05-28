@@ -1,70 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXE1Clb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXE1Cqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbXE1Clb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXE1ClW
+	id S1759427AbXE1Cqv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 22:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXE1Cqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:41:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:1480 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbXE1ClV (ORCPT
+	Sun, 27 May 2007 22:46:40 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60989 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752537AbXE1Cqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:41:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=pG/ikVtq16NDUMwHrCttgMYIFJ3f3fUANwUCo4wt5yqxe9tUCK3tW76u/Ar7OrrYDGkFXjFLs8j4vbCsgpWFgstj5nf6r+CYLccXXHFtu/hkM5NmyysCriJQgSu9uLTmsfhBX+tkHRh1sJiw9zSyiiqJvZcrfJZQUp07aabxJv8=
-Message-ID: <91b13c310705271941n48e266b9vc202b862ad4fabba@mail.gmail.com>
-Date: Mon, 28 May 2007 10:41:20 +0800
-From: "rae l" <crquan@gmail.com>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] merge dst_discard in & out into one, this decrements the vmlinux image by 21 bytes under i386 arch.
-Cc: "Networking Team" <netdev@vger.kernel.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Adrian Bunk" <trivial@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 27 May 2007 22:46:38 -0400
+Date: Mon, 28 May 2007 12:45:59 +1000
+From: David Chinner <dgc@sgi.com>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, David Chinner <dgc@sgi.com>,
+       Phillip Susi <psusi@cfl.rr.com>, Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+Message-ID: <20070528024559.GA85884050@sgi.com>
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <18010.12472.209452.148229@notabene.brown>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Denis Cheng
+On Mon, May 28, 2007 at 11:30:32AM +1000, Neil Brown wrote:
+> 
+> Thanks everyone for your input.  There was some very valuable
+> observations in the various emails.
+> I will try to pull most of it together and bring out what seem to be
+> the important points.
+> 
+> 
+> 1/ A BIO_RW_BARRIER request should never fail with -EOPNOTSUP.
 
-thus the definition of dst_discard_in and dst_discard_out is the same,
-we can define a dst_discard function and map the _in and _out to it,
-this can reduce space in vmlinux.
+Sounds good to me, but how do we test to see if the underlying
+device supports barriers? Do we just assume that they do and
+only change behaviour if -o nobarrier is specified in the mount
+options?
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
+> 2/ Maybe barriers provide stronger semantics than are required.
+> 
+>  All write requests are synchronised around a barrier write.  This is
+>  often more than is required and apparently can cause a measurable
+>  slowdown.
+> 
+>  Also the FUA for the actual commit write might not be needed.  It is
+>  important for consistency that the preceding writes are in safe
+>  storage before the commit write, but it is not so important that the
+>  commit write is immediately safe on storage.  That isn't needed until
+>  a 'sync' or 'fsync' or similar.
 
-diff --git a/net/core/dst.c b/net/core/dst.c
-index 764bccb..daa0439 100644
---- a/net/core/dst.c
-+++ b/net/core/dst.c
-@@ -111,17 +111,14 @@ out:
-        spin_unlock(&dst_lock);
- }
+The use of barriers in XFS assumes the commit write to be on stable
+storage before it returns.  One of the ordering guarantees that we
+need is that the transaction (commit write) is on disk before the
+metadata block containing the change in the transaction is written
+to disk and the current barrier behaviour gives us that.
 
--static int dst_discard_in(struct sk_buff *skb)
-+static int dst_discard(struct sk_buff *skb)
- {
-        kfree_skb(skb);
-        return 0;
- }
+>  One possible alternative is:
+>    - writes can overtake barriers, but barrier cannot overtake writes.
 
--static int dst_discard_out(struct sk_buff *skb)
--{
--       kfree_skb(skb);
--       return 0;
--}
-+#define dst_discard_in dst_discard
-+#define dst_discard_out        dst_discard
+No, that breaks the above usage of a barrier....
 
- void * dst_alloc(struct dst_ops * ops)
- {
+>    - flush before the barrier, not after.
+> 
+>  This is considerably weaker, and hence cheaper. But I think it is
+>  enough for all filesystems (providing it is still an option to call
+>  blkdev_issue_flush on 'fsync').
 
+No, not enough for XFS.
 
+>  Another alternative would be to tag each bio was being in a
+>  particular barrier-group.  Then bio's in different groups could
+>  overtake each other in either direction, but a BARRIER request must
+>  be totally ordered w.r.t. other requests in the barrier group.
+>  This would require an extra bio field, and would give the filesystem
+>  more appearance of control.  I'm not yet sure how much it would
+>  really help...
+
+And that assumes the filesystem is tracking exact dependencies
+between I/Os.  Such a mechanism would probably require filesystems
+to be redesigned to use this, but I can see how it would be useful
+for doing things like ensuring ordering between just an inode and
+it's data writes.  What would the overhead of having to support
+several hundred thousand different barrier groups be (i.e. one per
+dirty inode in a system)?
+
+> I think the implementation priorities here are:
+
+Depending on the answer to my first question:
+
+0/ implement a specific test for filesystems to run at mount time
+   to determine if barriers are supported or not.
+
+> 1/ implement a zero-length BIO_RW_BARRIER option.
+> 2/ Use it (or otherwise) to make all dm and md modules handle
+>    barriers (and loop?).
+> 3/ Devise and implement appropriate fall-backs with-in the block layer
+>    so that  -EOPNOTSUP is never returned.
+> 4/ Remove unneeded cruft from filesystems (and elsewhere).
+
+Sounds like a good start. ;)
+
+Cheers,
+
+Dave.
 -- 
-Denis Cheng
-Linux Application Developer
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
