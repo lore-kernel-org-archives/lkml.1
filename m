@@ -1,118 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbXE1Ces@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbXE1CjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758589AbXE1Ces (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXE1Cel
+	id S1758996AbXE1CjV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 22:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXE1CjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:34:41 -0400
-Received: from mx27.mail.ru ([194.67.23.64]:21537 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752241AbXE1Cek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:34:40 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
+	Sun, 27 May 2007 22:39:14 -0400
+Received: from mo-p07-ob.rzone.de ([81.169.146.190]:38954 "EHLO
+	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753028AbXE1CjN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 22:39:13 -0400
+Message-ID: <23956068.1180319946102.JavaMail.Postman_Professional@post.strato.de>
+Date: Mon, 28 May 2007 03:39:06 +0100 (BST)
+From: Robert Thomson <robert.p.thomson@googlemail.com>
+Reply-To: Robert Thomson <robert.p.thomson@googlemail.com>
 To: linux-kernel@vger.kernel.org
-Subject: 2.6.22-rc3: regression: make M=$PWD modules_install does nothing
-Date: Mon, 28 May 2007 06:34:36 +0400
-User-Agent: KMail/1.9.7
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, sam@ravnborg.org
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1377374.SdOcRMu0Fh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705280634.37420.arvidjaar@mail.ru>
+Subject: Proofreading your professional documents
+Mime-Version: 1.0
+Content-Type: text/plain; charset=Cp1252
+Content-Transfer-Encoding: 8BIT
+User-Agent: Postman Professional 8.6
+X-RZG-AUTH: z4gQVF2k5nCOh4QxALFN68fwDzo=
+X-RZG-CLASS-ID: mo07
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1377374.SdOcRMu0Fh
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Dear Professor/Lecturer
 
-This has been working up and including -rc2:
+Please excuse us for contacting you directly. We are offering an efficient service to help you ensure your academic and professional work is written in perfect English. We will check the grammar and style of your work and return it to you to meet your requirements and deadlines.
 
-{pts/1}% sudo make -C ~/src/linux-git O=3D$HOME/build/linux-2.6.22 M=3DPWD =
-V=3D1=20
-modules_install
-make: Entering directory `/home/bor/src/linux-git'
-make -C /home/bor/build/linux-2.6.22 \
-        KBUILD_SRC=3D/home/bor/src/linux-git \
-        KBUILD_EXTMOD=3D"PWD" -f /home/bor/src/linux-git/Makefile=20
-modules_install
-test -e include/linux/autoconf.h -a -e include/config/auto.conf || (       =
-   =20
-\
-        echo;                                                           \
-        echo "  ERROR: Kernel configuration is invalid.";               \
-        echo "         include/linux/autoconf.h or include/config/auto.conf=
-=20
-are missing.";      \
-        echo "         Run 'make oldconfig && make prepare' on kernel src t=
-o=20
-fix it.";  \
-        echo;                                                           \
-        /bin/false)
-mkdir -p /lib/modules/2.6.22-rc3-1avb/extra
-make -f /home/bor/src/linux-git/scripts/Makefile.modinst
-  if [ -r System.map -a -x /sbin/depmod ]; then /sbin/depmod -ae -F System.=
-map =20
-2.6.22-rc3-1avb; fi
-make: Leaving directory `/home/bor/src/linux-git'
+Proof-Reading-Service.com can provide you with a professional proofreading service at a very reasonable rate. All our proofreaders are highly qualified native English speakers. Many work as leading academics in their fields and all have extensive experience of proofreading to the highest standards.
 
-Makefile is trivial:
+If you are interested in our service, please take a look at our website: www.proof-reading-service.com All you have to do is send us your document as a word attachment with the deadline and we will guarantee delivery of a perfectly written document to give you complete confidence when you submit your work. The fee is worked out on a flat rate (£6.95 per thousand words or 0.695 pence per word), so you know exactly how much the proofreading will cost in advance.
 
-{pts/1}% cat Makefile
-#
-# Makefile for wlags49_cs_xxx
-#
+Once we have received your document(s) we will confirm the word count, the price and the deadline. If you have not heard from us within 2 hours during normal business hours after you have sent your work please resend it from a different email account or send the file to proofreadings@gmail.com.
 
-EXTRA_CFLAGS=20
-+=3D -I$(src) -I$(src)/include -I$(src)/include/hcf -I$(src)/include/wirele=
-ss \
-                -DBUS_PCMCIA -DUSE_UIL -DUSE_OLD_PARMS -DUSE_WPA \
-                -DUSE_WEXT -DWVLAN_49 \
-#               -DDBG \
-#               -DUSE_PROFILE
+We look forward to hearing from you!
 
-obj-m           +=3D wlags49_h1_cs.o
+Yours faithfully
 
-wlags49_h1_cs-y :=3D wl_profile.o \
-            wl_sysfs.o \
-            wl_wext.o \
-            wl_priv.o \
-            wl_main.o \
-            wl_enc.o \
-            wl_util.o \
-            wl_netdev.o \
-            wl_cs.o \
-            mmd.o \
-            hcfio.o \
-            hcf.o \
-            dhf.o \
-            sta_h1.o \
-            ap_h1.o
-
-
-
-ifndef src
-src =3D .
-endif
-foo: foo.c hcf.h dhf.h hcfdef.h sta_h1.c
-        $(CC) -o foo $(EXTRA_CFLAGS) foo.c
-
-
---nextPart1377374.SdOcRMu0Fh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGWj+9R6LMutpd94wRAgCmAJ908+y2gSWt3jf0l6mqo/TrsNieLACgpgW0
-W4cseJMrZiK1ZZ4cqrVAYrM=
-=yK/m
------END PGP SIGNATURE-----
-
---nextPart1377374.SdOcRMu0Fh--
+Proof-Reading-Service.com
