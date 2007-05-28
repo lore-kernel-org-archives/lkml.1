@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762302AbXE1Qb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbXE1Qcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762302AbXE1Qb2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 12:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbXE1QbU
+	id S1762846AbXE1Qcc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 12:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbXE1QcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 12:31:20 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:35609 "EHLO e5.ny.us.ibm.com"
+	Mon, 28 May 2007 12:32:25 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:54740 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750848AbXE1QbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 12:31:19 -0400
-Date: Mon, 28 May 2007 22:09:19 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Li, Tong N" <tong.n.li@intel.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, tingy@cs.umass.edu,
-       ckrm-tech@lists.sourceforge.net, Balbir Singh <balbir@in.ibm.com>,
-       efault@gmx.de, pwil3058@bigpond.net.au, kernel@kolivas.org,
-       linux-kernel@vger.kernel.org,
-       William Lee Irwin III <wli@holomorphy.com>, containers@lists.osdl.org,
-       Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org
-Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
-Message-ID: <20070528163919.GA28054@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070523164859.GA6595@in.ibm.com> <20070523180316.GY19966@holomorphy.com> <20070525161424.GA5162@in.ibm.com> <1180113298.28264.24.camel@tongli.jf.intel.com>
+	id S1756966AbXE1QcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 12:32:25 -0400
+Date: Mon, 28 May 2007 18:32:53 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Russell King <rmk@arm.linux.org.uk>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: sam@ravnborg.org
+Subject: ARM: Section mismatch warnings
+Message-ID: <20070528163253.GA29174@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1180113298.28264.24.camel@tongli.jf.intel.com>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 10:14:58AM -0700, Li, Tong N wrote:
-> Nice work, Vatsa. When I wrote the DWRR algorithm, I flattened the
-> hierarchies into one level, so maybe that approach can be applied to
-> your code as well. What I did is to maintain task and task group weights
-> and reservations separately from the scheduler, while the scheduler only
-> sees one system-wide weight per task and does not concern about which
-> group a task is in. The key here is the system-wide weight of each task
-> should represent an equivalent share to the share represented by the
-> group hierarchies. To do this, the scheduler looks up the task and group
-> weights/reservations it maintains, and dynamically computes the
-> system-wide weight *only* when it need a weight for a given task while
-> scheduling. The on-demand weight computation makes sure the cost is
-> small (constant time). The computation itself can be seen from an
-> example: assume we have a group of two tasks and the group's total share
-> is represented by a weight of 10. Inside the group, let's say the two
-> tasks, P1 and P2, have weights 1 and 2. Then the system-wide weight for
-> P1 is 10/3 and the weight for P2 is 20/3. In essence, this flattens
-> weights into one level without changing the shares they represent.
+Hi Russell.
 
-What do these task weights control? Timeslice primarily? If so, I am not
-sure how well it can co-exist with cfs then (unless you are planning to
-replace cfs with a equally good interactive/fair scheduler :)
+I've been building all defconfigs for ARM on latest -linus tree
+and got the following results with respect to section mismatch warnings.
 
-I would be very interested if this weight calculation can be used for
-smpnice based load balancing purposes too ..
+Unpatched: 105 section mismatch warnings
 
--- 
-Regards,
-vatsa
+Applied a path to ignore section mismatch warnings from variables named *_timer.
+Result: 39 section mismatch warnings.
+I will carry this patch in kbuild.git since it touches only modpost.c
+
+39 looked like a managebale set of warnings so I took a closer look.
+With patches that I will post as follow-up for this mail:
+Result: 19 section mismatch warnings (where some are duplicates from more than one defconfig).
+
+
+The remaining warnings are the following:
+
+# This symbol is exported and marked __init.
+# Eiteher drop the export or drop the __init marking.
+o-arm-mx1ads/log.out:WARNING: arch/arm/mach-imx/built-in.o(__ksymtab+0x80): Section mismatch: reference to .init.text:set_imx_fb_info (after '__ksymtab_set_imx_fb_info')
+
+# These are all almost trivial if one knows the device-model. I did not know enough about the devicemodel to fix them.
+# I suspect several symbols should NOT be marked __init since they are used in .add assignments and the like
+# or mayby __Devinit since they are used only in HOTPLUG scenarios.
+o-arm-ks8695/log.out:WARNING: arch/arm/mach-ks8695/built-in.o(.data+0x108): Section mismatch: reference to .init.text:micrel_pci_map_irq (after 'micrel_pci')
+o-arm-lubbock/log.out:WARNING: drivers/built-in.o(.text+0x39f2c): Section mismatch: reference to .init.text:pcmcia_lubbock_init (between 'pcmcia_probe' and 'sa1111_pcmcia_socket_suspend')
+o-arm-neponset/log.out:WARNING: arch/arm/mach-sa1100/built-in.o(.text+0x1748): Section mismatch: reference to .init.text:sa1110_mb_disable (between 'neponset_init' and 'neponset_resume')
+o-arm-neponset/log.out:WARNING: arch/arm/mach-sa1100/built-in.o(.text+0x17ac): Section mismatch: reference to .init.data:devices (between 'neponset_init' and 'neponset_resume')
+o-arm-neponset/log.out:WARNING: drivers/built-in.o(.text+0x4e0a8): Section mismatch: reference to .init.text:pcmcia_neponset_init (between 'pcmcia_probe' and 'sa1111_pcmcia_socket_suspend')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2410/built-in.o(.text+0x80): Section mismatch: reference to .init.data:s3c2410_dma_order (between 's3c2410_dma_add' and 's3c2410_pm_add')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2410/built-in.o(.text+0x84): Section mismatch: reference to .init.data:s3c2410_dma_sel (between 's3c2410_dma_add' and 's3c2410_pm_add')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2412/built-in.o(.text+0x738): Section mismatch: reference to .init.data:s3c2412_dma_sel (between 's3c2412_dma_add' and 's3c2412_pm_prepare')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2440/built-in.o(.text+0x4b8): Section mismatch: reference to .init.data:s3c2440_dma_order (between 's3c2440_dma_add' and 'anubis_nand_select')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2440/built-in.o(.text+0x4bc): Section mismatch: reference to .init.data:s3c2440_dma_sel (between 's3c2440_dma_add' and 'anubis_nand_select')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2443/built-in.o(.text+0x1ac): Section mismatch: reference to .init.text:s3c2443_add_sub (between 's3c2443_irq_add' and 's3c2443_irq_wdtac97_mask')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2443/built-in.o(.text+0x1c8): Section mismatch: reference to .init.text:s3c2443_add_sub (between 's3c2443_irq_add' and 's3c2443_irq_wdtac97_mask')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2443/built-in.o(.text+0x1e4): Section mismatch: reference to .init.text:s3c2443_add_sub (between 's3c2443_irq_add' and 's3c2443_irq_wdtac97_mask')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2443/built-in.o(.text+0x200): Section mismatch: reference to .init.text:s3c2443_add_sub (between 's3c2443_irq_add' and 's3c2443_irq_wdtac97_mask')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2443/built-in.o(.text+0x21c): Section mismatch: reference to .init.text:s3c2443_add_sub (between 's3c2443_irq_add' and 's3c2443_irq_wdtac97_mask')
+o-arm-s3c2410/log.out:WARNING: arch/arm/mach-s3c2443/built-in.o(.text+0xf0c): Section mismatch: reference to .init.data:s3c2443_dma_sel (after 's3c2443_dma_add')
+
+# Assembler stuff. It looked to me like __INIT was used wrongly but then I did not feel confident enough to patch it up - and I cannot test it.
+o-arm-realview-smp/log.out:WARNING: arch/arm/vfp/built-in.o(.data+0x0): Section mismatch: reference to .init.text:vfp_testing_entry (between 'vfp_vector' and 'vfp_notifier_block')
+o-arm-versatile/log.out:WARNING: arch/arm/vfp/built-in.o(.data+0x0): Section mismatch: reference to .init.text:vfp_testing_entry (between 'vfp_vector' and 'vfp_notifier_block')
+
+	Sam
