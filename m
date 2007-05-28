@@ -1,167 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbXE1SQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbXE1Sdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762667AbXE1SQU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 14:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbXE1SQN
+	id S1762004AbXE1Sdj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 14:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXE1Sd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 14:16:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60768 "EHLO ogre.sisk.pl"
+	Mon, 28 May 2007 14:33:28 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:11050 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751253AbXE1SQM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 14:16:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maximilian Engelhardt <maxi@daemonizer.de>
-Subject: Re: software suspend doesn't work with 2.6.22-rc3
-Date: Mon, 28 May 2007 20:21:29 +0200
-User-Agent: KMail/1.9.5
-Cc: nigel@nigel.suspend2.net, Herbert Xu <herbert@gondor.apana.org.au>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <200705261128.57332.maxi@daemonizer.de> <200705280222.02198.maxi@daemonizer.de> <200705280959.37516.rjw@sisk.pl>
-In-Reply-To: <200705280959.37516.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	id S1751527AbXE1Sd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 14:33:27 -0400
+Date: Mon, 28 May 2007 20:32:52 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Phillip Susi <psusi@cfl.rr.com>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       David Chinner <dgc@sgi.com>, linux-fsdevel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices,  filesystems, and dm/md.
+Message-ID: <20070528183252.GH7653@kernel.dk>
+References: <18006.38689.818186.221707@notabene.brown> <20070525111557.GP85884050@sgi.com> <20070525114910.GQ7653@kernel.dk> <4656F783.3000603@cfl.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705282021.30355.rjw@sisk.pl>
+In-Reply-To: <4656F783.3000603@cfl.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 May 2007 09:59, Rafael J. Wysocki wrote:
-> On Monday, 28 May 2007 02:21, Maximilian Engelhardt wrote:
-> > On Sunday 27 May 2007, Rafael J. Wysocki wrote:
-> > > On Sunday, 27 May 2007 22:41, Maximilian Engelhardt wrote:
-> > > > On Sunday 27 May 2007, Rafael J. Wysocki wrote:
-> > > > > On Sunday, 27 May 2007 18:01, Maximilian Engelhardt wrote:
-> > > > > > On Saturday 26 May 2007, Nigel Cunningham wrote:
-> > > > > > > Hi.
-> > > > > > >
-> > > > > > > On Sat, 2007-05-26 at 14:49 +0200, Maximilian Engelhardt wrote:
-> > > > > > > > On Saturday 26 May 2007, Nigel Cunningham wrote:
-> > > > > > > > > Hi.
-> > > > > > > > >
-> > > > > > > > > On Sat, 2007-05-26 at 11:28 +0200, Maximilian Engelhardt wrote:
-> > > > > > > > > > Hello,
-> > > > > > > > > >
-> > > > > > > > > > When I try software suspend on my laptop it always returns to
-> > > > > > > > > > my running system after some time.
-> > > > > > > > > > This is what's logged by the kernel:
-> > > > > > > > > >
-> > > > > > > > > > swsusp: Basic memory bitmaps created
-> > > > > > > > > > Stopping tasks ...
-> > > > > > > > > > Stopping kernel threads timed out after 20 seconds (1 tasks
-> > > > > > > > > > refusing to freeze):
-> > > > > > > > > >  cryptd
-> > > > > > > > > > Restarting tasks ... done.
-> > > > > > > > > > swsusp: Basic memory bitmaps freed
-> > > > > > > > > >
-> > > > > > > > > > I have no idea what's the problem, but if you tell me what I
-> > > > > > > > > > should do I can create debugging information and/or test
-> > > > > > > > > > patches.
-> > > > > > > > >
-> > > > > > > > > Could you try this patch, please? It should help.
-> > > > > > > > >
-> > > > > > > > > Herbert, is this right? If cryptd is going to be used for block
-> > > > > > > > > devs, the task should probably be PF_NOFREEZE (or whatever it
-> > > > > > > > > is today) instead.
-> > > > > > > > >
-> > > > > > > > > Regards,
-> > > > > > > > >
-> > > > > > > > > Nigel
-> > > > > > > > >
-> > > > > > > > >  crypto/cryptd.c         |    1 +
-> > > > > > > > >  include/linux/freezer.h |    3 +++
-> > > > > > > > >  kernel/power/process.c  |    2 +-
-> > > > > > > > >  3 files changed, 5 insertions(+), 1 deletion(-)
-> > > > > > > > > diff -ruNp 991-fix-cryptd.patch-old/crypto/cryptd.c
-> > > > > > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c ---
-> > > > > > > > > 991-fix-cryptd.patch-old/crypto/cryptd.c	2007-05-19
-> > > > > > > > > 18:16:47.000000000 +1000 +++
-> > > > > > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c	2007-05-26
-> > > > > > > > > 19:45:42.000000000 +1000 @@ -341,6 +341,7 @@ static int
-> > > > > > > > > cryptd_thread(void *data)
-> > > > > > > > >
-> > > > > > > > >  		mutex_unlock(&state->mutex);
-> > > > > > > > >
-> > > > > > > > > +		try_to_freeze();
-> > > > > > > > >  		schedule();
-> > > > > > > > >  	} while (!stop);
-> > > > > > > >
-> > > > > > > > I tried your patch, but when I apply it my kernel doesn't compile
-> > > > > > > > any more. I get these warnings/errors:
-> > > > > > > >
-> > > > > > > > [...]
-> > > > > > > >   CC      crypto/cryptd.o
-> > > > > > > > crypto/cryptd.c: In function ‘cryptd_thread’:
-> > > > > > > > crypto/cryptd.c:344: warning: implicit declaration of function
-> > > > > > > > ‘try_to_freeze’ [...]
-> > > > > > > >   LD      init/built-in.o
-> > > > > > > >   LD      .tmp_vmlinux1
-> > > > > > > > crypto/built-in.o: In function `cryptd_thread':
-> > > > > > > > cryptd.c:(.text+0xd7f5): undefined reference to `try_to_freeze'
-> > > > > > > > make: *** [.tmp_vmlinux1] Error 1
-> > > > > > >
-> > > > > > > Ah. You'll need to add #include <linux/freezer.h> near that start
-> > > > > > > of crypto/cryptd.c. Sorry for forgetting that.
-> > > > > > >
-> > > > > > > Nigel
-> > > > > >
-> > > > > > I added the include line and now I could compile the kernel, but
-> > > > > > suspending still doesn't work.
-> > > > > >
-> > > > > > swsusp: Basic memory bitmaps created
-> > > > > > Stopping tasks ...
-> > > > > > Stopping kernel threads timed out after 20 seconds (1 tasks refusing
-> > > > > > to freeze):
-> > > > > > cryptd
-> > > > > > Restarting tasks ... done.
-> > > > > > swsusp: Basic memory bitmaps freed
-> > > > >
-> > > > > OK, this means that cryptd doesn't execute the try_to_freeze() for some
-> > > > > reason.
-> > > > >
-> > > > > Please apply the appended patch on top of 2.6.22-rc3 and see if that
-> > > > > helps.
-> > > > >
-> > > > > Greetings,
-> > > > > Rafael
-> > > > >
-> > > > > ---
-> > > > >  crypto/cryptd.c |    1 +
-> > > > >  1 file changed, 1 insertion(+)
-> > > > >
-> > > > > Index: linux-2.6.22-rc3/crypto/cryptd.c
-> > > > > ===================================================================
-> > > > > --- linux-2.6.22-rc3.orig/crypto/cryptd.c
-> > > > > +++ linux-2.6.22-rc3/crypto/cryptd.c
-> > > > > @@ -316,6 +316,7 @@ static int cryptd_thread(void *data)
-> > > > >  	struct cryptd_state *state = data;
-> > > > >  	int stop;
-> > > > >
-> > > > > +	current->flags |= PF_NOFREEZE;
-> > > > >  	do {
-> > > > >  		struct crypto_async_request *req, *backlog;
-> > > >
-> > > > Even with this patch suspending doesn't work, dmesg shows the same error
-> > > > message.
-> > > > I also did build a kernel without cryptd and suspending does work there.
-> > >
-> > > Well, that's strange, because in that case the freezer shouldn't even wait
-> > > for cryptd.
-> > >
-> > > Can you please try the patch at http://lkml.org/lkml/2007/5/26/169 ?
-> > 
-> > With this patch applied suspend does work fine.
+
+(dunny why you explicitly dropped me off the cc/to list when replying to
+my email, hence I missed it for 3 days)
+
+On Fri, May 25 2007, Phillip Susi wrote:
+> Jens Axboe wrote:
+> >A barrier write will include a flush, but it may also use the FUA bit to
+> >ensure data is on platter. So the only situation where a fallback from a
+> >barrier to flush would be valid, is if the device lied and told you it
+> >could do FUA but it could not and that is the reason why the barrier
+> >write failed. If that is the case, the block layer should stop using FUA
+> >and fallback to flush-write-flush. And if it does that, then there's
+> >never a valid reason to switch from using barrier writes to
+> >blkdev_issue_flush() since both methods would either both work or both
+> >fail.
 > 
-> Hmm.  IMO the patch is too intrusive for 2.6.22, but OTOH it's going into the
-> direction preferred by some prominent people. ;-)
+> IIRC, the FUA bit only forces THAT request to hit the platter before it 
+> is completed; it does not flush any previous requests still sitting in 
+> the write back queue.  Because all io before the barrier must be on the 
+> platter as well, setting the FUA bit on the barrier request means you 
+> don't have to follow it with a flush, but you still have to precede it 
+> with a flush.
+
+I'm well aware of how FUA works, hence the barrier FUA implementation
+does flush and then write-fua. The win compared to flush-write-flush is
+just a saved command, essentially.
+
+> >It's not block layer breakage, it's a device issue.
 > 
-> Let's try to combine the two threads and see what results from that.
+> How isn't it block layer breakage?  If the device does not support 
+> barriers, isn't it the job of the block layer ( probably the scheduler ) 
+> to fall back to flush-write-flush?
 
-Well, it looks like we have to fix this one separately.
+The problem is flush not working, the block layer can't fix that for you
+obviously. If it's FUA not working, the block layer should fall back to
+flush-write-flush, as they are obviously functionally equivalent.
 
-Can you please tell me what to do to make cryptd run?
+-- 
+Jens Axboe
 
-Rafael
