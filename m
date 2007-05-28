@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762396AbXE1QMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762782AbXE1QNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762396AbXE1QMK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 12:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762472AbXE1QKx
+	id S1762782AbXE1QNS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 12:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbXE1QNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 12:10:53 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:10108 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762304AbXE1QKv (ORCPT
+	Mon, 28 May 2007 12:13:04 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:43657 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757190AbXE1QND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 12:10:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=RpGnBqDLxybmHbmbs0ctLs+fC4AMkzQON9curXJOMX2C7Zh/huhUdKgmRaU2cabQZW0YVyd4Xt53JBv0Qj4JFCi9ZFDPzNUace1ANxCQOxQWoL4gCGJSm8UmbWtzfm/0qy6TNZHiwJUNuqvK5RrNx0+LpytVv5EEUIbuSSIgdkI=
-Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 5/5] sysfs: fix root sysfs_dirent -> root dentry association
-In-Reply-To: <1180368625600-git-send-email-htejun@gmail.com>
-X-Mailer: git-send-email
-Date: Tue, 29 May 2007 01:10:26 +0900
-Message-Id: <11803686261278-git-send-email-htejun@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Reply-To: Tejun Heo <htejun@gmail.com>
-To: gregkh@suse.de, dmitry.torokhov@gmail.com, cornelia.huck@de.ibm.com,
-       oneukum@suse.de, rpurdie@rpsys.net, stern@rowland.harvard.edu,
-       maneesh@in.ibm.com, linux-kernel@vger.kernel.org, htejun@gmail.com
-Content-Transfer-Encoding: 7BIT
-From: Tejun Heo <htejun@gmail.com>
+	Mon, 28 May 2007 12:13:03 -0400
+Date: Mon, 28 May 2007 17:12:42 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Oliver Neukum <oliver@neukum.org>
+Message-ID: <20070528161242.GA1063@srcf.ucam.org>
+References: <20070527220158.GB22687@srcf.ucam.org> <Pine.LNX.4.44L0.0705281156470.22682-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0705281156470.22682-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The root sysfs_dirent didn't point to the root dentry fix it.
+On Mon, May 28, 2007 at 12:09:30PM -0400, Alan Stern wrote:
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/mount.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> I can't speak for the second example, but there's a good reason the
+> first example works this way.  It's not a matter of races; the problem
+> is that the kernel thread's job is to selectively suspend and resume
+> devices.  We don't want it doing this while a system sleep is in 
+> progress; it would (and in fact has, before the thread was made 
+> freezable) cause the sleep transition to abort.
 
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 7f2779e..2d6294b 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -63,6 +63,7 @@ static int sysfs_fill_super(struct super
- 		iput(inode);
- 		return -ENOMEM;
- 	}
-+	sysfs_root.s_dentry = root;
- 	root->d_fsdata = &sysfs_root;
- 	sb->s_root = root;
- 	return 0;
+How does this work on PPC or APM systems?
 -- 
-1.4.3.4
-
-
+Matthew Garrett | mjg59@srcf.ucam.org
