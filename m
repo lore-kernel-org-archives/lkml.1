@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbXE1CjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXE1Clb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758996AbXE1CjV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXE1CjO
+	id S1759427AbXE1Clb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 22:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXE1ClW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:39:14 -0400
-Received: from mo-p07-ob.rzone.de ([81.169.146.190]:38954 "EHLO
-	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753028AbXE1CjN convert rfc822-to-8bit (ORCPT
+	Sun, 27 May 2007 22:41:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:1480 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752537AbXE1ClV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:39:13 -0400
-Message-ID: <23956068.1180319946102.JavaMail.Postman_Professional@post.strato.de>
-Date: Mon, 28 May 2007 03:39:06 +0100 (BST)
-From: Robert Thomson <robert.p.thomson@googlemail.com>
-Reply-To: Robert Thomson <robert.p.thomson@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Proofreading your professional documents
-Mime-Version: 1.0
-Content-Type: text/plain; charset=Cp1252
-Content-Transfer-Encoding: 8BIT
-User-Agent: Postman Professional 8.6
-X-RZG-AUTH: z4gQVF2k5nCOh4QxALFN68fwDzo=
-X-RZG-CLASS-ID: mo07
+	Sun, 27 May 2007 22:41:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=pG/ikVtq16NDUMwHrCttgMYIFJ3f3fUANwUCo4wt5yqxe9tUCK3tW76u/Ar7OrrYDGkFXjFLs8j4vbCsgpWFgstj5nf6r+CYLccXXHFtu/hkM5NmyysCriJQgSu9uLTmsfhBX+tkHRh1sJiw9zSyiiqJvZcrfJZQUp07aabxJv8=
+Message-ID: <91b13c310705271941n48e266b9vc202b862ad4fabba@mail.gmail.com>
+Date: Mon, 28 May 2007 10:41:20 +0800
+From: "rae l" <crquan@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] merge dst_discard in & out into one, this decrements the vmlinux image by 21 bytes under i386 arch.
+Cc: "Networking Team" <netdev@vger.kernel.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Adrian Bunk" <trivial@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Professor/Lecturer
+From: Denis Cheng
 
-Please excuse us for contacting you directly. We are offering an efficient service to help you ensure your academic and professional work is written in perfect English. We will check the grammar and style of your work and return it to you to meet your requirements and deadlines.
+thus the definition of dst_discard_in and dst_discard_out is the same,
+we can define a dst_discard function and map the _in and _out to it,
+this can reduce space in vmlinux.
 
-Proof-Reading-Service.com can provide you with a professional proofreading service at a very reasonable rate. All our proofreaders are highly qualified native English speakers. Many work as leading academics in their fields and all have extensive experience of proofreading to the highest standards.
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
 
-If you are interested in our service, please take a look at our website: www.proof-reading-service.com All you have to do is send us your document as a word attachment with the deadline and we will guarantee delivery of a perfectly written document to give you complete confidence when you submit your work. The fee is worked out on a flat rate (£6.95 per thousand words or 0.695 pence per word), so you know exactly how much the proofreading will cost in advance.
+diff --git a/net/core/dst.c b/net/core/dst.c
+index 764bccb..daa0439 100644
+--- a/net/core/dst.c
++++ b/net/core/dst.c
+@@ -111,17 +111,14 @@ out:
+        spin_unlock(&dst_lock);
+ }
 
-Once we have received your document(s) we will confirm the word count, the price and the deadline. If you have not heard from us within 2 hours during normal business hours after you have sent your work please resend it from a different email account or send the file to proofreadings@gmail.com.
+-static int dst_discard_in(struct sk_buff *skb)
++static int dst_discard(struct sk_buff *skb)
+ {
+        kfree_skb(skb);
+        return 0;
+ }
 
-We look forward to hearing from you!
+-static int dst_discard_out(struct sk_buff *skb)
+-{
+-       kfree_skb(skb);
+-       return 0;
+-}
++#define dst_discard_in dst_discard
++#define dst_discard_out        dst_discard
 
-Yours faithfully
+ void * dst_alloc(struct dst_ops * ops)
+ {
 
-Proof-Reading-Service.com
+
+-- 
+Denis Cheng
+Linux Application Developer
