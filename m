@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760292AbXE1CvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759850AbXE1Cxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760292AbXE1CvZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbXE1CvR
+	id S1759850AbXE1Cxk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 22:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXE1Cxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:51:17 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:49186 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753698AbXE1CvQ (ORCPT
+	Sun, 27 May 2007 22:53:33 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:45131 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbXE1Cxc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:51:16 -0400
-Date: Sun, 27 May 2007 19:44:10 -0700
-From: Jouni Malinen <j@w1.fi>
-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, hostap@shmoo.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] use list_for_each_entry() for iteration in hostap_ap.c
-Message-ID: <20070528024409.GV5416@jm.kir.nu>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Christoph Hellwig <hch@infradead.org>, hostap@shmoo.com,
-	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070525125630.GE31790@traven> <20070525130308.GF31790@traven> <20070525143005.GB10669@infradead.org> <20070527102824.GJ31790@traven>
+	Sun, 27 May 2007 22:53:32 -0400
+Date: Sun, 27 May 2007 22:53:26 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: young dave <hidave.darkstar@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch -mm 1/1] remove useless tolower in isofs
+In-Reply-To: <a8e1da0705271808w3a6dc453rfb47dd3db100718@mail.gmail.com>
+Message-ID: <alpine.DEB.0.99.0705272248110.6131@sigma.j-a-k-j.com>
+References: <a8e1da0705271808w3a6dc453rfb47dd3db100718@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070527102824.GJ31790@traven>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 27, 2007 at 12:28:24PM +0200, Matthias Kaehlcke wrote:
+> Hi,
+> Remove useless tolower in isofs
+> 
+> Signed-off-by: dave young <hidave.darkstar@gmail.com>
+> 
+> inode.c |    2 +-
+> 1 file changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff -dur linux/fs/isofs/inode.c linux.new/fs/isofs/inode.c
+> --- linux/fs/isofs/inode.c      2007-05-28 08:54:33.000000000 +0000
+> +++ linux.new/fs/isofs/inode.c  2007-05-28 08:55:02.000000000 +0000
+> @@ -197,7 +197,7 @@
+>        hash = init_name_hash();
+>        while (len--) {
+>                c = tolower(*name++);
+> -               hash = partial_name_hash(tolower(c), hash);
+> +               hash = partial_name_hash(c, hash);
+>        }
+>        qstr->hash = end_name_hash(hash);
 
-> thanks for your comment, here's a patch that uses
-> list_for_each_entry(), additionally to the initial patch it
-> substitutes some list_for_each() loops by list_for_each_entry()
+How about this? A lot more readable and doesn't even need an intermediate 
+value.
 
-Thanks! I added this to my list of patches for the driver.
+for (; len; len--, name++) {
+	hash = partial_name_hash(tolower(*name), hash);
+}
 
-Could you please send a Signed-off-by line for this later version of the
-patch? You did it for the first version, but just to be sure, it would
-be prefered to see this explicitly for each version.
+Or if you don't think that way is more readable, how about this?
 
--- 
-Jouni Malinen                                            PGP id EFC895FA
+while (len) {
+	hash = partial_name_hash(tolower(*name), hash);
+	name++;
+	len--;
+}
+
+And then there's the supercompact form.
+
+while (len--) {
+	hash = partial_name_hash(tolower(*name++), hash);
+}
+
+But I do not like the last one at all. The first one is the best, because 
+it clearly separates the condition and iteration parts of the expression, 
+while STILL being only three lines long. Or two, if you omit the braces. 
+(But you shouldn't.)
