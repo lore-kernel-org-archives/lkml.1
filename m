@@ -1,76 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763581AbXE1VF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932340AbXE1VGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763581AbXE1VF6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 17:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760134AbXE1VFr
+	id S932340AbXE1VGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 17:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761606AbXE1VFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 17:05:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:64621 "EHLO
+	Mon, 28 May 2007 17:05:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:64130 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbXE1VFq (ORCPT
+	with ESMTP id S1751966AbXE1VFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 17:05:46 -0400
+	Mon, 28 May 2007 17:05:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VK5iKbXPLittTymmZik4sXfJ1iLK0v3PBfX4s8thFNjndW2Kd2e/PKd1YJVrj7uv+aoW6VMJI7BY4aohBAUvEP91QdhT7ALHA/NjZ5fXYSaK6EJG/UUCa+w2abEYct4V4+EVLO0SWWgCYxcOVcPcjyO6luev3UjOzay1KBkxJug=
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=ITBHyAcr4WEDWNt0qhzDebw0LVYZRmPMPqHk/bYX7b0rbJDZv3u18+/QTA5cTIPkfbMe1FKmGAFx2VraFA7z9eSZy0D/iYq6+umDLugFl8OYw1nSlyEsJnw93PcOgBXgMVwzDp9D3vnzn1F7S1p8dGMSu5PiCvsbrFxp8HWiK+0=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Junio C Hamano <junkio@cox.net>
-Subject: Re: [PATCH 3/3] Make ide dma blacklist handling a bit saner.
-Date: Mon, 28 May 2007 21:41:42 +0200
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [patch] Add the device IDs for AMD/ATI SB700
+Date: Mon, 28 May 2007 22:16:59 +0200
 User-Agent: KMail/1.9.6
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Dave Jones <davej@redhat.com>
-References: <20070521145042.GA6957@redhat.com> <7v3b1pbgeo.fsf_-_@assigned-by-dhcp.cox.net> <7vps4ta1iy.fsf_-_@assigned-by-dhcp.cox.net>
-In-Reply-To: <7vps4ta1iy.fsf_-_@assigned-by-dhcp.cox.net>
+Cc: Henry Su <henry.su@amd.com>, alan@lxorguk.ukuu.org.uk, greg@kroah.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       xiaosuzi520@hotmail.com
+References: <FFECF24D2A7F6D418B9511AF6F35860201B3658E@shacnexch2.atitech.com> <4656C8BC.6060807@garzik.org>
+In-Reply-To: <4656C8BC.6060807@garzik.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200705282216.59611.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705282141.42507.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Hi,
 
-On Tuesday 22 May 2007, Junio C Hamano wrote:
-> Earlier, the matching of (model,rev) in ide-dma black/white list
-> handling was to consider "ALL" in the table to match any
-> revision.  This changes the wildcard to NULL.  This way, the
-> DMA_BLACK_LIST macro used in the previous patch does not have to
-> use a slightly funky compile time constant expression to convert
-> NULL to "ALL".
-> 
-> Signed-off-by: Junio C Hamano <junkio@cox.net>
+Sorry for the late reply and thanks to Jeff for stepping in. :)
 
-The change itself looks good but IMO it is worth doing it before patch #2/3
-(it would also make it possible for me to merge this patch immediately).
+Since Jeff covered both status of your patches and administrative issues
+I would only like to add one small hint for people adding support for
+multi-function PCI chipsets (with multiple PCI device IDs):
 
-When it comes to patch #2 - Alan's comment may be a bit harsh but he seems
-to be right - there should be a common library-like file (ata-blacklist.c
-or ata-quirks.c or whatever name you like) containing ata_device_blacklist[].
+It makes sense to put addition of _all_ new PCI IDs into the first patch
+of the series and send it to PCI Maintainer (Hi Greg).  This should make
+all other patches from the series independent of each other (in the usual
+case I'm not talking about all crazy scenarios here).  After the patch
+with PCI IDs gets applied upstream you may now send all other patches to
+the respective maintainers without worrying about inter-patch dependencies
+and without maintainers worrying about your patches not applying cleanly.
 
-This would require slight modification of ide_in_drive_list() to teach
-it about ATA_HORKAGE_DMA but as I see from this patch this shouldn't be
-a problem for you. ;)  Please also note that <linux/ata.h> is used by both
-IDE and libata so it should be a good place to put struct ata_blacklist_entry
-and ATA_HORKAGE_* macros.
+IIRC Intely guys are using this process when adding support for their new
+chipsets and it works smoothly.
 
-Care to respin both patches?
+[ Yep, this process is the exception from the general "patch shouldn't add
+  unused code" rule but the amount of _temporarily_ unused stuff is _minimal_
+  and doing it this way saves a lot of time for all parties involved. ]
 
->  * I do not really know what I am doing in the mips area, but
->    that architecture specific table seems to be used by the same
->    ide_in_drive_list() function, so the entries are matched to
->    the updated code.
-
-Yep, thanks for not breaking AMD Alchemy IDE suppport.
-
-It looks like au1xxx_ide.h should really be in drivers/ide/mips because
-it is only included from drivers/ide/mips/au1xxx_ide.c - could somebody
-verify this and send me a patch?
+PS Greg/Jeff If I'm totally wrong on this please correct me...
 
 Thanks,
 Bart
+
+On Friday 25 May 2007, Jeff Garzik wrote:
+> Henry Su wrote:
+> > I check the latest kernel source code with git, and find out that the
+> > SMBus patch has not been applied yet,  
+> 
+> Correct.  When you don't see a patch in the upstream git tree 
+> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git 
+> then the next step is consult the MAINTAINERS file, and determine to 
+> whom you should send a follow-up patch, or simply contact about the 
+> status of a patch you just sent.  In this case, SMBus is in drivers/i2c 
+> sub-directory, which leads us to find in MAINTAINERS,
+> 
+> I2C SUBSYSTEM
+> P:      Jean Delvare
+> M:      khali@linux-fr.org
+> L:      i2c@lm-sensors.org
+> T:      quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
+> S:      Maintained
+> 
+> That tells us the maintainer of the subsystem, and also ("T:") an 
+> external reference (a tree) to where the maintainer posts accepted 
+> patches, prior to sending them upstream.
+> 
+> So for SMBus, you should make sure your SMBus changes appear in Jean 
+> Delvare's quilt tree.  If they do not, create a new patch and send it to 
+> Jean and CC i2c@lm-sensors.org and linux-kernel@vger.kernel.org.
+> 
+> 
+> > and the patch for IDE  has not been  applied completely.one more device
+> > id should be added to pata_atiixp.c, 
+> > l list the patch as following, or you can fetch it from the attached file,
+> > could you please apply this for me?  
+> 
+> Actually it has been applied -- the part that I maintain (drivers/ata/*) 
+> is currently stored in a secondary tree, as described above.  Your patch 
+> has been stored on the 'upstream' branch of 
+> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+> 
+> Currently, the upstream Linux kernel is only accepting bug fixes.  I 
+> merge ATA bug fixes (and sometimes simple PCI ID additions) into 
+> libata-dev.git#upstream-fixes during this phase of development.  These 
+> changes are sent upstream in 24-48 hours, to ensure that they will be 
+> included in the next release (kernel 2.6.22).
+> 
+> All other ATA changes are merged into libata-dev.git#upstream.  When 
+> Linus releases kernel 2.6.22, the "merge window" opens, allowing 
+> non-bug-fix changes to be submitted upstream.  When the merge window 
+> opens, I submit everything in libata-dev.git#upstream to Linus and 
+> Andrew Morton for inclusion in the official upstream kernel tree.
+> 
+> That is our development process in a nutshell.
+> 
+> The kernel development process is conducted entirely via email, so you 
+> see why it is so important to learn how to email patches in the proper 
+> format.
+> 
+> 	Jeff
