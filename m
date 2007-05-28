@@ -1,50 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbXE1Lie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbXE1Lnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754191AbXE1Lie (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 07:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbXE1Li0
+	id S1755799AbXE1Lnv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 07:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbXE1Lno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 07:38:26 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:57628 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbXE1Li0 (ORCPT
+	Mon, 28 May 2007 07:43:44 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:40759 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbXE1Lnn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 07:38:26 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <1180351493.4242.31.camel@lov.localdomain>
-References: <200705272229.21263.rjw@sisk.pl>  <20070527220412.GC22687@srcf.ucam.org>  <1180304166.3131.66.camel@lov.localdomain> <200705280943.54312.rjw@sisk.pl>  <20070528111554.GF18807@elf.ucw.cz> <1180351493.4242.31.camel@lov.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6BFA837E-47D4-487F-9D71-FA83D6D865E5@cam.ac.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Alan Stern <stern@rowland.harvard.edu>
+	Mon, 28 May 2007 07:43:43 -0400
+Message-ID: <465AC05A.80005@hitachi.com>
+Date: Mon, 28 May 2007 20:43:22 +0900
+From: "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dhowells@redhat.com, holt@sgi.com, alan@lxorguk.ukuu.org.uk,
+       masami.hiramatsu.pt@hitachi.com, yumiko.sugita.yf@hitachi.com,
+       soshima@redhat.com, haoki@redhat.com
+Subject: Re: [PATCH 7/7] documentation for /proc/pid/coredump_filter
+References: <4656DBFB.2050501@hitachi.com> <4656E0D7.1090301@hitachi.com> 
+    <20070527181729.e9e6d57c.randy.dunlap@oracle.com>
+In-Reply-To: <20070527181729.e9e6d57c.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
-Date: Mon, 28 May 2007 12:38:23 +0100
-To: Kay Sievers <kay.sievers@vrfy.org>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28 May 2007, at 12:24, Kay Sievers wrote:
+Hi Randy,
 
-> A driver for a bootup-critical device like this should just never
-> release the firmware after the first load. There is absolutely no  
-> point
-> in doing that.
+Randy Dunlap wrote:
+> Looks good.  Just one typo below.
+> 
+>  ------------------------------------------------------------------------------
+> 
+>> Preface
+>>@@ -2135,4 +2136,41 @@ those 64-bit counters, process A could s
+>> More information about this can be found within the taskstats documentation in
+>> Documentation/accounting.
+>> 
+>>+2.15 /proc/<pid>/coredump_filter - Core dump filtering settings
+>>+---------------------------------------------------------------
+>>+When a process is dumped, all anonymous memory is written to a core file as
+>>+long as the size of the core file isn't limited. But sometimes we don't want
+>>+to dump some memory segments, for example, huge shared memory. Conversely,
+>>+sometimes we wnat to save file-backed memory segments into a core file, not
+> 
+>                 want
+ 
+Thank you for your review.  I attached the fixed patch.
 
-Bogus argument: is a USB-Ethernet device which needs firmware loading  
-boot-up critical? Not on the surface, but if the device loads root  
-over this device, it suddenly is.
+Best regards,
+-- 
+Hidehiro Kawai
+Hitachi, Ltd., Systems Development Laboratory
 
-This functionality should also be written into the firmware-class  
-(and this fact *is* acknowledged in the sparse documentation).
 
-Michael-Luke Jones
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ Documentation/filesystems/proc.txt |   38 +++++++++++++++++++++++++++
+ 1 files changed, 38 insertions(+)
+
+Index: linux-2.6.22-rc2-mm1/Documentation/filesystems/proc.txt
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/Documentation/filesystems/proc.txt
++++ linux-2.6.22-rc2-mm1/Documentation/filesystems/proc.txt
+@@ -42,6 +42,7 @@ Table of Contents
+   2.12	/proc/<pid>/oom_adj - Adjust the oom-killer score
+   2.13	/proc/<pid>/oom_score - Display current oom-killer score
+   2.14	/proc/<pid>/io - Display the IO accounting fields
++  2.15	/proc/<pid>/coredump_filter - Core dump filtering settings
+ 
+ ------------------------------------------------------------------------------
+ Preface
+@@ -2135,4 +2136,41 @@ those 64-bit counters, process A could s
+ More information about this can be found within the taskstats documentation in
+ Documentation/accounting.
+ 
++2.15 /proc/<pid>/coredump_filter - Core dump filtering settings
++---------------------------------------------------------------
++When a process is dumped, all anonymous memory is written to a core file as
++long as the size of the core file isn't limited. But sometimes we don't want
++to dump some memory segments, for example, huge shared memory. Conversely,
++sometimes we want to save file-backed memory segments into a core file, not
++only the individual files.
++
++/proc/<pid>/coredump_filter allows you to customize which memory segments
++will be dumped when the <pid> process is dumped. coredump_filter is a bitmask
++of memory types. If a bit of the bitmask is set, memory segments of the
++corresponding memory type are dumped, otherwise they are not dumped.
++
++The following 4 memory types are supported:
++  - (bit 0) anonymous private memory
++  - (bit 1) anonymous shared memory
++  - (bit 2) file-backed private memory
++  - (bit 3) file-backed shared memory
++
++  Note that MMIO pages such as frame buffer are never dumped and vDSO pages
++  are always dumped regardless of the bitmask status.
++
++Default value of coredump_filter is 0x3; this means all anonymous memory
++segments are dumped.
++
++If you don't want to dump all shared memory segments attached to pid 1234,
++write 1 to the process's proc file.
++
++  $ echo 0x1 > /proc/1234/coredump_filter
++
++When a new process is created, the process inherits the bitmask status from its
++parent. It is useful to set up coredump_filter before the program runs.
++For example:
++
++  $ echo 0x7 > /proc/self/coredump_filter
++  $ ./some_program
++
+ ------------------------------------------------------------------------------
+
+
