@@ -1,42 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbXE1HYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbXE1HgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbXE1HYV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 03:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbXE1HYO
+	id S1759494AbXE1HgV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 03:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbXE1HgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 03:24:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:58841 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753299AbXE1HYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 03:24:13 -0400
-From: Michael Neuling <mikey@neuling.org>
-To: trivial@kernel.org
-cc: linux-kernel@vger.kernel.org
-X-GPG-Fingerprint: 9B25 DC2A C58D 2C8D 47C2  457E 0887 E86F 32E6 BE16
-MIME-Version: 1.0
-Subject: [PATCH] trivial: remove bogus comment from account_user_time 
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
-Date: Mon, 28 May 2007 17:24:10 +1000
-Message-ID: <2585.1180337050@neuling.org>
+	Mon, 28 May 2007 03:36:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52658
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751866AbXE1HgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 03:36:09 -0400
+Date: Mon, 28 May 2007 00:36:20 -0700 (PDT)
+Message-Id: <20070528.003620.59469636.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: miles.lane@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: EIP is at netlink_insert+0x41/0x10c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070527235234.fe2d4dab.akpm@linux-foundation.org>
+References: <a44ae5cd0705272347x5e37d4aeg1f6ac8ece0e1542c@mail.gmail.com>
+	<20070527235234.fe2d4dab.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hardirq_offset is no longer needed.
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Sun, 27 May 2007 23:52:34 -0700
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- kernel/sched.c |    1 -
- 1 file changed, 1 deletion(-)
+> I wonder how /bin/init got to run netlink stuff.
 
-Index: linux-2.6-ozlabs/kernel/sched.c
-===================================================================
---- linux-2.6-ozlabs.orig/kernel/sched.c
-+++ linux-2.6-ozlabs/kernel/sched.c
-@@ -3290,7 +3290,6 @@ static inline int expired_starving(struc
- /*
-  * Account user cpu time to a process.
-  * @p: the process that the cpu time gets accounted to
-- * @hardirq_offset: the offset to subtract from hardirq_count()
-  * @cputime: the cpu time spent in user space since the last update
-  */
- void account_user_time(struct task_struct *p, cputime_t cputime)
+glibc uses it, but I don't think init does anything which would make
+use of those features.
