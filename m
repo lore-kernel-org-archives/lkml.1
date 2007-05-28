@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbXE1Sdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbXE1Sfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762004AbXE1Sdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 14:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbXE1Sd2
+	id S1762898AbXE1Sfd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 14:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbXE1Sf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 14:33:28 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:11050 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751527AbXE1Sd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 14:33:27 -0400
-Date: Mon, 28 May 2007 20:32:52 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Phillip Susi <psusi@cfl.rr.com>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       David Chinner <dgc@sgi.com>, linux-fsdevel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices,  filesystems, and dm/md.
-Message-ID: <20070528183252.GH7653@kernel.dk>
-References: <18006.38689.818186.221707@notabene.brown> <20070525111557.GP85884050@sgi.com> <20070525114910.GQ7653@kernel.dk> <4656F783.3000603@cfl.rr.com>
-Mime-Version: 1.0
+	Mon, 28 May 2007 14:35:26 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:37503 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbXE1SfZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 14:35:25 -0400
+Date: Mon, 28 May 2007 19:35:14 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Message-ID: <20070528183513.GA2815@srcf.ucam.org>
+References: <200701051001.58472.david-b@pacbell.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4656F783.3000603@cfl.rr.com>
+In-Reply-To: <200701051001.58472.david-b@pacbell.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [patch 2.6.20-rc3 1/3] rtc-cmos driver
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 05, 2007 at 10:01:57AM -0800, David Brownell wrote:
+> This is an "RTC framework" driver for the "CMOS" RTCs which are standard
+> on PCs and some other platforms.  That's MC146818 compatible silicon.
+> Advantages of this vs. drivers/char/rtc.c (use one _or_ the other, only
+> one will be able to claim the RTC irq) include:
 
-(dunny why you explicitly dropped me off the cc/to list when replying to
-my email, hence I missed it for 3 days)
+Sorry for getting to this so late - I've only just started playing with 
+this driver.
 
-On Fri, May 25 2007, Phillip Susi wrote:
-> Jens Axboe wrote:
-> >A barrier write will include a flush, but it may also use the FUA bit to
-> >ensure data is on platter. So the only situation where a fallback from a
-> >barrier to flush would be valid, is if the device lied and told you it
-> >could do FUA but it could not and that is the reason why the barrier
-> >write failed. If that is the case, the block layer should stop using FUA
-> >and fallback to flush-write-flush. And if it does that, then there's
-> >never a valid reason to switch from using barrier writes to
-> >blkdev_issue_flush() since both methods would either both work or both
-> >fail.
-> 
-> IIRC, the FUA bit only forces THAT request to hit the platter before it 
-> is completed; it does not flush any previous requests still sitting in 
-> the write back queue.  Because all io before the barrier must be on the 
-> platter as well, setting the FUA bit on the barrier request means you 
-> don't have to follow it with a flush, but you still have to precede it 
-> with a flush.
+> +static int cmos_read_alarm(struct device *dev, struct rtc_wkalrm *t)
 
-I'm well aware of how FUA works, hence the barrier FUA implementation
-does flush and then write-fua. The win compared to flush-write-flush is
-just a saved command, essentially.
+This is awkward. At the very least, year will be set to -1. This then 
+gets passed through to rtc_tm_to_time, which results in reading 
+wakealarm providing very odd feedback. I guess the "right" fix is for 
+rtc_tm_to_time to use the current values for anything that's -1?
 
-> >It's not block layer breakage, it's a device issue.
-> 
-> How isn't it block layer breakage?  If the device does not support 
-> barriers, isn't it the job of the block layer ( probably the scheduler ) 
-> to fall back to flush-write-flush?
+> +	rtc_control = CMOS_READ(RTC_CONTROL);
+> +	rtc_control &= ~(RTC_PIE | RTC_AIE | RTC_UIE);
 
-The problem is flush not working, the block layer can't fix that for you
-obviously. If it's FUA not working, the block layer should fall back to
-flush-write-flush, as they are obviously functionally equivalent.
+Do you really want to clobber RTC_AIE on probe? If an alarm has been set 
+by the BIOS, it seems a little unfair to disable it on boot.
 
 -- 
-Jens Axboe
-
+Matthew Garrett | mjg59@srcf.ucam.org
