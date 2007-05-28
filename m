@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761897AbXE1N3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762114AbXE1NaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761897AbXE1N3U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 09:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbXE1N3L
+	id S1762114AbXE1NaA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 09:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbXE1N3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 09:29:11 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:35778 "EHLO smtp.wsc.cz"
+	Mon, 28 May 2007 09:29:52 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:35782 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753305AbXE1N3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 09:29:10 -0400
-Message-id: <19836306752961214186@wsc.cz>
+	id S1753104AbXE1N3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 09:29:51 -0400
+Message-id: <1365159682097121268@wsc.cz>
 In-reply-to: <12191294601255228079@wsc.cz>
-Subject: [PATCH 5/8] Char: n_r3964, use wait_event_interruptible
+Subject: [PATCH 6/8] Char: rtc, use wait_event_interruptible
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Date: Mon, 28 May 2007 15:29:08 +0200 (CEST)
+Cc: <a.zummo@towertech.it>
+Date: Mon, 28 May 2007 15:29:50 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-n_r3964, use wait_event_interruptible
+rtc, use wait_event_interruptible
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit 2b7813d0f34703e0a4b18593a3186bdc7e719c06
-tree 657e6eef237faac65c0c90920e3bb1ae5a8027d9
-parent d45ae897fff813cf27d5d6ddfd92d19806831965
-author Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 21:45:39 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 21:45:39 +0200
+commit 62bd843054a7b2b2a3e3003a6b57b6359f199837
+tree 7c6912d4ed42581ca46d384ab2467bfb9d9d9dbe
+parent 2b7813d0f34703e0a4b18593a3186bdc7e719c06
+author Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 21:58:54 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 21:58:54 +0200
 
- drivers/char/n_r3964.c |   14 ++------------
- 1 files changed, 2 insertions(+), 12 deletions(-)
+ drivers/char/rtc.c |   40 +++++++++++++++-------------------------
+ 1 files changed, 15 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/char/n_r3964.c b/drivers/char/n_r3964.c
-index 14557a4..6b918b8 100644
---- a/drivers/char/n_r3964.c
-+++ b/drivers/char/n_r3964.c
-@@ -1071,8 +1071,6 @@ static ssize_t r3964_read(struct tty_struct *tty, struct file *file,
- 	struct r3964_client_info *pClient;
- 	struct r3964_message *pMsg;
- 	struct r3964_client_message theMsg;
--	DECLARE_WAITQUEUE(wait, current);
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index 20380a2..787b520 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -353,33 +353,26 @@ static ssize_t rtc_read(struct file *file, char __user *buf,
+ 	if (count != sizeof(unsigned int) && count !=  sizeof(unsigned long))
+ 		return -EINVAL;
+ 
+-	add_wait_queue(&rtc_wait, &wait);
 -
- 	int count;
+-	do {
+-		/* First make it right. Then make it fast. Putting this whole
+-		 * block within the parentheses of a while would be too
+-		 * confusing. And no, xchg() is not the answer. */
+-
+-		__set_current_state(TASK_INTERRUPTIBLE);
+-		
+-		spin_lock_irq (&rtc_lock);
+-		data = rtc_irq_data;
+-		rtc_irq_data = 0;
+-		spin_unlock_irq (&rtc_lock);
+-
+-		if (data != 0)
+-			break;
++	spin_lock_irq (&rtc_lock);
++	data = rtc_irq_data;
++	rtc_irq_data = 0;
++	spin_unlock_irq (&rtc_lock);
  
- 	TRACE_L("read()");
-@@ -1086,16 +1084,8 @@ static ssize_t r3964_read(struct tty_struct *tty, struct file *file,
- 				return -EAGAIN;
- 			}
- 			/* block until there is a message: */
--			add_wait_queue(&pInfo->read_wait, &wait);
--repeat:
--			__set_current_state(TASK_INTERRUPTIBLE);
--			pMsg = remove_msg(pInfo, pClient);
--			if (!pMsg && !signal_pending(current)) {
--				schedule();
--				goto repeat;
--			}
--			__set_current_state(TASK_RUNNING);
--			remove_wait_queue(&pInfo->read_wait, &wait);
-+			wait_event_interruptible(pInfo->read_wait,
-+					(pMsg = remove_msg(pInfo, pClient)));
++	if (data == 0) {
+ 		if (file->f_flags & O_NONBLOCK) {
+ 			retval = -EAGAIN;
+ 			goto out;
  		}
+-		if (signal_pending(current)) {
+-			retval = -ERESTARTSYS;
++		retval = wait_event_interruptible(rtc_wait, ({
++			spin_lock_irq (&rtc_lock);
++			data = rtc_irq_data;
++			rtc_irq_data = 0;
++			spin_unlock_irq (&rtc_lock);
++			data;
++		}));
++		if (retval)
+ 			goto out;
+-		}
+-		schedule();
+-	} while (1);
++	}
  
- 		/* If we still haven't got a message, we must have been signalled */
+ 	if (count == sizeof(unsigned int))
+ 		retval = put_user(data, (unsigned int __user *)buf) ?: sizeof(int);
+@@ -387,10 +380,7 @@ static ssize_t rtc_read(struct file *file, char __user *buf,
+ 		retval = put_user(data, (unsigned long __user *)buf) ?: sizeof(long);
+ 	if (!retval)
+ 		retval = count;
+- out:
+-	__set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&rtc_wait, &wait);
+-
++out:
+ 	return retval;
+ #endif
+ }
