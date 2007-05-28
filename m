@@ -1,112 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932372AbXE1U4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932503AbXE1U5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932372AbXE1U4z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 16:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXE1U4q
+	id S932503AbXE1U5j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 16:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXE1U5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 16:56:46 -0400
-Received: from daemonizer.de ([87.230.16.230]:39808 "EHLO daemonizer.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751490AbXE1U4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 16:56:44 -0400
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: b44: regression in 2.6.22 (resend)
-Date: Mon, 28 May 2007 22:55:46 +0200
-User-Agent: KMail/1.9.7
-Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20070525172431.60affaca@freepuppy> <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
-In-Reply-To: <1180380230.3657.3.camel@chaos>
+	Mon, 28 May 2007 16:57:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:55373 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbXE1U53 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 16:57:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=kWnrn45AvUTit/SrDj9QNdqaD5+QpuJ8pkzPoCB9ntQx41I7Eg1LeOovaqTPRMEeQryT8hsdopyw2YQ0a+3M9aqoRZ//JlAY8tSvA9StxSLdCq6Xh9lFiuyVGFo5hV+hNfSWtox2wl0kF6ypxzMlE6eOjCzFL7V0iFmRYE8aPoY=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Fix potential memory leak in tipc_named_node_up()
+Date: Mon, 28 May 2007 22:58:08 +0200
+User-Agent: KMail/1.9.6
+Cc: Per Linden <per.liden@ericsson.com>, Jon Maloy <jon.maloy@ericsson.com>,
+       Allan Stephens <allan.stephens@windriver.com>,
+       tipc-discussion@lists.sourceforge.net,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1755595.g61BcoufYt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705282255.56490.maxi@daemonizer.de>
-X-Spam-Score: -4.1 (----)
-X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.3 AWL AWL: From: address is in the auto white-list
+Content-Disposition: inline
+Message-Id: <200705282258.08701.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1755595.g61BcoufYt
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+There seems to be a memory leak in net/tipc/name_distr.c::tipc_named_node_up()
 
-On Monday 28 May 2007, Thomas Gleixner wrote:
-> On Mon, 2007-05-28 at 19:44 +0200, Maximilian Engelhardt wrote:
-> > > Can you please keep CONFIG_HIGH_RES_TIMERS and CONFIG_NOHZ and try the
-> > > following combinations on the kernel command line:
-> > >
-> > > 1) highres=3Doff nohz=3Doff (should be the same as your working confi=
-g)
-> > > 2) highres=3Doff
-> > > 3) nohz=3Doff
-> >
-> > I tested this with my 2.6.22-rc3 kernel, here are the results:
-> >
-> > without any special boot parameters: problem does appear
-> > highres=3Doff nohz=3Doff: problem does not appear
-> > highres=3Doff: problem does not appear
-> > nohz=3Doff: problem does appear
->
-> Is there any other strange behavior of the high res enabled kernel than
-> the b44 problem ?
+The function, with comments, is this :
 
-I didn't notice anything.
+void tipc_named_node_up(unsigned long node)
+{
+        struct publication *publ;
+        struct distr_item *item = NULL;
+        struct sk_buff *buf = NULL;
+        u32 left = 0;
+        u32 rest;
+        u32 max_item_buf;
 
->
-> > I additionally built my 2.6.22-rc2-mm1 kernel without High Resolution
-> > Timer, but the high ping problem is still there.
->
-> Hmm, that's mysterious. Wild guess is that highres exposes the hidden
-> "feature" in a different way than rc2-mm1 does.
+        read_lock_bh(&tipc_nametbl_lock);
+        max_item_buf = TIPC_MAX_USER_MSG_SIZE / ITEM_SIZE;
+        max_item_buf *= ITEM_SIZE;
+        rest = publ_cnt * ITEM_SIZE;
 
-I think the bug in 2.6.21/22-rc3 is a different one that the one in=20
-2.6.22-rc2-mm1, but that's also only a wild guess :)
+        list_for_each_entry(publ, &publ_root, local_list) {
+-----> If we stop processing here after doing 1, 2 & 3 below we end up at (4) (below).
+                if (!buf) {
+                        left = (rest <= max_item_buf) ? rest : max_item_buf;
+                        rest -= left;
+                        buf = named_prepare_buf(PUBLICATION, left, node);
+-----> (1) here we allocate memory and store a pointer to it in 'buf'.
 
-I'll explain this a bit:
-In 2.6.21/22-rc3 is the same b44 driver that has been in the stock kernels =
-for=20
-some time. With this driver and High Resolution Timer turned on I get=20
-problems using iperf. The problems are that the systems becomes really slow=
-=20
-and unresponsive.  Michael Buesch thought this could be an IRQ storm which=
-=20
-sounds logical to me. This bug did never happen to me before I startet the=
-=20
-iperf test.
+                        if (!buf) {
+-----> (2) This test needs to fail, meaning we did allocate some memory.
+                                warn("Bulk publication distribution failure\n");
+                                goto exit;
+                        }
+                        item = (struct distr_item *)msg_data(buf_msg(buf));
+                }
+                publ_to_item(item, publ);
+                item++;
+                left -= ITEM_SIZE;
+                if (!left) {
+-----> (3) If this test fails we loop and do nothing to 'buf'.
+                        msg_set_link_selector(buf_msg(buf), node);
+                        dbg("tipc_named_node_up: sending publish msg to "
+                            "<%u.%u.%u>\n", tipc_zone(node),
+                            tipc_cluster(node), tipc_node(node));
+                        tipc_link_send(buf, node, node);
+                        buf = NULL;
+                }
+        }
+exit:
+        read_unlock_bh(&tipc_nametbl_lock);
+-----> (4) here we return without freeing 'buf' - memory leak.
+}
 
-The other issue happens only with 2.6.22-rc2-mm1 which includes the b44 ssb=
-=20
-spilt. It's independed wether High Resolution Timer is turned on or off I=20
-always get very varying and high ping times. The iperf-test doesn't show th=
-e=20
-problems from 2.6.21/22-rc3.
+Luckily this is easy to fix, since we can only leave the function with 'buf'
+either set to NULL or (in the leak case) set to a valid address, and since 
+kfree() handles being passed NULL gracefully we can simply kfree(buf) just 
+before we leave the function.
 
-Maxi
+The patch below frees 'buf' before leaving the function, thus avoiding the 
+potential leak.
 
---nextPart1755595.g61BcoufYt
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGW0HcOimwv528XGERAjPfAJ9EUNLUXjxAFnid3vcXhWQj8dTVnQCeJIQ9
-uISFyuLmxhfgJnmcR71RtAI=
-=exhi
------END PGP SIGNATURE-----
+Fix a potential memory leak in tipc_named_node_up()
 
---nextPart1755595.g61BcoufYt--
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ net/tipc/name_distr.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/net/tipc/name_distr.c b/net/tipc/name_distr.c
+index 39fd161..228ccfe 100644
+--- a/net/tipc/name_distr.c
++++ b/net/tipc/name_distr.c
+@@ -204,6 +204,7 @@ void tipc_named_node_up(unsigned long node)
+ 	}
+ exit:
+ 	read_unlock_bh(&tipc_nametbl_lock);
++	kfree(buf);
+ }
+ 
+ /**
+
+
+
