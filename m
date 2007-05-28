@@ -1,116 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXE1Cqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbXE1CsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbXE1Cqv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXE1Cqk
+	id S1760133AbXE1CsS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 22:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbXE1CsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:46:40 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60989 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752537AbXE1Cqi (ORCPT
+	Sun, 27 May 2007 22:48:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.225]:57890 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752190AbXE1CsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:46:38 -0400
-Date: Mon, 28 May 2007 12:45:59 +1000
-From: David Chinner <dgc@sgi.com>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, David Chinner <dgc@sgi.com>,
-       Phillip Susi <psusi@cfl.rr.com>, Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-Message-ID: <20070528024559.GA85884050@sgi.com>
-References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18010.12472.209452.148229@notabene.brown>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 27 May 2007 22:48:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=MNSLTUFn8PD0afeon6Eeo0FJUkPllHr6ZQFBpj31hXKY5jdXYXqWaEQ42vjUAEuCY/pGt8GU+nYP1C6l9iLo6GdNau4EpjgsfV1vm51bR22yym8Am4FnX9JdS035B2TV8kDZCiwpjcunu+ay3SVuKFcSdYngSuDNKmT8GVzOv3c=
+Message-ID: <465A42DE.1030909@gmail.com>
+Date: Mon, 28 May 2007 06:47:58 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Grant Grundler <grundler@parisc-linux.org>, Greg KH <greg@kroah.com>,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PCIE
+References: <20070523155958.GA5282@kroah.com> <4654AB40.6060208@gmail.com>	<adaejl79rh0.fsf@cisco.com> <4654BC10.2000808@gmail.com>	<adazm3v89hv.fsf@cisco.com> <4654C85B.6060505@gmail.com>	<adatzu385g1.fsf@cisco.com> <46561287.8020103@gmail.com>	<ada1wh560u1.fsf@cisco.com> <46584C30.4030206@gmail.com>	<20070526182828.GA7080@colo.lackof.org> <46588A3D.2060208@gmail.com>	<adaps4l21fe.fsf@cisco.com> <465A38B0.6030604@gmail.com> <adahcpx1y89.fsf@cisco.com>
+In-Reply-To: <adahcpx1y89.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 28, 2007 at 11:30:32AM +1000, Neil Brown wrote:
+Roland Dreier wrote:
+>  > > At least on my device (PCI ID 1131:7162) there is no MSI-X capability,
+>  > > so that's not an option for you.  The current Linux implementation
+>  > > does not support more than one MSI interrupt, so you just get one
+>  > > interrupt with pci_enable_msi().
+>  > 
+>  > This would mean MSI or MSI-X ?  A bit confused now.
 > 
-> Thanks everyone for your input.  There was some very valuable
-> observations in the various emails.
-> I will try to pull most of it together and bring out what seem to be
-> the important points.
+> As I said, the device I have in my system:
 > 
+>     02:00.0 Multimedia controller: Philips Semiconductors Unknown device 7162
+>             Subsystem: Animation Technologies Inc. Unknown device 0820
+>             Flags: bus master, fast devsel, latency 0, IRQ 11
+>             Memory at 90200000 (64-bit, non-prefetchable) [size=1M]
+>             Capabilities: [40] Message Signalled Interrupts: Mask- 64bit+ Queue=0/5 Enable-
+>             Capabilities: [50] Express Endpoint IRQ 0
+>             Capabilities: [74] Power Management version 2
+>             Capabilities: [80] Vendor Specific Information
 > 
-> 1/ A BIO_RW_BARRIER request should never fail with -EOPNOTSUP.
-
-Sounds good to me, but how do we test to see if the underlying
-device supports barriers? Do we just assume that they do and
-only change behaviour if -o nobarrier is specified in the mount
-options?
-
-> 2/ Maybe barriers provide stronger semantics than are required.
+> ...has only an MSI capability (the "[40] Message Signalled Interrupts"
+> line).  So MSI-X is not possible, since the device cannot do it.  And
+> that means you can at most do pci_enable_msi().  The current Linux MSI
+> support only handles a single interrupt, just like you get normally
+> (no matter how many MSI interrupts a device can handle).  To get
+> multiple interrupts from a single device under Linux, you must use
+> MSI-X and pci_enable_msix -- but for this to work, your device must
+> support MSI-X of course.
 > 
->  All write requests are synchronised around a barrier write.  This is
->  often more than is required and apparently can cause a measurable
->  slowdown.
+> A device that supports both MSI and MSI-X would look like:
 > 
->  Also the FUA for the actual commit write might not be needed.  It is
->  important for consistency that the preceding writes are in safe
->  storage before the commit write, but it is not so important that the
->  commit write is immediately safe on storage.  That isn't needed until
->  a 'sync' or 'fsync' or similar.
-
-The use of barriers in XFS assumes the commit write to be on stable
-storage before it returns.  One of the ordering guarantees that we
-need is that the transaction (commit write) is on disk before the
-metadata block containing the change in the transaction is written
-to disk and the current barrier behaviour gives us that.
-
->  One possible alternative is:
->    - writes can overtake barriers, but barrier cannot overtake writes.
-
-No, that breaks the above usage of a barrier....
-
->    - flush before the barrier, not after.
+>     0b:00.0 InfiniBand: Mellanox Technologies MT25204 [InfiniHost III Lx HCA] (rev 20)
+>             Subsystem: Mellanox Technologies MT25204 [InfiniHost III Lx HCA]
+>             Flags: bus master, fast devsel, latency 0, IRQ 16
+>             Memory at fc600000 (64-bit, non-prefetchable) [size=1M]
+>             Memory at d8800000 (64-bit, prefetchable) [size=8M]
+>             Capabilities: [40] Power Management version 2
+>             Capabilities: [48] Vital Product Data
+>             Capabilities: [90] Message Signalled Interrupts: Mask- 64bit+ Queue=0/5 Enable-
+>             Capabilities: [84] MSI-X: Enable- Mask- TabSize=32
+>             Capabilities: [60] Express Endpoint IRQ 0
 > 
->  This is considerably weaker, and hence cheaper. But I think it is
->  enough for all filesystems (providing it is still an option to call
->  blkdev_issue_flush on 'fsync').
+> with both "Message Signalled Interrupts" and "MSI-X" capabilities.
+> 
 
-No, not enough for XFS.
+Thanks for the explanation.
 
->  Another alternative would be to tag each bio was being in a
->  particular barrier-group.  Then bio's in different groups could
->  overtake each other in either direction, but a BARRIER request must
->  be totally ordered w.r.t. other requests in the barrier group.
->  This would require an extra bio field, and would give the filesystem
->  more appearance of control.  I'm not yet sure how much it would
->  really help...
+> However, as I said before I think you shouldn't worry about MSI right
+> now.  Since there are many systems where MSI doesn't work, you'll need
+> to get the driver working with legacy (INTx) interrupts anyway.  And
+> you seem to be in a bit over your head just doing that without adding
+> the complexity of MSI on top, hence my recommendation to just focus on
+> the basic driver.
 
-And that assumes the filesystem is tracking exact dependencies
-between I/Os.  Such a mechanism would probably require filesystems
-to be redesigned to use this, but I can see how it would be useful
-for doing things like ensuring ordering between just an inode and
-it's data writes.  What would the overhead of having to support
-several hundred thousand different barrier groups be (i.e. one per
-dirty inode in a system)?
+True, compatibility would be important.
 
-> I think the implementation priorities here are:
+Thanks,
+Manu
 
-Depending on the answer to my first question:
-
-0/ implement a specific test for filesystems to run at mount time
-   to determine if barriers are supported or not.
-
-> 1/ implement a zero-length BIO_RW_BARRIER option.
-> 2/ Use it (or otherwise) to make all dm and md modules handle
->    barriers (and loop?).
-> 3/ Devise and implement appropriate fall-backs with-in the block layer
->    so that  -EOPNOTSUP is never returned.
-> 4/ Remove unneeded cruft from filesystems (and elsewhere).
-
-Sounds like a good start. ;)
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
