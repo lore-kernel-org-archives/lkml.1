@@ -1,106 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbXE1Drh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbXE1EJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758755AbXE1Drh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 23:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXE1Dr2
+	id S1754906AbXE1EJa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 00:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbXE1EJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 23:47:28 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35977 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753740AbXE1Dr0 (ORCPT
+	Mon, 28 May 2007 00:09:22 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:38864 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750773AbXE1EJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 23:47:26 -0400
-Date: Mon, 28 May 2007 09:16:40 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Chris Newport <crn@netunix.com>,
+	Mon, 28 May 2007 00:09:21 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=Db7Qzt6Mo30Dj1aQivTrFb2R4kB+n3IPeblZ0kK/OvOINr/KOKVKB841ExeXmad1hIF64RJIRE4SFZ8CUAMXPEVv5rn7FPNuBUst5jD4jYU7bB0ZHDMInrb2Y0ZULr4a+C1Nnklj3okEuw2oLUAuIXgKEt+pQf+bLhdZSL8myEk=  ;
+X-YMail-OSG: _sN9zQAVM1kvaoGc4zS0iC3PgNaiBgdz_pN2W_Ktg0bTKetC
+Message-ID: <465A55E7.50904@yahoo.com.au>
+Date: Mon, 28 May 2007 14:09:11 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
-       linux-pcmcia@lists.infradead.org,
-       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
-       Tejun Heo <htejun@gmail.com>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Mikael Pettersson <mikpe@it.uu.se>,
-       linux1394-devel@lists.sourceforge.net,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kristian H?gsberg <krh@bitplanet.net>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
-       Andrey Borzenkov <arvidjaar@mail.ru>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Subject: Re: [2/3] 2.6.22-rc2: known regressions v2
-Message-ID: <20070528034640.GA6367@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <46558708.2040803@googlemail.com> <46559B54.80106@googlemail.com> <Pine.LNX.4.64.0705241001040.28086@schroedinger.engr.sgi.com> <alpine.LFD.0.98.0705241007290.26602@woody.linux-foundation.org> <20070524193740.GA6787@elte.hu> <alpine.LFD.0.98.0705241247540.26602@woody.linux-foundation.org> <20070525101105.GA9268@elte.hu> <4656CE39.8050800@netunix.com> <20070525123456.GA17238@elte.hu> <20070525093354.5dbe5f43.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070525093354.5dbe5f43.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Preserve the dirty bit in init_page_buffers
+References: <m14pm5io6h.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m14pm5io6h.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 25, 2007 at 09:33:54AM -0700, Andrew Morton wrote:
-> On Fri, 25 May 2007 14:34:56 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+Eric W. Biederman wrote:
+> The problem:  When we are trying to free buffers try_to_free_buffers
+> will look at ramdisk pages with clean buffer heads and remove the
+> dirty bit from the page.  Resulting in ramdisk pages with data that
+> get removed from the page cache.  Ouch!
 > 
-> > * Chris Newport <crn@netunix.com> wrote:
-> > 
-> > > There is a fundamental problem in getting a decent log to debug a 
-> > > crashed kernel.  Maybe we should take a hint from Solaris. If the 
-> > > kernel crashes Solaris dumps core to swap and sets a flag. At the next 
-> > > boot this image is copied to /var/adm/crashdump where it is preserved 
-> > > for future debugging. Obviously swap needs to be larger than core, but 
-> > > this is usually the case.
-> > 
-> > we've got kdump, but it's not usually enabled by default by distros.
+> Buffer heads appear on ramdisk pages when a filesystem calls getblk,
+> which through a series of function calls eventually calls
+> init_page_buffers. 
 > 
-> Isn't that awful?
+> So to fix the mismatch between buffer head state and page state this
+> patch modifies init_page_buffers to transfer the dirty bit from the
+> page to the buffer heads like we currently do for the uptodate bit.
+
+Ouch indeed!
+
+But can we ever have a dirty page at init_page_buffers-time?
+
+I would have thought we can fix this simply by removing the
+broken ramdisk_set_page_dirty (as far as the comment goes, we
+set CAP_NO_ACCT_DIRTY anyway, so the normal set_page_dirty
+should handle everything properly, no?).
+
+
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  fs/buffer.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
+> diff --git a/fs/buffer.c b/fs/buffer.c
+> index aa68206..c6b58e8 100644
+> --- a/fs/buffer.c
+> +++ b/fs/buffer.c
+> @@ -953,6 +953,7 @@ init_page_buffers(struct page *page, struct block_device *bdev,
+>  	struct buffer_head *head = page_buffers(page);
+>  	struct buffer_head *bh = head;
+>  	int uptodate = PageUptodate(page);
+> +	int dirty = PageDirty(page);
+>  
+>  	do {
+>  		if (!buffer_mapped(bh)) {
+> @@ -961,6 +962,8 @@ init_page_buffers(struct page *page, struct block_device *bdev,
+>  			bh->b_blocknr = block;
+>  			if (uptodate)
+>  				set_buffer_uptodate(bh);
+> +			if (dirty)
+> +				set_buffer_dirty(bh);
+>  			set_buffer_mapped(bh);
+>  		}
+>  		block++;
 
-I think kdump should be enabled by default. Or at least user should be
-given an option to enable/configure this service at installation time.
 
-Things are still good atleast in RHEL5. It gives user a option to
-enable/disable kdump at firstboot after installation. A fall side of
-doing it at firstboot time is that a user has to go for an extra reboot
-if he chooses to enable kdump (Because of kernel command line crashkernel=).
-An improvemnt could be that these options should be given at installation
-time so that a user does not have to go through an extra reboot to enable
-kdump service. 
-
-It also has got graphical scripts to configure kdump serivce and enable it.
-Other distributions are catching up but there seems to be a reluctance
-to enable kdump by default primarily because of a chunk of memory being
-reserved for kdump kernel which can not be used by regular kernel.
-
-As of today RHEL reserves 128MB of memory for x86/x86_64 arch if kdump
-is enabled. Some people are also reluctant to change the installer to
-include a screen which can help user enable/disable/configure kdump. They
-think it increases installer complexity and user is likely to get confused.
-
-> By now we should be in the situation where if a tester is hitting a
-> kernel crash we can say to them "please turn on crashdumps and send me
-> the image".  But we're not - kernel developers don't know how to turn the
-> thing on in $RANDOM_DISTRO, testers have no experience with the feature
-> and kernel developers don't have experience handling the crash images.
-> 
-> And I'm not sure that the (required) "don't dump user memory and pagecache"
-> feature has been implemented yet?
-> 
-
-Yes. It has been implemented and integrated with RHEL5. Not sure about others.
-NEC developers have developed a user space filtering utility which can filter
-out pagecache, user memory and zero pages.
-
-http://sourceforge.net/projects/makedumpfile
-
-In RHEL5, one can pre-configure filtering options and a filtered crash
-dump will automatically be saved to user configured destination.
- 
-Thanks
-Vivek
-
+-- 
+SUSE Labs, Novell Inc.
