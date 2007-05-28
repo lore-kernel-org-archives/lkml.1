@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbXE1PbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbXE1PdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759066AbXE1PbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 11:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbXE1PbE
+	id S1760631AbXE1PdL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 11:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbXE1Pc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 11:31:04 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:46953 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751662AbXE1PbB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 11:31:01 -0400
-Date: Mon, 28 May 2007 17:30:55 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Nitin Gupta <nitingupta910@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>
-Subject: Re: [RFC] LZO de/compression support - take 6
-Message-ID: <20070528153055.GN3899@stusta.de>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 28 May 2007 11:32:56 -0400
+Received: from www.osadl.org ([213.239.205.134]:57827 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750900AbXE1Pcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 11:32:54 -0400
+Subject: Re: b44: regression in 2.6.22 (resend)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Maximilian Engelhardt <maxi@daemonizer.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200705281714.25841.mb@bu3sch.de>
+References: <20070525172431.60affaca@freepuppy>
+	 <200705281216.51690.mb@bu3sch.de> <200705281609.49859.maxi@daemonizer.de>
+	 <200705281714.25841.mb@bu3sch.de>
+Content-Type: text/plain
+Date: Mon, 28 May 2007 17:32:51 +0200
+Message-Id: <1180366371.4952.5.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 28, 2007 at 08:10:31PM +0530, Nitin Gupta wrote:
-> Hi,
->
-> Attached is tester code used for testing.
-> (developed by Daniel Hazelton -- modified slightly to now use 'take 6'
-> version for 'TinyLZO')
->
-> Cheers,
-> Nitin
->
-> On 5/28/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
->> (Using tester program from Daniel)
->>
->> Following compares this kernel port ('take 6') vs original miniLZO code:
->>
->> 'TinyLZO' refers to this kernel port.
->>
->> 10000 run averages:
->> 'Tiny LZO':
->>        Combined: 61.2223 usec
->>        Compression: 41.8412 usec
->>        Decompression: 19.3811 usec
->> 'miniLZO':
->>        Combined: 66.0444 usec
->>        Compression: 46.6323 usec
->>        Decompression: 19.4121 usec
->>
->> Result:
->> Overall: TinyLZO is 7.3% faster
->> Compressor: TinyLZO is 10.2% faster
->> Decompressor: TinyLZO is 0.15% faster
+On Mon, 2007-05-28 at 17:14 +0200, Michael Buesch wrote:
+> > The -oldconfig1 is the kernel that had no problems and the other shows the b44 
+> > problem. So if High Resolution Timer Support is disabled everything works 
+> > fine and if I enable it the problems do appear again.
+> > 
+> > I didn't test this on my 2.6.22-rc3 kernel yet, but I guess disabling High 
+> > Resolution Timer Support will also solve the problem there.
+> > 
+> > The older kernels I tried also work perfectly fine and they didn't have the 
+> > High Resolution Timer Support yet.
+> 
+> So, that's interesting, indeed.
+> Any idea what's going on, someone? Thomas?
 
-So your the compressor of your version runs 10.2% faster than the 
-original version.
+Not off the top of my head.
 
-That's a huge difference.
+Maximilian, does the kernel work otherwise (I mean aside of the b44
+driver) ? 
 
-Why exactly is it that much faster?
+Can you please keep CONFIG_HIGH_RES_TIMERS and CONFIG_NOHZ and try the
+following combinations on the kernel command line:
 
-cu
-Adrian
+1) highres=off nohz=off (should be the same as your working config)
+2) highres=off
+3) nohz=off
 
--- 
+Michael, is anything in the b44 driver timer driven ?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Thanks,
+
+	tglx
+
 
