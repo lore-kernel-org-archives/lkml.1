@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbXE1Mc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbXE1Mif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758956AbXE1Mc6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 08:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXE1Mcu
+	id S1758858AbXE1Mif (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 08:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbXE1Mi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 08:32:50 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:56834 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750887AbXE1Mct (ORCPT
+	Mon, 28 May 2007 08:38:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49581 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750887AbXE1Mi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 08:32:49 -0400
-Date: Mon, 28 May 2007 13:10:56 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Message-ID: <20070528121056.GA29143@srcf.ucam.org>
-References: <1180008394.15600.26.camel@localhost> <20070527184402.GA21161@srcf.ucam.org> <20070528010506.GA24186@srcf.ucam.org> <200705281011.17338.rjw@sisk.pl>
-MIME-Version: 1.0
+	Mon, 28 May 2007 08:38:26 -0400
+Date: Mon, 28 May 2007 14:38:24 +0200
+From: Jan Kara <jack@suse.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Theodore Tso <tytso@mit.edu>,
+       Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>,
+       Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
+       ext3-users@redhat.com
+Subject: Re: fs periodic check (was Re: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted)
+Message-ID: <20070528123824.GA32510@atrey.karlin.mff.cuni.cz>
+References: <20070518090604.GA10841@ribosome.natur.cuni.cz> <9a8748490705180720u3baf9785l910581a2a76a6eb@mail.gmail.com> <20070518143529.GB14611@ribosome.natur.cuni.cz> <20070518215731.GB10655@thunk.org> <20070520195526.GA5235@ucw.cz> <20070522180158.GA4668@thunk.org> <20070524173911.GA4541@ucw.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705281011.17338.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <20070524173911.GA4541@ucw.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 28, 2007 at 10:11:15AM +0200, Rafael J. Wysocki wrote:
-> On Monday, 28 May 2007 03:05, Matthew Garrett wrote:
-> > This /mostly/ works - I've had my test machine cycling through a suspend 
-> > cycle every 10 seconds for the past hour without any difficulties 
-> > providing I unload USB first. If USB is loaded, the suspend occasionally 
-> > fails with one of the devices returning -EBUSY and causing it to be 
-> > aborted. I haven't looked into this in any detail yet, but it's 
-> > presumably sufficiently generic code that it's potentially biting people 
-> > on PPC anyway.
-> 
-> Most probably.
-> 
-> Still, please take what I said in the other thread into consideration: We've
-> been using the freezer for so long that at least some drivers started to rely
-> on it being used.
-> 
-> Even if there are no such drivers on your system, they can be used by other
-> systems.
+  Hello,
 
-Sure, but if any of these drivers run on PPC then they're broken anyway. 
-The assumption that processes will be frozen during suspend is true in 
-the specific case of ACPI and some of the ARM platforms, but not true on 
-PPC or APM systems. We either need to fix the drivers to stop assuming 
-this or add the process freezer to the other PM systems. Right now, 
-they're buggy.
+> But here's what I've got:
+> 
+> oot@spitz:/home/pavel# fsck.ext2 -f /dev/hda3
+> e2fsck 1.38 (30-Jun-2005)
+> Pass 1: Checking inodes, blocks, and sizes
+> Inode 371989 has illegal block(s).  Clear<y>? yes
+> 
+> Illegal block #2 (134217728) in inode 371989.  CLEARED.
+> Pass 2: Checking directory structure
+> 
+> i_file_acl for inode 371988 (/home/root/misc/zaurus/smail) is 131072,
+> should be zero.
+> Clear<y>? yes
+> 
+> Pass 3: Checking directory connectivity
+> Pass 4: Checking reference counts
+> Pass 5: Checking group summary information
+> Block bitmap differences:  -339972 +471044
+> Fix<y>? yes
+> 
+> Free blocks count wrong for group #10 (13882, counted=13883).
+> Fix<y>? yes
+> 
+> ...kernel 2.6.16-preempt (on zaurus). Filesystem should have been clean -- I was
+> using it till crash for half a year, but that's what journal is for,
+> right? ...But I guess this is almost impossible to debug?
+  Actually, your case doesn't seem to be hard. The first block number
+is 0x8000000 and the second one 0x20000. So something is flipping your
+bits...
 
+									Honza
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
