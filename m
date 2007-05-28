@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760007AbXE1Gnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbXE1Grv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760007AbXE1Gnq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 02:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbXE1Gni
+	id S1760140AbXE1Grv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 02:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXE1Gro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 02:43:38 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:48131
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750979AbXE1Gnh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 02:43:37 -0400
-Date: Mon, 28 May 2007 08:45:31 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>, j@w1.fi, hostap@shmoo.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] use list_for_each_entry() for iteration in hostap_ap.c
-Message-ID: <20070528064531.GM31790@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Christoph Hellwig <hch@infradead.org>, j@w1.fi, hostap@shmoo.com,
-	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070525125630.GE31790@traven> <20070525130308.GF31790@traven> <20070525143005.GB10669@infradead.org> <20070527102824.GJ31790@traven>
-MIME-Version: 1.0
+	Mon, 28 May 2007 02:47:44 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:37779 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750992AbXE1Grn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 02:47:43 -0400
+Date: Mon, 28 May 2007 12:25:50 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Nathan Lynch <nathanl@austin.ibm.com>,
+       Joel Schopp <jschopp@austin.ibm.com>, Ashok Raj <ashok.raj@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, Dipankar <dipankar@in.ibm.com>
+Subject: Re: CPU hotplug: system hang on CPU hot remove during `pfmon --system-wide'
+Message-ID: <20070528065550.GL6157@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <87bqg5emqk.wl%takeuchi_satoru@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070527102824.GJ31790@traven>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <87bqg5emqk.wl%takeuchi_satoru@jp.fujitsu.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+On Mon, May 28, 2007 at 10:54:43AM +0900, Satoru Takeuchi wrote:
+> Since I'm investigating this problem now, I'm glad if someone
+> reports the test result on other arch or freezer.
+
+I suspect the freezer based approach will not have this problem. Gautham
+could probably verify that.
+
+Andrew/Linus,
+	So is it settled now on what approach we are going to follow (freezer 
+vs lock based) for cpu hotplug? I thought that Linus was not favouring freezer 
+based approach sometime back ..
 
 -- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-              La posibilidad de realizar un suenyo es lo
-                 que hace que la vida sea interesante
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Regards,
+vatsa
