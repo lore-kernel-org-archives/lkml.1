@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbXE1Nry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbXE1Nxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbXE1Nry (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 09:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbXE1Nrp
+	id S1758728AbXE1Nxa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 09:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbXE1NxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 09:47:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:14273 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752155AbXE1Nrp (ORCPT
+	Mon, 28 May 2007 09:53:23 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51858 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbXE1NxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 09:47:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=mREFy6MuZpD+KYcx8D9WeUp4Y7eRkhtMWjO5VgfY5QsD6ZQ42F0etvtGJFh0HobURwwL3OQyfUTaID7mqIK/one91F4WfnmiqqKrLOA7B8oCH7rVWp6NzPDQfdvB00SMDh0Wspxj7A3YYP9FifrKJSyTAqDiXpqAroBCFt5n6w8=
-Message-ID: <84144f020705280647h79e429c0l96e15388c8beaf00@mail.gmail.com>
-Date: Mon, 28 May 2007 16:47:43 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Michael-Luke Jones" <mlj28@cam.ac.uk>
-Subject: Re: [RFC] LZO de/compression support - take 5
-Cc: "Nitin Gupta" <nitingupta910@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Bret Towe" <magnade@gmail.com>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>
-In-Reply-To: <E3A63767-F44E-404B-BA43-8DEB223CCAC7@cam.ac.uk>
+	Mon, 28 May 2007 09:53:22 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Preserve the dirty bit in init_page_buffers
+References: <m14pm5io6h.fsf@ebiederm.dsl.xmission.com>
+	<465A55E7.50904@yahoo.com.au>
+	<m18xb9a7sy.fsf@ebiederm.dsl.xmission.com>
+	<465A6078.6010804@yahoo.com.au>
+Date: Mon, 28 May 2007 07:52:35 -0600
+In-Reply-To: <465A6078.6010804@yahoo.com.au> (Nick Piggin's message of "Mon,
+	28 May 2007 14:54:16 +1000")
+Message-ID: <m14plx9hss.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705272359o16725994k7f3c01b99c5691cd@mail.gmail.com>
-	 <871A3BF3-A0EA-40E4-AB5F-FF6DDCE12DC7@cam.ac.uk>
-	 <4cefeab80705280509x73c8a1c9m9e8ba58d235a3666@mail.gmail.com>
-	 <E3A63767-F44E-404B-BA43-8DEB223CCAC7@cam.ac.uk>
-X-Google-Sender-Auth: 54889ae869fb4360
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/28/07, Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
-> No, LZO as a visible option makes no practical sense. Why would
-> anyone want to build LZO into a kernel when there are no in-kernel
-> users of the code?
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-Agreed. It should be a auto-selected hidden config option.
+> Eric W. Biederman wrote:
+>> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+>
+>>>I would have thought we can fix this simply by removing the
+>>>broken ramdisk_set_page_dirty (as far as the comment goes, we
+>>>set CAP_NO_ACCT_DIRTY anyway, so the normal set_page_dirty
+>>>should handle everything properly, no?).
+>>
+>>
+>> No.  I don't know where accounting comes into play.  I didn't
+>> trace that path.  But if we have a non-dirty ramdisk page with
+>> buffers (basically a hole in the middle or at the end of the ramdisk).
+>> We need to set the buffer dirty bits when we write to it.
+>
+> Accounting is done in set_page_dirty.
+
+Yes.  What I meant was I had not looked at the implications of
+accounting, so I had not looked to see if I could use a generic
+set_dirty_page.
+
+I only got as far as recognizing that __set_page_dirty_no_writeback as
+not the appropriate function to use because we need to handle buffer
+heads.
+
+>> So I don't see how it would make sense to reuse the generic
+>> set_page_dirty, and handling all of the logic in set_page_dirty
+>> to dirty the buffer heads seemed to have made the most sense.
+>
+> That's what the generic set_page_dirty does. What I want to know
+> is why *doesn't* it make sense to reuse the generic set_page_dirty?
+> Unless there is a good reason, then reusing is better than writing
+> your own.
+
+I did not look at that part in detail.  I only realized
+ramdisk_set_dirty_page needed to be modified upon a final review of my
+code, as it was not a case I actually hit.
+
+Just skimming through it again quickly I don't see a reason at this
+point to preserve a separate set_dirty_page for the ramdisk code.
+
+Eric
