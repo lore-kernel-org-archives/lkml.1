@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbXE1KoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbXE1KoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbXE1KoA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 06:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbXE1Knw
+	id S1755343AbXE1KoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 06:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbXE1KoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 06:43:52 -0400
-Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:56609 "EHLO
-	aeryn.fluff.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750723AbXE1Knv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 06:43:51 -0400
-Date: Mon, 28 May 2007 10:43:41 +0000
-From: Ben Dooks <ben-linux@fluff.org>
-To: Qi Yong <qiyong@fc-cn.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux v2.6.22-rc3
-Message-ID: <20070528104341.GA7171@fluff.org.uk>
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org> <2cd57c900705272335l1cacaedfwd2972cbb8b458ad3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2cd57c900705272335l1cacaedfwd2972cbb8b458ad3@mail.gmail.com>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 28 May 2007 06:44:00 -0400
+Received: from ozlabs.org ([203.10.76.45]:33003 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757431AbXE1Kn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 06:43:58 -0400
+Subject: Re: [patch] x86_64: fix sched_clock()
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20070525110543.GM8094@one.firstfloor.org>
+References: <20070525075446.GA20140@elte.hu>
+	 <20070525080209.GE8094@one.firstfloor.org> <20070525080415.GB21446@elte.hu>
+	 <20070525082018.GF8094@one.firstfloor.org> <20070525083430.GB27236@elte.hu>
+	 <20070525084109.GI8094@one.firstfloor.org> <20070525084426.GA29973@elte.hu>
+	 <20070525084547.GJ8094@one.firstfloor.org>
+	 <20070525015544.bce3cb99.akpm@linux-foundation.org>
+	 <20070525090315.GK8094@one.firstfloor.org>
+	 <20070525110543.GM8094@one.firstfloor.org>
+Content-Type: text/plain
+Date: Mon, 28 May 2007 13:12:47 +1000
+Message-Id: <1180321967.29566.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 28, 2007 at 02:35:12PM +0800, Qi Yong wrote:
-> On 26/05/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> >
-> >It's Friday evening, and the US is preparing for a long three-day weekend,
-> >often considered the official start of summer here.
-> >
-> >So what's a pasty white nerd to do? You can't go out on the beach, because
-> >the goodlooking people will laugh at you, and kick sand in your face.
-> >
-> >I'm not bitter.
-> >
-> >But now you _can_ do something: you can download the latest -rc kernel,
-> >and smile smugly to yourself, knowing that you are running the latest and
-> >greatest on your machine. And suddenly it doesn't even matter that summer
-> >is coming, because you can just sit in the basement, and close the blinds,
-> >and bask in the warm light from your LCD, rather than the harsh glare of
-> >the daystar..
-> >
-> >The geeks with embedded hardware can consider themselves doubly special
-> >(and not just because your mothers told you you are), because we've got
-> >updates to ARM, SH and Blackfin.
-> >
-> >What more could you possibly want? Some ATA updates? USB suspend problem
-> >solving? Infiniband? DVB and MMC updates? Network drivers and some fixes
-> >for silly network problems? Yeah we got them!
+On Fri, 2007-05-25 at 13:05 +0200, Andi Kleen wrote:
+> On Fri, May 25, 2007 at 11:03:15AM +0200, Andi Kleen wrote:
+> > > This?    I sent it to you earlier this week:
+> > 
+> > Sorry haven't processed those yet.
+> > 
+> > Ah. The correct fix here is to clear the tsc flag in boot_cpu_data
+> > when the option is set. Will do that.
 > 
-> Unfortunately MMC update get compiling breakages.
+> Hmm I double checked this now; tsc_disable indeed clears
+> X86_FEATURE_TSC in identify_cpu and that should be always
+> called before anything sched_clock related runs on a CPU.
 
-[snip]
+Yes, agreed.
 
-> >
-> >Ben Dooks (6):
-> >      [ARM] 4395/1: S3C24XX: add include of <linux/sysdev.h> to relevant 
-> >      machines
-> >      [ARM] 4396/1: S3C2443: Add missing HCLK clocks
-> >      [ARM] 4397/1: S3C2443: remove SDI0/1 IRQ ambiguity
-> >      [ARM] 4398/1: S3C2443: Fix watchdog IRQ number
-> >      [ARM] 4399/2: S3C2443: Fix SMDK2443 nand timings
-> >      [ARM] 4400/1: S3C24XX: Add high-speed MMC device definition
+> Also the only possibly faulting division is protected
+> by a cpu_has_tsc which even checks boot_cpu_data. this means
+> even if the resync frequency code was called for
+> some reason before the identify_cpu of a AP it should
+> still work. For the BP this definitely cannot happen.
 > 
->   CC      arch/arm/plat-s3c24xx/devs.o
-> /home/qiyong/linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:410: error:
-> 'S3C2443_PA_HSMMC' undeclared here (not in a function)
-> /home/qiyong/linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:411: error:
-> 'S3C2443_SZ_HSMMC' undeclared here (not in a function)
+> I also tried it with qemu myself (both one and two cpus) and it worked
+> 
+> Rusty, was this really on a standard kernel? Was it with multiple
+> CPUs? 
 
-sorry about that, missed a file from the patch that adds this
-and missed rmk's merge request, patch is in the patch system and
-should be in as soon as possible.
+No, will re-check.  Drop it for now, if I can reproduce I'll produce the
+real fix or a decent explanation.
 
-fyi:
-http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=4402/1
+Thanks,
+Rusty.
 
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
