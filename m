@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763271AbXE1UDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763527AbXE1UDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763271AbXE1UDk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 16:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbXE1UDd
+	id S1763527AbXE1UDx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 16:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760556AbXE1UDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 16:03:33 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2644 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751460AbXE1UDc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 16:03:32 -0400
-Date: Mon, 28 May 2007 16:03:30 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Oliver Neukum <oliver@neukum.org>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before
- hibernation/suspend
-In-Reply-To: <20070528165441.GA1669@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0705281600050.9790-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 28 May 2007 16:03:35 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39337 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759958AbXE1UDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 16:03:34 -0400
+Date: Mon, 28 May 2007 22:04:34 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Indan Zupancic <indan@nul.nu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org,
+       Bernhard Walle <bwalle@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: fix section mismatch warnings in mtrr
+Message-ID: <20070528200434.GC31233@uranus.ravnborg.org>
+References: <200705191443.27161.arvidjaar@mail.ru> <200705261802.08573.ak@suse.de> <20070527090542.GA18399@uranus.ravnborg.org> <200705271156.22098.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705271156.22098.ak@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 May 2007, Matthew Garrett wrote:
-
-> On Mon, May 28, 2007 at 12:43:36PM -0400, Alan Stern wrote:
-> > On Mon, 28 May 2007, Matthew Garrett wrote:
-> > > On Mon, May 28, 2007 at 12:09:30PM -0400, Alan Stern wrote:
-> > > 
-> > > > I can't speak for the second example, but there's a good reason the
-> > > > first example works this way.  It's not a matter of races; the problem
-> > > > is that the kernel thread's job is to selectively suspend and resume
-> > > > devices.  We don't want it doing this while a system sleep is in 
-> > > > progress; it would (and in fact has, before the thread was made 
-> > > > freezable) cause the sleep transition to abort.
-> > > 
-> > > How does this work on PPC or APM systems?
-> > 
-> > For hibernation it behaves the same as on other types of systems.
-> > 
-> > For STR it generally works okay.  There was one report of suspends
-> > aborting, and it looked like this was caused by selective resumes
-> > originating from userspace.  This seemed to be unrelated to the kernel
-> > threads; apparently some program was running while the STR was in
-> > progress, and causing the problem.  For example, the lsusb program will
-> > do a selective resume on every USB device as it scans through them all.
-> > However that's just a guess, we haven't fully resolved that bug report.
-> > 
-> > The theoretical answer is that it behaves the way we want.  The kernel 
-> > thread does selective resumes in response to device requests.  If such 
-> > a request comes in while the system is asleep it will awaken the 
-> > system; so it's only logical that a request coming in while the system 
-> > is in the process of going to sleep should abort the suspend.
+On Sun, May 27, 2007 at 11:56:21AM +0200, Andi Kleen wrote:
 > 
-> Ok, I guess I'm still not clear on this :) If it doesn't cause major 
-> problems on Powermac or APM systems, why is freezing the thread 
-> beneficial on ACPI systems?
+> > 
+> > So section mismatch warnings are more about catching sloopy usage of __init than it is to
+> > catch potential kernel oopesen. But the latter is a nice side effect that is appreciated.
+> 
+> My point was that I cannot recall a single real oops bug found by the compile
+> time checking.
+> 
+> We had a few in the past, but since we poison init data after boot they all tended
+> to be found quickly anyways.
+It's far better to find the bugs during build time than during run-time.
 
-Isn't it true, even on PPC and APM systems, that tasks are frozen for
-hibernation?  The difference is that they aren't frozen for STR.
+> But the warnings just seem to require endless changes and bogus changes
+> (randomly moving code which was actually ok because it only called 
+> in the init case).
+The main culprint is probarly that the warnings are so vocal.
+Everyone see them for each kernel-build that touches one file.
+And then everyone and their cousin try to fix them.
 
-Hence the answer to your question: Not freezing the thread would work 
-okay on ACPI systems for STR.  (In fact, not freezing anything would 
-probably work okay for STR.)  But it doesn't work with hibernation.
+When we are down to a warning-free x86 build things will start to look different.
+And I will do my to make us get there - as time permits.
 
-Alan Stern
-
+	Sam
