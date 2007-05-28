@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761235AbXE1LM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbXE1LQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761235AbXE1LM7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 07:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbXE1LMx
+	id S1757524AbXE1LQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 07:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbXE1LQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 07:12:53 -0400
-Received: from h80ad2262.async.vt.edu ([128.173.34.98]:42208 "EHLO
-	h80ad2262.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbXE1LMw (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 07:12:52 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1 - a different BUG: at mm/slab.c:777 __find_general_cachep()
-In-Reply-To: Your message of "Mon, 28 May 2007 13:43:12 +0300."
-             <84144f020705280343q7e1646ar6961e7c0fa6b327f@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <13451.1180348036@turing-police.cc.vt.edu>
-            <84144f020705280343q7e1646ar6961e7c0fa6b327f@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1180350764_4040P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 28 May 2007 07:12:44 -0400
-Message-ID: <15652.1180350764@turing-police.cc.vt.edu>
+	Mon, 28 May 2007 07:16:01 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36168 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750724AbXE1LQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 07:16:00 -0400
+Date: Mon, 28 May 2007 13:15:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Message-ID: <20070528111554.GF18807@elf.ucw.cz>
+References: <200705272229.21263.rjw@sisk.pl> <20070527220412.GC22687@srcf.ucam.org> <1180304166.3131.66.camel@lov.localdomain> <200705280943.54312.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705280943.54312.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1180350764_4040P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <15646.1180350764.1@turing-police.cc.vt.edu>
+Hi!
 
-On Mon, 28 May 2007 13:43:12 +0300, Pekka Enberg said:
-> On 5/28/07, Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
-> > [4294667.472000] BUG: at mm/slab.c:777 __find_general_cachep()
+> > > > What exactly is the problem we see here? The timeout of the firmware loader?
+> > > > What goes wrong with frozen userspace, usually there is only a netlink
+> > > > message sent from the kernel, which should be received and handled
+> > > > just fine when userspace is running again.
+> > > 
+> > > Driver calls request_firmware in the resume method. The userspace helper 
+> > > can't be run because it's been frozen, so the firmware never gets loaded 
+> > > and the call times out. The driver then fails to resume. While all this 
+> > > is happening, the rest of the kernel is blocking on that resume method. 
+> > > The firmware can be loaded once userspace has been started again, but by 
+> > > that time the driver has given up.
+> > 
+> > Seems, that's just the broken synchronous firmware loading interface
+> > with the useless timeout handling. The nowait version of the same loader
+> > doesn't time out, and should not have that problem. The sync version
+> > should be removed from the kernel, it just causes all sorts of problems
+> > since it exists.
+> > 
+> > Userspace should handle the async request just fine when it comes back
+> > running, regardless of the time it was submitted.
 > 
-> [snip]
-> 
-> > Any suggestions before I go doing the bisect shuffle?
-> 
-> It's complaining about a kmalloc() with size zero. The warning is new
-> and harmless for now, so no need to bisect this (it will point you at
-> the mm/slab.c change by Christoph Lameter).
+> Okay, so the solution is to convert the drivers to use
+> request_firmware_nowait() instead of request_firmware() in their .resume()
+> routines.
 
-I knew *that* part.  Closer look at drivers/firmware/dmi-id.c indicates that
-it's likely a busticated DMI field in my BIOS - looking around at the stuff in
-/sys/devices/virtual/dmi/id I found that the files product_version, board_version
-board_asset_tag, chassis_version, and chassis_asset_tag are empty (trying
-to 'cat' them gets just a \n) - the other values all look sane.
+You'll just get deadlock at different level (and more rare).
 
-This looks fishy:
+Imagine disk with its firmware on NFS and NFS with its firmware on
+disk.
 
-#define ADD_DMI_ATTR(_name, _field)         if (dmi_get_system_info(_field))                 sys_dmi_attributes[i++] = & sys_dmi_##_name##_attr.attr;
-
-Should that be making a check that it's not pointing at a null string?
+(Or maybe firmware loader doing find /, including both disk and
+NFS). Just don't call request_firmware_* from .resume().
 
 
---==_Exmh_1180350764_4040P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGWrkscC3lWbTT17ARAkIdAJ4h2qL1+S/aUpxS5ER9hban8tII+wCeIuLp
-Td/6OgEnHThmStaqdIutk3s=
-=a8TY
------END PGP SIGNATURE-----
-
---==_Exmh_1180350764_4040P--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
