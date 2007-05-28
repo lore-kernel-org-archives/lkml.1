@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbXE1N0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbXE1N0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbXE1N0g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 09:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbXE1N01
+	id S1760632AbXE1N0s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 09:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbXE1N0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 09:26:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54538 "EHLO amd.ucw.cz"
+	Mon, 28 May 2007 09:26:30 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:42027 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750779AbXE1N01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 09:26:27 -0400
-Date: Mon, 28 May 2007 15:26:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
-Message-ID: <20070528132625.GQ18807@elf.ucw.cz>
-References: <4658B7DD.3060309@tmr.com> <20070527211434.GG3989@ucw.cz> <465A4953.7030708@tmr.com> <465AD746.7090008@tmr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465AD746.7090008@tmr.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	id S1753506AbXE1N03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 09:26:29 -0400
+Message-id: <12191294601255228079@wsc.cz>
+Subject: [PATCH 1/8] Char: mxser_new, fix sparse warning
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Date: Mon, 28 May 2007 15:26:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+mxser_new, fix sparse warning
 
-> >That's clear, I'll have to use xen or kvm or similar which restores 
-> >the system as suspended. Thanks for the clarification of the limitations.
-> >
-> Sorry, I wrote that late at night and quickly. I should have said 
-> "design decision" rather than "limitation," For systems which don't do 
-> multiple kernels it's not an issue.
-> 
-> I certainly would not have made the same decision, but I didn't write 
-> the code. It seems more robust to save everything than to try to 
-> identify what has and hasn't changed in a modular kernel.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-We rely on atomic copy routine not moving inside the kernel. Yes, it
-would be possible to copy it to "known good" address and gain ability
-to resume different kernels. Actually it should not be _that_ hard.
+---
+commit 29f15033f00e36f622d0bcd5a2dd0f9a49981481
+tree 2a332865460a2775256b5087f8da6ff8f1befdf0
+parent 1f023432798b6e6fd52ad81af0eab250e1a71449
+author Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 18:14:21 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 18:14:21 +0200
 
-									Pavel 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ drivers/char/mxser_new.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/mxser_new.c b/drivers/char/mxser_new.c
+index 6cde448..71b9657 100644
+--- a/drivers/char/mxser_new.c
++++ b/drivers/char/mxser_new.c
+@@ -1560,7 +1560,7 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
+ 			return -EFAULT;
+ 		return 0;
+ 	case MOXA_ASPP_MON_EXT: {
+-		int status, p, shiftbit;
++		int p, shiftbit;
+ 		unsigned long opmode;
+ 		unsigned cflag, iflag;
+ 
