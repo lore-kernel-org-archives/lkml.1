@@ -1,88 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbXE1GfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbXE1GhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759339AbXE1GfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 02:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbXE1GfP
+	id S1759431AbXE1GhZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 02:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbXE1GhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 02:35:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:17533 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751866AbXE1GfN (ORCPT
+	Mon, 28 May 2007 02:37:14 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:20032 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750844AbXE1GhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 02:35:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=XIYYePDxk0JiPaLHKMdhevLCaJ4Bbd9PkkSHfoqYD6ZKh2Smvfo/imlDGS16OIqJRJOgq7q+PSGPHUNb3Rc/Udd4h5Ln5syn9AJneC6uxHaiOYvjBT95R/woRAg7viSLUjBtYVbWczIQxV32ieB1JCsvCtRxZ2aNjvenNxjRXN8=
-Message-ID: <2cd57c900705272335l1cacaedfwd2972cbb8b458ad3@mail.gmail.com>
-Date: Mon, 28 May 2007 14:35:12 +0800
-From: "Qi Yong" <qiyong@fc-cn.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux v2.6.22-rc3
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
+	Mon, 28 May 2007 02:37:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=4GCllosEXajLpjwRjPIG8HkzNN0xM2M6LfbcjeIYejgpkHv4fVnVjFtebVwPCaL6QB74vRi9AOn95ORKr5BDGMNjrj+u0fGpifFUo4L+oAj5jG+WJ15I+o4qpAsR2F+enE/XmTeX2w+D23rCPV6oz1aeqSChh/ubBTAYIqIJVRU=  ;
+X-YMail-OSG: BqsESLQVM1mLbwE1qoCIbRszqpZDVjrbafJ1a0pMnZBhL5JvDftXa9ybSTIaz1FTQ1JF5Sc75w--
+Message-ID: <465A7894.5090101@yahoo.com.au>
+Date: Mon, 28 May 2007 16:37:08 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Preserve the dirty bit in init_page_buffers
+References: <m14pm5io6h.fsf@ebiederm.dsl.xmission.com>	<465A55E7.50904@yahoo.com.au> <m18xb9a7sy.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m18xb9a7sy.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
-X-Google-Sender-Auth: 42d1d29bd38e63cf
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26/05/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
-> It's Friday evening, and the US is preparing for a long three-day weekend,
-> often considered the official start of summer here.
->
-> So what's a pasty white nerd to do? You can't go out on the beach, because
-> the goodlooking people will laugh at you, and kick sand in your face.
->
-> I'm not bitter.
->
-> But now you _can_ do something: you can download the latest -rc kernel,
-> and smile smugly to yourself, knowing that you are running the latest and
-> greatest on your machine. And suddenly it doesn't even matter that summer
-> is coming, because you can just sit in the basement, and close the blinds,
-> and bask in the warm light from your LCD, rather than the harsh glare of
-> the daystar..
->
-> The geeks with embedded hardware can consider themselves doubly special
-> (and not just because your mothers told you you are), because we've got
-> updates to ARM, SH and Blackfin.
->
-> What more could you possibly want? Some ATA updates? USB suspend problem
-> solving? Infiniband? DVB and MMC updates? Network drivers and some fixes
-> for silly network problems? Yeah we got them!
+Eric W. Biederman wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
+> 
+> 
+>>Eric W. Biederman wrote:
+>>
+>>>The problem:  When we are trying to free buffers try_to_free_buffers
+>>>will look at ramdisk pages with clean buffer heads and remove the
+>>>dirty bit from the page.  Resulting in ramdisk pages with data that
+>>>get removed from the page cache.  Ouch!
+>>>
+>>>Buffer heads appear on ramdisk pages when a filesystem calls getblk,
+>>>which through a series of function calls eventually calls
+>>>init_page_buffers.
+>>>
+>>>So to fix the mismatch between buffer head state and page state this
+>>>patch modifies init_page_buffers to transfer the dirty bit from the
+>>>page to the buffer heads like we currently do for the uptodate bit.
+>>
+>>Ouch indeed!
+>>
+>>But can we ever have a dirty page at init_page_buffers-time?
+> 
+> 
+> Definitely, and it was a royal pain to trace the bug that this
+> caused.  An initial ramdisk having pieces disappear after mkfs
+> is called can look like the entire machine is dying.
+> 
+> When we initialize the ramdisk by writing to /dev/ram0 usually in
+> init/do_mounts_rd.c we don't allocate buffer heads but we do set
+> the dirty bit, and the page is in the page cache.  So when we
+> later call getblk it reuses the same page and then calls
+> init_page_buffers.
 
-Unfortunately MMC update get compiling breakages.
+Hmm, the comment above grow_dev_buffers indicates this should
+not happen. But contrary to the comment, it doesn't go BUG
+unless you're attaching dirty buffers to a page with dirty
+buffers.
 
->
-> So stop worrying about those dangerous ultraviolet rays, and instead get
-> your Vitamin D in the form God (and the pharmaceutical industry) intended:
-> small easily swallowed pills. Beaches are overrated anyway, the sand gets
-> into the laptop fan and soon it won't work.
->
-> May you have a great summer,
->
->                 Linus
->
+I suspect this happens more frequently with rd.c, because unlike
+block_dev.c, it does not create dirty buffers in prepare_write.
+However it could still happen in block_dev.c via mmaped memory,
+as I said earlier.
 
-
->
-> Ben Dooks (6):
->       [ARM] 4395/1: S3C24XX: add include of <linux/sysdev.h> to relevant machines
->       [ARM] 4396/1: S3C2443: Add missing HCLK clocks
->       [ARM] 4397/1: S3C2443: remove SDI0/1 IRQ ambiguity
->       [ARM] 4398/1: S3C2443: Fix watchdog IRQ number
->       [ARM] 4399/2: S3C2443: Fix SMDK2443 nand timings
->       [ARM] 4400/1: S3C24XX: Add high-speed MMC device definition
-
-   CC      arch/arm/plat-s3c24xx/devs.o
-/home/qiyong/linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:410: error:
-'S3C2443_PA_HSMMC' undeclared here (not in a function)
-/home/qiyong/linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:411: error:
-'S3C2443_SZ_HSMMC' undeclared here (not in a function)
+I'm not saying this patch 1/3 is wrong, but we would at least
+need to revise some comments. The grow_dev_buffers comment looks
+like one of Andrew's. Maybe he can shed some more light on this?
 
 -- 
-Qi Yong
+SUSE Labs, Novell Inc.
