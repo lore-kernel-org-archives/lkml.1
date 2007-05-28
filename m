@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761289AbXE1Hi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbXE1Hq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761289AbXE1Hi4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 03:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbXE1Hig
+	id S1760210AbXE1Hq1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 03:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbXE1HqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 03:38:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56203 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752418AbXE1Hie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 03:38:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
-Date: Mon, 28 May 2007 09:43:53 +0200
-User-Agent: KMail/1.9.5
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>
-References: <200705272229.21263.rjw@sisk.pl> <20070527220412.GC22687@srcf.ucam.org> <1180304166.3131.66.camel@lov.localdomain>
-In-Reply-To: <1180304166.3131.66.camel@lov.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 28 May 2007 03:46:20 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42107 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752407AbXE1HqT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 03:46:19 -0400
+Date: Mon, 28 May 2007 10:46:18 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Documentation: How to use GDB to decode OOPSes
+Message-ID: <Pine.LNX.4.64.0705281046001.30697@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705280943.54312.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 May 2007 00:16, Kay Sievers wrote:
-> On Sun, 2007-05-27 at 23:04 +0100, Matthew Garrett wrote:
-> > On Sun, May 27, 2007 at 11:49:30PM +0200, Kay Sievers wrote:
-> > 
-> > > What exactly is the problem we see here? The timeout of the firmware loader?
-> > > What goes wrong with frozen userspace, usually there is only a netlink
-> > > message sent from the kernel, which should be received and handled
-> > > just fine when userspace is running again.
-> > 
-> > Driver calls request_firmware in the resume method. The userspace helper 
-> > can't be run because it's been frozen, so the firmware never gets loaded 
-> > and the call times out. The driver then fails to resume. While all this 
-> > is happening, the rest of the kernel is blocking on that resume method. 
-> > The firmware can be loaded once userspace has been started again, but by 
-> > that time the driver has given up.
-> 
-> Seems, that's just the broken synchronous firmware loading interface
-> with the useless timeout handling. The nowait version of the same loader
-> doesn't time out, and should not have that problem. The sync version
-> should be removed from the kernel, it just causes all sorts of problems
-> since it exists.
-> 
-> Userspace should handle the async request just fine when it comes back
-> running, regardless of the time it was submitted.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Okay, so the solution is to convert the drivers to use
-request_firmware_nowait() instead of request_firmware() in their .resume()
-routines.
+Adds instructions how to use GDB to figure out the exact location of
+an OOPS to Documentation/BUG-HUNTING.
 
-Greetings,
-Rafael
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ Documentation/BUG-HUNTING |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+Index: 2.6/Documentation/BUG-HUNTING
+===================================================================
+--- 2.6.orig/Documentation/BUG-HUNTING	2007-02-05 09:46:58.000000000 +0200
++++ 2.6/Documentation/BUG-HUNTING	2007-05-28 10:38:55.000000000 +0300
+@@ -191,6 +191,30 @@ >        mov        0xd0(%esp), %ebp    
+ >        mov        0x8(%ebp), %ebx         ! %ebx = skb->sk
+ >        mov        0x13c(%ebx), %eax       ! %eax = inet_sk(sk)->opt
+ 
++In addition, you can use GDB to figure out the exact file and line
++number of the OOPS from the vmlinux file. If you have
++CONFIG_DEBUG_INFO enabled, you can simply copy the EIP value from the
++OOPS:
++
++ EIP:    0060:[<c021e50e>]    Not tainted VLI
++
++And use GDB to translate that to human-readable form:
++
++  gdb vmlinux
++  (gdb) l *0xc021e50e
++
++If you don't have CONFIG_DEBUG_INFO enabled, you use the function
++offset from the OOPS:
++
++ EIP is at vt_ioctl+0xda8/0x1482
++
++And recompile the kernel with CONFIG_DEBUG_INFO enabled:
++
++  make vmlinux
++  gdb vmlinux
++  (gdb) p vt_ioctl
++  (gdb) l *(0x<address of vt_ioctl> + 0xda8)
++
+ Another very useful option of the Kernel Hacking section in menuconfig is
+ Debug memory allocations. This will help you see whether data has been
+ initialised and not set before use etc. To see the values that get assigned
