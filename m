@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbXE1LSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbXE1LWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762685AbXE1LSP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 07:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbXE1LR5
+	id S1762051AbXE1LWb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 07:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbXE1LWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 07:17:57 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:56910 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbXE1LRz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 07:17:55 -0400
-From: Nikita Danilov <nikita@clusterfs.com>
+	Mon, 28 May 2007 07:22:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58269 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbXE1LWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 07:22:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Date: Mon, 28 May 2007 13:28:07 +0200
+User-Agent: KMail/1.9.5
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>
+References: <200705272229.21263.rjw@sisk.pl> <200705280943.54312.rjw@sisk.pl> <20070528111554.GF18807@elf.ucw.cz>
+In-Reply-To: <20070528111554.GF18807@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18010.47701.751118.336431@gargle.gargle.HOWL>
-Date: Mon, 28 May 2007 15:17:41 +0400
-To: device-mapper development <dm-devel@redhat.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-raid@vger.kernel.org,
-       David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices,
-	filesystems, and dm/md.
-Newsgroups: gmane.linux.kernel.device-mapper.devel,gmane.linux.file-systems,gmane.linux.raid,gmane.linux.kernel
-In-Reply-To: <18006.38689.818186.221707@notabene.brown>
-References: <18006.38689.818186.221707@notabene.brown>
-X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
+Content-Disposition: inline
+Message-Id: <200705281328.08979.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown writes:
- > 
+On Monday, 28 May 2007 13:15, Pavel Machek wrote:
+> Hi!
+> 
+> > > > > What exactly is the problem we see here? The timeout of the firmware loader?
+> > > > > What goes wrong with frozen userspace, usually there is only a netlink
+> > > > > message sent from the kernel, which should be received and handled
+> > > > > just fine when userspace is running again.
+> > > > 
+> > > > Driver calls request_firmware in the resume method. The userspace helper 
+> > > > can't be run because it's been frozen, so the firmware never gets loaded 
+> > > > and the call times out. The driver then fails to resume. While all this 
+> > > > is happening, the rest of the kernel is blocking on that resume method. 
+> > > > The firmware can be loaded once userspace has been started again, but by 
+> > > > that time the driver has given up.
+> > > 
+> > > Seems, that's just the broken synchronous firmware loading interface
+> > > with the useless timeout handling. The nowait version of the same loader
+> > > doesn't time out, and should not have that problem. The sync version
+> > > should be removed from the kernel, it just causes all sorts of problems
+> > > since it exists.
+> > > 
+> > > Userspace should handle the async request just fine when it comes back
+> > > running, regardless of the time it was submitted.
+> > 
+> > Okay, so the solution is to convert the drivers to use
+> > request_firmware_nowait() instead of request_firmware() in their .resume()
+> > routines.
+> 
+> You'll just get deadlock at different level (and more rare).
+> 
+> Imagine disk with its firmware on NFS and NFS with its firmware on
+> disk.
 
-[...]
+Yeah, I've just given the very same example in another message. :-)
 
- > Thus the general sequence might be:
- > 
- >   a/ issue all "preceding writes".
- >   b/ issue the commit write with BIO_RW_BARRIER
- >   c/ wait for the commit to complete.
- >          If it was successful - done.
- >          If it failed other than with EOPNOTSUPP, abort
- >          else continue
- >   d/ wait for all 'preceding writes' to complete
- >   e/ call blkdev_issue_flush
- >   f/ issue commit write without BIO_RW_BARRIER
- >   g/ wait for commit write to complete
- >        if it failed, abort
- >   h/ call blkdev_issue
- >   DONE
- > 
- > steps b and c can be left out if it is known that the device does not
- > support barriers.  The only way to discover this to try and see if it
- > fails.
- > 
- > I don't think any filesystem follows all these steps.
+I believe the only _solution_ would be to load the firmware into memory
+before the suspend and use the in-RAM copy to upload it into the device
+in .resume().
 
-It seems that steps b/ -- h/ are quite generic, and can be implemented
-once in a generic code (with some synchronization mechanism like
-wait-queue at d/).
+A PM_PRE_FREEZE notifier could be used for that just fine, BTW.
 
-Nikita.
-
-[...]
-
- > 
- > Thank you for your attention.
- > 
- > NeilBrown
- > 
-
-Nikita.
+Greetings,
+Rafael
