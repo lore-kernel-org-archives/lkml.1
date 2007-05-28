@@ -1,60 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932612AbXE1VAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763355AbXE1VC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932612AbXE1VAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 17:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932376AbXE1VAX
+	id S1763355AbXE1VC5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 17:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbXE1VCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 17:00:23 -0400
-Received: from mail.zelnet.ru ([80.92.97.13]:38755 "EHLO mail.zelnet.ru"
+	Mon, 28 May 2007 17:02:51 -0400
+Received: from daemonizer.de ([87.230.16.230]:39849 "EHLO daemonizer.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932246AbXE1VAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 17:00:22 -0400
-Message-ID: <465B42D8.1020102@namesys.com>
-Date: Tue, 29 May 2007 01:00:08 +0400
-From: Edward Shishkin <edward@namesys.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
-X-Accept-Language: en-us, en
+	id S1750934AbXE1VCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 17:02:50 -0400
+From: Maximilian Engelhardt <maxi@daemonizer.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: software suspend doesn't work with 2.6.22-rc3
+Date: Mon, 28 May 2007 23:02:28 +0200
+User-Agent: KMail/1.9.7
+Cc: nigel@nigel.suspend2.net, Herbert Xu <herbert@gondor.apana.org.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200705261128.57332.maxi@daemonizer.de> <200705280959.37516.rjw@sisk.pl> <200705282021.30355.rjw@sisk.pl>
+In-Reply-To: <200705282021.30355.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Richard Purdie <rpurdie@rpsys.net>
-CC: akpm <akpm@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
-       vs@namesys.com
-Subject: Re: [PATCH -mm] reiser4: remove lzo compression security hole
-References: <1180047240.12821.48.camel@localhost.localdomain>
-In-Reply-To: <1180047240.12821.48.camel@localhost.localdomain>
-X-Enigmail-Version: 0.86.0.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart3799734.FFf1Euva34";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705282302.31227.maxi@daemonizer.de>
+X-Spam-Score: -4.1 (----)
+X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	*  0.3 AWL AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Purdie wrote:
+--nextPart3799734.FFf1Euva34
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
->Switch reiser4 to use lzo1x_decompress_safe instead of lzo1x_decompress
->as otherwise it presents a security hole (lzo1x_decompress doesn't
->perform bounds checking on the decompressed data).
+On Monday 28 May 2007, Rafael J. Wysocki wrote:
+> On Monday, 28 May 2007 09:59, Rafael J. Wysocki wrote:
+> > On Monday, 28 May 2007 02:21, Maximilian Engelhardt wrote:
+> > > On Sunday 27 May 2007, Rafael J. Wysocki wrote:
+> > > > On Sunday, 27 May 2007 22:41, Maximilian Engelhardt wrote:
+> > > > > On Sunday 27 May 2007, Rafael J. Wysocki wrote:
+> > > > > > On Sunday, 27 May 2007 18:01, Maximilian Engelhardt wrote:
+> > > > > > > On Saturday 26 May 2007, Nigel Cunningham wrote:
+> > > > > > > > Hi.
+> > > > > > > >
+> > > > > > > > On Sat, 2007-05-26 at 14:49 +0200, Maximilian Engelhardt=20
+wrote:
+> > > > > > > > > On Saturday 26 May 2007, Nigel Cunningham wrote:
+> > > > > > > > > > Hi.
+> > > > > > > > > >
+> > > > > > > > > > On Sat, 2007-05-26 at 11:28 +0200, Maximilian Engelhard=
+t=20
+wrote:
+> > > > > > > > > > > Hello,
+> > > > > > > > > > >
+> > > > > > > > > > > When I try software suspend on my laptop it always
+> > > > > > > > > > > returns to my running system after some time.
+> > > > > > > > > > > This is what's logged by the kernel:
+> > > > > > > > > > >
+> > > > > > > > > > > swsusp: Basic memory bitmaps created
+> > > > > > > > > > > Stopping tasks ...
+> > > > > > > > > > > Stopping kernel threads timed out after 20 seconds (1
+> > > > > > > > > > > tasks refusing to freeze):
+> > > > > > > > > > >  cryptd
+> > > > > > > > > > > Restarting tasks ... done.
+> > > > > > > > > > > swsusp: Basic memory bitmaps freed
+> > > > > > > > > > >
+> > > > > > > > > > > I have no idea what's the problem, but if you tell me
+> > > > > > > > > > > what I should do I can create debugging information
+> > > > > > > > > > > and/or test patches.
+> > > > > > > > > >
+> > > > > > > > > > Could you try this patch, please? It should help.
+> > > > > > > > > >
+> > > > > > > > > > Herbert, is this right? If cryptd is going to be used f=
+or
+> > > > > > > > > > block devs, the task should probably be PF_NOFREEZE (or
+> > > > > > > > > > whatever it is today) instead.
+> > > > > > > > > >
+> > > > > > > > > > Regards,
+> > > > > > > > > >
+> > > > > > > > > > Nigel
+> > > > > > > > > >
+> > > > > > > > > >  crypto/cryptd.c         |    1 +
+> > > > > > > > > >  include/linux/freezer.h |    3 +++
+> > > > > > > > > >  kernel/power/process.c  |    2 +-
+> > > > > > > > > >  3 files changed, 5 insertions(+), 1 deletion(-)
+> > > > > > > > > > diff -ruNp 991-fix-cryptd.patch-old/crypto/cryptd.c
+> > > > > > > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c ---
+> > > > > > > > > > 991-fix-cryptd.patch-old/crypto/cryptd.c	2007-05-19
+> > > > > > > > > > 18:16:47.000000000 +1000 +++
+> > > > > > > > > > 991-fix-cryptd.patch-new/crypto/cryptd.c	2007-05-26
+> > > > > > > > > > 19:45:42.000000000 +1000 @@ -341,6 +341,7 @@ static int
+> > > > > > > > > > cryptd_thread(void *data)
+> > > > > > > > > >
+> > > > > > > > > >  		mutex_unlock(&state->mutex);
+> > > > > > > > > >
+> > > > > > > > > > +		try_to_freeze();
+> > > > > > > > > >  		schedule();
+> > > > > > > > > >  	} while (!stop);
+> > > > > > > > >
+> > > > > > > > > I tried your patch, but when I apply it my kernel doesn't
+> > > > > > > > > compile any more. I get these warnings/errors:
+> > > > > > > > >
+> > > > > > > > > [...]
+> > > > > > > > >   CC      crypto/cryptd.o
+> > > > > > > > > crypto/cryptd.c: In function =E2=80=98cryptd_thread=E2=80=
+=99:
+> > > > > > > > > crypto/cryptd.c:344: warning: implicit declaration of
+> > > > > > > > > function =E2=80=98try_to_freeze=E2=80=99 [...]
+> > > > > > > > >   LD      init/built-in.o
+> > > > > > > > >   LD      .tmp_vmlinux1
+> > > > > > > > > crypto/built-in.o: In function `cryptd_thread':
+> > > > > > > > > cryptd.c:(.text+0xd7f5): undefined reference to
+> > > > > > > > > `try_to_freeze' make: *** [.tmp_vmlinux1] Error 1
+> > > > > > > >
+> > > > > > > > Ah. You'll need to add #include <linux/freezer.h> near that
+> > > > > > > > start of crypto/cryptd.c. Sorry for forgetting that.
+> > > > > > > >
+> > > > > > > > Nigel
+> > > > > > >
+> > > > > > > I added the include line and now I could compile the kernel,
+> > > > > > > but suspending still doesn't work.
+> > > > > > >
+> > > > > > > swsusp: Basic memory bitmaps created
+> > > > > > > Stopping tasks ...
+> > > > > > > Stopping kernel threads timed out after 20 seconds (1 tasks
+> > > > > > > refusing to freeze):
+> > > > > > > cryptd
+> > > > > > > Restarting tasks ... done.
+> > > > > > > swsusp: Basic memory bitmaps freed
+> > > > > >
+> > > > > > OK, this means that cryptd doesn't execute the try_to_freeze()
+> > > > > > for some reason.
+> > > > > >
+> > > > > > Please apply the appended patch on top of 2.6.22-rc3 and see if
+> > > > > > that helps.
+> > > > > >
+> > > > > > Greetings,
+> > > > > > Rafael
+> > > > > >
+> > > > > > ---
+> > > > > >  crypto/cryptd.c |    1 +
+> > > > > >  1 file changed, 1 insertion(+)
+> > > > > >
+> > > > > > Index: linux-2.6.22-rc3/crypto/cryptd.c
+> > > > > > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > > > > >=3D=3D --- linux-2.6.22-rc3.orig/crypto/cryptd.c
+> > > > > > +++ linux-2.6.22-rc3/crypto/cryptd.c
+> > > > > > @@ -316,6 +316,7 @@ static int cryptd_thread(void *data)
+> > > > > >  	struct cryptd_state *state =3D data;
+> > > > > >  	int stop;
+> > > > > >
+> > > > > > +	current->flags |=3D PF_NOFREEZE;
+> > > > > >  	do {
+> > > > > >  		struct crypto_async_request *req, *backlog;
+> > > > >
+> > > > > Even with this patch suspending doesn't work, dmesg shows the same
+> > > > > error message.
+> > > > > I also did build a kernel without cryptd and suspending does work
+> > > > > there.
+> > > >
+> > > > Well, that's strange, because in that case the freezer shouldn't ev=
+en
+> > > > wait for cryptd.
+> > > >
+> > > > Can you please try the patch at http://lkml.org/lkml/2007/5/26/169 ?
+> > >
+> > > With this patch applied suspend does work fine.
+> >
+> > Hmm.  IMO the patch is too intrusive for 2.6.22, but OTOH it's going in=
+to
+> > the direction preferred by some prominent people. ;-)
+> >
+> > Let's try to combine the two threads and see what results from that.
 >
->Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
+> Well, it looks like we have to fix this one separately.
 >
->---
-> fs/reiser4/plugin/compress/compress.c |    2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
->Index: linux-2.6.21/fs/reiser4/plugin/compress/compress.c
->===================================================================
->--- linux-2.6.21.orig/fs/reiser4/plugin/compress/compress.c	2007-05-16 20:47:45.000000000 +0100
->+++ linux-2.6.21/fs/reiser4/plugin/compress/compress.c	2007-05-24 23:43:28.000000000 +0100
->@@ -319,7 +319,7 @@ lzo1_decompress(coa_t coa, __u8 * src_fi
-> 	assert("edward-851", coa == NULL);
-> 	assert("edward-852", src_len != 0);
-> 
->-	result = lzo1x_decompress(src_first, src_len, dst_first, &dstlen, NULL);
->+	result = lzo1x_decompress_safe(src_first, src_len, dst_first, &dstlen, NULL);
-> 	if (result != LZO_E_OK)
-> 		warning("edward-853", "lzo1x_1_decompress failed\n");
-> 	*dst_len = dstlen;
->
->  
->
+> Can you please tell me what to do to make cryptd run?
 
-Signed-off-by: Edward Shishkin <edward@namesys.com>
+Well, there really isn't much I do. When I switched from 2.6.21 to 2.6.22-r=
+c2=20
+I did a 'make oldconfig' and I enabled CONFIG_CRYPTO_CRYPTD because I thoug=
+ht=20
+it would be a good idea. I don't need cryptd, =C2=A0I just enabled it. Now =
+when I=20
+boot this kernel it seems like cryptd is automatically started.
+
+I also tried building a kernel where CONFIG_CRYPTO_CRYPTD is disabled and=20
+there suspending does work fine.
+
+Maxi
+
+--nextPart3799734.FFf1Euva34
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGW0NnOimwv528XGERAjyEAJ9oLEX6+nU+hbBVITlxJi7gEVU09wCgw2O7
+SxL82xlwXl19W/BwnqMEIjY=
+=kcd3
+-----END PGP SIGNATURE-----
+
+--nextPart3799734.FFf1Euva34--
