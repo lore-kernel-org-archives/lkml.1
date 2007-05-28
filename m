@@ -1,78 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763859AbXE1XA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbXE1XDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763859AbXE1XA1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 19:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758897AbXE1XAP
+	id S1762780AbXE1XDk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 19:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXE1XDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 19:00:15 -0400
-Received: from fmmailgate09.web.de ([217.72.192.184]:57763 "EHLO
-	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758637AbXE1XAN (ORCPT
+	Mon, 28 May 2007 19:03:32 -0400
+Received: from fed1rmmtao107.cox.net ([68.230.241.39]:32903 "EHLO
+	fed1rmmtao107.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbXE1XDb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 19:00:13 -0400
-Date: Tue, 29 May 2007 01:00:12 +0200
-Message-Id: <18025041@web.de>
+	Mon, 28 May 2007 19:03:31 -0400
+From: Junio C Hamano <junkio@cox.net>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH 3/3] Make ide dma blacklist handling a bit saner.
+References: <20070521145042.GA6957@redhat.com>
+	<7v3b1pbgeo.fsf_-_@assigned-by-dhcp.cox.net>
+	<7vps4ta1iy.fsf_-_@assigned-by-dhcp.cox.net>
+	<200705282141.42507.bzolnier@gmail.com>
+Date: Mon, 28 May 2007 16:03:29 -0700
+In-Reply-To: <200705282141.42507.bzolnier@gmail.com> (Bartlomiej
+	Zolnierkiewicz's message of "Mon, 28 May 2007 21:41:42 +0200")
+Message-ID: <7vfy5ga6v2.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-From: Uwe Bugla <saubermann60@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: b44: regression in 2.6.22 (resend)
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19AOkBpUCmss5R83I+aIno1vBloXJy6Mnrf4TdNuaAGE/A2O
- Ipggf7ZyItFabKLgOTexcrTnbUh2929FrQbxJvpf/4MvhRFv1dMZgzm8XxWn
- w==
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-28 at 22:55 +0200, Maximilian Engelhardt wrote:
-> > > I additionally built my 2.6.22-rc2-mm1 kernel without High Resolution
-> > > Timer, but the high ping problem is still there.
-> >
-> > Hmm, that's mysterious. Wild guess is that highres exposes the hidden
-> > "feature" in a different way than rc2-mm1 does.
+Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> writes:
+
+> The change itself looks good but IMO it is worth doing it before patch #2/3
+> (it would also make it possible for me to merge this patch immediately).
+
+Yes, I should have considered that the earlier #2/3 needs
+coordination between you and Jeff.
+
+> When it comes to patch #2 - Alan's comment may be a bit harsh but he seems
+> to be right - there should be a common library-like file (ata-blacklist.c
+> or ata-quirks.c or whatever name you like) containing ata_device_blacklist[].
 >
-> I think the bug in 2.6.21/22-rc3 is a different one that the one in
-> 2.6.22-rc2-mm1, but that's also only a wild guess :)
->
-> I'll explain this a bit:
-> In 2.6.21/22-rc3 is the same b44 driver that has been in the stock kernels for
-> some time. With this driver and High Resolution Timer turned on I get
-> problems using iperf. The problems are that the systems becomes really slow
-> and unresponsive. Michael Buesch thought this could be an IRQ storm which
-> sounds logical to me. This bug did never happen to me before I startet the
-> iperf test.
+> This would require slight modification of ide_in_drive_list() to teach
+> it about ATA_HORKAGE_DMA ... Please also note that <linux/ata.h> is used by both
+> IDE and libata so it should be a good place to put struct ata_blacklist_entry
+> and ATA_HORKAGE_* macros.
 
-Can you please apply
+Thanks for the hint.  Alan is correct to point out that I
+cheated. ;-)  If I understand correctly, the change would
+involve:
 
-http://www.tglx.de/projects/hrtimers/2.6.22-rc3/patch-2.6.22-rc3-hrt1.patch
+ - create a new file that has ata_device_blacklist[] whose type
+   is "struct ata_blacklist_entry" (i.e. matches libata-core),
+   by separating the table out of ata/libata-core.c.
 
-on top of rc3 and check, whether it has any effect on your problem.
+   Q1. should that file go to drivers/ata/ or drivers/ide/?
 
-> The other issue happens only with 2.6.22-rc2-mm1 which includes the b44 ssb
-> spilt. It's independed wether High Resolution Timer is turned on or off I
-> always get very varying and high ping times. The iperf-test doesn't show the
-> problems from 2.6.21/22-rc3.
+ - make that file depended on when either libata and/or IDE is
+   selected.
 
-Neither with nor without highres ?
+   Q2. Kconfig dependency rule is needed for this, perhaps.  How
+   should that look like?
 
-tglx
+ - some out-of-tree drivers might be using ide_in_drive_list()
+   and relying on it to take "struct drive_list_entry"; create a
+   new function, ide_in_device_list(), that takes "struct
+   ata_blacklist_entry" as its parameter.
 
-Neither with nor without Gleixner ?
+   Q3. Is the 'out-of-tree drivers' a real issue, and if so, is
+   the above a reasonable avenue to take?
 
-Neither with nor without Buesch ?
+ - convert in-tree callers to use ide_in_device_list() instead,
+   feeding it ata_device_blacklist[], and remove drive_blacklist[]
+   from drivers/ide/ide-dma.c.
 
-Neither with nor without Miller ?
+   Q4. What would you like to do for drive_whitelist[]?
 
-Neither with nor without Kyle ?
+> Care to respin both patches?
 
-Neither with nor without ........ ?
+Before the questions are answered I cannot respin the earlier
+#2/3, but I can certainly respin #3/3.
 
-Neither with nor without would-like-to-spare time hackers ?
 
-Neither with nor without profile neurotic would-like-to-copyright owners ?
 
-_______________________________________________________________
-SMS schreiben mit WEB.DE FreeMail - einfach, schnell und
-kostenguenstig. Jetzt gleich testen! http://f.web.de/?mc=021192
 
