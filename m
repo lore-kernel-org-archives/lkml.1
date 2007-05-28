@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbXE1JM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbXE1JPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761929AbXE1JM7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 05:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761456AbXE1JMo
+	id S1761639AbXE1JPR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 05:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXE1JPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 05:12:44 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2263 "EHLO
+	Mon, 28 May 2007 05:15:04 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3965 "EHLO
 	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760882AbXE1JMn (ORCPT
+	with ESMTP id S1754326AbXE1JPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 05:12:43 -0400
-Date: Mon, 28 May 2007 10:12:24 +0100
+	Mon, 28 May 2007 05:15:02 -0400
+Date: Mon, 28 May 2007 10:14:53 +0100
 From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Nathan Lynch <nathanl@austin.ibm.com>,
-       Joel Schopp <jschopp@austin.ibm.com>, Ashok Raj <ashok.raj@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [BUG] CPU hotplug: system hang on CPU hot remove during oprofile
-Message-ID: <20070528091224.GA26046@flint.arm.linux.org.uk>
-Mail-Followup-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-	Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-	Nathan Lynch <nathanl@austin.ibm.com>,
-	Joel Schopp <jschopp@austin.ibm.com>,
-	Ashok Raj <ashok.raj@intel.com>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Gautham R Shenoy <ego@in.ibm.com>
-References: <87k5utblbp.wl%takeuchi_satoru@jp.fujitsu.com>
+To: Qi Yong <qiyong@fc-cn.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux v2.6.22-rc3
+Message-ID: <20070528091453.GB26046@flint.arm.linux.org.uk>
+Mail-Followup-To: Qi Yong <qiyong@fc-cn.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org> <2cd57c900705272335l1cacaedfwd2972cbb8b458ad3@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87k5utblbp.wl%takeuchi_satoru@jp.fujitsu.com>
+In-Reply-To: <2cd57c900705272335l1cacaedfwd2972cbb8b458ad3@mail.gmail.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 28, 2007 at 01:53:30PM +0900, Satoru Takeuchi wrote:
-> I found a bug on CPU hotplug. If oprofile is running, CPU hot remove causes
-> system hang. I only confirm that this problem occurs on my ia64 box. I'm glad
-> if someone report about other arch.
+On Mon, May 28, 2007 at 02:35:12PM +0800, Qi Yong wrote:
+> >Ben Dooks (6):
+> >      [ARM] 4395/1: S3C24XX: add include of <linux/sysdev.h> to relevant 
+> >      machines
+> >      [ARM] 4396/1: S3C2443: Add missing HCLK clocks
+> >      [ARM] 4397/1: S3C2443: remove SDI0/1 IRQ ambiguity
+> >      [ARM] 4398/1: S3C2443: Fix watchdog IRQ number
+> >      [ARM] 4399/2: S3C2443: Fix SMDK2443 nand timings
+> >      [ARM] 4400/1: S3C24XX: Add high-speed MMC device definition
+> 
+>   CC      arch/arm/plat-s3c24xx/devs.o
+> /home/qiyong/linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:410: error:
+> 'S3C2443_PA_HSMMC' undeclared here (not in a function)
+> /home/qiyong/linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:411: error:
+> 'S3C2443_SZ_HSMMC' undeclared here (not in a function)
 
-oprofile is not CPU hotplug safe.  (It should probably be made so,
-but I think that would require a redesign, or at least a rewrite of
-the backends.)
+There's a fix already pending (from a day after -rc3) in my tree.
+You'll have to wait until the end of the week before I push it to
+Linus, or alternatively grab it from the patch system.
 
 -- 
 Russell King
