@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761757AbXE1WjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762923AbXE1Wl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761757AbXE1WjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 18:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXE1WjH
+	id S1762923AbXE1Wl1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 18:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXE1WlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 18:39:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48882 "EHLO mail.dvmed.net"
+	Mon, 28 May 2007 18:41:18 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48895 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbXE1WjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 18:39:04 -0400
-Message-ID: <465B5A06.8030402@garzik.org>
-Date: Mon, 28 May 2007 18:39:02 -0400
+	id S1751442AbXE1WlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 18:41:17 -0400
+Message-ID: <465B5A8B.7000701@garzik.org>
+Date: Mon, 28 May 2007 18:41:15 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
 To: divy@chelsio.com
 CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Subject: Re: [PATCH 3/7] cxgb3 - Fix direct XAUI support
-References: <20070526225958.12133.84586.stgit@localhost.localdomain>
-In-Reply-To: <20070526225958.12133.84586.stgit@localhost.localdomain>
+Subject: Re: [PATCH 4/7 RESEND] cxgb3 - Update FW to 4.1
+References: <20070526231748.12319.20729.stgit@localhost.localdomain>
+In-Reply-To: <20070526231748.12319.20729.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
@@ -31,16 +31,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 divy@chelsio.com wrote:
 > From: Divy Le Ray <divy@chelsio.com>
 > 
-> Check all lanes for link status on direct XAUI cards.
-> Don't assume that direct XAUI always uses XGMAC 1.
+> Bump FW version to 4.1.
+> Modify chip tuning in consequence.
 > 
 > Signed-off-by: Divy Le Ray <divy@chelsio.com>
 > ---
 > 
->  drivers/net/cxgb3/ael1002.c |   10 ++++++++--
->  drivers/net/cxgb3/regs.h    |    2 ++
->  2 files changed, 10 insertions(+), 2 deletions(-)
+>  drivers/net/cxgb3/regs.h    |    4 ++++
+>  drivers/net/cxgb3/t3_hw.c   |   40 ++++++++++++++++++++++------------------
+>  drivers/net/cxgb3/version.h |    2 +-
+>  3 files changed, 27 insertions(+), 19 deletions(-)
 
-ACK
+You think requiring a FIRMWARE UPGRADE is something that should be done 
+in the middle of a kernel bugfix series?  What Q/A planet are you from?
+
+This is a completely ridiculous burden you are placing on the individual 
+user.  A good driver knows that firmware NOT SHIPPED WITH THE KERNEL 
+does not necessarily move in lock-step with the kernel driver.  You are 
+welcome to GPL your firmware and ship it of course....
+
+	Jeff
+
 
 
