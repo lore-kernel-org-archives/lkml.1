@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbXE1USw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763251AbXE1UYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932274AbXE1USw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 16:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXE1USp
+	id S1763251AbXE1UYd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 16:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXE1UYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 16:18:45 -0400
-Received: from keil-draco.com ([216.193.185.50]:50584 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750822AbXE1USo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 16:18:44 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [RFC] LZO de/compression support - take 6
-Date: Mon, 28 May 2007 16:18:40 -0400
-User-Agent: KMail/1.9.6
-Cc: Nitin Gupta <nitingupta910@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm-cc@laptop.org, linuxcompressed-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280903t6b2bb687g4eb1d9de2717f6ec@mail.gmail.com> <20070528171115.GQ3899@stusta.de>
-In-Reply-To: <20070528171115.GQ3899@stusta.de>
+	Mon, 28 May 2007 16:24:25 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:18647 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbXE1UYZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 16:24:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=p4FaBcyEbwczYU4ZL59sqMpQCthzXMeb33NU2lZOJ+K/ZXyutIzFwTPnZxQlodpceOEquPaa2IQ4rM3K4qpuZtNbhiMbxzSF4jsmU0PHsLRA8ABI2I9nsbAVztJNQ9R6Eywp4ykIWiC7FZfcU/o6Z0kIgcP5SKZ4hsZc7s9vsbo=
+Message-ID: <9a8748490705281324u509d9019qa7e60e446ca509b9@mail.gmail.com>
+Date: Mon, 28 May 2007 22:24:24 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: stuff ready to be deleted?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705281618.40228.dhazelton@enter.net>
+References: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 May 2007 13:11:15 Adrian Bunk wrote:
-> On Mon, May 28, 2007 at 09:33:32PM +0530, Nitin Gupta wrote:
-> > On 5/28/07, Adrian Bunk <bunk@stusta.de> wrote:
-> >...
-> >
-> >> - then ensure that it works correctly on all architectures and
-> >
-> > Already tested on x86, amd64, ppc (by Bret). I do not have machines
-> > from other archs available. Bret tested 'take 3' version but no
-> > changes were introduced in further revisions that could affect
-> > correctness - but still it will be good to have this version tested
-> > too. Only with inclusion in -mm and testing by much wider user base
-> > can make it to mainline (I suppose nobody uses -mm for production use
-> > anyway).
-> >
-> >>   document why your version is that much faster than the original
-> >>   version and why you know your optimizations have no side effects
+On 28/05/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+>
+>   i'm trying to keep track of kernel janitor projects that involve
+> removing dead content from the tree:
+>
+> http://fsdev.net/wiki/index.php?title=Kernel_Janitor%27s_Todo_List
+>
+> currently, the list contains the items:
+>
+>     * 1 Legacy power management
+>     * 2 PCMCIA IOCTL support
+>     * 3 Traffic shaper
+>     * 4 Traffic policing
+>     * 5 Userspace queueing via NETLINK
+>     * 6 ebt: ulog support
+>     * 7 MOXA SmartIO support
+>     * 8 Old I2O ioctls
+>     * 9 Stallion drivers
+>     * 10 SDL RISCom/8 support
+>     * 11 Macintosh M68K support
+>     * 12 Commodore A2232 serial support
+>     * 13 CONFIG_FORCED_INLINING
+>     * 14 kernel_thread()
+>
+> which of the above are legitimate candidates for removal?  which are
+> already underway in someone's local tree?  anything else that can
+> be added?  etc, etc.
+>
 
-With likely(), unlikely() and noinline *not* defined as NOP's performance 
-drops:
+Take a look at Documentation/feature-removal-schedule.txt
+Some of that stuff is already listed there along with who is in charge
+of removing it and when.
 
-10000 run averages:
-'Tiny LZO':
-        Combined: 84.9292 usec
-        Compression: 42.4646 usec
-        Decompression: 42.4646 usec
-'miniLZO':
-        Combined: 61.3548 usec
-        Compression: 43.5648 usec
-        Decompression: 17.79 usec
-
-However, I'm worried that my testbed code - likely the Perl script that 
-actually loops the test code and collects its output - is somehow faulting, 
-as the way that the Compression and Decompression code have the exact same 
-value.
-
-I'm going to toss some debugging output in the script and see if I can spot 
-the problem.
-
-DRH
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
