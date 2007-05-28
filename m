@@ -1,84 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760480AbXE1QER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbXE1QJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760480AbXE1QER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 12:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXE1QEB
+	id S1760572AbXE1QJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 12:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXE1QJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 12:04:01 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:65211 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211AbXE1QEA (ORCPT
+	Mon, 28 May 2007 12:09:32 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4633 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750844AbXE1QJb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 12:04:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uZVNhOiJTIc1Knn8boFLPVE/h/kPWJ2SZsfkcYKYIZLEe6CUELN4ElWTjrOmN1+/3fG9i7ncN+I0fVkTafevU5wDIL41YTwEIYy4x5ujyjjMJ7s6ApdfRBqfmy18jbaKaSia3D8MXhn0DzKeLYYn9GLBaIU67Zp8GOoCtVidgJk=
-Message-ID: <4cefeab80705280903t6b2bb687g4eb1d9de2717f6ec@mail.gmail.com>
-Date: Mon, 28 May 2007 21:33:32 +0530
-From: "Nitin Gupta" <nitingupta910@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [RFC] LZO de/compression support - take 6
-Cc: "Daniel Hazelton" <dhazelton@enter.net>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Bret Towe" <magnade@gmail.com>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>
-In-Reply-To: <20070528154346.GO3899@stusta.de>
+	Mon, 28 May 2007 12:09:31 -0400
+Date: Mon, 28 May 2007 12:09:30 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before
+ hibernation/suspend
+In-Reply-To: <20070527220158.GB22687@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.44L0.0705281156470.22682-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
-	 <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com>
-	 <200705281049.48679.dhazelton@enter.net>
-	 <4cefeab80705280806m39fbcfd6v93a1c847c25e381c@mail.gmail.com>
-	 <20070528154346.GO3899@stusta.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/28/07, Adrian Bunk <bunk@stusta.de> wrote:
-> On Mon, May 28, 2007 at 08:36:44PM +0530, Nitin Gupta wrote:
-> >...
-> > So, before this change, it will be good if it gets merged in mainline
-> > and tested, at least for correctness, on all supported achs. All the
-> > while, we will have a good feeling that there is still a good scope
-> > for perf improvement :)
->
-> The correct order is:
-> - create one version with all the optimizations you have in mind
+On Sun, 27 May 2007, Matthew Garrett wrote:
 
-Already done. One more optimization is regarding use of memcpy() in
-place of COPY4() macros and open byte-by-byte copying. There are some
-places where it's very hard to get it correct without adding
-additional checks on various values which casues futher overhead by
-iteslf - even then I could not get them correct so I decided not to go
-with this particular optimization by myself.
+> > BTW, I know of two subsystems that want their kernel threads to be frozen for
+> > synchronization purposes.  Please see these messages:
+> > 
+> > 1) https://lists.linux-foundation.org/pipermail/linux-pm/2007-May/012592.html
+> > (plus follow up)
+> > 
+> > 2) http://marc.info/?l=linux-kernel&m=117919066830575&w=2
+> 
+> I'm not entirely sold on this. The issue is that there's the possibility 
+> of races during suspend/resume? It sounds like that should be 
+> implemented in the driver, rather than depending on a side-effect of 
+> process freezing. Otherwise there's no way of selectively suspending 
+> that device.
 
-> - then ensure that it works correctly on all architectures and
+I can't speak for the second example, but there's a good reason the
+first example works this way.  It's not a matter of races; the problem
+is that the kernel thread's job is to selectively suspend and resume
+devices.  We don't want it doing this while a system sleep is in 
+progress; it would (and in fact has, before the thread was made 
+freezable) cause the sleep transition to abort.
 
-Already tested on x86, amd64, ppc (by Bret). I do not have machines
-from other archs available. Bret tested 'take 3' version but no
-changes were introduced in further revisions that could affect
-correctness - but still it will be good to have this version tested
-too. Only with inclusion in -mm and testing by much wider user base
-can make it to mainline (I suppose nobody uses -mm for production use
-anyway).
+Handling it entirely from within the drivers is possible in theory.  
+Unfortunately the design of the PM core has not leant itself to such an 
+approach.  Using separate callbacks for hibernation vs. STR will help, 
+as will Raphael's notifiers.
 
->   document why your version is that much faster than the original
->   version and why you know your optimizations have no side effects
+Alan Stern
 
-Replied in earlier mail regarding this.
-
-> - then get it tested in -mm
->
-
-This is what I am looking for :)
-
-> After these steps, you can start considering getting it into mainline.
->
-
-
-- Nitin
