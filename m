@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763144AbXE1T7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763271AbXE1UDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763144AbXE1T7w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 15:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbXE1T7p
+	id S1763271AbXE1UDk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 16:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbXE1UDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 15:59:45 -0400
-Received: from keil-draco.com ([216.193.185.50]:50549 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751373AbXE1T7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 15:59:44 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [RFC] LZO de/compression support - take 6
-Date: Mon, 28 May 2007 15:59:40 -0400
-User-Agent: KMail/1.9.6
-Cc: Nitin Gupta <nitingupta910@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm-cc@laptop.org, linuxcompressed-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280903t6b2bb687g4eb1d9de2717f6ec@mail.gmail.com> <20070528171115.GQ3899@stusta.de>
-In-Reply-To: <20070528171115.GQ3899@stusta.de>
+	Mon, 28 May 2007 16:03:33 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2644 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751460AbXE1UDc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 16:03:32 -0400
+Date: Mon, 28 May 2007 16:03:30 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before
+ hibernation/suspend
+In-Reply-To: <20070528165441.GA1669@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.44L0.0705281600050.9790-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705281559.40237.dhazelton@enter.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 May 2007 13:11:15 Adrian Bunk wrote:
-> On Mon, May 28, 2007 at 09:33:32PM +0530, Nitin Gupta wrote:
-> > On 5/28/07, Adrian Bunk <bunk@stusta.de> wrote:
-> >...
-> >
-> >> - then ensure that it works correctly on all architectures and
-> >
-> > Already tested on x86, amd64, ppc (by Bret). I do not have machines
-> > from other archs available. Bret tested 'take 3' version but no
-> > changes were introduced in further revisions that could affect
-> > correctness - but still it will be good to have this version tested
-> > too. Only with inclusion in -mm and testing by much wider user base
-> > can make it to mainline (I suppose nobody uses -mm for production use
-> > anyway).
-> >
-> >>   document why your version is that much faster than the original
-> >>   version and why you know your optimizations have no side effects
-> >
-> > Replied in earlier mail regarding this.
-> >...
->
-> I have not seen any explanations:
-> - Why did the upstream author write the code that way?
-> - Why are your changes correct?
-> - Why do your changes allow the compiler to produce faster code?
+On Mon, 28 May 2007, Matthew Garrett wrote:
 
-Would it help if I added instrumentation code to both the upstream code and 
-the stripped down code in question?
+> On Mon, May 28, 2007 at 12:43:36PM -0400, Alan Stern wrote:
+> > On Mon, 28 May 2007, Matthew Garrett wrote:
+> > > On Mon, May 28, 2007 at 12:09:30PM -0400, Alan Stern wrote:
+> > > 
+> > > > I can't speak for the second example, but there's a good reason the
+> > > > first example works this way.  It's not a matter of races; the problem
+> > > > is that the kernel thread's job is to selectively suspend and resume
+> > > > devices.  We don't want it doing this while a system sleep is in 
+> > > > progress; it would (and in fact has, before the thread was made 
+> > > > freezable) cause the sleep transition to abort.
+> > > 
+> > > How does this work on PPC or APM systems?
+> > 
+> > For hibernation it behaves the same as on other types of systems.
+> > 
+> > For STR it generally works okay.  There was one report of suspends
+> > aborting, and it looked like this was caused by selective resumes
+> > originating from userspace.  This seemed to be unrelated to the kernel
+> > threads; apparently some program was running while the STR was in
+> > progress, and causing the problem.  For example, the lsusb program will
+> > do a selective resume on every USB device as it scans through them all.
+> > However that's just a guess, we haven't fully resolved that bug report.
+> > 
+> > The theoretical answer is that it behaves the way we want.  The kernel 
+> > thread does selective resumes in response to device requests.  If such 
+> > a request comes in while the system is asleep it will awaken the 
+> > system; so it's only logical that a request coming in while the system 
+> > is in the process of going to sleep should abort the suspend.
+> 
+> Ok, I guess I'm still not clear on this :) If it doesn't cause major 
+> problems on Powermac or APM systems, why is freezing the thread 
+> beneficial on ACPI systems?
 
-> The upstream author of the code is available - and he might be able to
-> help you getting answers. No matter whether your changes are incorrect
-> or correct optimizations that should go upstream, in both cases
-> discussing these issues with upstream is the best solution.
->
-> And testing is nice, but if you broke some case that's outside of your
-> tests you'll never notice.
+Isn't it true, even on PPC and APM systems, that tasks are frozen for
+hibernation?  The difference is that they aren't frozen for STR.
 
-Any suggestions for tests I could add to the boilerplate I've been using to 
-benchmark the code? I'll add a few tests that use random input rather than 
-one of the source files - I'd add a test to see how it deals with NULL input, 
-but I ran into that in an early version of the testbed (where I had a typo 
-that stopped the code from working) and the compressor didn't like it. And I 
-suppose I could put in a test that reads in a chunk of /dev/mem or have it 
-get a chunk of data from HAL/DBus as well.
+Hence the answer to your question: Not freezing the thread would work 
+okay on ACPI systems for STR.  (In fact, not freezing anything would 
+probably work okay for STR.)  But it doesn't work with hibernation.
 
-But if anyone has a suggestion of what tests I could toss at it to really 
-stress the code, let me know and I'll get to work extending this code so it 
-can stress test both the standard implementation of miniLZO *and* this 
-stripped down 'Tiny' version.
-
-DRH
-
-> > - Nitin
->
-> cu
-> Adrian
-
+Alan Stern
 
