@@ -1,56 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbXE1BZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760533AbXE1BbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760636AbXE1BZZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 21:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbXE1BZM
+	id S1760533AbXE1BbP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 21:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbXE1Ba4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 21:25:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:65182 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753592AbXE1BZK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 21:25:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Wws1l+frUU9veYYDsWDjNsA/hJOI3E6m8D+hvt+ScDymv+TrqOOsNy74PPLgaPzgDanFtF8RHD3QBsSZpwVv3SlGknrYtYqnbiuEdCS0GtU8k5kikoVK2I7y6PAIhj5PTpqPuhLuKy1hDEa6xSIlnaYHYhlMADSfOJ1HyUG8bLk=
-Message-ID: <465A2F6F.6070900@gmail.com>
-Date: Mon, 28 May 2007 05:25:03 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Sun, 27 May 2007 21:30:56 -0400
+Received: from ns.suse.de ([195.135.220.2]:60860 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753087AbXE1Baz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 21:30:55 -0400
+From: Neil Brown <neilb@suse.de>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, David Chinner <dgc@sgi.com>,
+       Phillip Susi <psusi@cfl.rr.com>,
+       "Stefan Bader" <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Date: Mon, 28 May 2007 11:30:32 +1000
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Grant Grundler <grundler@parisc-linux.org>, Greg KH <greg@kroah.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIE
-References: <20070523155958.GA5282@kroah.com> <4654AB40.6060208@gmail.com>	<adaejl79rh0.fsf@cisco.com> <4654BC10.2000808@gmail.com>	<adazm3v89hv.fsf@cisco.com> <4654C85B.6060505@gmail.com>	<adatzu385g1.fsf@cisco.com> <46561287.8020103@gmail.com>	<ada1wh560u1.fsf@cisco.com> <46584C30.4030206@gmail.com>	<20070526182828.GA7080@colo.lackof.org> <46588A3D.2060208@gmail.com> <adaps4l21fe.fsf@cisco.com>
-In-Reply-To: <adaps4l21fe.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18010.12472.209452.148229@notabene.brown>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+In-Reply-To: message from Neil Brown on Friday May 25
+References: <18006.38689.818186.221707@notabene.brown>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > >> Another question would be if the device supports multiple messages, MSIX
->  > >> should be used ?
->  > > 
->  > > Yes. Assuming the device supports multiple MSI-X messages.
-> 
-> At least on my device (PCI ID 1131:7162) there is no MSI-X capability,
-> so that's not an option for you.  The current Linux implementation
-> does not support more than one MSI interrupt, so you just get one
-> interrupt with pci_enable_msi().
-> 
-> I think it's probably simplest for you to forget about MSI until you
-> have the basic driver working.
 
-Damn. The NXP guys don't want me to go ahead with the generic registers.
+Thanks everyone for your input.  There was some very valuable
+observations in the various emails.
+I will try to pull most of it together and bring out what seem to be
+the important points.
 
-What they said :
 
-> And if you really use the SAA7162 in the PC application,
-> pls ignore the 0x520 .....
-> That's not a good decision to use that.
+1/ A BIO_RW_BARRIER request should never fail with -EOPNOTSUP.
 
-Might need to ask them why it would not be a good decision then. :-(
+ This is certainly a very attractive position - it makes the interface
+ cleaner and makes life easier for filesystems and other clients of
+ the block interface.
+ Currently filesystems handle -EOPNOTSUP by
+  a/ resubmitting the request without the BARRIER (after waiting for
+    earlier requests to complete) and
+  b/ possibly printing an error message to the kernel logs.
+
+ The block layer can do both of these just as easily and it does make
+ sense to do it there.
+
+ md/dm modules could keep count of requests as has been suggested
+ (though that would be a fairly big change for raid0 as it currently
+ doesn't know when a request completes - bi_endio goes directly to the
+ filesystem). 
+ However I think the idea of a zero-length BIO_RW_BARRIER would be a
+ good option.  raid0 could send one of these down each device, and
+ when they all return, the barrier request can be sent to it's target
+ device(s).
+
+ I think this is a worthy goal that we should work towards.
+
+2/ Maybe barriers provide stronger semantics than are required.
+
+ All write requests are synchronised around a barrier write.  This is
+ often more than is required and apparently can cause a measurable
+ slowdown.
+
+ Also the FUA for the actual commit write might not be needed.  It is
+ important for consistency that the preceding writes are in safe
+ storage before the commit write, but it is not so important that the
+ commit write is immediately safe on storage.  That isn't needed until
+ a 'sync' or 'fsync' or similar.
+
+ One possible alternative is:
+   - writes can overtake barriers, but barrier cannot overtake writes.
+   - flush before the barrier, not after.
+
+ This is considerably weaker, and hence cheaper. But I think it is
+ enough for all filesystems (providing it is still an option to call
+ blkdev_issue_flush on 'fsync').
+
+ Another alternative would be to tag each bio was being in a
+ particular barrier-group.  Then bio's in different groups could
+ overtake each other in either direction, but a BARRIER request must
+ be totally ordered w.r.t. other requests in the barrier group.
+ This would require an extra bio field, and would give the filesystem
+ more appearance of control.  I'm not yet sure how much it would
+ really help...
+ It would allow us to set FUA on all bios with a non-zero
+ barrier-group.  That would mean we don't have to flush the entire
+ cache, just those blocks that are critical.... but I'm still not sure
+ it's a good idea.
+
+ Of course, these weaker rules would only apply inside the elevator.
+ Once the request goes to the device we need to work with what the
+ device provides, which probably means total-ordering around the
+ barrier. 
+
+ I think this requires more discussion before a way forward is clear.
+
+3/ Do we need explicit control of the 'ordered' mode?
+
+  Consider a SCSI device that has NV RAM cache.  mode_sense reports
+  that write-back is enabled, so _FUA or _FLUSH will be used.
+  But as it is *NV* ram, QUEUE_ORDER_DRAIN is really the best mode.
+  But it seems there is no way to query this information.
+  Using _FLUSH causes the NVRAM to be flushed to media which is a
+  terrible performance problem.
+  Setting SYNC_NV doesn't work on the particular device in question.
+  We currently tell customers to mount with -o nobarriers, but that
+  really feels like the wrong solution.  We should be telling the scsi
+  device "don't flush".
+  An advantage of 'nobarriers' is it can go in /etc/fstab.  Where
+  would you record that a SCSI drive should be set to
+  QUEUE_ORDERD_DRAIN ??
+
+
+I think the implementation priorities here are:
+
+1/ implement a zero-length BIO_RW_BARRIER option.
+2/ Use it (or otherwise) to make all dm and md modules handle
+   barriers (and loop?).
+3/ Devise and implement appropriate fall-backs with-in the block layer
+   so that  -EOPNOTSUP is never returned.
+4/ Remove unneeded cruft from filesystems (and elsewhere).
+
+Comments?
+
+Thanks,
+NeilBrown
