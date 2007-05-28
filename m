@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763527AbXE1UDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXE1UMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763527AbXE1UDx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 16:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760556AbXE1UDf
+	id S932207AbXE1UMS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 16:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbXE1UMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 16:03:35 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39337 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759958AbXE1UDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 16:03:34 -0400
-Date: Mon, 28 May 2007 22:04:34 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Indan Zupancic <indan@nul.nu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org,
-       Bernhard Walle <bwalle@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: fix section mismatch warnings in mtrr
-Message-ID: <20070528200434.GC31233@uranus.ravnborg.org>
-References: <200705191443.27161.arvidjaar@mail.ru> <200705261802.08573.ak@suse.de> <20070527090542.GA18399@uranus.ravnborg.org> <200705271156.22098.ak@suse.de>
+	Mon, 28 May 2007 16:12:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37825 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbXE1UMI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 16:12:08 -0400
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, video4linux-list@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>
+References: <2172422218943432279@wsc.cz>
+	 <1180364420.21547.160.camel@localhost>
+	 <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>
+	 <1180378677.21547.189.camel@localhost>
+	 <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 28 May 2007 17:11:11 -0300
+Message-Id: <1180383071.21547.230.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705271156.22098.ak@suse.de>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 27, 2007 at 11:56:21AM +0200, Andi Kleen wrote:
-> 
-> > 
-> > So section mismatch warnings are more about catching sloopy usage of __init than it is to
-> > catch potential kernel oopesen. But the latter is a nice side effect that is appreciated.
-> 
-> My point was that I cannot recall a single real oops bug found by the compile
-> time checking.
-> 
-> We had a few in the past, but since we poison init data after boot they all tended
-> to be found quickly anyways.
-It's far better to find the bugs during build time than during run-time.
 
-> But the warnings just seem to require endless changes and bogus changes
-> (randomly moving code which was actually ok because it only called 
-> in the init case).
-The main culprint is probarly that the warnings are so vocal.
-Everyone see them for each kernel-build that touches one file.
-And then everyone and their cousin try to fix them.
+> > As Luca pointed, if we add conversion for one driver, we should add for
+> > the rest.
+> >
+> > Instead, it would be better if Jiri sends the decoding and the rescaling
+> > stuff as a patch to v4l2-apps/lib, starting the API decoding library.
+> > Once we have a library, we can ask the userspace developers to use it
+> > for the formats not recognized by their userspace apps.
+> >
+> 
+> I think it would be better to evaluate existing solutions (eg. libpw).
 
-When we are down to a warning-free x86 build things will start to look different.
-And I will do my to make us get there - as time permits.
+Agreed. Volunteers?
 
-	Sam
+-- 
+Cheers,
+Mauro
+
