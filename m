@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759070AbXE1BDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbXE1BFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759070AbXE1BDl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 21:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXE1BDd
+	id S1760136AbXE1BFa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 21:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbXE1BFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 21:03:33 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:31527 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbXE1BDc (ORCPT
+	Sun, 27 May 2007 21:05:23 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:52198 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753592AbXE1BFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 21:03:32 -0400
-X-IronPort-AV: i="4.14,585,1170662400"; 
-   d="scan'208"; a="155191097:sNHT42938388"
-To: David Miller <davem@davemloft.net>
-Cc: abraham.manu@gmail.com, greg@kroah.com, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: PCIE
-X-Message-Flag: Warning: May contain useful information
-References: <46561287.8020103@gmail.com> <ada1wh560u1.fsf@cisco.com>
-	<46584C30.4030206@gmail.com>
-	<20070526.154910.78725926.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sun, 27 May 2007 18:03:29 -0700
-In-Reply-To: <20070526.154910.78725926.davem@davemloft.net> (David Miller's message of "Sat, 26 May 2007 15:49:10 -0700 (PDT)")
-Message-ID: <ada3b1h3gke.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Sun, 27 May 2007 21:05:22 -0400
+Date: Mon, 28 May 2007 02:05:06 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Message-ID: <20070528010506.GA24186@srcf.ucam.org>
+References: <1180008394.15600.26.camel@localhost> <alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org> <20070527164300.GA20355@srcf.ucam.org> <200705272032.15971.rjw@sisk.pl> <20070527184402.GA21161@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 May 2007 01:03:30.0374 (UTC) FILETIME=[01922E60:01C7A0C4]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20070527184402.GA21161@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > i presume then i shouldn't be using IRQF_SHARED, if using MSI.
- > 
- > That's actually a really good question.
- > 
- > It is likely architecture dependant whether the PCI controller wires
- > unique MSI interrupts to shared cpu interrupt lines.
+On Sun, May 27, 2007 at 07:44:02PM +0100, Matthew Garrett wrote:
 
-Yes, but current Linux drivers assume that MSI interrupts are
-non-shared.  Certainly in my drivers I make that assumption, and from
-a quick look neither tg3 nor e1000 sets IRQF_SHARED if they enable
-MSI.
+> Anyway. I've tested the following patch on a dual-core x86. No obvious 
+> issues yet, but I'll try to put it through a few hundred cycles.
 
-I think that if we run on a system where MSI interrupts may be shared,
-then we should just have pci_enable_msi() fail.  If drivers have to
-allow for shared MSI interrupts, then they lose most of the advantage
-of MSI -- if I get an MSI but I don't know it came from my device, I
-probably have to do an MMIO read to find out if it's mine or not and
-also to preserve DMA ordering, which kills the main advantage of MSI.
-And since MSIs are basically edge triggered, sharing vectors is going
-to lead to all sorts of hassles.
+This /mostly/ works - I've had my test machine cycling through a suspend 
+cycle every 10 seconds for the past hour without any difficulties 
+providing I unload USB first. If USB is loaded, the suspend occasionally 
+fails with one of the devices returning -EBUSY and causing it to be 
+aborted. I haven't looked into this in any detail yet, but it's 
+presumably sufficiently generic code that it's potentially biting people 
+on PPC anyway.
 
- > I can imagine many systems where the cpu simply doesn't have enough
- > interrupt pins to uniquely identify every possible MSI interrupt
- > source.
-
-I have a hard time imagining a PCI host bus controller that converts
-MSI interrupts back to wire interrupts that go to pins on the CPU.
-For one thing it would be hard to maintain the guarantee that
-MSI interrupts can't pass DMAs.  And it would be an absolutely silly
-architecture too.
-
- - R.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
