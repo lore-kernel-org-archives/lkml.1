@@ -1,72 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761922AbXE1KNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761778AbXE1KQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761922AbXE1KNz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 06:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbXE1KNs
+	id S1761778AbXE1KQX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 06:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbXE1KQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 06:13:48 -0400
-Received: from mail.screens.ru ([213.234.233.54]:50124 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbXE1KNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 06:13:47 -0400
-Date: Mon, 28 May 2007 14:13:40 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] signal: multithread program returns with wrong errno on receiving SIGSTOP
-Message-ID: <20070528101340.GA1095@tv-sign.ru>
-References: <20070528070753.GA989@tv-sign.ru> <87fy5hb76t.wl%takeuchi_satoru@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 28 May 2007 06:16:16 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:33484 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbXE1KQP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 06:16:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Zi7yhcfs4921XCuGTktB14Hy/EtZwPamGlva0VPOfWnG4br26LAVAEWgZlEHP6+p+K6ke2jmATMuSg5k3XXuJ57FGGJ5nSewrauCZBH9z7JKBtCEBWcctowE8sCQ/JA4eLmcpwBNXB7csLfx2JE/6QNX/ntwdIDz/n9OYsfk4ZU=
+Message-ID: <84144f020705280316t3ac31cadwc3382c9804db88c1@mail.gmail.com>
+Date: Mon, 28 May 2007 13:16:14 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "young dave" <hidave.darkstar@gmail.com>
+Subject: Re: [patch -mm 1/1] remove useless tolower in isofs
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <a8e1da0705280310q7f3124c0te58395fa3348dfa5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <87fy5hb76t.wl%takeuchi_satoru@jp.fujitsu.com>
-User-Agent: Mutt/1.5.11
+References: <a8e1da0705271808w3a6dc453rfb47dd3db100718@mail.gmail.com>
+	 <84144f020705272300r28e7dd71y8328edf9df6ed171@mail.gmail.com>
+	 <a8e1da0705280310q7f3124c0te58395fa3348dfa5@mail.gmail.com>
+X-Google-Sender-Auth: e63404b333bcae9b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/28, Satoru Takeuchi wrote:
-> 
-> At Mon, 28 May 2007 11:07:53 +0400,
-> Oleg Nesterov wrote:
-> > 
-> > 	drivers/char/n_tty.c:job_control()
-> > 
-> > 		kill_pgrp(task_pgrp(current), SIGTTIN, 1);
-> > 		return -ERESTARTSYS;
-> > 
-> > This is wrong. kill_pgrp()->__group_send_sig_info() sends SIGTTIN
-> > to the thread group, but can choose any sub-thread as a target for
-> > signal_wake_up().
-> > 
-> > This means we return ERESTARTSYS, but signal_pending() != true, bug.
-> > 
-> > Satoru, could you re-test with the untested patch below?
-> 
-> I tested this patch on my ia64 box and it works fine.
+On 5/28/07, young dave <hidave.darkstar@gmail.com> wrote:
+> Thanks,  can this small fix be merged?
 
-Thanks! A quick grep shows that tty_check_change() may have the same problem.
-
-> # Since I don't know anything about tty driver, I can't determine its
-> # adequacy immediately, sorry.
-
-/dev/tty is a black magic to me too. I'll send the patch later unless
-maintainers have any objections.
-
-> > --- t/drivers/char/n_tty.c~	2007-04-05 12:18:26.000000000 +0400
-> > +++ t/drivers/char/n_tty.c	2007-05-28 10:57:58.000000000 +0400
-> > @@ -1191,6 +1191,7 @@ static int job_control(struct tty_struct
-> >  			    is_current_pgrp_orphaned())
-> >  				return -EIO;
-> >  			kill_pgrp(task_pgrp(current), SIGTTIN, 1);
-> > +			set_thread_flag(TIF_SIGPENDING);
-> >  			return -ERESTARTSYS;
-> >  		}
-> >  	}
-> >
-
-Oleg.
-
+Yes. Please be patient and wait for Andrew to pick it up.
