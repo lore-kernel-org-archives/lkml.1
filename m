@@ -1,419 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbXE1QZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbXE1Q2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbXE1QZZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 12:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbXE1QYS
+	id S1760836AbXE1Q2b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 12:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbXE1Q2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 12:24:18 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:50740 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755755AbXE1QYO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 12:24:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=sfZGhlxmGzKSoiznRcEG2SLbl3TN3CrqobDNnofQecWm4eCGBgPIjPer06nydqunsJAv7Hko2d1FqY4W3uUyVEkAN2Wm6blmBOsUGY0RGPXiFqQOKlGF+MRFbIYs5AVg4qUgEJfPMAlgy45iwPrhsbg7+YbpPXEhf7QUCZDptW4=
-Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 3/3] sysfs: use singly-linked list for sysfs_dirent tree
-In-Reply-To: <118036944617-git-send-email-htejun@gmail.com>
-X-Mailer: git-send-email
-Date: Tue, 29 May 2007 01:24:06 +0900
-Message-Id: <11803694462460-git-send-email-htejun@gmail.com>
+	Mon, 28 May 2007 12:28:25 -0400
+Received: from paris.bmts.com ([216.183.128.227]:51781 "EHLO paris.bmts.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753738AbXE1Q2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 12:28:24 -0400
+Date: Mon, 28 May 2007 12:28:17 -0400
+From: Mike Houston <mikeserv@bmts.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, zach@vmware.com
+Subject: Re: 2.6.22-rc3 - VMI does not compile unless himem enabled
+Message-Id: <20070528122817.86079676.mikeserv@bmts.com>
+In-Reply-To: <6bffcb0e0705280311i6946f444l36465357ed7850ab@mail.gmail.com>
+References: <20070527054746.632f06f8.mikeserv@bmts.com>
+	<6bffcb0e0705280311i6946f444l36465357ed7850ab@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Reply-To: Tejun Heo <htejun@gmail.com>
-To: gregkh@suse.de, dmitry.torokhov@gmail.com, cornelia.huck@de.ibm.com,
-       oneukum@suse.de, rpurdie@rpsys.net, stern@rowland.harvard.edu,
-       maneesh@in.ibm.com, linux-kernel@vger.kernel.org, htejun@gmail.com
-Content-Transfer-Encoding: 7BIT
-From: Tejun Heo <htejun@gmail.com>
+Content-Transfer-Encoding: 7bit
+X-brucetelecom.com-MailScanner-Information: Please contact Bruce Telecom 519.368.2000 for more information
+X-brucetelecom.com-MailScanner: Found to be clean
+X-brucetelecom.com-MailScanner-From: mikeserv@bmts.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sysfs_dirent use singly linked list for its tree structure.
-sysfs_link_sibling() and sysfs_unlink_sibling() functions are added to
-handle simpler cases.  It adds some complexity and cpu cycle overhead
-but reduced memory footprint is worthwhile on big machines.
+On Mon, 28 May 2007 12:11:35 +0200
+"Michal Piotrowski" <michal.k.k.piotrowski@gmail.com> wrote:
 
-This change reduces the sizeof sysfs_dirent from 104 to 88 on 64bit
-and from 60 to 52 on 32bit.
+> Hi Mike,
+> 
+> On 27/05/07, Mike Houston <mikeserv@bmts.com> wrote:
+> > While building kernels for vmware guests, I noticed that the
+> > paravirt VMI driver in 2.6.22-rc3 does not compile when highmem
+> > support is disabled. This did not occur in 2.6.21
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/dir.c   |  146 +++++++++++++++++++++++++++++++++++++----------------
- fs/sysfs/inode.c |   12 +++--
- fs/sysfs/mount.c |    3 -
- fs/sysfs/sysfs.h |    4 +-
- 4 files changed, 111 insertions(+), 54 deletions(-)
+> Please try this patch
+> http://lkml.org/lkml/diff/2007/5/24/143/1
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 40596a0..b4074ad 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -22,6 +22,48 @@ static spinlock_t sysfs_ino_lock = SPIN_
- static DEFINE_IDA(sysfs_ino_ida);
- 
- /**
-+ *	sysfs_link_sibling - link sysfs_dirent into sibling list
-+ *	@sd: sysfs_dirent of interest
-+ *
-+ *	Link @sd into its sibling list which starts from
-+ *	sd->s_parent->s_children.
-+ *
-+ *	Locking:
-+ *	mutex_lock(sd->s_parent->dentry->d_inode->i_mutex)
-+ */
-+static void sysfs_link_sibling(struct sysfs_dirent *sd)
-+{
-+	struct sysfs_dirent *parent_sd = sd->s_parent;
-+
-+	BUG_ON(sd->s_sibling);
-+	sd->s_sibling = parent_sd->s_children;
-+	parent_sd->s_children = sd;
-+}
-+
-+/**
-+ *	sysfs_unlink_sibling - unlink sysfs_dirent from sibling list
-+ *	@sd: sysfs_dirent of interest
-+ *
-+ *	Unlink @sd from its sibling list which starts from
-+ *	sd->s_parent->s_children.
-+ *
-+ *	Locking:
-+ *	mutex_lock(sd->s_parent->dentry->d_inode->i_mutex)
-+ */
-+static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
-+{
-+	struct sysfs_dirent **pos;
-+
-+	for (pos = &sd->s_parent->s_children; *pos; pos = &(*pos)->s_sibling) {
-+		if (*pos == sd) {
-+			*pos = sd->s_sibling;
-+			sd->s_sibling = NULL;
-+			break;
-+		}
-+	}
-+}
-+
-+/**
-  *	sysfs_get_active - get an active reference to sysfs_dirent
-  *	@sd: sysfs_dirent to get an active reference to
-  *
-@@ -73,9 +115,9 @@ void sysfs_put_active(struct sysfs_diren
- 		return;
- 
- 	/* atomic_dec_return() is a mb(), we'll always see the updated
--	 * sd->s_sibling.next.
-+	 * sd->s_sibling.
- 	 */
--	cmpl = (void *)sd->s_sibling.next;
-+	cmpl = (void *)sd->s_sibling;
- 	complete(cmpl);
- }
- 
-@@ -129,18 +171,18 @@ void sysfs_deactivate(struct sysfs_diren
- 	DECLARE_COMPLETION_ONSTACK(wait);
- 	int v;
- 
--	BUG_ON(!list_empty(&sd->s_sibling));
--	sd->s_sibling.next = (void *)&wait;
-+	BUG_ON(sd->s_sibling);
-+	sd->s_sibling = (void *)&wait;
- 
- 	/* atomic_add_return() is a mb(), put_active() will always see
--	 * the updated sd->s_sibling.next.
-+	 * the updated sd->s_sibling.
- 	 */
- 	v = atomic_add_return(SD_DEACTIVATED_BIAS, &sd->s_active);
- 
- 	if (v != SD_DEACTIVATED_BIAS)
- 		wait_for_completion(&wait);
- 
--	INIT_LIST_HEAD(&sd->s_sibling);
-+	sd->s_sibling = NULL;
- }
- 
- static int sysfs_alloc_ino(ino_t *pino)
-@@ -237,8 +279,6 @@ struct sysfs_dirent *sysfs_new_dirent(co
- 	atomic_set(&sd->s_count, 1);
- 	atomic_set(&sd->s_active, 0);
- 	atomic_set(&sd->s_event, 1);
--	INIT_LIST_HEAD(&sd->s_children);
--	INIT_LIST_HEAD(&sd->s_sibling);
- 
- 	sd->s_name = name;
- 	sd->s_mode = mode;
-@@ -273,7 +313,7 @@ void sysfs_attach_dirent(struct sysfs_di
- 
- 	if (parent_sd) {
- 		sd->s_parent = sysfs_get(parent_sd);
--		list_add(&sd->s_sibling, &parent_sd->s_children);
-+		sysfs_link_sibling(sd);
- 	}
- }
- 
-@@ -289,7 +329,7 @@ int sysfs_dirent_exist(struct sysfs_dire
- {
- 	struct sysfs_dirent * sd;
- 
--	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
-+	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
- 		if (sd->s_type) {
- 			if (strcmp(sd->s_name, new))
- 				continue;
-@@ -409,7 +449,7 @@ static struct dentry * sysfs_lookup(stru
- 	struct inode *inode;
- 	int found = 0;
- 
--	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
-+	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
- 		if ((sd->s_type & SYSFS_NOT_PINNED) &&
- 		    !strcmp(sd->s_name, dentry->d_name.name)) {
- 			found = 1;
-@@ -458,7 +498,7 @@ static void remove_dir(struct dentry * d
- 
- 	mutex_lock(&parent->d_inode->i_mutex);
- 
-- 	list_del_init(&sd->s_sibling);
-+	sysfs_unlink_sibling(sd);
- 
- 	pr_debug(" o %s removing done (%d)\n",d->d_name.name,
- 		 atomic_read(&d->d_count));
-@@ -478,9 +518,9 @@ void sysfs_remove_subdir(struct dentry *
- 
- static void __sysfs_remove_dir(struct dentry *dentry)
- {
--	LIST_HEAD(removed);
--	struct sysfs_dirent * parent_sd;
--	struct sysfs_dirent * sd, * tmp;
-+	struct sysfs_dirent *removed = NULL;
-+	struct sysfs_dirent *parent_sd;
-+	struct sysfs_dirent **pos;
- 
- 	if (!dentry)
- 		return;
-@@ -488,15 +528,25 @@ static void __sysfs_remove_dir(struct de
- 	pr_debug("sysfs %s: removing dir\n",dentry->d_name.name);
- 	mutex_lock(&dentry->d_inode->i_mutex);
- 	parent_sd = dentry->d_fsdata;
--	list_for_each_entry_safe(sd, tmp, &parent_sd->s_children, s_sibling) {
--		if (!sd->s_type || !(sd->s_type & SYSFS_NOT_PINNED))
--			continue;
--		list_move(&sd->s_sibling, &removed);
-+	pos = &parent_sd->s_children;
-+	while (*pos) {
-+		struct sysfs_dirent *sd = *pos;
-+
-+		if (sd->s_type && (sd->s_type & SYSFS_NOT_PINNED)) {
-+			*pos = sd->s_sibling;
-+			sd->s_sibling = removed;
-+			removed = sd;
-+		} else
-+			pos = &(*pos)->s_sibling;
- 	}
- 	mutex_unlock(&dentry->d_inode->i_mutex);
- 
--	list_for_each_entry_safe(sd, tmp, &removed, s_sibling) {
--		list_del_init(&sd->s_sibling);
-+	while (removed) {
-+		struct sysfs_dirent *sd = removed;
-+
-+		removed = sd->s_sibling;
-+		sd->s_sibling = NULL;
-+
- 		sysfs_drop_dentry(sd);
- 		sysfs_deactivate(sd);
- 		sysfs_put(sd);
-@@ -577,11 +627,11 @@ int sysfs_rename_dir(struct kobject * ko
- 	d_add(new_dentry, NULL);
- 	d_move(kobj->dentry, new_dentry);
- 
--	list_del_init(&sd->s_sibling);
-+	sysfs_unlink_sibling(sd);
- 	sysfs_get(parent_sd);
- 	sysfs_put(sd->s_parent);
- 	sd->s_parent = parent_sd;
--	list_add(&sd->s_sibling, &parent_sd->s_children);
-+	sysfs_link_sibling(sd);
- 
- 	error = 0;
- 	goto out_unlock;
-@@ -633,11 +683,11 @@ again:
- 	dput(new_dentry);
- 
- 	/* Remove from old parent's list and insert into new parent's list. */
--	list_del_init(&sd->s_sibling);
-+	sysfs_unlink_sibling(sd);
- 	sysfs_get(new_parent_sd);
- 	sysfs_put(sd->s_parent);
- 	sd->s_parent = new_parent_sd;
--	list_add(&sd->s_sibling, &new_parent_sd->s_children);
-+	sysfs_link_sibling(sd);
- 
- out:
- 	mutex_unlock(&new_parent_dentry->d_inode->i_mutex);
-@@ -668,7 +718,7 @@ static int sysfs_dir_close(struct inode
- 	struct sysfs_dirent * cursor = file->private_data;
- 
- 	mutex_lock(&dentry->d_inode->i_mutex);
--	list_del_init(&cursor->s_sibling);
-+	sysfs_unlink_sibling(cursor);
- 	mutex_unlock(&dentry->d_inode->i_mutex);
- 
- 	release_sysfs_dirent(cursor);
-@@ -687,7 +737,7 @@ static int sysfs_readdir(struct file * f
- 	struct dentry *dentry = filp->f_path.dentry;
- 	struct sysfs_dirent * parent_sd = dentry->d_fsdata;
- 	struct sysfs_dirent *cursor = filp->private_data;
--	struct list_head *p, *q = &cursor->s_sibling;
-+	struct sysfs_dirent **pos;
- 	ino_t ino;
- 	int i = filp->f_pos;
- 
-@@ -710,16 +760,21 @@ static int sysfs_readdir(struct file * f
- 			i++;
- 			/* fallthrough */
- 		default:
-+			pos = &parent_sd->s_children;
-+			while (*pos != cursor)
-+				pos = &(*pos)->s_sibling;
-+
-+			/* unlink cursor */
-+			*pos = cursor->s_sibling;
-+
- 			if (filp->f_pos == 2)
--				list_move(q, &parent_sd->s_children);
-+				pos = &parent_sd->s_children;
- 
--			for (p=q->next; p!= &parent_sd->s_children; p=p->next) {
--				struct sysfs_dirent *next;
-+			for ( ; *pos; pos = &(*pos)->s_sibling) {
-+				struct sysfs_dirent *next = *pos;
- 				const char * name;
- 				int len;
- 
--				next = list_entry(p, struct sysfs_dirent,
--						   s_sibling);
- 				if (!next->s_type)
- 					continue;
- 
-@@ -729,12 +784,14 @@ static int sysfs_readdir(struct file * f
- 
- 				if (filldir(dirent, name, len, filp->f_pos, ino,
- 						 dt_type(next)) < 0)
--					return 0;
-+					break;
- 
--				list_move(q, p);
--				p = q;
- 				filp->f_pos++;
- 			}
-+
-+			/* put cursor back in */
-+			cursor->s_sibling = *pos;
-+			*pos = cursor;
- 	}
- 	return 0;
- }
-@@ -759,20 +816,21 @@ static loff_t sysfs_dir_lseek(struct fil
- 		if (file->f_pos >= 2) {
- 			struct sysfs_dirent *sd = dentry->d_fsdata;
- 			struct sysfs_dirent *cursor = file->private_data;
--			struct list_head *p;
-+			struct sysfs_dirent **pos;
- 			loff_t n = file->f_pos - 2;
- 
--			list_del(&cursor->s_sibling);
--			p = sd->s_children.next;
--			while (n && p != &sd->s_children) {
--				struct sysfs_dirent *next;
--				next = list_entry(p, struct sysfs_dirent,
--						   s_sibling);
-+			sysfs_unlink_sibling(cursor);
-+
-+			pos = &sd->s_children;
-+			while (n && *pos) {
-+				struct sysfs_dirent *next = *pos;
- 				if (next->s_type)
- 					n--;
--				p = p->next;
-+				pos = &(*pos)->s_sibling;
- 			}
--			list_add_tail(&cursor->s_sibling, p);
-+
-+			cursor->s_sibling = *pos;
-+			*pos = cursor;
- 		}
- 	}
- 	mutex_unlock(&dentry->d_inode->i_mutex);
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 167c7fb..4d79a61 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -283,8 +283,8 @@ void sysfs_drop_dentry(struct sysfs_dire
- 
- int sysfs_hash_and_remove(struct dentry * dir, const char * name)
- {
--	struct sysfs_dirent * sd;
--	struct sysfs_dirent * parent_sd;
-+	struct sysfs_dirent **pos, *sd;
-+	struct sysfs_dirent *parent_sd = dir->d_fsdata;
- 	int found = 0;
- 
- 	if (!dir)
-@@ -294,13 +294,15 @@ int sysfs_hash_and_remove(struct dentry
- 		/* no inode means this hasn't been made visible yet */
- 		return -ENOENT;
- 
--	parent_sd = dir->d_fsdata;
- 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
--	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
-+	for (pos = &parent_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
-+		sd = *pos;
-+
- 		if (!sd->s_type)
- 			continue;
- 		if (!strcmp(sd->s_name, name)) {
--			list_del_init(&sd->s_sibling);
-+			*pos = sd->s_sibling;
-+			sd->s_sibling = NULL;
- 			found = 1;
- 			break;
- 		}
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 2d6294b..2e66701 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -24,12 +24,9 @@ static const struct super_operations sys
- 
- static struct sysfs_dirent sysfs_root = {
- 	.s_count	= ATOMIC_INIT(1),
--	.s_sibling	= LIST_HEAD_INIT(sysfs_root.s_sibling),
--	.s_children	= LIST_HEAD_INIT(sysfs_root.s_children),
- 	.s_type		= SYSFS_ROOT,
- 	.s_mode		= S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO,
- 	.s_ino		= 1,
--	.s_iattr	= NULL,
- };
- 
- static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index ae006b0..6f8aaf3 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -23,8 +23,8 @@ struct sysfs_dirent {
- 	atomic_t		s_count;
- 	atomic_t		s_active;
- 	struct sysfs_dirent	* s_parent;
--	struct list_head	s_sibling;
--	struct list_head	s_children;
-+	struct sysfs_dirent	* s_sibling;
-+	struct sysfs_dirent	* s_children;
- 	const char		* s_name;
- 
- 	union {
--- 
-1.4.3.4
+Thank you Michal, Alexey Dobriyan replied off list and
+showed me the fix that already went into -mm and it did indeed solve
+the problem and the paravirt in the vmware guests works fine. Nice of
+you folks to help me when I missed the ball. Sorry for missing that.
 
-
+Mike Houston
