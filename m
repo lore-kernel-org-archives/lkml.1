@@ -1,87 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760903AbXE1WxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763528AbXE1Wxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760903AbXE1WxR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 18:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbXE1WxI
+	id S1763528AbXE1Wxu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 18:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbXE1Wxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 18:53:08 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:42813 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbXE1WxF (ORCPT
+	Mon, 28 May 2007 18:53:43 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:60126 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbXE1Wxm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 18:53:05 -0400
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20070528130343.GB29738@srcf.ucam.org>
-References: <1180008394.15600.26.camel@localhost>
-	 <20070527184402.GA21161@srcf.ucam.org>
-	 <20070528010506.GA24186@srcf.ucam.org> <200705281011.17338.rjw@sisk.pl>
-	 <20070528121056.GA29143@srcf.ucam.org> <20070528125507.GI18807@elf.ucw.cz>
-	 <20070528130343.GB29738@srcf.ucam.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-LBxhtiGjzeykB2V10R76"
-Date: Tue, 29 May 2007 08:53:03 +1000
-Message-Id: <1180392783.4149.18.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 28 May 2007 18:53:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UcoDP38Hp0yH989ysiy7TntIdPsD53NV3ZameqXGaPXCDdhjlEofG73hYI98KgvTk9yHoXOaO+LId/kcgQ0LxQ6oJuOSh9HIYSmLf4SzZsDNKoMsNjWLQRSc+ELN85pHovVBZbmS+FezevcUDs3E04lf3mCZSXDXLGOguSqHtmU=
+Message-ID: <dda83e780705281553s67ace88at60f6ab28b198a832@mail.gmail.com>
+Date: Mon, 28 May 2007 15:53:41 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Nitin Gupta" <nitingupta910@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 6
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
+       linuxcompressed-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Richard Purdie" <richard@openedhand.com>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>
+In-Reply-To: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 5/28/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
+> Hi,
+>
+> This is kernel port of LZO1X-1 compressor and LZO1X decompressor (safe
+> version only).
+>
+> * Changes since 'take 5' (Full Changelog after this):
+> - Added compressor and decomrpesssor as separate and hidden config
+> options (default: n)
+> - Cleanups: removed LZO_CHECK_MPOS_NON_DET macro
+> - removed PTR* macros.
+>
+> * Benchmarks: (system: P4 3GHz, 1G RAM)
+> (Using tester program from Daniel)
+>
+> Following compares this kernel port ('take 6') vs original miniLZO code:
+>
+> 'TinyLZO' refers to this kernel port.
+>
+> 10000 run averages:
+> 'Tiny LZO':
+>        Combined: 61.2223 usec
+>        Compression: 41.8412 usec
+>        Decompression: 19.3811 usec
+> 'miniLZO':
+>        Combined: 66.0444 usec
+>        Compression: 46.6323 usec
+>        Decompression: 19.4121 usec
+>
+> Result:
+> Overall: TinyLZO is 7.3% faster
+> Compressor: TinyLZO is 10.2% faster
+> Decompressor: TinyLZO is 0.15% faster
+>
+> TODO: test 'take 6' port on archs other than x86(_32)
+>
+> * Changelog vs. original LZO:
+> 1) Used standard/kernel defined data types: (this eliminated _huge_
+> #ifdef chunks)
+>   lzo_bytep -> unsigned char *
+>   lzo_uint -> size_t
+>   lzo_xint -> size_t
+>   lzo_uint32p -> u32 *
+>   lzo_uintptr_t  -> unsigned long
+> 2) Removed everything #ifdef'ed under COPY_DICT (this is not set for
+> LZO1X, so removed corres. parts).
+> 3) Removed code #ifdef'ed for LZO1Y, LZO1Z, other variants.
+> 4) Reformatted the code to match general kernel style.
+> 5) The only code change: (as suggested by Andrey)
+> -#if defined(__LITTLE_ENDIAN)
+> -                             m_pos = op - 1;
+> -                             m_pos -= (*(const unsigned short *)ip) >> 2;
+> -#else
+> -                             m_pos = op - 1;
+> -                             m_pos -= (ip[0] >> 2) + (ip[1] << 6);
+> -#endif
+>
+> + m_pos = op - 1 - (cpu_to_le16(*(const u16 *)ip) >> 2);
+>
+> (Andrey suggested le16_to_cpu for above but I think it should be cpu_to_le16).
+> *** Need testing on big endian machine ***
+>
+> Similarly:
+> -#if defined(__LITTLE_ENDIAN)
+> -                             m_pos -= (*(const unsigned short *)ip) >> 2;
+> -#else
+> -                             m_pos -= (ip[0] >> 2) + (ip[1] << 6);
+> -#endif
+>
+> + m_pos -= cpu_to_le16(*(const u16 *)ip) >> 2;
+>
+> 6) Get rid of LZO_CHECK_MPOS_NON_DET macro and PTR* macros.
+>
+>
+> I think it's now ready for mainline inclusion.
+>
+>
+>  include/linux/lzo1x.h        |   66 +++++++++++
+>  lib/Kconfig                  |    6 +
+>  lib/Makefile                 |    2 +
+>  lib/lzo1x/Makefile           |    2 +
+>  lib/lzo1x/lzo1x_compress.c   |  259
 
---=-LBxhtiGjzeykB2V10R76
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Hi.
-
-On Mon, 2007-05-28 at 14:03 +0100, Matthew Garrett wrote:
-> On Mon, May 28, 2007 at 02:55:07PM +0200, Pavel Machek wrote:
->=20
-> > Well, PPC people are aware of this, and they think they can fix the
-> > drivers. We probably want to drop the freezer for suspend long-term,
-> > so. PPC machines use small subset of all the drivers, so it apparently
-> > is not big problem for them.
->=20
-> I'm fairly certain that PPC uses USB. In any case, it's not limited to=20
-> PPC - APM has the same issue. Any driver that assumes processes will be=20
-> frozen during suspend to RAM is broken now, not the future.
-
-The converse is also true, though. Any process that assumes processes
-aren't frozen during suspend to RAM is also broken now, and will be
-while we allow the possibility of suspending to ram after writing a
-hibernation image.
-
-In short, drivers should be designed to work whether processes are
-frozen or not.
-
-Regards,
-
-Nigel
-
---=-LBxhtiGjzeykB2V10R76
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGW11PN0y+n1M3mo0RAgniAJ0fZhQWg5VICONqJI8RjBgVd6QVvQCgmwo+
-tsHtsvNsxqI4JD92iezEqJs=
-=Aant
------END PGP SIGNATURE-----
-
---=-LBxhtiGjzeykB2V10R76--
-
+tested this on ppc and its still good
+is there any reason to bother with a test on amd64?
+if there is I might be able to get to it tonight
