@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbXE1Hq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761219AbXE1HrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760210AbXE1Hq1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 03:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbXE1HqU
+	id S1761219AbXE1HrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 03:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbXE1HrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 03:46:20 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42107 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752407AbXE1HqT (ORCPT
+	Mon, 28 May 2007 03:47:10 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:35052 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbXE1HrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 03:46:19 -0400
-Date: Mon, 28 May 2007 10:46:18 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Documentation: How to use GDB to decode OOPSes
-Message-ID: <Pine.LNX.4.64.0705281046001.30697@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 28 May 2007 03:47:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=M2hGFBzreEq4oi8sWVndoVAiA7emmIdeasAqTB9Qijvy/5JnE8DCWedFHf49Mc1Bh0UEWNsXAmoePN54ZlUaG1VWLuRhhNATNNf/+xMwVh53fBcmJO/mR6LtobTn2TUEmYxRrbHtlnNNrHR0/je6PwEw2nVPjpkKpgSh/CfSNPg=
+Message-ID: <84144f020705280047t55cec1c3hb7b1921b9478a954@mail.gmail.com>
+Date: Mon, 28 May 2007 10:47:06 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Tero Roponen" <teanropo@jyu.fi>
+Subject: Re: tty-related oops in latest kernel(s)?
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
+	 <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
+X-Google-Sender-Auth: 1978a39faec89176
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On 5/28/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Can we have your .config please? Also, could you work out the file and
+> line number of vt_ioctl+0xda8/0x1482 like this:
+>
+> gdb vmlinux
+> (gdb) l *0xc021e50e
 
-Adds instructions how to use GDB to figure out the exact location of
-an OOPS to Documentation/BUG-HUNTING.
+Btw, this only works if you have CONFIG_DEBUG_INFO set. In case it
+wasn't, please do:
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- Documentation/BUG-HUNTING |   24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
-
-Index: 2.6/Documentation/BUG-HUNTING
-===================================================================
---- 2.6.orig/Documentation/BUG-HUNTING	2007-02-05 09:46:58.000000000 +0200
-+++ 2.6/Documentation/BUG-HUNTING	2007-05-28 10:38:55.000000000 +0300
-@@ -191,6 +191,30 @@ >        mov        0xd0(%esp), %ebp    
- >        mov        0x8(%ebp), %ebx         ! %ebx = skb->sk
- >        mov        0x13c(%ebx), %eax       ! %eax = inet_sk(sk)->opt
- 
-+In addition, you can use GDB to figure out the exact file and line
-+number of the OOPS from the vmlinux file. If you have
-+CONFIG_DEBUG_INFO enabled, you can simply copy the EIP value from the
-+OOPS:
-+
-+ EIP:    0060:[<c021e50e>]    Not tainted VLI
-+
-+And use GDB to translate that to human-readable form:
-+
-+  gdb vmlinux
-+  (gdb) l *0xc021e50e
-+
-+If you don't have CONFIG_DEBUG_INFO enabled, you use the function
-+offset from the OOPS:
-+
-+ EIP is at vt_ioctl+0xda8/0x1482
-+
-+And recompile the kernel with CONFIG_DEBUG_INFO enabled:
-+
-+  make vmlinux
-+  gdb vmlinux
-+  (gdb) p vt_ioctl
-+  (gdb) l *(0x<address of vt_ioctl> + 0xda8)
-+
- Another very useful option of the Kernel Hacking section in menuconfig is
- Debug memory allocations. This will help you see whether data has been
- initialised and not set before use etc. To see the values that get assigned
+- Enable CONFIG_DEBUG_INFO
+- make vmlinux
+- gdb vmlinux
+(gdb) p vt_ioctl
+(gdb) l *(0x<address of vt_ioctl> + 0xda8)
