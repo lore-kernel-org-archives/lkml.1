@@ -1,89 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760860AbXE1Gt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760896AbXE1GxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760860AbXE1Gt5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 02:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbXE1Gtv
+	id S1760896AbXE1GxS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 02:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXE1GxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 02:49:51 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:40877 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750844AbXE1Gtu (ORCPT
+	Mon, 28 May 2007 02:53:04 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:57174 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750992AbXE1GxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 02:49:50 -0400
-Subject: Re: [PATCH} x86_64 PM_TRACE support.
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Julian Sikorski <belegdol@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Randy Dunlap <rdunlap@xenotime.net>,
-       Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Richard Hughes <hughsient@gmail.com>, Andi Kleen <ak@suse.de>
-In-Reply-To: <4659F3C8.8080606@gmail.gom>
-References: <1180161174.9773.60.camel@nigel.suspend2.net>
-	 <20070527203955.GE3989@ucw.cz>  <4659F3C8.8080606@gmail.gom>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-leR7rmUV35bXhG5evdg1"
-Date: Mon, 28 May 2007 07:54:56 +1000
-Message-Id: <1180302896.4020.37.camel@nigel.suspend2.net>
+	Mon, 28 May 2007 02:53:03 -0400
+Date: Sun, 27 May 2007 23:52:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Miles Lane" <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: EIP is at netlink_insert+0x41/0x10c
+Message-Id: <20070527235234.fe2d4dab.akpm@linux-foundation.org>
+In-Reply-To: <a44ae5cd0705272347x5e37d4aeg1f6ac8ece0e1542c@mail.gmail.com>
+References: <a44ae5cd0705272347x5e37d4aeg1f6ac8ece0e1542c@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 27 May 2007 23:47:52 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+>
 
---=-leR7rmUV35bXhG5evdg1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+please cc netdev@vger.kernel.org on net-related matters.
 
-Hi.
+> Linux version 2.6.22-rc2-mm1 (root@heliotrope.localdomain) (gcc
+> version 4.1.2 20070502 (Red Hat 4.1.2-12)) #1 PREEMPT Sun May 27
+> 18:30:28 PDT 2007
+>
+> ...
+>
+> serio: i8042 AUX port at 0x60,0x64 irq 12
+> mice: PS/2 mouse device common for all mice
+> i2c-adapter i2c-0: nForce2 SMBus adapter at 0x5000
+> i2c-adapter i2c-1: nForce2 SMBus adapter at 0x5500
+> usbcore: registered new interface driver usbhid
+> drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
+> oprofile: using NMI interrupt.
+> TCP cubic registered
+> NET: Registered protocol family 1
+> NET: Registered protocol family 10
+> IPv6 over IPv4 tunneling driver
+> NET: Registered protocol family 17
+> powernow-k8: Processor cpuid 6a0 not supported
+> Using IPI Shortcut mode
+> Freeing unused kernel memory: 260k freed
+> Write protecting the kernel text: 3108k
+> Write protecting the kernel read-only data: 1699k
+> input: AT Translated Set 2 keyboard as /class/input/input2
+> BUG: unable to handle kernel paging request at virtual address 7272746d
+>  printing eip:
+> c038fb7f
+> *pde = 00000000
+> Oops: 0000 [#1]
+> PREEMPT
+> Modules linked in:
+> CPU:    0
+> EIP:    0060:[<c038fb7f>]    Not tainted VLI
+> EFLAGS: 00210002   (2.6.22-rc2-mm1 #1)
+> EIP is at netlink_insert+0x41/0x10c
+> eax: c201a100   ebx: c242e3c0   ecx: 59bdb910   edx: 7272746d
+> esi: c2060348   edi: c2ae2c00   ebp: c2af3ebc   esp: c2af3ea0
+> ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+> Process init (pid: 505, ti=c2af3000 task=c2186150 task.ti=c2af3000)
+> Stack: 00000020 000001f9 c201a100 00000000 c242e3c0 c2ae2c00 c2af3ee0 c2af3ed8
+>        c03910dd c242e3c0 c2af3ee0 c0431fe0 c242e3c0 c2af3ee0 c2af3f74 c0378d48
+>        00000010 000001f9 ffffffff c218c2f4 48305000 00000000 00000000 c2af5ac0
+> Call Trace:
+>  [<c03910dd>] netlink_bind+0x86/0x12d
+>  [<c0378d48>] sys_bind+0x4e/0x6d
+>  [<c037a008>] sys_socketcall+0x72/0x222
+>  [<c0103e16>] sysenter_past_esp+0x5f/0x99
+>  [<ffffe410>] 0xffffe410
+>  =======================
+> INFO: lockdep is turned off.
+> Code: 35 ec aa 8a c0 e8 c4 fd ff ff 8b 55 e8 89 f0 e8 80 f6 ff ff 89
+> 45 ec 8b 10 c7 45 f0 00 00 00 00 eb 05 ff 45 f0 89 c2 85 d2 74 1b <8b>
+> 02 0f 18 00 90 8b 4d e8 39 8a 70 02 00 00 75 e6 bb 9e ff ff
+> EIP: [<c038fb7f>] netlink_insert+0x41/0x10c SS:ESP 0068:c2af3ea0
+> note: init[505] exited with preempt_count 1
 
-On Sun, 2007-05-27 at 22:10 +0100, Julian Sikorski wrote:
-> Pavel Machek pisze:
-> > Hi!
-> >=20
-> >> As promised I took another look at the patch and at what Randy had
-> >> prepared to fix the IA64 compilation error. I did some more work on it=
-,
-> >> and believe that the following is the tidiest correct solution I can
-> >> come up with. It differs from the version that caused the compilation
-> >> error primarily in that:
-> >>
-> >> * the #include <asm/resume-trace.h> is inside the #ifdef=20
-> >>   CONFIG_PM_TRACE.
-> >> * now-unnecessary protection for multiple #includes and ifdef testing =
-of
-> >>   CONFIG_PM_TRACE in the asm code were removed.
-> >> * do-nothing definitions for !PM_TRACE restored to
-> >>   include/linux/resume-trace.h.
-> >>
-> >> We're therefore depending upon kernel/power/Kconfig having the right
-> >> depends condition. As far as I can see, IA64 doesn't define CONFIG_X86=
-.
-> >> Is that correct, or do we need to have (X86 && !IA64)?
-> >=20
-> > ia64? did you mean x86-64?
-> >=20
-> > Otherwise looks ok to me.
-> >=20
-> IIRC enabling pm_trace on x86_64 was breaking compilation on ia64, so I
-> think Nigel meant the latter.
-
-Yes, it was breaking ia64, so I meant what I said - I can test x86_64
-easily. I was concerned about ensuring the condition was right for ia64.
-
-Regards,
-
-Nigel
-
---=-leR7rmUV35bXhG5evdg1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGWf4wN0y+n1M3mo0RAk1pAJ9tBv0lHIAJcdHw6B33V1qHWW0onwCdF/rX
-o4uFSLNmcCLJo3XGrmdtn5E=
-=AfNc
------END PGP SIGNATURE-----
-
---=-leR7rmUV35bXhG5evdg1--
+I wonder how /bin/init got to run netlink stuff.
 
