@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762331AbXE1K7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbXE1LFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762331AbXE1K7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 06:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbXE1K7d
+	id S1755631AbXE1LFw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 07:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbXE1LFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 06:59:33 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:51696 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751199AbXE1K7c (ORCPT
+	Mon, 28 May 2007 07:05:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:9070 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750793AbXE1LFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 06:59:32 -0400
+	Mon, 28 May 2007 07:05:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ayitEa50nDncY9aXN38PJbI0iwif6jZYSFD+u47tRl5ZwQzBSXFdtrVDSoB/XE/WjmDHzFb/e7TSVDBr5BxLNH5I8EEz67XjMzPAnuJ8ROtaHrJR8WH18DsqE+xsjWoD71o3NYIAAX8dOBLmfTVQnCUok082INxsO8OmHsd8g2E=
-Message-ID: <4a3acf9f0705280359s2d4d507bs97d060889f44ba41@mail.gmail.com>
-Date: Mon, 28 May 2007 18:59:31 +0800
-From: "=?GB2312?B?xNq6y9e319k=?=" <kerneltrack@gmail.com>
+        b=c4V34F5hqykLxA0QDfTEo+j/RHVMJHPuHxZSJ1rhWuRkGzOYqg3gCyE1sctjwZ6FxryYonfSlf6HZ4OLeehj2qvVtZoSDfgV3YqGTtRkWVmkIrVOAKBd9FrHhDtstzq+xySqMgm6PncztZgzfLovZ/MxZI7BHKskw2Wx+JdQmAI=
+Message-ID: <9b9ffe290705280405m5086f2dbldea5961ed2b057ca@mail.gmail.com>
+Date: Mon, 28 May 2007 19:05:43 +0800
+From: "=?UTF-8?B?5LiB5LiB?=" <sns2002@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: question about __block_commit_write
+Subject: An error of compile kernel2.6.22-rc3 for ARM CPU s3c2440
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all.
-   In the snippet code, I add a printk into block_commit_write, I want
-to get the bh's block number and device number . I recompiled it in
-2.4.20. But I surprise that mutliple output lines are the same.
+Hi,All.
 
-static int __block_commit_write(struct inode *inode, struct page
-*page,  unsigned from, unsigned to)
-{
- unsigned block_start, block_end;
- int partial = 0, need_balance_dirty = 0;
- unsigned blocksize;
- struct buffer_head *bh, *head;
+I compiled new kernel2.6.22-rc3 for my s3c2440 platform yesterday,
+I got follow error message from gcc-compiler.
 
- blocksize = 1 << inode->i_blkbits;
+>CC      arch/arm/plat-s3c24xx/devs.o
+>linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:410:
+error:'S3C2443_PA_HSMMC' undeclared here (not in a function)
+>linux/linux-2.6/arch/arm/plat-s3c24xx/devs.c:411:
+error:'S3C2443_SZ_HSMMC' undeclared here (not in a function)
 
- for(bh = head = page->buffers, block_start = 0;
-     bh != head || !block_start;
-     block_start=block_end, bh = bh->b_this_page) {
-  block_end = block_start + blocksize;
-  if (block_end <= from || block_start >= to) {
-   if (!buffer_uptodate(bh))
-    partial = 1;
-  } else {
-@+   printk(KERN_ERR"dev is %d, blocknr is %d\n", bh->b_dev, bh->b_blocknr);
-   set_bit(BH_Uptodate, &bh->b_state);
-   if (!atomic_set_buffer_dirty(bh)) {
-    __mark_dirty(bh);
-    buffer_insert_inode_data_queue(bh, inode);
-    need_balance_dirty = 1;
-   }
-  }
- }
+I found the reason of the error is the two marco  wasn't add into the
+file "arch-s3c2410/map.h",so I make a patch file for the problem.
 
- if (need_balance_dirty)
-  balance_dirty();
- /*
-  * is this a partial write that happened to make all buffers
-  * uptodate then we can optimize away a bogus readpage() for
-  * the next read(). Here we 'discover' wether the page went
-  * uptodate as a result of this (potentially partial) write.
-  */
- if (!partial)
-  SetPageUptodate(page);
- return 0;
-}
+>>------------------------------------------------------
+fix_miss_marco_for_s3c2443.patch
+>>------------------------------------------------------
+diff -Nurp linux-2.6.22-rc3-org/include/asm-arm/arch-s3c2410/map.h
+linux-2.6.22-rc3/include/asm-arm/arch-s3c2410/map.h
+--- linux-2.6.22-rc3-org/include/asm-arm/arch-s3c2410/map.h     2007-04-26
+11:08:32.000000000 +0800
++++ linux-2.6.22-rc3/include/asm-arm/arch-s3c2410/map.h 2007-05-28
+18:38:54.000000000 +0800
+@@ -153,6 +153,10 @@
+ #define S3C2440_PA_AC97           (0x5B000000)
+ #define S3C2440_SZ_AC97           SZ_1M
+
++/* High-speed MMC/SD */
++#define S3C2443_PA_HSMMC          (0x4A800000)
++#define S3C2443_SZ_HSMMC          0xFF
++
+ /* ISA style IO, for each machine to sort out mappings for, if it
+ * implements it. We reserve two 16M regions for ISA.
+ */
 
 
-The ouput is following :
-dev is 5640, blocknr is 14223
-dev is 5640, blocknr is 14223
-dev is 5640, blocknr is 14223
-dev is 5640, blocknr is 14223
-dev is 5640, blocknr is 14223
-dev is 5640, blocknr is 14223
-.....
-
-
-
-
-I do not know why happened like these?
+-------
+Ding Yi
+sns2002@gmail.com
+-------
