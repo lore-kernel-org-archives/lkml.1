@@ -1,91 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbXE1CsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760292AbXE1CvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760133AbXE1CsS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbXE1CsJ
+	id S1760292AbXE1CvZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 22:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbXE1CvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:48:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.225]:57890 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752190AbXE1CsG (ORCPT
+	Sun, 27 May 2007 22:51:17 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:49186 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753698AbXE1CvQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:48:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=MNSLTUFn8PD0afeon6Eeo0FJUkPllHr6ZQFBpj31hXKY5jdXYXqWaEQ42vjUAEuCY/pGt8GU+nYP1C6l9iLo6GdNau4EpjgsfV1vm51bR22yym8Am4FnX9JdS035B2TV8kDZCiwpjcunu+ay3SVuKFcSdYngSuDNKmT8GVzOv3c=
-Message-ID: <465A42DE.1030909@gmail.com>
-Date: Mon, 28 May 2007 06:47:58 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Sun, 27 May 2007 22:51:16 -0400
+Date: Sun, 27 May 2007 19:44:10 -0700
+From: Jouni Malinen <j@w1.fi>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, hostap@shmoo.com,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] use list_for_each_entry() for iteration in hostap_ap.c
+Message-ID: <20070528024409.GV5416@jm.kir.nu>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>, hostap@shmoo.com,
+	linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070525125630.GE31790@traven> <20070525130308.GF31790@traven> <20070525143005.GB10669@infradead.org> <20070527102824.GJ31790@traven>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Grant Grundler <grundler@parisc-linux.org>, Greg KH <greg@kroah.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIE
-References: <20070523155958.GA5282@kroah.com> <4654AB40.6060208@gmail.com>	<adaejl79rh0.fsf@cisco.com> <4654BC10.2000808@gmail.com>	<adazm3v89hv.fsf@cisco.com> <4654C85B.6060505@gmail.com>	<adatzu385g1.fsf@cisco.com> <46561287.8020103@gmail.com>	<ada1wh560u1.fsf@cisco.com> <46584C30.4030206@gmail.com>	<20070526182828.GA7080@colo.lackof.org> <46588A3D.2060208@gmail.com>	<adaps4l21fe.fsf@cisco.com> <465A38B0.6030604@gmail.com> <adahcpx1y89.fsf@cisco.com>
-In-Reply-To: <adahcpx1y89.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070527102824.GJ31790@traven>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > > At least on my device (PCI ID 1131:7162) there is no MSI-X capability,
->  > > so that's not an option for you.  The current Linux implementation
->  > > does not support more than one MSI interrupt, so you just get one
->  > > interrupt with pci_enable_msi().
->  > 
->  > This would mean MSI or MSI-X ?  A bit confused now.
-> 
-> As I said, the device I have in my system:
-> 
->     02:00.0 Multimedia controller: Philips Semiconductors Unknown device 7162
->             Subsystem: Animation Technologies Inc. Unknown device 0820
->             Flags: bus master, fast devsel, latency 0, IRQ 11
->             Memory at 90200000 (64-bit, non-prefetchable) [size=1M]
->             Capabilities: [40] Message Signalled Interrupts: Mask- 64bit+ Queue=0/5 Enable-
->             Capabilities: [50] Express Endpoint IRQ 0
->             Capabilities: [74] Power Management version 2
->             Capabilities: [80] Vendor Specific Information
-> 
-> ...has only an MSI capability (the "[40] Message Signalled Interrupts"
-> line).  So MSI-X is not possible, since the device cannot do it.  And
-> that means you can at most do pci_enable_msi().  The current Linux MSI
-> support only handles a single interrupt, just like you get normally
-> (no matter how many MSI interrupts a device can handle).  To get
-> multiple interrupts from a single device under Linux, you must use
-> MSI-X and pci_enable_msix -- but for this to work, your device must
-> support MSI-X of course.
-> 
-> A device that supports both MSI and MSI-X would look like:
-> 
->     0b:00.0 InfiniBand: Mellanox Technologies MT25204 [InfiniHost III Lx HCA] (rev 20)
->             Subsystem: Mellanox Technologies MT25204 [InfiniHost III Lx HCA]
->             Flags: bus master, fast devsel, latency 0, IRQ 16
->             Memory at fc600000 (64-bit, non-prefetchable) [size=1M]
->             Memory at d8800000 (64-bit, prefetchable) [size=8M]
->             Capabilities: [40] Power Management version 2
->             Capabilities: [48] Vital Product Data
->             Capabilities: [90] Message Signalled Interrupts: Mask- 64bit+ Queue=0/5 Enable-
->             Capabilities: [84] MSI-X: Enable- Mask- TabSize=32
->             Capabilities: [60] Express Endpoint IRQ 0
-> 
-> with both "Message Signalled Interrupts" and "MSI-X" capabilities.
-> 
+On Sun, May 27, 2007 at 12:28:24PM +0200, Matthias Kaehlcke wrote:
 
-Thanks for the explanation.
+> thanks for your comment, here's a patch that uses
+> list_for_each_entry(), additionally to the initial patch it
+> substitutes some list_for_each() loops by list_for_each_entry()
 
-> However, as I said before I think you shouldn't worry about MSI right
-> now.  Since there are many systems where MSI doesn't work, you'll need
-> to get the driver working with legacy (INTx) interrupts anyway.  And
-> you seem to be in a bit over your head just doing that without adding
-> the complexity of MSI on top, hence my recommendation to just focus on
-> the basic driver.
+Thanks! I added this to my list of patches for the driver.
 
-True, compatibility would be important.
+Could you please send a Signed-off-by line for this later version of the
+patch? You did it for the first version, but just to be sure, it would
+be prefered to see this explicitly for each version.
 
-Thanks,
-Manu
-
+-- 
+Jouni Malinen                                            PGP id EFC895FA
