@@ -1,82 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbXE1VJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932547AbXE1VNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932701AbXE1VJn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 17:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762511AbXE1VJF
+	id S932547AbXE1VNW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 17:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbXE1VNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 17:09:05 -0400
-Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:42633 "HELO
-	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760892AbXE1VJA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 17:09:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=6lSWKkV1QM2PCel9lgnhBrcSU6A2qzWlJcPFkIMwTDpj9FC4QZDIxxBnpredXQ/m+wC3TsxsvGuyzZPcMLLLaF/X/nwtUNaA63RrUxi8ztMrbj+zdQaHBq64vjSX+VppudPOapirMEUc/0akO2dx1crF1MbfA+/2V9Rfst7R3sk=  ;
-X-YMail-OSG: bEbBp_wVM1nsqwFK8_ceoSpKwvnBNxI_ofhbPoTDyPD3zGg3mA1PEFfa5cjIHIJJtRwWcR8MCQ--
-From: David Brownell <david-b@pacbell.net>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [patch 2.6.20-rc3 1/3] rtc-cmos driver
-Date: Mon, 28 May 2007 14:07:04 -0700
-User-Agent: KMail/1.9.6
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <200701051001.58472.david-b@pacbell.net> <20070528183513.GA2815@srcf.ucam.org>
-In-Reply-To: <20070528183513.GA2815@srcf.ucam.org>
+	Mon, 28 May 2007 17:13:12 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:44756 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750934AbXE1VNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 17:13:11 -0400
+Message-ID: <465B45E0.3040007@simon.arlott.org.uk>
+Date: Mon, 28 May 2007 22:13:04 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200705281407.05250.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="us-ascii"
+To: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       davem@davemloft.net
+CC: stable@kernel.org, yoshfuji@linux-ipv6.org, berni@birkenwald.de,
+       linkfanel@yahoo.fr
+Subject: "[IPV6]: Fix routing round-robin locking." breaks manual default
+ route (bug 8349)
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 May 2007, Matthew Garrett wrote:
-> On Fri, Jan 05, 2007 at 10:01:57AM -0800, David Brownell wrote:
-> > This is an "RTC framework" driver for the "CMOS" RTCs which are standard
-> > on PCs and some other platforms.  That's MC146818 compatible silicon.
-> > ...
-> > +static int cmos_read_alarm(struct device *dev, struct rtc_wkalrm *t)
-> 
-> This is awkward. At the very least, year will be set to -1. This then 
-> gets passed through to rtc_tm_to_time, which results in reading 
-> wakealarm providing very odd feedback. I guess the "right" fix is for 
-> rtc_tm_to_time to use the current values for anything that's -1?
+Initial state - address, no routes:
+# ip -6 a
+2: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qlen 1000
+    inet6 2001:4b10:1005:0:202:44ff:fe50:91af/64 scope global
+       valid_lft forever preferred_lft forever
+    inet6 fe80::202:44ff:fe50:91af/64 scope link
+       valid_lft forever preferred_lft forever
+# ip -6 r
+fe80::/64 dev eth0  metric 256  expires 21332290sec mtu 1500 advmss 1440
+ff00::/8 dev eth0  metric 256  expires 21332290sec mtu 1500 advmss 1440
+unreachable default dev lo  proto none  metric -1  error -101
+# ping6 -c 1 2001:4b10:1005:0:205:b4ff:fe12:530
+connect: Network is unreachable
 
-Well ... legacy APIs allow "-1" there; /proc/driver/rtc certainly
-interprets wildcards consistently too.  That is, historically it's
-not been legit to call rtc_tm_to_time(&t->time).
+Adding a 2000::/3 route works:
+# ip -6 r a 2000::/3 via fe80::230:18ff:feb0:25c2 dev eth0
+# ping6 -c 1 2001:4b10:1005:0:205:b4ff:fe12:530
+64 bytes from 2001:4b10:1005:0:205:b4ff:fe12:530: icmp_seq=1 ttl=64 time=0.921 ms
+# ip -6 r d 2000::/3 via fe80::230:18ff:feb0:25c2 dev eth0
 
-A counter-argument could be made that rtc_read_alarm() should get
-rid of wildcards.  It's got the right RTC in hand; rtc_tm_to_time()
-doesn't.  Other RTCs can have this same type of "wildcard" issue.
+Adding a ::/0 route doesn't work:
+# ip -6 r a ::/0 via fe80::230:18ff:feb0:25c2 dev eth0
+# ping6 -c 1 2001:4b10:1005:0:205:b4ff:fe12:530
+connect: Network is unreachable
 
-Me, I'd prefer to make the API treat alarms as purely oneshot.
-That whole "wildcard" model is, as you noted, awkward ... even
-though it's got hardware support in cases like MC146818 and clones,
-it's not very portable.  But I don't want to push that issue either
-way just now.
-
+A route assigned by addrconf works.
 
 
-> > +	rtc_control = CMOS_READ(RTC_CONTROL);
-> > +	rtc_control &= ~(RTC_PIE | RTC_AIE | RTC_UIE);
-> 
-> Do you really want to clobber RTC_AIE on probe? If an alarm has been set 
-> by the BIOS, it seems a little unfair to disable it on boot.
+Reverting this patch from 2.6.22-rc3 fixes it:
+	commit f11e6659ce9058928d73ff440f9b40a818d628ab
+	Author: David S. Miller <davem@sunset.davemloft.net>
+	Date:   Sat Mar 24 20:36:25 2007 -0700
+	    [IPV6]: Fix routing round-robin locking.
 
-I was wondering about that in the context of a different RTC, which
-happens to run on BIOS-less hardware.  Which, curiously, may be the
-opposite of BIOS-impaired hardware ... :)
+This patch is was added to 2.6.20.5, breaking -stable too.
 
-In general, I suspect the alarm should stay active ... unless its
-time has already passed.  That was the original intent of that
-tweak, but of course PCs don't actually *have* oneshot alarms, so
-there's no way to tell if a given alarm is in the past.  Leading to
-the conclusion that AIE should probably stay enabled.
 
-- Dave
+With RT6_DEBUG 3 in route.c (plus some additional debug statements):
 
+Manual default route:
+[  535.981000] fib6_add_rt2node
+[  535.981000] fib6_add_rt2node fn->fn_flags = 00000007 (RTN_TL_ROOT=00000001)
+[  535.981000] fib6_add_rt2node fn->leaf = b0697be0 (ip6_null_entry = b0697be0)
+[  535.981000] fib6_add_rt2node rt->rt6i_flags = 00000003 (RTF_DEFAULT = 00010000, RTF_ADDRCONF = 00040000)
+[  535.981000] fib6_add_rt2node goto out...
+[  535.981000] fib6_add_rt2node out:
+
+Ping6:
+[  570.903000] rt6_select(fn->leaf=b1b63140, oif=0)
+[  570.903000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
+[  570.903000] find_match m = 10, *mpri = -1
+[  570.904000] rt6_select() => b0697be0
+[  570.904000] rt6_select(fn->leaf=b1b63140, oif=0)
+[  570.904000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
+[  570.904000] find_match m = 10, *mpri = -1
+[  570.904000] rt6_select() => b0697be0
+
+
+Addrconf default route:
+[  624.846000] rt6_select(fn->leaf=b1b63300, oif=2)
+[  624.846000] find_match rt->rt6i_gateway = 000002ff 00000000 00000000 01000000
+[  624.846000] find_match m = 10, *mpri = -1
+[  624.846000] rt6_select() => b1b63300
+[  624.846000] rt6_select(fn->leaf=b1b63300, oif=2)
+[  624.846000] find_match rt->rt6i_gateway = 000002ff 00000000 00000000 01000000
+[  624.846000] find_match m = 10, *mpri = -1
+[  624.846000] rt6_select() => b1b63300
+[  624.846000] fib6_add_rt2node
+[  624.846000] fib6_add_rt2node fn->fn_flags = 00000007 (RTN_TL_ROOT=00000001)
+[  624.846000] fib6_add_rt2node fn->leaf = b0697be0 (ip6_null_entry = b0697be0)
+[  624.846000] fib6_add_rt2node rt->rt6i_flags = 00450003 (RTF_DEFAULT = 00010000, RTF_ADDRCONF = 00040000)
+[  624.846000] fib6_add_rt2node out:
+
+Ping6:
+[  689.245000] rt6_select(fn->leaf=b1b63140, oif=0)
+[  689.245000] find_match rt->rt6i_gateway = 104b0120 00000510 ffb40502 300512fe
+[  689.245000] find_match m = 10, *mpri = -1
+[  689.245000] rt6_select() => b1b63140
+[  689.245000] rt6_select(fn->leaf=b1b63140, oif=0)
+[  689.245000] find_match rt->rt6i_gateway = 104b0120 00000510 ffb40502 300512fe
+[  689.245000] find_match m = 10, *mpri = -1
+[  689.245000] rt6_select() => b1b63140
+[  689.248000] rt6_select(fn->leaf=b1b63140, oif=0)
+[  689.248000] find_match rt->rt6i_gateway = 104b0120 00000510 ffb40502 300512fe
+[  689.248000] find_match m = 10, *mpri = -1
+[  689.248000] rt6_select() => b1b63140
+[  689.248000] rt6_select(fn->leaf=b1b63140, oif=0)
+[  689.248000] find_match rt->rt6i_gateway = 104b0120 00000510 ffb40502 300512fe
+[  689.248000] find_match m = 10, *mpri = -1
+[  689.248000] rt6_select() => b1b63140
+[  689.248000] rt6_select(fn->leaf=b1b63ae0, oif=2)
+[  689.248000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
+[  689.248000] find_match m = 9, *mpri = -1
+[  689.248000] rt6_select() => b1b63ae0
+[  689.702000] rt6_select(fn->leaf=b1b63ae0, oif=2)
+[  689.702000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
+[  689.702000] find_match m = 9, *mpri = -1
+[  689.702000] rt6_select() => b1b63ae0
+
+
+Manual 2000::/3 route:
+[  765.424000] fib6_add_rt2node
+[  765.424000] fib6_add_rt2node fn->fn_flags = 00000000 (RTN_TL_ROOT=00000001)
+[  765.424000] fib6_add_rt2node fn->leaf = 00000000 (ip6_null_entry = b0697be0)
+[  765.424000] fib6_add_rt2node rt->rt6i_flags = 00000003 (RTF_DEFAULT = 00010000, RTF_ADDRCONF = 00040000)
+[  765.424000] fib6_add_rt2node out:
+[  765.424000] fib6_add_rt2node fn->fn_flags |= RTN_RTINFO;
+
+Ping6:
+[  779.705000] rt6_select(fn->leaf=b1b63060, oif=0)
+[  779.705000] find_match rt->rt6i_gateway = 000080fe 00000000 ff183002 c225b0fe
+[  779.705000] find_match m = 10, *mpri = -1
+[  779.705000] rt6_select() => b1b63060
+[  779.713000] rt6_select(fn->leaf=b1b63060, oif=0)
+[  779.713000] find_match rt->rt6i_gateway = 000080fe 00000000 ff183002 c225b0fe
+[  779.713000] find_match m = 10, *mpri = -1
+[  779.713000] rt6_select() => b1b63060
+[  779.714000] rt6_select(fn->leaf=b1b63ae0, oif=2)
+[  779.714000] find_match rt->rt6i_gateway = 00000000 00000000 00000000 00000000
+[  779.714000] find_match m = 9, *mpri = -1
+[  779.714000] rt6_select() => b1b63ae0
+
+-- 
+Simon Arlott
