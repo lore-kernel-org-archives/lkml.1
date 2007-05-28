@@ -1,52 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXE1UMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763365AbXE1UNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932207AbXE1UMS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 16:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbXE1UMJ
+	id S1763365AbXE1UNR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 16:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760000AbXE1UNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 16:12:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37825 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbXE1UMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 16:12:08 -0400
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, video4linux-list@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>
-References: <2172422218943432279@wsc.cz>
-	 <1180364420.21547.160.camel@localhost>
-	 <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>
-	 <1180378677.21547.189.camel@localhost>
-	 <d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 28 May 2007 17:11:11 -0300
-Message-Id: <1180383071.21547.230.camel@localhost>
+	Mon, 28 May 2007 16:13:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4744 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759958AbXE1UNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 16:13:04 -0400
+Date: Mon, 28 May 2007 20:12:13 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Dave Airlie <airlied@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeff Garzik <jeff@garzik.org>, Jesse Barnes <jesse.barnes@intel.com>,
+       linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+Message-ID: <20070528201213.GA5840@ucw.cz>
+References: <200705171423.46748.jesse.barnes@intel.com> <465228E2.1030405@garzik.org> <9e4733910705211726q38be6843ndac49f8adc25aad0@mail.gmail.com> <200705211856.56228.jbarnes@virtuousgeek.org> <9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com> <21d7e9970705220735j37bc8eeck87db7193c08c4c24@mail.gmail.com> <9e4733910705220813i479a68faxf365697962317c60@mail.gmail.com> <21d7e9970705221025r2f798dc5x310947db040c6521@mail.gmail.com> <9e4733910705221258v660d8f42j16cc596ca820e8b8@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9e4733910705221258v660d8f42j16cc596ca820e8b8@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-> > As Luca pointed, if we add conversion for one driver, we should add for
-> > the rest.
+> >> These are not isolated problems. Linux needs a 
+> >properly designed
+> >> graphics subsystem. One way to achieve that is to 
+> >design it all on
+> >> paper first so that we can try and locate the 
+> >interactions between
+> >> modules. For example the current mode setting design 
+> >is definitely
+> >> broken for multi-seat support, that's because you 
+> >didn't take that
+> >> feature into account when writing the code.
 > >
-> > Instead, it would be better if Jiri sends the decoding and the rescaling
-> > stuff as a patch to v4l2-apps/lib, starting the API decoding library.
-> > Once we have a library, we can ask the userspace developers to use it
-> > for the formats not recognized by their userspace apps.
-> >
+> >No it isn't the code Jesse posted can handle multi-seat 
+> >fine in the
+> >areas that it makes sense as we've pointed out to you 
+> >you cannot just
 > 
-> I think it would be better to evaluate existing solutions (eg. libpw).
+> The code doesn't create one device per CRTC. Missing 
+> that feature
+> means that we need a persistent root priv app around 
+> that owns the
+> single device and then listens for messages from each 
+> seat asking it
+> to do things. That root priv app is not necessary, it is 
+> a security
+> risk and it should be eliminated.
 
-Agreed. Volunteers?
+Fine, submit a patch. But don't block other people patches just
+because they do not address your favourite problem.
 
+> >Fine, but nobody has succeeded at this, because the 
+> >effort of doing it
+> >this way is not incrementally developed, we are not 
+> >designing DX10, we
+> >are improving Linux graphics one step at a time.
+> 
+> And the right way to build a house is to build the 
+> kitchen first and
+> figure out the rest after the kitchen is finished.
+
+...and the right way to build a house is to do nothing, and chase away
+anyone trying to do something?
+
+> >The thing is we need integration with memory 
+> >management, the memory
+> >management is in the drm as it is complicated and the 
+> >work is done, I
+> >know you aren't even reading this sentence at this 
+> >point.
+> 
+> A new memory manager for drm is a nice piece of work. It 
+> was something
+> that needed to get done. But right now it is being done 
+> in an X
+> specific manner without consideration of alternative 
+> graphics
+> environments.
+
+Feel free to post alternative patch that addresses that...
+
+Fact is, everyone runs X these days. 'Your patches can't go in,
+because you do not support alternative graphics systems (that don't
+exist)' is pretty weak argument.
+
+							Pavel
 -- 
-Cheers,
-Mauro
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
