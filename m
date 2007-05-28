@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763251AbXE1UYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbXE1U0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763251AbXE1UYd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 16:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXE1UYZ
+	id S932265AbXE1U0R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 16:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760342AbXE1U0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 16:24:25 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:18647 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822AbXE1UYZ (ORCPT
+	Mon, 28 May 2007 16:26:09 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4990 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbXE1U0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 16:24:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p4FaBcyEbwczYU4ZL59sqMpQCthzXMeb33NU2lZOJ+K/ZXyutIzFwTPnZxQlodpceOEquPaa2IQ4rM3K4qpuZtNbhiMbxzSF4jsmU0PHsLRA8ABI2I9nsbAVztJNQ9R6Eywp4ykIWiC7FZfcU/o6Z0kIgcP5SKZ4hsZc7s9vsbo=
-Message-ID: <9a8748490705281324u509d9019qa7e60e446ca509b9@mail.gmail.com>
-Date: Mon, 28 May 2007 22:24:24 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: stuff ready to be deleted?
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 28 May 2007 16:26:08 -0400
+Date: Mon, 28 May 2007 21:25:58 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ARM: Section mismatch warnings
+Message-ID: <20070528202558.GG5737@flint.arm.linux.org.uk>
+Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20070528163253.GA29174@uranus.ravnborg.org> <20070528170430.GB5737@flint.arm.linux.org.uk> <20070528183629.GA30821@uranus.ravnborg.org> <20070528192548.GD5737@flint.arm.linux.org.uk> <20070528195847.GB31233@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
+In-Reply-To: <20070528195847.GB31233@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/05/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
->
->   i'm trying to keep track of kernel janitor projects that involve
-> removing dead content from the tree:
->
-> http://fsdev.net/wiki/index.php?title=Kernel_Janitor%27s_Todo_List
->
-> currently, the list contains the items:
->
->     * 1 Legacy power management
->     * 2 PCMCIA IOCTL support
->     * 3 Traffic shaper
->     * 4 Traffic policing
->     * 5 Userspace queueing via NETLINK
->     * 6 ebt: ulog support
->     * 7 MOXA SmartIO support
->     * 8 Old I2O ioctls
->     * 9 Stallion drivers
->     * 10 SDL RISCom/8 support
->     * 11 Macintosh M68K support
->     * 12 Commodore A2232 serial support
->     * 13 CONFIG_FORCED_INLINING
->     * 14 kernel_thread()
->
-> which of the above are legitimate candidates for removal?  which are
-> already underway in someone's local tree?  anything else that can
-> be added?  etc, etc.
->
+On Mon, May 28, 2007 at 09:58:47PM +0200, Sam Ravnborg wrote:
+> Declaring neponset_probe __init cured it.
+> Sorry for posting the wrong patch in the first place.
 
-Take a look at Documentation/feature-removal-schedule.txt
-Some of that stuff is already listed there along with who is in charge
-of removing it and when.
+Arguably, making neponset_probe __devinit and neponset_port_fns
+__devinitdata is arguably more correct since any device driver can
+be bound and unbound at any time (grumble).
+
+I don't think David's platform_driver_probe() is a proper answer
+since it's still possible to unbind the driver, leaving no way to
+re-bind.  IOW, it only solves half the problem.  Really, the
+allowance of bind/unbind should be a per-driver and per-bus thing
+imho.  That's for a separate discussion though.
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
