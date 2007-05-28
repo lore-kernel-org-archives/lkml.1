@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbXE1LWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761486AbXE1L0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762051AbXE1LWb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 07:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbXE1LWY
+	id S1761486AbXE1L0Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 07:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbXE1L0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 07:22:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58269 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750724AbXE1LWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 07:22:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Mon, 28 May 2007 07:26:02 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:54268 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbXE1L0A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 07:26:00 -0400
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before
+	hibernation/suspend
+From: Kay Sievers <kay.sievers@vrfy.org>
 To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
-Date: Mon, 28 May 2007 13:28:07 +0200
-User-Agent: KMail/1.9.5
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
        pm list <linux-pm@lists.linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Nigel Cunningham <nigel@nigel.suspend2.net>,
        Alan Stern <stern@rowland.harvard.edu>,
        Oliver Neukum <oliver@neukum.org>
-References: <200705272229.21263.rjw@sisk.pl> <200705280943.54312.rjw@sisk.pl> <20070528111554.GF18807@elf.ucw.cz>
 In-Reply-To: <20070528111554.GF18807@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+References: <200705272229.21263.rjw@sisk.pl>
+	 <20070527220412.GC22687@srcf.ucam.org>
+	 <1180304166.3131.66.camel@lov.localdomain> <200705280943.54312.rjw@sisk.pl>
+	 <20070528111554.GF18807@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 28 May 2007 13:24:53 +0200
+Message-Id: <1180351493.4242.31.camel@lov.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705281328.08979.rjw@sisk.pl>
+X-Provags-ID: V01U2FsdGVkX18Dj7Ws9X2ymQpMfWfOu2lEE7DLiFHDaxms9QJ
+ sUab6dZLI2yMrVu+RkIg5Cmvo7HdfPVFdbP0vx5K3G25rwwdl3
+ gETxmPaSGCEj7Cdf7fFKu7W6kaA1tXJ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 28 May 2007 13:15, Pavel Machek wrote:
+On Mon, 2007-05-28 at 13:15 +0200, Pavel Machek wrote:
 > Hi!
 > 
 > > > > > What exactly is the problem we see here? The timeout of the firmware loader?
@@ -63,14 +69,13 @@ On Monday, 28 May 2007 13:15, Pavel Machek wrote:
 > 
 > Imagine disk with its firmware on NFS and NFS with its firmware on
 > disk.
+> 
+> (Or maybe firmware loader doing find /, including both disk and
+> NFS). Just don't call request_firmware_* from .resume().
 
-Yeah, I've just given the very same example in another message. :-)
+A driver for a bootup-critical device like this should just never
+release the firmware after the first load. There is absolutely no point
+in doing that.
 
-I believe the only _solution_ would be to load the firmware into memory
-before the suspend and use the in-RAM copy to upload it into the device
-in .resume().
+Kay
 
-A PM_PRE_FREEZE notifier could be used for that just fine, BTW.
-
-Greetings,
-Rafael
