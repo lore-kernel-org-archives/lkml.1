@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761689AbXE1K0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762283AbXE1K1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761689AbXE1K0m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 06:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbXE1K0e
+	id S1762283AbXE1K1a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 06:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXE1K1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 06:26:34 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:59821 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbXE1K0e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 06:26:34 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <1180343171.4242.15.camel@lov.localdomain>
-References: <200705272229.21263.rjw@sisk.pl> <20070527220412.GC22687@srcf.ucam.org> <1180304166.3131.66.camel@lov.localdomain> <200705280943.54312.rjw@sisk.pl> <9D3FC259-8391-4C2F-9F0F-AEF6CB3030E8@cam.ac.uk> <1180343171.4242.15.camel@lov.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5C7E12A9-DCEB-40AA-B3E6-4A54F4FE8047@cam.ac.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       Rob Landley <rob@landley.net>
+	Mon, 28 May 2007 06:27:23 -0400
+Received: from h80ad2262.async.vt.edu ([128.173.34.98]:34702 "EHLO
+	h80ad2262.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbXE1K1W (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 06:27:22 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1 - a different BUG: at mm/slab.c:777 __find_general_cachep()
+In-Reply-To: Your message of "Wed, 23 May 2007 00:42:33 PDT."
+             <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1180348036_4040P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
-Date: Mon, 28 May 2007 11:26:28 +0100
-To: Kay Sievers <kay.sievers@vrfy.org>
-X-Mailer: Apple Mail (2.752.2)
+Date: Mon, 28 May 2007 06:27:16 -0400
+Message-ID: <13451.1180348036@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28 May 2007, at 10:06, Kay Sievers wrote:
+--==_Exmh_1180348036_4040P
+Content-Type: text/plain; charset=us-ascii
 
-> The underlying issue are the driver authors, that's not so easy to
-> fix. :)
+On Wed, 23 May 2007 00:42:33 PDT, Andrew Morton said:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
 
-Sorry, I know this maybe be unintentional, but comments like this  
-make me somewhat angry.
+Dell Latitude D820 laptop, Intel T7200 dual-core, x86_64 kernel.
 
-If there is no decent documentation as to how to do it the right way  
-(tm), how do you expect people to do it the right way (tm)?
+Does something wonky during very early boot, before userspace has started:
 
-> Any timeout for a
-> firmware-request is just a broken concept, the request should wait
-> forever, to be fulfilled or canceled from userspace when it's ready.
+[4294667.471000] Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz stepping 06
+[4294667.471000] Brought up 2 CPUs 
+[4294667.471000] NET: Registered protocol family 16
+[4294667.472000] ACPI: ACPI Dock Station Driver
+[4294667.472000] ACPI: bus type pci registered
+[4294667.472000] BUG: at mm/slab.c:777 __find_general_cachep()
+[4294667.472000] 
+[4294667.472000] Call Trace:
+[4294667.472000]  [<ffffffff8020b2a8>] dump_trace+0xca/0x3cb
+[4294667.472000]  [<ffffffff8020b5e5>] show_trace+0x3c/0x52
+[4294667.472000]  [<ffffffff8020b610>] dump_stack+0x15/0x17
+[4294667.472000]  [<ffffffff8028952e>] __kmalloc+0x41/0xb2
+[4294667.472000]  [<ffffffff8042c450>] get_modalias+0x6c/0x107 
+[4294667.472000]  [<ffffffff8042c520>] dmi_dev_uevent+0x35/0x4d
+[4294667.472000]  [<ffffffff803b7d5f>] dev_uevent+0x19b/0x1d1
+[4294667.472000]  [<ffffffff8034bd3c>] kobject_uevent_env+0x244/0x477
+[4294667.472000]  [<ffffffff8034bf7a>] kobject_uevent+0xb/0xd
+[4294667.472000]  [<ffffffff803b7971>] device_add+0x2b5/0x4eb
+[4294667.472000]  [<ffffffff803b7bc0>] device_register+0x19/0x1d 
+[4294667.472000]  [<ffffffff807dd71a>] dmi_id_init+0x2d1/0x2e9
+[4294667.472000]  [<ffffffff807c1651>] kernel_init+0x168/0x2da
+[4294667.472000]  [<ffffffff8020acd8>] child_rip+0xa/0x12
+[4294667.472000] 
+[4294667.473000] PCI: Using MMCONFIG at f0000000 - f3ffffff 
+[4294667.489000] ACPI: SSDT 7FE819CE, 0043 (r1  LMPWR  DELLLOM     1001 INTL 20050624)
 
-What I wrote above is especially true when the in-kernel APIs  
-themselves do things the wrong way (tm) themselves. Thus, even more  
-thought is required to work around this imperfect behaviour in a sane  
-manner. And without documentation, every single device driver author  
-has to go through this thought process themselves. Unsurprisingly,  
-they often get it wrong. But as there's no decent documentation to do  
-it right, it's *not* their fault. I'd suggest it's more the fault of  
-the core kernel devs who fail to fix up a questionable firmware  
-loading interface, then fail to document how to work around its  
-shortcomings.
+Any suggestions before I go doing the bisect shuffle?
 
-Again, apologies if this sounds angry, I don't want to start an  
-argument. But as someone just starting out here, this kind of thing  
-can be very frustrating, as even with the best will in the world,  
-achieving the right way (tm) is basically impossible if those in the  
-know about what the right way (tm) is fail to share this information.
+--==_Exmh_1180348036_4040P
+Content-Type: application/pgp-signature
 
-Michael-Luke Jones
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFGWq6EcC3lWbTT17ARApTxAJ4+8osQTBPiZE+ZJ1mONrUa5ne/sACgtTfX
+0FQZi1FbH2fr+JmeKFqMoHM=
+=73JY
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1180348036_4040P--
