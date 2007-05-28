@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbXE1U5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXE1U6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932581AbXE1U5x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 16:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932499AbXE1U5j
+	id S932409AbXE1U6Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 16:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932507AbXE1U5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 28 May 2007 16:57:40 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4880 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932473AbXE1U5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 28 May 2007 16:57:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:43086 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932486AbXE1U5i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 16:57:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Nv5ACbeUX6OXnWYM2Q10cEAgThjUIsN4wcEa2lWB4Z81oAD9ZukkGFuE15giH4tOVchHFUcJxRWk76goA2A5UGp6y16qSQWBMsYKf6VzMkfVNSMByZUf6ImlDQDdwkgYqstsSviUto6dBo2+Z1fIQuL8mHeq4ijF+w+TrdX6JGQ=
-Message-ID: <9e4733910705281357x592f0853re9492efdb5ef82e8@mail.gmail.com>
-Date: Mon, 28 May 2007 16:57:37 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: [RFC] enhancing the kernel's graphics subsystem
-Cc: "Dave Airlie" <airlied@gmail.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Jeff Garzik" <jeff@garzik.org>,
-       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-In-Reply-To: <20070528201213.GA5840@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Mon, 28 May 2007 20:57:27 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Message-ID: <20070528205727.GA5911@ucw.cz>
+References: <20070528161242.GA1063@srcf.ucam.org> <Pine.LNX.4.44L0.0705281237200.22682-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200705171423.46748.jesse.barnes@intel.com>
-	 <465228E2.1030405@garzik.org>
-	 <9e4733910705211726q38be6843ndac49f8adc25aad0@mail.gmail.com>
-	 <200705211856.56228.jbarnes@virtuousgeek.org>
-	 <9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com>
-	 <21d7e9970705220735j37bc8eeck87db7193c08c4c24@mail.gmail.com>
-	 <9e4733910705220813i479a68faxf365697962317c60@mail.gmail.com>
-	 <21d7e9970705221025r2f798dc5x310947db040c6521@mail.gmail.com>
-	 <9e4733910705221258v660d8f42j16cc596ca820e8b8@mail.gmail.com>
-	 <20070528201213.GA5840@ucw.cz>
+In-Reply-To: <Pine.LNX.4.44L0.0705281237200.22682-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/28/07, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
-> > >> These are not isolated problems. Linux needs a
-> > >properly designed
-> > >> graphics subsystem. One way to achieve that is to
-> > >design it all on
-> > >> paper first so that we can try and locate the
-> > >interactions between
-> > >> modules. For example the current mode setting design
-> > >is definitely
-> > >> broken for multi-seat support, that's because you
-> > >didn't take that
-> > >> feature into account when writing the code.
-> > >
-> > >No it isn't the code Jesse posted can handle multi-seat
-> > >fine in the
-> > >areas that it makes sense as we've pointed out to you
-> > >you cannot just
-> >
-> > The code doesn't create one device per CRTC. Missing
-> > that feature
-> > means that we need a persistent root priv app around
-> > that owns the
-> > single device and then listens for messages from each
-> > seat asking it
-> > to do things. That root priv app is not necessary, it is
-> > a security
-> > risk and it should be eliminated.
->
-> Fine, submit a patch. But don't block other people patches just
-> because they do not address your favourite problem.
+Hi!
 
-I have already implemented this once and submitted a patch.
+> > > I can't speak for the second example, but there's a good reason the
+> > > first example works this way.  It's not a matter of races; the problem
+> > > is that the kernel thread's job is to selectively suspend and resume
+> > > devices.  We don't want it doing this while a system sleep is in 
+> > > progress; it would (and in fact has, before the thread was made 
+> > > freezable) cause the sleep transition to abort.
+> > 
+> > How does this work on PPC or APM systems?
+> 
+> For hibernation it behaves the same as on other types of systems.
+> 
+> For STR it generally works okay.  There was one report of suspends
+> aborting, and it looked like this was caused by selective resumes
+> originating from userspace.  This seemed to be unrelated to the kernel
+> threads; apparently some program was running while the STR was in
+> progress, and causing the problem.  For example, the lsusb program will
+> do a selective resume on every USB device as it scans through them all.
+> However that's just a guess, we haven't fully resolved that bug report.
+> 
+> The theoretical answer is that it behaves the way we want.  The kernel 
+> thread does selective resumes in response to device requests.  If such 
+> a request comes in while the system is asleep it will awaken the 
+> system; so it's only logical that a request coming in while the system 
+> is in the process of going to sleep should abort the suspend.
 
-Search in the paper for this paragraph:
-http://jonsmirl.googlepages.com/graphics.html
-DRM also implements the concept of a master user with more
-capabilities than normal users. These extra capabilities allow the
-graphics device to be initialized and the consumption of GPU resources
-to be controlled. The current X server, which runs as root, functions
-as the DRM master. There is actually no real requirement that the DRM
-master be run as root, and there is a preliminary patch that removes
-this requirement.
+I'd say that it shows ppc being broken. User wanted to suspend the
+system, and now unrelated task did lsusb... and system will not sleep.
 
-That paragraphs contains a link to the code that used to be hosted at
-freedesktop.org. Maybe they can still find it.
-
+AFAICT it is DoS issue -- if one of your users keeps doing lsusb, root
+will not be able to suspend the system.
+							Pavel
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
