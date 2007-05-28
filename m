@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761838AbXE1RJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762160AbXE1RL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761838AbXE1RJy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 13:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbXE1RJq
+	id S1762160AbXE1RL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 13:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbXE1RLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 13:09:46 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2236 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750746AbXE1RJp (ORCPT
+	Mon, 28 May 2007 13:11:21 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47222 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750746AbXE1RLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 13:09:45 -0400
-Date: Mon, 28 May 2007 18:09:36 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] arm: fix section mismatch warnings
-Message-ID: <20070528170936.GC5737@flint.arm.linux.org.uk>
-Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20070528163253.GA29174@uranus.ravnborg.org> <20070528164427.GB29174@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 28 May 2007 13:11:20 -0400
+Date: Mon, 28 May 2007 19:11:15 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Nitin Gupta <nitingupta910@gmail.com>
+Cc: Daniel Hazelton <dhazelton@enter.net>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm-cc@laptop.org, linuxcompressed-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 6
+Message-ID: <20070528171115.GQ3899@stusta.de>
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com> <200705281049.48679.dhazelton@enter.net> <4cefeab80705280806m39fbcfd6v93a1c847c25e381c@mail.gmail.com> <20070528154346.GO3899@stusta.de> <4cefeab80705280903t6b2bb687g4eb1d9de2717f6ec@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070528164427.GB29174@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <4cefeab80705280903t6b2bb687g4eb1d9de2717f6ec@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 28, 2007 at 06:44:27PM +0200, Sam Ravnborg wrote:
-> diff --git a/arch/arm/mach-sa1100/neponset.c b/arch/arm/mach-sa1100/neponset.c
-> index d7c038a..17ebdc4 100644
-> --- a/arch/arm/mach-sa1100/neponset.c
-> +++ b/arch/arm/mach-sa1100/neponset.c
-> @@ -139,12 +139,12 @@ static u_int neponset_get_mctrl(struct uart_port *port)
->  	return ret;
->  }
->  
-> -static struct sa1100_port_fns neponset_port_fns __initdata = {
-> +static struct sa1100_port_fns neponset_port_fns __devinitdata = {
->  	.set_mctrl	= neponset_set_mctrl,
->  	.get_mctrl	= neponset_get_mctrl,
->  };
->  
-> -static int neponset_probe(struct platform_device *dev)
-> +static int __devinit neponset_probe(struct platform_device *dev)
->  {
->  	sa1100_register_uart_fns(&neponset_port_fns);
->  
-> @@ -299,7 +299,7 @@ static struct platform_device *devices[] __initdata = {
->  	&smc91x_device,
->  };
->  
-> -static int __init neponset_init(void)
-> +static int __devinit neponset_init(void)
->  {
->  	platform_driver_register(&neponset_device_driver);
->  
+On Mon, May 28, 2007 at 09:33:32PM +0530, Nitin Gupta wrote:
+> On 5/28/07, Adrian Bunk <bunk@stusta.de> wrote:
+>...
+>> - then ensure that it works correctly on all architectures and
+>
+> Already tested on x86, amd64, ppc (by Bret). I do not have machines
+> from other archs available. Bret tested 'take 3' version but no
+> changes were introduced in further revisions that could affect
+> correctness - but still it will be good to have this version tested
+> too. Only with inclusion in -mm and testing by much wider user base
+> can make it to mainline (I suppose nobody uses -mm for production use
+> anyway).
+>
+>>   document why your version is that much faster than the original
+>>   version and why you know your optimizations have no side effects
+>
+> Replied in earlier mail regarding this.
+>...
 
-How can this hunk be correct?  neponset_init() is only called from
-subsys_initcall() - it's not something we want to keep at init time.
-I'm afraid I suspect faulty section analysis.
+I have not seen any explanations:
+- Why did the upstream author write the code that way?
+- Why are your changes correct?
+- Why do your changes allow the compiler to produce faster code?
 
-Given that (in the other messages) that there's other problems with
-the warnings being generated, I'm reluctant to apply this off-hand.
-I feel that the patch need quite careful review to make sure that
-we're not introducing incorrect stuff such as the above.
+The upstream author of the code is available - and he might be able to 
+help you getting answers. No matter whether your changes are incorrect 
+or correct optimizations that should go upstream, in both cases 
+discussing these issues with upstream is the best solution.
 
-I'll try and commit some of these changes this week though.
+And testing is nice, but if you broke some case that's outside of your 
+tests you'll never notice.
+
+> - Nitin
+
+cu
+Adrian
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
