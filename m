@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbXE1CyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbXE1C61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760834AbXE1CyK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758857AbXE1Cx5
+	id S1760635AbXE1C61 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 22:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbXE1C6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:53:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42734
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753299AbXE1Cx4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:53:56 -0400
-Date: Sun, 27 May 2007 19:54:05 -0700 (PDT)
-Message-Id: <20070527.195405.41633170.davem@davemloft.net>
-To: rdreier@cisco.com
-Cc: abraham.manu@gmail.com, greg@kroah.com, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org
-Subject: Re: PCIE
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <ada3b1h3gke.fsf@cisco.com>
-References: <46584C30.4030206@gmail.com>
-	<20070526.154910.78725926.davem@davemloft.net>
-	<ada3b1h3gke.fsf@cisco.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 27 May 2007 22:58:16 -0400
+Received: from ns1.suse.de ([195.135.220.2]:38283 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753104AbXE1C6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 22:58:14 -0400
+From: Neil Brown <neilb@suse.de>
+To: David Chinner <dgc@sgi.com>
+Date: Mon, 28 May 2007 12:57:53 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18010.17713.76863.245176@notabene.brown>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Phillip Susi <psusi@cfl.rr.com>,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+In-Reply-To: message from David Chinner on Monday May 28
+References: <18006.38689.818186.221707@notabene.brown>
+	<18010.12472.209452.148229@notabene.brown>
+	<20070528024559.GA85884050@sgi.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sun, 27 May 2007 18:03:29 -0700
+On Monday May 28, dgc@sgi.com wrote:
+> On Mon, May 28, 2007 at 11:30:32AM +1000, Neil Brown wrote:
+> > 
+> > Thanks everyone for your input.  There was some very valuable
+> > observations in the various emails.
+> > I will try to pull most of it together and bring out what seem to be
+> > the important points.
+> > 
+> > 
+> > 1/ A BIO_RW_BARRIER request should never fail with -EOPNOTSUP.
+> 
+> Sounds good to me, but how do we test to see if the underlying
+> device supports barriers? Do we just assume that they do and
+> only change behaviour if -o nobarrier is specified in the mount
+> options?
+> 
 
-> I have a hard time imagining a PCI host bus controller that converts
-> MSI interrupts back to wire interrupts that go to pins on the CPU.
-> For one thing it would be hard to maintain the guarantee that
-> MSI interrupts can't pass DMAs.  And it would be an absolutely silly
-> architecture too.
+What exactly do you want to know, and why do you care?
 
-We are definitely going to see systems like this, and the DMA issue
-will be taken care of by the PCI host controller, it will either pull
-out all queued up DMA writes by the device in question itself
-(somehow) or require the driver for the PCI host controller do a dummy
-read out to the device before servicing an interrupt handler to
-guanentee this semantic.
+The idea is that every "struct block_device" supports barriers.  If the
+underlying hardware doesn't support them directly, then they get
+simulated by draining the queue and issuing a flush.
+Theoretically there could be devices which have a write-back cache
+that cannot be flushed, and you couldn't implement barriers on such a
+device.  So throw it out and buy another?
 
-We already have pre-PCI-E controllers on sparc64 where I have to do a
-dummy config space read to pull out all the pending DMA requests
-before servicing an interrupt, so this kind of scheme would be nothing
-new.
+As far as I can tell, the only thing XFS does differently with devices
+that don't support barriers is that it prints a warning message to the
+kernel logs.  If the underlying device printed the message when it
+detected that barriers couldn't be supported, XFS wouldn't need to
+care at all.
 
-People are going to use PCI-E on very inexpensive and primitive cpu
-platforms.
-
-The thing to do for such platforms is the use virtual IRQ numbers and
-interrogate the PCI-E controller for the MSI number when the CPU level
-interrupt arrives and translate that into the appropriate virtual IRQ.
+NeilBrown
