@@ -1,71 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbXE1Er5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbXE1EtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757973AbXE1Er5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 00:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXE1Ert
+	id S1760625AbXE1EtF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 00:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbXE1Esv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 00:47:49 -0400
-Received: from ozlabs.org ([203.10.76.45]:49869 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180AbXE1Ers (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 00:47:48 -0400
+	Mon, 28 May 2007 00:48:51 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35703 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754260AbXE1Esu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 00:48:50 -0400
+Date: Mon, 28 May 2007 14:48:45 +1000
+From: Timothy Shimmin <tes@sgi.com>
+To: David Chinner <dgc@sgi.com>, Neil Brown <neilb@suse.de>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Phillip Susi <psusi@cfl.rr.com>,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+Message-ID: <980E945058C35F7E3117FE88@timothy-shimmins-power-mac-g5.local>
+In-Reply-To: <20070528024559.GA85884050@sgi.com>
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown>
+ <20070528024559.GA85884050@sgi.com>
+X-Mailer: Mulberry/4.0.8 (Mac OS X)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18010.24300.599531.828815@cargo.ozlabs.ibm.com>
-Date: Mon, 28 May 2007 14:47:40 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] $ARCH: Enable arbitary speed tty ioctls and split
- input/output speed
-In-Reply-To: <20070524160559.54c2c639@the-village.bc.nu>
-References: <20070523172739.1d3a918c@the-village.bc.nu>
-	<1180012135.8303.89.camel@shinybook.infradead.org>
-	<20070524144109.7bd0f4d0@the-village.bc.nu>
-	<1180014338.8303.95.camel@shinybook.infradead.org>
-	<20070524160559.54c2c639@the-village.bc.nu>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox writes:
+Hi,
 
-> On Thu, 24 May 2007 09:45:37 -0400
-> David Woodhouse <dwmw2@infradead.org> wrote:
-> 
-> > On Thu, 2007-05-24 at 14:41 +0100, Alan Cox wrote:
-> > > Most people copied the x86 behaviour which makes it easy to transplant.
-> > > Some are just smoking something (see ioctls.h for sh-64 and weep), others
-> > > have slightly odd behaviour for historical compatibility reasons (Sparc)
-> > 
-> > Likewise, I assume the lack of IBSHIFT on PowerPC is because of AIX?
-> 
-> I assume nobody ever got around to it. CIBAUD is in the PowerPC System V
-> API supplement for example and is supported by other Power OS's.
+--On 28 May 2007 12:45:59 PM +1000 David Chinner <dgc@sgi.com> wrote:
 
-The guys that did the original ppc linux port (mainly Gary Thomas and
-Cort Dougan, I believe) tended to follow the alpha and x86 linux ports
-rather than the System V ABI.  There aren't any SysV-based OSes for
-PowerPC still extant so it doesn't really matter.
+> On Mon, May 28, 2007 at 11:30:32AM +1000, Neil Brown wrote:
+>>
+>> Thanks everyone for your input.  There was some very valuable
+>> observations in the various emails.
+>> I will try to pull most of it together and bring out what seem to be
+>> the important points.
+>>
+>>
+>> 1/ A BIO_RW_BARRIER request should never fail with -EOPNOTSUP.
+>
+> Sounds good to me, but how do we test to see if the underlying
+> device supports barriers? Do we just assume that they do and
+> only change behaviour if -o nobarrier is specified in the mount
+> options?
+>
+I would assume so.
+Then when the block layer finds that they aren't supported and does
+non-barrier ones, then it could report a message.
+We, xfs, I guess can't take much other course of action
+and we aint doing much now other than not requesting them
+anymore and printing an error message.
 
-And yes, nobody has got around to implementing CIBAUD/IBSHIFT.
+>> 2/ Maybe barriers provide stronger semantics than are required.
+>>
+>>  All write requests are synchronised around a barrier write.  This is
+>>  often more than is required and apparently can cause a measurable
+>>  slowdown.
+>>
+>>  Also the FUA for the actual commit write might not be needed.  It is
+>>  important for consistency that the preceding writes are in safe
+>>  storage before the commit write, but it is not so important that the
+>>  commit write is immediately safe on storage.  That isn't needed until
+>>  a 'sync' or 'fsync' or similar.
+>
+> The use of barriers in XFS assumes the commit write to be on stable
+> storage before it returns.  One of the ordering guarantees that we
+> need is that the transaction (commit write) is on disk before the
+> metadata block containing the change in the transaction is written
+> to disk and the current barrier behaviour gives us that.
+>
+Yep, and that one is what we want the FUA for -
+for the write into the log.
 
-> > Why bother introducing new IBSHIFT stuff when it can be declared
-> > obsolete already -- if you want different input and output baud rates,
-> > just set BOTHER and have different values c_ispeed and c_ospeed.
-> 
-> BOTHER is for the output speed. BOTHER << IBSHIFT is for the input speed
-> if it different to the default (and you need B0 << IBSHIFT to know if an
-> input speed is being specifically set in the first place).
-> 
-> CIBAUD and IBSHIFT come from standards documents so it appears to make
-> sense at some level to support those standards. As everyone else in the
-> Power world supports it I don't see why Linux should be different.
+I'm taking it that the FUA write will just guarantee that that
+particular write has made it to disk on i/o completion
+(and no write cache flush is done).
 
-Sure, we can add them.  I suggest IBSHIFT = 16 and CIBAUD = 0xff0000
-(or 077600000 if we are going to continue the peculiar convention of
-using octal for the C* constants).
+The other XFS constraint is that we know when the metadata hits the disk
+so that we can move the tail of the log.
+And that is what we are effectively getting from the pre-write-flush
+part of the barrier. It would ensure that any metadata not yet to disk would
+be on disk before we overwrite the tail of the log.
+If we could determine cases when we don't have to worry about overwriting
+the tail of the log, then it would be good if we could
+just do FUA writes for contraint 1 above. Is that possible?
 
-Paul.
+--Tim
+
+
