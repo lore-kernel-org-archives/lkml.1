@@ -1,442 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbXE1HES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761013AbXE1HIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbXE1HES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 03:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbXE1HEL
+	id S1761013AbXE1HIZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 03:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbXE1HIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 03:04:11 -0400
-Received: from mga02.intel.com ([134.134.136.20]:21967 "EHLO mga02.intel.com"
+	Mon, 28 May 2007 03:08:18 -0400
+Received: from mail.screens.ru ([213.234.233.54]:39516 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751866AbXE1HEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 03:04:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,585,1170662400"; 
-   d="scan'208";a="247953984"
-From: Yang Sheng <sheng.yang@intel.com>
-Organization: intel
-To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH]Multi-threaded Initcall with dependence support
-Date: Mon, 28 May 2007 15:03:10 +0800
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1751866AbXE1HIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 03:08:18 -0400
+Date: Mon, 28 May 2007 11:07:53 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Satoru Takeuchi <takeuchi_satoru.jp@fujitsu.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] signal: multithread program returns with wrong errno on receiving SIGSTOP
+Message-ID: <20070528070753.GA989@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705281503.10918.sheng.yang@intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Why we need this:
+Satoru Takeuchi wrote:
+>
+> I found a bug on signal subsystem. If there is some multithread program
+> and one of the thread is blocking on the system call, it returns with
+> wrong errno on receiving SIGSTOP and following SIGCONT.
 
-It can speed up the calling of initcalls, especially useful for some embed 
-device. 
+It doesn't matter in this particular case, but in general it is good to
+report the kernel version as well.
 
-Idea:
+> 1. issue the test program (attached on this mail) from term A.
+>
+>    $ ./mt-wrong-errno
+>
+> 2. send SIGSTOP to test program from term B.
+>
+>    $ ps a
+>    ...
+>     9685 pts/3    Sl+    0:00 ./mt-wrong-errno
+>     9688 pts/4    R+     0:00 ps a
+>    $ kill -STOP 9685
+>
+> 3. send SIGCONT to test program from term B.
+>
+>    $ kill -CONT 9685
+>
+> Expected Result
+> ===============
+>
+> `./mt-wrong-errno' restarts read syscall (and stop again by receiving
+> SIGTTIN).
+>
+> Actual Result
+> =============
+>
+> `./mt-wrong-errno' returns with wrong errno 512 means ERESTARTSYS.
+> The comment on include/linux/errno.h says "this errno should never be
+> seen by user program." So it's definitely a bug.
 
-1. The initcall can indicate a executing sequence by using the a 
-macro(initcall_depend()) in case of causing dependence problem in 
-multi-threaded running. Multi dependences is also allowed.
-2. Ensure the calling of initcalls in the same layer would be completed before 
-the next layers' calling.
+Wild guess,
 
-Usage:
-You can indicate that initcall A must be run after initcall B by calling the 
-macro in A's file:
+	drivers/char/n_tty.c:job_control()
 
-initcall_depend(A, B);
+		kill_pgrp(task_pgrp(current), SIGTTIN, 1);
+		return -ERESTARTSYS;
 
-Means initcall A must run after initcall B finish executing(A depends on B).
+This is wrong. kill_pgrp()->__group_send_sig_info() sends SIGTTIN
+to the thread group, but can choose any sub-thread as a target for
+signal_wake_up().
 
-Take notice of that if you declare A depends on B and C, you must put these 
-together as (the sequences is not important):
+This means we return ERESTARTSYS, but signal_pending() != true, bug.
 
-initcall_depend(A, B);
-initcall_depend(A, C);
+Satoru, could you re-test with the untested patch below?
 
-The detail of method:
+Oleg.
 
-A new section called .initcall.depend was added to 
-arch/xxx/kernel/vmlinux.lds.S to indicate the dependence relationship. A 
-struct called initcall_depend_t stored the relationship between A and B, and 
-was stored in section .initcall.depend.
-
-Because all the dependence of A are put together, and the sequences of 
-initcall_depend_t was decided in linker order as initcall itself did. When A 
-is going to run, we can check if A would depend on others by checking the 
-point indicate the current item in dependence table. If the field "call" of 
-initcall_depend_t point to A, we know that A is depend on something and get 
-the prev_addr of the struct to find what it depends on. The field "prev_addr"  
-point to somewhere in .initcall.init section to indicate the address(also the 
-order) of depended initcall, so it can be used to find out whether other 
-threads complete executing of the depended initcall. If the current point of 
-the thread executing is smaller than prev_addr(it means some thread not 
-completed executing, not only this thread), we'll wait, otherwise we can 
-continue to check next thread. If all the thread is ok, we will run the 
-initcall and go to the next one.
-
-This method is not very precision(for we may have to wait even when the 
-initcall was completed but not all the other pass it), but easy to implement. 
-
-I provide two method to get the dependence relationship, the following code 
-contains the one which is more flexibly but less efficiency.
-
-The downside of this patch is every driver must explictly indicate its 
-dependence, please tell if this is acceptable. Any suggestions and comments 
-are welcome.
-
-Thanks.
-
-----
-
- arch/x86_64/kernel/vmlinux.lds.S |    6 +
- include/linux/init.h             |   16 +++
- init/main.c                      |  257 +++++++++++++++++++++++++++++++------
- 3 files changed, 237 insertions(+), 42 deletions(-)
-
-diff --git a/arch/x86_64/kernel/vmlinux.lds.S 
-b/arch/x86_64/kernel/vmlinux.lds.S
-index dbccfda..355c8b6 100644
---- a/arch/x86_64/kernel/vmlinux.lds.S
-+++ b/arch/x86_64/kernel/vmlinux.lds.S
-@@ -167,6 +167,12 @@ SECTIONS
- 	INITCALLS
-   }
-   __initcall_end = .;
-+  . = ALIGN(16);
-+  __initcall_depend_start = .;
-+  .initcall.depend : AT(ADDR(.initcall.depend) - LOAD_OFFSET) {
-+	*(.initcall.depend)
-+  }
-+  __initcall_depend_end = .;
-   __con_initcall_start = .;
-   .con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
- 	*(.con_initcall.init)
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 56ec4c6..68134d7 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -73,7 +73,17 @@
- /*
-  * Used for initialization calls..
-  */
-+
- typedef int (*initcall_t)(void);
-+
-+typedef struct {
-+	initcall_t call;
-+	union {
-+		initcall_t func;
-+		initcall_t* addr;
-+	} prev;
-+} initcall_depend_t;
-+
- typedef void (*exitcall_t)(void);
- 
- extern initcall_t __con_initcall_start[], __con_initcall_end[];
-@@ -108,6 +118,12 @@ void prepare_namespace(void);
- 	static initcall_t __initcall_##fn##id __attribute_used__ \
- 	__attribute__((__section__(".initcall" level ".init"))) = fn
- 
-+#define initcall_depend(fn, req) \
-+	static initcall_depend_t __dependency_##fn_after_##req \
-+	__attribute_used__ __attribute__((__section__(".initcall.depend"))) = { \
-+		.call = fn, \
-+		.prev.func = req }
-+
- /*
-  * A "pure" initcall has no dependencies on anything else, and purely
-  * initializes variables that couldn't be statically initialized.
-diff --git a/init/main.c b/init/main.c
-index eb8bdba..75c39c7 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -645,68 +645,241 @@ static int __init initcall_debug_setup(char *str)
- }
- __setup("initcall_debug", initcall_debug_setup);
- 
--extern initcall_t __initcall_start[], __initcall_end[];
-+static int __initdata original_count;
- 
--static void __init do_initcalls(void)
-+static int __init initcall_run(initcall_t* call)
- {
--	initcall_t *call;
--	int count = preempt_count();
--
--	for (call = __initcall_start; call < __initcall_end; call++) {
--		ktime_t t0, t1, delta;
--		char *msg = NULL;
--		char msgbuf[40];
--		int result;
--
--		if (initcall_debug) {
--			printk("Calling initcall 0x%p", *call);
--			print_fn_descriptor_symbol(": %s()",
--					(unsigned long) *call);
--			printk("\n");
--			t0 = ktime_get();
--		}
-+	ktime_t t0, t1, delta;
-+	char *msg = NULL;
-+	char msgbuf[40];
-+	int result;
-+
-+	if (initcall_debug) {
-+		printk("Calling initcall 0x%p", *call);
-+		print_fn_descriptor_symbol(": %s()",
-+				(unsigned long) *call);
-+		printk("\n");
-+		t0 = ktime_get();
-+	}
- 
--		result = (*call)();
-+	result = (*call)();
- 
--		if (initcall_debug) {
--			t1 = ktime_get();
--			delta = ktime_sub(t1, t0);
-+	if (initcall_debug) {
-+		t1 = ktime_get();
-+		delta = ktime_sub(t1, t0);
- 
--			printk("initcall 0x%p", *call);
--			print_fn_descriptor_symbol(": %s()",
--					(unsigned long) *call);
--			printk(" returned %d.\n", result);
-+		printk("initcall 0x%p", *call);
-+		print_fn_descriptor_symbol(": %s()",
-+				(unsigned long) *call);
-+		printk(" returned %d.\n", result);
- 
--			printk("initcall 0x%p ran for %Ld msecs: ",
-+		printk("initcall 0x%p ran for %Ld msecs: ",
- 				*call, (unsigned long long)delta.tv64 >> 20);
--			print_fn_descriptor_symbol("%s()\n",
-+		print_fn_descriptor_symbol("%s()\n",
- 				(unsigned long) *call);
-+	}
-+
-+	if (result && result != -ENODEV && initcall_debug) {
-+		sprintf(msgbuf, "error code %d", result);
-+		msg = msgbuf;
-+	}
-+	if (preempt_count() != original_count) {
-+		msg = "preemption imbalance";
-+		preempt_count() = original_count; 
-+	}
-+	if (irqs_disabled()) {
-+		msg = "disabled interrupts";
-+		local_irq_enable();
-+	}
-+	if (msg) {
-+		printk(KERN_WARNING "initcall at 0x%p", *call);
-+		print_fn_descriptor_symbol(": %s()",
-+				(unsigned long) *call);
-+		printk(": returned with %s\n", msg);
-+	}
-+	return 0;
-+}
-+
-+static int __init wait_for_initcall(void)
-+{
-+	return 0;
-+}
-+
-+extern initcall_t __initcall_start[], __initcall_end[];
-+extern initcall_depend_t __initcall_depend_start[], __initcall_depend_end[];
-+
-+static initcall_t* __initdata initcall_pt;
-+static initcall_depend_t* __initdata initcall_depend_pt;
-+static struct mutex __initdata initcall_pt_mutex;
-+static struct mutex __initdata initcall_depend_pt_mutex;
-+
-+#define NR_INIT_THREADS 2
-+
-+static initcall_t* __initdata thread_pt[NR_INIT_THREADS];
-+static struct mutex __initdata thread_mutex[NR_INIT_THREADS];
-+static atomic_t __initdata threading_count = ATOMIC_INIT(NR_INIT_THREADS);
-+static struct completion __initdata initcall_completion;
-+
-+static atomic_t __initdata initcall_executing_count = ATOMIC_INIT(0);
-+
-+static void __init wait_for_depend(initcall_depend_t* call_depend, int 
-thread_no)
-+{
-+	int i;
-+
-+	while (*call_depend->call == *thread_pt[thread_no]) {
-+		for (i = 0; i < NR_INIT_THREADS; i++)
-+		{
-+			if (i == thread_no) continue;
-+			mutex_lock(&thread_mutex[i]);
-+
-+			/* when the request function was not executed, wait for it*/
-+			while (call_depend->prev.addr >= thread_pt[i]) {
-+				mutex_unlock(&thread_mutex[i]);
-+				yield();
-+				mutex_lock(&thread_mutex[i]);
-+			}
-+
-+			mutex_unlock(&thread_mutex[i]);
- 		}
-+		++call_depend;
-+	}
-+}
-+
-+static int __init initcall_process(void *data)
-+{
-+	long thread_no = (long)data;
-+
-+	initcall_depend_t* call_depend;
- 
--		if (result && result != -ENODEV && initcall_debug) {
--			sprintf(msgbuf, "error code %d", result);
--			msg = msgbuf;
-+	for (;;) {
-+		mutex_lock(&initcall_pt_mutex);
-+
-+		atomic_inc(&initcall_executing_count);
-+		if (initcall_pt >= __initcall_end) {
-+			mutex_unlock(&initcall_pt_mutex);
-+			break;
- 		}
--		if (preempt_count() != count) {
--			msg = "preemption imbalance";
--			preempt_count() = count;
-+		
-+		mutex_lock(&thread_mutex[thread_no]);
-+		thread_pt[thread_no] = initcall_pt;
-+		mutex_unlock(&thread_mutex[thread_no]);
-+
-+		++initcall_pt;
-+
-+		if (*thread_pt[thread_no] == wait_for_initcall) {
-+
-+			if (initcall_debug) {
-+				printk("Wait for %d initcalls to complete.\n", 
-+						atomic_read(&initcall_executing_count) - 1);
-+			}
-+
-+			while (atomic_read(&initcall_executing_count) != 1) {
-+				yield();
-+			}
-+			mutex_unlock(&initcall_pt_mutex);
-+			atomic_dec(&initcall_executing_count);
-+			continue;
- 		}
--		if (irqs_disabled()) {
--			msg = "disabled interrupts";
--			local_irq_enable();
-+
-+		mutex_unlock(&initcall_pt_mutex);
-+
-+		mutex_lock(&initcall_depend_pt_mutex);
-+		if ((initcall_depend_pt < __initcall_depend_end) && 
-+				(*thread_pt[thread_no] == *initcall_depend_pt->call)) {
-+			call_depend = initcall_depend_pt;
-+
-+			/* find the next initcall dependency */
-+			while ((initcall_depend_pt < __initcall_depend_end) &&
-+					(*initcall_depend_pt->call == *call_depend->call)) 
-+				++initcall_depend_pt;
-+			mutex_unlock(&initcall_depend_pt_mutex);
-+
-+			wait_for_depend(call_depend, thread_no);
-+			initcall_run(thread_pt[thread_no]);
-+		} else {
-+			mutex_unlock(&initcall_depend_pt_mutex);
-+
-+			initcall_run(thread_pt[thread_no]);
- 		}
--		if (msg) {
--			printk(KERN_WARNING "initcall at 0x%p", *call);
--			print_fn_descriptor_symbol(": %s()",
--					(unsigned long) *call);
--			printk(": returned with %s\n", msg);
-+		atomic_dec(&initcall_executing_count);
-+	}
-+
-+	if (initcall_debug) {
-+		printk("Initcall thread %ld is completed!\n", thread_no);
-+	}
-+
-+	if (atomic_dec_and_test(&threading_count)) {
-+		complete(&initcall_completion);
-+	}
-+	return 0;
-+}
-+
-+/*
-+ * Map the initcall_depend_t.prev.addr from prev.func. 
-+ * Only match the first matched function.
-+ */
-+static void __init map_depend_address(void)
-+{
-+	initcall_t* pt;
-+	initcall_depend_t* dpt;
-+
-+	for (dpt = __initcall_depend_start; 
-+			dpt < __initcall_depend_end; ++dpt) 
-+	{
-+		for (pt = __initcall_start; 
-+				pt < __initcall_end; ++pt) {
-+			if (*dpt->prev.func == *pt ) {
-+				dpt->prev.addr = pt;
-+				break;
-+			}
-+		}
-+		if (pt >= __initcall_end) 
-+			panic("Want to depend on a non-exist initcall!\n");
-+	}
-+}
-+
-+static void __init do_initcalls(void)
-+{
-+	long i;
-+	struct task_struct* initcall_task[NR_INIT_THREADS];
-+
-+	original_count = preempt_count();
-+
-+	mutex_init(&initcall_pt_mutex);
-+	mutex_init(&initcall_depend_pt_mutex);
-+	init_completion(&initcall_completion);
-+
-+	map_depend_address();
-+
-+	initcall_pt = __initcall_start;
-+	initcall_depend_pt = __initcall_depend_start;
-+
-+	for (i = 0; i < NR_INIT_THREADS; ++i) {
-+		mutex_init(&thread_mutex[i]);
-+	}
-+
-+	for (i = 0; i < NR_INIT_THREADS; ++i) {
-+		initcall_task[i] = kthread_run(initcall_process, (long *)i,
-+				"initcallthread-%d", i);
-+		if (IS_ERR(initcall_task[i])) {
-+			panic("Fail to set up initcall process thread...\n");
+--- t/drivers/char/n_tty.c~	2007-04-05 12:18:26.000000000 +0400
++++ t/drivers/char/n_tty.c	2007-05-28 10:57:58.000000000 +0400
+@@ -1191,6 +1191,7 @@ static int job_control(struct tty_struct
+ 			    is_current_pgrp_orphaned())
+ 				return -EIO;
+ 			kill_pgrp(task_pgrp(current), SIGTTIN, 1);
++			set_thread_flag(TIF_SIGPENDING);
+ 			return -ERESTARTSYS;
  		}
  	}
- 
-+	wait_for_completion(&initcall_completion);
-+
- 	/* Make sure there is no pending stuff from the initcall sequence */
- 	flush_scheduled_work();
- }
- 
-+core_initcall_sync(wait_for_initcall);
-+postcore_initcall_sync(wait_for_initcall);
-+arch_initcall_sync(wait_for_initcall);
-+subsys_initcall_sync(wait_for_initcall);
-+fs_initcall_sync(wait_for_initcall);
-+device_initcall_sync(wait_for_initcall);
-+late_initcall_sync(wait_for_initcall);
-+
- /*
-  * Ok, the machine is now initialized. None of the devices
-  * have been touched yet, but the CPU subsystem is up and
 
--- 
-regards
-Yang, Sheng
