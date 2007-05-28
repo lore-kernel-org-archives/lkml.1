@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932382AbXE1WBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932717AbXE1WCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932382AbXE1WBS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 18:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbXE1WBK
+	id S932717AbXE1WCO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 18:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXE1WB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 18:01:10 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4262 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbXE1WBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 18:01:09 -0400
-Date: Mon, 28 May 2007 23:00:56 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ARM/ARM26: Enable arbitary speed tty ioctls and split input/output speed
-Message-ID: <20070528220056.GH5737@flint.arm.linux.org.uk>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <20070523172739.1d3a918c@the-village.bc.nu> <20070528193658.GF5737@flint.arm.linux.org.uk> <20070528145632.7c0ec1c9.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070528145632.7c0ec1c9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 28 May 2007 18:01:59 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48622 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751490AbXE1WB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 18:01:58 -0400
+Message-ID: <465B5151.4090504@garzik.org>
+Date: Mon, 28 May 2007 18:01:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH] pata_sis: FIFO whack
+References: <20070525205024.2f83995d@the-village.bc.nu>
+In-Reply-To: <20070525205024.2f83995d@the-village.bc.nu>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 28, 2007 at 02:56:32PM -0700, Andrew Morton wrote:
-> On Mon, 28 May 2007 20:36:58 +0100 Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+Alan Cox wrote:
+> If you are using a SiS controller and the BIOS didn't set it up then the
+> FIFO may be left active when we try and set up the CD. Not convinced this
+> matters but I'd prefer to be safe
 > 
-> > On Wed, May 23, 2007 at 05:27:39PM +0100, Alan Cox wrote:
-> > > Add the ioctls and values needed for this to the ARM26/ARM32 ports. The
-> > > actual code has been in the base kernel for a while and automatically
-> > > turns on when a port sets the required defines.
-> > 
-> > Did you forget to provide a termios2 structure for ARM?  Hope you
-> > remembered for the other arches:
-> > 
-> > drivers/char/tty_ioctl.c: In function `set_termios':
-> > drivers/char/tty_ioctl.c:429: error: invalid application of `sizeof' to incomplete type `termios2'
-> > drivers/char/tty_ioctl.c: In function `n_tty_ioctl':
-> > drivers/char/tty_ioctl.c:732: error: invalid application of `sizeof' to incomplete type `termios2'
-> > 
-> > Will copy the i386 version into ARM's termbits.h
-> > 
+> Signed-off-by: Alan Cox <alan@redhat.com>
 > 
-> I think Alan's per-arch patch was dependent upon an earlier patch.  He
-> fooled everyone by sending them out in random order, without sequence
-> nnumbers and without telling anyone the dependencies.  And the add-termios2
-> patch was a single megapatch whereas the enablement patches were a per-arch
-> sprinkle.
-> 
-> 
-> Here's tha arm bit of
-> lots-of-architectures-enable-arbitary-speed-tty-support.patch: 
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc2-mm1/drivers/ata/pata_sis.c linux-2.6.22-rc2-mm1/drivers/ata/pata_sis.c
+> --- linux.vanilla-2.6.22-rc2-mm1/drivers/ata/pata_sis.c	2007-05-25 17:39:06.000000000 +0100
+> +++ linux-2.6.22-rc2-mm1/drivers/ata/pata_sis.c	2007-05-25 18:22:21.000000000 +0100
+> @@ -149,6 +149,9 @@
+>  	if (!pci_test_config_bits(pdev, &sis_enable_bits[ap->port_no]))
+>  		return -ENOENT;
+>  
+> +	/* Clear the FIFO settings. We can't enable the FIFO until
+> +	   we know we are poking at a disk */
+> +	pci_write_config_byte(pdev, 0x4B, 0);
+>  	return ata_std_prereset(ap, deadline);
 
-I hope that isn't because it's wrong.  It's "termios2" not "termios_2".
 
-> Or you can just drop this patch and I'll resend it once
-> lots-of-architectures-enable-arbitary-speed-tty-support.patch is merged up.
+Should I queue this into #upstream (2.6.23) or #upstream-fixes 
+(2.6.22-rc) branch?
 
-I think I'd prefer to commit my own version copied from x86, which at
-least passes a build test.  Doing that now.
+I lean towards #upstream since it is so late in the 2.6.22-rc cycle, 
+because of your comment "Not convinced this matters".
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	Jeff
+
+
