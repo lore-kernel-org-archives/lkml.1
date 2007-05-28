@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbXE1WDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763531AbXE1WNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763481AbXE1WDc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 18:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXE1WDZ
+	id S1763531AbXE1WNO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 18:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbXE1WNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 18:03:25 -0400
-Received: from postfix2-g20.free.fr ([212.27.60.43]:56466 "EHLO
-	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbXE1WDY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 18:03:24 -0400
-Message-ID: <465B49EB.4080204@free.fr>
-Date: Mon, 28 May 2007 23:30:19 +0200
-From: Thierry Merle <thierry.merle@free.fr>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 28 May 2007 18:13:00 -0400
+Received: from sd-green-bigip-145.dreamhost.com ([208.97.132.145]:36073 "EHLO
+	spaceymail-a4.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752011AbXE1WM7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 18:12:59 -0400
+From: Anant Nitya <kernel@prachanda.info>
+Organization: Prachanda Hub
+To: linux-kernel@vger.kernel.org
+Subject: Re: NOHZ: local_softirq_pending 08
+Date: Tue, 29 May 2007 03:42:41 +0530
+User-Agent: KMail/1.9.6
+Cc: =?iso-8859-2?q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+References: <465B43D6.6060405@interia.pl>
+In-Reply-To: <465B43D6.6060405@interia.pl>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Markus Rechberger <mrechberger@gmail.com>, video4linux-list@redhat.com,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-References: <2172422218943432279@wsc.cz> <1180364420.21547.160.camel@localhost>	<d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>	<1180378677.21547.189.camel@localhost>	<d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com> <1180383071.21547.230.camel@localhost>
-In-Reply-To: <1180383071.21547.230.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705290342.42175.kernel@prachanda.hub>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab a écrit :
->>> As Luca pointed, if we add conversion for one driver, we should add for
->>> the rest.
->>>
->>> Instead, it would be better if Jiri sends the decoding and the rescaling
->>> stuff as a patch to v4l2-apps/lib, starting the API decoding library.
->>> Once we have a library, we can ask the userspace developers to use it
->>> for the formats not recognized by their userspace apps.
->>>
->>>       
->> I think it would be better to evaluate existing solutions (eg. libpw).
->>     
+On Tuesday 29 May 2007 02:34:22 Rafa³ Bilski wrote:
+> Hi!
 >
-> Agreed. Volunteers?
+> A lot of "NOHZ: local_softirq_pending 08" messages (about 100) and
+> then suddenly stoped to show. I have 2.6.21.1. I checked .2 and .3
+> changelogs but I don't see anything about this message.
+> What does it mean?
 >
->   
-Hi Mauro and Markus,
-Just to summ up what I understood we need:
+> Is "08" IRQ number?
+>   8:          2    XT-PIC-XT        rtc
+>
+> Please CC me.
+Does this patch [ http://lkml.org/lkml/2007/5/22/35 ] helps you fix it ?
 
-What do we need in userspace, only for v4l (dvb is not concerned):
-- colorspace translations
-- filters that be done in hardware if the selected hardware can, 
-otherwise software plugin
-- decompression algorithm like stk11xx or usbvision (the decompression 
-algorithm is in kernelspace since it is of linear complexity but shall 
-be moved to userspace)
+Regards 
+Ananitya
 
-Using pwlib will not mean that application developers will use pwlib to 
-decode v4l driver outputs.
-C bindings are much more popular than C++ bindings and do not prevent 
-object oriented design.
-Application developers implement their own codecs.
-As an example, every application do deinterlacing internally or not...
-Application developers will probably not use pwlib v4l extensions 
-because they will prefer to write adapted codecs for their framework.
 
-Much more important for me is to see the actual specification of the 
-needed v4l extensions points, with advice/participation of 
-application/codec developers.
-
-Thierry
+-- 
+Out of many thousands, one may endeavor for perfection, and of
+those who have achieved perfection, hardly one knows Me in truth.
+				-- Gita Sutra Of Mysticism
