@@ -1,69 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbXE1Jew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbXE1Jhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761423AbXE1Jew (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 05:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbXE1Jeq
+	id S1761661AbXE1Jhn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 05:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbXE1Jhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 05:34:46 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:16100 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978AbXE1Jep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 05:34:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=RvbSz4Bt1C8gJNDv3nAgFLZi+r862VxKrdUq2YC1b2to3tM7ti8YkdNERo8J9T/ZWHnYMSKRZtBVFKrgcEoYBwAo9p/v3WSRL7N9kW+SYyGGg0DxW2NKC7w8jh1+ZNQJrs05xoZeBbdWMxCST+7AlogyEp0VUfZrbrCVrsAVA38=
-Message-ID: <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
-Date: Mon, 28 May 2007 12:34:44 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Tero Roponen" <teanropo@jyu.fi>
-Subject: Re: tty-related oops in latest kernel(s)?
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
+	Mon, 28 May 2007 05:37:36 -0400
+Received: from daemonizer.de ([87.230.16.230]:58897 "EHLO daemonizer.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752769AbXE1Jhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 05:37:34 -0400
+From: Maximilian Engelhardt <maxi@daemonizer.de>
+To: =?utf-8?q?Bj=C3=B6rn_Steinbrink?= <B.Steinbrink@gmx.de>
+Subject: Re: Oops with prism54 in 2.6.22-rc3
+Date: Mon, 28 May 2007 11:37:17 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>, acme@redhat.com,
+       davem@davemloft.net
+References: <200705261442.34054.maxi@daemonizer.de> <20070528014339.GA6136@atjola.homenet>
+In-Reply-To: <20070528014339.GA6136@atjola.homenet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart16866032.9rn4ngiib2";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
-	 <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
-X-Google-Sender-Auth: a10cefe3ba9e3ef1
+Message-Id: <200705281137.23735.maxi@daemonizer.de>
+X-Spam-Score: -4.1 (----)
+X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	*  0.3 AWL AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/28/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> >   BUG: unable to handle kernel NULL pointer dereference at virtual address 00000731
-> >   EIP is at vt_ioctl+0xda8/0x1482
+--nextPart16866032.9rn4ngiib2
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-[snip]
+On Monday 28 May 2007, Bj=C3=B6rn Steinbrink wrote:
+> On 2007.05.26 14:42:30 +0200, Maximilian Engelhardt wrote:
+> > Hello,
+> >
+> > when using the prism54 driver including in the 2.6.22-rc3 kernel I get
+> > this Oops when putting the card into monitor mode:
+> >
+> > BUG: unable to handle kernel NULL pointer dereference at virtual address
+> > 000001d8
+> >  printing eip:
+> > c0500608
+> > *pde =3D 00000000
+> > Oops: 0002 [#1]
+> > PREEMPT
+> > Modules linked in: fuse
+> > CPU:    0
+> > EIP:    0060:[<c0500608>]    Not tainted VLI
+> > EFLAGS: 00010046   (2.6.22-rc3 #2)
+> > EIP is at netif_rx+0x48/0xc0
+> > eax: 00000000   ebx: c18fdbc0   ecx: c087991c   edx: c0879910
+> > esi: 00000246   edi: f7c68010   ebp: f7fe0ba0   esp: c07bbef0
+> > ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
+> > Process swapper (pid: 0, ti=3Dc07ba000 task=3Dc075a280 task.ti=3Dc07ba0=
+00)
+> > Stack: f7ec0000 00000000 c03d2b8f c07bbf24 00000082 f7c68024 f7fe0800
+> > c18fdbc0 00000070 00000046 00000286 00000286 00000008 00000007 0032dcd5
+> > 00000000 f7fe0ba0 00000002 f7fe0800 c03d913d 00000000 00000000 f7f4d2c0
+> > 00000000 Call Trace:
+> >  [<c03d2b8f>] islpci_eth_receive+0x12f/0x590
+> >  [<c03d913d>] islpci_interrupt+0x1cd/0x280
+> >  [<c0144e15>] handle_IRQ_event+0x25/0x50
+> >  [<c014669c>] handle_fasteoi_irq+0x5c/0xe0
+> >  [<c010674a>] do_IRQ+0x4a/0x80
+> >  [<c010498f>] common_interrupt+0x23/0x28
+> >  [<c0102b3a>] default_idle+0x2a/0x40
+> >  [<c01023e3>] cpu_idle+0x43/0x80
+> >  [<c07bcb2a>] start_kernel+0x21a/0x260
+> >  [<c07bc450>] unknown_bootoption+0x0/0x260
+> >  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > Code: c7 43 0c 00 00 00 00 c7 43 10 00 00 00 00 9c 5e fa ff 05 bc 9c 87
+> > c0 a1 0c 99 87 c0 3b 05 c0 4a 7b c0 77 30 85 c0 74 43 8b 43 14 <ff> 80 =
+d8
+> > 01 00 00 a1 08 99 87 c0 ff 05 0c 99 87 c0 c7 03 04 99
+> > EIP: [<c0500608>] netif_rx+0x48/0xc0 SS:ESP 0068:c07bbef0
+> > Kernel panic - not syncing: Fatal exception in interrupt
+> >
+> > After this the system is frozen. Using kernel 2.6.21 everything works
+> > fine, I can capture packets in monitor mode and do not get any Oops.
+>
+> That's probably due to commit 4c13eb6657fe9ef7b4dc8f1a405c902e9e5234e0,
+> which moved the setting of skb->dev into eth_type_trans, which is never
+> called when the card is in monitor mode.
+>
+> Could you try this patch?
+>
+>
+> Manually set the device of a skb for prism54 cards that are in monitor
+> mode as we never call eth_type_trans in that case.
+>
+> Signed-off-by: Bj=C3=B6rn Steinbrink <B.Steinbrink@gmx.de>
+> ---
+> diff --git a/drivers/net/wireless/prism54/islpci_eth.c
+> b/drivers/net/wireless/prism54/islpci_eth.c index dd070cc..f49eb06 100644
+> --- a/drivers/net/wireless/prism54/islpci_eth.c
+> +++ b/drivers/net/wireless/prism54/islpci_eth.c
+> @@ -378,9 +378,10 @@ islpci_eth_receive(islpci_private *priv)
+>  	display_buffer((char *) skb->data, skb->len);
+>  #endif
+>  	/* take care of monitor mode and spy monitoring. */
+> -	if (unlikely(priv->iw_mode =3D=3D IW_MODE_MONITOR))
+> +	if (unlikely(priv->iw_mode =3D=3D IW_MODE_MONITOR)) {
+> +		skb->dev =3D ndev;
+>  		discard =3D islpci_monitor_rx(priv, &skb);
+> -	else {
+> +	} else {
+>  		if (unlikely(skb->data[2 * ETH_ALEN] =3D=3D 0)) {
+>  			/* The packet has a rx_annex. Read it for spy monitoring, Then
+>  			 * remove it, while keeping the 2 leading MAC addr.
 
-On 5/28/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> >   Call Trace:
-> >    [<c0149fd9>] link_path_walk+0xa5/0xaf
-> >    [<c021d766>] vt_ioctl+0x0/0x1482
-> >    [<c021a395>] tty_ioctl+0xa01/0xa87
+With this patch monitor mode does work fine.
 
-I am getting this with your config:
+Maxi
 
-(gdb) p vt_ioctl
-$1 = {int (struct tty_struct *, struct file *, unsigned int, long
-unsigned int)} 0xc01e404a <vt_ioctl>
-(gdb) l *(0xc01e404a + 0xda8)
-0xc01e4df2 is in vt_ioctl (drivers/char/vt_ioctl.c:720).
-715             /*
-716              * Returns the first available (non-opened) console.
-717              */
-718             case VT_OPENQRY:
-719                     for (i = 0; i < MAX_NR_CONSOLES; ++i)
-720                             if (! VT_IS_IN_USE(i))
-721                                     break;
-722                     ucval = i < MAX_NR_CONSOLES ? (i+1) : -1;
-723                     goto setint;
-724
+--nextPart16866032.9rn4ngiib2
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Which seems to match the code dump in the OOPS as well. I am not sure
-what %edx (which is zero and causes problems) should contain but I am
-guessing tty_driver->ttys is corrupted which seems consistent with the
-reference count sanity check failure. Unfortunately I am not familiar
-enough with tty internals to immediately see why this is happening.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGWqLTOimwv528XGERAgrqAKD3MLXyW3ZVnxMI2NYZfAzJBXNo6ACgyI1r
+Ectbu9yQZzoCfCjCt7Xp8qw=
+=W41q
+-----END PGP SIGNATURE-----
+
+--nextPart16866032.9rn4ngiib2--
