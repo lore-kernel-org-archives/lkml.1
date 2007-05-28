@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbXE1CGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbXE1CQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758842AbXE1CGy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbXE1CGf
+	id S1756900AbXE1CQn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 22:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbXE1CQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:06:35 -0400
-Received: from smtp108.sbc.mail.mud.yahoo.com ([68.142.198.207]:46426 "HELO
-	smtp108.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751725AbXE1CGd (ORCPT
+	Sun, 27 May 2007 22:16:35 -0400
+Received: from cavan.codon.org.uk ([217.147.92.49]:34888 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbXE1CQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:06:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Otr8m80GoM1xSxVFdmquUvUCSdEr1M+XAVWcs+/Al8U8U9rORWe0F69duycgZNuQ8EROWODZ4K8VP2dzObb2DzzrAKnEW70ms2Qf0Ak/ZBpbJGd94B/nzKYB0ICuPKSMIkS7eVYX0jpldLEX2536H5IUk6ZrFTtzFOfFXgIq+ig=  ;
-X-YMail-OSG: zqU1OJ4VM1mPhjj70P4v_kL8VCgJMKuJuFcJbFeTuIfSKK5q4i2LJKPithJO3O.F80Ag8LJ.gA--
-From: David Brownell <david-b@pacbell.net>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: RTC_DRV_CMOS can break userspace interface
-Date: Sun, 27 May 2007 18:44:49 -0700
-User-Agent: KMail/1.9.6
+	Sun, 27 May 2007 22:16:34 -0400
+Date: Mon, 28 May 2007 03:16:22 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: David Brownell <david-b@pacbell.net>
 Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20070527190351.GA21387@srcf.ucam.org> <20070527233911.GA23491@srcf.ucam.org> <20070528003822.GA23759@srcf.ucam.org>
-In-Reply-To: <20070528003822.GA23759@srcf.ucam.org>
+Message-ID: <20070528021622.GA24517@srcf.ucam.org>
+References: <20070527190351.GA21387@srcf.ucam.org> <20070527233911.GA23491@srcf.ucam.org> <20070528003822.GA23759@srcf.ucam.org> <200705271844.54589.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705271844.54589.david-b@pacbell.net>
+In-Reply-To: <200705271844.54589.david-b@pacbell.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: RTC_DRV_CMOS can break userspace interface
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 27 May 2007, Matthew Garrett wrote:
-> On Mon, May 28, 2007 at 12:39:11AM +0100, Matthew Garrett wrote:
+On Sun, May 27, 2007 at 06:44:49PM -0700, David Brownell wrote:
+> On Sunday 27 May 2007, Matthew Garrett wrote:
+> > Actually, it seems to be worse than that - the PNP entry for my cmos 
+> > clock doesn't appear to mention an irq, so the wakealarm entry doesn't 
+> > work. I can happily wake it using the /proc/acpi/alarm interface.
+> > 
+> > David, would you be happy with hardcoding the rtc-cmos IRQ to 8 on PCs 
+> > if there's inadequate PNP information available?
 > 
-> > but will disable /proc/acpi/wakeup. It'll also be impossible to load 
-> > CONFIG_RTC_CMOS because CONFIG_RTC has grabbed the io ports, so it's not 
-> > possible to use the new interface. This situation doesn't appear to be 
-> > documented, which is less than ideal...
+> That would seem to naturally belong in the PNP code, yes?
 > 
-> Actually, it seems to be worse than that - the PNP entry for my cmos 
-> clock doesn't appear to mention an irq, so the wakealarm entry doesn't 
-> work. I can happily wake it using the /proc/acpi/alarm interface.
-> 
-> David, would you be happy with hardcoding the rtc-cmos IRQ to 8 on PCs 
-> if there's inadequate PNP information available?
+> Agreed that it seems like it needs to be hardcoded somewhere.
 
-That would seem to naturally belong in the PNP code, yes?
+The PNP code is reporting what's in the tables - I'd be a bit surprised 
+if it special-cased specific devices, but I guess there's an argument 
+for that. All the other machines I've checked report an IRQ, so I guess 
+Apple just didn't take much care in getting this right.
 
-Agreed that it seems like it needs to be hardcoded somewhere.
+As far as sanity checking goes - how about we check that the reported 
+io ports are the legacy range, and if so hardcode the irq if the 
+hardware hasn't reported one? I'd /hope/ that nobody has produced any 
+hardware that that would break, but then, well. The strongest argument 
+for it being safe is probably that the legacy RTC driver seems to 
+hardcode this and hasn't obviously been breaking things.
 
-- Dave
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
