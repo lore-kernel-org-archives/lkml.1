@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbXE1C61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759178AbXE1DLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760635AbXE1C61 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 22:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbXE1C6Q
+	id S1759178AbXE1DLS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 23:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXE1DLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 22:58:16 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38283 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753104AbXE1C6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 22:58:14 -0400
-From: Neil Brown <neilb@suse.de>
-To: David Chinner <dgc@sgi.com>
-Date: Mon, 28 May 2007 12:57:53 +1000
+	Sun, 27 May 2007 23:11:07 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:58852 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753382AbXE1DLF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 May 2007 23:11:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=r2o+m9Po2S6fBGwDUWrfsSwHhCSUFnvOm29fteXSVdEA2uX1uB/ayQe8GFTgoXxdeUMue96imO0LIzpIPbayEiLT9p2uxHZ/bWsv26gJ+dioQRyv5yNWXxjym9G0GCcs/b4ffbCjPLePf2QCnZAAxCBfQTGDCmDjkuP4hZshkLk=
+Message-ID: <a8e1da0705272011g6ad2550eo153eb0e98590b11a@mail.gmail.com>
+Date: Mon, 28 May 2007 03:11:04 +0000
+From: "young dave" <hidave.darkstar@gmail.com>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+Subject: Re: [patch -mm 1/1] remove useless tolower in isofs
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.0.99.0705272248110.6131@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18010.17713.76863.245176@notabene.brown>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, Phillip Susi <psusi@cfl.rr.com>,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-In-Reply-To: message from David Chinner on Monday May 28
-References: <18006.38689.818186.221707@notabene.brown>
-	<18010.12472.209452.148229@notabene.brown>
-	<20070528024559.GA85884050@sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+References: <a8e1da0705271808w3a6dc453rfb47dd3db100718@mail.gmail.com>
+	 <alpine.DEB.0.99.0705272248110.6131@sigma.j-a-k-j.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday May 28, dgc@sgi.com wrote:
-> On Mon, May 28, 2007 at 11:30:32AM +1000, Neil Brown wrote:
-> > 
-> > Thanks everyone for your input.  There was some very valuable
-> > observations in the various emails.
-> > I will try to pull most of it together and bring out what seem to be
-> > the important points.
-> > 
-> > 
-> > 1/ A BIO_RW_BARRIER request should never fail with -EOPNOTSUP.
-> 
-> Sounds good to me, but how do we test to see if the underlying
-> device supports barriers? Do we just assume that they do and
-> only change behaviour if -o nobarrier is specified in the mount
-> options?
-> 
+Hi,
+> And then there's the supercompact form.
+>
+> while (len--) {
+>         hash = partial_name_hash(tolower(*name++), hash);
+> }
+>
+> But I do not like the last one at all. The first one is the best, because
+> it clearly separates the condition and iteration parts of the expression,
+> while STILL being only three lines long. Or two, if you omit the braces.
+> (But you shouldn't.)
+>
 
-What exactly do you want to know, and why do you care?
+IMO, I like the last one, but I prefer to keep the original author's
+one, I only remove the unnecessary tolower function.
+What do you think about this , Andrew?
 
-The idea is that every "struct block_device" supports barriers.  If the
-underlying hardware doesn't support them directly, then they get
-simulated by draining the queue and issuing a flush.
-Theoretically there could be devices which have a write-back cache
-that cannot be flushed, and you couldn't implement barriers on such a
-device.  So throw it out and buy another?
-
-As far as I can tell, the only thing XFS does differently with devices
-that don't support barriers is that it prints a warning message to the
-kernel logs.  If the underlying device printed the message when it
-detected that barriers couldn't be supported, XFS wouldn't need to
-care at all.
-
-NeilBrown
+Regards
+dave
