@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbXE1W1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbXE1W3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759408AbXE1W1F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 18:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbXE1W0z
+	id S1760387AbXE1W3g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 18:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXE1W32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 18:26:55 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:52710 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbXE1W0z (ORCPT
+	Mon, 28 May 2007 18:29:28 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:3972 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752072AbXE1W32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 18:26:55 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Mon, 28 May 2007 18:25:38 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: stuff ready to be deleted?
-In-Reply-To: <Pine.LNX.4.61.0705282326480.11140@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.64.0705281818370.17410@localhost.localdomain>
-References: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
- <Pine.LNX.4.61.0705282326480.11140@yvahk01.tjqt.qr>
+	Mon, 28 May 2007 18:29:28 -0400
+Date: Mon, 28 May 2007 18:29:27 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Pavel Machek <pavel@ucw.cz>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before
+ hibernation/suspend
+In-Reply-To: <20070528205727.GA5911@ucw.cz>
+Message-ID: <Pine.LNX.4.44L0.0705281719200.10323-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 May 2007, Jan Engelhardt wrote:
+On Mon, 28 May 2007, Pavel Machek wrote:
 
->
-> On May 28 2007 16:15, Robert P. J. Day wrote:
-> >removing dead content from the tree:
-> >
-> >http://fsdev.net/wiki/index.php?title=Kernel_Janitor%27s_Todo_List
-> >
-> >currently, the list contains the items:
-> >
-> >    * 4 Traffic policing
->
-> CONFIG_NET_SCHED? CONFIG_NET_ACT_POLICE? Neither seems
-> marked as deprecated/obsoleted in Kconfig.
+> > The theoretical answer is that it behaves the way we want.  The kernel 
+> > thread does selective resumes in response to device requests.  If such 
+> > a request comes in while the system is asleep it will awaken the 
+> > system; so it's only logical that a request coming in while the system 
+> > is in the process of going to sleep should abort the suspend.
+> 
+> I'd say that it shows ppc being broken. User wanted to suspend the
+> system, and now unrelated task did lsusb... and system will not sleep.
+> 
+> AFAICT it is DoS issue -- if one of your users keeps doing lsusb, root
+> will not be able to suspend the system.
 
-the "traffic policing" entry in that list refers specifically to the
-config option "CLS_NET_POLICE" in net/sched/Kconfig:
+This is a matter of one's philosophy.  In suspend-to-RAM, should tasks
+be frozen or should I/O queues be frozen?
 
-config NET_CLS_POLICE
-        bool "Traffic Policing (obsolete)"
-        depends on NET_CLS_ACT!=y
-        select NET_ESTIMATOR
-        ---help---
-          Say Y here if you want to do traffic policing, i.e. strict
-          bandwidth limiting. This option is obsoleted by the traffic
-          policer implemented as action, it stays here for compatibility
-          reasons.
+With the USB subsystem I have followed the approach taken by the PM
+core, which is that tasks are frozen.  But one can -- and Linus has on
+at least one occasion -- make a good case that tasks should be left
+running while only I/O is frozen.  This would require the subsystem to
+distinguish between a selective device suspend and a system-wide
+suspend-to-RAM, so that selective resume could be enabled on demand in
+one case but not the other.
 
-so ... does "obsolete" really mean "obsolete"?
+It's quite doable in principle -- it's just not the technique I used.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Alan Stern
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
