@@ -1,80 +1,614 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762283AbXE1K1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbXE1Ka1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762283AbXE1K1a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 06:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbXE1K1X
+	id S1761357AbXE1Ka1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 06:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbXE1KaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 06:27:23 -0400
-Received: from h80ad2262.async.vt.edu ([128.173.34.98]:34702 "EHLO
-	h80ad2262.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbXE1K1W (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 06:27:22 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1 - a different BUG: at mm/slab.c:777 __find_general_cachep()
-In-Reply-To: Your message of "Wed, 23 May 2007 00:42:33 PDT."
-             <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1180348036_4040P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 28 May 2007 06:30:17 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:44313 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751204AbXE1KaN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 06:30:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=HnYtMVAsAL+6eZDUU3L/z8F7laL+FjUFBdTmXLsCQjZLbzPxhCJbYttG1SbrJqoKNYUSAWdSu6BjFbSliZgi0eUGQvDzDA3exXMD49Xk5Lf4YX2VuG5dDBMdC0Okn5w14WaMjYg1uo63OKDays+4g37xhfOjLwEZGMJCZpP3c+k=
+Message-ID: <465AAF2C.6070602@gmail.com>
+Date: Mon, 28 May 2007 18:30:04 +0800
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
+MIME-Version: 1.0
+To: linux-fbdev-devel@lists.sourceforge.net
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH 8/9] [RESEND] fbdev: Detect primary display device
+References: <465952CD.2040409@gmail.com> <Pine.LNX.4.64.0705281037080.4790@anakin>
+In-Reply-To: <Pine.LNX.4.64.0705281037080.4790@anakin>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 28 May 2007 06:27:16 -0400
-Message-ID: <13451.1180348036@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1180348036_4040P
-Content-Type: text/plain; charset=us-ascii
+Add function helper, fb_is_primary_device().  Given struct fb_info, it will
+return a nonzero value if the device is the primary display.
 
-On Wed, 23 May 2007 00:42:33 PDT, Andrew Morton said:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/
+Currently, only the i386 is supported where the function checks for the
+IORESOURCE_ROM_SHADOW flag.
 
-Dell Latitude D820 laptop, Intel T7200 dual-core, x86_64 kernel.
+Signed-off-by: Antonino Daplas <adaplas@gmail.com>
+---
+Geert Uytterhoeven wrote:
+> On Sun, 27 May 2007, Antonino A. Daplas wrote:
+>> Add function helper, fb_is_display_device().  Given struct fb_info, it will
+>                              ^^^^^^^
+> 			     primary
+> 
+>> return a nonzero value if the device is the primary display.
+> 
+>> +static inline int fb_is_primary_device(struct fb_screeninfo *info)
+>                                                  ^^^^^^^^^^^^^
 
-Does something wonky during very early boot, before userspace has started:
+Yikes, thanks.  Andrew, here's an updated patch.
 
-[4294667.471000] Intel(R) Core(TM)2 CPU         T7200  @ 2.00GHz stepping 06
-[4294667.471000] Brought up 2 CPUs 
-[4294667.471000] NET: Registered protocol family 16
-[4294667.472000] ACPI: ACPI Dock Station Driver
-[4294667.472000] ACPI: bus type pci registered
-[4294667.472000] BUG: at mm/slab.c:777 __find_general_cachep()
-[4294667.472000] 
-[4294667.472000] Call Trace:
-[4294667.472000]  [<ffffffff8020b2a8>] dump_trace+0xca/0x3cb
-[4294667.472000]  [<ffffffff8020b5e5>] show_trace+0x3c/0x52
-[4294667.472000]  [<ffffffff8020b610>] dump_stack+0x15/0x17
-[4294667.472000]  [<ffffffff8028952e>] __kmalloc+0x41/0xb2
-[4294667.472000]  [<ffffffff8042c450>] get_modalias+0x6c/0x107 
-[4294667.472000]  [<ffffffff8042c520>] dmi_dev_uevent+0x35/0x4d
-[4294667.472000]  [<ffffffff803b7d5f>] dev_uevent+0x19b/0x1d1
-[4294667.472000]  [<ffffffff8034bd3c>] kobject_uevent_env+0x244/0x477
-[4294667.472000]  [<ffffffff8034bf7a>] kobject_uevent+0xb/0xd
-[4294667.472000]  [<ffffffff803b7971>] device_add+0x2b5/0x4eb
-[4294667.472000]  [<ffffffff803b7bc0>] device_register+0x19/0x1d 
-[4294667.472000]  [<ffffffff807dd71a>] dmi_id_init+0x2d1/0x2e9
-[4294667.472000]  [<ffffffff807c1651>] kernel_init+0x168/0x2da
-[4294667.472000]  [<ffffffff8020acd8>] child_rip+0xa/0x12
-[4294667.472000] 
-[4294667.473000] PCI: Using MMCONFIG at f0000000 - f3ffffff 
-[4294667.489000] ACPI: SSDT 7FE819CE, 0043 (r1  LMPWR  DELLLOM     1001 INTL 20050624)
+Tony
 
-Any suggestions before I go doing the bisect shuffle?
+ arch/i386/Makefile         |    1 +
+ arch/i386/video/Makefile   |    1 +
+ arch/i386/video/fbdev.c    |   34 ++++++++++++++++++++++++++++++++++
+ include/asm-alpha/fb.h     |    6 ++++++
+ include/asm-arm/fb.h       |    6 ++++++
+ include/asm-arm26/fb.h     |    6 ++++++
+ include/asm-avr32/fb.h     |    6 ++++++
+ include/asm-blackfin/fb.h  |    6 ++++++
+ include/asm-cris/fb.h      |    6 ++++++
+ include/asm-frv/fb.h       |    6 ++++++
+ include/asm-h8300/fb.h     |    6 ++++++
+ include/asm-i386/fb.h      |    3 +++
+ include/asm-ia64/fb.h      |    6 ++++++
+ include/asm-m32r/fb.h      |    6 ++++++
+ include/asm-m68k/fb.h      |    6 ++++++
+ include/asm-m68knommu/fb.h |    6 ++++++
+ include/asm-mips/fb.h      |    6 ++++++
+ include/asm-parisc/fb.h    |    6 ++++++
+ include/asm-powerpc/fb.h   |    6 ++++++
+ include/asm-s390/fb.h      |    6 ++++++
+ include/asm-sh/fb.h        |    6 ++++++
+ include/asm-sh64/fb.h      |    6 ++++++
+ include/asm-sparc/fb.h     |    6 ++++++
+ include/asm-sparc64/fb.h   |    6 ++++++
+ include/asm-v850/fb.h      |    6 ++++++
+ include/asm-x86_64/fb.h    |    7 ++++++-
+ include/asm-xtensa/fb.h    |    6 ++++++
+ 27 files changed, 177 insertions(+), 1 deletions(-)
 
---==_Exmh_1180348036_4040P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGWq6EcC3lWbTT17ARApTxAJ4+8osQTBPiZE+ZJ1mONrUa5ne/sACgtTfX
-0FQZi1FbH2fr+JmeKFqMoHM=
-=73JY
------END PGP SIGNATURE-----
-
---==_Exmh_1180348036_4040P--
+diff --git a/arch/i386/Makefile b/arch/i386/Makefile
+index 3eb063e..01f0ff0 100644
+--- a/arch/i386/Makefile
++++ b/arch/i386/Makefile
+@@ -111,6 +111,7 @@ drivers-$(CONFIG_PCI)			+= arch/i386/pci
+ # must be linked after kernel/
+ drivers-$(CONFIG_OPROFILE)		+= arch/i386/oprofile/
+ drivers-$(CONFIG_PM)			+= arch/i386/power/
++drivers-$(CONFIG_FB)                    += arch/i386/video/
+ 
+ CFLAGS += $(mflags-y)
+ AFLAGS += $(mflags-y)
+diff --git a/arch/i386/video/Makefile b/arch/i386/video/Makefile
+new file mode 100644
+index 0000000..2c447c9
+--- /dev/null
++++ b/arch/i386/video/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_FB)               += fbdev.o
+diff --git a/arch/i386/video/fbdev.c b/arch/i386/video/fbdev.c
+new file mode 100644
+index 0000000..7fc712c
+--- /dev/null
++++ b/arch/i386/video/fbdev.c
+@@ -0,0 +1,34 @@
++/*
++ * arch/i386/video/fbdev.c - i386 Framebuffer
++ *
++ * Copyright (C) 2007 Antonino Daplas <adaplas@gmail.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive
++ * for more details.
++ *
++ */
++#include <linux/fb.h>
++#include <linux/pci.h>
++
++int fb_is_primary_device(struct fb_info *info)
++{
++	struct device *device;
++	struct pci_dev *pci_dev = NULL;
++	struct resource *res = NULL;
++	int retval = 0;
++
++	device = info->device;
++
++	if (device)
++		pci_dev = to_pci_dev(device);
++
++	if (pci_dev)
++		res = &pci_dev->resource[PCI_ROM_RESOURCE];
++
++	if (res && res->flags & IORESOURCE_ROM_SHADOW)
++		retval = 1;
++
++	return retval;
++}
++EXPORT_SYMBOL(fb_is_primary_device);
+diff --git a/include/asm-alpha/fb.h b/include/asm-alpha/fb.h
+index ca714a4..6d3b5b6 100644
+--- a/include/asm-alpha/fb.h
++++ b/include/asm-alpha/fb.h
+@@ -1,7 +1,13 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/device.h>
+ 
+ /* Caching is off in the I/O space quadrant by design.  */
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-arm/fb.h b/include/asm-arm/fb.h
+index 4bf5b88..d92e99c 100644
+--- a/include/asm-arm/fb.h
++++ b/include/asm-arm/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-arm26/fb.h b/include/asm-arm26/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-arm26/fb.h
++++ b/include/asm-arm26/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-avr32/fb.h b/include/asm-avr32/fb.h
+index d22a4a8..41baf84 100644
+--- a/include/asm-avr32/fb.h
++++ b/include/asm-avr32/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -12,4 +13,9 @@ static inline void fb_pgprotect(struct f
+ 				     | (_PAGE_BUFFER | _PAGE_DIRTY));
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-blackfin/fb.h b/include/asm-blackfin/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-blackfin/fb.h
++++ b/include/asm-blackfin/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-cris/fb.h b/include/asm-cris/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-cris/fb.h
++++ b/include/asm-cris/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-frv/fb.h b/include/asm-frv/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-frv/fb.h
++++ b/include/asm-frv/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-h8300/fb.h b/include/asm-h8300/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-h8300/fb.h
++++ b/include/asm-h8300/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-i386/fb.h b/include/asm-i386/fb.h
+index d30073c..d1c6297 100644
+--- a/include/asm-i386/fb.h
++++ b/include/asm-i386/fb.h
+@@ -1,9 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
++extern int fb_is_primary_device(struct fb_info *info);
++
+ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+ 				unsigned long off)
+ {
+diff --git a/include/asm-ia64/fb.h b/include/asm-ia64/fb.h
+index c06b45b..33f2ba6 100644
+--- a/include/asm-ia64/fb.h
++++ b/include/asm-ia64/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -13,4 +14,9 @@ static inline void fb_pgprotect(struct f
+ 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-m32r/fb.h b/include/asm-m32r/fb.h
+index 4bf5b88..d92e99c 100644
+--- a/include/asm-m32r/fb.h
++++ b/include/asm-m32r/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-m68k/fb.h b/include/asm-m68k/fb.h
+index dc12b5a..6f0c25e 100644
+--- a/include/asm-m68k/fb.h
++++ b/include/asm-m68k/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ #include <asm/setup.h>
+@@ -24,4 +25,9 @@ static inline void fb_pgprotect(struct f
+ }
+ #endif /* CONFIG_SUN3 */
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-m68knommu/fb.h b/include/asm-m68knommu/fb.h
+index 9f8c88d..f2752d4 100644
+--- a/include/asm-m68knommu/fb.h
++++ b/include/asm-m68knommu/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-mips/fb.h b/include/asm-mips/fb.h
+index ac23d96..cc740a9 100644
+--- a/include/asm-mips/fb.h
++++ b/include/asm-mips/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-parisc/fb.h b/include/asm-parisc/fb.h
+index d5e47ed..4d503a0 100644
+--- a/include/asm-parisc/fb.h
++++ b/include/asm-parisc/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-powerpc/fb.h b/include/asm-powerpc/fb.h
+index e13d6eb..411af8d 100644
+--- a/include/asm-powerpc/fb.h
++++ b/include/asm-powerpc/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -12,4 +13,9 @@ static inline void fb_pgprotect(struct f
+ 						 vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-s390/fb.h b/include/asm-s390/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-s390/fb.h
++++ b/include/asm-s390/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-sh/fb.h b/include/asm-sh/fb.h
+index 4bf5b88..d92e99c 100644
+--- a/include/asm-sh/fb.h
++++ b/include/asm-sh/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-sh64/fb.h b/include/asm-sh64/fb.h
+index 4bf5b88..d92e99c 100644
+--- a/include/asm-sh64/fb.h
++++ b/include/asm-sh64/fb.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+ 
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -10,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-sparc/fb.h b/include/asm-sparc/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-sparc/fb.h
++++ b/include/asm-sparc/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-sparc64/fb.h b/include/asm-sparc64/fb.h
+index 8703c70..d6cd3a1 100644
+--- a/include/asm-sparc64/fb.h
++++ b/include/asm-sparc64/fb.h
+@@ -1,5 +1,6 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -9,4 +10,9 @@ static inline void fb_pgprotect(struct f
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-v850/fb.h b/include/asm-v850/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-v850/fb.h
++++ b/include/asm-v850/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-x86_64/fb.h b/include/asm-x86_64/fb.h
+index d30073c..60548e6 100644
+--- a/include/asm-x86_64/fb.h
++++ b/include/asm-x86_64/fb.h
+@@ -1,6 +1,6 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
+-
++#include <linux/fb.h>
+ #include <linux/fs.h>
+ #include <asm/page.h>
+ 
+@@ -11,4 +11,9 @@ static inline void fb_pgprotect(struct f
+ 		pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
+ }
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
+diff --git a/include/asm-xtensa/fb.h b/include/asm-xtensa/fb.h
+index 9f8c88d..c7df380 100644
+--- a/include/asm-xtensa/fb.h
++++ b/include/asm-xtensa/fb.h
+@@ -1,6 +1,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
++#include <linux/fb.h>
+ 
+ #define fb_pgprotect(...) do {} while (0)
+ 
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
+ #endif /* _ASM_FB_H_ */
