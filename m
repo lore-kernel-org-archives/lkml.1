@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbXE1BP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760830AbXE1BRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbXE1BP7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 May 2007 21:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759044AbXE1BPv
+	id S1760830AbXE1BRl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 May 2007 21:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758445AbXE1BRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 May 2007 21:15:51 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:58345 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756072AbXE1BPu (ORCPT
+	Sun, 27 May 2007 21:17:34 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:21449 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755728AbXE1BRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 May 2007 21:15:50 -0400
-X-IronPort-AV: i="4.14,585,1170662400"; 
-   d="scan'208"; a="158013329:sNHT42844374"
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>, Greg KH <greg@kroah.com>,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PCIE
-X-Message-Flag: Warning: May contain useful information
-References: <20070523155958.GA5282@kroah.com> <4654AB40.6060208@gmail.com>
-	<adaejl79rh0.fsf@cisco.com> <4654BC10.2000808@gmail.com>
-	<adazm3v89hv.fsf@cisco.com> <4654C85B.6060505@gmail.com>
-	<adatzu385g1.fsf@cisco.com> <46561287.8020103@gmail.com>
-	<ada1wh560u1.fsf@cisco.com> <46584C30.4030206@gmail.com>
-	<20070526182828.GA7080@colo.lackof.org> <46588A3D.2060208@gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sun, 27 May 2007 18:15:49 -0700
-In-Reply-To: <46588A3D.2060208@gmail.com> (Manu Abraham's message of "Sat, 26 May 2007 23:27:57 +0400")
-Message-ID: <adaps4l21fe.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Sun, 27 May 2007 21:17:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=j70wWX6dIfsiGT6Upv66g7FREPt3/ZUF38kM+KbHVzkDXeMBBDvU2l6odvK5llQOEbPwcC98ffluTFQ6eFpPE+M57NzPsBzUOoReRywuX4nxWkj9/Mt4wQWlS1Xl1lbXF9NlS5UDTZkLOUchzC/p5lDiIyAmpbIb4PI+6w+olnQ=
+Message-ID: <465A2DA4.7070409@gmail.com>
+Date: Mon, 28 May 2007 09:17:24 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 May 2007 01:15:49.0362 (UTC) FILETIME=[BA0ACD20:01C7A0C5]
-Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim7002 verified; ); 
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v14
+References: <20070523120616.GA23407@elte.hu>
+In-Reply-To: <20070523120616.GA23407@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > >> Another question would be if the device supports multiple messages, MSIX
- > >> should be used ?
- > > 
- > > Yes. Assuming the device supports multiple MSI-X messages.
+Ingo Molnar wrote:
+> i'm pleased to announce release -v14 of the CFS scheduler patchset.
+>
+> The CFS patch against v2.6.22-rc2, v2.6.21.1 or v2.6.20.10 can be 
+> downloaded from the usual place:
+>    
+>       http://people.redhat.com/mingo/cfs-scheduler/
+>   
 
-At least on my device (PCI ID 1131:7162) there is no MSI-X capability,
-so that's not an option for you.  The current Linux implementation
-does not support more than one MSI interrupt, so you just get one
-interrupt with pci_enable_msi().
+In comment before distribute_fair_add(), we have such text:
 
-I think it's probably simplest for you to forget about MSI until you
-have the basic driver working.
+/*
+  * A task gets added back to the runnable tasks and gets
+  * a small credit for the CPU time it missed out on while
+  * it slept, so fix up all other runnable task's wait_runtime
+  * so that the sum stays constant (around 0).
+  *
+[snip]
+  */
 
- > Ok. Alongwith this, i am a bit confused with the mailbox approach of
- > sending messages, every register type has it's own set of interrupt
- > registers (for example I2C, say I2C has it's own set of 32 STATUS
- > bitfields for it's interrupt, the same goes for the others)
- > 
- > Another aspect is the DTL-MMIO interface, which isn't defined any place.
- > Using the base addresses as an offset to the normal MMIO obtained using
- > pci_resource_*/ioremap() doesn't seem to work at all.
+But as I observe by cat /proc/sched_debug (2.6.21.1, UP, RHEL4), I found 
+the all waiting fields often are more than zero, or less than zero.
 
- > [etc....]
+IMHO, the sum of task_struct->wait_runtime just is the denominator of 
+all runnable time in some ways, is it right? if so, increasing the sum 
+of wait_runtime just make scheduling decision more precise. so what's 
+meaning for keeping the wait_runtime is zero-sum?
 
-All this is device-specific stuff ... not sure how much anyone can
-help you if you can't share the docs.
+Good luck
 
- - R.
+- Li Yu
