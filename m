@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761837AbXE1JbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbXE1Jew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761837AbXE1JbK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 05:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbXE1Ja5
+	id S1761423AbXE1Jew (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 05:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbXE1Jeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 05:30:57 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:21526 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755614AbXE1Ja4 (ORCPT
+	Mon, 28 May 2007 05:34:46 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:16100 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751978AbXE1Jep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 05:30:56 -0400
+	Mon, 28 May 2007 05:34:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=KZkIy3ILbl8qNSPeJAfE/GUskxu+PwjtKZob+ea3TQKYX8RPhItUsQvqkTLn7T6qJ1G3Okc/79GAQQ7IUD+t3k9CkGuWRyk3giQtBCYuAGKRo+FcjWq4hnBL/uysS/sHDJQrXgtCaiI+xTl3eprZdRVNnsaPXvZM5fDpoBCvjr4=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: 2.6.22-rc3 scripts/kconfig/qconf arch/i386/Kconfig
-Date: Mon, 28 May 2007 05:30:42 -0400
-User-Agent: KMail/1.9.6
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=RvbSz4Bt1C8gJNDv3nAgFLZi+r862VxKrdUq2YC1b2to3tM7ti8YkdNERo8J9T/ZWHnYMSKRZtBVFKrgcEoYBwAo9p/v3WSRL7N9kW+SYyGGg0DxW2NKC7w8jh1+ZNQJrs05xoZeBbdWMxCST+7AlogyEp0VUfZrbrCVrsAVA38=
+Message-ID: <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
+Date: Mon, 28 May 2007 12:34:44 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Tero Roponen" <teanropo@jyu.fi>
+Subject: Re: tty-related oops in latest kernel(s)?
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705280530.42562.gene.heskett@gmail.com>
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
+	 <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
+X-Google-Sender-Auth: a10cefe3ba9e3ef1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Up in the middle of the night, bored so I thought I'd build a new kernel 
-2.6.22-rc3 before I got too far behind.
+On 5/28/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> >   BUG: unable to handle kernel NULL pointer dereference at virtual address 00000731
+> >   EIP is at vt_ioctl+0xda8/0x1482
 
-These errors were output after a make oldconfig had been done, followed by a 
-make xconfig:
+[snip]
 
-drivers/macintosh/Kconfig:116:warning: 'select' used by config 
-symbol 'PMAC_APM_EMU' refers to undefined symbol 'SYS_SUPPORTS_APM_EMULATION'
-drivers/net/Kconfig:2283:warning: 'select' used by config symbol 'UCC_GETH' 
-refers to undefined symbol 'UCC_FAST'
-drivers/input/keyboard/Kconfig:170:warning: 'select' used by config 
-symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-drivers/input/mouse/Kconfig:182:warning: 'select' used by config 
-symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+On 5/28/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> >   Call Trace:
+> >    [<c0149fd9>] link_path_walk+0xa5/0xaf
+> >    [<c021d766>] vt_ioctl+0x0/0x1482
+> >    [<c021a395>] tty_ioctl+0xa01/0xa87
 
-A make bzImage then spit this out:
+I am getting this with your config:
 
-scripts/kconfig/conf -s arch/i386/Kconfig
-drivers/macintosh/Kconfig:116:warning: 'select' used by config 
-symbol 'PMAC_APM_EMU' refers to undefined symbol 'SYS_SUPPORTS_APM_EMULATION'
-drivers/net/Kconfig:2283:warning: 'select' used by config symbol 'UCC_GETH' 
-refers to undefined symbol 'UCC_FAST'
-drivers/input/keyboard/Kconfig:170:warning: 'select' used by config 
-symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
-drivers/input/mouse/Kconfig:182:warning: 'select' used by config 
-symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+(gdb) p vt_ioctl
+$1 = {int (struct tty_struct *, struct file *, unsigned int, long
+unsigned int)} 0xc01e404a <vt_ioctl>
+(gdb) l *(0xc01e404a + 0xda8)
+0xc01e4df2 is in vt_ioctl (drivers/char/vt_ioctl.c:720).
+715             /*
+716              * Returns the first available (non-opened) console.
+717              */
+718             case VT_OPENQRY:
+719                     for (i = 0; i < MAX_NR_CONSOLES; ++i)
+720                             if (! VT_IS_IN_USE(i))
+721                                     break;
+722                     ucval = i < MAX_NR_CONSOLES ? (i+1) : -1;
+723                     goto setint;
+724
 
-Other than the usual 'deprecated' suspects, the rest of the build proceeded 
-nominally.  As did the reboot to it, and the first time install of the latest 
-nvidia drivers from their .run file.
-
-I purposely chose 'SLUB' and the new firewire stack.  SLUB bears watching I 
-suppose, but how?
-
-The firewire stack will get checked out later by my movie camera, a Sony 
-TVR-460.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Life is like bein' on a mule team.  Unless you're the lead mule, all the
-scenery looks about the same.
+Which seems to match the code dump in the OOPS as well. I am not sure
+what %edx (which is zero and causes problems) should contain but I am
+guessing tty_driver->ttys is corrupted which seems consistent with the
+reference count sanity check failure. Unfortunately I am not familiar
+enough with tty internals to immediately see why this is happening.
