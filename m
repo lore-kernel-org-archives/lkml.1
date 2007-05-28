@@ -1,317 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbXE1PPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbXE1PQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757668AbXE1PPG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 11:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbXE1POz
+	id S1759632AbXE1PQt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 11:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbXE1PQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 11:14:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:52490 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbXE1POy (ORCPT
+	Mon, 28 May 2007 11:16:39 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:39278
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbXE1PQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 11:14:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Q23hHHcG3gvVrVSX/GsV3Ptq8yENloKSH2qJM2ztSy1W3KATWiZoesV6UGHq24pCTL0ZIEUIMENjkWu4p9vgndXxehpHzwubZVY4mfdCxMEmy2jN73oj+tGL1djKdq2X6YTy0fetjBScoGew3RHcgAJ0aO19m+BmIj7tjVACh3c=
-Message-ID: <d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>
-Date: Mon, 28 May 2007 17:14:51 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-Cc: "Jiri Slaby" <jirislaby@gmail.com>, video4linux-list@redhat.com,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1180364420.21547.160.camel@localhost>
+	Mon, 28 May 2007 11:16:38 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Maximilian Engelhardt <maxi@daemonizer.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: b44: regression in 2.6.22 (resend)
+Date: Mon, 28 May 2007 17:14:25 +0200
+User-Agent: KMail/1.9.6
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20070525172431.60affaca@freepuppy> <200705281216.51690.mb@bu3sch.de> <200705281609.49859.maxi@daemonizer.de>
+In-Reply-To: <200705281609.49859.maxi@daemonizer.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <2172422218943432279@wsc.cz> <1180364420.21547.160.camel@localhost>
+Message-Id: <200705281714.25841.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/28/07, Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> Hi Jiri,
->
-> I have some comments for your driver.
->
-> > + * Copyright (C) Nicolas VIVIEN
->
-> It would be interesting to have Nicolas SOB as well, if possible.
->
-> > +
-> > +#ifndef CONFIG_STK11XX_DEBUG_STREAM
-> > +#define CONFIG_STK11XX_DEBUG_STREAM	0
-> > +#endif
-> > +
-> > +#if CONFIG_STK11XX_DEBUG_STREAM
->
-> I would instead use:
-> #ifdef CONFIG_STK11XX_DEBUG_STREAM
->
-> > +/*
-> > + * Bayer conversion
-> > + */
->
-> We don't do format conversions in kernel. Instead, you should return a
-> proper Bayer Fourcc format (like V4L2_PIX_FMT_SBGGR8).
->
+On Monday 28 May 2007 16:09:46 Maximilian Engelhardt wrote:
+> On Monday 28 May 2007, Michael Buesch wrote:
+> > Can you give 2.6.16 a try? The diff is not that big and we might
+> > be able to find out what broke if you find out 2.6.16 works.
+> > You can also try later kernels like .17, .18, .19 to further
+> > reduce the patch. (You could also git-bisect, if you have the time).
+> >
+> I did some testing and compiled some kernels and here are the results:
+> 
+> I was able to find out what causes the problems for me.  I did build two 
+> 2.6.21.3 kernels, and one does work fine and the other doesn't.
+> 
+> This is a diff of the kernel configs I used:
+> 
+> --- /usr/src/linux-2.6.21.3-oldconfig1/.config  2007-05-28 13:41:15.000000000 
+> +0200
+> +++ /usr/src/linux-2.6.21.3/.config     2007-05-28 14:46:08.000000000 +0200
+> @@ -1,7 +1,7 @@
+>  #
+>  # Automatically generated make config: don't edit
+>  # Linux kernel version: 2.6.21.3
+> -# Mon May 28 13:41:15 2007
+> +# Mon May 28 14:46:09 2007
+>  #
+>  CONFIG_X86_32=y
+>  CONFIG_GENERIC_TIME=y
+> @@ -32,7 +32,7 @@
+>  #
+>  # General setup
+>  #
+> -CONFIG_LOCALVERSION="-oldconfig1"
+> +CONFIG_LOCALVERSION=""
+>  CONFIG_LOCALVERSION_AUTO=y
+>  CONFIG_SWAP=y
+>  CONFIG_SYSVIPC=y
+> @@ -108,9 +108,9 @@
+>  #
+>  # Processor type and features
+>  #
+> -# CONFIG_TICK_ONESHOT is not set
+> +CONFIG_TICK_ONESHOT=y
+>  # CONFIG_NO_HZ is not set
+> -# CONFIG_HIGH_RES_TIMERS is not set
+> +CONFIG_HIGH_RES_TIMERS=y
+>  # CONFIG_SMP is not set
+>  CONFIG_X86_PC=y
+>  # CONFIG_X86_ELAN is not set
+> 
+> The -oldconfig1 is the kernel that had no problems and the other shows the b44 
+> problem. So if High Resolution Timer Support is disabled everything works 
+> fine and if I enable it the problems do appear again.
+> 
+> I didn't test this on my 2.6.22-rc3 kernel yet, but I guess disabling High 
+> Resolution Timer Support will also solve the problem there.
+> 
+> The older kernels I tried also work perfectly fine and they didn't have the 
+> High Resolution Timer Support yet.
 
-It's ok in his case since most userspace applications do not support
-this format, it helps noone if there's a driver out there which isn't
-supported by most userspace applications and I don't expect that all
-applications will add a conversion for that format soon.
-This would moreover raise the question about a userspace library,
-though there are many more important issues which are outstanding and
-which got smashed down.
-
-> > +static void stk11xx_resize_image(u8 *out, const u8 *in,
-> > +		unsigned int width, unsigned int height, unsigned int factor)
->
-> Also, kernel shouldn't be doing image resize.
->
-> > +static int stk11xx_decompress(struct stk11xx *dev)
-> > +{
->
-> We don't do format conversions in kernel. Instead, you should return a
-> proper Bayer Fourcc format (like V4L2_PIX_FMT_SBGGR8).
->
-> > +static int stk1125_load_microcode(struct stk11xx *dev)
-> > +{
-> > +	unsigned int i;
-> > +	const u8 *values_204, *values_205;
-> > +	int retok, value;
-> > +
-> > +	/* From 80x60 to 640x480 */
-> > +	const u8 values_1_204[] = {
-> > +		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
-> > +		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
-> > +		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
-> > +		0x96, 0x3d, 0x69, 0x3a, 0x8e, 0x3c, 0x8f, 0x8b, 0x8c, 0x94,
-> > +		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
-> > +		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
-> > +	};
-> > +	const u8 values_1_205[] = {
-> > +		0x45, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
-> > +		0x50, 0x93, 0x00, 0x81, 0x20, 0x45, 0x00, 0x00, 0x00, 0x24,
-> > +		0xc4, 0xb6, 0x00, 0x3c, 0x36, 0x00, 0x07, 0xe2, 0xbf, 0x00,
-> > +		0x04, 0x19, 0x40, 0x0d, 0x00, 0x73, 0xdf, 0x06, 0x20, 0x88,
-> > +		0x88, 0xc1, 0x3f, 0x42, 0x80, 0x04, 0xb8, 0x92, 0x0a, 0x00,
-> > +		0x00, 0x00, 0x00, 0x68, 0x5c, 0xc3, 0x2e, 0x00, 0x00
-> > +	};
-> > +
-> > +	/* From 800x600 to 1280x1024 */
-> > +	const u8 values_2_204[] = {
-> > +		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
-> > +		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
-> > +		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
-> > +		0x96, 0x3d, 0x69, 0x3a, 0x8e, 0x3c, 0x8f, 0x8b, 0x8c, 0x94,
-> > +		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
-> > +		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
-> > +	};
-> > +	const u8 values_2_205[] = {
-> > +		0x05, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
-> > +		0x50, 0x93, 0x00, 0x81, 0x20, 0x05, 0x00, 0x00, 0x00, 0x1b,
-> > +		0xbb, 0xa4, 0x01, 0x81, 0x12, 0x00, 0x07, 0xe2, 0xbf, 0x00,
-> > +		0x04, 0x19, 0x40, 0x0d, 0x00, 0x73, 0xdf, 0x06, 0x20, 0x88,
-> > +		0x88, 0xc1, 0x3f, 0x42, 0x80, 0x04, 0xb8, 0x92, 0x0a, 0x00,
-> > +		0x00, 0x00, 0x00, 0x68, 0x5c, 0xc3, 0x2e, 0x00, 0x00
-> > +	};
->
-> Please use instead the load_firmware routines. It is not a good idea to
-> have firmware inside the kernel. Also, this might rise some legal issues
-> due to licensing models.
-
-Jiri, are you allowed to include that microcode, did you get any
-information about this from the manufacturer which could allow the
-inclusion?
-The sequences are rather small not putting it into extra firmware
-files would make life much easier for some users, on the other side if
-it raises legal issues Mauro's right with loading it from a file
-
-Markus
-
->
-> > +
-> > +/*
-> > + * The configuration of device is composed of 11 steps.
-> > + * This function is called by the initialization process.
-> > + *
-> > + * We don't know the meaning of these steps! We only replay the USB log.
-> > + *
-> > + * The steps 0 to 9 are called during the initialization.
-> > + * Then, the driver choose the last step :
-> > + *   10 : for a resolution from 80x60 to 640x480
-> > + *   11 : for a resolution from 800x600 to 1280x1024
-> > + */
-> > +static int stk1125_configure_device(struct stk11xx *dev, int step)
-> > +{
-> > +	int value;
-> > +
-> > +	/*      0,    1,    2,    3,    4,    5,    6,    7,    8,    9,
-> > +		    10,   11 */
-> > +
-> > +	const u8 values_001B[] = {
-> > +		0x0E, 0x03, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E, 0x0E,
-> > +		    0x0E, 0x0E
-> > +	};
-> > +	const u8 values_001C[] = {
-> > +		0x06, 0x02, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46,
-> > +		    0x46, 0x0E
-> > +	};
-> > +	const u8 values_0202[] = {
-> > +		0x1E, 0x0A, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E,
-> > +		    0x1E, 0x1E
-> > +	};
-> > +	const u8 values_0110[] = {
-> > +		0x07, 0x00, 0x00, 0x00, 0x00, 0x3E, 0x3E, 0x00, 0x00, 0x00,
-> > +		    0x00, 0x00
-> > +	};
-> > +	const u8 values_0112[] = {
-> > +		0x07, 0x00, 0x00, 0x00, 0x00, 0x09, 0x09, 0x00, 0x00, 0x00,
-> > +		    0x00, 0x00
-> > +	};
-> > +	const u8 values_0114[] = {
-> > +		0x87, 0x80, 0x80, 0x80, 0x80, 0xBE, 0xBE, 0x80, 0x80, 0x80,
-> > +		    0x80, 0x00
-> > +	};
-> > +	const u8 values_0115[] = {
-> > +		0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-> > +		    0x02, 0x05
-> > +	};
-> > +	const u8 values_0116[] = {
-> > +		0xE7, 0xE0, 0xE0, 0xE0, 0xE0, 0xE9, 0xE9, 0xE0, 0xE0, 0xE0,
-> > +		    0xE0, 0x00
-> > +	};
-> > +	const u8 values_0117[] = {
-> > +		0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-> > +		    0x01, 0x04
-> > +	};
-> > +	const u8 values_0100[] = {
-> > +		0x20, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21,
-> > +		    0x21, 0x21
-> > +	};
-> > +
-> > +	dev_dbg(&dev->udev->dev, "stk1125_configure_device: %d\n", step);
-> > +
-> > +	stk11xx_write_registry(dev, 0x0000, 0x0024);
-> > +	stk11xx_write_registry(dev, 0x0002, 0x0068);
-> > +	stk11xx_write_registry(dev, 0x0003, 0x0080);
-> > +	stk11xx_write_registry(dev, 0x0005, 0x0000);
-> 	...
->
-> Instead of using all those write, you should consider creating a table
-> of values and use something like:
-> 	stk11xx_write_regs(dev, table1);
->
-> > +/*
-> > + * STK-1135 API
-> > + */
-> > +
-> > +static int stk1135_load_microcode(struct stk11xx *dev)
-> > +{
-> > +	unsigned int i;
-> > +	int retok, value;
->
-> > +
-> > +	const u8 values_204[] = {
-> > +		0x17, 0x19, 0xb4, 0xa6, 0x12, 0x13, 0x1e, 0x21, 0x24, 0x32,
-> > +		0x36, 0x39, 0x4d, 0x53, 0x5d, 0x5f, 0x60, 0x61, 0x62, 0x63,
-> > +		0x64, 0x65, 0x66, 0x82, 0x83, 0x85, 0x86, 0x89, 0x97, 0x98,
-> > +		0xad, 0xae, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbf, 0x48, 0xd8,
-> > +		0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f,
-> > +		0x80, 0x81, 0xd8, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c,
-> > +		0x7d, 0x7e, 0x7f, 0x80, 0x81, 0xd8, 0x76, 0x77, 0x78, 0x79,
-> > +		0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f, 0x80, 0x81, 0x5c, 0xc0,
-> > +		0x59, 0x5a, 0x5b, 0xd4, 0x8e, 0x8f, 0x90, 0x91, 0x92, 0x93,
-> > +		0x94, 0x95, 0x96, 0xb3, 0x73, 0x06, 0x07, 0x0b, 0x15, 0x20,
-> > +		0x4e, 0x4f, 0x49, 0x4a, 0x4b, 0x4c, 0x46, 0x06, 0x07, 0xb9,
-> > +		0xba, 0xbb, 0xbc, 0x61, 0x62, 0x65, 0x66
-> > +	};
-> > +	const u8 values_205[] = {
-> > +		0x41, 0x41, 0x03, 0x06, 0x06, 0x08, 0x06, 0x00, 0x02, 0x69,
-> > +		0x35, 0x60, 0xfe, 0x1c, 0x04, 0x08, 0x08, 0x08, 0x08, 0x00,
-> > +		0x00, 0x10, 0x14, 0x01, 0x80, 0x0c, 0xb6, 0x00, 0x25, 0x25,
-> > +		0x3f, 0x24, 0x10, 0x07, 0xcc, 0x1f, 0x30, 0x02, 0x9c, 0x80,
-> > +		0x00, 0x0d, 0x18, 0x22, 0x2c, 0x3e, 0x4f, 0x6f, 0x8e, 0xac,
-> > +		0xc8, 0xe5, 0xa0, 0x00, 0x0d, 0x18, 0x22, 0x2c, 0x3e, 0x4f,
-> > +		0x6f, 0x8e, 0xac, 0xc8, 0xe5, 0xc0, 0x00, 0x0d, 0x18, 0x22,
-> > +		0x2c, 0x3e, 0x4f, 0x6f, 0x8e, 0xac, 0xc8, 0xe5, 0x70, 0x18,
-> > +		0x09, 0x07, 0x07, 0x3c, 0x3d, 0x95, 0x88, 0x89, 0x47, 0x9c,
-> > +		0x81, 0x9c, 0x3d, 0x76, 0x76, 0x01, 0xf3, 0x05, 0x00, 0x44,
-> > +		0x06, 0x0a, 0x96, 0x00, 0x7d, 0x00, 0x20, 0x01, 0xf3, 0x04,
-> > +		0xe4, 0x09, 0xc8, 0x08, 0x08, 0x10, 0x14
-> > +	};
->
-> Same as commented before about microcode.
->
-> You may also consider writing a separate c file for stk1135. Having a
-> large .c file is not very nice. The better is to split the code into a
-> few parts.
-> > +static void *stk11xx_rvmalloc(unsigned long size)
->
-> Another rvmalloc implementation? You should consider using the one
-> already at kernel.
->
-> > +
-> > +static void stk11xx_rvfree(void *mem, unsigned long size)
->
-> same as above.
->
-> > +	cap->version = (u32)DRIVER_VERSION_NUM;
->
-> You should use, instead, KERNEL_VERSION macro.
->
-> > +       /* Create frame buffers and make circular ring */
-> > +       for (i = 0; i < default_nbrframebuf; i++)
-> > +               if (dev->framebuf[i].data == NULL) {
-> > +                       dev->framebuf[i].data =
-> vmalloc(STK11XX_FRAME_SIZE);
->
-> STK11XX_FRAME_SIZE is defined previously as  (1280 * 1024 * 3). Why to
-> allocate so much memory, even if the user selects a lower format? You
-> should, instead, allocate memory dynamically as needed by the user.
->
-> > +static int stk11xx_querystd(struct file *file, void *fh, v4l2_std_id
-> > *a)
-> > +{
-> > +	*a = V4L2_STD_UNKNOWN;
-> > +	return 0;
-> > +}
-> > +
-> > +static int stk11xx_s_std(struct file *file, void *fh, v4l2_std_id *a)
-> > +{
-> > +	return *a == V4L2_STD_UNKNOWN ? 0 : -EINVAL;
-> > +}
->
-> This raises an interesting discussion about video standards. I would,
-> instead, use V4L2_STD_ALL, since webcams are capable of properly
-> handling on 525 raw lines/60Hz based standards (those derived from
-> 640x480 res) as well as 625 raw lines/50Hz based standards (those
-> derived from ITU-T CIF resolutions).
->
-> As reference, STD_ALL is defined as:
->
-> #define V4L2_STD_ALL            (V4L2_STD_525_60        |\
->                                  V4L2_STD_625_50)
->
-> ---
->
-> Also, I noticed that several hexadecimal values are using uppercases.
-> The better is to convert all of them to lowercase, to keep the same
-> codingstyle as the other drivers.
->
-> --
-> Cheers,
-> Mauro
->
-> --
-> video4linux-list mailing list
-> Unsubscribe mailto:video4linux-list-request@redhat.com?subject=unsubscribe
-> https://www.redhat.com/mailman/listinfo/video4linux-list
->
-
+So, that's interesting, indeed.
+Any idea what's going on, someone? Thomas?
 
 -- 
-Markus Rechberger
+Greetings Michael.
