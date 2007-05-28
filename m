@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbXE1OuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbXE1O4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759398AbXE1OuP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 10:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXE1OuB
+	id S1758723AbXE1O4Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 10:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbXE1O4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 10:50:01 -0400
-Received: from keil-draco.com ([216.193.185.50]:50223 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753418AbXE1OuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 10:50:00 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Subject: Re: [RFC] LZO de/compression support - take 6
-Date: Mon, 28 May 2007 10:49:48 -0400
+	Mon, 28 May 2007 10:56:14 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:35987
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbXE1O4N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 10:56:13 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Maximilian Engelhardt <maxi@daemonizer.de>,
+       Gary Zambrano <zambrano@broadcom.com>
+Subject: Re: b44: regression in 2.6.22 (resend)
+Date: Mon, 28 May 2007 16:55:14 +0200
 User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Bret Towe" <magnade@gmail.com>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com>
-In-Reply-To: <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20070525172431.60affaca@freepuppy> <200705281249.56106.mb@bu3sch.de> <200705281612.15649.maxi@daemonizer.de>
+In-Reply-To: <200705281612.15649.maxi@daemonizer.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705281049.48679.dhazelton@enter.net>
+Message-Id: <200705281655.15105.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 28 May 2007 10:40:31 Nitin Gupta wrote:
-> Hi,
->
-> Attached is tester code used for testing.
-> (developed by Daniel Hazelton -- modified slightly to now use 'take 6'
-> version for 'TinyLZO')
->
-> Cheers,
-> Nitin
->
+On Monday 28 May 2007 16:12:12 Maximilian Engelhardt wrote:
+> On Monday 28 May 2007, Michael Buesch wrote:
+> > Can you also test the following patch?
+> > I think there's a bug in b44 that is doesn't properly discard
+> > shared IRQs, so it might possibly generate a NAPI storm, dunno.
+> > Worth a try.
+> >
+> > Index: linux-2.6.22-rc3/drivers/net/b44.c
+> > ===================================================================
+> > --- linux-2.6.22-rc3.orig/drivers/net/b44.c	2007-05-27 23:01:44.000000000
+> > +0200 +++ linux-2.6.22-rc3/drivers/net/b44.c	2007-05-28 12:48:27.000000000
+> > +0200 @@ -911,6 +911,8 @@ static irqreturn_t b44_interrupt(int irq
+> >  	spin_lock(&bp->lock);
+> >
+> >  	istat = br32(bp, B44_ISTAT);
+> > +	if (istat == 0xFFFFFFFF)
+> > +		goto out; /* Shared IRQ not for us */
+> >  	imask = br32(bp, B44_IMASK);
+> >
+> >  	/* The interrupt mask register controls which interrupt bits
+> > @@ -942,6 +944,7 @@ irq_ack:
+> >  		bw32(bp, B44_ISTAT, istat);
+> >  		br32(bp, B44_ISTAT);
+> >  	}
+> > +out:
+> >  	spin_unlock(&bp->lock);
+> >  	return IRQ_RETVAL(handled);
+> >  }
+> 
+> I did try this patch on a affected kernel, but I didn't notice any big 
+> difference. Perhaps the kernel is a bit less slow during the test, but It's 
+> hard to tell.
 
-<snip>
-I haven't tested with version 6, but after removing the LZO_CHECK_MPOS_NON_DET 
-macro from the 'take 5' code and replacing the open-coded byte-for-byte 
-copies with calls to memcpy:
+Ok, but anyway. I think this is a bug and needs to be fixed this way. Gary?
 
-10000 run averages:
-'Tiny LZO':
-        Combined: 57.4691 usec
-        Compression: 39.8837 usec
-        Decompression: 17.5854 usec
-'miniLZO':
-        Combined: 64.0484 usec
-        Compression: 46.0604 usec
-        Decompression: 17.988 usec
-
-which means:
-Overall TinyLZO is 10.2% faster
-TinyLZO compresses 13.4% faster
-TinyLZO decompresses 2.23% faster
-
--Benchmark run a a Pentium-M 1.73GHz, 1GB Ram
-With the speed-up seen with just the removal of the LZO_CHECK_MPOS_NON_DET I 
-wasn't sure that changing the open-coded copy to a call to memcpy() was going 
-to have a big impact on the code, but it does appear to have has several 
-percentage points of difference. (Though I am unsure about the speed increase 
-with the decompression - I didn't touch that file when making this set of 
-changes. I'm going to make the memcpy() changes to 'take 6' and see if the 
-speed-up holds true)
-
-DRH
+-- 
+Greetings Michael.
