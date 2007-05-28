@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932717AbXE1WCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbXE1WDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932717AbXE1WCO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 18:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXE1WB7
+	id S1763481AbXE1WDc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 18:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbXE1WDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 18:01:59 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48622 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751490AbXE1WB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 18:01:58 -0400
-Message-ID: <465B5151.4090504@garzik.org>
-Date: Mon, 28 May 2007 18:01:53 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 28 May 2007 18:03:25 -0400
+Received: from postfix2-g20.free.fr ([212.27.60.43]:56466 "EHLO
+	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbXE1WDY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 18:03:24 -0400
+Message-ID: <465B49EB.4080204@free.fr>
+Date: Mon, 28 May 2007 23:30:19 +0200
+From: Thierry Merle <thierry.merle@free.fr>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] pata_sis: FIFO whack
-References: <20070525205024.2f83995d@the-village.bc.nu>
-In-Reply-To: <20070525205024.2f83995d@the-village.bc.nu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Markus Rechberger <mrechberger@gmail.com>, video4linux-list@redhat.com,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+References: <2172422218943432279@wsc.cz> <1180364420.21547.160.camel@localhost>	<d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>	<1180378677.21547.189.camel@localhost>	<d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com> <1180383071.21547.230.camel@localhost>
+In-Reply-To: <1180383071.21547.230.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> If you are using a SiS controller and the BIOS didn't set it up then the
-> FIFO may be left active when we try and set up the CD. Not convinced this
-> matters but I'd prefer to be safe
-> 
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> 
-> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.22-rc2-mm1/drivers/ata/pata_sis.c linux-2.6.22-rc2-mm1/drivers/ata/pata_sis.c
-> --- linux.vanilla-2.6.22-rc2-mm1/drivers/ata/pata_sis.c	2007-05-25 17:39:06.000000000 +0100
-> +++ linux-2.6.22-rc2-mm1/drivers/ata/pata_sis.c	2007-05-25 18:22:21.000000000 +0100
-> @@ -149,6 +149,9 @@
->  	if (!pci_test_config_bits(pdev, &sis_enable_bits[ap->port_no]))
->  		return -ENOENT;
->  
-> +	/* Clear the FIFO settings. We can't enable the FIFO until
-> +	   we know we are poking at a disk */
-> +	pci_write_config_byte(pdev, 0x4B, 0);
->  	return ata_std_prereset(ap, deadline);
+Mauro Carvalho Chehab a écrit :
+>>> As Luca pointed, if we add conversion for one driver, we should add for
+>>> the rest.
+>>>
+>>> Instead, it would be better if Jiri sends the decoding and the rescaling
+>>> stuff as a patch to v4l2-apps/lib, starting the API decoding library.
+>>> Once we have a library, we can ask the userspace developers to use it
+>>> for the formats not recognized by their userspace apps.
+>>>
+>>>       
+>> I think it would be better to evaluate existing solutions (eg. libpw).
+>>     
+>
+> Agreed. Volunteers?
+>
+>   
+Hi Mauro and Markus,
+Just to summ up what I understood we need:
 
+What do we need in userspace, only for v4l (dvb is not concerned):
+- colorspace translations
+- filters that be done in hardware if the selected hardware can, 
+otherwise software plugin
+- decompression algorithm like stk11xx or usbvision (the decompression 
+algorithm is in kernelspace since it is of linear complexity but shall 
+be moved to userspace)
 
-Should I queue this into #upstream (2.6.23) or #upstream-fixes 
-(2.6.22-rc) branch?
+Using pwlib will not mean that application developers will use pwlib to 
+decode v4l driver outputs.
+C bindings are much more popular than C++ bindings and do not prevent 
+object oriented design.
+Application developers implement their own codecs.
+As an example, every application do deinterlacing internally or not...
+Application developers will probably not use pwlib v4l extensions 
+because they will prefer to write adapted codecs for their framework.
 
-I lean towards #upstream since it is so late in the 2.6.22-rc cycle, 
-because of your comment "Not convinced this matters".
+Much more important for me is to see the actual specification of the 
+needed v4l extensions points, with advice/participation of 
+application/codec developers.
 
-	Jeff
-
-
+Thierry
