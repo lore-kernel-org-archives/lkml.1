@@ -1,423 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763333AbXE2OJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762772AbXE2OKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763333AbXE2OJd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932088AbXE2OD6
+	id S1762772AbXE2OKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbXE2OK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 10:03:58 -0400
-Received: from tayrelbas04.tay.hp.com ([161.114.80.247]:54497 "EHLO
-	tayrelbas04.tay.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758557AbXE2ODz (ORCPT
+	Tue, 29 May 2007 10:10:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:7607 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751578AbXE2OKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 10:03:55 -0400
-Date: Tue, 29 May 2007 06:48:28 -0700
-From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmSiA019788@frankl.hpl.hp.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 14/22] 2.6.22-rc3 perfmon2 : default sampling format
-Cc: eranian@hpl.hp.com
+	Tue, 29 May 2007 10:10:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=YHib9s6noxxp7zEW5ipaBRkHBTKCXXxHlvokLNRz4z5vPNyr9krWO0kx3JfKd+cZPx2Oe/1/dHo+1p/jgCBtghpqcALHDZBLNrRgzIat5ULAMatGilvJeJ80aCdjsGekV7bh/QH2NMKrFBiBPbOUfH6K+BvLmI8HlR/PJr/VdhY=
+Message-ID: <465C3446.5020603@googlemail.com>
+Date: Tue, 29 May 2007 16:10:14 +0200
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       us15@os.inf.tu-dresden.de, gregkh@suse.de, davej@redhat.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] reduce AER init error information
+References: <1177832284.14017.270.camel@ymzhang>
+In-Reply-To: <1177832284.14017.270.camel@ymzhang>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-This file implements the default sampling buffer format.
+Zhang, Yanmin napisał(a):
+> PCI-Express AER support in kernel requires BIOS to provide _OSC support
+> to allow the AER Root port service driver to request for native control
+> of AER. If a root port supports AER capablity, but BIOS doesn't provide
+> _OSC for it, aerdriver will print many debug information to system console.
+> Below is a log example.
+> 
+> *******************Error information example************
+> Evaluate _OSC Set fails. Status = 0x0005
+> Evaluate _OSC Set fails. Status = 0x0005
+> aer_init: AER service init fails - Run ACPI _OSC fails
+> aer: probe of 0000:00:02.0:pcie01 failed with error 2
+> Evaluate _OSC Set fails. Status = 0x0005
+> Evaluate _OSC Set fails. Status = 0x0005
+> aer_init: AER service init fails - Run ACPI _OSC fails
+> aer: probe of 0000:00:04.0:pcie01 failed with error 2
+> Evaluate _OSC Set fails. Status = 0x0005
+> Evaluate _OSC Set fails. Status = 0x0005
+> aer_init: AER service init fails - Run ACPI _OSC fails
+> aer: probe of 0000:00:06.0:pcie01 failed with error 2
+> ******************End of Error information example******
+> 
+> 
+> As _OSC is an optional capability of BIOS, such error information looks
+> like overly-verbosed. The patch against kernel 2.6.21 changes it to just
+> print one line report messages if aerdriver fails to attach the root port
+> service device.
+> 
+> Below is an example of new output.
+> AER service couldn't init device 0000:00:02.0:pcie01 - no _OSC support
+> 
+> 
+> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+> 
+> ---
+> 
+[..]
 
-in this format, the buffer is composed of two major sections:
-	- a buffer header
-	- the samples
+This patch fixes a 2.6.21 regression. Please add this to the -stable and mainline queue.
 
-Each sample is composed of:
-	- a fixed size header
-	- an optional variable size body containing the values
-	  of PMDs of interest as specified by user per counter
+Regards,
+Michal
 
-The sample header contains:
-	- the PID, TID
-	- CPU where the PMU interrupt occurred
-	- active event set number
-	- a unique timestamp for the CPU where the interrupt occurred
-	- the index of the PMD register that overflowed
-	- the last reset value of that overflowd PMD
-
-Samples are stored contiguously. No aggregation is made. When multiple
-counters overflow at the same time, multiple samples are written but
-they have the same timestamp.
-
-When the end of the buffer is reached, monitoring is stopped. A user
-notification may be requested. Otherwise the buffer has reached its
-saturation point until a pfm_restart() is issued.
-
-The format works for all architectures in both 32-bit and 64-bit.
-Samples for all events sets are store in the same buffer.
-
-
-
-
---- linux-2.6.22.base/perfmon/perfmon_dfl_smpl.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/perfmon/perfmon_dfl_smpl.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,284 @@
-+/*
-+ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
-+ *               Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *
-+ * This file implements the new default sampling buffer format
-+ * for the perfmon2 subsystem.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+ */
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/smp.h>
-+
-+#include <linux/perfmon.h>
-+#include <linux/perfmon_dfl_smpl.h>
-+
-+MODULE_AUTHOR("Stephane Eranian <eranian@hpl.hp.com>");
-+MODULE_DESCRIPTION("new perfmon default sampling format");
-+MODULE_LICENSE("GPL");
-+
-+static int pfm_dfl_fmt_validate(u32 ctx_flags, u16 npmds, void *data)
-+{
-+	struct pfm_dfl_smpl_arg *arg = data;
-+	u64 min_buf_size;
-+
-+	if (data == NULL) {
-+		PFM_DBG("no argument passed");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * sanity check in case size_t is smaller then u64
-+	 */
-+#if BITS_PER_LONG == 4
-+#define MAX_SIZE_T	(1ULL<<(sizeof(size_t)<<3))
-+	if (sizeof(size_t) < sizeof(arg->buf_size)) {
-+		if (arg->buf_size >= MAX_SIZE_T)
-+			return -ETOOBIG;
-+	}
-+#endif
-+	
-+	/*
-+	 * compute min buf size. npmds is the maximum number
-+	 * of implemented PMD registers.
-+	 */
-+	min_buf_size = sizeof(struct pfm_dfl_smpl_hdr)
-+	             + (sizeof(struct pfm_dfl_smpl_entry) + (npmds*sizeof(u64)));
-+
-+	PFM_DBG("validate ctx_flags=0x%x flags=0x%x npmds=%u "
-+		   "min_buf_size=%llu buf_size=%llu\n",
-+		   ctx_flags,
-+		   arg->buf_flags,
-+		   npmds,
-+		   (unsigned long long)min_buf_size,
-+		   (unsigned long long)arg->buf_size);
-+
-+	/*
-+	 * must hold at least the buffer header + one minimally sized entry
-+	 */
-+	if (arg->buf_size < min_buf_size)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int pfm_dfl_fmt_get_size(u32 flags, void *data, size_t *size)
-+{
-+	struct pfm_dfl_smpl_arg *arg = data;
-+
-+	/*
-+	 * size has been validated in default_validate
-+	 * we can never loose bits from buf_size.
-+	 */
-+	*size = (size_t)arg->buf_size;
-+
-+	return 0;
-+}
-+
-+static int pfm_dfl_fmt_init(struct pfm_context *ctx, void *buf, u32 ctx_flags,
-+			    u16 npmds, void *data)
-+{
-+	struct pfm_dfl_smpl_hdr *hdr;
-+	struct pfm_dfl_smpl_arg *arg = data;
-+
-+	hdr = buf;
-+
-+	hdr->hdr_version = PFM_DFL_SMPL_VERSION;
-+	hdr->hdr_buf_size = arg->buf_size;
-+	hdr->hdr_buf_flags = arg->buf_flags;
-+	hdr->hdr_cur_offs = sizeof(*hdr);
-+	hdr->hdr_overflows = 0;
-+	hdr->hdr_count = 0;
-+	hdr->hdr_min_buf_space = sizeof(struct pfm_dfl_smpl_entry) + (npmds*sizeof(u64));
-+
-+	PFM_DBG("buffer=%p buf_size=%llu hdr_size=%zu hdr_version=%u.%u "
-+		  "min_space=%llu npmds=%u",
-+		  buf,
-+		  (unsigned long long)hdr->hdr_buf_size,
-+		  sizeof(*hdr),
-+		  PFM_VERSION_MAJOR(hdr->hdr_version),
-+		  PFM_VERSION_MINOR(hdr->hdr_version),
-+		  (unsigned long long)hdr->hdr_min_buf_space,
-+		  npmds);
-+
-+	return 0;
-+}
-+
-+/*
-+ * called from pfm_overflow_handler() to record a new sample
-+ *
-+ * context is locked, interrupts are disabled (no preemption)
-+ */
-+static int pfm_dfl_fmt_handler(void *buf, struct pfm_ovfl_arg *arg,
-+			       unsigned long ip, u64 tstamp, void *data)
-+{
-+	struct pfm_dfl_smpl_hdr *hdr;
-+	struct pfm_dfl_smpl_entry *ent;
-+	void *cur, *last;
-+	u64 *e;
-+	size_t entry_size, min_size;
-+	u16 npmds, i;
-+	u16 ovfl_pmd;
-+
-+	hdr = buf;
-+	cur = buf+hdr->hdr_cur_offs;
-+	last = buf+hdr->hdr_buf_size;
-+	ovfl_pmd = arg->ovfl_pmd;
-+	min_size = hdr->hdr_min_buf_space;
-+
-+	/*
-+	 * precheck for sanity
-+	 */
-+	if ((last - cur) < min_size)
-+		goto full;
-+
-+	npmds = arg->num_smpl_pmds;
-+
-+	ent = (struct pfm_dfl_smpl_entry *)cur;
-+
-+	entry_size = sizeof(*ent) + (npmds << 3);
-+
-+	/* position for first pmd */
-+	e = (u64 *)(ent+1);
-+
-+	hdr->hdr_count++;
-+
-+	PFM_DBG_ovfl("count=%llu cur=%p last=%p free_bytes=%zu ovfl_pmd=%d "
-+		       "npmds=%u",
-+		       (unsigned long long)hdr->hdr_count,
-+		       cur, last,
-+		       (last-cur),
-+		       ovfl_pmd,
-+		       npmds);
-+
-+	/*
-+	 * current = task running at the time of the overflow.
-+	 *
-+	 * per-task mode:
-+	 * 	- this is usually the task being monitored.
-+	 * 	  Under certain conditions, it might be a different task
-+	 *
-+	 * system-wide:
-+	 * 	- this is not necessarily the task controlling the session
-+	 */
-+	ent->pid = current->pid;
-+	ent->ovfl_pmd = ovfl_pmd;
-+	ent->last_reset_val = arg->pmd_last_reset;
-+
-+	/*
-+	 * where did the fault happen (includes slot number)
-+	 */
-+	ent->ip = ip;
-+
-+	ent->tstamp = tstamp;
-+	ent->cpu = smp_processor_id();
-+	ent->set = arg->active_set;
-+	ent->tgid = current->tgid;
-+
-+	/*
-+	 * selectively store PMDs in increasing index number
-+	 */
-+	if (npmds) {
-+		u64 *val = arg->smpl_pmds_values;
-+		for(i=0; i < npmds; i++) {
-+			*e++ = *val++;
-+		}
-+	}
-+
-+	/*
-+	 * update position for next entry
-+	 */
-+	hdr->hdr_cur_offs += entry_size;
-+	cur += entry_size;
-+
-+	/*
-+	 * post check to avoid losing the last sample
-+	 */
-+	if ((last - cur) < min_size)
-+		goto full;
-+
-+	/* reset before returning from interrupt handler */
-+	arg->ovfl_ctrl = PFM_OVFL_CTRL_RESET;
-+
-+	return 0;
-+full:
-+	PFM_DBG_ovfl("sampling buffer full free=%zu, count=%llu",
-+		     last-cur,
-+		     (unsigned long long)hdr->hdr_count);
-+
-+	/*
-+	 * increment number of buffer overflows.
-+	 * important to detect duplicate set of samples.
-+	 */
-+	hdr->hdr_overflows++;
-+
-+	/*
-+	 * request notification and masking of monitoring.
-+	 * Notification is still subject to the overflowed
-+	 * register having the FL_NOTIFY flag set.
-+	 */
-+	arg->ovfl_ctrl = PFM_OVFL_CTRL_NOTIFY| PFM_OVFL_CTRL_MASK;
-+
-+	return -ENOBUFS; /* we are full, sorry */
-+}
-+
-+static int pfm_dfl_fmt_restart(int is_active, u32 *ovfl_ctrl, void *buf)
-+{
-+	struct pfm_dfl_smpl_hdr *hdr;
-+
-+	hdr = buf;
-+
-+	hdr->hdr_count = 0;
-+	hdr->hdr_cur_offs = sizeof(*hdr);
-+
-+	*ovfl_ctrl = PFM_OVFL_CTRL_RESET;
-+
-+	return 0;
-+}
-+
-+static int pfm_dfl_fmt_exit(void *buf)
-+{
-+	return 0;
-+}
-+
-+static struct pfm_smpl_fmt dfl_fmt={
-+	.fmt_name = "default",
-+	.fmt_version = 0x10000,
-+	.fmt_arg_size = sizeof(struct pfm_dfl_smpl_arg),
-+	.fmt_validate = pfm_dfl_fmt_validate,
-+	.fmt_getsize = pfm_dfl_fmt_get_size,
-+	.fmt_init = pfm_dfl_fmt_init,
-+	.fmt_handler = pfm_dfl_fmt_handler,
-+	.fmt_restart = pfm_dfl_fmt_restart,
-+	.fmt_exit = pfm_dfl_fmt_exit,
-+	.fmt_flags = PFM_FMT_BUILTIN_FLAG,
-+	.owner = THIS_MODULE
-+};
-+
-+static int pfm_dfl_fmt_init_module(void)
-+{
-+	return pfm_fmt_register(&dfl_fmt);
-+}
-+
-+static void pfm_dfl_fmt_cleanup_module(void)
-+{
-+	pfm_fmt_unregister(&dfl_fmt);
-+}
-+
-+module_init(pfm_dfl_fmt_init_module);
-+module_exit(pfm_dfl_fmt_cleanup_module);
---- linux-2.6.22.base/include/linux/perfmon_dfl_smpl.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/include/linux/perfmon_dfl_smpl.h	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,78 @@
-+/*
-+ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
-+ *               Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *
-+ * This file implements the new dfl sampling buffer format
-+ * for perfmon2 subsystem.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+  */
-+#ifndef __PERFMON_DFL_SMPL_H__
-+#define __PERFMON_DFL_SMPL_H__ 1
-+
-+/*
-+ * format specific parameters (passed at context creation)
-+ */
-+struct pfm_dfl_smpl_arg {
-+	__u64 buf_size;		/* size of the buffer in bytes */
-+	__u32 buf_flags;	/* buffer specific flags */
-+	__u32 reserved1;	/* for future use */
-+	__u64 reserved[6];	/* for future use */
-+};
-+
-+/*
-+ * This header is at the beginning of the sampling buffer returned to the user.
-+ * It is directly followed by the first record.
-+ */
-+struct pfm_dfl_smpl_hdr {
-+	__u64 hdr_count;	/* how many valid entries */
-+	__u64 hdr_cur_offs;	/* current offset from top of buffer */
-+	__u64 hdr_overflows;	/* #overflows for buffer */
-+	__u64 hdr_buf_size;	/* bytes in the buffer */
-+	__u64 hdr_min_buf_space;/* minimal buffer size (internal use) */
-+	__u32 hdr_version;	/* smpl format version */
-+	__u32 hdr_buf_flags;	/* copy of buf_flags */
-+	__u64 hdr_reserved[10];	/* for future use */
-+};
-+
-+/*
-+ * Entry header in the sampling buffer.  The header is directly followed
-+ * with the values of the PMD registers of interest saved in increasing
-+ * index order: PMD4, PMD5, and so on. How many PMDs are present depends
-+ * on how the session was programmed.
-+ *
-+ * In the case where multiple counters overflow at the same time, multiple
-+ * entries are written consecutively.
-+ *
-+ * last_reset_value member indicates the initial value of the overflowed PMD.
-+ */
-+struct pfm_dfl_smpl_entry {
-+	__u32	pid;		/* thread id (for NPTL, this is gettid()) */
-+	__u16	ovfl_pmd;	/* index of overflowed PMD for this sample */
-+	__u16	reserved;	/* for future use */
-+	__u64	last_reset_val;	/* initial value of overflowed PMD */
-+	__u64	ip;		/* where did the overflow interrupt happened  */
-+	__u64	tstamp;		/* overflow timetamp */
-+	__u16	cpu;		/* cpu on which the overfow occurred */
-+	__u16	set;		/* event set active when overflow ocurred   */
-+	__u32	tgid;		/* thread group id (for NPTL, this is getpid())*/
-+};
-+
-+#define PFM_DFL_SMPL_VERSION_MAJ 1U
-+#define PFM_DFL_SMPL_VERSION_MIN 0U
-+#define PFM_DFL_SMPL_VERSION (((PFM_DFL_SMPL_VERSION_MAJ&0xffff)<<16)|\
-+				(PFM_DFL_SMPL_VERSION_MIN & 0xffff))
-+
-+#endif /* __PERFMON_DFL_SMPL_H__ */
+-- 
+"Najbardziej brakowało mi twojego milczenia."
+-- Andrzej Sapkowski "Coś więcej"
