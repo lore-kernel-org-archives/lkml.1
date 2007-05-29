@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932302AbXE2BwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932360AbXE2B4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932302AbXE2BwI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 21:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXE2Bv5
+	id S932360AbXE2B4U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 21:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759406AbXE2B4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 21:51:57 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:23428 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753316AbXE2Bv4 (ORCPT
+	Mon, 28 May 2007 21:56:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:29855 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754647AbXE2B4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 21:51:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Ja82ACRu2eoIP3urk3eY1CRAYF14T+3kVeueXUoaVh3WJ9uZ1jowvHUbqzKiH2DteSyMG8qlEG+LEmcvawBMCf/6/Wj3vO7DrsCOSxPFN1erLXaECl0yaPZYW0WOyN4atuhl28BVAnOWtNefSws03VnsD5WZlfc+3PgKNeKEgKE=
-Message-ID: <2cd57c900705281851g7e0cdbe8j9db0689390155dd4@mail.gmail.com>
-Date: Tue, 29 May 2007 09:51:55 +0800
-From: "Qi Yong" <qiyong@fc-cn.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: [PATCH] add a trivial patch style checker
-Cc: "Andrew Morton" <akpm@osdl.org>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Joel Schopp" <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <9a1288909c10f2935af82ec5cea0c46b@pinky>
+	Mon, 28 May 2007 21:56:12 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=PARkhZF+/1MY98X/0gJfW9ci97ormPZOXRnMYRhaGLv2nKEmnpl2ThERrq1tTjogB
+	M0cGe1ALTNbMVSqzUiY0g==
+Message-ID: <6599ad830705281855w67921bb4kda8813cf993656df@mail.gmail.com>
+Date: Mon, 28 May 2007 18:55:52 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Peter Williams" <pwil3058@bigpond.net.au>
+Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
+Cc: vatsa@in.ibm.com, "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       wli@holomorphy.com, ckrm-tech@lists.sourceforge.net,
+       "Balbir Singh" <balbir@in.ibm.com>, efault@gmx.de,
+       linux-kernel@vger.kernel.org, tingy@cs.umass.edu,
+       "Kirill Korotaev" <dev@sw.ru>, kernel@kolivas.org, tong.n.li@intel.com,
+       containers@lists.osdl.org, "Ingo Molnar" <mingo@elte.hu>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       "Guillaume Chazarain" <guichaz@yahoo.fr>
+In-Reply-To: <465B7163.7020403@bigpond.net.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky>
-X-Google-Sender-Auth: 4106a20b3547d3d3
+References: <3d8471ca0705231112rfac9cfbt9145ac2da8ec1c85@mail.gmail.com>
+	 <20070525074500.GD6157@in.ibm.com> <20070525082951.GA25280@elte.hu>
+	 <4656DF0C.9090306@sw.ru> <20070525153450.GA4679@in.ibm.com>
+	 <46570C70.4050209@sw.ru> <20070525180850.GA26884@in.ibm.com>
+	 <46577CA6.8000807@bigpond.net.au> <20070528172658.GA18582@in.ibm.com>
+	 <465B7163.7020403@bigpond.net.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/05/07, Andy Whitcroft <apw@shadowen.org> wrote:
-
-...
-
-> diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
-> index a417b25..23637e8 100644
-> --- a/Documentation/SubmittingPatches
-> +++ b/Documentation/SubmittingPatches
-> @@ -118,7 +118,21 @@ then only post say 15 or so at a time and wait for review and integration.
+On 5/28/07, Peter Williams <pwil3058@bigpond.net.au> wrote:
 >
+> In any case, there's no point having cpu affinity if it's going to be
+> ignored.  Maybe you could have two levels of affinity: 1. if set by a
+> root it must be obeyed; and 2. if set by an ordinary user it can be
+> overridden if the best interests of the system dictate.  BUT I think
+> that would be a bad idea.
 
-...
+Something like that already exists (at least for controlling the
+bounding set of allowed cpus) via cpusets.
 
-> -8) Name your kernel version.
-> +9) Name your kernel version.
->
->  It is important to note, either in the subject line or in the patch
->  description, the kernel version to which this patch applies.
-
-If omitted, we could assume it default to the latest linus git tree.
-
-> -10) Include PATCH in the subject
-> +11) Include PATCH in the subject
->
->  Due to high e-mail traffic to Linus, and to linux-kernel, it is common
->  convention to prefix your subject line with [PATCH].  This lets Linus
-
-or use "patch", to be easier to read.
-
--- 
-Qi Yong
+Paul
