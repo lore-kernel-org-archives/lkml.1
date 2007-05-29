@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbXE2VAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932277AbXE2VBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932480AbXE2VAa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760199AbXE2VAO
+	id S932277AbXE2VBs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758819AbXE2VBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:00:14 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:44691 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760788AbXE2VAN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:00:13 -0400
-Date: Tue, 29 May 2007 13:59:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bryan Wu <bryan.wu@analog.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
-In-Reply-To: <11803414753217-git-send-email-bryan.wu@analog.com>
-Message-ID: <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
-References: <11803414753217-git-send-email-bryan.wu@analog.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 29 May 2007 17:01:41 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:49481 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758760AbXE2VBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 17:01:41 -0400
+Subject: Re: [PATCH] Samsung LTV350QV LCD driver
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <11804683571524-git-send-email-hskinnemoen@atmel.com>
+References: <11804683571524-git-send-email-hskinnemoen@atmel.com>
+Content-Type: text/plain
+Date: Tue, 29 May 2007 22:01:17 +0100
+Message-Id: <1180472477.5822.87.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 28 May 2007, Bryan Wu wrote:
+On Tue, 2007-05-29 at 21:52 +0200, Haavard Skinnemoen wrote:
+> This patch adds support for powering on and off the Samsung LTV350QV
+> LCD panel via SPI. The driver responds to framebuffer power
+> management, it powers off the panel on reboot/halt/poweroff, and it
+> can also be controlled through sysfs. The panel is powered up when the
+> module is loaded and off when the module is unloaded.
 > 
->  - Blackfin arch update including BF54x initial supporting
->  - Blackfin driver update: serial/spi/rtc
->  - Provide new Blackfin watchdog driver
->  - binfmt_flat.c for Blackfin arch modification
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 
-I realize that this all just touches blackfin-specific stuff, but after 
--rc3 I really prefer not to bother with these things..
+The LCD class device bits look fine to me. The only change I'd request
+is not to change the order of things in drivers/video/backlight/Kconfig.
+If you do want to reword one of those entries (which is what I think you
+wanted to do), send it as a separate patch please.
 
-Also, for stuff that is really just an architecture that I can't even 
-test, and where there is a clear maintainership thing, I'd actually prefer 
-to just do a git merge, if possible. It's not like I will likely start 
-looking at some blackfin-specific patches. Judging from the diffs, you do 
-actually use git, do you have a place where you could export these kinds 
-of patch-series as a git tree instead?
+David, any objections to the SPI bits?
 
-		Linus
+Richard
+
