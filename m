@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764092AbXE2H5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764295AbXE2H55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764092AbXE2H5g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 03:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXE2H53
+	id S1764295AbXE2H55 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 03:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXE2H5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 03:57:29 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:46392 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753129AbXE2H52 (ORCPT
+	Tue, 29 May 2007 03:57:49 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:51338 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755534AbXE2H5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 03:57:28 -0400
-Date: Tue, 29 May 2007 00:56:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Folkert van Heusden <folkert@vanheusden.com>
-Cc: linux-kernel@vger.kernel.org, Jarek Poplawski <jarkao2@o2.pl>,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org
-Subject: Re: [2.6.21.1] soft lockup when removing netconsole module
-Message-Id: <20070529005628.f7f3abc6.akpm@linux-foundation.org>
-In-Reply-To: <20070526154011.GB3735@vanheusden.com>
-References: <20070526154011.GB3735@vanheusden.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 29 May 2007 03:57:48 -0400
+Subject: Re: 2.6.22-rc2-mm1
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Tilman Schmidt <tilman@imap.cc>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+In-Reply-To: <20070528192224.0cf237d0@gondolin.boeblingen.de.ibm.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+	 <46585953.80200@imap.cc>
+	 <20070526090117.dda72286.akpm@linux-foundation.org>
+	 <465A033C.3070400@imap.cc>
+	 <3ae72650705271541o2c3755edwdc769883e79820e5@mail.gmail.com>
+	 <20070528192224.0cf237d0@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Tue, 29 May 2007 09:56:45 +0200
+Message-Id: <1180425405.7208.15.camel@lov.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+r7S+hN3I4zzm6MUdthSrFZU54Ujbjrz5t2+U
+ a6ovX80ic9x3xwG3J2N+R0J2ehE7v71uuFY+UPkYEXIEznAXW4
+ c0jkhVtO2w1hEo74IO9+VZZVNl3MJv6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 May 2007 17:40:12 +0200 Folkert van Heusden <folkert@vanheusden.com> wrote:
-
-> When trying to remove the netconsole module, I got the following kernel
-> output after a while (couple of minutes iirc):
+On Mon, 2007-05-28 at 19:22 +0200, Cornelia Huck wrote: 
+> On Mon, 28 May 2007 00:41:19 +0200,
+> "Kay Sievers" <kay.sievers@vrfy.org> wrote:
 > 
-> [525720.117293] BUG: soft lockup detected on CPU#1!
-> [525720.117353]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
-> [525720.117439]  [<c1004d7b>] show_trace+0x12/0x14
-> [525720.117526]  [<c1004e75>] dump_stack+0x16/0x18
-> [525720.117613]  [<c104dd5b>] softlockup_tick+0xa6/0xc2
-> [525720.117694]  [<c1026855>] run_local_timers+0x12/0x14
-> [525720.117738]  [<c1026669>] update_process_times+0x72/0xa1
-> [525720.117744]  [<c1038673>] tick_sched_timer+0x53/0xb6
-> [525720.117748]  [<c1033d62>] hrtimer_interrupt+0x189/0x1e3
-> [525720.117753]  [<c100e9e2>] local_apic_timer_interrupt+0x55/0x5b
-> [525720.117761]  [<c100ea12>] smp_apic_timer_interrupt+0x2a/0x39
-> [525720.117766]  [<c1004a3f>] apic_timer_interrupt+0x33/0x38
-> [525720.117770]  [<c120f4b1>] mutex_lock+0x8/0xa
-> [525720.117775]  [<c102d2f0>] flush_workqueue+0x2f/0x8f
-> [525720.117780]  [<c102d7a0>] cancel_rearming_delayed_workqueue+0x29/0x2b
-> [525720.117785]  [<c102d7b1>] cancel_rearming_delayed_work+0xf/0x11
-> [525720.117790]  [<c11be143>] netpoll_cleanup+0x75/0xa5
-> [525720.117794]  [<f893712d>] cleanup_netconsole+0x17/0x1a [netconsole]
-> [525720.117804]  [<c1041f11>] sys_delete_module+0x12f/0x14f
-> [525720.117809]  [<c1003f74>] syscall_call+0x7/0xb
-> [525720.117812]  =======================
+> > Cornelia,
+> > in the patch is:
+> >   +	if (dev->kobj.parent == &dev->class->subsys.kobj)
+> >   +		return 0;
+> > 
+> > which will skip the creation of the "device"-link, right?
 > 
-> Also the rmmod hangs and would not exit even with kill -9. It also
-> sucks up 100% cpu.
+> Uh, looking at the code again, this doesn't seem to be what I wanted :(
+> 
+> > But still, I don't think the transaction-style of error handling is
+> > what we want, it's for some critical subsystems the equivalent of
+> > adding PANIC(), and this just for a failing symlink-creation. I think
+> > we just want to print the to the logs, and not let the whole core
+> > device registration fail entirely.
+> 
+> Hm, but failure to create a symlink usually signifies something's really
+> wrong (no memory, or an object is there which shouldn't)?
 
-Jason recently posted a mystery patch without telling us what problem it
-fixed.
+Sure, but this is core code, which is used by _all_ drivers and _all_
+devices. Subsystems can decide to panic if this appropriate, but generic
+core code should probably not make such decisions.
 
-It looks like you just found it: cancel_rearming_delayed_work() will hang
-if the work isn't actually pending.  Please test this:
+With this change, a single failing symlink (or attribute) for a
+scsi/ide/block/... device may crash the whole box during bootup. I'm not
+sure that this is what we want.
 
+It's a failure that should be logged (the patch doesn't even add that),
+but there is probably no reason to refuse the creation of a device, if
+something non-vital like a symlink or attribute fails to be created.
 
-From: Jason Wessel <jason.wessel@windriver.com>
-
-Do not call cancel_rearming_delayed_work() if there is no
-pending work.
-
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- net/core/netpoll.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff -puN net/core/netpoll.c~a net/core/netpoll.c
---- a/net/core/netpoll.c~a
-+++ a/net/core/netpoll.c
-@@ -784,8 +784,10 @@ void netpoll_cleanup(struct netpoll *np)
- 			if (atomic_dec_and_test(&npinfo->refcnt)) {
- 				skb_queue_purge(&npinfo->arp_tx);
- 				skb_queue_purge(&npinfo->txq);
--				cancel_rearming_delayed_work(&npinfo->tx_work);
--				flush_scheduled_work();
-+				if (delayed_work_pending(&npinfo->tx_work)) {
-+					cancel_rearming_delayed_work(&npinfo->tx_work);
-+					flush_scheduled_work();
-+				}
- 
- 				kfree(npinfo);
- 			}
-_
+Thanks,
+Kay
 
