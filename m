@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763665AbXE2StU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXE2Sx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763665AbXE2StU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXE2StG
+	id S1764248AbXE2Sx0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbXE2SxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:49:06 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:56250 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbXE2StE (ORCPT
+	Tue, 29 May 2007 14:53:18 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:52816 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759420AbXE2SxR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:49:04 -0400
-Date: Tue, 29 May 2007 19:49:01 +0100 (IST)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
+	Tue, 29 May 2007 14:53:17 -0400
+Date: Tue, 29 May 2007 11:59:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
 To: Christoph Lameter <clameter@sgi.com>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 3/7] Allow CONFIG_MIGRATION to be set without CONFIG_NUMA
-In-Reply-To: <Pine.LNX.4.64.0705291133380.24473@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0705291948100.5669@skynet.skynet.ie>
-References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
- <20070529173710.1570.91203.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0705291057170.24126@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705291910430.5669@skynet.skynet.ie>
- <Pine.LNX.4.64.0705291133380.24473@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1: SLUB
+Message-Id: <20070529115900.405908a3.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0705291131010.24395@schroedinger.engr.sgi.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+	<20070528212250.eb38af64.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0705291012120.23611@schroedinger.engr.sgi.com>
+	<465C6D4B.90403@oracle.com>
+	<Pine.LNX.4.64.0705291131010.24395@schroedinger.engr.sgi.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007, Christoph Lameter wrote:
+On Tue, 29 May 2007 11:32:27 -0700 (PDT) Christoph Lameter wrote:
 
-> On Tue, 29 May 2007, Mel Gorman wrote:
->
->>>> +config SYSCALL_MOVE_PAGES
->>>> +	def_bool y
->>>> +	depends on MIGRATION && NUMA
->>>> +
->>>
->>> Do we really need the CONFIG_SYSCALL_MOVE_PAGES? I think you will directly
->>> access the lower levels. So why have it? CONFIG_SYSCALL_MOVE_PAGES ==
->>> CONFIG_NUMA.
->>
->> Without SYSCALL_MOVE_PAGES, the check in migrate.h becomes
->>
->> #if defined(CONFIG_NUMA) && defined(CONFIG_MIGRATION)
->> /* Check if a vma is migratable */
->> static inline int vma_migratable(struct vm_area_struct *vma)
->> #endif
->
-> Why do you need vma_migratable for the CONFIG_MIGRATION case? The use of
-> vma_migratable in a !NUMA sitation would not be working right as far as I
-> can tell.
->
-> #ifdef CONFIG_NUMA
->
-> is fine.
->
+> Oh. I forgot the usual instruction: Try to boot with slub_debug on the 
+> kernel command line. SLUB will attempt to remedy the situation to allow 
+> the boot to continue if it finds anything that goes wrong.
 
-Makes sense.
+Yes, that boots, thanks.
 
->> That in itself is fine but in mm/migrate.c I didn't want to define
->> sys_move_pages() in the non-NUMA case. Whatever about the header file where
->> SYSCALL_MOVE_PAGES obscures understanding, I think it makes sense to have
->> SYSCALL_MOVE_PAGES for mm/migrate.c . What do you think?
->
-> Why do you need sys_move_pages for the non-NUMA case?
->
-> The low level function that I intended to be used by defrag is
-> migrate_pages and that one is outside of #ifdef CONFIG_NUMA.
->
+Problem was the dmi-off-by-one kmalloc.  I used the patch
+that Andrew has merged and it works fine now.
 
-Also make sense. It'll be fixed up in the next verion minus the 
-SYSCALL_MOVE_PAGES dirt. It'll even simplify the patch.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
