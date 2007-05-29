@@ -1,53 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbXE2G3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763950AbXE2GaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761971AbXE2G3H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 02:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbXE2G24
+	id S1763950AbXE2GaR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 02:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbXE2GaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 02:28:56 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:26357 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbXE2G2z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 02:28:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AcK3LDF8SBRV4zlO4vNIKOZ8T3ApplOXWEGRdjHo6NyfgAwGfNg4J7C4FDbGCqZWfu77wWKNE1kV2slY1MjSdOlCC6xLPAPW5a24Ulle6rl0qeybclmseTXAcVsFdpwUoMKGDDdx/G5oKBwu741Y5KvmgFWP3Gt5UzIu3I3Zn44=
-Message-ID: <a781481a0705282328u54a14143jc60194fcf7b5aa23@mail.gmail.com>
-Date: Tue, 29 May 2007 11:58:54 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Bill Davidsen" <davidsen@tmr.com>
-Subject: Re: What causes iowait other than waiting for i/o?
-Cc: "Linux Kernel mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <465B4B75.2040602@tmr.com>
+	Tue, 29 May 2007 02:30:05 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53804 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751113AbXE2GaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 02:30:04 -0400
+From: Neil Brown <neilb@suse.de>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Date: Tue, 29 May 2007 16:29:46 +1000
+Message-ID: <18011.51290.257450.26100@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <465B4B75.2040602@tmr.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: Peter Linich <plinich@cse.unsw.edu.au>
+Subject: [PATCH/RFC] Is it OK for 'read' to return nuls for a file
+   that never had nuls in it?
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bill,
 
-On 5/29/07, Bill Davidsen <davidsen@tmr.com> wrote:
-> I recently noted that my system was spending a lot of time in i/o wait
-> when doing some tasks which I thought didn't involve i/o, as noted by
-> the lack of disk light activity most of the time. I thought of network,
-> certainly the NIC had no activity for this job. So I set up a little
-> loop to capture all disk i/o and network activity (including loopback).
-> That was no obvious help, and the program doesn't use pipes.
->
-> At this point I'm really curious, does someone have a good clue?
->
-> Note: I don't think this is a bug or performance issue, unless the
-> kernel is doing something and charging time to iowait instead of system
-> I don't see anything to fix, but I would like to understand.
+[resending with correct To address - please reply to this one]
 
-What tool / kernel instrumentation / mechanism are you using to
-determine that some task(s) are indeed blocked waiting for i/o? Perhaps
-some userspace process accounting tools could be "broken" in the sense
-that they generalize all uninterruptible sleep as waiting for i/o ...
+It appears that there is a race when reading from a file that is
+concurrently being truncated.  It is possible to read a number of
+bytes that matches the size of the file before the truncate, but the
+actual bytes are all nuls - values that had never been in the file.
 
-Satyam
+Below is a simple C program to demonstrate this, and a patch that
+might fix it (initial testing is positive, but it might just make the
+window smaller).
+To trial the program run two instances, naming the same file as the
+only argument.  Every '!' indicates a read that found a nul.  I get
+one every few minutes.
+e.g.  cc -o race race.c ; ./race /tmp/testfile & ./race /tmp/tracefile
+
+My exploration suggests the problem is in do_generic_mapping_read in
+mm/filemap.c. 
+This code:
+   gets the size of the file
+   triggers readahead
+   gets the appropriate page
+   If the page is up-to-date, return data.
+
+If a truncate happens just before readahead is triggered, then
+the size will be the pre-truncate size of the file, while the page
+could have been read by the readahead and so will be up-to-date and
+full of nuls.
+
+Note that if do_generic_mapping_read calls readpage explicitly, it
+samples the value of inode->i_size again after the read.  However if
+the readpage is called by the readahead code, i_size is not
+re-sampled.
+
+I am not 100% confident of every aspect of this explanation (I haven't
+traced all the way through the read-ahead code) but it seems to fit
+the available data including the fact that if I disable read-ahead
+(blockdev --setra 0) then the apparent problem goes away.
+
+The patch below moves the code for re-sampling i_size from after the
+readpage call to before the "actor" call.
+
+Questions:
+  - Is this a problem, and should it be fixed (I think "yes").
+  - Is the patch appropriate, and does it have no negative
+    consequences?.
+    (Obviously some comments should be tidied up to reflect the new
+    reality).
+
+Thanks,
+NeilBrown
+
+------------------------------------------------------------
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+	char buf1[4096];
+	char buf2[4096];
+	int i;
+
+	for (i=0; i<4096; i++) buf1[i] = 'x';
+
+	while(1) {
+		int fd = open(argv[1], O_WRONLY|O_CREAT|O_TRUNC, 0600);
+		int n;
+		if (fd < 0) {
+			perror("open-write");
+			exit(1);
+		}
+		if (write(fd, buf1, 4096) != 4096) {
+			perror("write1");
+			exit(1);
+		}
+		close(fd);
+		fd = open(argv[1], O_RDONLY, 0600);
+		if (fd < 0) {
+			perror("open-read");
+			exit(1);
+		}
+		n = read(fd, buf2, 4096);
+		if (n == 0) {
+			// printf(".");
+			fflush(stdout);
+			close(fd);
+			continue;
+		}
+		if (n != 4096) {
+			perror("read1");
+			exit(1);
+		}
+		if (buf2[0] == 0) {
+			printf("!");
+			fflush(stdout);
+		}
+		close(fd);
+	}
+}
+
+---------------------------------------------------------
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./mm/filemap.c |   35 ++++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
+
+diff .prev/mm/filemap.c ./mm/filemap.c
+--- .prev/mm/filemap.c	2007-05-29 09:41:06.000000000 +1000
++++ ./mm/filemap.c	2007-05-29 12:06:03.000000000 +1000
+@@ -930,6 +930,24 @@ find_page:
+ 			goto page_not_up_to_date;
+ page_ok:
+ 
++		isize = i_size_read(inode);
++		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++		if (unlikely(!isize || index > end_index)) {
++			page_cache_release(page);
++			goto out;
++		}
++
++		/* nr is the maximum number of bytes to copy from this page */
++		nr = PAGE_CACHE_SIZE;
++		if (index == end_index) {
++			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
++			if (nr <= offset) {
++				page_cache_release(page);
++				goto out;
++			}
++		}
++		nr = nr - offset;
++
+ 		/* If users can be writing to this page using arbitrary
+ 		 * virtual addresses, take care about potential aliasing
+ 		 * before reading the page on the kernel side.
+@@ -1023,23 +1041,6 @@ readpage:
+ 		 * part of the page is not copied back to userspace (unless
+ 		 * another truncate extends the file - this is desired though).
+ 		 */
+-		isize = i_size_read(inode);
+-		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
+-		if (unlikely(!isize || index > end_index)) {
+-			page_cache_release(page);
+-			goto out;
+-		}
+-
+-		/* nr is the maximum number of bytes to copy from this page */
+-		nr = PAGE_CACHE_SIZE;
+-		if (index == end_index) {
+-			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
+-			if (nr <= offset) {
+-				page_cache_release(page);
+-				goto out;
+-			}
+-		}
+-		nr = nr - offset;
+ 		goto page_ok;
+ 
+ readpage_error:
