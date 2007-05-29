@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbXE2N1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbXE2N2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbXE2N1l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762114AbXE2NZd
+	id S1755320AbXE2N2I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbXE2NZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:25:33 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:23906 "EHLO
+	Tue, 29 May 2007 09:25:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:23907 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762654AbXE2NZ0 (ORCPT
+	with ESMTP id S1762385AbXE2NZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 09:25:26 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=RMeLLwm80KvAFsrDghGQ2C/XRnfiFG43NJolz/7XF3bOfpQ3HeVUNI/H6B0MUPVtp
-	tv4wvUkUs/+X5hgUcXF2A==
-Message-Id: <20070529132142.238927000@menage.corp.google.com>
+	b=O2PKZHvGW8idS0eZx+Y4uk4bT/36JOm0e6dx5nM3+Lm1PexMAGI+SuLcBMFhOBw6p
+	yXN56gFjyogVi+GpFGbDg==
+Message-Id: <20070529132143.722433000@menage.corp.google.com>
 References: <20070529130104.461765000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Tue, 29 May 2007 06:01:06 -0700
+Date: Tue, 29 May 2007 06:01:14 -0700
 From: menage@google.com
 To: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
        vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
@@ -26,333 +26,645 @@ To: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
 Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
        devel@openvz.org
-Subject: [PATCH 02/10] Containers(V10): Example CPU accounting subsystem
-Content-Disposition: inline; filename=cpu_acct.patch
+Subject: [PATCH 10/10] Containers(V10): Support for automatic userspace release agents
+Content-Disposition: inline; filename=container_release_agent.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This example demonstrates how to use the generic container subsystem
-for a simple resource tracker that counts, for the processes in a
-container, the total CPU time used and the %CPU used in the last
-complete 10 second interval.
+This patch adds the following files to the container filesystem:
 
-Portions contributed by Balbir Singh <balbir@in.ibm.com>
+notify_on_release - configures/reports whether the container subsystem
+should attempt to run a release script when this container becomes
+unused
+
+release_agent - configures/reports the release agent to be used for
+this hierarchy (top level in each hierarchy only)
+
+releasable - reports whether this container would have been
+auto-released if notify_on_release was true and a release agent was
+configured (mainly useful for debugging)
+
+To avoid locking issues, invoking the userspace release agent is done
+via a workqueue task; containers that need to have their release
+agents invoked by the workqueue task are linked on to a list.
+
+When the "cpuset" filesystem is mounted, it automatically sets the
+hierarchy's release agent to be /sbin/cpuset_release_agent for
+backward-compatibility with existing cpusets users.
 
 Signed-off-by: Paul Menage <menage@google.com>
-
 ---
- include/linux/container_subsys.h |    6 +
- include/linux/cpu_acct.h         |   14 ++
- init/Kconfig                     |    7 +
- kernel/Makefile                  |    1 
- kernel/cpu_acct.c                |  185 +++++++++++++++++++++++++++++++++++++++
- kernel/sched.c                   |   14 ++
- 6 files changed, 224 insertions(+), 3 deletions(-)
+ include/linux/container.h |   15 +
+ kernel/container.c        |  364 ++++++++++++++++++++++++++++++++++++++++++----
+ kernel/cpuset.c           |    5 
+ 3 files changed, 348 insertions(+), 36 deletions(-)
 
-Index: container-2.6.22-rc2-mm1/include/linux/container_subsys.h
+Index: container-2.6.22-rc2-mm1/include/linux/container.h
 ===================================================================
---- container-2.6.22-rc2-mm1.orig/include/linux/container_subsys.h
-+++ container-2.6.22-rc2-mm1/include/linux/container_subsys.h
-@@ -7,4 +7,10 @@
+--- container-2.6.22-rc2-mm1.orig/include/linux/container.h
++++ container-2.6.22-rc2-mm1/include/linux/container.h
+@@ -64,11 +64,7 @@ static inline void css_get(struct contai
+  * css_put() should be called to release a reference taken by
+  * css_get()
+  */
+-
+-static inline void css_put(struct container_subsys_state *css)
+-{
+-	atomic_dec(&css->refcnt);
+-}
++void css_put(struct container_subsys_state *css);
  
- /* */
+ struct container {
+ 	unsigned long flags;		/* "unsigned long" so bitops work */
+@@ -99,6 +95,13 @@ struct container {
+ 	 * tasks in this container. Protected by css_group_lock
+ 	 */
+ 	struct list_head css_groups;
++
++	/*
++	 * Linked list running through all containers that can
++	 * potentially be reaped by the release agent. Protected by
++	 * container_mutex
++	 */
++	struct list_head release_list;
+ };
  
-+#ifdef CONFIG_CONTAINER_CPUACCT
-+SUBSYS(cpuacct)
-+#endif
-+
-+/* */
-+
- /* */
-Index: container-2.6.22-rc2-mm1/include/linux/cpu_acct.h
-===================================================================
---- /dev/null
-+++ container-2.6.22-rc2-mm1/include/linux/cpu_acct.h
-@@ -0,0 +1,14 @@
-+
-+#ifndef _LINUX_CPU_ACCT_H
-+#define _LINUX_CPU_ACCT_H
-+
-+#include <linux/container.h>
-+#include <asm/cputime.h>
-+
-+#ifdef CONFIG_CONTAINER_CPUACCT
-+extern void cpuacct_charge(struct task_struct *, cputime_t cputime);
-+#else
-+static void inline cpuacct_charge(struct task_struct *p, cputime_t cputime) {}
-+#endif
-+
-+#endif
-Index: container-2.6.22-rc2-mm1/init/Kconfig
-===================================================================
---- container-2.6.22-rc2-mm1.orig/init/Kconfig
-+++ container-2.6.22-rc2-mm1/init/Kconfig
-@@ -337,6 +337,13 @@ config SYSFS_DEPRECATED
- 	  If you are using a distro that was released in 2006 or later,
- 	  it should be safe to say N here.
+ /* A css_group is a structure holding pointers to a set of
+@@ -271,6 +274,8 @@ struct task_struct *container_iter_next(
+ 					struct container_iter *it);
+ void container_iter_end(struct container *cont, struct container_iter *it);
  
-+config CONTAINER_CPUACCT
-+	bool "Simple CPU accounting container subsystem"
-+	select CONTAINERS
-+	help
-+	  Provides a simple Resource Controller for monitoring the
-+	  total CPU consumed by the tasks in a container
++void container_set_release_agent_path(struct container_subsys *ss,
++				      const char *path);
+ 
+ #else /* !CONFIG_CONTAINERS */
+ 
+Index: container-2.6.22-rc2-mm1/kernel/container.c
+===================================================================
+--- container-2.6.22-rc2-mm1.orig/kernel/container.c
++++ container-2.6.22-rc2-mm1/kernel/container.c
+@@ -62,6 +62,8 @@
+ 
+ #define CONTAINER_SUPER_MAGIC		0x27e0eb
+ 
++static DEFINE_MUTEX(container_mutex);
 +
- config RELAY
- 	bool "Kernel->user space relay support (formerly relayfs)"
- 	help
-Index: container-2.6.22-rc2-mm1/kernel/Makefile
-===================================================================
---- container-2.6.22-rc2-mm1.orig/kernel/Makefile
-+++ container-2.6.22-rc2-mm1/kernel/Makefile
-@@ -38,6 +38,7 @@ obj-$(CONFIG_KEXEC) += kexec.o
- obj-$(CONFIG_COMPAT) += compat.o
- obj-$(CONFIG_CONTAINERS) += container.o
- obj-$(CONFIG_CPUSETS) += cpuset.o
-+obj-$(CONFIG_CONTAINER_CPUACCT) += cpu_acct.o
- obj-$(CONFIG_IKCONFIG) += configs.o
- obj-$(CONFIG_STOP_MACHINE) += stop_machine.o
- obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
-Index: container-2.6.22-rc2-mm1/kernel/cpu_acct.c
-===================================================================
---- /dev/null
-+++ container-2.6.22-rc2-mm1/kernel/cpu_acct.c
-@@ -0,0 +1,185 @@
+ /* Generate an array of container subsystem pointers */
+ #define SUBSYS(_x) &_x ## _subsys,
+ 
+@@ -89,6 +91,13 @@ struct containerfs_root {
+ 
+ 	/* A list running through the mounted hierarchies */
+ 	struct list_head root_list;
++
++	/* The path to use for release notifications. No locking
++	 * between setting and use - so if userspace updates this
++	 * while subcontainers exist, you could miss a
++	 * notification. We ensure that it's always a valid
++	 * NUL-terminated string */
++	char release_agent_path[PATH_MAX];
+ };
+ 
+ 
+@@ -115,7 +124,13 @@ static int need_forkexit_callback = 0;
+ 
+ /* bits in struct container flags field */
+ typedef enum {
++	/* Container is dead */
+ 	CONT_REMOVED,
++	/* Container has previously had a child container or a task,
++	 * but no longer (only if CONT_NOTIFY_ON_RELEASE is set) */
++	CONT_RELEASABLE,
++	/* Container requires release notifications to userspace */
++	CONT_NOTIFY_ON_RELEASE,
+ } container_flagbits_t;
+ 
+ /* convenient tests for these bits */
+@@ -124,6 +139,19 @@ inline int container_is_removed(const st
+ 	return test_bit(CONT_REMOVED, &cont->flags);
+ }
+ 
++inline int container_is_releasable(const struct container *cont)
++{
++	const int bits =
++		(1 << CONT_RELEASABLE) |
++		(1 << CONT_NOTIFY_ON_RELEASE);
++	return (cont->flags & bits) == bits;
++}
++
++inline int notify_on_release(const struct container *cont)
++{
++	return test_bit(CONT_NOTIFY_ON_RELEASE, &cont->flags);
++}
++
+ /* for_each_subsys() allows you to iterate on each subsystem attached to
+  * an active hierarchy */
+ #define for_each_subsys(_root, _ss) \
+@@ -133,6 +161,12 @@ list_for_each_entry(_ss, &_root->subsys_
+ #define for_each_root(_root) \
+ list_for_each_entry(_root, &roots, root_list)
+ 
++/* the list of containers eligible for automatic release */
++static LIST_HEAD(release_list);
++static void container_release_agent(struct work_struct *work);
++static DECLARE_WORK(release_agent_work, container_release_agent);
++static void check_for_release(struct container *cont);
++
+ /* Link structure for associating css_group objects with containers */
+ struct cg_container_link {
+ 	/*
+@@ -181,11 +215,8 @@ static int css_group_count;
+ /*
+  * unlink a css_group from the list and free it
+  */
+-static void release_css_group(struct kref *k)
++static void unlink_css_group(struct css_group *cg)
+ {
+-	struct css_group *cg =
+-		container_of(k, struct css_group, ref);
+-	int i;
+ 	write_lock(&css_group_lock);
+ 	list_del(&cg->list);
+ 	css_group_count--;
+@@ -198,8 +229,47 @@ static void release_css_group(struct kre
+ 		kfree(link);
+ 	}
+ 	write_unlock(&css_group_lock);
++}
++
++static void release_css_group(struct kref *k)
++{
++	int i;
++	struct css_group *cg = container_of(k, struct css_group, ref);
++	BUG_ON(!mutex_is_locked(&container_mutex));
++
++	unlink_css_group(cg);
+ 	for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
+-		atomic_dec(&cg->subsys[i]->container->count);
++		struct container *cont = cg->subsys[i]->container;
++		if (atomic_dec_and_test(&cont->count) &&
++		    container_is_releasable(cont)) {
++			check_for_release(cont);
++		}
++	}
++	kfree(cg);
++}
++
 +/*
-+ * kernel/cpu_acct.c - CPU accounting container subsystem
-+ *
-+ * Copyright (C) Google Inc, 2006
-+ *
-+ * Developed by Paul Menage (menage@google.com) and Balbir Singh
-+ * (balbir@in.ibm.com)
-+ *
++ * In the task exit path we want to avoid taking container_mutex
++ * unless absolutely necessary, so the release process is slightly
++ * different.
 + */
++static void release_css_group_taskexit(struct kref *k)
++{
++	int i;
++	struct css_group *cg = container_of(k, struct css_group, ref);
++	unlink_css_group(cg);
++	for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
++		struct container *cont = cg->subsys[i]->container;
++		if (notify_on_release(cont)) {
++			mutex_lock(&container_mutex);
++			set_bit(CONT_RELEASABLE, &cont->flags);
++			if (atomic_dec_and_test(&cont->count)) {
++				check_for_release(cont);
++			}
++			mutex_unlock(&container_mutex);
++		} else {
++			atomic_dec(&cont->count);
++		}
+ 	}
+ 	kfree(cg);
+ }
+@@ -217,6 +287,11 @@ static inline void put_css_group(struct 
+ 	kref_put(&cg->ref, release_css_group);
+ }
+ 
++static inline void put_css_group_taskexit(struct css_group *cg)
++{
++	kref_put(&cg->ref, release_css_group_taskexit);
++}
 +
-+/*
-+ * Example container subsystem for reporting total CPU usage of tasks in a
-+ * container, along with percentage load over a time interval
-+ */
+ /*
+  * find_existing_css_group() is a helper for
+  * find_css_group(), and checks to see whether an existing
+@@ -446,8 +521,6 @@ static struct css_group *find_css_group(
+  * update of a tasks container pointer by attach_task()
+  */
+ 
+-static DEFINE_MUTEX(container_mutex);
+-
+ /**
+  * container_lock - lock out any changes to container structures
+  *
+@@ -795,6 +868,7 @@ static int container_fill_super(struct s
+ 	root->d_fsdata = &hroot->top_container;
+ 	hroot->top_container.dentry = root;
+ 
++	strcpy(hroot->release_agent_path, "");
+ 	sb->s_fs_info = hroot;
+ 	hroot->sb = sb;
+ 
+@@ -811,6 +885,7 @@ static void init_container_root(struct c
+ 	INIT_LIST_HEAD(&cont->sibling);
+ 	INIT_LIST_HEAD(&cont->children);
+ 	INIT_LIST_HEAD(&cont->css_groups);
++	INIT_LIST_HEAD(&cont->release_list);
+ 	list_add(&root->root_list, &roots);
+ 	root_count++;
+ }
+@@ -1057,7 +1132,7 @@ static int attach_task(struct container 
+ 			ss->attach(ss, cont, oldcont, tsk);
+ 		}
+ 	}
+-
++	set_bit(CONT_RELEASABLE, &oldcont->flags);
+ 	synchronize_rcu();
+ 	put_css_group(cg);
+ 	return 0;
+@@ -1109,6 +1184,9 @@ typedef enum {
+ 	FILE_ROOT,
+ 	FILE_DIR,
+ 	FILE_TASKLIST,
++	FILE_NOTIFY_ON_RELEASE,
++	FILE_RELEASABLE,
++	FILE_RELEASE_AGENT,
+ } container_filetype_t;
+ 
+ static ssize_t container_common_file_write(struct container *cont,
+@@ -1145,6 +1223,28 @@ static ssize_t container_common_file_wri
+ 	case FILE_TASKLIST:
+ 		retval = attach_task_by_pid(cont, buffer);
+ 		break;
++	case FILE_NOTIFY_ON_RELEASE:
++		clear_bit(CONT_RELEASABLE, &cont->flags);
++		if (simple_strtoul(buffer, NULL, 10) != 0)
++			set_bit(CONT_NOTIFY_ON_RELEASE, &cont->flags);
++		else
++			clear_bit(CONT_NOTIFY_ON_RELEASE, &cont->flags);
++		break;
++	case FILE_RELEASE_AGENT:
++	{
++		struct containerfs_root *root = cont->root;
++		if (nbytes < sizeof(root->release_agent_path)) {
++			/* We never write anything other than '\0'
++			 * into the last char of release_agent_path,
++			 * so it always remains a NUL-terminated
++			 * string */
++			strncpy(root->release_agent_path, buffer, nbytes);
++			root->release_agent_path[nbytes] = 0;
++		} else {
++			retval = -ENOSPC;
++		}
++		break;
++	}
+ 	default:
+ 		retval = -EINVAL;
+ 		goto out2;
+@@ -1183,6 +1283,49 @@ static ssize_t container_read_uint(struc
+ 	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
+ }
+ 
++static ssize_t container_common_file_read(struct container *cont,
++					  struct cftype *cft,
++					  struct file *file,
++					  char __user *buf,
++					  size_t nbytes, loff_t *ppos)
++{
++	container_filetype_t type = cft->private;
++	char *page;
++	ssize_t retval = 0;
++	char *s;
 +
-+#include <linux/module.h>
-+#include <linux/container.h>
-+#include <linux/fs.h>
-+#include <asm/div64.h>
++	if (!(page = (char *)__get_free_page(GFP_KERNEL)))
++		return -ENOMEM;
 +
-+struct cpuacct {
-+	struct container_subsys_state css;
-+	spinlock_t lock;
-+	/* total time used by this class */
-+	cputime64_t time;
++	s = page;
 +
-+	/* time when next load calculation occurs */
-+	u64 next_interval_check;
++	switch (type) {
++	case FILE_RELEASE_AGENT:
++	{
++		struct containerfs_root *root;
++		size_t n;
++		mutex_lock(&container_mutex);
++		root = cont->root;
++		n = strnlen(root->release_agent_path,
++			    sizeof(root->release_agent_path));
++		n = min(n, (size_t) PAGE_SIZE);
++		strncpy(s, root->release_agent_path, n);
++		mutex_unlock(&container_mutex);
++		s += n;
++		break;
++	}
++	default:
++		retval = -EINVAL;
++		goto out;
++	}
++	*s++ = '\n';
 +
-+	/* time used in current period */
-+	cputime64_t current_interval_time;
++	retval = simple_read_from_buffer(buf, nbytes, ppos, page, s - page);
++out:
++	free_page((unsigned long)page);
++	return retval;
++}
 +
-+	/* time used in last period */
-+	cputime64_t last_interval_time;
+ static ssize_t container_file_read(struct file *file, char __user *buf,
+ 				   size_t nbytes, loff_t *ppos)
+ {
+@@ -1560,17 +1703,51 @@ static int container_tasks_release(struc
+ 	return 0;
+ }
+ 
++static u64 container_read_notify_on_release(struct container *cont,
++					    struct cftype *cft)
++{
++	return notify_on_release(cont);
++}
++
++static u64 container_read_releasable(struct container *cont,
++				     struct cftype *cft)
++{
++	return test_bit(CONT_RELEASABLE, &cont->flags);
++}
++
+ /*
+  * for the common functions, 'private' gives the type of file
+  */
+ 
+-static struct cftype cft_tasks = {
+-	.name = "tasks",
+-	.open = container_tasks_open,
+-	.read = container_tasks_read,
++static struct cftype files[] = {
++	{
++		.name = "tasks",
++		.open = container_tasks_open,
++		.read = container_tasks_read,
++		.write = container_common_file_write,
++		.release = container_tasks_release,
++		.private = FILE_TASKLIST,
++	},
++
++	{
++		.name = "notify_on_release",
++		.read_uint = container_read_notify_on_release,
++		.write = container_common_file_write,
++		.private = FILE_NOTIFY_ON_RELEASE,
++	},
++
++	{
++		.name = "releasable",
++		.read_uint = container_read_releasable,
++		.private = FILE_RELEASABLE,
++	}
 +};
 +
-+struct container_subsys cpuacct_subsys;
++static struct cftype cft_release_agent = {
++	.name = "release_agent",
++	.read = container_common_file_read,
+ 	.write = container_common_file_write,
+-	.release = container_tasks_release,
+-	.private = FILE_TASKLIST,
++	.private = FILE_RELEASE_AGENT,
+ };
+ 
+ static int container_populate_dir(struct container *cont)
+@@ -1581,9 +1758,14 @@ static int container_populate_dir(struct
+ 	/* First clear out any existing files */
+ 	container_clear_directory(cont->dentry);
+ 
+-	if ((err = container_add_file(cont, &cft_tasks)) < 0)
++	if ((err = container_add_files(cont, files, ARRAY_SIZE(files)) < 0))
+ 		return err;
+ 
++	if (cont == cont->top_container) {
++		if ((err = container_add_file(cont, &cft_release_agent)) < 0)
++			return err;
++	}
 +
-+static inline struct cpuacct *container_ca(struct container *cont)
+ 	for_each_subsys(cont->root, ss) {
+ 		if (ss->populate && (err = ss->populate(ss, cont)) < 0)
+ 			return err;
+@@ -1635,6 +1817,7 @@ static long container_create(struct cont
+ 	INIT_LIST_HEAD(&cont->sibling);
+ 	INIT_LIST_HEAD(&cont->children);
+ 	INIT_LIST_HEAD(&cont->css_groups);
++	INIT_LIST_HEAD(&cont->release_list);
+ 
+ 	cont->parent = parent;
+ 	cont->root = parent->root;
+@@ -1693,6 +1876,24 @@ static int container_mkdir(struct inode 
+ 	return container_create(c_parent, dentry, mode | S_IFDIR);
+ }
+ 
++static inline int container_has_css_refs(struct container *cont)
 +{
-+	return container_of(container_subsys_state(cont, cpuacct_subsys_id),
-+			    struct cpuacct, css);
-+}
-+
-+static inline struct cpuacct *task_ca(struct task_struct *task)
-+{
-+	return container_of(task_subsys_state(task, cpuacct_subsys_id),
-+			    struct cpuacct, css);
-+}
-+
-+#define INTERVAL (HZ * 10)
-+
-+static inline u64 next_interval_boundary(u64 now) {
-+	/* calculate the next interval boundary beyond the
-+	 * current time */
-+	do_div(now, INTERVAL);
-+	return (now + 1) * INTERVAL;
-+}
-+
-+static int cpuacct_create(struct container_subsys *ss, struct container *cont)
-+{
-+	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-+	if (!ca)
-+		return -ENOMEM;
-+	spin_lock_init(&ca->lock);
-+	ca->next_interval_check = next_interval_boundary(get_jiffies_64());
-+	cont->subsys[cpuacct_subsys_id] = &ca->css;
++	/* Check the reference count on each subsystem. Since we
++	 * already established that there are no tasks in the
++	 * container, if the css refcount is also 0, then there should
++	 * be no outstanding references, so the subsystem is safe to
++	 * destroy */
++	struct container_subsys *ss;
++	for_each_subsys(cont->root, ss) {
++		struct container_subsys_state *css;
++		css = cont->subsys[ss->subsys_id];
++		if (atomic_read(&css->refcnt)) {
++			return 1;
++		}
++	}
 +	return 0;
 +}
 +
-+static void cpuacct_destroy(struct container_subsys *ss,
-+			    struct container *cont)
-+{
-+	kfree(container_ca(cont));
-+}
-+
-+/* Lazily update the load calculation if necessary. Called with ca locked */
-+static void cpuusage_update(struct cpuacct *ca)
-+{
-+	u64 now = get_jiffies_64();
-+	/* If we're not due for an update, return */
-+	if (ca->next_interval_check > now)
-+		return;
-+
-+	if (ca->next_interval_check <= (now - INTERVAL)) {
-+		/* If it's been more than an interval since the last
-+		 * check, then catch up - the last interval must have
-+		 * been zero load */
-+		ca->last_interval_time = 0;
-+		ca->next_interval_check = next_interval_boundary(now);
-+	} else {
-+		/* If a steal takes the last interval time negative,
-+		 * then we just ignore it */
-+		if ((s64)ca->current_interval_time > 0) {
-+			ca->last_interval_time = ca->current_interval_time;
-+		} else {
-+			ca->last_interval_time = 0;
-+		}
-+		ca->next_interval_check += INTERVAL;
-+	}
-+	ca->current_interval_time = 0;
-+}
-+
-+static u64 cpuusage_read(struct container *cont,
-+			 struct cftype *cft)
-+{
-+	struct cpuacct *ca = container_ca(cont);
-+	u64 time;
-+
-+	spin_lock_irq(&ca->lock);
-+	cpuusage_update(ca);
-+	time = cputime64_to_jiffies64(ca->time);
-+	spin_unlock_irq(&ca->lock);
-+
-+	/* Convert 64-bit jiffies to seconds */
-+	time *= 1000;
-+	do_div(time, HZ);
-+	return time;
-+}
-+
-+static u64 load_read(struct container *cont,
-+		     struct cftype *cft)
-+{
-+	struct cpuacct *ca = container_ca(cont);
-+	u64 time;
-+
-+	/* Find the time used in the previous interval */
-+	spin_lock_irq(&ca->lock);
-+	cpuusage_update(ca);
-+	time = cputime64_to_jiffies64(ca->last_interval_time);
-+	spin_unlock_irq(&ca->lock);
-+
-+	/* Convert time to a percentage, to give the load in the
-+	 * previous period */
-+	time *= 100;
-+	do_div(time, INTERVAL);
-+
-+	return time;
-+}
-+
-+static struct cftype files[] = {
-+	{
-+		.name = "cpuacct.usage",
-+		.read_uint = cpuusage_read,
-+	},
-+	{
-+		.name = "cpuacct.load",
-+		.read_uint = load_read,
-+	}
-+};
-+
-+static int cpuacct_populate(struct container_subsys *ss,
-+			    struct container *cont)
-+{
-+	return container_add_files(cont, files, ARRAY_SIZE(files));
-+}
-+
-+void cpuacct_charge(struct task_struct *task, cputime_t cputime)
-+{
-+
-+	struct cpuacct *ca;
-+	unsigned long flags;
-+
-+	if (!cpuacct_subsys.active)
-+		return;
-+	rcu_read_lock();
-+	ca = task_ca(task);
-+	if (ca) {
-+		spin_lock_irqsave(&ca->lock, flags);
-+		cpuusage_update(ca);
-+		ca->time = cputime64_add(ca->time, cputime);
-+		ca->current_interval_time =
-+			cputime64_add(ca->current_interval_time, cputime);
-+		spin_unlock_irqrestore(&ca->lock, flags);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+struct container_subsys cpuacct_subsys = {
-+	.name = "cpuacct",
-+	.create = cpuacct_create,
-+	.destroy = cpuacct_destroy,
-+	.populate = cpuacct_populate,
-+	.subsys_id = cpuacct_subsys_id,
-+};
-Index: container-2.6.22-rc2-mm1/kernel/sched.c
-===================================================================
---- container-2.6.22-rc2-mm1.orig/kernel/sched.c
-+++ container-2.6.22-rc2-mm1/kernel/sched.c
-@@ -59,6 +59,7 @@
- #include <linux/kprobes.h>
- #include <linux/delayacct.h>
- #include <linux/reciprocal_div.h>
-+#include <linux/cpu_acct.h>
- 
- #include <asm/tlb.h>
- #include <asm/unistd.h>
-@@ -2847,9 +2848,13 @@ void account_user_time(struct task_struc
+ static int container_rmdir(struct inode *unused_dir, struct dentry *dentry)
  {
- 	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
- 	cputime64_t tmp;
-+	struct rq *rq = this_rq();
+ 	struct container *cont = dentry->d_fsdata;
+@@ -1701,7 +1902,6 @@ static int container_rmdir(struct inode 
+ 	struct container_subsys *ss;
+ 	struct super_block *sb;
+ 	struct containerfs_root *root;
+-	int css_busy = 0;
  
- 	p->utime = cputime_add(p->utime, cputime);
+ 	/* the vfs holds both inode->i_mutex already */
  
-+	if (p != rq->idle)
-+		cpuacct_charge(p, cputime);
+@@ -1719,20 +1919,7 @@ static int container_rmdir(struct inode 
+ 	root = cont->root;
+ 	sb = root->sb;
+ 
+-	/* Check the reference count on each subsystem. Since we
+-	 * already established that there are no tasks in the
+-	 * container, if the css refcount is also 0, then there should
+-	 * be no outstanding references, so the subsystem is safe to
+-	 * destroy */
+-	for_each_subsys(root, ss) {
+-		struct container_subsys_state *css;
+-		css = cont->subsys[ss->subsys_id];
+-		if (atomic_read(&css->refcnt)) {
+-			css_busy = 1;
+-			break;
+-		}
+-	}
+-	if (css_busy) {
++	if (container_has_css_refs(cont)) {
+ 		mutex_unlock(&container_mutex);
+ 		return -EBUSY;
+ 	}
+@@ -1754,6 +1941,11 @@ static int container_rmdir(struct inode 
+ 	dput(d);
+ 	root->number_of_containers--;
+ 
++	if (!list_empty(&cont->release_list))
++		list_del(&cont->release_list);
++	set_bit(CONT_RELEASABLE, &parent->flags);
++	check_for_release(parent);
 +
- 	/* Add user time to cpustat. */
- 	tmp = cputime_to_cputime64(cputime);
- 	if (TASK_NICE(p) > 0)
-@@ -2879,9 +2884,10 @@ void account_system_time(struct task_str
- 		cpustat->irq = cputime64_add(cpustat->irq, tmp);
- 	else if (softirq_count())
- 		cpustat->softirq = cputime64_add(cpustat->softirq, tmp);
--	else if (p != rq->idle)
-+	else if (p != rq->idle) {
- 		cpustat->system = cputime64_add(cpustat->system, tmp);
--	else if (atomic_read(&rq->nr_iowait) > 0)
-+		cpuacct_charge(p, cputime);
-+	} else if (atomic_read(&rq->nr_iowait) > 0)
- 		cpustat->iowait = cputime64_add(cpustat->iowait, tmp);
- 	else
- 		cpustat->idle = cputime64_add(cpustat->idle, tmp);
-@@ -2906,8 +2912,10 @@ void account_steal_time(struct task_stru
- 			cpustat->iowait = cputime64_add(cpustat->iowait, tmp);
- 		else
- 			cpustat->idle = cputime64_add(cpustat->idle, tmp);
--	} else
-+	} else {
- 		cpustat->steal = cputime64_add(cpustat->steal, tmp);
-+		cpuacct_charge(p, -tmp);
-+	}
+ 	mutex_unlock(&container_mutex);
+ 	/* Drop the active superblock reference that we took when we
+ 	 * created the container */
+@@ -2107,7 +2299,7 @@ void container_exit(struct task_struct *
+ 	tsk->containers = &init_css_group;
+ 	task_unlock(tsk);
+ 	if (cg)
+-		put_css_group(cg);
++		put_css_group_taskexit(cg);
  }
  
- /*
+ static atomic_t namecnt;
+@@ -2215,7 +2407,10 @@ int container_clone(struct task_struct *
+ 
+  out_release:
+ 	mutex_unlock(&inode->i_mutex);
++
++	mutex_lock(&container_mutex);
+ 	put_css_group(cg);
++	mutex_unlock(&container_mutex);
+ 	deactivate_super(parent->root->sb);
+ 	return ret;
+ }
+@@ -2236,3 +2431,110 @@ int container_is_descendant(const struct
+ 	ret = (cont == target);
+ 	return ret;
+ }
++
++static void check_for_release(struct container *cont)
++{
++	BUG_ON(!mutex_is_locked(&container_mutex));
++	if (container_is_releasable(cont) && !atomic_read(&cont->count)
++	    && list_empty(&cont->children) && !container_has_css_refs(cont)) {
++		/* Container is currently removeable. If it's not
++		 * already queued for a userspace notification, queue
++		 * it now */
++		if (list_empty(&cont->release_list)) {
++			list_add(&cont->release_list, &release_list);
++			schedule_work(&release_agent_work);
++		}
++	}
++}
++
++void css_put(struct container_subsys_state *css)
++{
++	struct container *cont = css->container;
++	if (notify_on_release(cont)) {
++		mutex_lock(&container_mutex);
++		set_bit(CONT_RELEASABLE, &cont->flags);
++		if (atomic_dec_and_test(&css->refcnt)) {
++			check_for_release(cont);
++		}
++		mutex_unlock(&container_mutex);
++	} else {
++		atomic_dec(&css->refcnt);
++	}
++}
++
++void container_set_release_agent_path(struct container_subsys *ss,
++				      const char *path)
++{
++	mutex_lock(&container_mutex);
++	strcpy(ss->root->release_agent_path, path);
++	mutex_unlock(&container_mutex);
++}
++
++/*
++ * Notify userspace when a container is released, by running the
++ * configured release agent with the name of the container (path
++ * relative to the root of container file system) as the argument.
++ *
++ * Most likely, this user command will try to rmdir this container.
++ *
++ * This races with the possibility that some other task will be
++ * attached to this container before it is removed, or that some other
++ * user task will 'mkdir' a child container of this container.  That's ok.
++ * The presumed 'rmdir' will fail quietly if this container is no longer
++ * unused, and this container will be reprieved from its death sentence,
++ * to continue to serve a useful existence.  Next time it's released,
++ * we will get notified again, if it still has 'notify_on_release' set.
++ *
++ * The final arg to call_usermodehelper() is UMH_WAIT_EXEC, which
++ * means only wait until the task is successfully execve()'d.  The
++ * separate release agent task is forked by call_usermodehelper(),
++ * then control in this thread returns here, without waiting for the
++ * release agent task.  We don't bother to wait because the caller of
++ * this routine has no use for the exit status of the release agent
++ * task, so no sense holding our caller up for that.
++ *
++ */
++
++static void container_release_agent(struct work_struct *work)
++{
++	BUG_ON(work != &release_agent_work);
++	mutex_lock(&container_mutex);
++	while (!list_empty(&release_list)) {
++		char *argv[3], *envp[3];
++		int i;
++		char *pathbuf;
++		struct container *cont = list_entry(release_list.next,
++						    struct container,
++						    release_list);
++		list_del_init(&cont->release_list);
++
++		pathbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
++		if (!pathbuf)
++			continue;
++
++		if (container_path(cont, pathbuf, PAGE_SIZE) < 0) {
++			kfree(pathbuf);
++			continue;
++		}
++
++		i = 0;
++		argv[i++] = cont->root->release_agent_path;
++		argv[i++] = (char *)pathbuf;
++		argv[i] = NULL;
++
++		i = 0;
++		/* minimal command environment */
++		envp[i++] = "HOME=/";
++		envp[i++] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
++		envp[i] = NULL;
++
++		/* Drop the lock while we invoke the usermode helper,
++		 * since the exec could involve hitting disk and hence
++		 * be a slow process */
++		mutex_unlock(&container_mutex);
++		call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
++		kfree(pathbuf);
++		mutex_lock(&container_mutex);
++	}
++	mutex_unlock(&container_mutex);
++}
+Index: container-2.6.22-rc2-mm1/kernel/cpuset.c
+===================================================================
+--- container-2.6.22-rc2-mm1.orig/kernel/cpuset.c
++++ container-2.6.22-rc2-mm1/kernel/cpuset.c
+@@ -275,6 +275,11 @@ static int cpuset_get_sb(struct file_sys
+ 					   unused_dev_name,
+ 					   "cpuset", mnt);
+ 		put_filesystem(container_fs);
++		if (!ret) {
++			container_set_release_agent_path(
++				&cpuset_subsys,
++				"/sbin/cpuset_release_agent");
++		}
+ 	}
+ 	return ret;
+ }
 
 --
