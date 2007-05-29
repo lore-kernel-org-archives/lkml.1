@@ -1,94 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbXE2ODU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbXE2ODh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbXE2ODU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXE2OAA
+	id S1761431AbXE2ODh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbXE2OAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 10:00:00 -0400
+	Tue, 29 May 2007 10:00:04 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750976AbXE2N7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752188AbXE2N7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 09:59:49 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:21 -0700
+Date: Tue, 29 May 2007 06:48:37 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmLcf019697@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmbhh019892@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 07/22] 2.6.22-rc3 perfmon2 : event sets and multiplexing support
+Subject: [PATCH 22/22] 2.6.22-rc3 perfmon2 : new mips files
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the event set and multiplexing support.
+This patch contains the new mips files
 
-On many PMU models, there is not enough counter to collect
-certain metric in one run. Even on those that have potentially
-lots of counters, e.g. P4 with 18, there are oftentimes constraints
-which make measuring certain event together impossible. In those
-situation the user has n choice but to measure with multiple
-runs which is not always practical and prone to errors.
 
-One way to alleviate the problem is to introduce the notion
-of an event set. Each set encapsulates the entire PMU state.
-If a PMU has M counters then each set can define M events. 
-Multiple sets can be defined. They are then multiplexed onto
-the actual PMU such that only one is active at any time.
-The collected counts can then be scaled to get an *estimate*
-of what they would have been had each event been measured across
-the entire run. It is important to note that this remains an
-estimate. The faster we can switch, the smaller the blind spots are
-but the higher the overhead is.
+The files are as follows:
 
-Sets and set switching can be implemented at the user level. Yet
-by having kernel support for it, we can signification improve
-performance especially for non self-monitoring per-thread context where
-we guarantee switching always occurs in the context of the monitored thread.
+arch/mips/perfmon/Kconfig:
+	- add menuconfig options
 
-By default, any perfmon2 context is created with a default set, i.e., set0.
-Set can be dynamically created/deleted with specific system calls. A set
-is identified by a simple number (0-65535). The number determines the
-position of the set in an ordered list. The order in the list determines
-the switch order. Switching occurs in a round-robin fashion.
+arch/mips/perfmon/Makefile:
+	- makefile for arch specific files
 
-Switching can be triggered by a timeout or after a certain number of overflows.
-The type of switching as well as the timeout is determined per set.
-The timeout granularity is determined by that of the timer tick. The actual
-timeout value is returned to the user.
+arch/mips/perfmon/perfmon.c:
+	- architecture specific perfmon support. Implements architecture specific
+	  operations such as save/restore/start/stop/detect overflow counters
 
-The file perfmon_sets.c implements:
-	- set-related back-end system calls: __pfm_create_evtsets(), __pfm_delete_evtsets(), __pfm_getinfo_evtsets()
-	- set switching: pfm_switch_sets(), __pfm_handle_switch_timeout()
+arch/mips/perfmon/perfmon_mips64.c:
+	- PMU description table for various MIPS processors
+
+include/asm-mips/perfmon.h:
+	- MIPS specific perfmon definitions
+
+include/asm-mips/perfmon_api.h:
+	- MIPS user-visible constants
 
 
 
 
---- linux-2.6.22.base/perfmon/perfmon_sets.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/perfmon/perfmon_sets.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,1014 @@
+
+--- linux-2.6.22.base/arch/mips/perfmon/Kconfig	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/mips/perfmon/Kconfig	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,23 @@
++menu "Hardware Performance Monitoring support"
++config PERFMON
++	bool "Perfmon2 performance monitoring interface"
++	default n
++	help
++  	Enables the perfmon2 interface to access the hardware
++	performance counters. See <http://perfmon2.sf.net/> for
++ 	more details.
++
++config PERFMON_DEBUG
++ 	bool "Perfmon debugging"
++	default n
++	depends on PERFMON
++ 	help
++  	Enables perfmon debugging support
++
++config PERFMON_MIPS64
++	tristate "Support for MIPS64 hardware performance counters"
++	depends on PERFMON
++	default n
++	help
++	Enables support for the MIPS64 hardware performance counters"
++endmenu
+--- linux-2.6.22.base/arch/mips/perfmon/Makefile	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/mips/perfmon/Makefile	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,2 @@
++obj-$(CONFIG_PERFMON)		+= perfmon.o
++obj-$(CONFIG_PERFMON_MIPS64)	+= perfmon_mips64.o
+--- linux-2.6.22.base/arch/mips/perfmon/perfmon.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/mips/perfmon/perfmon.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,312 @@
 +/*
-+ * perfmon_sets.c: perfmon2 event sets and multiplexing functions
++ * This file implements the MIPS64 specific
++ * support for the perfmon2 interface
 + *
-+ * This file implements the perfmon2 interface which
-+ * provides access to the hardware performance counters
-+ * of the host processor.
++ * Copyright (c) 2005 Philip J. Mucci
 + *
-+ * The initial version of perfmon.c was written by
-+ * Ganesh Venkitachalam, IBM Corp.
-+ *
-+ * Then it was modified for perfmon-1.x by Stephane Eranian and
-+ * David Mosberger, Hewlett Packard Co.
-+ *
-+ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
-+ * by Stephane Eranian, Hewlett Packard Co.
-+ *
-+ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *                David Mosberger-Tang <davidm@hpl.hp.com>
-+ *
-+ * More information about perfmon available at:
-+ * 	http://perfmon2.sf.net
++ * based on versions for other architectures:
++ * Copyright (c) 2005 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@htrpl.hp.com>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -104,980 +107,897 @@ The file perfmon_sets.c implements:
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
 +  */
-+#include <linux/kernel.h>
++#include <linux/interrupt.h>
++#include <linux/module.h>
 +#include <linux/perfmon.h>
-+#include <linux/pagemap.h>
-+
-+static struct kmem_cache	*pfm_set_cachep;
-+static struct kmem_cache	*pfm_lg_set_cachep;
 +
 +/*
-+ * reload reference overflow switch thresholds
++ * collect pending overflowed PMDs. Called from pfm_ctxsw()
++ * and from PMU interrupt handler. Must fill in set->povfl_pmds[]
++ * and set->npend_ovfls. Interrupts are masked
 + */
-+static void pfm_reload_switch_thresholds(struct pfm_event_set *set)
++static void __pfm_get_ovfl_pmds(struct pfm_context *ctx, struct pfm_event_set *set)
 +{
-+	u64 *mask;
-+	u16 i, max_cnt_pmd, first_cnt_pmd;
++ 	u64 new_val, wmask;
++	u64 *used_mask, *cnt_pmds;
++	u64 mask[PFM_PMD_BV];
++	unsigned int i, max;
 +
-+	mask = set->used_pmds;
-+	first_cnt_pmd = pfm_pmu_conf->first_cnt_pmd;
-+	max_cnt_pmd = pfm_pmu_conf->max_cnt_pmd;
++	max = pfm_pmu_conf->max_cnt_pmd;
++	cnt_pmds = pfm_pmu_conf->cnt_pmds;
++	used_mask = set->used_pmds;
++	wmask = 1ULL << pfm_pmu_conf->counter_width;
++	bitmap_and(ulp(mask),ulp(cnt_pmds),ulp(used_mask),max);
++	
++	for (i = 0; i < max; i++) {
++		/* assume all PMD are counters */
++		if (test_bit(i, mask)) {
++			new_val = pfm_arch_read_pmd(ctx, i);
 +
-+	for (i = first_cnt_pmd; i< max_cnt_pmd; i++) {
-+		if (test_bit(i, ulp(mask))) {
-+			set->pmds[i].ovflsw_thres = set->pmds[i].ovflsw_ref_thres;
-+			PFM_DBG("set%u pmd%u ovflsw_thres=%llu",
-+				set->id,
-+				i,
-+				(unsigned long long)set->pmds[i].ovflsw_thres);
++ 			PFM_DBG_ovfl("pmd%u new_val=0x%llx bit=%d\n",
++  				 i, (unsigned long long)new_val,
++				 (new_val&wmask) ? 1 : 0);
++
++  			if (new_val & wmask) {
++				__set_bit(i, set->povfl_pmds);
++				set->npend_ovfls++;
++			}
 +		}
 +	}
 +}
 +
-+/*
-+ * ensures that all id_next sets exists such that the round-robin
-+ * will work correctly, i.e., next dangling references.
-+ */
-+int pfm_prepare_sets(struct pfm_context *ctx, struct pfm_event_set *act_set)
++static void pfm_stop_active(struct task_struct *task, struct pfm_context *ctx,
++			       struct pfm_event_set *set)
 +{
-+	struct pfm_event_set *set1, *set2;
-+	u16 max_cnt_pmd;
-+#define is_last_set(s, c)	((s)->list.next == &(c)->list)
++	unsigned int i, max;
 +
-+	max_cnt_pmd = pfm_pmu_conf->max_cnt_pmd;
++	max = pfm_pmu_conf->max_pmc;
 +
-+	list_for_each_entry(set1, &ctx->list, list) {
-+
-+		if (is_last_set(set1, ctx))
-+			set2 = list_entry(ctx->list.next,
-+					  struct pfm_event_set, list);
-+		else
-+			set2 = list_entry(set1->list.next,
-+					  struct pfm_event_set, list);
-+		/*
-+		 * switch_next is used during actual switching
-+		 * so we prepare its value here. When no explicit next
-+		 * is requested, the field is initialized with the address
-+		 * of the next element in the ordered list
-+		 */
-+		if (set1->flags & PFM_SETFL_EXPL_NEXT) {
-+			list_for_each_entry(set2, &ctx->list, list) {
-+				if (set2->id == set1->id_next)
-+					break;
-+			}
-+			if (set2 == NULL) {
-+				PFM_DBG("set%u points to set%u "
-+					"which does not exist",
-+					set1->id,
-+					set1->id_next);
-+				return -EINVAL;
-+			}
-+		}
-+		/*
-+		 * update field used during actual switching
-+		 */
-+		set1->sw_next = set2;
-+
-+		PFM_DBG("set%u sw_next=%u", set1->id, set2->id);
-+
-+		/*
-+		 * cleanup bitvectors
-+		 */
-+		bitmap_zero(ulp(set1->ovfl_pmds), max_cnt_pmd);
-+		bitmap_zero(ulp(set1->povfl_pmds), max_cnt_pmd);
-+		set1->npend_ovfls = 0;
-+		/*
-+		 * we cannot just use plain clear because of arch-specific flags
-+		 */
-+		set1->priv_flags &= ~(PFM_SETFL_PRIV_MOD_BOTH|PFM_SETFL_PRIV_SWITCH);
-+
-+		/*
-+		 * reset activation and elapsed ns
-+		 */
-+		set1->duration = 0;
-+
-+		pfm_modview_begin(set1);
-+
-+		set1->view->set_runs = 0;
-+
-+		pfm_modview_end(set1);
++	/*
++	 * clear enable bits
++	 */
++	for (i = 0; i < max; i++) {
++		if (test_bit(i, set->used_pmcs))
++			pfm_arch_write_pmc(ctx, i,0);
 +	}
-+	/*
-+	 * setting PFM_CPUINFO_TIME_SWITCH, triggers
-+	 * further checking if __pfm_handle_switch_timeout().
-+	 * switch timeout is effectively decremented only when
-+	 * monitoring has been activated via pfm_start() or
-+	 * any user level equivalent.
-+	 */
-+	if (act_set->flags & PFM_SETFL_TIME_SWITCH) {
 +
-+		act_set->timeout_sw_left = act_set->timeout_sw_ref;
-+		PFM_DBG("arming timeout for set%u", act_set->id);
-+
-+		if (ctx->flags.system)
-+			__get_cpu_var(pfm_syst_info) = PFM_CPUINFO_TIME_SWITCH;
-+
-+	} else if (act_set->flags & PFM_SETFL_OVFL_SWITCH)
-+		pfm_reload_switch_thresholds(act_set);
-+
-+	return 0;
-+}
-+
-+/*
-+ * called from *_timer_interrupt(). task == current
-+ */
-+void __pfm_handle_switch_timeout(void)
-+{
-+	struct pfm_event_set *set;
-+	struct pfm_context *ctx;
-+	unsigned long flags;
-+
-+	/*
-+	 * The timer tick check is operating on each
-+	 * CPU. Not all CPUs have time switching enabled
-+	 * hence we need to check.
-+	 */
-+	ctx  = __get_cpu_var(pmu_ctx);
-+	if (ctx == NULL)
++	if (set->npend_ovfls)
 +		return;
 +
-+	spin_lock_irqsave(&ctx->lock, flags);
-+
-+	set = ctx->active_set;
-+	BUG_ON(set == NULL);
-+
-+	/*
-+	 * we decrement only when attached and not masked or zombie
-+	 */
-+	if (ctx->state != PFM_CTX_LOADED)
-+		goto done;
-+
-+	/*
-+	 * do not decrement timeout unless monitoring is active.
-+	 */
-+	if (!pfm_arch_is_active(ctx))
-+		goto done;
-+
-+	set->timeout_sw_left--;
-+
-+	__get_cpu_var(pfm_stats).handle_timeout_count++;
-+
-+	if (!set->timeout_sw_left)
-+		pfm_switch_sets(ctx, NULL, PFM_PMD_RESET_SHORT, 0);
-+done:
-+	spin_unlock_irqrestore(&ctx->lock, flags);
++	__pfm_get_ovfl_pmds(ctx, set);
 +}
 +
 +/*
++ * Called from pfm_ctxsw(). Task is guaranteed to be current.
++ * Context is locked. Interrupts are masked. Monitoring is active.
++ * PMU access is guaranteed. PMC and PMD registers are live in PMU.
 + *
-+ * always operating on the current task
-+ * interrupts are masked
++ * for per-thread:
++ * 	must stop monitoring for the task
 + *
-+ * input:
-+ * 	- new_set: new set to switch to, if NULL follow normal chain
++ * Return:
++ * 	non-zero : did not save PMDs (as part of stopping the PMU)
++ * 	       0 : saved PMDs (no need to save them in caller)
 + */
-+void pfm_switch_sets(struct pfm_context *ctx,
-+		    struct pfm_event_set *new_set,
-+		    int reset_mode,
-+		    int no_restart)
++int pfm_arch_ctxswout_thread(struct task_struct *task, struct pfm_context *ctx,
++			      struct pfm_event_set *set)
 +{
-+	struct pfm_event_set *set;
-+	u64 switch_count;
-+	u64 now, end;
-+	unsigned long info = 0;
-+	u32 new_flags;
-+	int is_system, state, is_active, nn;
-+
-+	now = sched_clock();
-+	set = ctx->active_set;
-+	is_active = pfm_arch_is_active(ctx);
-+
 +	/*
-+	 * if no set is explicitly requested,
-+	 * use the set_switch_next field
++	 * disable lazy restore of PMC registers.
 +	 */
-+	if (new_set == NULL) {
-+		/*
-+	 	 * we use round-robin unless the user specified
-+		 * a particular set to go to.
-+	 	 */
-+		new_set = set->sw_next;
-+		BUG_ON(new_set == NULL);
-+	}
++	set->priv_flags |= PFM_SETFL_PRIV_MOD_PMCS;
 +
-+	PFM_DBG("state=%d act=%d cur_set=%u cur_runs=%llu cur_npend=%d next_set=%u "
-+		  "next_runs=%llu new_npend=%d reset_mode=%d reset_pmds=%llx",
-+		  ctx->state,
-+		  is_active,
-+		  set->id,
-+		  (unsigned long long)set->view->set_runs,
-+		  set->npend_ovfls,
-+		  new_set->id,
-+		  (unsigned long long)new_set->view->set_runs,
-+		  new_set->npend_ovfls,
-+		  reset_mode,
-+		  (unsigned long long)new_set->reset_pmds[0]);
++	pfm_stop_active(task, ctx, set);
 +
-+	is_system = ctx->flags.system;
-+	state = ctx->state;
-+	new_flags = new_set->flags;
-+	switch_count = __get_cpu_var(pfm_stats).set_switch_count;
-+
-+	pfm_modview_begin(set);
-+
-+	/*
-+	 * nothing more to do
-+	 */
-+	if (new_set == set)
-+		goto skip_same_set;
-+
-+
-+	if (is_active) {
-+		pfm_arch_stop(current, ctx, set);
-+
-+		pfm_save_pmds(ctx, set);
-+
-+		/*
-+	 	 * compute elapsed ns for active set
-+	 	 */
-+		set->duration += now - set->duration_start;
-+		set->view->set_status &= ~PFM_SETVFL_ACTIVE;
-+
-+		/*
-+		 * must be done after pfm_arch_stop()
-+		 */
-+		if (is_system)
-+			info = __get_cpu_var(pfm_syst_info);
-+	}
-+	pfm_modview_end(set);
-+
-+	pfm_modview_begin(new_set);
-+
-+	pfm_arch_restore_pmds(ctx, new_set);
-+
-+	/*
-+	 * if masked, we must restore the pmcs such that they
-+	 * do not capture anything.
-+	 */
-+	pfm_arch_restore_pmcs(ctx, new_set);
-+
-+	if (new_set->npend_ovfls) {
-+		pfm_arch_resend_irq();
-+		__get_cpu_var(pfm_stats).ovfl_intr_replay_count++;
-+	}
-+
-+	new_set->priv_flags &= ~PFM_SETFL_PRIV_MOD_BOTH;
-+
-+skip_same_set:
-+	switch_count++;
-+	new_set->view->set_runs++;
-+	/*
-+	 * reset switch threshold
-+	 */
-+	if (new_flags & PFM_SETFL_OVFL_SWITCH)
-+		pfm_reload_switch_thresholds(new_set);
-+	else if (new_flags & PFM_SETFL_TIME_SWITCH)
-+		new_set->timeout_sw_left = new_set->timeout_sw_ref;
-+
-+	/*
-+	 * reset overflowed PMD registers
-+	 */
-+	nn = bitmap_weight(ulp(new_set->reset_pmds), pfm_pmu_conf->max_pmd);
-+	if (nn)
-+		pfm_reset_pmds(ctx, new_set, nn, reset_mode);
-+	/*
-+	 * this is needed when coming from pfm_start()
-+	 */
-+	if (no_restart)
-+		goto skip_restart;
-+
-+	/*
-+	 * reactivate monitoring
-+	 */
-+	if (is_system) {
-+		info  &= ~PFM_CPUINFO_TIME_SWITCH;
-+
-+		if (new_flags & PFM_SETFL_TIME_SWITCH)
-+			info |= PFM_CPUINFO_TIME_SWITCH;
-+
-+		__get_cpu_var(pfm_syst_info) = info;
-+
-+		PFM_DBG("new_set=%u info=0x%lx flags=0x%x",
-+			new_set->id,
-+			info,
-+			new_flags);
-+	}
-+
-+	if (is_active) {
-+		pfm_arch_start(current, ctx, new_set);
-+		new_set->duration_start = now;
-+	}
-+
-+skip_restart:
-+	ctx->active_set = new_set;
-+	ctx->set_all_runs++;
-+
-+	new_set->view->set_status |= PFM_SETVFL_ACTIVE;
-+
-+	pfm_modview_end(new_set);
-+	end = sched_clock();
-+
-+	__get_cpu_var(pfm_stats).set_switch_count = switch_count;
-+	__get_cpu_var(pfm_stats).set_switch_ns += end - now;
++	return 1;
 +}
 +
 +/*
-+ * called from __pfm_overflow_handler() to switch event sets.
-+ * monitoring is stopped, task is current, interrupts are masked.
-+ * compared to pfm_switch_sets(), this version is simplified because
-+ * it know about the call path. There is no need to stop monitoring
-+ * because it is already frozen by PMU handler.
++ * Called from pfm_stop() and pfm_ctxsw() when idle
++ * task and EXCL_IDLE is on.
++ *
++ * Interrupts are masked. Context is locked. Set is the active set.
++ *
++ * For per-thread:
++ *   task is not necessarily current. If not current task, then
++ *   task is guaranteed stopped and off any cpu. Access to PMU
++ *   is not guaranteed. Interrupts are masked. Context is locked.
++ *   Set is the active set.
++ *
++ * For system-wide:
++ * 	task is current
++ *
++ * must disable active monitoring. ctx cannot be NULL
 + */
-+void pfm_switch_sets_from_intr(struct pfm_context *ctx)
++void pfm_arch_stop(struct task_struct *task, struct pfm_context *ctx,
++		   struct pfm_event_set *set)
 +{
-+	struct pfm_event_set *set, *new_set;
-+	u64 switch_count;
-+	u64 now, end;
-+	u32 new_flags;
-+	unsigned long info = 0;
-+	int is_system, state, n;
-+
-+	now = sched_clock();
-+	set = ctx->active_set;
-+	new_set = set->sw_next;
-+
-+	PFM_DBG_ovfl("state=%d cur_set=%u cur_runs=%llu cur_npend=%d next_set=%u "
-+		  "next_runs=%llu new_npend=%d new_r_pmds=%llx",
-+		  ctx->state,
-+		  set->id,
-+		  (unsigned long long)set->view->set_runs,
-+		  set->npend_ovfls,
-+		  new_set->id,
-+		  (unsigned long long)new_set->view->set_runs,
-+		  new_set->npend_ovfls,
-+		  (unsigned long long)new_set->reset_pmds[0]);
-+
-+	is_system = ctx->flags.system;
-+	state = ctx->state;
-+	new_flags = new_set->flags;
-+	switch_count = __get_cpu_var(pfm_stats).set_switch_count;
-+
-+	pfm_modview_begin(set);
++	/*
++	 * no need to go through stop_save()
++	 * if we are already stopped
++	 */
++	if (!ctx->flags.started)
++		return;
 +
 +	/*
-+	 * nothing more to do
++	 * stop live registers and collect pending overflow
 +	 */
-+	if (new_set == set)
-+		goto skip_same_set;
-+
-+	/*
-+	 * when called from PMU intr handler, monitoring
-+	 * is already stopped
-+	 *
-+	 * save current PMD registers, we use a special
-+	 * form for performance reason. On some architectures,
-+	 * such as x86, the pmds are already saved when entering
-+	 * the PMU interrupt handler via pfm-arch_intr_freeze()
-+	 * so we don't need to save them again. On the contrary,
-+	 * on IA-64, they are not saved by freeze, thus we have to
-+	 * to it here.
-+	 */
-+	pfm_arch_save_pmds_from_intr(ctx, set);
-+
-+	/*
-+	 * compute elapsed ns for active set
-+	 */
-+	set->view->set_status &= ~PFM_SETVFL_ACTIVE;
-+
-+	pfm_modview_end(set);
-+
-+	set->duration += now - set->duration_start;
-+
-+	if (is_system)
-+		info = __get_cpu_var(pfm_syst_info);
-+
-+	pfm_modview_begin(new_set);
-+
-+	pfm_arch_restore_pmds(ctx, new_set);
-+	__get_cpu_var(pfm_stats).ccnt6 += sched_clock() - now;
-+	/*
-+	 * must not be restored active as we are still executing in the
-+	 * PMU interrupt handler. activation is deferred to unfreeze PMU
-+	 */
-+	pfm_arch_restore_pmcs(ctx, new_set);
-+
-+	/*
-+	 * check for pending interrupt on incoming set.
-+	 * interrupts are masked so handler call deferred
-+	 */
-+	if (new_set->npend_ovfls) {
-+		pfm_arch_resend_irq();
-+		__get_cpu_var(pfm_stats).ovfl_intr_replay_count++;
-+	}
-+	/*
-+	 * no need to restore anything, that is already done
-+	 */
-+	new_set->priv_flags &= ~PFM_SETFL_PRIV_MOD_BOTH;
-+	/*
-+	 * reset duration counter
-+	 */
-+	new_set->duration_start = now;
-+
-+skip_same_set:
-+	switch_count++;
-+	new_set->view->set_runs++;
-+
-+	/*
-+	 * reset switch threshold
-+	 */
-+	if (new_flags & PFM_SETFL_OVFL_SWITCH)
-+		pfm_reload_switch_thresholds(new_set);
-+	else if (new_flags & PFM_SETFL_TIME_SWITCH)
-+		new_set->timeout_sw_left = new_set->timeout_sw_ref;
-+
-+	/*
-+	 * reset overflowed PMD registers
-+	 */
-+	n = bitmap_weight(ulp(new_set->reset_pmds), pfm_pmu_conf->max_pmd);
-+	if (n)
-+		pfm_reset_pmds(ctx, new_set, n, PFM_PMD_RESET_SHORT);
-+
-+	/*
-+	 * reactivate monitoring
-+	 */
-+	if (is_system) {
-+		info  &= ~PFM_CPUINFO_TIME_SWITCH;
-+
-+		if (new_flags & PFM_SETFL_TIME_SWITCH)
-+			info |= PFM_CPUINFO_TIME_SWITCH;
-+
-+		__get_cpu_var(pfm_syst_info) = info;
-+
-+		PFM_DBG("new_set=%u info=0x%lx flags=0x%x",
-+			new_set->id,
-+			info,
-+			new_flags);
-+	}
-+
-+	ctx->active_set = new_set;
-+	ctx->set_all_runs++;
-+
-+	new_set->view->set_status |= PFM_SETVFL_ACTIVE;
-+
-+	pfm_modview_end(new_set);
-+
-+	end = sched_clock();
-+
-+	__get_cpu_var(pfm_stats).set_switch_count = switch_count;
-+	__get_cpu_var(pfm_stats).set_switch_ns += end - now;
-+}
-+
-+
-+static int pfm_setfl_sane(struct pfm_context *ctx, u32 flags)
-+{
-+#define PFM_SETFL_BOTH_SWITCH	(PFM_SETFL_OVFL_SWITCH|PFM_SETFL_TIME_SWITCH)
-+	int ret;
-+
-+	ret = pfm_arch_setfl_sane(ctx, flags);
-+	if (ret)
-+		return ret;
-+
-+	if ((flags & PFM_SETFL_BOTH_SWITCH) == PFM_SETFL_BOTH_SWITCH) {
-+		PFM_DBG("both switch ovfl and switch time are set");
-+		return -EINVAL;
-+	}
-+	return 0;
++	if (task == current)
++		pfm_stop_active(task, ctx, set);
 +}
 +
 +/*
-+ * it is never possible to change the identification of an existing set
++ * function called from pfm_unload_context_*(). Context is locked.
++ * interrupts are masked. task is not guaranteed to be current task.
++ * Access to PMU is not guaranteed.
++ *
++ * function must do whatever arch-specific action is required on unload
++ * of a context.
++ *
++ * called for both system-wide and per-thread. task is NULL for ssytem-wide
 + */
-+static int __pfm_change_evtset(struct pfm_context *ctx,
-+				  struct pfm_event_set *set,
-+				  struct pfarg_setdesc *req)
++void pfm_arch_unload_context(struct pfm_context *ctx, struct task_struct *task)
 +{
-+	u32 flags;
-+	u16 set_id, set_id_next;
-+	struct timespec tv;
-+	unsigned long ji;
-+	int ret;
-+
-+	BUG_ON(ctx->state == PFM_CTX_LOADED);
-+
-+	set_id = req->set_id;
-+	set_id_next = req->set_id_next;
-+	flags = req->set_flags;
-+
-+	ret = pfm_setfl_sane(ctx, flags);
-+	if (ret) {
-+		PFM_DBG("invalid flags 0x%x set %u", flags, set_id);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * commit changes
-+	 *
-+	 * note that we defer checking the validity of set_id_next until the
-+	 * context is actually attached. This is the only moment where we can
-+	 * safely assess the sanity of the sets because sets cannot be changed
-+	 * or deleted once the context is attached
-+	 */
-+	set->id = set_id;
-+	set->id_next = set_id_next;
-+	set->flags = flags;
-+	set->priv_flags = 0;
-+
-+	/*
-+	 * reset pointer to next set
-+	 */
-+	set->sw_next = NULL;
-+
-+	tv.tv_sec = 0;
-+	tv.tv_nsec = req->set_timeout;
-+	ji = timespec_to_jiffies(&tv);
-+
-+	/*
-+	 * verify that timeout is not 0
-+	 */
-+	if (!ji && (flags & PFM_SETFL_TIME_SWITCH) != 0) {
-+		PFM_DBG("invalid timeout=0");
-+		return -EINVAL;
-+	}
-+
-+	set->timeout_sw_ref = set->timeout_sw_left = ji;
-+
-+	PFM_DBG("set%u flags=0x%x id_next=%u req_nsec=%llu"
-+		" jiffies=%lu HZ=%u TICK_NSEC=%lu eff_nsec=%lu",
-+		set_id,
-+		flags,
-+		set_id_next,
-+		(unsigned long long)req->set_timeout,
-+		ji,
-+		HZ, TICK_NSEC,
-+		ji * TICK_NSEC);
-+
-+	/*
-+	 * return actual timeout in nsecs
-+	 */
-+	jiffies_to_timespec(ji, &tv);
-+	req->set_timeout = tv.tv_sec * 1000000000 + tv.tv_nsec;
-+
-+	return 0;
 +}
 +
 +/*
-+ * this function does not modify the next field
++ * called from pfm_start() or pfm_ctxsw() when idle task and
++ * EXCL_IDLE is on.
++ *
++ * Interrupts are masked. Context is locked. Set is the active set.
++ *
++ * For per-trhead:
++ * 	Task is not necessarily current. If not current task, then task
++ * 	is guaranteed stopped and off any cpu. Access to PMU is not guaranteed.
++ *
++ * For system-wide:
++ * 	task is always current
++ *
++ * must enable active monitoring.
 + */
-+void pfm_init_evtset(struct pfm_event_set *set)
++void pfm_arch_start(struct task_struct *task, struct pfm_context *ctx,
++	            struct pfm_event_set *set)
 +{
-+	u64 *impl_pmcs;
-+	u16 i, max_pmc;
++	unsigned int i, max_pmc;
++
++	if (task != current)
++		return;
 +
 +	max_pmc = pfm_pmu_conf->max_pmc;
-+	impl_pmcs =  pfm_pmu_conf->impl_pmcs;
 +
-+	/*
-+	 * install default values for all PMC  registers
-+	 */
-+	for (i=0; i < max_pmc;  i++) {
-+		if (test_bit(i, ulp(impl_pmcs))) {
-+			set->pmcs[i] = pfm_pmu_conf->pmc_desc[i].dfl_val;
-+			PFM_DBG("set%u pmc%u=0x%llx",
-+				set->id,
-+				i,
-+				(unsigned long long)set->pmcs[i]);
-+		}
++	for (i = 0; i < max_pmc; i++) {
++		if (test_bit(i, set->used_pmcs))
++		    pfm_arch_write_pmc(ctx, i, set->pmcs[i]);
 +	}
-+
-+	/*
-+	 * PMD registers are set to 0 when the event set is allocated,
-+	 * hence we do not need to explicitly initialize them.
-+	 *
-+	 * For virtual PMD registers (i.e., those tied to a SW resource)
-+	 * their value becomes meaningful once the context is attached.
-+	 */
 +}
 +
 +/*
-+ * look for an event set using its identification. If the set does not
-+ * exist:
-+ * 	- if alloc == 0 then return error
-+ * 	- if alloc == 1  then allocate set
++ * function called from pfm_switch_sets(), pfm_context_load_thread(),
++ * pfm_context_load_sys(), pfm_ctxsw(), pfm_switch_sets()
++ * context is locked. Interrupts are masked. set cannot be NULL.
++ * Access to the PMU is guaranteed.
 + *
-+ * alloc is one ONLY when coming from pfm_create_evtsets() which can only
-+ * be called when the context is detached, i.e. monitoring is stopped.
++ * function must restore all PMD registers from set.
 + */
-+struct pfm_event_set *pfm_find_set(struct pfm_context *ctx, u16 set_id,
-+					  int alloc)
++void pfm_arch_restore_pmds(struct pfm_context *ctx, struct pfm_event_set *set)
 +{
-+	struct kmem_cache *cachep;
-+	struct pfm_event_set *set, *new_set, *prev;
-+	unsigned long offs;
-+	size_t view_size;
-+	void *view;
++	u64 ovfl_mask, val, *pmds;
++	u64 *impl_pmds;
++	unsigned int i;
++	unsigned int max_pmd;
 +
-+	PFM_DBG("looking for set=%u", set_id);
-+
-+	/*
-+	 * shortcut for set0: always exist, cannot be removed
-+	 */
-+	if (!(set_id || alloc))
-+		return list_entry(ctx->list.next, struct pfm_event_set, list);
-+
-+	prev = NULL;
-+	list_for_each_entry(set, &ctx->list, list) {
-+		if (set->id == set_id)
-+			return set;
-+		if (set->id > set_id)
-+			break;
-+		prev = set;
-+	}
-+
-+	if (!alloc)
-+		return NULL;
++	max_pmd = pfm_pmu_conf->max_pmd;
++	ovfl_mask = pfm_pmu_conf->ovfl_mask;
++	impl_pmds = pfm_pmu_conf->impl_pmds;
++	pmds = set->view->set_pmds;
 +
 +	/*
-+	 * when alloc == 1, context is detached, monitoring is stopped and
-+	 * interrupts are enabled but context is locked
++	 * must restore all pmds to avoid leaking
++	 * information to user.
 +	 */
++	for (i = 0; i < max_pmd; i++) {
 +
-+	cachep = ctx->flags.mapset ? pfm_set_cachep : pfm_lg_set_cachep;
++		if (test_bit(i, impl_pmds) == 0)
++			continue;
 +
-+	/*
-+	 * we are holding the context spinlock and interrupts
-+	 * are unmasked. We must use GFP_ATOMIC as we cannot
-+	 * sleep while holding a spin lock.
-+	 */
-+	new_set = kmem_cache_zalloc(cachep, GFP_ATOMIC);
-+	if (!new_set)
-+		return NULL;
++		val = pmds[i];
 +
-+	if (ctx->flags.mapset) {
-+		view_size = PAGE_ALIGN(sizeof(struct pfm_set_view));
-+		view      = kmalloc(view_size, GFP_ATOMIC);
-+		if (view == NULL) {
-+			PFM_DBG("cannot allocate set view");
-+			kmem_cache_free(cachep, new_set);
-+			return NULL;
-+		}
-+		offs = PFM_SET_REMAP_BASE
-+		     + (set_id*PFM_SET_REMAP_SCALAR);
-+	} else {
-+		view_size = sizeof(struct pfm_set_view);
-+		view = (struct pfm_set_view *)(new_set+1);
-+		offs = 0;
++		/*
++		 * set upper bits for counter to ensure
++		 * overflow will trigger
++		 */
++		val &= ovfl_mask;
++
++		pfm_arch_write_pmd(ctx, i, val);
 +	}
-+
-+	memset(view, 0, sizeof(struct pfm_set_view));
-+
-+	new_set->id = set_id;
-+	new_set->view = view;
-+	new_set->mmap_offset = offs;
-+
-+	INIT_LIST_HEAD(&new_set->list);
-+
-+	if (prev == NULL) {
-+		list_add(&(new_set->list), &ctx->list);
-+	} else {
-+		PFM_DBG("add after set=%u", prev->id);
-+		list_add(&(new_set->list), &prev->list);
-+	}
-+	PFM_DBG("set_id=%u size=%zu view=%p remap=%d mmap_offs=%lu",
-+			set_id,
-+			view_size,
-+			view,
-+			ctx->flags.mapset,
-+			new_set->mmap_offset);
-+	return new_set;
 +}
 +
 +/*
-+ * context is unloaded for this command. Interrupts are enabled
++ * function called from pfm_switch_sets(), pfm_context_load_thread(),
++ * pfm_context_load_sys(), pfm_ctxsw().
++ * Context is locked. Interrupts are masked. set cannot be NULL.
++ * Access to the PMU is guaranteed.
++ *
++ * function must restore all PMC registers from set, if needed.
 + */
-+int __pfm_create_evtsets(struct pfm_context *ctx, struct pfarg_setdesc *req,
-+			int count)
++void pfm_arch_restore_pmcs(struct pfm_context *ctx, struct pfm_event_set *set)
 +{
-+	struct pfm_event_set *set;
-+	u16 set_id;
-+	int i, ret;
++	u64 *impl_pmcs;
++	unsigned int i, max_pmc;
 +
-+	for (i = 0; i < count; i++, req++) {
-+		set_id = req->set_id;
++	max_pmc = pfm_pmu_conf->max_pmc;
++	impl_pmcs = pfm_pmu_conf->impl_pmcs;
 +
-+		PFM_DBG("set_id=%u", set_id);
++	/*
++	 * - by default no PMCS measures anything
++	 * - on ctxswout, all used PMCs are disabled (cccr enable bit cleared)
++	 * hence when masked we do not need to restore anything
++	 */
++	if (ctx->state == PFM_CTX_MASKED || ctx->flags.started == 0)
++		return;
 +
-+		set = pfm_find_set(ctx, set_id, 1);
-+		if (set == NULL)
-+			goto error_mem;
++	/*
++	 * restore all pmcs
++	 */
++	for (i = 0; i < max_pmc; i++)
++		if (test_bit(i, impl_pmcs))
++			pfm_arch_write_pmc(ctx, i, set->pmcs[i]);
++}
 +
-+		ret = __pfm_change_evtset(ctx, set, req);
-+		if (ret)
-+			goto error_params;
-+
-+		pfm_init_evtset(set);
++char *pfm_arch_get_pmu_module_name(void)
++{
++	switch(cpu_data->cputype) {
++#ifndef CONFIG_SMP
++	case CPU_34K:
++#if defined(CPU_74K)
++	case CPU_74K:
++#endif
++#endif
++	case CPU_SB1:
++	case CPU_SB1A:
++	case CPU_25KF:
++	case CPU_24K:
++	case CPU_20KC:
++	case CPU_5KC:
++	  return "perfmon_mips64";
++	default:
++	  return NULL;
 +	}
-+	return 0;
-+error_mem:
-+	PFM_DBG("cannot allocate set %u", set_id);
-+	pfm_retflag_set(req->set_flags, PFM_REG_RETFL_EINVAL);
-+	return -ENOMEM;
-+error_params:
-+	pfm_retflag_set(req->set_flags, PFM_REG_RETFL_EINVAL);
++	return NULL;
++}
++
++int perfmon_perf_irq(void)
++{
++  /* BLATANTLY STOLEN FROM OPROFILE, then modified */
++  struct pt_regs *regs;
++  unsigned int counters = pfm_pmu_conf->max_pmc;
++  unsigned int control;
++  unsigned int counter;
++
++  regs = get_irq_regs();
++  switch (counters) {
++#define HANDLE_COUNTER(n)						\
++	case n + 1:							\
++		control = read_c0_perfctrl ## n();			\
++		counter = read_c0_perfcntr ## n();			\
++		if ((control & MIPS64_PMC_INT_ENABLE_MASK) &&		\
++		    (counter & MIPS64_PMD_INTERRUPT)) {			\
++			pfm_interrupt_handler(instruction_pointer(regs),\
++					      regs);                    \
++			return(1);					\
++		}
++      HANDLE_COUNTER(3)
++      HANDLE_COUNTER(2)
++      HANDLE_COUNTER(1)
++      HANDLE_COUNTER(0)
++      }
++
++  return 0;
++}
++EXPORT_SYMBOL(perfmon_perf_irq);
+--- linux-2.6.22.base/arch/mips/perfmon/perfmon_mips64.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/mips/perfmon/perfmon_mips64.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,187 @@
++/*
++ * This file contains the MIPS64 and decendent PMU register description tables
++ * and pmc checker used by perfmon.c.
++ *
++ * Copyright (c) 2005 Philip Mucci
++ *
++ * Based on perfmon_p6.c:
++ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/module.h>
++#include <linux/perfmon.h>
++
++MODULE_AUTHOR("Philip Mucci <mucci@cs.utk.edu>");
++MODULE_DESCRIPTION("MIPS64 PMU description tables");
++MODULE_LICENSE("GPL");
++
++/*
++ * reserved:
++ * 	- bit 63-9
++ * RSVD: reserved bits must be 1
++ */
++#define PFM_MIPS64_PMC_RSVD 0xfffffffffffffe10ULL
++#define PFM_MIPS64_PMC_VAL  (1ULL<<4)
++
++extern int null_perf_irq(struct pt_regs *regs);
++extern int (*perf_irq)(struct pt_regs *regs);
++extern int perfmon_perf_irq(struct pt_regs *regs);
++
++static struct pfm_arch_pmu_info pfm_mips64_pmu_info;
++
++static struct pfm_reg_desc pfm_mips64_pmc_desc[]={
++/* pmc0 */  PMC_D(PFM_REG_I64, "CP0_25_0", PFM_MIPS64_PMC_VAL, PFM_MIPS64_PMC_RSVD, 0, 0),
++/* pmc1 */  PMC_D(PFM_REG_I64, "CP0_25_1", PFM_MIPS64_PMC_VAL, PFM_MIPS64_PMC_RSVD, 0, 1),
++/* pmc2 */  PMC_D(PFM_REG_I64, "CP0_25_2", PFM_MIPS64_PMC_VAL, PFM_MIPS64_PMC_RSVD, 0, 2),
++/* pmc3 */  PMC_D(PFM_REG_I64, "CP0_25_3", PFM_MIPS64_PMC_VAL, PFM_MIPS64_PMC_RSVD, 0, 3)
++};
++#define PFM_MIPS64_NUM_PMCS ARRAY_SIZE(pfm_mips64_pmc_desc)
++
++static struct pfm_reg_desc pfm_mips64_pmd_desc[]={
++/* pmd0 */ PMD_D(PFM_REG_C, "CP0_25_0", 0),
++/* pmd1 */ PMD_D(PFM_REG_C, "CP0_25_1", 1),
++/* pmd2 */ PMD_D(PFM_REG_C, "CP0_25_2", 2),
++/* pmd3 */ PMD_D(PFM_REG_C, "CP0_25_3", 3)
++};
++#define PFM_MIPS64_NUM_PMDS ARRAY_SIZE(pfm_mips64_pmd_desc)
++
++static int pfm_mips64_probe_pmu(void)
++{
++	struct cpuinfo_mips *c = &current_cpu_data;
++
++	switch (c->cputype) {
++#ifndef CONFIG_SMP
++	case CPU_34K:
++#if defined(CPU_74K)
++	case CPU_74K:
++#endif
++#endif
++	case CPU_SB1:
++	case CPU_SB1A:
++	case CPU_25KF:
++	case CPU_24K:
++	case CPU_20KC:
++	case CPU_5KC:
++		return 0;
++		break;
++	default:
++		PFM_INFO("Unknown cputype 0x%x",c->cputype);
++	}
++	return -1;
++}
++
++/*
++ * impl_pmcs, impl_pmds are computed at runtime to minimize errors!
++ */
++static struct pfm_pmu_config pfm_mips64_pmu_conf = {
++	.pmu_name = "MIPS", /* placeholder */
++	.counter_width = 31,
++	.pmd_desc = pfm_mips64_pmd_desc,
++	.pmc_desc = pfm_mips64_pmc_desc,
++	.num_pmc_entries = PFM_MIPS64_NUM_PMCS,
++	.num_pmd_entries = PFM_MIPS64_NUM_PMDS,
++	.probe_pmu = pfm_mips64_probe_pmu,
++	.flags = PFM_PMU_BUILTIN_FLAG,
++	.owner = THIS_MODULE,
++	.arch_info = &pfm_mips64_pmu_info
++};
++
++static inline int n_counters(void)
++{
++	if (!(read_c0_config1() & MIPS64_CONFIG_PMC_MASK))
++		return 0;
++	if (!(read_c0_perfctrl0() & MIPS64_PMC_CTR_MASK))
++		return 1;
++	if (!(read_c0_perfctrl1() & MIPS64_PMC_CTR_MASK))
++		return 2;
++	if (!(read_c0_perfctrl2() & MIPS64_PMC_CTR_MASK))
++		return 3;
++	return 4;
++}
++
++static int __init pfm_mips64_pmu_init_module(void)
++{
++	struct cpuinfo_mips *c = &current_cpu_data;
++	int i, ret, num;
++
++	switch (c->cputype) {
++	case CPU_5KC:
++		pfm_mips64_pmu_conf.pmu_name = "MIPS5KC";
++		break;
++	case CPU_20KC:
++		pfm_mips64_pmu_conf.pmu_name = "MIPS20KC";
++		break;
++	case CPU_24K:
++		pfm_mips64_pmu_conf.pmu_name = "MIPS24K";
++		break;
++	case CPU_25KF:
++		pfm_mips64_pmu_conf.pmu_name = "MIPS25KF";
++		break;
++	case CPU_SB1:
++		pfm_mips64_pmu_conf.pmu_name = "SB1";
++		break;
++	case CPU_SB1A:
++	pfm_mips64_pmu_conf.pmu_name = "SB1A";
++		break;
++#ifndef CONFIG_SMP
++	case CPU_34K:
++		pfm_mips64_pmu_conf.pmu_name = "MIPS34K";
++		break;
++#if defined(CPU_74K)
++	case CPU_74K:
++		pfm_mips64_pmu_conf.pmu_name = "MIPS74K";
++		break;
++#endif
++#endif
++	default:
++		PFM_INFO("Unknown cputype 0x%x",c->cputype);
++		return -1;
++	}
++
++	num = n_counters();
++	if (num == 0) {
++		PFM_INFO("cputype 0x%x has no counters",c->cputype);
++		return -1;
++	}
++	/* mark remaining counters unavailable */
++	for(i=num; i < PFM_MIPS64_NUM_PMCS; i++) {
++		pfm_mips64_pmc_desc[i].type = PFM_REG_NA;
++	}
++
++	for(i=num; i < PFM_MIPS64_NUM_PMDS; i++) {
++		pfm_mips64_pmd_desc[i].type = PFM_REG_NA;
++	}
++
++	pfm_mips64_pmu_conf.num_pmc_entries = num;
++	pfm_mips64_pmu_conf.num_pmd_entries = num;
++
++	pfm_mips64_pmu_info.pmu_style = c->cputype;
++
++	ret = pfm_pmu_register(&pfm_mips64_pmu_conf);
++	if (ret == 0)
++		perf_irq = perfmon_perf_irq;
 +	return ret;
 +}
 +
-+int __pfm_getinfo_evtsets(struct pfm_context *ctx, struct pfarg_setinfo *req,
-+				 int count)
++static void __exit pfm_mips64_pmu_cleanup_module(void)
 +{
-+	struct pfm_event_set *set;
-+	int i, is_system, is_loaded;
-+	u16 set_id;
-+	int max_cnt_pmd;
-+	u64 end;
-+
-+	end = sched_clock();
-+	is_system = ctx->flags.system;
-+	is_loaded = ctx->state == PFM_CTX_LOADED;
-+	max_cnt_pmd = pfm_pmu_conf->max_cnt_pmd;
-+
-+	for (i = 0; i < count; i++, req++) {
-+
-+		set_id = req->set_id;
-+
-+		list_for_each_entry(set, &ctx->list, list) {
-+			if (set->id == set_id)
-+				goto found;
-+			if (set->id > set_id)
-+				goto error;
-+		}
-+found:
-+		/*
-+		 * compute leftover timeout
-+		 */
-+		req->set_flags = set->flags;
-+		req->set_timeout = set->timeout_sw_left * TICK_NSEC;
-+		req->set_runs = set->view->set_runs;
-+		req->set_act_duration = set->duration;
-+		req->set_mmap_offset = set->mmap_offset;
-+
-+		/*
-+		 * adjust for active set if needed
-+		 */
-+		if (is_system && is_loaded && ctx->flags.started
-+		    && set == ctx->active_set)
-+			req->set_act_duration  += end - set->duration_start;
-+
-+		/*
-+		 * copy the list of pmds which last overflowed for
-+		 * the set
-+		 */
-+		bitmap_copy(ulp(req->set_ovfl_pmds),
-+			    ulp(set->ovfl_pmds),
-+			    max_cnt_pmd);
-+
-+		/*
-+		 * copy bitmask of available PMU registers
-+		 */
-+		bitmap_copy(ulp(req->set_avail_pmcs),
-+			    ulp(pfm_pmu_conf->impl_pmcs),
-+			    pfm_pmu_conf->max_pmc);
-+
-+		bitmap_copy(ulp(req->set_avail_pmds),
-+			    ulp(pfm_pmu_conf->impl_pmds),
-+			    pfm_pmu_conf->max_pmd);
-+
-+		pfm_retflag_set(req->set_flags, 0);
-+
-+		PFM_DBG("set%u flags=0x%x eff_usec=%llu runs=%llu",
-+			set_id,
-+			set->flags,
-+			(unsigned long long)req->set_timeout,
-+			(unsigned long long)set->view->set_runs);
-+	}
-+	return 0;
-+error:
-+	PFM_DBG("set%u not found", set_id);
-+	pfm_retflag_set(req->set_flags, PFM_REG_RETFL_EINVAL);
-+	return -EINVAL;
++	pfm_pmu_unregister(&pfm_mips64_pmu_conf);
++	perf_irq = null_perf_irq;
 +}
 +
++module_init(pfm_mips64_pmu_init_module);
++module_exit(pfm_mips64_pmu_cleanup_module);
+--- linux-2.6.22.base/include/asm-mips/perfmon.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/include/asm-mips/perfmon.h	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,370 @@
 +/*
-+ * context is unloaded for this command. Interrupts are enabled
-+ */
-+int __pfm_delete_evtsets(struct pfm_context *ctx, void *arg, int count)
-+{
-+	struct pfarg_setdesc *req = arg;
-+	struct pfm_event_set *set;
-+	struct kmem_cache *cachep;
-+	u16 set_id;
-+	size_t view_size;
-+	int i;
++ * Copyright (c) 2005 Philip Mucci.
++ *
++ * Based on other versions:
++ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * This file contains mips64 specific definitions for the perfmon
++ * interface.
++ *
++ * This file MUST never be included directly. Use linux/perfmon.h.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++  */
++#ifndef _ASM_MIPS64_PERFMON_H_
++#define _ASM_MIPS64_PERFMON_H_
 +
-+	/* delete operation only works when context is detached */
-+	BUG_ON(ctx->state != PFM_CTX_UNLOADED);
++#ifdef __KERNEL__
 +
-+	view_size = PAGE_ALIGN(sizeof(struct pfm_set_view));
++#define PFM_ARCH_PMD_STK_ARG	2
++#define PFM_ARCH_PMC_STK_ARG	2
 +
-+	if (ctx->flags.mapset)
-+		cachep = pfm_set_cachep;
-+	else
-+		cachep = pfm_lg_set_cachep;
-+
-+	for (i = 0; i < count; i++, req++) {
-+		set_id = req->set_id;
-+
-+		/*
-+		 * cannot remove set 0
-+		 */
-+		if (!set_id)
-+			goto error;
-+
-+		list_for_each_entry(set, &ctx->list, list) {
-+			if (set->id == set_id)
-+				goto found;
-+			if (set->id > set_id)
-+				goto error;
-+		}
-+		goto error;
-+found:
-+		/*
-+		 * clear active set if necessary.
-+		 * will be updated when context is loaded
-+		 */
-+		if (set == ctx->active_set)
-+			ctx->active_set = NULL;
-+
-+		list_del(&set->list);
-+
-+		if (ctx->flags.mapset)
-+			kfree(set->view);
-+		kmem_cache_free(cachep, set);
-+
-+		pfm_retflag_set(req->set_flags, 0);
-+
-+		PFM_DBG("set%u deleted", set_id);
-+	}
-+	return 0;
-+error:
-+	PFM_DBG("set%u not found or invalid", set_id);
-+	pfm_retflag_set(req->set_flags, PFM_REG_RETFL_EINVAL);
-+	return -EINVAL;
-+}
-+
-+/*
-+ * called from pfm_context_free() to free all sets
-+ */
-+void pfm_free_sets(struct pfm_context *ctx)
-+{
-+	struct pfm_event_set *set, *tmp;
-+	struct kmem_cache *cachep;
-+	int use_remap;
-+
-+	use_remap = ctx->flags.mapset;
-+
-+	if (use_remap)
-+		cachep = pfm_set_cachep;
-+	else
-+		cachep = pfm_lg_set_cachep;
-+
-+	list_for_each_entry_safe(set, tmp, &ctx->list, list) {
-+		list_del(&set->list);
-+		if (use_remap)
-+			kfree(set->view);
-+		kmem_cache_free(cachep, set);
-+	}
-+}
-+
-+int pfm_sets_init(void)
-+{
-+
-+	pfm_lg_set_cachep = kmem_cache_create("pfm_large_event_set",
-+			sizeof(struct pfm_event_set)+sizeof(struct pfm_set_view),
-+			SLAB_HWCACHE_ALIGN, 0, NULL, NULL);
-+	if (pfm_lg_set_cachep == NULL) {
-+		PFM_ERR("cannot initialize large event set slab");
-+		return -ENOMEM;
-+	}
-+
-+	pfm_set_cachep = kmem_cache_create("pfm_event_set",
-+			sizeof(struct pfm_event_set),
-+			SLAB_HWCACHE_ALIGN, 0, NULL, NULL);
-+	if (pfm_set_cachep == NULL) {
-+		PFM_ERR("cannot initialize event set slab");
-+		return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+static struct page *pfm_view_map_pagefault(struct vm_area_struct *vma,
-+					   unsigned long address, int *type)
-+{
-+	void *kaddr;
-+	struct page *page;
-+
-+	kaddr = vma->vm_private_data;
-+	if (kaddr == NULL) {
-+		PFM_DBG("no view");
-+		return NOPAGE_SIGBUS;
-+	}
-+
-+	if ( (address < (unsigned long) vma->vm_start) ||
-+	     (address >= (unsigned long) (vma->vm_start + PAGE_SIZE)) )
-+		return NOPAGE_SIGBUS;
-+
-+	kaddr += (address - vma->vm_start);
-+
-+	if (type)
-+		*type = VM_FAULT_MINOR;
-+
-+	page = virt_to_page(kaddr);
-+	get_page(page);
-+
-+	PFM_DBG("[%d] start=%p ref_count=%d",
-+		  current->pid,
-+		  kaddr, page_count(page));
-+
-+	return page;
-+}
-+struct vm_operations_struct pfm_view_map_vm_ops = {
-+	.nopage	= pfm_view_map_pagefault,
++struct pfm_arch_pmu_info {
++	u32 pmu_style;
 +};
 +
-+int pfm_mmap_set(struct pfm_context *ctx, struct vm_area_struct *vma,
-+		 size_t size)
++#define MIPS64_CONFIG_PMC_MASK (1 << 4)
++#define MIPS64_PMC_INT_ENABLE_MASK (1 << 4)
++#define MIPS64_PMC_CNT_ENABLE_MASK (0xf)
++#define MIPS64_PMC_EVT_MASK (0x7 << 6)
++#define MIPS64_PMC_CTR_MASK (1 << 31)
++#define MIPS64_PMD_INTERRUPT (1 << 31)
++
++/* Coprocessor register 25 contains the PMU interface. */
++/* Sel 0 is control for counter 0 */
++/* Sel 1 is count for counter 0. */
++/* Sel 2 is control for counter 1. */
++/* Sel 3 is count for counter 1. */
++
++/*
++
++31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4  3 2 1 0
++M  0--------------------------------------------------------------0 Event-- IE U S K EXL
++
++M 31 If this bit is one, another pair of Performance Control
++and Counter registers is implemented at a MTC0
++
++Event 8:5 Counter event enabled for this counter. Possible events
++are listed in Table 6-30. R/W Undefined
++
++IE 4 Counter Interrupt Enable. This bit masks bit 31 of the
++associated count register from the interrupt exception
++request output. R/W 0
++
++U 3 Count in User Mode. When this bit is set, the specified
++event is counted in User Mode. R/W Undefined
++
++S 2 Count in Supervisor Mode. When this bit is set, the
++specified event is counted in Supervisor Mode. R/W Undefined
++
++K 1 Count in Kernel Mode. When this bit is set, count the
++event in Kernel Mode when EXL and ERL both are 0. R/W Undefined
++
++EXL 0 Count when EXL. When this bit is set, count the event
++when EXL = 1 and ERL = 0. R/W Undefined
++*/
++
++static inline void pfm_arch_resend_irq(void)
++{}
++
++static inline void pfm_arch_serialize(void)
++{}
++
++
++static inline void pfm_arch_unfreeze_pmu(void)
++{}
++
++/*
++ * MIPS does not save the PMDs during pfm_arch_intr_freeze_pmu(), thus
++ * this routine needs to do it when switching sets on overflow
++ */
++static inline void pfm_arch_save_pmds_from_intr(struct pfm_context *ctx,
++					   struct pfm_event_set *set)
 +{
-+	struct pfm_event_set *set;
-+	u16 set_id;
++	pfm_save_pmds(ctx, set);
++}
 +
-+	if (!ctx->flags.mapset) {
-+		PFM_DBG("context does not use set remapping");
-+		return -EINVAL;
++static inline void pfm_arch_write_pmc(struct pfm_context *ctx,
++				      unsigned int cnum, u64 value)
++{
++  /*
++   * we only write to the actual register when monitoring is
++   * active (pfm_start was issued)
++   */
++  if (ctx && (ctx->flags.started == 0))
++	  return;
++
++  switch(pfm_pmu_conf->pmc_desc[cnum].hw_addr) {
++  case 0:
++    write_c0_perfctrl0(value);
++    break;
++  case 1:
++    write_c0_perfctrl1(value);
++    break;
++  case 2:
++    write_c0_perfctrl2(value);
++    break;
++  case 3:
++    write_c0_perfctrl3(value);
++    break;
++  default:
++    BUG();
++  }
++}
++
++static inline void pfm_arch_write_pmd(struct pfm_context *ctx,
++				      unsigned int cnum, u64 value)
++{
++  value &= pfm_pmu_conf->ovfl_mask;
++
++  switch(pfm_pmu_conf->pmd_desc[cnum].hw_addr) {
++  case 0:
++    write_c0_perfcntr0(value);
++    break;
++  case 1:
++    write_c0_perfcntr1(value);
++    break;
++  case 2:
++    write_c0_perfcntr2(value);
++    break;
++  case 3:
++    write_c0_perfcntr3(value);
++    break;
++  default:
++    BUG();
++  }
++}
++
++static inline u64 pfm_arch_read_pmd(struct pfm_context *ctx, unsigned int cnum)
++{
++	switch(pfm_pmu_conf->pmd_desc[cnum].hw_addr) {
++	case 0:
++		return read_c0_perfcntr0();
++		break;
++	case 1:
++		return read_c0_perfcntr1();
++		break;
++	case 2:
++		return read_c0_perfcntr2();
++		break;
++	case 3:
++		return read_c0_perfcntr3();
++		break;
++	default:
++		BUG();
++		return 0;
 +	}
++}
 +
-+	if (vma->vm_pgoff < PFM_SET_REMAP_OFFS
-+			|| vma->vm_pgoff >= PFM_SET_REMAP_OFFS_MAX) {
-+		PFM_DBG("invalid offset %lu", vma->vm_pgoff);
-+		return -EINVAL;
++static inline u64 pfm_arch_read_pmc(struct pfm_context *ctx, unsigned int cnum)
++{
++	switch(pfm_pmu_conf->pmc_desc[cnum].hw_addr) {
++	case 0:
++		return read_c0_perfctrl0();
++		break;
++	case 1:
++		return read_c0_perfctrl1();
++		break;
++	case 2:
++		return read_c0_perfctrl2();
++		break;
++	case 3:
++		return read_c0_perfctrl3();
++		break;
++	default:
++		BUG();
++		return 0;
 +	}
++}
 +
-+	if (size != PAGE_SIZE) {
-+		PFM_DBG("size %zu must be page size", size);
-+		return -EINVAL;
-+	}
++/*
++ * For some CPUs, the upper bits of a counter must be set in order for the
++ * overflow interrupt to happen. On overflow, the counter has wrapped around,
++ * and the upper bits are cleared. This function may be used to set them back.
++ */
++static inline void pfm_arch_ovfl_reset_pmd(struct pfm_context *ctx,
++					   unsigned int cnum)
++{
++  u64 val;
++  val = pfm_arch_read_pmd(ctx, cnum);
++  /* This masks out overflow bit 31 */
++  pfm_arch_write_pmd(ctx, cnum, val);
++}
 +
-+	set_id = (u16)(vma->vm_pgoff - PFM_SET_REMAP_OFFS);
-+	set = pfm_find_set(ctx, set_id, 0);
-+	if (set == NULL) {
-+		PFM_DBG("set=%u is undefined", set_id);
-+		return -EINVAL;
-+	}
++/*
++ * At certain points, perfmon needs to know if monitoring has been
++ * explicitely started/stopped by user via pfm_start/pfm_stop. The
++ * information is tracked in ctx.flags.started. However on certain
++ * architectures, it may be possible to start/stop directly from
++ * user level with a single assembly instruction bypassing
++ * the kernel. This function must be used to determine by
++ * an arch-specific mean if monitoring is actually started/stopped.
++ */
++static inline int pfm_arch_is_active(struct pfm_context *ctx)
++{
++	return ctx->flags.started;
++}
 +
-+	PFM_DBG("mmaping set_id=%u", set_id);
++static inline void pfm_arch_ctxswout_sys(struct task_struct *task,
++					 struct pfm_context *ctx,
++					 struct pfm_event_set *set)
++{}
 +
-+	vma->vm_ops = &pfm_view_map_vm_ops;
-+	vma->vm_private_data = set->view;
++static inline void pfm_arch_ctxswin_sys(struct task_struct *task,
++                                         struct pfm_context *ctx,
++                                         struct pfm_event_set *set)
++{}
 +
++static inline void pfm_arch_ctxswin_thread(struct task_struct *task,
++                                         struct pfm_context *ctx,
++                                         struct pfm_event_set *set)
++{}
++
++int  pfm_arch_is_monitoring_active(struct pfm_context *ctx);
++int  pfm_arch_ctxswout_thread(struct task_struct *task,
++			      struct pfm_context *ctx, struct pfm_event_set *set);
++void pfm_arch_stop(struct task_struct *task, struct pfm_context *ctx,
++		   struct pfm_event_set *set);
++void pfm_arch_start(struct task_struct *task, struct pfm_context *ctx,
++		    struct pfm_event_set *set);
++void pfm_arch_restore_pmds(struct pfm_context *ctx, struct pfm_event_set *set);
++void pfm_arch_restore_pmcs(struct pfm_context *ctx, struct pfm_event_set *set);
++char *pfm_arch_get_pmu_module_name(void);
++
++static inline void pfm_arch_intr_freeze_pmu(struct pfm_context *ctx,
++					    struct pfm_event_set *set)
++{
++	pfm_arch_stop(current, ctx, set);
++	/*
++	 * we mark monitoring as stopped to avoid
++	 * certain side effects especially in
++	 * pfm_switch_sets_from_intr() on
++	 * pfm_arch_restore_pmcs()
++	 */
++	ctx->flags.started = 0;
++}
++
++/*
++ * unfreeze PMU from pfm_do_interrupt_handler()
++ * ctx may be NULL for spurious
++ */
++static inline void pfm_arch_intr_unfreeze_pmu(struct pfm_context *ctx)
++{
++	if (!ctx)
++		return;
++
++	PFM_DBG_ovfl("state=%d", ctx->state);
++
++	ctx->flags.started = 1;
++
++	if (ctx->state == PFM_CTX_MASKED)
++		return;
++
++	pfm_arch_restore_pmcs(ctx, ctx->active_set);
++}
++
++static inline int pfm_arch_pmu_config_init(struct _pfm_pmu_config *cfg)
++{
 +	return 0;
 +}
 +
++/*
++ * this function is called from the PMU interrupt handler ONLY.
++ * On MIPS, the PMU is frozen via arch_stop, masking would be implemented
++ * via arch-stop as well. Given that the PMU is already stopped when
++ * entering the interrupt handler, we do not need to stop it again, so
++ * this function is a nop.
++ */
++static inline void pfm_arch_mask_monitoring(struct pfm_context *ctx,
++					    struct pfm_event_set *set)
++{}
 +
++/*
++ * on MIPS masking/unmasking uses the start/stop mechanism, so we simply
++ * need to start here.
++ */
++static inline void pfm_arch_unmask_monitoring(struct pfm_context *ctx,
++					      struct pfm_event_set *set)
++{
++	pfm_arch_start(current, ctx, set);
++}
++
++static inline void pfm_arch_pmu_config_remove(void)
++{}
++
++static inline int pfm_arch_context_initialize(struct pfm_context *ctx,
++					      u32 ctx_flags)
++{
++	return 0;
++}
++
++void pfm_arch_unload_context(struct pfm_context *ctx, struct task_struct *task);
++
++/*
++ * function called from pfm_setfl_sane(). Context is locked
++ * and interrupts are masked.
++ * The value of flags is the value of ctx_flags as passed by
++ * user.
++ *
++ * function must check arch-specific set flags.
++ * Return:
++ * 	1 when flags are valid
++ *      0 on error
++ */
++static inline int
++pfm_arch_setfl_sane(struct pfm_context *ctx, u32 flags)
++{
++	return 0;
++}
++
++static inline int pfm_arch_init(void)
++{
++	return 0;
++}
++
++static inline void pfm_arch_init_percpu(void)
++{}
++
++static inline int pfm_arch_load_context(struct pfm_context *ctx,
++					struct pfm_event_set *set,
++					struct task_struct *task)
++{
++	return 0;
++}
++
++/*
++ * not used for mips
++ */
++static inline int pfm_smpl_buffer_alloc_compat(struct pfm_context *ctx,
++					       size_t rsize, struct file *filp)
++{
++	return -EINVAL;
++}
++
++static inline void pfm_arch_idle_notifier_register(void)
++{}
++
++static inline void pfm_arch_idle_notifier_unregister(void)
++{}
++
++struct pfm_arch_context {
++	/* empty */
++};
++
++#define PFM_ARCH_CTX_SIZE	sizeof(struct pfm_arch_context)
++
++#endif /* __KERNEL__ */
++#endif /* _ASM_MIPS64_PERFMON_H_ */
+--- linux-2.6.22.base/include/asm-mips/perfmon_api.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/include/asm-mips/perfmon_api.h	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,40 @@
++/*
++ * Copyright (c) 2007 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * This file contains mips64 specific definitions for the perfmon
++ * interface.
++ *
++ * This file MUST never be included directly. Use linux/perfmon.h.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++  */
++#ifndef _ASM_MIPS64_PERFMON_API_H_
++#define _ASM_MIPS64_PERFMON_API_H_
++
++#define PFM_ARCH_MAX_HW_PMCS	256 /* maximum number of PMC registers */
++#define PFM_ARCH_MAX_HW_PMDS	256 /* maximum number of PMD registers */
++/*
++ * Virtual PMU registers: registers mapped to non-PMU resources
++ * IMPORTANT:
++ * 	- must appear in PMC/PMD namespace *AFTER* PMU registers
++ * 	- SW PMD can be specified as smpl_pmds, reset_pmds
++ * 	- SW PMD cannot overflow
++ * 	- SW PMD do not show up in pfarg_msg.ovfl_pmds/pfarg_setinfo_t.ovfl_pmds
++ */
++#define PFM_ARCH_MAX_SW_PMCS	64 /* max virtual PMCS */
++#define PFM_ARCH_MAX_SW_PMDS	64 /* max virtual PMDS */
++
++#endif /* _ASM_MIPS64_PERFMON_API_H_ */
