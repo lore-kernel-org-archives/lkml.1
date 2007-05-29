@@ -1,383 +1,372 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbXE2NUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761387AbXE2NUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbXE2NUX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXE2NT4
+	id S1761387AbXE2NUx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbXE2NUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:19:56 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:7826 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760895AbXE2NTy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:19:54 -0400
-Message-Id: <20070529130107.353411147@chello.nl>
-References: <20070529125248.877196281@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Tue, 29 May 2007 14:52:52 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 4/5] lockstat: human readability tweaks
-Content-Disposition: inline; filename=lockstat-output.patch
+	Tue, 29 May 2007 09:20:03 -0400
+Received: from il.qumranet.com ([82.166.9.18]:40207 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760911AbXE2NT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:19:59 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
+       Shaohua Li <shaohua.li@intel.com>
+Subject: [GIT PULL] KVM cpu hotplug fixes
+Date: Tue, 29 May 2007 16:19:56 +0300
+Message-Id: <1180444796352-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Present all this fancy new lock statistics information:
+Linus,
 
-*warning, _wide_ output ahead*
+Please pull from the repository and branch
 
-(output edited for purpose of brevity)
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git hotplug-linus
 
- # cat /proc/lock_stat
-lock_stat version 0.1
------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                              class name    contentions   waittime-min   waittime-max waittime-total   acquisitions   holdtime-min   holdtime-max holdtime-total
------------------------------------------------------------------------------------------------------------------------------------------------------------------
+to receive a patchset which makes cpu hotplug (and therefore, suspend and
+resume) more robust when running virtual machines.  The core issue is that
+we need a notification about a cpu going away at a point in time where it's
+still alive, but not running any user processes.  Such a notification does
+not exist today, so the patchset adds it as a new CPU_DYING notification.
 
-                         &inode->i_mutex:         14458           6.57      398832.75     2469412.23        6768876           0.34    11398383.65   339410830.89
-                         ---------------
-                         &inode->i_mutex           4486          [<ffffffff802a08f9>] pipe_wait+0x86/0x8d
-                         &inode->i_mutex              0          [<ffffffff802a01e8>] pipe_write_fasync+0x29/0x5d
-                         &inode->i_mutex              0          [<ffffffff802a0e18>] pipe_read+0x74/0x3a5
-                         &inode->i_mutex              0          [<ffffffff802a1a6a>] do_lookup+0x81/0x1ae
+The patchset is against 2.6.22-rc3.
 
-.................................................................................................................................................................
+Shortlog:
 
-              &inode->i_data.tree_lock-W:           491           0.27          62.47         493.89        2477833           0.39         468.89     1146584.25
-              &inode->i_data.tree_lock-R:            65           0.44           4.27          48.78       26288792           0.36         184.62    10197458.24
-              --------------------------
-                &inode->i_data.tree_lock             46          [<ffffffff80277095>] __do_page_cache_readahead+0x69/0x24f
-                &inode->i_data.tree_lock             31          [<ffffffff8026f9fb>] add_to_page_cache+0x31/0xba
-                &inode->i_data.tree_lock              0          [<ffffffff802770ee>] __do_page_cache_readahead+0xc2/0x24f
-                &inode->i_data.tree_lock              0          [<ffffffff8026f6e4>] find_get_page+0x1a/0x58
+Avi Kivity (7):
+      HOTPLUG: Add CPU_DYING notifier
+      HOTPLUG: Adapt cpuset hotplug callback to CPU_DYING
+      HOTPLUG: Adapt thermal throttle to CPU_DYING
+      SMP: Implement on_cpu()
+      KVM: Keep track of which cpus have virtualization enabled
+      KVM: Tune hotplug/suspend IPIs
+      KVM: Use CPU_DYING for disabling virtualization
 
-.................................................................................................................................................................
+ arch/i386/kernel/cpu/mcheck/therm_throt.c |    6 ++-
+ drivers/kvm/kvm_main.c                    |   50 +++++++++++++++++++++--------
+ include/linux/notifier.h                  |    3 ++
+ include/linux/smp.h                       |   16 +++++++++
+ kernel/cpu.c                              |   16 ++++++++-
+ kernel/cpuset.c                           |    3 ++
+ kernel/softirq.c                          |   24 ++++++++++++++
+ 7 files changed, 100 insertions(+), 18 deletions(-)
 
-                      proc_inum_idr.lock:             0           0.00           0.00           0.00             36           0.00          65.60         148.26
-                        proc_subdir_lock:             0           0.00           0.00           0.00        3049859           0.00         106.81     1563212.42
-                        shrinker_rwsem-W:             0           0.00           0.00           0.00              5           0.00           1.73           3.68
-                        shrinker_rwsem-R:             0           0.00           0.00           0.00            633           2.57         246.57       10909.76
+And the patch in all its glory:
 
-'contentions' and 'acquisitions' are the number of such events measured (since 
-the last reset). The waittime- and holdtime- (min, max, total) numbers are 
-presented in microseconds.
+diff --git a/arch/i386/kernel/cpu/mcheck/therm_throt.c b/arch/i386/kernel/cpu/mcheck/therm_throt.c
+index 7ba7c3a..1203dc5 100644
+--- a/arch/i386/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/i386/kernel/cpu/mcheck/therm_throt.c
+@@ -134,19 +134,21 @@ static __cpuinit int thermal_throttle_cpu_callback(struct notifier_block *nfb,
+ 	int err;
  
-If there are any contention points, the lock class is presented in the block
-format (as i_mutex and tree_lock above), otherwise a single line of output is
-presented.
-
-The output is sorted on absolute number of contentions (read + write), this
-should get the worst offenders presented first, so that:
-
- # grep : /proc/lock_stat | head
-
-will quickly show who's bad.
-
-The stats can be reset using:
-
- # echo 0 > /proc/lock_stat
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Jason Baron <jbaron@redhat.com>
----
- kernel/lockdep_proc.c |  266 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 266 insertions(+)
-
-Index: linux-2.6-git/kernel/lockdep_proc.c
-===================================================================
---- linux-2.6-git.orig/kernel/lockdep_proc.c
-+++ linux-2.6-git/kernel/lockdep_proc.c
-@@ -15,6 +15,10 @@
- #include <linux/seq_file.h>
- #include <linux/kallsyms.h>
- #include <linux/debug_locks.h>
-+#include <linux/vmalloc.h>
-+#include <linux/sort.h>
-+#include <asm/uaccess.h>
-+#include <asm/div64.h>
+ 	sys_dev = get_cpu_sysdev(cpu);
+-	mutex_lock(&therm_cpu_lock);
+ 	switch (action) {
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
++		mutex_lock(&therm_cpu_lock);
+ 		err = thermal_throttle_add_dev(sys_dev);
++		mutex_unlock(&therm_cpu_lock);
+ 		WARN_ON(err);
+ 		break;
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
++		mutex_lock(&therm_cpu_lock);
+ 		thermal_throttle_remove_dev(sys_dev);
++		mutex_unlock(&therm_cpu_lock);
+ 		break;
+ 	}
+-	mutex_unlock(&therm_cpu_lock);
+ 	return NOTIFY_OK;
+ }
  
- #include "lockdep_internals.h"
+diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
+index da985b3..1ad5ea1 100644
+--- a/drivers/kvm/kvm_main.c
++++ b/drivers/kvm/kvm_main.c
+@@ -41,6 +41,7 @@
+ #include <linux/fs.h>
+ #include <linux/mount.h>
+ #include <linux/sched.h>
++#include <linux/cpumask.h>
  
-@@ -342,6 +346,262 @@ static const struct file_operations proc
- 	.release	= seq_release,
- };
+ #include "x86_emulate.h"
+ #include "segment_descriptor.h"
+@@ -51,8 +52,12 @@ MODULE_LICENSE("GPL");
+ static DEFINE_SPINLOCK(kvm_lock);
+ static LIST_HEAD(vm_list);
  
-+#ifdef CONFIG_LOCK_STAT
++static cpumask_t cpus_hardware_enabled;
 +
-+struct lock_stat_data {
-+	struct lock_class *class;
-+	struct lock_class_stats stats;
-+};
+ struct kvm_arch_ops *kvm_arch_ops;
+ 
++static void hardware_disable(void *ignored);
 +
-+struct lock_stat_seq {
-+	struct lock_stat_data *iter;
-+	struct lock_stat_data *iter_end;
-+	struct lock_stat_data stats[MAX_LOCKDEP_KEYS];
-+};
-+
-+/*
-+ * sort on absolute number of contentions
-+ */
-+int lock_stat_cmp(const void *l, const void *r)
+ #define STAT_OFFSET(x) offsetof(struct kvm_vcpu, stat.x)
+ 
+ static struct kvm_stats_debugfs_item {
+@@ -2840,7 +2845,7 @@ static int kvm_reboot(struct notifier_block *notifier, unsigned long val,
+ 		 * in vmx root mode.
+ 		 */
+ 		printk(KERN_INFO "kvm: exiting hardware virtualization\n");
+-		on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
++		on_each_cpu(hardware_disable, NULL, 0, 1);
+ 	}
+ 	return NOTIFY_OK;
+ }
+@@ -2883,28 +2888,46 @@ static void decache_vcpus_on_cpu(int cpu)
+ 	spin_unlock(&kvm_lock);
+ }
+ 
++static void hardware_enable(void *junk)
 +{
-+	const struct lock_stat_data *dl = l, *dr = r;
-+	unsigned long nl, nr;
++	int cpu = raw_smp_processor_id();
 +
-+	nl = dl->stats.read_waittime.nr + dl->stats.write_waittime.nr;
-+	nr = dr->stats.read_waittime.nr + dr->stats.write_waittime.nr;
-+
-+	return nr - nl;
-+}
-+
-+static void seq_line(struct seq_file *m, char c, int offset, int length)
-+{
-+	int i;
-+
-+	for (i = 0; i < offset; i++)
-+		seq_puts(m, " ");
-+	for (i = 0; i < length; i++)
-+		seq_printf(m, "%c", c);
-+	seq_puts(m, "\n");
-+}
-+
-+static void snprint_time(char *buf, size_t bufsiz, unsigned long long nr)
-+{
-+	unsigned long rem;
-+
-+	rem = do_div(nr, 1000);
-+	snprintf(buf, bufsiz, "%llu.%02d", nr, ((int)rem+5)/10);
-+}
-+
-+static void seq_time(struct seq_file *m, unsigned long long time)
-+{
-+	char num[15];
-+
-+	snprint_time(num, sizeof(num), time);
-+	seq_printf(m, " %14s", num);
-+}
-+
-+static void seq_lock_time(struct seq_file *m, struct lock_time *lt)
-+{
-+	seq_printf(m, "%14lu", lt->nr);
-+	seq_time(m, lt->min);
-+	seq_time(m, lt->max);
-+	seq_time(m, lt->total);
-+}
-+
-+static void seq_stats(struct seq_file *m, struct lock_stat_data *data)
-+{
-+	char name[39];
-+	struct lock_class *class;
-+	struct lock_class_stats *stats;
-+	int i, namelen;
-+
-+	class = data->class;
-+	stats = &data->stats;
-+
-+	snprintf(name, 38, "%s", class->name);
-+	namelen = strlen(name);
-+
-+	if (stats->write_holdtime.nr) {
-+		if (stats->read_holdtime.nr)
-+			seq_printf(m, "%38s-W:", name);
-+		else
-+			seq_printf(m, "%40s:", name);
-+
-+		seq_lock_time(m, &stats->write_waittime);
-+		seq_puts(m, " ");
-+		seq_lock_time(m, &stats->write_holdtime);
-+		seq_puts(m, "\n");
-+	}
-+
-+	if (stats->read_holdtime.nr) {
-+		seq_printf(m, "%38s-R:", name);
-+		seq_lock_time(m, &stats->read_waittime);
-+		seq_puts(m, " ");
-+		seq_lock_time(m, &stats->read_holdtime);
-+		seq_puts(m, "\n");
-+	}
-+
-+	if (stats->read_waittime.nr + stats->write_waittime.nr == 0)
++	if (cpu_isset(cpu, cpus_hardware_enabled))
 +		return;
-+
-+	if (stats->read_holdtime.nr)
-+		namelen += 2;
-+
-+	for (i = 0; i < ARRAY_SIZE(class->contention_point); i++) {
-+		char sym[KSYM_SYMBOL_LEN];
-+		char ip[32];
-+
-+		if (class->contention_point[i] == 0)
-+			break;
-+
-+		if (!i)
-+			seq_line(m, '-', 40-namelen, namelen);
-+
-+		sprint_symbol(sym, class->contention_point[i]);
-+		snprintf(ip, sizeof(ip), "[<%p>]",
-+				(void *)class->contention_point[i]);
-+		seq_printf(m, "%40s %14lu %29s %s\n", name,
-+				stats->contention_point[i],
-+				ip, sym);
-+	}
-+	if (i) {
-+		seq_puts(m, "\n");
-+		seq_line(m, '.', 0, 40 + 1 + 8 * (14 + 1));
-+		seq_puts(m, "\n");
-+	}
++	cpu_set(cpu, cpus_hardware_enabled);
++	kvm_arch_ops->hardware_enable(NULL);
 +}
 +
-+static void seq_header(struct seq_file *m)
++static void hardware_disable(void *junk)
 +{
-+	seq_printf(m, "lock_stat version 0.1\n");
-+	seq_line(m, '-', 0, 40 + 1 + 8 * (14 + 1));
-+	seq_printf(m, "%40s %14s %14s %14s %14s %14s %14s %14s %14s\n",
-+			"class name",
-+			"contentions",
-+			"waittime-min",
-+			"waittime-max",
-+			"waittime-total",
-+			"acquisitions",
-+			"holdtime-min",
-+			"holdtime-max",
-+			"holdtime-total");
-+	seq_line(m, '-', 0, 40 + 1 + 8 * (14 + 1));
-+	seq_printf(m, "\n");
++	int cpu = raw_smp_processor_id();
++
++	if (!cpu_isset(cpu, cpus_hardware_enabled))
++		return;
++	cpu_clear(cpu, cpus_hardware_enabled);
++	decache_vcpus_on_cpu(cpu);
++	kvm_arch_ops->hardware_disable(NULL);
 +}
 +
-+static void *ls_start(struct seq_file *m, loff_t *pos)
-+{
-+	struct lock_stat_seq *data = m->private;
-+
-+	if (data->iter == data->stats)
-+		seq_header(m);
-+
-+	return data->iter;
-+}
-+
-+static void *ls_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	struct lock_stat_seq *data = m->private;
-+
-+	(*pos)++;
-+
-+	data->iter = v;
-+	data->iter++;
-+	if (data->iter == data->iter_end)
-+		data->iter = NULL;
-+
-+	return data->iter;
-+}
-+
-+static void ls_stop(struct seq_file *m, void *v)
-+{
-+}
-+
-+static int ls_show(struct seq_file *m, void *v)
-+{
-+	struct lock_stat_seq *data = m->private;
-+
-+	seq_stats(m, data->iter);
-+	return 0;
-+}
-+
-+static struct seq_operations lockstat_ops = {
-+	.start	= ls_start,
-+	.next	= ls_next,
-+	.stop	= ls_stop,
-+	.show	= ls_show,
-+};
-+
-+static int lock_stat_open(struct inode *inode, struct file *file)
-+{
-+	int res;
-+	struct lock_class *class;
-+	struct lock_stat_seq *data = vmalloc(sizeof(struct lock_stat_seq));
-+
-+	if (!data)
-+		return -ENOMEM;
-+
-+	res = seq_open(file, &lockstat_ops);
-+	if (!res) {
-+		struct lock_stat_data *iter = data->stats;
-+		struct seq_file *m = file->private_data;
-+
-+		data->iter = iter;
-+		list_for_each_entry(class, &all_lock_classes, lock_entry) {
-+			iter->class = class;
-+			iter->stats = lock_stats(class);
-+			iter++;
-+		}
-+		data->iter_end = iter;
-+
-+		sort(data->stats, data->iter_end - data->iter,
-+				sizeof(struct lock_stat_data),
-+				lock_stat_cmp, NULL);
-+
-+		m->private = data;
-+	} else
-+		vfree(data);
-+
-+	return res;
-+}
-+
-+ssize_t lock_stat_write(struct file *file, const char __user *buf,
-+		size_t count, loff_t *ppos)
-+{
-+	struct lock_class *class;
-+	char c;
-+
-+	if (count) {
-+		if (get_user(c, buf))
-+			return -EFAULT;
-+
-+		if (c != '0')
-+			return count;
-+
-+		list_for_each_entry(class, &all_lock_classes, lock_entry)
-+			clear_lock_stats(class);
-+	}
-+	return count;
-+}
-+
-+static int lock_stat_release(struct inode *inode, struct file *file)
-+{
-+	struct seq_file *seq = file->private_data;
-+
-+	vfree(seq->private);
-+	seq->private = NULL;
-+	return seq_release(inode, file);
-+}
-+
-+static const struct file_operations proc_lock_stat_operations = {
-+	.open		= lock_stat_open,
-+	.write		= lock_stat_write,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= lock_stat_release,
-+};
-+#endif /* CONFIG_LOCK_STAT */
-+
- static int __init lockdep_proc_init(void)
+ static int kvm_cpu_hotplug(struct notifier_block *notifier, unsigned long val,
+ 			   void *v)
  {
- 	struct proc_dir_entry *entry;
-@@ -354,6 +614,12 @@ static int __init lockdep_proc_init(void
- 	if (entry)
- 		entry->proc_fops = &proc_lockdep_stats_operations;
+ 	int cpu = (long)v;
  
-+#ifdef CONFIG_LOCK_STAT
-+	entry = create_proc_entry("lock_stat", S_IRUSR, NULL);
-+	if (entry)
-+		entry->proc_fops = &proc_lock_stat_operations;
-+#endif
-+
+ 	switch (val) {
+-	case CPU_DOWN_PREPARE:
+-	case CPU_DOWN_PREPARE_FROZEN:
++	case CPU_DYING:
++	case CPU_DYING_FROZEN:
+ 	case CPU_UP_CANCELED:
+ 	case CPU_UP_CANCELED_FROZEN:
+ 		printk(KERN_INFO "kvm: disabling virtualization on CPU%d\n",
+ 		       cpu);
+-		decache_vcpus_on_cpu(cpu);
+-		smp_call_function_single(cpu, kvm_arch_ops->hardware_disable,
+-					 NULL, 0, 1);
++		on_cpu(cpu, hardware_disable, NULL, 0, 1);
+ 		break;
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+ 		printk(KERN_INFO "kvm: enabling virtualization on CPU%d\n",
+ 		       cpu);
+-		smp_call_function_single(cpu, kvm_arch_ops->hardware_enable,
+-					 NULL, 0, 1);
++		on_cpu(cpu, hardware_enable, NULL, 0, 1);
+ 		break;
+ 	}
+ 	return NOTIFY_OK;
+@@ -2961,14 +2984,13 @@ static void kvm_exit_debug(void)
+ 
+ static int kvm_suspend(struct sys_device *dev, pm_message_t state)
+ {
+-	decache_vcpus_on_cpu(raw_smp_processor_id());
+-	on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
++	hardware_disable(NULL);
  	return 0;
  }
  
-
---
-
+ static int kvm_resume(struct sys_device *dev)
+ {
+-	on_each_cpu(kvm_arch_ops->hardware_enable, NULL, 0, 1);
++	hardware_enable(NULL);
+ 	return 0;
+ }
+ 
+@@ -3021,7 +3043,7 @@ int kvm_init_arch(struct kvm_arch_ops *ops, struct module *module)
+ 	if (r < 0)
+ 		goto out;
+ 
+-	on_each_cpu(kvm_arch_ops->hardware_enable, NULL, 0, 1);
++	on_each_cpu(hardware_enable, NULL, 0, 1);
+ 	r = register_cpu_notifier(&kvm_cpu_notifier);
+ 	if (r)
+ 		goto out_free_1;
+@@ -3053,7 +3075,7 @@ out_free_2:
+ 	unregister_reboot_notifier(&kvm_reboot_notifier);
+ 	unregister_cpu_notifier(&kvm_cpu_notifier);
+ out_free_1:
+-	on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
++	on_each_cpu(hardware_disable, NULL, 0, 1);
+ 	kvm_arch_ops->hardware_unsetup();
+ out:
+ 	kvm_arch_ops = NULL;
+@@ -3067,7 +3089,7 @@ void kvm_exit_arch(void)
+ 	sysdev_class_unregister(&kvm_sysdev_class);
+ 	unregister_reboot_notifier(&kvm_reboot_notifier);
+ 	unregister_cpu_notifier(&kvm_cpu_notifier);
+-	on_each_cpu(kvm_arch_ops->hardware_disable, NULL, 0, 1);
++	on_each_cpu(hardware_disable, NULL, 0, 1);
+ 	kvm_arch_ops->hardware_unsetup();
+ 	kvm_arch_ops = NULL;
+ }
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index 9431101..576f2bb 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -196,6 +196,8 @@ extern int __srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+ #define CPU_DEAD		0x0007 /* CPU (unsigned)v dead */
+ #define CPU_LOCK_ACQUIRE	0x0008 /* Acquire all hotcpu locks */
+ #define CPU_LOCK_RELEASE	0x0009 /* Release all hotcpu locks */
++#define CPU_DYING		0x000A /* CPU (unsigned)v not running any task,
++				        * not handling interrupts, soon dead */
+ 
+ /* Used for CPU hotplug events occuring while tasks are frozen due to a suspend
+  * operation in progress
+@@ -208,6 +210,7 @@ extern int __srcu_notifier_call_chain(struct srcu_notifier_head *nh,
+ #define CPU_DOWN_PREPARE_FROZEN	(CPU_DOWN_PREPARE | CPU_TASKS_FROZEN)
+ #define CPU_DOWN_FAILED_FROZEN	(CPU_DOWN_FAILED | CPU_TASKS_FROZEN)
+ #define CPU_DEAD_FROZEN		(CPU_DEAD | CPU_TASKS_FROZEN)
++#define CPU_DYING_FROZEN	(CPU_DYING | CPU_TASKS_FROZEN)
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_NOTIFIER_H */
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index 96ac21f..613edd2 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <linux/errno.h>
++#include <asm/system.h>
+ 
+ extern void cpu_idle(void);
+ 
+@@ -61,6 +62,11 @@ int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
+  * Call a function on all processors
+  */
+ int on_each_cpu(void (*func) (void *info), void *info, int retry, int wait);
++/*
++ * Call a function on one processor
++ */
++int on_cpu(int cpu, void (*func)(void *info), void *info,
++	       int retry, int wait);
+ 
+ #define MSG_ALL_BUT_SELF	0x8000	/* Assume <32768 CPU's */
+ #define MSG_ALL			0x8001
+@@ -96,6 +102,16 @@ static inline int up_smp_call_function(void)
+ 		local_irq_enable();		\
+ 		0;				\
+ 	})
++
++static inline int on_cpu(int cpu, void (*func)(void *info), void *info,
++			     int retry, int wait)
++{
++	local_irq_disable();
++	func(info);
++	local_irq_enable();
++	return 0;
++}
++
+ static inline void smp_send_reschedule(int cpu) { }
+ #define num_booting_cpus()			1
+ #define smp_prepare_boot_cpu()			do {} while (0)
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 208cf34..181ae70 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -103,11 +103,19 @@ static inline void check_for_tasks(int cpu)
+ 	write_unlock_irq(&tasklist_lock);
+ }
+ 
++struct take_cpu_down_param {
++	unsigned long mod;
++	void *hcpu;
++};
++
+ /* Take this CPU down. */
+-static int take_cpu_down(void *unused)
++static int take_cpu_down(void *_param)
+ {
++	struct take_cpu_down_param *param = _param;
+ 	int err;
+ 
++	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
++				param->hcpu);
+ 	/* Ensure this CPU doesn't handle any more interrupts. */
+ 	err = __cpu_disable();
+ 	if (err < 0)
+@@ -127,6 +135,10 @@ static int _cpu_down(unsigned int cpu, int tasks_frozen)
+ 	cpumask_t old_allowed, tmp;
+ 	void *hcpu = (void *)(long)cpu;
+ 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
++	struct take_cpu_down_param tcd_param = {
++		.mod = mod,
++		.hcpu = hcpu,
++	};
+ 
+ 	if (num_online_cpus() == 1)
+ 		return -EBUSY;
+@@ -153,7 +165,7 @@ static int _cpu_down(unsigned int cpu, int tasks_frozen)
+ 	set_cpus_allowed(current, tmp);
+ 
+ 	mutex_lock(&cpu_bitmask_lock);
+-	p = __stop_machine_run(take_cpu_down, NULL, cpu);
++	p = __stop_machine_run(take_cpu_down, &tcd_param, cpu);
+ 	mutex_unlock(&cpu_bitmask_lock);
+ 
+ 	if (IS_ERR(p) || cpu_online(cpu)) {
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index f57854b..584953a 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -2138,6 +2138,9 @@ static void common_cpu_mem_hotplug_unplug(void)
+ static int cpuset_handle_cpuhp(struct notifier_block *nb,
+ 				unsigned long phase, void *cpu)
+ {
++	if (phase == CPU_DYING || phase == CPU_DYING_FROZEN)
++		return NOTIFY_DONE;
++
+ 	common_cpu_mem_hotplug_unplug();
+ 	return 0;
+ }
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 0b9886a..11666f7 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -658,4 +658,28 @@ int on_each_cpu(void (*func) (void *info), void *info, int retry, int wait)
+ 	return ret;
+ }
+ EXPORT_SYMBOL(on_each_cpu);
++
++/*
++ * Call a function on one processor, which might be the currently executing
++ * processor.
++ */
++int on_cpu(int cpu, void (*func) (void *info), void *info,
++	       int retry, int wait)
++{
++	int ret;
++	int this_cpu;
++
++	this_cpu = get_cpu();
++	if (this_cpu == cpu) {
++		local_irq_disable();
++		func(info);
++		local_irq_enable();
++		ret = 0;
++	} else
++		ret = smp_call_function_single(cpu, func, info, retry, wait);
++	put_cpu();
++	return ret;
++}
++EXPORT_SYMBOL(on_cpu);
++
+ #endif
