@@ -1,97 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764054AbXE2SjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764629AbXE2Sjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764054AbXE2SjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbXE2Sh2
+	id S1764629AbXE2Sjk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbXE2Sha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:37:28 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43733 "EHLO smtp.polymtl.ca"
+	Tue, 29 May 2007 14:37:30 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43732 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbXE2ShY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751113AbXE2ShY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 14:37:24 -0400
-Message-Id: <20070529183709.943985314@polymtl.ca>
+Message-Id: <20070529183709.029138476@polymtl.ca>
 References: <20070529183356.192838687@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 May 2007 14:34:03 -0400
+Date: Tue, 29 May 2007 14:34:01 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 7/9] Conditional Calls - Documentation
-Content-Disposition: inline; filename=conditional-calls-documentation.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:37:10 +0000
+Subject: [patch 5/9] Conditional Calls - i386 Optimization
+Content-Disposition: inline; filename=conditional-calls-i386-optimization.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:37:09 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+i386 optimization of the cond_calls which uses a movb with code patching to
+set/unset the value used to populate the register used for the branch test.
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- Documentation/condcall.txt |   60 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 60 insertions(+)
+ arch/i386/kernel/Makefile   |    1 
+ arch/i386/kernel/condcall.c |  140 ++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/condcall.h |   69 +++++++++++++++++++++
+ 3 files changed, 209 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/Documentation/condcall.txt
+Index: linux-2.6-lttng/include/asm-i386/condcall.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/condcall.h	2007-05-17 01:49:46.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/condcall.h	2007-05-17 01:52:38.000000000 -0400
+@@ -1 +1,68 @@
+-#include <asm-generic/condcall.h>
++#ifndef _ASM_I386_CONDCALL_H
++#define _ASM_I386_CONDCALL_H
++
++/*
++ * Conditional function calls. i386 architecture optimizations.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++
++#ifdef CONFIG_COND_CALL
++
++#define CF_DEFAULT (CF_OPTIMIZED | CF_LOCKDEP | CF_PRINTK)
++
++/* Optimized version of the cond_call. Passing the flags as a pointer to
++ * the inline assembly to trick it into putting the flags value as third
++ * parameter in the structure. */
++#define cond_call_optimized(flags, name, func) \
++	({ \
++		static const char __cstrtab_name_##name[] \
++		__attribute__((section("__cond_call_strings"))) = #name; \
++		char condition; \
++		asm (	".section __cond_call, \"a\", @progbits;\n\t" \
++					".long %1, 0f, %2;\n\t" \
++					".previous;\n\t" \
++					".align 2\n\t" \
++					"0:\n\t" \
++					"movb %3,%0;\n\t" \
++				: "=r" (condition) \
++				: "m" (*__cstrtab_name_##name), \
++				  "m" (*(char*)flags), \
++				  "i" ((flags) & CF_STATIC_ENABLE)); \
++		(likely(!condition)) ? \
++			(__typeof__(func))0 : \
++			(func); \
++	})
++
++/* cond_call macro selecting the generic or optimized version of cond_call,
++ * depending on the flags specified. */
++#define _cond_call(flags, name, func) \
++({ \
++	(((flags) & CF_LOCKDEP) && ((flags) & CF_OPTIMIZED)) ? \
++		cond_call_optimized(flags, name, func) : \
++		cond_call_generic(flags, name, func); \
++})
++
++/* cond_call with default behavior */
++#define cond_call(name, func) _cond_call(CF_DEFAULT, name, func)
++
++/* Architecture dependant cond_call information, used internally for cond_call
++ * activation. */
++
++/* Offset of the immediate value from the start of the movb instruction, in
++ * bytes. */
++#define COND_CALL_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET 1
++#define COND_CALL_OPTIMIZED_ENABLE_TYPE unsigned char
++/* Dereference enable as lvalue from a pointer to its instruction */
++#define COND_CALL_OPTIMIZED_ENABLE(a) \
++	*(COND_CALL_OPTIMIZED_ENABLE_TYPE*) \
++		((char*)a+COND_CALL_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET)
++
++extern int cond_call_optimized_set_enable(void *address, char enable);
++
++#endif
++#endif //_ASM_I386_CONDCALL_H
+Index: linux-2.6-lttng/arch/i386/kernel/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/kernel/Makefile	2007-05-17 01:42:46.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/Makefile	2007-05-17 01:52:38.000000000 -0400
+@@ -33,6 +33,7 @@
+ obj-y				+= sysenter.o vsyscall.o
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat.o
+ obj-$(CONFIG_EFI) 		+= efi.o efi_stub.o
++obj-$(CONFIG_COND_CALL_ENABLE_OPTIMIZATION)	+= condcall.o
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault.o
+ obj-$(CONFIG_SERIAL_8250)	+= legacy_serial.o
+ obj-$(CONFIG_VM86)		+= vm86.o
+Index: linux-2.6-lttng/arch/i386/kernel/condcall.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/Documentation/condcall.txt	2007-05-17 01:55:05.000000000 -0400
-@@ -0,0 +1,60 @@
-+		        Using the Conditional Calls
++++ linux-2.6-lttng/arch/i386/kernel/condcall.c	2007-05-17 01:52:38.000000000 -0400
+@@ -0,0 +1,140 @@
++/* condcall.c
++ *
++ * - Erratum 49 fix for Intel PIII.
++ * - Still present on newer processors : Intel Core 2 Duo Processor for Intel
++ *   Centrino Duo Processor Technology Specification Update, AH33.
++ *   Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
++ *   Instruction Execution Results.
++ *
++ * Permits cond_call activation by XMC with correct serialization.
++ *
++ * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
++ * location that has preemption enabled because it involves no temporary or
++ * reused data structure.
++ *
++ * Quoting Richard J Moore, source of the information motivating this
++ * implementation which differs from the one proposed by Intel which is not
++ * suitable for kernel context (does not support NMI and would require disabling
++ * interrupts on every CPU for a long period) :
++ *
++ * "There is another issue to consider when looking into using probes other
++ * then int3:
++ *
++ * Intel erratum 54 - Unsynchronized Cross-modifying code - refers to the
++ * practice of modifying code on one processor where another has prefetched
++ * the unmodified version of the code. Intel states that unpredictable general
++ * protection faults may result if a synchronizing instruction (iret, int,
++ * int3, cpuid, etc ) is not executed on the second processor before it
++ * executes the pre-fetched out-of-date copy of the instruction.
++ *
++ * When we became aware of this I had a long discussion with Intel's
++ * microarchitecture guys. It turns out that the reason for this erratum
++ * (which incidentally Intel does not intend to fix) is because the trace
++ * cache - the stream of micorops resulting from instruction interpretation -
++ * cannot guaranteed to be valid. Reading between the lines I assume this
++ * issue arises because of optimization done in the trace cache, where it is
++ * no longer possible to identify the original instruction boundaries. If the
++ * CPU discoverers that the trace cache has been invalidated because of
++ * unsynchronized cross-modification then instruction execution will be
++ * aborted with a GPF. Further discussion with Intel revealed that replacing
++ * the first opcode byte with an int3 would not be subject to this erratum.
++ *
++ * So, is cmpxchg reliable? One has to guarantee more than mere atomicity."
++ *
++ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ */
 +
-+			    Mathieu Desnoyers
-+
-+
-+This document introduces Conditional Calls and their use.
-+
-+* Purpose of conditional calls
-+
-+A conditional call is used to compile into the kernel a function call that is
-+disabled at compile-time. Then, at runtime, it can be enabled dynamically. As
-+explained below, the opposite can also be done.
-+
-+
-+* Usage
-+
-+In order to use the macro cond_call, you should include linux/condcall.h.
-+
++#include <linux/notifier.h>
++#include <linux/mutex.h>
++#include <linux/preempt.h>
++#include <linux/smp.h>
++#include <linux/notifier.h>
++#include <linux/module.h>
 +#include <linux/condcall.h>
++#include <linux/kdebug.h>
 +
-+Add, in your code :
++#include <asm/cacheflush.h>
 +
-+ret = cond_call(examplecondcall, myfunc(a, b));
++#define BREAKPOINT_INSTRUCTION  0xcc
++#define BREAKPOINT_INS_LEN 1
 +
-+Where :
-+- examplecondcall is the conditional call identifier
-+- myfunc(a, b) is a call to myfunc with valid parameters.
-+- "ret" is, optionally, the variable in which the return value of myfunc() must
-+  be put. If the conditional call is disabled, ret will be set to 0 casted to
-+  the type of the return value of myfunc().
++static DEFINE_MUTEX(cond_call_mutex);
++static long target_eip = 0;
 +
-+Use cond_call_arm("examplecondcall") to activate the conditional call.
++static void cond_call_synchronize_core(void *info)
++{
++	sync_core();	/* use cpuid to stop speculative execution */
++}
 +
-+Use cond_call_disarm("examplecondcall") to deactivate the conditional call.
++/* The eip value points right after the breakpoint instruction, in the second
++ * byte of the movb. Incrementing it of 1 byte makes the code resume right after
++ * the movb instruction, effectively skipping this instruction.
++ *
++ * We simply skip the 2 bytes load immediate here, leaving the register in an
++ * undefined state. We don't care about the content (0 or !0), because we are
++ * changing the value 0->1 or 1->0. This small window of undefined value
++ * doesn't matter.
++ */
++static int cond_call_notifier(struct notifier_block *nb,
++	unsigned long val, void *data)
++{
++	enum die_val die_val = (enum die_val) val;
++	struct die_args *args = (struct die_args *)data;
 +
-+Use cond_call_query("examplecondcall") to query the conditional call state.
++	if (!args->regs || user_mode_vm(args->regs))
++		return NOTIFY_DONE;
 +
-+The cond_call mechanism supports inserting multiple instances of the same
-+cond_call. Conditional calls can be put in inline functions, inlined static
-+functions, and unrolled loops.
++	if (die_val == DIE_INT3	&& args->regs->eip == target_eip) {
++		args->regs->eip += 1; /* Skip the next byte of load immediate */
++		return NOTIFY_STOP;
++	}
++	return NOTIFY_DONE;
++}
 +
++static struct notifier_block cond_call_notify = {
++	.notifier_call = cond_call_notifier,
++	.priority = 0x7fffffff,	/* we need to be notified first */
++};
 +
-+* Optimization for a given architecture
++int cond_call_optimized_set_enable(void *address, char enable)
++{
++	char saved_byte;
++	int ret;
++	char *dest = address;
 +
-+One can implement optimized conditional calls for a given architecture by
-+replacing asm-$ARCH/condcall.h.
++	mutex_lock(&cond_call_mutex);
 +
-+The CF_* flags can be used to control the type of conditional call. See the
-+include/linux/condcall.h header for the list of flags. They can be specified as
-+the first parameter of the _cond_call() macro, as in the following example,
-+which declares a cond_call enabled statically (which can be disabled/reenabled
-+dynamically)
++	if (!(enable ^ dest[1])) /* Must be a state change 0<->1 to execute */
++		goto end;
 +
-+ret = _cond_call(CF_DEFAULT | CF_STATIC_ENABLE, examplecondcall, myfunc(a, b));
++	target_eip = (long)address + BREAKPOINT_INS_LEN;
++	/* register_die_notifier has memory barriers */
++	register_die_notifier(&cond_call_notify);
++	saved_byte = *dest;
++	*dest = BREAKPOINT_INSTRUCTION;
++	wmb();
++	/* Execute serializing instruction on each CPU.
++	 * Acts as a memory barrier. */
++	ret = on_each_cpu(cond_call_synchronize_core, NULL, 1, 1);
++	BUG_ON(ret != 0);
 +
-+Another example of flag usage is to declare a cond_call that always uses the
-+generic version of the cond_calls. It can be useful to use this when cond_calls
-+are placed in kernel code presenting particular reentrancy challenges.
-+
-+ret = _cond_call(CF_DEFAULT & ~CF_OPTIMIZED, examplecondcall, myfunc(a, b));
++	dest[1] = enable;
++	wmb();
++	*dest = saved_byte;
++		/* Wait for all int3 handlers to end
++		   (interrupts are disabled in int3).
++		   This CPU is clearly not in a int3 handler,
++		   because int3 handler is not preemptible and
++		   there cannot be any more int3 handler called
++		   for this site, because we placed the original
++		   instruction back.
++		   synchronize_sched has memory barriers */
++	synchronize_sched();
++	unregister_die_notifier(&cond_call_notify);
++	/* unregister_die_notifier has memory barriers */
++	target_eip = 0;
++end:
++	mutex_unlock(&cond_call_mutex);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(cond_call_optimized_set_enable);
 
 -- 
 Mathieu Desnoyers
