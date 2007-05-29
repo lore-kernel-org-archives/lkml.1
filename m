@@ -1,98 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbXE2NOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbXE2NPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758557AbXE2NOP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbXE2NOA
+	id S1752175AbXE2NPU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbXE2NPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:14:00 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:40339 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbXE2NN7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:13:59 -0400
-Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Bill Davidsen <davidsen@tmr.com>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070529124052.GH23046@elf.ucw.cz>
-References: <4658B7DD.3060309@tmr.com>
-	 <1180392482.4149.15.camel@nigel.suspend2.net>
-	 <20070529112952.GA23046@elf.ucw.cz> <200705291403.09773.rjw@sisk.pl>
-	 <20070529124052.GH23046@elf.ucw.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5K7qlT8+zy1POt6C6Q49"
-Date: Tue, 29 May 2007 23:13:45 +1000
-Message-Id: <1180444425.20718.33.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 29 May 2007 09:15:08 -0400
+Received: from thunk.org ([69.25.196.29]:55491 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752375AbXE2NPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:15:06 -0400
+Date: Tue, 29 May 2007 09:15:01 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: M Macnair <mmacnair@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Seeding /dev/random not working
+Message-ID: <20070529131501.GA9899@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	M Macnair <mmacnair@gmail.com>, linux-kernel@vger.kernel.org
+References: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 29, 2007 at 12:53:10PM +0100, M Macnair wrote:
+> I have two embedded boards (one ARM, one PowerPC), running two
+> different versions of 2.6.  They have no hard drives, keyboards or
+> mice.  They each have a NIC, but I understand these make no
+> contribution to the entropy pool.
+> 
+> 	if [ -f $random_seed ]; then
+> 		cat $random_seed >/dev/urandom  # should seed the pool
+> 	fi
+> 	dd if=/dev/urandom of=$random_seed count=1 2>/dev/null # save some
+> data from urandom for next boot
+>
+> I have rebooted my boards many times, and after each boot I read the
+> contents of $random_seed.  Whilst it does not happen every time, the
+> contents of $random_seed are /often the same/.  To give you a feel:
+> rebooted 11 times, got a total of 3 different outputs.
 
---=-5K7qlT8+zy1POt6C6Q49
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ok, so this is telling me a couple of things.  First of all, if you're
+only getting three outputs, it means that you don't have any
+peripherals feeding entropy into the system from the boot sequence.
+Without any hard drives, keyboards or mice, and a NIC whose device
+driver hasn't been configured to feed entropy, you're definitely
+hosed.
 
-Hi.
+Secondly, and more importantly, your boot scripts aren't set up
+correctly.  You really want to make sure that you save the some
+entropy at shutdown.  i.e., run at shutdown the same sequence that was
+run at the boot-time.  (You don't really need the "cat $random_seed >
+/dev/urandom", but it's harmless.)  Repeating this sequence at
+shutdown is useful because it saves any entropy gathered from the
+current boot session and saves it to be used at the next boot session.
+I've noticed a number of distro's have gotten this wrong, and I guess
+I should have filed more bugs to get this fixed.  In your case, since
+you don't have anything wired up to feed entropy into your pool, it
+will make /dev/urandom effectively a psuedo-random number generator,
+but at least you won't get repeating outputs.
 
-On Tue, 2007-05-29 at 14:40 +0200, Pavel Machek wrote:
-> On Tue 2007-05-29 14:03:07, Rafael J. Wysocki wrote:
-> > On Tuesday, 29 May 2007 13:29, Pavel Machek wrote:
-> > > Hi!
-> > >=20
-> > > > > Yup.  Don't we do something like this for the (ACPI-based) suspen=
-d to RAM
-> > > > > already?
-> > > >=20
-> > > > Yeah, I was thinking about this overnight too. It should be doable.=
- In
-> > > > addition to what we already do, I think you'd want:
-> > > >=20
-> > > > - to copy the assembly to do the copying to a safe page;
-> > > > - to put the location of the cpu state that was saved in the image
-> > > > header so that it can be used after the data is copied back;
-> > >=20
-> > > ...alternatively, we can just rely on copy routine (and its data) not
-> > > changing frequently.
-> > >=20
-> > > > - to copy the nosave data to a 'safe' page.
-> > > >=20
-> > > > What else?
-> > >=20
-> > > page directories need to be on a safe place, too.
-> >=20
-> > They are already.
->=20
-> ...but will that place still be safe when we use other version of
-> kernel?
+Another thing which I noticed is that when Matt Mackall took over
+maintainership of /dev/random, he apparently took out one of the
+safeguards I had, which was that before, when entropy was extracted
+from the pool the time stamp when it was extracted was mixed back into
+the pool.  The theory was that an external attacker might not know
+when a program might be calling /dev/random, so mixing in the time of
+that entropy was extracted wouldn't hurt, and might help.  I'll submit
+a patch to add that support back in, which will help you a little.
 
-They'll be in the image too, won't they? Failing that, the information
-could be stored in the image header.
+HOWEVER, the more important thing to remember is that /dev/random
+isn't magic.  If you don't have any entropy sources to mix in, and you
+don't do anything at the application level to mix in data that might
+not be known by external attackers, you will always be vulnerable,
+especially if your threat model includes government funded
+intelligence agencies.  So if you are planning on using /dev/urandom
+for cryptographic purposes, while some of these fixes will avoid at
+least the embarassing result of repeating outputs from /dev/urandom,
+it's not really going to result in high-quality unpredictable results
+against a well-funded, determined adversary.  
 
-> Anyway, pagedirs are on the safe place, right? That means that we
-> swsusp should no longer clash with page allocation debugging...=20
-
-You mean DEBUG_PAGEALLOC? That can be overcome easily - I have code in
-current Suspend2 that works with DEBUG_PAGEALLOC. I handle the page
-fault, mapping the page and setting a flag in the fault handler to tell
-the atomic copy code to unmap the page again once it has been copied.
+If that is your threat model, then you really should consider adding
+hardware random number generator into your product design.
 
 Regards,
 
-Nigel
-
---=-5K7qlT8+zy1POt6C6Q49
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGXCcJN0y+n1M3mo0RAsxgAJsFrEoiRgagMSmA4g1iXGUgM6z+HwCgysFX
-6SK7XO1C1ZezvIzGfRYu39Q=
-=xZDU
------END PGP SIGNATURE-----
-
---=-5K7qlT8+zy1POt6C6Q49--
-
+					- Ted
