@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbXE2VNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751976AbXE2VNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbXE2VNh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbXE2VN1
+	id S1751976AbXE2VNU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbXE2VNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:13:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:39543 "EHLO mail.goop.org"
+	Tue, 29 May 2007 17:13:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:34165 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbXE2VNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:13:25 -0400
-Message-ID: <465C9776.20901@goop.org>
-Date: Tue, 29 May 2007 14:13:26 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1751007AbXE2VNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 17:13:12 -0400
+To: Matt Mackall <mpm@selenic.com>
+Cc: M Macnair <mmacnair@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Seeding /dev/random not working
+References: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
+	<p73zm3nefcc.fsf@bingen.suse.de>
+	<de6d2b4f0705290944i69ca8f2dudda10775ebc41c07@mail.gmail.com>
+	<20070529202337.GH11166@waste.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 30 May 2007 00:08:22 +0200
+In-Reply-To: <20070529202337.GH11166@waste.org>
+Message-ID: <p73veebe10p.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] Tell modpost that any reference from .note* is OK
-References: <465C8E10.8040608@goop.org> <20070529210748.GC7738@uranus.ravnborg.org>
-In-Reply-To: <20070529210748.GC7738@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Tue, May 29, 2007 at 01:33:20PM -0700, Jeremy Fitzhardinge wrote:
->   
->> .note* sections are ELF notes, which are typically used by external
->> tools to examine the kernel image.  Since this is removed from any
->> runtime consideration, it's OK to reference any section from a .note*
->> section.
->>
->> As a side-effect, this changes secref_whitelist to accept a NULL "atsym"
->> pointer, allowing it to be called when "before" is NULL.  This is
->> needed for .note sections since they don't necessarily have any
->> symbols, and it also allows the .got2 check to to be folded into the
->> normal whitelist checks.
->>     
->
-> I did it a bit different. Adding .note to init_section_ref_ok +
-> exit_section_ref_ok is much simpler.
-> Next patch will move .got2 there too.
->   
+Matt Mackall <mpm@selenic.com> writes:
 
-Oh, yeah, that's simpler.  OK.
+> On Tue, May 29, 2007 at 05:44:37PM +0100, M Macnair wrote:
+> > On 29 May 2007 18:58:59 +0200, Andi Kleen <andi@firstfloor.org> wrote:
+> > >"M Macnair" <mmacnair@gmail.com> writes:
+> > >>
+> > >> Many distros ship with an init script that saves and restores the
+> > >> entropy pool on startup and shutdown.  The bit that interests me that
+> > >> is called on startup is (my comments):
+> > >>       if [ -f $random_seed ]; then
+> > >>               cat $random_seed >/dev/urandom  # should seed the pool
+> > >OA
+> > >Writing doesn't actually work; to get real accounted entropy for 
+> > >/dev/random
+> > >you need to use a special ioctl. I ran into this problem some years ago
+> > >and ended up writing http://www.muc.de/~ak/rndfeed.c
+> > >
+> > >-Andi
+> > 
+> > If this doesn't work, then it seems to me as though all the
+> > debian-esque distros that use equivalents of the above script are
+> > wasting their time, and the man page recommending that technique (man
+> > 4 random) is also wrong.  Is that interpretation correct?
+> 
+> Andi is incorrect. Writing does work and everything you write is mixed
 
-    J
+Note I wrote accounted entropy above.
+
+> into the pool. It's just not counted as entropy credit.
+
+This means everything using /dev/random blocks.  For me that
+includes "does not work".
+
+> This is as intended.
+
+If the intention was to get everybody from stopping /dev/random
+and moving them to /dev/urandom I guess it works well. Congratulations.
+
+-Andi
