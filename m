@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbXE2NNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbXE2NOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756066AbXE2NNn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbXE2NNh
+	id S1758557AbXE2NOP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbXE2NOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:13:37 -0400
-Received: from keil-draco.com ([216.193.185.50]:50950 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751372AbXE2NNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:13:35 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-Subject: Re: [RFC] LZO de/compression support - take 6
-Date: Tue, 29 May 2007 09:13:30 -0400
-User-Agent: KMail/1.9.6
-Cc: "Adrian Bunk" <bunk@stusta.de>, "Michael-Luke Jones" <mlj28@cam.ac.uk>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Bret Towe" <magnade@gmail.com>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <20070529114043.GR3899@stusta.de> <4cefeab80705290503k70572e9bmc76e466c7967871b@mail.gmail.com>
-In-Reply-To: <4cefeab80705290503k70572e9bmc76e466c7967871b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705290913.31043.dhazelton@enter.net>
+	Tue, 29 May 2007 09:14:00 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:40339 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751909AbXE2NN7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:13:59 -0400
+Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Bill Davidsen <davidsen@tmr.com>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070529124052.GH23046@elf.ucw.cz>
+References: <4658B7DD.3060309@tmr.com>
+	 <1180392482.4149.15.camel@nigel.suspend2.net>
+	 <20070529112952.GA23046@elf.ucw.cz> <200705291403.09773.rjw@sisk.pl>
+	 <20070529124052.GH23046@elf.ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5K7qlT8+zy1POt6C6Q49"
+Date: Tue, 29 May 2007 23:13:45 +1000
+Message-Id: <1180444425.20718.33.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 May 2007 08:03:55 Nitin Gupta wrote:
-> On 5/29/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > On Tue, May 29, 2007 at 09:08:27AM +0100, Michael-Luke Jones wrote:
-> > > On 28 May 2007, at 18:11, Adrian Bunk wrote:
-> > >> I have not seen any explanations:
-> > >> - Why did the upstream author write the code that way?
-> > >
-> > > Apparently due to his requirement for extreme portability. The original
-> > > code was designed to work on everything from 16-bit DOS through CRAY
-> > > supercomputers through Windows, Unices and Linux.
-> >
-> > Sure, this could be the reason in some or all cases.
-> >
-> > The upstream author knows the code best, and discussing such issues with
-> > him will in many cases be a win:
-> >
-> > It could be that there was in some cases no good reason, and the
-> > upstream code that gets used by many other projects could become faster.
-> >
-> > Or there was a good reason that applies also to the in-kernel version
-> > and a change breaks some corner case.
->
-> I have mailed the author with detailed changelog - waiting for reply.
->
-> > > The author has stated on the thread that it's a good idea to remove
-> > > unnecessary ifdefs when porting the code into the kernel, given that
-> > > the portability requirements are obviously no longer needed.
-> >
-> > "remove unnecessary ifdefs" implies "generated code is identical".
-> >
-> > That's quite different from "code is 10% faster".
->
-> Daniel made some changes to his testing code and now the perf gain is just
-> 1.6%.
->
-> - Nitin
 
-The changes for version 5 are all in one file - helpers.h. All I did was 
-define the macros that had previously been NOP's. Most of the performance 
-loss, IMHO, is due to the compression and decompression functions being 
-marked noinline. The currently reported 1.6% overall performance boost is 
-likely related to the use of likely()/unlikely().
+--=-5K7qlT8+zy1POt6C6Q49
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-DRH
+Hi.
+
+On Tue, 2007-05-29 at 14:40 +0200, Pavel Machek wrote:
+> On Tue 2007-05-29 14:03:07, Rafael J. Wysocki wrote:
+> > On Tuesday, 29 May 2007 13:29, Pavel Machek wrote:
+> > > Hi!
+> > >=20
+> > > > > Yup.  Don't we do something like this for the (ACPI-based) suspen=
+d to RAM
+> > > > > already?
+> > > >=20
+> > > > Yeah, I was thinking about this overnight too. It should be doable.=
+ In
+> > > > addition to what we already do, I think you'd want:
+> > > >=20
+> > > > - to copy the assembly to do the copying to a safe page;
+> > > > - to put the location of the cpu state that was saved in the image
+> > > > header so that it can be used after the data is copied back;
+> > >=20
+> > > ...alternatively, we can just rely on copy routine (and its data) not
+> > > changing frequently.
+> > >=20
+> > > > - to copy the nosave data to a 'safe' page.
+> > > >=20
+> > > > What else?
+> > >=20
+> > > page directories need to be on a safe place, too.
+> >=20
+> > They are already.
+>=20
+> ...but will that place still be safe when we use other version of
+> kernel?
+
+They'll be in the image too, won't they? Failing that, the information
+could be stored in the image header.
+
+> Anyway, pagedirs are on the safe place, right? That means that we
+> swsusp should no longer clash with page allocation debugging...=20
+
+You mean DEBUG_PAGEALLOC? That can be overcome easily - I have code in
+current Suspend2 that works with DEBUG_PAGEALLOC. I handle the page
+fault, mapping the page and setting a flag in the fault handler to tell
+the atomic copy code to unmap the page again once it has been copied.
+
+Regards,
+
+Nigel
+
+--=-5K7qlT8+zy1POt6C6Q49
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGXCcJN0y+n1M3mo0RAsxgAJsFrEoiRgagMSmA4g1iXGUgM6z+HwCgysFX
+6SK7XO1C1ZezvIzGfRYu39Q=
+=xZDU
+-----END PGP SIGNATURE-----
+
+--=-5K7qlT8+zy1POt6C6Q49--
 
