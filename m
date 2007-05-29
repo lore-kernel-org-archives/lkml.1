@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761535AbXE2Lkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751919AbXE2LxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761535AbXE2Lkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 07:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbXE2Lkr
+	id S1751919AbXE2LxV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 07:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbXE2LxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 07:40:47 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47930 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750792AbXE2Lkr (ORCPT
+	Tue, 29 May 2007 07:53:13 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:30479 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXE2LxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 07:40:47 -0400
-Date: Tue, 29 May 2007 13:40:43 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Michael-Luke Jones <mlj28@cam.ac.uk>
-Cc: Nitin Gupta <nitingupta910@gmail.com>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>
-Subject: Re: [RFC] LZO de/compression support - take 6
-Message-ID: <20070529114043.GR3899@stusta.de>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com> <200705281049.48679.dhazelton@enter.net> <4cefeab80705280806m39fbcfd6v93a1c847c25e381c@mail.gmail.com> <20070528171115.GQ3899@stusta.de> <7A4314A3-24D8-49E2-BEEF-D760595255A2@cam.ac.uk>
+	Tue, 29 May 2007 07:53:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=X8TI7IqiH3PsA7HuYBns34gt5dI/Q4OPeDuXGqdpuxrzjzmIQEHtGifPh+4sBe8adA2sqnYGOwCr+ZQhR7yl/J/SJTNYBNwD5d87uSUBgTA18ai6d/sRQCNALul7ZRyCP0GtQm3h39CrB5ZX7ciLdeHBE5Ujrr3R9W2xYmZiMPU=
+Message-ID: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
+Date: Tue, 29 May 2007 12:53:10 +0100
+From: "M Macnair" <mmacnair@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Seeding /dev/random not working
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7A4314A3-24D8-49E2-BEEF-D760595255A2@cam.ac.uk>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 09:08:27AM +0100, Michael-Luke Jones wrote:
-> On 28 May 2007, at 18:11, Adrian Bunk wrote:
->
->> I have not seen any explanations:
->> - Why did the upstream author write the code that way?
->
-> Apparently due to his requirement for extreme portability. The original 
-> code was designed to work on everything from 16-bit DOS through CRAY 
-> supercomputers through Windows, Unices and Linux.
+In brief: Adding entropy by writing to /dev/[u]random doesn't appear
+to be working.  I am aware that the reported available entropy (via
+/proc/sys/kernel/random/entropy_avail) will not increase; the symptom
+is /dev/random keeps spitting out the same numbers.
 
-Sure, this could be the reason in some or all cases.
+I have two embedded boards (one ARM, one PowerPC), running two
+different versions of 2.6.  They have no hard drives, keyboards or
+mice.  They each have a NIC, but I understand these make no
+contribution to the entropy pool.
 
-The upstream author knows the code best, and discussing such issues with 
-him will in many cases be a win:
+Many distros ship with an init script that saves and restores the
+entropy pool on startup and shutdown.  The bit that interests me that
+is called on startup is (my comments):
+	if [ -f $random_seed ]; then
+		cat $random_seed >/dev/urandom  # should seed the pool
+	fi
+	dd if=/dev/urandom of=$random_seed count=1 2>/dev/null # save some
+data from urandom for next boot
+I have rebooted my boards many times, and after each boot I read the
+contents of $random_seed.  Whilst it does not happen every time, the
+contents of $random_seed are /often the same/.  To give you a feel:
+rebooted 11 times, got a total of 3 different outputs.
 
-It could be that there was in some cases no good reason, and the 
-upstream code that gets used by many other projects could become faster.
+This suggests that cat'ing the contents of the random_seed file into
+/dev/urandom is not actually increasing the available entropy at all;
+indeed it is having no effect whatsoever.
 
-Or there was a good reason that applies also to the in-kernel version 
-and a change breaks some corner case.
+This is obviously a serious issue on these boards, as writing to
+/dev/random is the only source of entropy.
 
-> The author has stated on the thread that it's a good idea to remove 
-> unnecessary ifdefs when porting the code into the kernel, given that the 
-> portability requirements are obviously no longer needed.
+In place of these startup scripts I have tried my own script that
+explicitly cats in a load of data, and then reads out several K from
+/dev/urandom - the data that is read out is normally the same, no
+matter what data is written.
 
-"remove unnecessary ifdefs" implies "generated code is identical".
+I put the fact that this is not 100% reproducible down to timing
+variations, which is also the reason why all the experimentation has
+been done at startup - the reading and writing occurs at very nearly
+exactly the same kernel time, every time it boots.
 
-That's quite different from "code is 10% faster".
+Is this a bug?  Am I doing something stupid?
 
-> Michael-Luke
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Michael Macnair
