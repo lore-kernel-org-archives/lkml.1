@@ -1,86 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764766AbXE2MYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbXE2Mfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764766AbXE2MYU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 08:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbXE2MYN
+	id S1753412AbXE2Mfu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 08:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbXE2Mfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 08:24:13 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:43596 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751633AbXE2MYL (ORCPT
+	Tue, 29 May 2007 08:35:43 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:47264 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751095AbXE2Mfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 08:24:11 -0400
-Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Bill Davidsen <davidsen@tmr.com>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>
-In-Reply-To: <200705291403.09773.rjw@sisk.pl>
-References: <4658B7DD.3060309@tmr.com>
-	 <1180392482.4149.15.camel@nigel.suspend2.net>
-	 <20070529112952.GA23046@elf.ucw.cz>  <200705291403.09773.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-m7wnNWlAsbO1BO+cPnTd"
-Date: Tue, 29 May 2007 22:23:58 +1000
-Message-Id: <1180441438.20718.1.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 29 May 2007 08:35:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ib5p1L/yIkbqdiUwcevlTM1z+dnx4u0cfoRfh/qqEJN956YV4803/tYE/fP4P3iFdlBPhYL5gbfswo29t5Io6VWfJKPRjvaTjafZHD9mN+Frw32HDwOrC1DGNGbZOfYx5spJrXySwR5EsFwd2JACC3n6nF5QnFrgJCiSPYDTx0E=
+Message-ID: <465C1DD1.8060201@gmail.com>
+Date: Tue, 29 May 2007 14:34:25 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Neil Brown <neilb@suse.de>
+CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Block devices and barriers
+References: <Pine.LNX.4.62.0705211434150.8776@pademelon.sonytel.be> <18011.43887.825594.407340@notabene.brown>
+In-Reply-To: <18011.43887.825594.407340@notabene.brown>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
---=-m7wnNWlAsbO1BO+cPnTd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Neil Brown wrote:
+>> but I can't find a way to actually trigger the calling of ps3disk_issue_flush()
+>> and ps3disk_prepare_flush().
+>>
+>>  1. My prepare_flush_fn() routine should be called from queue_flush(), which is
+>>     in turn called by start_ordered().
+>>     start_ordered() is called by blk_do_ordered(), but only if there's no
+>>     barrier (REQ_HARDBARRIER is not set).
+>>     Apart from drivers/block/pktcdvd.c and init_request_from_bio()
+>>     (BIO_RW_BARRIER is set by drivers/md/md.c only?), the only other way
+>>     REQ_HARDBARRIER can be set is in queue_flush(), which is not possible.
+> 
+> BIO_RW_BARRIER is set by various filesystems when mounted with
+>   -o barrier 
+> or
+>   -o barrier=1 (ext3)
+> 
+> See calls to set_buffer_ordered in fs/jbd/commit.c
 
-Hi.
+You driver first needs to call blk_queue_ordered() to set ordered mode
+(probably QUEUE_ORDERED_DRAIN_FLUSH) and the filesystem needs to be
+mounted with barrier enabled as Neil explained.  Then, the FS will issue
+barriers and the block layer will interpret them as draining + cache flush.
 
-On Tue, 2007-05-29 at 14:03 +0200, Rafael J. Wysocki wrote:
-> On Tuesday, 29 May 2007 13:29, Pavel Machek wrote:
-> > Hi!
-> >=20
-> > > > Yup.  Don't we do something like this for the (ACPI-based) suspend =
-to RAM
-> > > > already?
-> > >=20
-> > > Yeah, I was thinking about this overnight too. It should be doable. I=
-n
-> > > addition to what we already do, I think you'd want:
-> > >=20
-> > > - to copy the assembly to do the copying to a safe page;
-> > > - to put the location of the cpu state that was saved in the image
-> > > header so that it can be used after the data is copied back;
-> >=20
-> > ...alternatively, we can just rely on copy routine (and its data) not
-> > changing frequently.
+>>   2. My issue_flush_fn() should be called from blkdev_issue_flush() (ignoring
+>>      drivers/md). But blkdev_issue_flush() is called by ReiserFS and XFS only.
+> 
+> Yeh, it isn't widely used at the moment.
 
-I'd rather be sure. It will be extra code, but reliability is important.
+I thought about re-implementing it in terms of barrier callbacks but
+wasn't sure whether it would be better than completely removing
+blkdev_issue_flush() && a bit lazy. :-)
 
-> > > - to copy the nosave data to a 'safe' page.
-> > >=20
-> > > What else?
-> >=20
-> > page directories need to be on a safe place, too.
->=20
-> They are already.
+I'll look into it.
 
-Yeah - that's why I ignored them.
+>> I read the Block Device chapter in Linux Device Drivers 3rd edition, which says
+>> to check blk_barrier_rq(), but the barrier part seems to be obsolete, as we now
+>> have the prepare_flush_fn parameter of blk_queue_ordered().
+>>
+>> Am I missing something? Should I care about barriers?
+> 
+> Yes, you should care about barriers, though it is true that there is
+> some confusion around them and it might be difficult.
 
-Regards,
+Yeap, basically a block driver needs two callbacks - issue_flush and
+prepare_flush plus a call to blk_queue_ordered().
 
-Nigel
+>> BTW, Documentation/block/barrier.txt seems to be out-of-date. Patch to update
+>> it is below.
+> 
+> You might like to post this directly to
+>   Tejun Heo <htejun@gmail.com>
 
---=-m7wnNWlAsbO1BO+cPnTd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Received, acked && forwarded to Jens.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Thanks.
 
-iD8DBQBGXBtdN0y+n1M3mo0RArJLAKDbVqS/UE0OAL0Y4vN2gccAXu/bPwCcDocH
-FgrZpK2RHOk5oH+fEiuvcFw=
-=uIiQ
------END PGP SIGNATURE-----
-
---=-m7wnNWlAsbO1BO+cPnTd--
-
+-- 
+tejun
