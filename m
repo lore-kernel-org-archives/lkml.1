@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbXE2W0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751785AbXE2WeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752041AbXE2W0c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 18:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXE2W0W
+	id S1751785AbXE2WeB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 18:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbXE2Wdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 18:26:22 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40226 "EHLO mx2.suse.de"
+	Tue, 29 May 2007 18:33:53 -0400
+Received: from main.gmane.org ([80.91.229.2]:49447 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbXE2W0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 18:26:20 -0400
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add a trivial patch style checker
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky>
-	<p738xb8fjv2.fsf@bingen.suse.de>
-	<20070529115324.GB18437@osiris.boeblingen.de.ibm.com>
-	<20070529131903.GA5024@one.firstfloor.org>
-	<20070529142222.GC18437@osiris.boeblingen.de.ibm.com>
-	<20070529145818.GB5024@one.firstfloor.org>
-	<20070529164352.GD18437@osiris.boeblingen.de.ibm.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 30 May 2007 01:21:36 +0200
-In-Reply-To: <20070529164352.GD18437@osiris.boeblingen.de.ibm.com>
-Message-ID: <p73r6ozdxmn.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
+	id S1750870AbXE2Wdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 18:33:53 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Arkadiusz Mehlich <ris@elsat.net.pl>
+Subject: =?utf-8?b?cGF0YV9hbWQ=?= hangs system
+Date: Tue, 29 May 2007 22:33:17 +0000 (UTC)
+Message-ID: <loom.20070530T002505-935@post.gmane.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 217.173.173.29 (Mozilla/5.0 (X11; U; Linux x86_64; pl; rv:1.8.1.3) Gecko/20070413 Firefox/2.0.0.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens <heiko.carstens@de.ibm.com> writes:
-> 
-> I'm talking of a specific problem where we just added a panic to the
-> zfcp device driver. If that panic ever triggers we know for sure that
-> memory corruption happened.
-> So I'm just asking to not say in general that panic() in a device driver
-> is a bad thing.
+Hi,
+Recently i switched from old ide interface to new libata (pata) interface.
+With old drivers all's be ok.
 
-Ok there might be exceptions, but in general I still think it's true.
-It probably fits the "you must be able to justify any warnings" rule.
-I would still like this check to be added.
+When i switch to new driver (pata_amd on MCP55) my burning software (k3b) totaly
+hangs system when i have DVD-R, DVD+R in my drive ... with CD-R, CD-ROM, DVD-ROM
+work fine.
 
--Andi
+System hungs on 'detecting media' stage.
+
+There is workaround or patch to fix this problem ?
+Is not k3b problem !
+
+Thanks for reply.
+
