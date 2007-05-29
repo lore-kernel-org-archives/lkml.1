@@ -1,185 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763079AbXE2HA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbXE2HZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763079AbXE2HA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 03:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXE2HAv
+	id S1760179AbXE2HZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 03:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbXE2HZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 03:00:51 -0400
-Received: from ns.suse.de ([195.135.220.2]:60556 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752601AbXE2HAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 03:00:50 -0400
-From: Neil Brown <neilb@suse.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Tue, 29 May 2007 17:00:36 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 29 May 2007 03:25:49 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:16378 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754135AbXE2HZt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 03:25:49 -0400
+Date: Tue, 29 May 2007 09:25:43 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Tilman Schmidt" <tilman@imap.cc>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Greg KH" <greg@kroah.com>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: 2.6.22-rc2-mm1
+Message-ID: <20070529092543.21ccd8ad@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <3ae72650705271541o2c3755edwdc769883e79820e5@mail.gmail.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+	<46585953.80200@imap.cc>
+	<20070526090117.dda72286.akpm@linux-foundation.org>
+	<465A033C.3070400@imap.cc>
+	<3ae72650705271541o2c3755edwdc769883e79820e5@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18011.53140.20314.43413@notabene.brown>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Peter Linich <plinich@cse.unsw.edu.au>
-Subject: Re: [PATCH/RFC] Is it OK for 'read' to return nuls for a file   that
- never had nuls in it?
-In-Reply-To: message from Nick Piggin on Tuesday May 29
-References: <18011.51290.257450.26100@notabene.brown>
-	<465BCAA9.3070707@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday May 29, nickpiggin@yahoo.com.au wrote:
-> > 
-> > Questions:
-> >   - Is this a problem, and should it be fixed (I think "yes").
+On Mon, 28 May 2007 00:41:19 +0200,
+"Kay Sievers" <kay.sievers@vrfy.org> wrote:
+
+> Cornelia,
+> in the patch is:
+>   +	if (dev->kobj.parent == &dev->class->subsys.kobj)
+>   +		return 0;
 > 
-> I think you are right.
+> which will skip the creation of the "device"-link, right?
 
-That's encouraging - thanks.
+...and this is certainly broken. Argl.
 
-> 
-> >   - Is the patch appropriate, and does it have no negative
-> >     consequences?.
-> >     (Obviously some comments should be tidied up to reflect the new
-> >     reality).
-> 
-> Would it be better (and closer to following the existing logic) if
-> we sampled i_size before testing each page for uptodateness? It might
-> also cost a little less in the fastpath case of finding an uptodate
-> page.
-
-Uhm. no.
-
-It doesn't address the issue which is that we need to check i_size
-*after* we have got hold of the page and believe it to be uptodate.
-
-And just to check, I race the test with your patch and I get a nice
-little row of "!!!!!" - it is finding zeros still.
-
-But we could possibly remove the early checks on end_index, that
-makes sense (I've also moved the comment).
-
-Thanks,
-NeilBrown
+Could those folks that had trouble with this kernel check out whether
+the following patch helps?
 
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-### Diffstat output
- ./mm/filemap.c |   72 ++++++++++++++++++++++-----------------------------------
- 1 file changed, 28 insertions(+), 44 deletions(-)
+Fix check when to create certain symlinks (the device link and some
+compatible links).
 
-diff .prev/mm/filemap.c ./mm/filemap.c
---- .prev/mm/filemap.c	2007-05-29 16:45:26.000000000 +1000
-+++ ./mm/filemap.c	2007-05-29 16:58:23.000000000 +1000
-@@ -875,13 +875,11 @@ void do_generic_mapping_read(struct addr
- {
- 	struct inode *inode = mapping->host;
- 	unsigned long index;
--	unsigned long end_index;
- 	unsigned long offset;
- 	unsigned long last_index;
- 	unsigned long next_index;
- 	unsigned long prev_index;
- 	unsigned int prev_offset;
--	loff_t isize;
- 	struct page *cached_page;
- 	int error;
- 	struct file_ra_state ra = *_ra;
-@@ -894,27 +892,12 @@ void do_generic_mapping_read(struct addr
- 	last_index = (*ppos + desc->count + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
- 	offset = *ppos & ~PAGE_CACHE_MASK;
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+---
+ drivers/base/core.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
+
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -657,12 +657,12 @@ static int device_add_class_symlinks(str
+ 	 * If this is not a "fake" compatible device, then create the
+ 	 * symlink from the class to the device.
+ 	 */
+-	if (dev->kobj.parent == &dev->class->subsys.kobj)
+-		return 0;
+-	error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+-				  dev->bus_id);
+-	if (error)
+-		goto out_subsys;
++	if (dev->kobj.parent != &dev->class->subsys.kobj) {
++		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
++					  dev->bus_id);
++		if (error)
++			goto out_subsys;
++	}
+ 	if (dev->parent) {
+ 		error = sysfs_create_link(&dev->kobj, &dev->parent->kobj,
+ 					  "device");
+@@ -689,7 +689,8 @@ out_device:
+ 		sysfs_remove_link(&dev->kobj, "device");
+ #endif
+ out_busid:
+-	sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++	if (dev->kobj.parent != &dev->class->subsys.kobj)
++		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
+ out_subsys:
+ 	sysfs_remove_link(&dev->kobj, "subsystem");
+ out:
+@@ -712,7 +713,8 @@ static void device_remove_class_symlinks
+ #endif
+ 		sysfs_remove_link(&dev->kobj, "device");
+ 	}
+-	sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
++	if (dev->kobj.parent != &dev->class->subsys.kobj)
++		sysfs_remove_link(&dev->class->subsys.kobj, dev->bus_id);
+ 	sysfs_remove_link(&dev->kobj, "subsystem");
+ }
  
--	isize = i_size_read(inode);
--	if (!isize)
--		goto out;
--
--	end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
- 	for (;;) {
- 		struct page *page;
-+		unsigned long end_index;
-+		loff_t isize;
- 		unsigned long nr, ret;
- 
--		/* nr is the maximum number of bytes to copy from this page */
--		nr = PAGE_CACHE_SIZE;
--		if (index >= end_index) {
--			if (index > end_index)
--				goto out;
--			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
--			if (nr <= offset) {
--				goto out;
--			}
--		}
--		nr = nr - offset;
--
- 		cond_resched();
- 		if (index == next_index)
- 			next_index = page_cache_readahead(mapping, &ra, filp,
-@@ -929,6 +912,32 @@ find_page:
- 		if (!PageUptodate(page))
- 			goto page_not_up_to_date;
- page_ok:
-+		/*
-+		 * i_size must be checked after we know the page is Uptodate.
-+		 *
-+		 * Checking i_size after the check allows us to calculate
-+		 * the correct value for "nr", which means the zero-filled
-+		 * part of the page is not copied back to userspace (unless
-+		 * another truncate extends the file - this is desired though).
-+		 */
-+
-+		isize = i_size_read(inode);
-+		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-+		if (unlikely(!isize || index > end_index)) {
-+			page_cache_release(page);
-+			goto out;
-+		}
-+
-+		/* nr is the maximum number of bytes to copy from this page */
-+		nr = PAGE_CACHE_SIZE;
-+		if (index == end_index) {
-+			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
-+			if (nr <= offset) {
-+				page_cache_release(page);
-+				goto out;
-+			}
-+		}
-+		nr = nr - offset;
- 
- 		/* If users can be writing to this page using arbitrary
- 		 * virtual addresses, take care about potential aliasing
-@@ -1015,31 +1024,6 @@ readpage:
- 			unlock_page(page);
- 		}
- 
--		/*
--		 * i_size must be checked after we have done ->readpage.
--		 *
--		 * Checking i_size after the readpage allows us to calculate
--		 * the correct value for "nr", which means the zero-filled
--		 * part of the page is not copied back to userspace (unless
--		 * another truncate extends the file - this is desired though).
--		 */
--		isize = i_size_read(inode);
--		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
--		if (unlikely(!isize || index > end_index)) {
--			page_cache_release(page);
--			goto out;
--		}
--
--		/* nr is the maximum number of bytes to copy from this page */
--		nr = PAGE_CACHE_SIZE;
--		if (index == end_index) {
--			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
--			if (nr <= offset) {
--				page_cache_release(page);
--				goto out;
--			}
--		}
--		nr = nr - offset;
- 		goto page_ok;
- 
- readpage_error:
