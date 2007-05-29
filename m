@@ -1,39 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbXE2QCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbXE2QEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbXE2QCX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 12:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbXE2QCQ
+	id S1757055AbXE2QEj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 12:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbXE2QEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 12:02:16 -0400
-Received: from ns2.suse.de ([195.135.220.15]:37976 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751724AbXE2QCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 12:02:16 -0400
-To: "M Macnair" <mmacnair@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Seeding /dev/random not working
-References: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 29 May 2007 18:58:59 +0200
-In-Reply-To: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
-Message-ID: <p73zm3nefcc.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Tue, 29 May 2007 12:04:32 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:17766 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXE2QEb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 12:04:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tJpeYKaa3NHQint17NQDihtlGGUq0zxZjVbwmnL1IvN+DsPVT+tgdybD3vnidEAqztrGCD4BqcGBwuVgPEF/rQ4WmtVtjlkI6Y101GPU4XyCCzFg9R9S9Sgtegv4wBQsZROePJ0GYyZWKot1wt3XTM/YpMoZlBPneTPS1r55ocs=
+Message-ID: <d120d5000705290904s706763bfj7beb837397f54d86@mail.gmail.com>
+Date: Tue, 29 May 2007 12:04:30 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCHSET 2.6.22-rc2-mm1] sysfs: reduce memory footprint of sysfs_dirent
+Cc: gregkh@suse.de, cornelia.huck@de.ibm.com, oneukum@suse.de,
+       rpurdie@rpsys.net, stern@rowland.harvard.edu, maneesh@in.ibm.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <118036944617-git-send-email-htejun@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <118036944617-git-send-email-htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"M Macnair" <mmacnair@gmail.com> writes:
-> 
-> Many distros ship with an init script that saves and restores the
-> entropy pool on startup and shutdown.  The bit that interests me that
-> is called on startup is (my comments):
-> 	if [ -f $random_seed ]; then
-> 		cat $random_seed >/dev/urandom  # should seed the pool
-OA
-Writing doesn't actually work; to get real accounted entropy for /dev/random
-you need to use a special ioctl. I ran into this problem some years ago 
-and ended up writing http://www.muc.de/~ak/rndfeed.c
+Hi Tejun,
 
--Andi
+On 5/28/07, Tejun Heo <htejun@gmail.com> wrote:
+> Hello, all.
+>
+> This patchset reduces the size of sysfs_dirent to 88 byte from 136 on
+> 64bit and to 52 from 76 on 32bit.  Combined with forthcoming
+> reclaimable sysfs directories, this will make sysfs much more scalable
+> on very large machines and very small machines.
+>
+> This patchset contains the following three patches.
+>
+> #01: move-s_active-functions-to-fs-sysfs-dir-c, prep for #02
+> #02: slim-down-sysfs_dirent-s_active
+> #03: use-signly-linked-list-for-sysfs_dirent-tree
+>
+> I'm pretty sure #02 is a good idea but #03 is debatable.  The code
+> doesn't look much uglier after the conversion tho.  Inputs welcome.
+>
+
+I think that #3 is a good idea as well - we have a lot of sysfs
+objects on any given system and slimming down sysfs benefits everyone.
+
+-- 
+Dmitry
