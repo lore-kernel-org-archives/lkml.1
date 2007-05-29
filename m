@@ -1,152 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbXE2PiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbXE2Pky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758606AbXE2PiT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 11:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbXE2PiK
+	id S1757943AbXE2Pky (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 11:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbXE2Pkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 11:38:10 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:28548 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754021AbXE2PiG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 11:38:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Tz54Qxcq/RmsSFBXTI5kJ0F5WB+HZ7QGJbNN6FYlkL83kXH+ixADOEIsa/FkyUKEF+iqbSkU/gE8QYA7/rRknjEr73isPyJev7YvJZ+F2c2V2kXhY1qMhLLDlDdahcIWuwsIp9eaPVk5RXffzzEJ45Pft0peS42E8GNeg/MzXUw=
-Message-ID: <43e72e890705290838o50fd0897re3f8fc7547b3758e@mail.gmail.com>
-Date: Tue, 29 May 2007 11:38:05 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Matthias Kaehlcke" <matthias.kaehlcke@gmail.com>, developers@islsm.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 2/2] use list_for_each_entry() for iteration in Prism 54 driver
-In-Reply-To: <20070527103951.GK31790@traven>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 29 May 2007 11:40:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51175 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752882AbXE2Pkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 11:40:45 -0400
+Date: Tue, 29 May 2007 11:40:42 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] add procfs tunable to enable immediate panic when there are
+ busy inodes after umount
+Message-Id: <20070529114042.5fe0b810.jlayton@redhat.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070525125630.GE31790@traven> <20070525130444.GG31790@traven>
-	 <20070527103951.GK31790@traven>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/27/07, Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
-> El Fri, May 25, 2007 at 03:04:44PM +0200 Matthias Kaehlcke ha dit:
->
-> > Use list_for_each() in the Prism54 driver to iterate over the MAC list
->
-> In response to a similar patch Christoph Hellwig suggests the use of
-> list_for_each_entry() instead of list_for_each(). Here is a evolution
-> of the patch that takes into account Christophs' suggestion
->
-> --
->
-> Prism54 driver: Use list_for_each_entry() instead of manual iteration
-> and substitute a list_for_each_safe() loop with
-> list_for_each_entry_safe()
->
-> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+After spending quite a bit of time tracking down a "VFS: busy inodes
+after unmount" problem, it occurs to me that it would be nice to be
+able to force a panic when that occurs. While an oops message alone is
+not generally helpful for tracking down this sort of problem,
+collecting and analyzing a coredump when this occurs can be.
 
-Singed-off-by: Luis R. Rodriguez <mcgrof@gmail.com>
+The following patch adds a procfs tunable that allows you to force a
+core when a "busy inodes after umount" problem occurs. It also changes
+the classic error message to be something a bit less cryptic to users.
 
-Looks good,
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
-  Luis
-
-> --
->
-> diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
-> index 283be4a..585f599 100644
-> --- a/drivers/net/wireless/prism54/isl_ioctl.c
-> +++ b/drivers/net/wireless/prism54/isl_ioctl.c
-> @@ -1853,7 +1853,6 @@ prism54_del_mac(struct net_device *ndev, struct iw_request_info *info,
->         islpci_private *priv = netdev_priv(ndev);
->         struct islpci_acl *acl = &priv->acl;
->         struct mac_entry *entry;
-> -       struct list_head *ptr;
->         struct sockaddr *addr = (struct sockaddr *) extra;
->
->         if (addr->sa_family != ARPHRD_ETHER)
-> @@ -1861,11 +1860,9 @@ prism54_del_mac(struct net_device *ndev, struct iw_request_info *info,
->
->         if (down_interruptible(&acl->sem))
->                 return -ERESTARTSYS;
-> -       for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
-> -               entry = list_entry(ptr, struct mac_entry, _list);
-> -
-> +       list_for_each_entry(entry, &acl->mac_list, _list) {
->                 if (memcmp(entry->addr, addr->sa_data, ETH_ALEN) == 0) {
-> -                       list_del(ptr);
-> +                       list_del(&entry->_list);
->                         acl->size--;
->                         kfree(entry);
->                         up(&acl->sem);
-> @@ -1883,7 +1880,6 @@ prism54_get_mac(struct net_device *ndev, struct iw_request_info *info,
->         islpci_private *priv = netdev_priv(ndev);
->         struct islpci_acl *acl = &priv->acl;
->         struct mac_entry *entry;
-> -       struct list_head *ptr;
->         struct sockaddr *dst = (struct sockaddr *) extra;
->
->         dwrq->length = 0;
-> @@ -1891,9 +1887,7 @@ prism54_get_mac(struct net_device *ndev, struct iw_request_info *info,
->         if (down_interruptible(&acl->sem))
->                 return -ERESTARTSYS;
->
-> -       for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
-> -               entry = list_entry(ptr, struct mac_entry, _list);
-> -
-> +       list_for_each_entry(entry, &acl->mac_list, _list) {
->                 memcpy(dst->sa_data, entry->addr, ETH_ALEN);
->                 dst->sa_family = ARPHRD_ETHER;
->                 dwrq->length++;
-> @@ -1960,7 +1954,6 @@ prism54_get_policy(struct net_device *ndev, struct iw_request_info *info,
->  static int
->  prism54_mac_accept(struct islpci_acl *acl, char *mac)
->  {
-> -       struct list_head *ptr;
->         struct mac_entry *entry;
->         int res = 0;
->
-> @@ -1972,8 +1965,7 @@ prism54_mac_accept(struct islpci_acl *acl, char *mac)
->                 return 1;
->         }
->
-> -       for (ptr = acl->mac_list.next; ptr != &acl->mac_list; ptr = ptr->next) {
-> -               entry = list_entry(ptr, struct mac_entry, _list);
-> +       list_for_each_entry(entry, &acl->mac_list, _list) {
->                 if (memcmp(entry->addr, mac, ETH_ALEN) == 0) {
->                         res = 1;
->                         break;
-> @@ -2216,11 +2208,9 @@ prism54_wpa_bss_ie_init(islpci_private *priv)
->  void
->  prism54_wpa_bss_ie_clean(islpci_private *priv)
->  {
-> -       struct list_head *ptr, *n;
-> +       struct islpci_bss_wpa_ie *bss, *n;
->
-> -       list_for_each_safe(ptr, n, &priv->bss_wpa_list) {
-> -               struct islpci_bss_wpa_ie *bss;
-> -               bss = list_entry(ptr, struct islpci_bss_wpa_ie, list);
-> +       list_for_each_entry_safe(bss, n, &priv->bss_wpa_list, list) {
->                 kfree(bss);
->         }
->  }
->
-> --
-> Matthias Kaehlcke
-> Linux Application Developer
-> Barcelona
->
->     I am incapable of conceiving infinity, and yet I do not accept finity
->                           (Simone de Beauvoir)
->                                                                  .''`.
->     using free software / Debian GNU/Linux | http://debian.org  : :'  :
->                                                                 `. `'`
-> gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+diff --git a/fs/inode.c b/fs/inode.c
+index 9a012cc..0e638b0 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -327,7 +327,7 @@ static int invalidate_list(struct list_head *head, struct list_head *dispose)
+ 			count++;
+ 			continue;
+ 		}
+-		busy = 1;
++		++busy;
+ 	}
+ 	/* only unused inodes may be cached with i_count zero */
+ 	inodes_stat.nr_unused -= count;
+diff --git a/fs/super.c b/fs/super.c
+index 5260d62..9c2871b 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -287,6 +287,8 @@ int fsync_super(struct super_block *sb)
+ void generic_shutdown_super(struct super_block *sb)
+ {
+ 	const struct super_operations *sop = sb->s_op;
++	extern int umount_debug;
++	int busy;
+ 
+ 	if (sb->s_root) {
+ 		shrink_dcache_for_umount(sb);
+@@ -303,10 +305,15 @@ void generic_shutdown_super(struct super_block *sb)
+ 			sop->put_super(sb);
+ 
+ 		/* Forget any remaining inodes */
+-		if (invalidate_inodes(sb)) {
+-			printk("VFS: Busy inodes after unmount of %s. "
+-			   "Self-destruct in 5 seconds.  Have a nice day...\n",
+-			   sb->s_id);
++		if (busy = invalidate_inodes(sb)) {
++			printk("VFS: %d busy inodes after unmount of %s. ",
++				 busy, sb->s_id);
++			if (umount_debug != 0) {
++				printk("Crashing host on request.\n");
++				BUG();
++			} else {
++				printk("This machine will likely crash eventually. Consider a reboot.\n");
++			}
+ 		}
+ 
+ 		unlock_kernel();
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index 47f1c53..176b984 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -818,6 +818,7 @@ enum
+ 	FS_AIO_NR=18,	/* current system-wide number of aio requests */
+ 	FS_AIO_MAX_NR=19,	/* system-wide maximum number of aio requests */
+ 	FS_INOTIFY=20,	/* inotify submenu */
++	FS_UMOUNT_DEBUG=21, /* busy inodes on umount debug switch */
+ 	FS_OCFS2=988,	/* ocfs2 */
+ };
+ 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 30ee462..8e62c34 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -156,6 +156,7 @@ extern ctl_table pty_table[];
+ extern ctl_table inotify_table[];
+ #endif
+ 
++int umount_debug;
+ #ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
+ int sysctl_legacy_va_layout;
+ #endif
+@@ -962,6 +963,14 @@ static ctl_table fs_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
++	{
++		.ctl_name	= FS_UMOUNT_DEBUG,
++		.procname	= "umount_debug",
++		.data		= &umount_debug,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
+ #ifdef CONFIG_DNOTIFY
+ 	{
+ 		.ctl_name	= FS_DIR_NOTIFY,
