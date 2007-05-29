@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763959AbXE2FOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbXE2FZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763959AbXE2FOz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 01:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbXE2FOs
+	id S1760946AbXE2FZV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 01:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXE2FZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 01:14:48 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:27414 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753814AbXE2FOr (ORCPT
+	Tue, 29 May 2007 01:25:09 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:46792 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbXE2FZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 01:14:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=l9AlQIbp0nTCqLtaiRFdXGD+83GZLjHB/7Lgx/La3Rdr35e7jAbtKh0KF2IUqvqks1NwKIGOwvTyoMvoqFh3VKDvGiWEiPZUGa+mt+Z3grgFM2DY9FDY/VzL2E56/f3GwMyqi5VcIhF+XjLLK8qjmZRKKVG6hX68yc0Aoo1L3UU=  ;
-X-YMail-OSG: QbSnIfIVM1nw6zA7dD_HyTvVnHg5Uv_h1jEqsHDJQKhGdJbEJZJLB9uXe1ZRGgkAsn2ZL2VImw--
-Message-ID: <465BB6C2.7050704@yahoo.com.au>
-Date: Tue, 29 May 2007 15:14:42 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Preserve the dirty bit in init_page_buffers
-References: <m14pm5io6h.fsf@ebiederm.dsl.xmission.com>	<465A55E7.50904@yahoo.com.au>	<m18xb9a7sy.fsf@ebiederm.dsl.xmission.com>	<465A6078.6010804@yahoo.com.au> <465A6197.5010402@yahoo.com.au> <m1veed82mz.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1veed82mz.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 29 May 2007 01:25:08 -0400
+Date: Mon, 28 May 2007 23:25:02 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Network broken in kernel level.
+In-reply-to: <fa.FYU0TmYcs8tw7er8ovzop6Z2Qgc@ifi.uio.no>
+To: Wang Penghui <wangpenghui@westea.org>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <465BB92E.2000005@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.FYU0TmYcs8tw7er8ovzop6Z2Qgc@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
-
->> However we
->>could still set_page_dirty of a block device page without buffers
->>via an mmap.
+Wang Penghui wrote:
+> Hello, list,
 > 
+> Recently, i have messed up with the follow problem, i have two server
+> both with two ethernet cards. Here are them:
 > 
-> After the page is made dirty via mmap we have:
-> sys_write -> ... -> block_prepare_write -> ... -> create_empty_buffers.
+> [root@db1 ~]# lspci | grep -i eth
+> 05:00.0 Ethernet controller: Marvell Technology Group Ltd. Gigabit
+> Ethernet Controller (rev 18)
+> 07:04.0 Ethernet controller: Intel Corp. 82541GI/PI Gigabit Ethernet
+> Controller (rev 05)
+> 
+> And they are running MySQL server on both of them. The OS is RHEL 4 with
+> the default kernel 2.6.9-5.ELsmp. These days there are lots of error
+> message comming out in /var/log/message and dmesg.
 
-Yep, that's what I mean.
-
-
-> I suspect that is a pretty rare case but it does indeed seem to exist
-> as a problem.
-
-I think so too. But either we have some misunderstanding of the
-codepaths involved, or the author of the comments there didn't
-consider this case, so...
+That kernel is very old, you should get the latest RHEL errata update 
+kernel and see if that helps. There have been hundreds of bugfixes in 
+RHEL kernels since that version.
 
 -- 
-SUSE Labs, Novell Inc.
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
