@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764569AbXE2Icw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbXE2IqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764569AbXE2Icw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 04:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbXE2Ico
+	id S1758723AbXE2IqO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 04:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbXE2IqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 04:32:44 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:29075 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753894AbXE2Icn (ORCPT
+	Tue, 29 May 2007 04:46:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60313
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750707AbXE2Ip7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 04:32:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MvRKvfw9loKYl40lMPGvqWMbxOAWWA2RfzeE6PtTjbBTSuKVlBihycKChAy4WG5sQQx1TLdRjrsEGHxDEEpE1HlUEZBLs/byv3CYM2Aw3T1y6ESxwOKyFOoI7oZ38chk3MwXV3IBTLXT+F7KkDVfiH5d+S/EQDJnaFrv3AjL3+I=
-Message-ID: <a8e1da0705290132l328f1e4t10d2c0495d46f5fe@mail.gmail.com>
-Date: Tue, 29 May 2007 08:32:42 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Matt Keenan" <tank.en.mate@gmail.com>
-Subject: Re: [NFS] [PATCH] NFSD: fix uninitialized variable
-Cc: "Jeff Garzik" <jeff@garzik.org>, "J. Bruce Fields" <bfields@fieldses.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, neilb@suse.de,
-       nfs@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <465BD64A.3040302@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 May 2007 04:45:59 -0400
+Date: Tue, 29 May 2007 01:46:10 -0700 (PDT)
+Message-Id: <20070529.014610.23017882.davem@davemloft.net>
+To: rpjday@mindspring.com
+Cc: jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org
+Subject: Re: stuff ready to be deleted?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0705290419370.23055@localhost.localdomain>
+References: <Pine.LNX.4.64.0705281818370.17410@localhost.localdomain>
+	<Pine.LNX.4.61.0705290807530.11140@yvahk01.tjqt.qr>
+	<Pine.LNX.4.64.0705290419370.23055@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070527103442.GA10594@havoc.gtf.org>
-	 <20070529030050.GB20631@fieldses.org> <465B9BB9.7060300@garzik.org>
-	 <a8e1da0705282131w72fbed65g8cb28589202298c1@mail.gmail.com>
-	 <465BD64A.3040302@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, matt
-embarrassed :)
-below resend it.
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+Date: Tue, 29 May 2007 04:20:24 -0400 (EDT)
 
-diff -dur linux/fs/nfsd/nfs4acl.c linux.new/fs/nfsd/nfs4acl.c
---- linux/fs/nfsd/nfs4acl.c     2007-05-29 12:28:29.000000000 +0000
-+++ linux.new/fs/nfsd/nfs4acl.c 2007-05-29 16:32:26.000000000 +0000
-@@ -183,8 +183,6 @@
- summarize_posix_acl(struct posix_acl *acl, struct posix_acl_summary *pas)
- {
-        struct posix_acl_entry *pa, *pe;
--       pas->users = 0;
--       pas->groups = 0;
-        pas->mask = 07;
+> On Tue, 29 May 2007, Jan Engelhardt wrote:
+> 
+> >
+> > On May 28 2007 18:25, Robert P. J. Day wrote:
+> > >On Mon, 28 May 2007, Jan Engelhardt wrote:
+> >
+> > >> >currently, the list contains the items:
+> > >> >
+> > >> >    * 4 Traffic policing
+> > >>
+> > >> CONFIG_NET_SCHED? CONFIG_NET_ACT_POLICE? Neither seems
+> > >> marked as deprecated/obsoleted in Kconfig.
+> > >
+> > >the "traffic policing" entry in that list refers specifically to the
+> > >config option "CLS_NET_POLICE" in net/sched/Kconfig:
+> > >
+> > >config NET_CLS_POLICE
+> > >        bool "Traffic Policing (obsolete)"
+> > >        depends on NET_CLS_ACT!=y
+> > >
+> > >so ... does "obsolete" really mean "obsolete"?
+> >
+> > Have you taken a look at the Makefile? See this oddity:
+> >
+> > obj-$(CONFIG_NET_ACT_POLICE)    += act_police.o
+> > obj-$(CONFIG_NET_CLS_POLICE)    += act_police.o
+> >
+> > So is the Kconfig entry all that is obsolete?
+> 
+> ah, i hadn't noticed that.  how odd.  now i don't know *what* to
+> think.
 
-        pe = acl->a_entries + acl->a_count;
-@@ -229,6 +227,7 @@
-        int eflag = ((flags & NFS4_ACL_TYPE_DEFAULT) ?
-                NFS4_INHERITANCE_FLAGS | NFS4_ACE_INHERIT_ONLY_ACE : 0);
-
-+       memset(pas, 0, sizeof(struct posix_acl_summary));
-        BUG_ON(pacl->a_count < 3);
-        summarize_posix_acl(pacl, &pas);
+Look at what tests that config option in the code, not just
+what the makefiles do.
