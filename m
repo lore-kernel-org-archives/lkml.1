@@ -1,437 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760546AbXE2OCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbXE2OCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760546AbXE2OCd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXE2N7y
+	id S1760867AbXE2OCz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbXE2N74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:59:54 -0400
+	Tue, 29 May 2007 09:59:56 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751942AbXE2N7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:59:47 -0400
+	id S1751964AbXE2N7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:59:48 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:35 -0700
+Date: Tue, 29 May 2007 06:48:17 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmZrR019866@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmHQd019645@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 20/22] 2.6.22-rc3 perfmon2 : new x86_64 files
+Subject: [PATCH 03/22] 2.6.22-rc3 perfmon2 : new system calls support
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the new x86_64 files.
+This patch contains the perfmon2 system call interface.
 
-The files are as follows:
+The interface consist of 12 new system calls. The front-end
+of each system call is implemented in perfmon_syscall.c.
+The front-end takes care of copying the parameters into
+kernel structures and also verifies that the perfmon state
+is appropriate for each command. The back-end of each syscall
+is implemented either in the core (perfmon.c) or in feature
+specific file (e.g. perfmon_sets.c).
+
+The system calls are defined as follows:
+
+sys_pfm_create_context():
+	- create a new perfmon2 context and returns a file descriptor in
+	  the pfarg_ctx_t parameters. This is the first call an application
+	  must make to do monitoring 
+	- rewritten to pass sampling format identification as a string
+	- file descriptor is now returned by call
+
+sys_pfm_write_pmcs():
+	- program the PMU configuration registers. Accepts vector of arguments
+	  of type pfarg_pmc_t
+	
+sys_pfm_write_pmds():
+	- program the PMU data registers. Accepts a vector of arguments of type
+	  pfarg_pmd_t
+
+sys_pfm_read_pmds():
+	- read the PMU data registers.  Accepts a vector of arguments of type
+	  pfarg_pmd_t
+
+sys_pfm_restart():
+	- indicate that application is doing processing an overflow notification
+
+sys_pfm_start():
+	- start monitoring
+
+sys_pfm_stop():
+	- stop monitoring
+
+sys_pfm_load_context():
+	- attach a perfmon2 context to a task or the current processor.
+
+sys_pfm_unload_context():
+	- detach the perfmon2 context
+
+sys_pfm_create_evtsets():
+	- create or change an event sets. By default a context is created with only one
+	  set
+
+sys_pfm_delete_evtsets():
+	- delete any explicitely created event set
+
+sys_pfm_getinfo_evtsets():
+	- get information about event sets, such as the number of activations. Accepts
+	  vector arguments of type pfarg_setinfo_t
+
+There are other more indirect system calls related to the fact that a context uses a file
+descriptor. Those system calls are in perfmon_file.c and part of another patch.
 
 
-arch/x86_64/perfmon/Kconfig:
-	- add menuconfig options
-
-arch/x86_64/perfmon/Makefile:
-	- makefile for arch specific files
-
-arch/x86_64/perfmon/perfmon_k8.c:
-	- PMU description for Opteron/Althon64 PMU for both 32 and 64-bit modes
-
-arch/x86_64/perfmon/perfmon_core.c:
-	- PMU description for Intel Core-bsaed processors
-
-include/asm-x86_64/perfmon.h:
-	- architecture specific header definitions
-
-include/asm-i386/perfmon_api.h:
-	- i386/x86_64 user-visible constants
 
 
---- linux-2.6.22.base/arch/x86_64/perfmon/Kconfig	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/arch/x86_64/perfmon/Kconfig	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,55 @@
-+menu "Hardware Performance Monitoring support"
-+config PERFMON
-+ 	bool "Perfmon2 performance monitoring interface"
-+	default n
-+ 	help
-+  	Enables the perfmon2 interface to access the hardware
-+	performance counters. See <http://perfmon2.sf.net/> for
-+ 	more details.
-+
-+config PERFMON_DEBUG
-+ 	bool "Perfmon debugging"
-+	default n
-+	depends on PERFMON
-+ 	help
-+  	Enables perfmon debugging support
-+
-+config X86_64_PERFMON_K8
-+	tristate "Support 64-bit mode AMD Athlon64 and Opteron64 hardware performance counters"
-+	depends on PERFMON
-+	default n
-+	help
-+	Enables support for 64-bit mode AMD Athlon64 and Opteron64 processors
-+	hardware performance counters.
-+
-+config X86_64_PERFMON_P4
-+	tristate "Support for Intel 64-bit Pentium 4/Xeon hardware performance counters"
-+	depends on PERFMON
-+	default n
-+	help
-+	Enables support for Intel 64-bit mode Pentium 4/Xeon hardware performance
-+	counters.
-+
-+config  X86_64_PERFMON_CORE
-+	tristate "Support for Intel Core-based performance counters"
-+	depends on PERFMON
-+	default n
-+	help
-+	Enables 64-bit support for Intel Core-based performance counters. Enable
-+	this option to support Intel Core 2 Duo processors.
-+
-+config X86_64_PERFMON_GEN_IA32
-+	tristate "Support for Intel architectural performance counters"
-+	depends on PERFMON
-+	default n
-+	help
-+	Enables 64-bit support for Intel architectural performance counters.
-+
-+config X86_64_PERFMON_PEBS
-+	tristate "Support for Intel Precise Event-Based Sampling (PEBS)"
-+	depends on PERFMON
-+	default n
-+	help
-+	Enables support for 64-bit Precise Event-Based Sampling (PEBS) on the Intel
-+	Pentium 4, Xeon, and Core-based processors which support it.
-+endmenu
---- linux-2.6.22.base/arch/x86_64/perfmon/Makefile	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/arch/x86_64/perfmon/Makefile	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,16 @@
-+#
-+# Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
-+# Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+#
-+
-+obj-$(CONFIG_PERFMON)			+= perfmon.o
-+obj-$(CONFIG_X86_64_PERFMON_K8)		+= perfmon_k8.o
-+obj-$(CONFIG_X86_64_PERFMON_P4)		+= perfmon_p4.o
-+obj-$(CONFIG_X86_64_PERFMON_CORE)	+= perfmon_core.o
-+obj-$(CONFIG_X86_64_PERFMON_GEN_IA32)	+= perfmon_gen_ia32.o
-+obj-$(CONFIG_X86_64_PERFMON_PEBS)	+= perfmon_pebs_smpl.o
-+
-+perfmon-$(subst m,y,$(CONFIG_PERFMON)) += ../../i386/perfmon/perfmon.o
-+perfmon_p4-$(subst m,y,$(CONFIG_X86_64_PERFMON_P4)) += ../../i386/perfmon/perfmon_p4.o
-+perfmon_gen_ia32-$(subst m,y,$(CONFIG_X86_64_PERFMON_GEN_IA32)) += ../../i386/perfmon/perfmon_gen_ia32.o
-+perfmon_pebs_smpl-$(subst m,y,$(CONFIG_X86_64_PERFMON_PEBS)) += ../../i386/perfmon/perfmon_pebs_smpl.o
---- linux-2.6.22.base/arch/x86_64/perfmon/perfmon_core.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/arch/x86_64/perfmon/perfmon_core.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,298 @@
+--- linux-2.6.22.base/perfmon/perfmon_syscalls.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/perfmon/perfmon_syscalls.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,991 @@
 +/*
-+ * This file contains the Intel Core PMU registers description tables.
-+ * Intel Core 2 processor are based on the Intel Core microarchitecture.
++ * perfmon_syscalls.c: perfmon2 system call interface
 + *
-+ * Copyright (c) 2006 Hewlett-Packard Development Company, L.P.
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
 + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ */
-+#include <linux/module.h>
-+#include <linux/perfmon.h>
-+#include <asm/nmi.h>
-+
-+MODULE_AUTHOR("Stephane Eranian <eranian@hpl.hp.com>");
-+MODULE_DESCRIPTION("Intel Core");
-+MODULE_LICENSE("GPL");
-+
-+static int force_nmi;
-+MODULE_PARM_DESC(force_nmi, "bool: force use of NMI for PMU interrupt");
-+module_param(force_nmi, bool, 0600);
-+
-+/*
-+ * - upper 32 bits are reserved
-+ * - INT: APIC enable bit is reserved (forced to 1)
-+ * - bit 21 is reserved
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
 + *
-+ *   RSVD: reserved bits must be 1
-+ */
-+#define PFM_CORE_PMC_RSVD ((~((1ULL<<32)-1)) \
-+		  	| (1ULL<<20)   \
-+			| (1ULL<<21))
-+
-+/*
-+ * force Local APIC interrupt on overflow
-+ * disable with NO_EMUL64
-+ */
-+#define PFM_CORE_PMC_VAL	(1ULL<<20)
-+#define PFM_CORE_NO64		(1ULL<<20)
-+
-+#define PFM_CORE_NA { .reg_type = PFM_REGT_NA}
-+
-+#define PFM_CORE_CA(m, c, t) \
-+	{ \
-+	  .addrs[0] = m, \
-+	  .ctr = c, \
-+	  .reg_type = t \
-+	}
-+/*
-+ * physical addresses of MSR controlling the perfevtsel and counter registers
-+ */
-+struct pfm_arch_pmu_info pfm_core_pmu_info={
-+	.pmc_addrs = {
-+		PFM_CORE_CA(MSR_CORE_PERF_GLOBAL_CTRL, 0, PFM_REGT_EN),
-+		PFM_CORE_CA(MSR_IA32_PEBS_ENABLE, 0, PFM_REGT_EN),
-+		PFM_CORE_CA(MSR_CORE_PERF_FIXED_CTR_CTRL, 0, PFM_REGT_OTH),
-+		PFM_CORE_NA,
-+		PFM_CORE_CA(MSR_P6_EVNTSEL0, 4, PFM_REGT_OTH),
-+		PFM_CORE_CA(MSR_P6_EVNTSEL1, 5, PFM_REGT_OTH)
-+	},
-+	.pmd_addrs = {
-+		PFM_CORE_CA(MSR_CORE_PERF_FIXED_CTR0, 0, PFM_REGT_CTR),
-+		PFM_CORE_CA(MSR_CORE_PERF_FIXED_CTR1, 0, PFM_REGT_CTR),
-+		PFM_CORE_CA(MSR_CORE_PERF_FIXED_CTR2, 0, PFM_REGT_CTR),
-+		PFM_CORE_NA,
-+		PFM_CORE_CA(MSR_P6_PERFCTR0, 0, PFM_REGT_CTR),
-+		PFM_CORE_CA(MSR_P6_PERFCTR1, 0, PFM_REGT_CTR)
-+	},
-+	.pebs_ctr_idx = 4, /* IA32_PMC0 */
-+	.pmu_style = PFM_X86_PMU_CORE
-+};
-+
-+/*
-+ * force PMI bit on
-+ */
-+#define PFM_CORE_CTR_CTRL_VAL  (0x444ULL)
-+#define PFM_CORE_CTR_CTRL_RSVD (~0xfffULL)
-+
-+static struct pfm_reg_desc pfm_core_pmc_desc[]={
-+/* pmc0  */ { .type = PFM_REG_I,
-+	      .desc = "GLOBAL_CTRL",
-+	      .dfl_val = 0,
-+	      .rsvd_msk = 0xfffffff8fffffffcULL,
-+	      .no_emul64_msk = 0,
-+	      .hw_addr = MSR_CORE_PERF_GLOBAL_CTRL
-+	    },
-+/* pmc1  */ { .type = PFM_REG_I,
-+	      .desc = "PEBS_ENABLE",
-+	      .dfl_val = 0,
-+	      .rsvd_msk = 0xfffffffffffffffeULL,
-+	      .no_emul64_msk = 0,
-+	      .hw_addr = MSR_IA32_PEBS_ENABLE
-+	    },
-+/* pmc2  */ { .type = PFM_REG_W,
-+	      .desc = "FIXED_CTRL",
-+	      .dfl_val = 0x888ULL,
-+	      .rsvd_msk = 0xfffffffffffff444ULL,
-+	      .no_emul64_msk = 0,
-+	      .hw_addr = MSR_CORE_PERF_FIXED_CTR_CTRL
-+	    },
-+/* pmc3  */ PMX_NA,
-+/* pmc4  */ {
-+	      .type = PFM_REG_I64,
-+	      .desc = "PERFEVTSEL0",
-+	      .dfl_val = PFM_CORE_PMC_VAL,
-+	      .rsvd_msk = PFM_CORE_PMC_RSVD,
-+	      .no_emul64_msk = PFM_CORE_NO64,
-+	      .hw_addr = MSR_P6_EVNTSEL0
-+	    },
-+/* pmc5  */ {
-+	      .type = PFM_REG_W64,
-+	      .desc = "PERFEVTSEL1",
-+	      .dfl_val = PFM_CORE_PMC_VAL,
-+	      .rsvd_msk = PFM_CORE_PMC_RSVD,
-+	      .no_emul64_msk = PFM_CORE_NO64,
-+	      .hw_addr = MSR_P6_EVNTSEL1
-+	    }
-+};
-+
-+#define PFM_CORE_D(n) PMD_D(PFM_REG_C, "PMC"#n, MSR_P6_PERFCTR0+n)
-+#define PFM_CORE_FD(n) PMD_D(PFM_REG_C, "FIXED_CTR"#n, MSR_CORE_PERF_FIXED_CTR0+n)
-+
-+static int nmi_uses_pmc0;
-+
-+static struct pfm_reg_desc pfm_core_pmd_desc[]={
-+/* pmd0  */ PFM_CORE_FD(0),
-+/* pmd1  */ PFM_CORE_FD(1),
-+/* pmd2  */ PFM_CORE_FD(2),
-+/* pmd3  */ PMX_NA,
-+/* pmd4  */ PFM_CORE_D(0),
-+/* pmd5  */ PFM_CORE_D(1)
-+};
-+#define PFM_CORE_NUM_PMCS	ARRAY_SIZE(pfm_core_pmc_desc)
-+#define PFM_CORE_NUM_PMDS	ARRAY_SIZE(pfm_core_pmd_desc)
-+
-+static struct pfm_pmu_config pfm_core_pmu_conf;
-+
-+static int pfm_core_detect_nmi(void)
-+{
-+	unsigned int i;
-+	int cnt, disabled = -1;
-+
-+	PFM_INFO("nmi_watchdog=%d nmi_active=%d force_nmi=%d",
-+		nmi_watchdog, atomic_read(&nmi_active), force_nmi);
-+
-+
-+	/* NMI not using PMU */
-+	if (nmi_watchdog != NMI_LOCAL_APIC) {
-+		if (force_nmi)
-+			pfm_core_pmu_info.flags |= PFM_X86_FL_USE_NMI;
-+		return 0;
-+	}
-+
-+	/*
-+	 * assume NMI does not used the fixed counter. In any case, it cannot
-+	 * because FIXED_CTR_CTRL is common to all fixed counters, so it would be
-+	 * hard to share the other 2 fixed counters with somebody else.
-+	 */
-+
-+	/* test IA32_PMC0, IA32_PMC1 */
-+	for (i=4; i < 6; i++) {
-+		if (avail_to_resrv_perfctr_nmi(pfm_core_pmd_desc[i].hw_addr))
-+			continue;
-+		if (disabled != -1) {
-+			PFM_INFO("more than one counter used by NMI, not supported");
-+			return -1;
-+		}
-+		PFM_INFO("NMI watchdog using %s/%s, disabling them for perfmon",
-+			pfm_core_pmd_desc[i].desc,
-+			pfm_core_pmc_desc[i].desc);
-+
-+		pfm_core_pmc_desc[i].type = PFM_REG_NA;
-+		pfm_core_pmu_info.pmc_addrs[i].reg_type = PFM_REGT_EN;
-+
-+		pfm_core_pmd_desc[i].type = PFM_REG_NA;
-+		pfm_core_pmu_info.pmd_addrs[i].reg_type = PFM_REGT_NA;
-+		disabled = i;
-+	}
-+	/*
-+	 * if NMI uses IA32_PMC0 or IA32_PMC1, we cannot use global controls
-+	 * to start stop all counters. We disabled the global controls and
-+	 * mark generic counters as each having enbale bits
-+	 */
-+
-+	/* disable GLOBAL_CTRL */
-+	pfm_core_pmc_desc[0].type = PFM_REG_NA;
-+	pfm_core_pmu_info.pmc_addrs[0].reg_type = PFM_REGT_NA;
-+
-+	cnt = disabled == 4 ? 5 : 4;
-+
-+	/* mark fixed counters as having enable bit. All 3 controlled together */
-+	pfm_core_pmu_info.pmc_addrs[2].reg_type = PFM_REGT_EN;/* FIXED_CTR_CTRL */
-+
-+	/* mark left-over counter as having enable bit */
-+	pfm_core_pmu_info.pmc_addrs[cnt].reg_type = PFM_REGT_EN;
-+
-+	if (disabled == 4)
-+		nmi_uses_pmc0 = 1;
-+
-+	pfm_core_pmu_info.flags |= PFM_X86_FL_USE_NMI;
-+
-+	return 0;
-+}
-+
-+static int pfm_core_probe_pmu(void)
-+{
-+	int ret;
-+
-+	/*
-+	 * only works on Intel processors
-+	 */
-+	if (cpu_data->x86_vendor != X86_VENDOR_INTEL) {
-+		PFM_INFO("not running on Intel processor");
-+		return -1;
-+	}
-+
-+	if (cpu_data->x86 != 6 || cpu_data->x86_model != 15)
-+		return -1;
-+
-+	if (!cpu_has_apic) {
-+		PFM_INFO("no Local APIC, unsupported");
-+		return -1;
-+	}
-+
-+	ret = pfm_core_detect_nmi();
-+	if (ret == -1)
-+		return -1;
-+
-+	/*
-+	 * verify that DS/PEBS support is present
-+	 */
-+	if (cpu_has_ds) {
-+		PFM_INFO("Data Save Area (DS) supported");
-+
-+		pfm_core_pmu_info.flags |= PFM_X86_FL_PMU_DS;
-+
-+		if (cpu_has_pebs && nmi_uses_pmc0 == 0) {
-+			pfm_core_pmu_info.flags |= PFM_X86_FL_PMU_PEBS;
-+			PFM_INFO("PEBS supported, enabled");
-+		} else {
-+			if (cpu_has_pebs && nmi_uses_pmc0)
-+				PFM_INFO("PEBS supported, but disabled because NMI uses IA32_PMC0");
-+			pfm_core_pmc_desc[1].type = PFM_REG_NA;
-+			pfm_core_pmu_info.pmc_addrs[1].reg_type = PFM_REGT_NA;
-+		}
-+	} else {
-+		PFM_INFO("PEBS not supported");
-+		pfm_core_pmc_desc[1].type = PFM_REG_NA;
-+		pfm_core_pmu_info.pmc_addrs[1].reg_type = PFM_REGT_NA;
-+	}
-+	return 0;
-+}
-+
-+static int pfm_core_pmc_check(struct pfm_context *ctx,
-+			     struct pfm_event_set *set,
-+			     struct pfarg_pmc *req)
-+{
-+	struct pfm_arch_context *ctx_arch;
-+
-+	ctx_arch = pfm_ctx_arch(ctx);
-+
-+	/*
-+	 * we come here only for the PMC that are forbidden
-+	 * when PEBS is enabled
-+	 */
-+	return ctx_arch->flags & PFM_X86_USE_PEBS ?  -EINVAL : 0;
-+}
-+
-+/*
-+ * Counters may have model-specific width. Yet the documentation says
-+ * that only the lower 32 bits can be written to. bits [w-32]
-+ * are sign extensions of bit 31. As such the effective width of
-+ * a counter is 31 bits only.
-+ */
-+static struct pfm_pmu_config pfm_core_pmu_conf={
-+	.pmu_name = "Intel Core",
-+	.pmd_desc = pfm_core_pmd_desc,
-+	.counter_width = 31,
-+	.num_pmc_entries = PFM_CORE_NUM_PMCS,
-+	.num_pmd_entries = PFM_CORE_NUM_PMDS,
-+	.pmc_write_check = pfm_core_pmc_check,
-+	.pmc_desc = pfm_core_pmc_desc,
-+	.probe_pmu = pfm_core_probe_pmu,
-+	.version = "1.0",
-+	.flags = PFM_PMU_BUILTIN_FLAG,
-+	.owner = THIS_MODULE,
-+	.arch_info = &pfm_core_pmu_info
-+};
-+	
-+static int __init pfm_core_pmu_init_module(void)
-+{
-+	return pfm_pmu_register(&pfm_core_pmu_conf);
-+}
-+
-+static void __exit pfm_core_pmu_cleanup_module(void)
-+{
-+	pfm_pmu_unregister(&pfm_core_pmu_conf);
-+}
-+
-+module_init(pfm_core_pmu_init_module);
-+module_exit(pfm_core_pmu_cleanup_module);
---- linux-2.6.22.base/arch/x86_64/perfmon/perfmon_k8.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/arch/x86_64/perfmon/perfmon_k8.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,360 @@
-+/*
-+ * This file contains the PMU description for the Ahtlon64 and Opteron64
-+ * processors. It supports 32 and 64-bit modes.
-+ *
-+ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ * More information about perfmon available at:
++ * 	http://perfmon2.sf.net
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -447,418 +124,957 @@ include/asm-i386/perfmon_api.h:
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
 +  */
-+#include <linux/module.h>
++#include <linux/kernel.h>
 +#include <linux/perfmon.h>
-+#include <linux/vmalloc.h>
-+#include <asm/nmi.h>
-+
-+MODULE_AUTHOR("Stephane Eranian <eranian@hpl.hp.com>");
-+MODULE_DESCRIPTION("Athlon/Opteron 64 (K8) PMU description table");
-+MODULE_LICENSE("GPL");
-+
-+static int force_nmi;
-+MODULE_PARM_DESC(force_nmi, "bool: force use of NMI for PMU interrupt");
-+module_param(force_nmi, bool, 0600);
-+
-+static struct pfm_arch_pmu_info pfm_k8_pmu_info={
-+	.pmc_addrs = {
-+		{{MSR_K7_EVNTSEL0, 0}, 0, PFM_REGT_EN},
-+		{{MSR_K7_EVNTSEL1, 0}, 1, PFM_REGT_EN},
-+		{{MSR_K7_EVNTSEL2, 0}, 2, PFM_REGT_EN},
-+		{{MSR_K7_EVNTSEL3, 0}, 3, PFM_REGT_EN},
-+	},
-+	.pmd_addrs = {
-+		{{MSR_K7_PERFCTR0, 0}, 0, PFM_REGT_CTR},
-+		{{MSR_K7_PERFCTR1, 0}, 0, PFM_REGT_CTR},
-+		{{MSR_K7_PERFCTR2, 0}, 0, PFM_REGT_CTR},
-+		{{MSR_K7_PERFCTR3, 0}, 0, PFM_REGT_CTR},
-+	},
-+	.pmu_style = PFM_X86_PMU_P6
-+};
++#include <linux/fs.h>
++#include <linux/ptrace.h>
++#include <asm/uaccess.h>
 +
 +/*
-+ * reserved bits must be zero
++ * Context locking rules:
++ * ---------------------
++ * 	- any thread with access to the file descriptor of a context can
++ * 	  potentially issue perfmon calls
 + *
-+ * - upper 32 bits are reserved
-+ * - APIC enable bit is reserved (forced to 1)
-+ * - bit 21 is reserved
++ * 	- calls must be serialized to guarantee correctness
++ *
++ * 	- as soon as a context is attached to a thread or CPU, it may be
++ * 	  actively monitoring. On some architectures, such as IA-64, this
++ * 	  is true even though the pfm_start() call has not been made. This
++ * 	  comes from the fact that on some architectures, it is possible to
++ * 	  start/stop monitoring from userland.
++ *
++ *	- If monitoring is active, then there can PMU interrupts. Because
++ *	  context accesses must be serialized, the perfmon system calls
++ *	  must mask interrupts as soon as the context is attached.
++ *
++ *	- perfmon system calls that operate with the context unloaded cannot
++ *	  assume it is actually unloaded when they are called. They first need
++ *	  to check and for that they need interrupts masked. Then if the context
++ *	  is actually unloaded, they can unmask interrupts.
++ *
++ *	- interrupt masking holds true for other internal perfmon functions as
++ *	  well. Except for PMU interrupt handler because those interrupts cannot
++ *	  be nested.
++ *
++ * 	- we mask ALL interrupts instead of just the PMU interrupt because we
++ * 	  also need to protect against timer interrupts which could trigger
++ * 	  a set switch.
 + */
-+#define PFM_K8_RSVD	((~((1ULL<<32)-1)) \
-+			| (1ULL<<20)	\
-+			| (1ULL<<21))
 +
 +/*
-+ * force Local APIC interrupt on overflow
++ * cannot attach if :
++ * 	- kernel task
++ * 	- task not owned by caller
++ * 	- task is dead or zombie
++ * 	- cannot use blocking notification when self-monitoring
 + */
-+#define PFM_K8_VAL	(1ULL<<20)
-+#define PFM_K8_NO64	(1ULL<<20)
-+
-+static struct pfm_reg_desc pfm_k8_pmc_desc[]={
-+/* pmc0  */ PMC_D(PFM_REG_I64, "PERFSEL0", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL0),
-+/* pmc1  */ PMC_D(PFM_REG_I64, "PERFSEL1", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL1),
-+/* pmc2  */ PMC_D(PFM_REG_I64, "PERFSEL2", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL2),
-+/* pmc3  */ PMC_D(PFM_REG_I64, "PERFSEL3", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL3),
-+};
-+#define PFM_AMD_NUM_PMCS ARRAY_SIZE(pfm_k8_pmc_desc)
-+
-+static struct pfm_reg_desc pfm_k8_pmd_desc[]={
-+/* pmd0  */ PMD_D(PFM_REG_C, "PERFCTR0", MSR_K7_PERFCTR0),
-+/* pmd1  */ PMD_D(PFM_REG_C, "PERFCTR1", MSR_K7_PERFCTR1),
-+/* pmd2  */ PMD_D(PFM_REG_C, "PERFCTR2", MSR_K7_PERFCTR2),
-+/* pmd3  */ PMD_D(PFM_REG_C, "PERFCTR3", MSR_K7_PERFCTR3),
-+};
-+#define PFM_AMD_NUM_PMDS ARRAY_SIZE(pfm_k8_pmd_desc)
-+
-+static struct pfm_context **pfm_nb_sys_owners;
-+static struct pfm_context *pfm_nb_task_owner;
-+
-+static struct pfm_pmu_config pfm_k8_pmu_conf;
-+
-+/*
-+ * There can only one user per socket for the Northbridge (NB) events
-+ * so we enforce mutual exclusion as follows:
-+ * 	- per-thread : only one context machine-wide can use NB events
-+ * 	- system-wide: only one context per processor socket
-+ *
-+ * Exclusion is enforced at:
-+ * 	- pfm_load_context()
-+ * 	- pfm_write_pmcs() for attached contexts
-+ *
-+ * Exclusion is released at:
-+ * 	- pfm_unload_context() or any calls that implicitely uses it
-+ *
-+ * return:
-+ * 	0  : successfully acquire NB access
-+ * 	< 0:  errno, failed to acquire NB access
-+ */
-+static int pfm_k8_acquire_nb(struct pfm_context *ctx)
++static int pfm_task_incompatible(struct pfm_context *ctx, struct task_struct *task)
 +{
-+	struct pfm_context **entry, *old;
-+	int proc_id;
++	/*
++	 * no kernel task or task not owned by caller
++	 */
++	if (!task->mm) {
++		PFM_DBG("cannot attach to kernel thread [%d]", task->pid);
++		return -EPERM;
++	}
 +
-+#ifdef CONFIG_SMP
-+	proc_id = topology_physical_package_id(smp_processor_id());
-+#else
-+	proc_id = 0;
-+#endif
++	/*
++	 * cannot block in self-monitoring mode
++	 */
++	if (ctx->flags.block && task == current) {
++		PFM_DBG("cannot load a in blocking mode on self for [%d]",
++			task->pid);
++		return -EINVAL;
++	}
 +
-+	if (ctx->flags.system)
-+		entry = &pfm_nb_sys_owners[proc_id];
-+	else
-+		entry = &pfm_nb_task_owner;
-+
-+	old = cmpxchg(entry, NULL, ctx);	
-+ 	if (!old) {
-+		if (ctx->flags.system)
-+			PFM_DBG("acquired Northbridge event access on socket %u", proc_id);
-+		else
-+			PFM_DBG("acquired Northbridge event access globally");
-+	} else if (old != ctx) {
-+		if (ctx->flags.system)
-+			PFM_DBG("NorthBridge event conflict on socket %u", proc_id);
-+		else
-+			PFM_DBG("global NorthBridge event conflict");
++	if (task->exit_state == EXIT_ZOMBIE || task->exit_state == EXIT_DEAD) {
++		PFM_DBG("cannot attach to zombie/dead task [%d]", task->pid);
 +		return -EBUSY;
 +	}
 +	return 0;
 +}
 +
 +/*
-+ * invoked from pfm_write_pmcs() when pfm_nb_sys_owners is not NULL,i.e.,
-+ * when we have detected a multi-core processor.
++ * This function  is used in per-thread mode only AND when not
++ * self-monitoring. It finds the task to monitor and checks
++ * that the caller has persmissions to attach. It also checks
++ * that the task is stopped via ptrace so that we can safely
++ * modify its state.
 + *
-+ * context is locked, interrupts are masked
++ * task refcount is increment when succesful.
 + */
-+static int pfm_k8_pmc_write_check(struct pfm_context *ctx,
-+			     struct pfm_event_set *set,
-+			     struct pfarg_pmc *req)
++int pfm_get_task(struct pfm_context *ctx, pid_t pid, struct task_struct **task)
 +{
-+	unsigned int event;
-+	/*
-+	 * delay checking NB event until we load the context
-+	 */
-+	if (ctx->state == PFM_CTX_UNLOADED)
-+		return 0;
++	struct task_struct *p;
++	int ret = 0, ret1 = 0;
 +
 +	/*
-+	 * check event is NB event
++	 * When attaching to another thread we must ensure
++	 * that the thread is actually stopped. Just like with
++	 * perfmon system calls, we enforce that the thread
++	 * be ptraced and STOPPED by using ptrace_check_attach().
++	 *
++	 * As a consequence, only the ptracing parent can actually
++	 * attach a context to a thread. Obviously, this constraint
++	 * does not exist for self-monitoring threads.
++	 *
++	 * We use ptrace_may_attach() to check for permission.
++	 * No permission checking is needed for self monitoring.
 +	 */
-+	event = (unsigned int)(req->reg_value & 0xff);
-+	if (event < 0xee)
-+		return 0;
++	read_lock(&tasklist_lock);
 +
-+	return pfm_k8_acquire_nb(ctx);
++	p = find_task_by_pid(pid);
++	if (p)
++		get_task_struct(p);
++
++	read_unlock(&tasklist_lock);
++
++	if (p == NULL)
++		return -ESRCH;
++
++	ret = -EPERM;
++
++	/*
++	 * returns 0 if cannot attach
++	 */
++	ret1 = ptrace_may_attach(p);
++	if (ret1)
++		ret = ptrace_check_attach(p, 0);
++
++	PFM_DBG("may_attach=%d check_attach=%d", ret1, ret);
++
++	if (ret || !ret1)
++		goto error;
++
++	ret = pfm_task_incompatible(ctx, p);
++	if (ret)
++		goto error;
++
++	*task = p;
++
++	return 0;
++error:
++	if (!(ret1 || ret))
++		ret = -EPERM;
++
++	put_task_struct(p);
++
++	return ret;
 +}
 +
-+/*
-+ * invoked on pfm_load_context().
-+ * context is locked, interrupts are masked
-+ */
-+static int pfm_k8_load_context(struct pfm_context *ctx)
++int pfm_check_task_state(struct pfm_context *ctx, int check_mask,
++			 unsigned long *flags)
 +{
-+	struct pfm_event_set *set;
-+	unsigned int i, n;
++	struct task_struct *task;
++	unsigned long local_flags, new_flags;
++	int state, ret;
++
++recheck:
++	/*
++	 * task is NULL for system-wide context
++	 */
++	task = ctx->task;
++	state = ctx->state;
++	local_flags = *flags;
++
++	PFM_DBG("state=%d check_mask=0x%x", state, check_mask);
++	/*
++	 * if the context is detached, then we do not touch
++	 * hardware, therefore there is not restriction on when we can
++	 * access it.
++	 */
++	if (state == PFM_CTX_UNLOADED)
++		return 0;
++	/*
++	 * no command can operate on a zombie context.
++	 * A context becomes zombie when the file that identifies
++	 * it is closed while the context is still attached to the
++	 * thread it monitors.
++	 */
++	if (state == PFM_CTX_ZOMBIE)
++		return -EINVAL;
 +
 +	/*
-+	 * scan all sets for NB events
++	 * at this point, state is PFM_CTX_LOADED or PFM_CTX_MASKED
 +	 */
-+	list_for_each_entry(set, &ctx->list, list) {
-+		n = set->nused_pmcs;
-+		for(i=0; n; i++) {
-+			if (!test_bit(i, ulp(set->used_pmcs)))
-+				continue;
-+			if ((set->pmcs[i] & 0xff) >= 0xee)
-+				goto found;
-+			n--;
++
++	/*
++	 * some commands require the context to be unloaded to operate
++	 */
++	if (check_mask & PFM_CMD_UNLOADED)  {
++		PFM_DBG("state=%d, cmd needs context unloaded", state);
++		return -EBUSY;
++	}
++
++	/*
++	 * self-monitoring always ok.
++	 */
++	if (task == current)
++		return 0;
++
++	/*
++	 * for syswide, the calling thread must be running on the cpu
++	 * the context is bound to. There cannot be preemption as we
++	 * check with interrupts disabled.
++	 */
++	if (ctx->flags.system) {
++		if (ctx->cpu != smp_processor_id())
++			return -EBUSY;
++		return 0;
++	}
++
++	/*
++	 * at this point, monitoring another thread
++	 */
++
++	/*
++	 * the pfm_unload_context() command is allowed on masked context
++	 */
++	if (state == PFM_CTX_MASKED && !(check_mask & PFM_CMD_UNLOAD))
++		return 0;
++
++	/*
++	 * When we operate on another thread, we must wait for it to be
++	 * stopped and completely off any CPU as we need to access the
++	 * PMU state (or machine state).
++	 *
++	 * A thread can be put in the STOPPED state in various ways
++	 * including PTRACE_ATTACH, or when it receives a SIGSTOP signal.
++	 * We enforce that the thread must be ptraced, so it is stopped
++	 * AND it CANNOT Wake up while we operate on it because this
++	 * would require an action for the ptracing parent which is the
++	 * thread that is calling this function.
++	 *
++	 * The dependency on ptrace, imposes that only the ptracing
++	 * parent can issue command on a thread. This is unfortunate
++	 * but we do not know of a better way of doing this.
++	 */
++	if (check_mask & PFM_CMD_STOPPED) {
++
++		spin_unlock_irqrestore(&ctx->lock, local_flags);
++
++		/*
++		 * check that the thread is ptraced AND STOPPED
++		 */
++		ret = ptrace_check_attach(task, 0);
++
++		spin_lock_irqsave(&ctx->lock, new_flags);
++
++		/*
++		 * flags may be different than when we released the lock
++		 */
++		*flags = new_flags;
++
++		if (ret)
++			return ret;
++		/*
++		 * we must recheck to verify if state has changed
++		 */
++		if (ctx->state != state) {
++			PFM_DBG("old_state=%d new_state=%d",
++				state,
++				ctx->state);
++			goto recheck;
 +		}
 +	}
 +	return 0;
-+found:
-+	return pfm_k8_acquire_nb(ctx);
 +}
 +
-+/*
-+ * invoked on pfm_unload_context()
-+ */
-+static int pfm_k8_unload_context(struct pfm_context *ctx)
++int pfm_get_args(void __user *ureq, size_t sz, size_t lsz, void *laddr,
++		 void **req, void **ptr_free)
 +{
-+	struct pfm_context **entry, *old;
-+	int proc_id;
-+
-+#ifdef CONFIG_SMP
-+	proc_id = topology_physical_package_id(smp_processor_id());
-+#else
-+	proc_id = 0;
-+#endif
++	void *addr;
 +
 +	/*
-+	 * unload always happens on the monitored CPU in system-wide
++	 * check if we can get by with stack buffer
 +	 */
-+	if (ctx->flags.system)
-+		entry = &pfm_nb_sys_owners[proc_id];
-+	else
-+		entry = &pfm_nb_task_owner;
-+
-+	old = cmpxchg(entry, ctx, NULL);	
-+	if (old == ctx) {
-+		if (ctx->flags.system)
-+			PFM_DBG("released NorthBridge on socket %u", proc_id);
-+		else
-+			PFM_DBG("released NorthBridge events globally");
++	if (sz <= lsz) {
++		*req = laddr;
++		*ptr_free = NULL;
++		return copy_from_user(laddr, ureq, sz) ? -EFAULT : 0;
 +	}
++
++	if (unlikely(sz > pfm_controls.arg_mem_max)) {
++		PFM_DBG("argument too big %zu max=%zu",
++			sz,
++			pfm_controls.arg_mem_max);
++		return -E2BIG;
++	}
++
++	addr = kmalloc(sz, GFP_KERNEL);
++	if (unlikely(addr == NULL))
++		return -ENOMEM;
++
++	if (copy_from_user(addr, ureq, sz)) {
++		kfree(addr);
++		return -EFAULT;
++	}
++	*req = *ptr_free = addr;
++
 +	return 0;
 +}
 +
-+/*
-+ * detect if we need to active NorthBridge event access control
-+ */
-+static int pfm_k8_setup_nb_event_control(void)
++int pfm_get_smpl_arg(char __user *fmt_uname, void __user *fmt_uarg, size_t usize, void **arg,
++		     struct pfm_smpl_fmt **fmt)
 +{
-+	unsigned int c, n = 0;
-+	unsigned int max_phys = 0;
++	struct pfm_smpl_fmt *f;
++	char *fmt_name;
++	void *addr = NULL;
++	size_t sz;
++	int ret;
 +
-+#ifdef CONFIG_SMP
-+	for_each_present_cpu(c) {
-+		if (cpu_data[c].phys_proc_id > max_phys)
-+			max_phys = cpu_data[c].phys_proc_id;
-+	}
-+#else
-+	max_phys = 0;
-+#endif
-+	if (max_phys > 255) {
-+		PFM_INFO("socket id %d is too big to handle", max_phys);
++	fmt_name = getname(fmt_uname);
++	if (!fmt_name) {
++		PFM_DBG("getname failed");
 +		return -ENOMEM;
 +	}
 +
-+	n = max_phys + 1;
-+	if (n < 2)
-+		return 0;
-+
-+	pfm_nb_sys_owners = vmalloc(n * sizeof(*pfm_nb_sys_owners));
-+	if (!pfm_nb_sys_owners)
-+		return -ENOMEM;
-+
-+	memset(pfm_nb_sys_owners, 0, n * sizeof(*pfm_nb_sys_owners));
-+	pfm_nb_task_owner = NULL;
-+
 +	/*
-+	 * activate write-checker for PMC registers
++	 * find fmt and increase refcount
 +	 */
-+	for(c=0; c < PFM_AMD_NUM_PMCS; c++) {
-+		pfm_k8_pmc_desc[c].type |= PFM_REG_WC;
-+	}
++	f = pfm_smpl_fmt_get(fmt_name);
 +
-+	pfm_k8_pmu_conf.load_context = pfm_k8_load_context;
-+	pfm_k8_pmu_conf.unload_context = pfm_k8_unload_context;
-+	pfm_k8_pmu_conf.pmc_write_check = pfm_k8_pmc_write_check;
++	putname(fmt_name);
 +
-+	PFM_INFO("NorthBridge event access control enabled");
-+
-+	return 0;
-+}
-+
-+static int pfm_k8_detect_nmi(void)
-+{
-+	unsigned int i;
-+
-+	if (nmi_watchdog != NMI_LOCAL_APIC) {
-+		if (force_nmi)
-+			pfm_k8_pmu_info.flags |= PFM_X86_FL_USE_NMI;
-+		return 0;
++	if (f == NULL) {
++		PFM_DBG("buffer format not found");
++		return -EINVAL;
 +	}
 +
 +	/*
-+	 * assume NMI watchdog is initialized before PMU description module
-+	 * auto-detect which perfctr/eventsel is used by NMI watchdog
++	 * expected format argument size
 +	 */
-+	for (i=0; i < PFM_AMD_NUM_PMDS; i++) {
-+		if (avail_to_resrv_perfctr_nmi(pfm_k8_pmd_desc[i].hw_addr))
-+			continue;
-+
-+		PFM_INFO("NMI watchdog using %s/%s, disabling for perfmon",
-+				pfm_k8_pmc_desc[i].desc,
-+				pfm_k8_pmd_desc[i].desc);
-+
-+		pfm_k8_pmc_desc[i].type = PFM_REG_NA;
-+		pfm_k8_pmd_desc[i].type = PFM_REG_NA;
-+		pfm_k8_pmu_info.pmc_addrs[i].reg_type = PFM_REGT_NA;
-+		pfm_k8_pmu_info.pmd_addrs[i].reg_type = PFM_REGT_NA;
-+	}
-+	pfm_k8_pmu_info.flags |= PFM_X86_FL_USE_NMI;
-+	return 0;
-+}
-+
-+static int pfm_k8_probe_pmu(void)
-+{
-+	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD) {
-+		PFM_INFO("not an AMD processor");
-+		return -1;
-+	}
-+
-+	if (current_cpu_data.x86 != 15) {
-+		PFM_INFO("unsupported family=%d", current_cpu_data.x86);
-+		return -1;
-+	}
++	sz = f->fmt_arg_size;
 +
 +	/*
-+	 * check for local APIC (required)
++	 * check user size matches expected size
++	 * usize = -1 is for IA-64 backward compatibility
 +	 */
-+	if (!cpu_has_apic) {
-+		PFM_INFO("no local APIC, unsupported");
-+		return -1;
++	ret = -EINVAL;
++	if (sz != usize && usize != -1) {
++		PFM_DBG("invalid arg size %zu, format expects %zu",
++			usize, sz);
++		goto error;
 +	}
-+	if (pfm_k8_detect_nmi()) {
-+		PFM_INFO("NMI detection failed");
-+		return -1;
-+	}
-+	if (current_cpu_data.x86_max_cores > 1)
-+		pfm_k8_setup_nb_event_control();
-+
-+	return 0;
-+}
-+
-+static struct pfm_pmu_config pfm_k8_pmu_conf={
-+	.pmu_name = "AMD K8",
-+	.counter_width = 47,
-+	.pmd_desc = pfm_k8_pmd_desc,
-+	.pmc_desc = pfm_k8_pmc_desc,
-+	.num_pmc_entries = PFM_AMD_NUM_PMCS,
-+	.num_pmd_entries = PFM_AMD_NUM_PMDS,
-+	.probe_pmu = pfm_k8_probe_pmu,
-+	.version = "1.1",
-+	.arch_info = &pfm_k8_pmu_info,
-+	.flags = PFM_PMU_BUILTIN_FLAG,
-+	.owner = THIS_MODULE
-+};
 +	
-+static int __init pfm_k8_pmu_init_module(void)
-+{
-+	return pfm_pmu_register(&pfm_k8_pmu_conf);
++	if (sz) {
++		ret = -ENOMEM;
++		addr = kmalloc(sz, GFP_KERNEL);
++		if (addr == NULL)
++			goto error;
++
++		ret = -EFAULT;
++		if (copy_from_user(addr, fmt_uarg, sz))
++			goto error;
++	}
++	*arg = addr;
++	*fmt = f;
++	return 0;
++
++error:
++	kfree(addr);
++	pfm_smpl_fmt_put(f);
++	return ret;
 +}
 +
-+static void __exit pfm_k8_pmu_cleanup_module(void)
++/*
++ * unlike the other perfmon system calls, this one return a file descriptor
++ * or a value < 0 in case of error, very much like open() or socket()
++ */
++asmlinkage long sys_pfm_create_context(struct pfarg_ctx __user *ureq,
++				       char __user *fmt_name,
++				       void __user *fmt_uarg, size_t fmt_size)
 +{
-+	if (pfm_nb_sys_owners)
-+		vfree(pfm_nb_sys_owners);
++	struct pfarg_ctx req;
++	struct pfm_context *new_ctx;
++	struct pfm_smpl_fmt *fmt = NULL;
++	void *fmt_arg = NULL;
++	int ret;
 +
-+	pfm_pmu_unregister(&pfm_k8_pmu_conf);
++	if (atomic_read(&perfmon_disabled))
++		return -ENOSYS;
++
++	if (copy_from_user(&req, ureq, sizeof(req)))
++		return -EFAULT;
++
++	if (fmt_name) {
++		ret = pfm_get_smpl_arg(fmt_name, fmt_uarg, fmt_size, &fmt_arg, &fmt);
++		if (ret)
++			goto abort;
++	}
++
++	ret = __pfm_create_context(&req, fmt, fmt_arg, PFM_NORMAL, &new_ctx);
++
++	kfree(fmt_arg);
++abort:
++	return ret;
 +}
 +
-+module_init(pfm_k8_pmu_init_module);
-+module_exit(pfm_k8_pmu_cleanup_module);
---- linux-2.6.22.base/include/asm-x86_64/perfmon.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/include/asm-x86_64/perfmon.h	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,24 @@
-+/*
-+ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *
-+ * This file contains X86-64 Processor Family specific definitions
-+ * for the perfmon interface.
-+ *
-+ * This file MUST never be included directly. Use linux/perfmon.h.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+  */
-+#include <asm-i386/perfmon.h>
---- linux-2.6.22.base/include/asm-x86_64/perfmon_api.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/include/asm-x86_64/perfmon_api.h	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,24 @@
-+/*
-+ * Copyright (c) 2007 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *
-+ * This file contains x86-64 specific definitions for the perfmon
-+ * interface.
-+ *
-+ * This file MUST never be included directly. Use linux/perfmon.h.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+  */
-+#include <asm-i386/perfmon_api.h>
---- linux-2.6.22.base/include/asm-x86_64/perfmon_pebs_smpl.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/include/asm-x86_64/perfmon_pebs_smpl.h	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,19 @@
-+/*
-+ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+  */
-+#include <asm-i386/perfmon_pebs_smpl.h>
++asmlinkage long sys_pfm_write_pmcs(int fd, struct pfarg_pmc __user *ureq, int count)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	struct pfarg_pmc pmcs[PFM_PMC_STK_ARG];
++	struct pfarg_pmc *req;
++	void *fptr;
++	unsigned long flags;
++	size_t sz;
++	int ret, fput_needed;
++
++	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
++		return -EINVAL;
++
++	sz = count*sizeof(*ureq);
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	ret = pfm_get_args(ureq, sz, sizeof(pmcs), pmcs, (void **)&req, &fptr);
++	if (ret)
++		goto error;
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
++	if (!ret)
++		ret = __pfm_write_pmcs(ctx, req, count);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	if (copy_to_user(ureq, req, sz))
++		ret = -EFAULT;
++
++	/*
++	 * This function may be on the critical path.
++	 * We want to avoid the branch if unecessary.
++	 */
++	if (fptr)
++		kfree(fptr);
++error:
++	fput_light(filp, fput_needed);
++
++	return ret;
++}
++
++asmlinkage long sys_pfm_write_pmds(int fd, struct pfarg_pmd __user *ureq, int count)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	struct pfarg_pmd pmds[PFM_PMD_STK_ARG];
++	struct pfarg_pmd *req;
++	void *fptr;
++	unsigned long flags;
++	size_t sz;
++	int ret, fput_needed;
++
++	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
++		return -EINVAL;
++
++	sz = count*sizeof(*ureq);
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	ret = pfm_get_args(ureq, sz, sizeof(pmds), pmds, (void **)&req, &fptr);
++	if (ret)
++		goto error;
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
++	if (!ret)
++		ret = __pfm_write_pmds(ctx, req, count, 0);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	if (copy_to_user(ureq, req, sz))
++		ret = -EFAULT;
++
++	if (fptr)
++		kfree(fptr);
++error:
++	fput_light(filp, fput_needed);
++
++	return ret;
++}
++
++asmlinkage long sys_pfm_read_pmds(int fd, struct pfarg_pmd __user *ureq, int count)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	struct pfarg_pmd pmds[PFM_PMD_STK_ARG];
++	struct pfarg_pmd *req;
++	void *fptr;
++	unsigned long flags;
++	size_t sz;
++	int ret, fput_needed;
++
++	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
++		return -EINVAL;
++
++	sz = count*sizeof(*ureq);
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	ret = pfm_get_args(ureq, sz, sizeof(pmds), pmds, (void **)&req, &fptr);
++	if (ret)
++		goto error;
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
++	if (!ret)
++		ret = __pfm_read_pmds(ctx, req, count);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	if (copy_to_user(ureq, req, sz))
++		ret = -EFAULT;
++
++	if (fptr)
++		kfree(req);
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
++
++asmlinkage long sys_pfm_restart(int fd)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	unsigned long flags;
++	int ret, fput_needed, complete_needed;
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, 0, &flags);
++	if (!ret)
++		ret = __pfm_restart(ctx, &complete_needed);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++	/*
++	 * In per-thread mode with blocking notification, i.e.
++	 * ctx->flags.blocking=1, we need to defer issuing the
++	 * complete to unblock the blocked monitored thread.
++	 * Otherwise we have a potential deadlock due to a lock
++	 * inversion between the context lock and the task_rq_lock()
++	 * which can happen if one thread is in this call and the other
++	 * (the monitored thread) is in the context switch code.
++	 *
++	 * It is safe to access the context outside the critical section
++	 * because:
++	 * 	- we are protected by the fget_light(), so the context cannot
++	 * 	  disappear.
++	 * 	- we are protected against another thread issuing a extraneous
++	 * 	  pfm_restart() because the ctx->flags.can-restart flag has
++	 * 	  already been cleared
++	 * 	- the restart_complete field is only touched by the context init
++	 * 	  code (happens only once) or by wait_for_completion_interruptible
++	 * 	  in __pfm_handle_work(), so this is already serialized
++	 */
++	if (complete_needed)
++		complete(&ctx->restart_complete);
++
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
++
++asmlinkage long sys_pfm_stop(int fd)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	unsigned long flags;
++	int ret, fput_needed;
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
++	if (!ret)
++		ret = __pfm_stop(ctx);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
++
++asmlinkage long sys_pfm_start(int fd, struct pfarg_start __user *ureq)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	struct pfarg_start req;
++	unsigned long flags;
++	int ret, fput_needed;
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	/*
++	 * the one argument is actually optional
++	 */
++	if (ureq && copy_from_user(&req, ureq, sizeof(req)))
++		return -EFAULT;
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED, &flags);
++	if (!ret)
++		ret = __pfm_start(ctx, ureq ? &req : NULL);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
++
++asmlinkage long sys_pfm_load_context(int fd, struct pfarg_load __user *ureq)
++{
++	struct pfm_context *ctx;
++	struct task_struct *task;
++	struct file *filp;
++	unsigned long flags;
++	struct pfarg_load req;
++	int ret, fput_needed;
++
++	if (copy_from_user(&req, ureq, sizeof(req)))
++		return -EFAULT;
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	task = NULL;
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	/*
++	 * in per-thread mode (not self-monitoring), get a reference
++	 * on task to monitor. This must be done with interrupts enabled
++	 * Upon succesful return, refcount on task is increased.
++	 *
++	 * fget_light() is protecting the context.
++	 */
++	if (!ctx->flags.system) {
++		if (req.load_pid != current->pid) {
++			ret = pfm_get_task(ctx, req.load_pid, &task);
++			if (ret)
++				goto error;
++		} else
++			task = current;
++	}
++
++	/*
++	 * irqsave is required to avoid race in case context is already
++	 * loaded or with switch timeout in the case of self-monitoring
++	 */
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_UNLOADED, &flags);
++	if (!ret)
++		ret = __pfm_load_context(ctx, &req, task);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	/*
++	 * in per-thread mode (not self-monitoring), we need
++	 * to decrease refcount on task to monitor:
++	 *   - load successful: we have a reference to the task in ctx->task
++	 *   - load failed    : undo the effect of pfm_get_task()
++	 */
++	if (task && task != current)
++		put_task_struct(task);
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
++
++asmlinkage long sys_pfm_unload_context(int fd)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	unsigned long flags;
++	int ret, fput_needed;
++	int is_system, can_release = 0;
++	u32 cpu;
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++	is_system = ctx->flags.system;
++	cpu = ctx->cpu;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_STOPPED|PFM_CMD_UNLOAD, &flags);
++	if (!ret)
++		ret = __pfm_unload_context(ctx, &can_release);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	if (can_release)
++		pfm_release_session(is_system, cpu);
++
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
++
++asmlinkage long sys_pfm_create_evtsets(int fd, struct pfarg_setdesc __user *ureq, int count)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	struct pfarg_setdesc *req;
++	void *fptr;
++	unsigned long flags;
++	size_t sz;
++	int ret, fput_needed;
++
++	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
++		return -EINVAL;
++
++	sz = count*sizeof(*ureq);
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	ret = pfm_get_args(ureq, sz, 0, NULL, (void **)&req, &fptr);
++	if (ret)
++		goto error;
++
++	/*
++	 * must mask interrupts because we do not know the state of context,
++	 * could be attached and we could be getting PMU interrupts. So
++	 * we mask and lock context and we check and possibly relax masking
++	 */
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_UNLOADED, &flags);
++	if (!ret)
++		ret = __pfm_create_evtsets(ctx, req, count);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	if (copy_to_user(ureq, req, sz))
++		ret = -EFAULT;
++
++	kfree(fptr);
++
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
++
++asmlinkage long  sys_pfm_getinfo_evtsets(int fd, struct pfarg_setinfo __user *ureq, int count)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	struct pfarg_setinfo *req;
++	void *fptr;
++	unsigned long flags;
++	size_t sz;
++	int ret, fput_needed;
++
++	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
++		return -EINVAL;
++
++	sz = count*sizeof(*ureq);
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	ret = pfm_get_args(ureq, sz, 0, NULL, (void **)&req, &fptr);
++	if (ret)
++		goto error;
++
++	/*
++	 * this command operate even when context is loaded, so we need
++	 * to keep interrupts masked to avoid a race with PMU interrupt
++	 * which may switch active set
++	 */
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, 0, &flags);
++	if (!ret)
++		ret = __pfm_getinfo_evtsets(ctx, req, count);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	if (copy_to_user(ureq, req, sz))
++		ret = -EFAULT;
++
++	kfree(fptr);
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
++
++asmlinkage long sys_pfm_delete_evtsets(int fd, struct pfarg_setinfo __user *ureq, int count)
++{
++	struct pfm_context *ctx;
++	struct file *filp;
++	struct pfarg_setinfo *req;
++	void *fptr;
++	unsigned long flags;
++	size_t sz;
++	int ret, fput_needed;
++
++	if (count < 0 || count >= PFM_MAX_ARG_COUNT(ureq))
++		return -EINVAL;
++
++	sz = count*sizeof(*ureq);
++
++	filp = fget_light(fd, &fput_needed);
++	if (unlikely(filp == NULL)) {
++		PFM_DBG("invalid fd %d", fd);
++		return -EBADF;
++	}
++
++	ctx = filp->private_data;
++	ret = -EBADF;
++
++	if (unlikely(!ctx || filp->f_op != &pfm_file_ops)) {
++		PFM_DBG("fd %d not related to perfmon", fd);
++		goto error;
++	}
++
++	ret = pfm_get_args(ureq, sz, 0, NULL, (void **)&req, &fptr);
++	if (ret)
++		goto error;
++
++	/*
++	 * must mask interrupts because we do not know the state of context,
++	 * could be attached and we could be getting PMU interrupts
++	 */
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	ret = pfm_check_task_state(ctx, PFM_CMD_UNLOADED, &flags);
++	if (!ret)
++		ret = __pfm_delete_evtsets(ctx, req, count);
++
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	if (copy_to_user(ureq, req, sz))
++		ret = -EFAULT;
++
++	kfree(fptr);
++
++error:
++	fput_light(filp, fput_needed);
++	return ret;
++}
