@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXE2RNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbXE2RN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbXE2RNF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 13:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbXE2RMz
+	id S1757946AbXE2RN2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 13:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759220AbXE2RNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 13:12:55 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:41804 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbXE2RMy (ORCPT
+	Tue, 29 May 2007 13:13:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56790 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762052AbXE2RNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 13:12:54 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Tue, 29 May 2007 13:11:07 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>, Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH] FILESYSTEMS:  Delete unused "int dummy[5]" from inodes_stat_t.
-Message-ID: <Pine.LNX.4.64.0705291307001.32601@localhost.localdomain>
+	Tue, 29 May 2007 13:13:18 -0400
+Date: Tue, 29 May 2007 10:13:17 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22-rc2-mm1: SLUB
+In-Reply-To: <20070528212250.eb38af64.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0705291012120.23611@schroedinger.engr.sgi.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+ <20070528212250.eb38af64.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 28 May 2007, Randy Dunlap wrote:
 
-Delete the apparently unused array "int dummy[5]" from struct
-inodes_stat_t.
+> Has then already been posted and I missed it.. and it's fixed?  :)
+> /me hopes
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Maybe this patch wil help?
+
+SLUB: Fix NUMA / SYSFS bootstrap issue
+
+The kmem_cache_node cache is very special because it is needed for
+NUMA bootstrap. Under certain conditions (like for example if lockdep is
+enabled and significantly increases the size of spinlock_t) the structure
+may become exactly the size as one of the larger caches in the kmalloc array.
+
+That early during bootstrap we cannot perform merging properly. The unique
+id for the kmem_cache_node cache will match one of the kmalloc array. Sysfs
+will complain about a duplicate directory entry. All of this occurs while
+the console is not yet fully operational. Thus boot may appear to be
+silently failing.
+
+The kmem_cache_node cache is very special. During early boostrap the main
+allocation function is not operational yet and so we have to run our
+own small special alloc function during early boot. It is also special in
+that it is never freed.
+
+We really do not want any merging on that cache. Set the refcount -1 and
+forbid merging of slabs that have a negative refcount.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
+ mm/slub.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-  no idea what that array is for, but no one seems to care about it.
-removal compile-tested on x86 with "make allyesconfig" and nobody
-misses it (unless it's used for padding of some kind).
-
-
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 7cf0c54..dec83dd 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -44,7 +44,6 @@ extern int get_max_files(void);
- struct inodes_stat_t {
- 	int nr_inodes;
- 	int nr_unused;
--	int dummy[5];
- };
- extern struct inodes_stat_t inodes_stat;
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-05-25 18:28:42.000000000 -0700
++++ slub/mm/slub.c	2007-05-25 18:29:46.000000000 -0700
+@@ -2473,6 +2473,7 @@ void __init kmem_cache_init(void)
+ 	 */
+ 	create_kmalloc_cache(&kmalloc_caches[0], "kmem_cache_node",
+ 		sizeof(struct kmem_cache_node), GFP_KERNEL);
++	kmalloc_caches[0].refcount = -1;
+ #endif
+ 
+ 	/* Able to allocate the per node structures */
+@@ -2520,6 +2521,12 @@ static int slab_unmergeable(struct kmem_
+ 	if (s->ctor)
+ 		return 1;
+ 
++	/*
++	 * We may have set a slab to be unmergeable during bootstrap.
++	 */
++	if (s->refcount < 0)
++		return 1;
++
+ 	return 0;
+ }
+ 
