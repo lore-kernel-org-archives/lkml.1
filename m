@@ -1,75 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752659AbXE2S3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbXE2S3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752659AbXE2S3Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbXE2S3A
+	id S1755512AbXE2S3b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXE2S3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:29:00 -0400
-Received: from rtr.ca ([64.26.128.89]:3625 "EHLO mail.rtr.ca"
+	Tue, 29 May 2007 14:29:15 -0400
+Received: from daemonizer.de ([87.230.16.230]:50017 "EHLO daemonizer.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750715AbXE2S27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:28:59 -0400
-Message-ID: <465C70EA.9020300@rtr.ca>
-Date: Tue, 29 May 2007 14:28:58 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1751205AbXE2S3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:29:13 -0400
+From: Maximilian Engelhardt <maxi@daemonizer.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: b44: regression in 2.6.22 (resend)
+Date: Tue, 29 May 2007 20:28:19 +0200
+User-Agent: KMail/1.9.7
+Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Jeff Garzik <jgarzik@pobox.com>, Gary Zambrano <zambrano@broadcom.com>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20070525172431.60affaca@freepuppy> <200705282255.56490.maxi@daemonizer.de> <1180388752.3657.13.camel@chaos>
+In-Reply-To: <1180388752.3657.13.camel@chaos>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle on Intel
- chipset
-References: <465C566E.4030009@rtr.ca> <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org> <465C608E.3040303@rtr.ca> <465C64D1.3030604@rtr.ca> <alpine.LFD.0.98.0705291048020.26602@woody.linux-foundation.org> <465C6E9B.2040605@rtr.ca>
-In-Reply-To: <465C6E9B.2040605@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart2108277.LgnDDiMWG5";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705292028.23386.maxi@daemonizer.de>
+X-Spam-Score: -4.1 (----)
+X-Spam-Report: No, hits=-4.1 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.1.7-deb 
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	*  0.3 AWL AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Linus Torvalds wrote:
-..
->> There's a different (but related to all the same freezer problems) 
->> patch by Rafael Wysocki <rjw@sisk.pl>:
->>
->>     Re: [RFC][PATCH][EXPERIMENTAL] Make kernel threads nonfreezable by 
->> default
->>     Message-Id: <200705291415.31970.rjw@sisk.pl>
-> 
-> I'll hunt for Rafael's patch next.
+--nextPart2108277.LgnDDiMWG5
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Mmm.. Rafael's patch appears to be part of a large series of 15 patches,
-and it's not totally clear to me how to test just that part of it,
-so I think I'll leave things as is (working!) for now.
+On Monday 28 May 2007, Thomas Gleixner wrote:
+> On Mon, 2007-05-28 at 22:55 +0200, Maximilian Engelhardt wrote:
+> > > > I additionally built my 2.6.22-rc2-mm1 kernel without High Resoluti=
+on
+> > > > Timer, but the high ping problem is still there.
+> > >
+> > > Hmm, that's mysterious. Wild guess is that highres exposes the hidden
+> > > "feature" in a different way than rc2-mm1 does.
+> >
+> > I think the bug in 2.6.21/22-rc3 is a different one that the one in
+> > 2.6.22-rc2-mm1, but that's also only a wild guess :)
+> >
+> > I'll explain this a bit:
+> > In 2.6.21/22-rc3 is the same b44 driver that has been in the stock
+> > kernels for some time. With this driver and High Resolution Timer turned
+> > on I get problems using iperf. The problems are that the systems becomes
+> > really slow and unresponsive.  Michael Buesch thought this could be an
+> > IRQ storm which sounds logical to me. This bug did never happen to me
+> > before I startet the iperf test.
+>
+> Can you please apply
+>
+> http://www.tglx.de/projects/hrtimers/2.6.22-rc3/patch-2.6.22-rc3-hrt1.pat=
+ch
+>
+> on top of rc3 and check, whether it has any effect on your problem.
+>
+The patch didn't change anything.
 
-Here's my current fix:
+> > The other issue happens only with 2.6.22-rc2-mm1 which includes the b44
+> > ssb spilt. It's independed wether High Resolution Timer is turned on or
+> > off I always get very varying and high ping times. The iperf-test doesn=
+'t
+> > show the problems from 2.6.21/22-rc3.
+>
+> Neither with nor without highres ?
 
--- snip --
+Yes, it doesn't matter if highres is turned on or off. iperf never showed t=
+he=20
+problem from 2.6.21/22-rc3.
 
-Regarding commit 7ed92f1a149dddc3cb537ccd7441e98adac12c3e
-"USB: make the autosuspend workqueue thread freezable":
+Maxi
 
-This commit causes USB lockups on resume from Suspend-to-RAM
-on my Core2duo notebook.  Applying the patch below to revert
-the commit fixes the problem for me in 2.6.22-rc3.
+--nextPart2108277.LgnDDiMWG5
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Signed-off-by:  Mark Lord <mlord@pobox.com>
----
---- b0rken/drivers/usb/core/usb.c	2007-05-29 13:32:32.000000000 -0400
-+++ linux/drivers/usb/core/usb.c	2007-05-29 13:27:10.000000000 -0400
-@@ -205,11 +205,7 @@
- 
- static int ksuspend_usb_init(void)
- {
--	/* This workqueue is supposed to be both freezable and
--	 * singlethreaded.  Its job doesn't justify running on more
--	 * than one CPU.
--	 */
--	ksuspend_usb_wq = create_freezeable_workqueue("ksuspend_usbd");
-+	ksuspend_usb_wq = create_singlethread_workqueue("ksuspend_usbd");
- 	if (!ksuspend_usb_wq)
- 		return -ENOMEM;
- 	return 0;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGXHDHOimwv528XGERAvpZAKDu3pqAnjMzHV5odcOiR2TmhWn8bQCg2hQ/
+2ZkoY2na1eNflA4m/XLM1AA=
+=hbMa
+-----END PGP SIGNATURE-----
+
+--nextPart2108277.LgnDDiMWG5--
