@@ -1,95 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbXE2PYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbXE2PbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760775AbXE2PYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 11:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXE2PYM
+	id S1756900AbXE2PbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 11:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbXE2PbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 11:24:12 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:59911 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbXE2PYL convert rfc822-to-8bit (ORCPT
+	Tue, 29 May 2007 11:31:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:64356 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750838AbXE2PbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 11:24:11 -0400
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 11:24:11 EDT
-DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=XzNKYLxRFYK3EK2q7u6va15YW9lSAlAlMChUm8JLquD+ER54CbNO4y2aMN+8xbMzt/f6DaI4TDcQ4TWQ4oH4j4e+E3eW5b3umIBpiLCu4j15c7m48VRv3suvgnCOY039;
-X-IronPort-AV: E=Sophos;i="4.14,589,1170655200"; 
-   d="scan'208";a="275781087"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 29 May 2007 11:31:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tW3r4k847OP/IqunmZK6Ss3wxs9YMtWeZclZByeEUlYrC4LxS/1As0hhAkwD4oOgaAkaeNheGzJHtux8q1xS/D3OdrIldVTaGfkpXfhAfkMcs3diyQNS8nteDLt6gwhr0OkX21U5L78mhzuuoEMceybGUsUK2tVDlXEMX5v+o7s=
+Message-ID: <9a8748490705290831x15a552c1q75f858b5509f2f4c@mail.gmail.com>
+Date: Tue, 29 May 2007 17:31:12 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "M Macnair" <mmacnair@gmail.com>
+Subject: Re: Seeding /dev/random not working
+Cc: "Pavel Machek" <pavel@ucw.cz>, "Theodore Tso" <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <de6d2b4f0705290817g2b92f031re29c52ed9f3264a7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6.22-rc1-mm1] ehci-hcd - BUG: scheduling while atomic: rmmod/0x00000001/4568
-Date: Tue, 29 May 2007 10:14:35 -0500
-Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9524D51@ausx3mpc125.aus.amer.dell.com>
-In-Reply-To: <20070525150015.b5eaafc3.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6.22-rc1-mm1] ehci-hcd - BUG: scheduling while atomic: rmmod/0x00000001/4568
-Thread-Index: AcefGBpgDz3Tb61dTcuCogNSiM7QgQC69Qng
-References: <20070521024437.GA4751@inferi.kami.home><20070525214005.GA6925@suse.de> <20070525150015.b5eaafc3.akpm@linux-foundation.org>
-From: <Stuart_Hayes@Dell.com>
-To: <gregkh@suse.de>
-Cc: <malattia@linux.it>, <linux-kernel@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>,
-       <linux-usb-devel@lists.sourceforge.net>, <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 29 May 2007 15:14:36.0536 (UTC) FILETIME=[11C9DF80:01C7A204]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
+	 <20070529131501.GA9899@thunk.org> <20070529141456.GC5840@ucw.cz>
+	 <de6d2b4f0705290817g2b92f031re29c52ed9f3264a7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 29/05/07, M Macnair <mmacnair@gmail.com> wrote:
+> On 5/29/07, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> > > > I have two embedded boards (one ARM, one PowerPC), running two
+> > > > different versions of 2.6.  They have no hard drives, keyboards or
+> > > > mice.  They each have a NIC, but I understand these make no
+> > > > contribution to the entropy pool.
+> > > >
+> > > >     if [ -f $random_seed ]; then
+> > > >             cat $random_seed >/dev/urandom  # should seed the pool
+> > > >     fi
+> > > >     dd if=/dev/urandom of=$random_seed count=1 2>/dev/null # save some
+> > > > data from urandom for next boot
+> > > >
+> > > > I have rebooted my boards many times, and after each boot I read the
+> > > > contents of $random_seed.  Whilst it does not happen every time, the
+> > > > contents of $random_seed are /often the same/.  To give you a feel:
+> > > > rebooted 11 times, got a total of 3 different outputs.
+> > >
+> > > Ok, so this is telling me a couple of things.  First of all, if you're
+> > > only getting three outputs, it means that you don't have any
+> > > peripherals feeding entropy into the system from the boot sequence.
+> > > Without any hard drives, keyboards or mice, and a NIC whose device
+> > > driver hasn't been configured to feed entropy, you're definitely
+> > > hosed.
+> >
+> > Can we get at least time-of-boot from rtc clock to the pool? We really
+> > should not be getting identical outputs...
+>
+> Ah yes that is one thing I forgot to mention - when you turn these
+> boards off, you really do turn them off - no battery means no clock.
+> They wake up every time in 1970.
+>
+> I am planning on providing my own entropy to this system by feeding
+> /dev/random (which leads to the problem of it not working...).
 
-Sorry about that.  Would it be helpful if I verified that and sent it in
-signed off?
+Depending on how high quality randomness you need, you could just let
+your NIC driver provide entropy by changing interrupt handlers to use
+SA_SAMPLE_RANDOM.
+Sure, getting entropy that way allows an outside attacker to influence
+the pool if they can obtain a high degree of control over what data
+you recieve and when, but in most realistic scenarios it should be
+acceptable (and it's certainly better than no entropy at all).
 
-Thanks
-Stuart
-
------Original Message-----
-From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-Sent: Friday, May 25, 2007 5:00 PM
-To: Greg KH
-Cc: Mattia Dongili; Linux Kernel Mailing List; Hayes, Stuart; David
-Brownell; linux-usb-devel@lists.sourceforge.net
-Subject: Re: [2.6.22-rc1-mm1] ehci-hcd - BUG: scheduling while atomic:
-rmmod/0x00000001/4568
-
-On Fri, 25 May 2007 14:40:05 -0700 Greg KH <gregkh@suse.de> wrote:
-
-> On Mon, May 21, 2007 at 11:44:37AM +0900, Mattia Dongili wrote:
-> > Hello,
-> > 
-> > with gregkh-usb-usb-ehci-cpufreq-fix.patch removing ehci-hcd causes 
-> > the following BUG:
-> 
-> Thanks for letting me know.
-> 
-> Stuart, any help here?
-
-pretty obvious.  cpufreq_unregister_notifier() sleeps, and that patch
-causes it to be called under spinlock.
-
-Something like this...
-
---- a/drivers/usb/host/ehci-hcd.c~fix-gregkh-usb-usb-ehci-cpufreq-fix
-+++ a/drivers/usb/host/ehci-hcd.c
-@@ -452,14 +452,14 @@ static void ehci_stop (struct usb_hcd *h
- 	if (HC_IS_RUNNING (hcd->state))
- 		ehci_quiesce (ehci);
- 
--#ifdef CONFIG_CPU_FREQ
--	cpufreq_unregister_notifier(&ehci->cpufreq_transition,
--				    CPUFREQ_TRANSITION_NOTIFIER);
--#endif
- 	ehci_reset (ehci);
- 	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
- 	spin_unlock_irq(&ehci->lock);
- 
-+#ifdef CONFIG_CPU_FREQ
-+	cpufreq_unregister_notifier(&ehci->cpufreq_transition,
-+				    CPUFREQ_TRANSITION_NOTIFIER);
-+#endif
- 	/* let companion controllers work when we aren't */
- 	ehci_writel(ehci, 0, &ehci->regs->configured_flag);
- 
-_
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
