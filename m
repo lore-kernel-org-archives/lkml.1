@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760346AbXE2PTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbXE2PVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760346AbXE2PTn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 11:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXE2PTf
+	id S1760757AbXE2PVj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 11:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbXE2PV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 11:19:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:40888 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbXE2PTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 11:19:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JU435ijtQ/H8sAyRoPLWsBBBjdEZqIa5CS/GngnQNd5XRiANmU22SML9Cgsv13j095hG83pEvAAtcsERGV6FC0NW3aV/71z25AnfLqrv66tJ/72I2pPW/plcxVhTBJght5GAg1rsCKbZOt5bTTjEwzUD2BvP0tryxGFXOV3bCo0=
-Message-ID: <9d2cd630705290819m1e52059cwc749c18e284dffbe@mail.gmail.com>
-Date: Tue, 29 May 2007 17:19:32 +0200
-From: "Gregor Jasny" <gjasny@googlemail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: Linux v2.6.22-rc3
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jeff Garzik" <jgarzik@pobox.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <465BF244.5080200@gmail.com>
+	Tue, 29 May 2007 11:21:29 -0400
+Received: from mms2.broadcom.com ([216.31.210.18]:1569 "EHLO mms2.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750699AbXE2PV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 11:21:28 -0400
+X-Server-Uuid: A6C4E0AE-A7F0-449F-BAE7-7FA0D737AC76
+Subject: Re: b44: regression in 2.6.22 (resend)
+From: "Gary Zambrano" <zambrano@broadcom.com>
+To: "Maximilian Engelhardt" <maxi@daemonizer.de>
+cc: "Thomas Gleixner" <tglx@linutronix.de>, "Michael Buesch" <mb@bu3sch.de>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>,
+       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
+       "Jeff Garzik" <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <200705282255.56490.maxi@daemonizer.de>
+References: <20070525172431.60affaca@freepuppy>
+ <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
+ <200705282255.56490.maxi@daemonizer.de>
+Date: Tue, 29 May 2007 06:58:43 -0700
+Message-ID: <1180447123.17146.4.camel@dhcp-10-12-136-115.broadcom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Evolution 2.2.2 (2.2.2-5)
+X-WSS-ID: 6A429B603CG1520377-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>
-	 <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>
-	 <46599E6B.1000209@pobox.com>
-	 <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com>
-	 <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>
-	 <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com>
-	 <465AA536.6080608@gmail.com>
-	 <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com>
-	 <465BF244.5080200@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/29, Tejun Heo <htejun@gmail.com>:
-> Aieee, so the drive doesn't like the new SRST sequence.  Indan pointed
-> me to your original posting and before the reset sequence update your
-> drive was reset successfully but only after 30sec delay, right?  If you
-> change the first entry in ata_eh_reset_timeouts[] table at the top of
-> libata-eh.c to 35 * HZ, does it work?
+On Mon, 2007-05-28 at 13:55 -0700, Maximilian Engelhardt wrote:
+> On Monday 28 May 2007, Thomas Gleixner wrote:
+> > On Mon, 2007-05-28 at 19:44 +0200, Maximilian Engelhardt wrote:
+> > > > Can you please keep CONFIG_HIGH_RES_TIMERS and CONFIG_NOHZ and try the
+> > > > following combinations on the kernel command line:
+> > > >
+> > > > 1) highres=off nohz=off (should be the same as your working config)
+> > > > 2) highres=off
+> > > > 3) nohz=off
+> > >
+> > > I tested this with my 2.6.22-rc3 kernel, here are the results:
+> > >
+> > > without any special boot parameters: problem does appear
+> > > highres=off nohz=off: problem does not appear
+> > > highres=off: problem does not appear
+> > > nohz=off: problem does appear
+> >
+> > Is there any other strange behavior of the high res enabled kernel than
+> > the b44 problem ?
+> 
+> I didn't notice anything.
+> 
+> >
+> > > I additionally built my 2.6.22-rc2-mm1 kernel without High Resolution
+> > > Timer, but the high ping problem is still there.
+> >
+> > Hmm, that's mysterious. Wild guess is that highres exposes the hidden
+> > "feature" in a different way than rc2-mm1 does.
+> 
+> I think the bug in 2.6.21/22-rc3 is a different one that the one in 
+> 2.6.22-rc2-mm1, but that's also only a wild guess :)
+> 
+> I'll explain this a bit:
+> In 2.6.21/22-rc3 is the same b44 driver that has been in the stock kernels for 
+> some time. With this driver and High Resolution Timer turned on I get 
+> problems using iperf. The problems are that the systems becomes really slow 
+> and unresponsive.  Michael Buesch thought this could be an IRQ storm which 
+> sounds logical to me. This bug did never happen to me before I startet the 
+> iperf test.
 
-No, it even times out after 35 seconds. I've raised the first timeout
-to 60 seconds but still no success.
+
+Can you please check to see if you notice anything out of the ordinary
+using netperf in place of iperf in your high res timer on/off testbed?
+
+Thanks,
+Gary
+
+
+
+
+
+
+
