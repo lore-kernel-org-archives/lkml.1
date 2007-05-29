@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbXE2PVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbXE2PYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760757AbXE2PVj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 11:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbXE2PV3
+	id S1760775AbXE2PYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 11:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXE2PYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 11:21:29 -0400
-Received: from mms2.broadcom.com ([216.31.210.18]:1569 "EHLO mms2.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbXE2PV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 11:21:28 -0400
-X-Server-Uuid: A6C4E0AE-A7F0-449F-BAE7-7FA0D737AC76
-Subject: Re: b44: regression in 2.6.22 (resend)
-From: "Gary Zambrano" <zambrano@broadcom.com>
-To: "Maximilian Engelhardt" <maxi@daemonizer.de>
-cc: "Thomas Gleixner" <tglx@linutronix.de>, "Michael Buesch" <mb@bu3sch.de>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
-       "Jeff Garzik" <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200705282255.56490.maxi@daemonizer.de>
-References: <20070525172431.60affaca@freepuppy>
- <200705281944.05030.maxi@daemonizer.de> <1180380230.3657.3.camel@chaos>
- <200705282255.56490.maxi@daemonizer.de>
-Date: Tue, 29 May 2007 06:58:43 -0700
-Message-ID: <1180447123.17146.4.camel@dhcp-10-12-136-115.broadcom.com>
+	Tue, 29 May 2007 11:24:12 -0400
+Received: from ausc60pc101.us.dell.com ([143.166.85.206]:59911 "EHLO
+	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbXE2PYL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 11:24:11 -0400
+X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 11:24:11 EDT
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns; b=XzNKYLxRFYK3EK2q7u6va15YW9lSAlAlMChUm8JLquD+ER54CbNO4y2aMN+8xbMzt/f6DaI4TDcQ4TWQ4oH4j4e+E3eW5b3umIBpiLCu4j15c7m48VRv3suvgnCOY039;
+X-IronPort-AV: E=Sophos;i="4.14,589,1170655200"; 
+   d="scan'208";a="275781087"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5)
-X-WSS-ID: 6A429B603CG1520377-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [2.6.22-rc1-mm1] ehci-hcd - BUG: scheduling while atomic: rmmod/0x00000001/4568
+Date: Tue, 29 May 2007 10:14:35 -0500
+Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9524D51@ausx3mpc125.aus.amer.dell.com>
+In-Reply-To: <20070525150015.b5eaafc3.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [2.6.22-rc1-mm1] ehci-hcd - BUG: scheduling while atomic: rmmod/0x00000001/4568
+Thread-Index: AcefGBpgDz3Tb61dTcuCogNSiM7QgQC69Qng
+References: <20070521024437.GA4751@inferi.kami.home><20070525214005.GA6925@suse.de> <20070525150015.b5eaafc3.akpm@linux-foundation.org>
+From: <Stuart_Hayes@Dell.com>
+To: <gregkh@suse.de>
+Cc: <malattia@linux.it>, <linux-kernel@vger.kernel.org>,
+       <dbrownell@users.sourceforge.net>,
+       <linux-usb-devel@lists.sourceforge.net>, <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 29 May 2007 15:14:36.0536 (UTC) FILETIME=[11C9DF80:01C7A204]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-28 at 13:55 -0700, Maximilian Engelhardt wrote:
-> On Monday 28 May 2007, Thomas Gleixner wrote:
-> > On Mon, 2007-05-28 at 19:44 +0200, Maximilian Engelhardt wrote:
-> > > > Can you please keep CONFIG_HIGH_RES_TIMERS and CONFIG_NOHZ and try the
-> > > > following combinations on the kernel command line:
-> > > >
-> > > > 1) highres=off nohz=off (should be the same as your working config)
-> > > > 2) highres=off
-> > > > 3) nohz=off
-> > >
-> > > I tested this with my 2.6.22-rc3 kernel, here are the results:
-> > >
-> > > without any special boot parameters: problem does appear
-> > > highres=off nohz=off: problem does not appear
-> > > highres=off: problem does not appear
-> > > nohz=off: problem does appear
-> >
-> > Is there any other strange behavior of the high res enabled kernel than
-> > the b44 problem ?
+
+Sorry about that.  Would it be helpful if I verified that and sent it in
+signed off?
+
+Thanks
+Stuart
+
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+Sent: Friday, May 25, 2007 5:00 PM
+To: Greg KH
+Cc: Mattia Dongili; Linux Kernel Mailing List; Hayes, Stuart; David
+Brownell; linux-usb-devel@lists.sourceforge.net
+Subject: Re: [2.6.22-rc1-mm1] ehci-hcd - BUG: scheduling while atomic:
+rmmod/0x00000001/4568
+
+On Fri, 25 May 2007 14:40:05 -0700 Greg KH <gregkh@suse.de> wrote:
+
+> On Mon, May 21, 2007 at 11:44:37AM +0900, Mattia Dongili wrote:
+> > Hello,
+> > 
+> > with gregkh-usb-usb-ehci-cpufreq-fix.patch removing ehci-hcd causes 
+> > the following BUG:
 > 
-> I didn't notice anything.
+> Thanks for letting me know.
 > 
-> >
-> > > I additionally built my 2.6.22-rc2-mm1 kernel without High Resolution
-> > > Timer, but the high ping problem is still there.
-> >
-> > Hmm, that's mysterious. Wild guess is that highres exposes the hidden
-> > "feature" in a different way than rc2-mm1 does.
-> 
-> I think the bug in 2.6.21/22-rc3 is a different one that the one in 
-> 2.6.22-rc2-mm1, but that's also only a wild guess :)
-> 
-> I'll explain this a bit:
-> In 2.6.21/22-rc3 is the same b44 driver that has been in the stock kernels for 
-> some time. With this driver and High Resolution Timer turned on I get 
-> problems using iperf. The problems are that the systems becomes really slow 
-> and unresponsive.  Michael Buesch thought this could be an IRQ storm which 
-> sounds logical to me. This bug did never happen to me before I startet the 
-> iperf test.
+> Stuart, any help here?
 
+pretty obvious.  cpufreq_unregister_notifier() sleeps, and that patch
+causes it to be called under spinlock.
 
-Can you please check to see if you notice anything out of the ordinary
-using netperf in place of iperf in your high res timer on/off testbed?
+Something like this...
 
-Thanks,
-Gary
-
-
-
-
-
-
-
+--- a/drivers/usb/host/ehci-hcd.c~fix-gregkh-usb-usb-ehci-cpufreq-fix
++++ a/drivers/usb/host/ehci-hcd.c
+@@ -452,14 +452,14 @@ static void ehci_stop (struct usb_hcd *h
+ 	if (HC_IS_RUNNING (hcd->state))
+ 		ehci_quiesce (ehci);
+ 
+-#ifdef CONFIG_CPU_FREQ
+-	cpufreq_unregister_notifier(&ehci->cpufreq_transition,
+-				    CPUFREQ_TRANSITION_NOTIFIER);
+-#endif
+ 	ehci_reset (ehci);
+ 	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
+ 	spin_unlock_irq(&ehci->lock);
+ 
++#ifdef CONFIG_CPU_FREQ
++	cpufreq_unregister_notifier(&ehci->cpufreq_transition,
++				    CPUFREQ_TRANSITION_NOTIFIER);
++#endif
+ 	/* let companion controllers work when we aren't */
+ 	ehci_writel(ehci, 0, &ehci->regs->configured_flag);
+ 
+_
