@@ -1,37 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbXE2Mye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbXE2Mys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbXE2Mye (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 08:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbXE2Mxv
+	id S1757183AbXE2Mys (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 08:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbXE2MyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 08:53:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:37685 "EHLO
+	Tue, 29 May 2007 08:54:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:37005 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753302AbXE2Mxt (ORCPT
+	with ESMTP id S1752115AbXE2Mx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 08:53:49 -0400
+	Tue, 29 May 2007 08:53:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=ZGuNY8NmckQiE/H0Fh3D4JS+49p8bcn8UBudVeu6fLflV0AO8Rfp1aXDAKNIWUuxi/Qivd5dhntT2KyWnqTdz1QiRbE1cCroKorfAdmVXjMG4xD08Uzw1oB33//AVuJMF5ihq8VTuMkv9aUEiEuZw/DaVgX8ajhhujz3p3PRP04=
-Message-ID: <465C2253.4070307@googlemail.com>
-Date: Tue, 29 May 2007 14:53:39 +0200
+        b=Ur78h8LYkIxujWEla9SRpLrhCGbxGSnzjuHX95K/OLP6HGwso6Vj6qf6fx+yNMsYJilMAmlxY8JBppEsnVoYTK4ZlDGF8saH/hMwTPdBcwKtVEdPoTMCRxRhM7YC7nCTEG/TKu7+WHx5KieklS+6yHT00FVabxG5dpUyfqg2UHk=
+Message-ID: <465C225C.7090507@googlemail.com>
+Date: Tue, 29 May 2007 14:53:48 +0200
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Ben Collins <bcollins@ubuntu.com>, yoshfuji@linux-ipv6.org,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       linux-wireless@vger.kernel.org, developers@islsm.org,
-       =?ISO-8859-2?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Francis Russell <francisrussell@btopenworld.com>,
-       Alan Cox <alan@redhat.com>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       "Horst H. von Brand" <vonbrand@inf.utfsm.cl>
-Subject: Re: [2/3] 2.6.22-rc3: known regressions with patches
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Maximilian Engelhardt <maxi@daemonizer.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, zach@vmware.com,
+       =?ISO-8859-2?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <ak@suse.de>,
+       discuss@x86-64.org, Jeff Garzik <jeff@garzik.org>,
+       Ben Collins <ben.collins@ubuntu.com>
+Subject: Re: [3/3] 2.6.22-rc3: known regressions with patches
 References: <465C203A.1020200@googlemail.com>
 In-Reply-To: <465C203A.1020200@googlemail.com>
 X-Enigmail-Version: 0.94.1.1
@@ -51,46 +50,46 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Networking
+Suspend
 
-Subject    : Oops with prism54 in 2.6.22-rc3
-References : http://lkml.org/lkml/2007/5/26/54
+Subject    : software suspend doesn't work with 2.6.22-rc3
+References : http://lkml.org/lkml/2007/5/26/24
 Submitter  : Maximilian Engelhardt <maxi@daemonizer.de>
-Handled-By : Björn Steinbrink <B.Steinbrink@gmx.de> 
-Patch      : http://lkml.org/lkml/2007/5/27/182
-Status     : patch available
-
-
-Subject    : OOPS triggered by ip(8) deconfiguring a network interface
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8491
-Submitter  : Ben Collins <bcollins@ubuntu.com>
-Patch      : http://marc.info/?l=linux-netdev&m=117915849224816&w=2
-             commit 5632c5152aa621885d87ea0b8fdd5a6bb9f69c6f
-Status     : bug probably fixed
-
-SATA/PATA
-
-Subject    : pata_via appears to incorrectly detects 40-pin cable
-References : http://lkml.org/lkml/2007/5/17/273
-Submitter  : Francis Russell <francisrussell@btopenworld.com>
-Status     : Not really a regression. Alan seems to have a general fix.
-             (Tejun Heo)
-
-Subject    : libata reset-seq merge broke sata_sil on sh
-References : http://lkml.org/lkml/2007/5/10/63
-Submitter  : Paul Mundt <lethal@linux-sh.org>
-Handled-By : Tejun Heo <htejun@gmail.com>
-Caused-By  : commit 4750def52cb2c21732dda9aa1d43a07db37b0186
-Patch      : http://lkml.org/lkml/2007/5/19/161
+Handled-By : Rafael J. Wysocki <rjw@sisk.pl>
+Patch      : http://lkml.org/lkml/2007/5/26/169
 Status     : patch available
 
 
 
-Sparc64
+TTY
 
-Subject    : arch/sparc64/time.c doesn't compile on Ultra 1 (no PCI)
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8540
-Submitter  : Horst H. von Brand <vonbrand@inf.utfsm.cl>
+Subject    : signal: multithread program returns with wrong errno on receiving SIGSTOP
+References : http://lkml.org/lkml/2007/5/27/189
+Submitter  : Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Handled-By : Oleg Nesterov <oleg@tv-sign.ru>
+Patch      : http://lkml.org/lkml/2007/5/28/27
+Status     : patch available
+
+
+
+Virtualization
+
+Subject    : build failed in arch/i386/kernel/vmi.c
+References : http://lkml.org/lkml/2007/5/24/119
+Submitter  : Toralf Förster <toralf.foerster@gmx.de>
+Handled-By : Alexey Dobriyan <adobriyan@gmail.com>
+Patch      : http://lkml.org/lkml/2007/5/24/143
+Status     : patch available
+
+
+
+x86-64
+
+Subject    : BUG: at mm/slab.c:777 __find_general_cachep()
+References : http://lkml.org/lkml/2007/5/18/17
+Submitter  : Jeff Garzik <jeff@garzik.org>
+Handled-By : Ben Collins <ben.collins@ubuntu.com>
+Patch      : http://lkml.org/lkml/2007/5/18/19
 Status     : patch available
 
 
@@ -101,6 +100,4 @@ Michal
 --
 "Najbardziej brakowa³o mi twojego milczenia."
 -- Andrzej Sapkowski "Co¶ wiêcej"
-
-
 
