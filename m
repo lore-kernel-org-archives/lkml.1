@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761167AbXE2B1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762426AbXE2Bbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761167AbXE2B1f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 21:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbXE2B10
+	id S1762426AbXE2Bbv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 21:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbXE2Bbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 21:27:26 -0400
-Received: from mx2.suse.de ([195.135.220.15]:37601 "EHLO mx2.suse.de"
+	Mon, 28 May 2007 21:31:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49545 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753122AbXE2B10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 21:27:26 -0400
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add a trivial patch style checker
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 29 May 2007 04:23:45 +0200
-In-Reply-To: <9a1288909c10f2935af82ec5cea0c46b@pinky>
-Message-ID: <p738xb8fjv2.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1753122AbXE2Bbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 21:31:42 -0400
+Message-ID: <465B8277.9010001@garzik.org>
+Date: Mon, 28 May 2007 21:31:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Tejun Heo <htejun@gmail.com>
+CC: Paul Mundt <lethal@linux-sh.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, garyhade@us.ibm.com
+Subject: Re: [PATCH] libata: implement ata_wait_after_reset()
+References: <20070510072005.GA27316@linux-sh.org> <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com> <20070510072005.GA27316@linux-sh.org> <464301D3.5060306@gmail.com> <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com> <20070511005217.GA23186@linux-sh.org> <464439C8.7090309@gmail.com> <20070512034928.GB29259@linux-sh.org> <20070516003002.GA18863@linux-sh.org> <464B3505.20004@gmail.com>
+In-Reply-To: <464B3505.20004@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft <apw@shadowen.org> writes:
-> +
-> +# no BUG() or BUG_ON()
-> +		if ($line =~ /\b(BUG|BUG_ON)\b/) {
-> +			print "Try to use WARN_ON & Recovery code rather than BUG() or BUG_ON()\n";
+Tejun Heo wrote:
+> -	msleep(150);
+> +	/* wait a while before checking status */
+> +	ata_wait_after_reset(ap, deadline);
+[...]
+> -	msleep(150);
+> +	/* wait a while before checking status */
+> +	ata_wait_after_reset(ap, deadline);
+>  
+>  	/* Before we perform post reset processing we want to see if
+>  	 * the bus shows 0xFF because the odd clown forgets the D7
+> @@ -3543,8 +3583,8 @@ int sata_std_hardreset(struct ata_port *
+>  		return 0;
+>  	}
+>  
+> -	/* wait a while before checking status, see SRST for more info */
+> -	msleep(150);
+> +	/* wait a while before checking status */
+> +	ata_wait_after_reset(ap, deadline);
+>  
+>  	rc = ata_wait_ready(ap, deadline);
+[...]
+> -	msleep(150);
+> +	/* wait a while before checking status */
+> +	ata_wait_after_reset(ap, deadline);
+>  
+>  	/* Before we perform post reset processing we want to see if
+>  	 * the bus shows 0xFF because the odd clown forgets the D7
+> Index: work/drivers/ata/sata_inic162x.c
+> ===================================================================
+> --- work.orig/drivers/ata/sata_inic162x.c
+> +++ work/drivers/ata/sata_inic162x.c
+> @@ -446,7 +446,7 @@ static int inic_hardreset(struct ata_por
+>  		struct ata_taskfile tf;
+>  
+>  		/* wait a while before checking status */
+> -		msleep(150);
+> +		ata_wait_after_reset(ap, deadline);
+>  
+>  		rc = ata_wait_ready(ap, deadline);
+[...]
 
-Just outlawing BUG_ON doesn't seem like a good idea to me. We'll just end
-up with lots of untested and likely buggy recovery code or no asserts. Both
-would be bad.
+The main thing that bothers me is not the increase in delay, but the 
+fact that this create converts a delay/Status-poll sequence into a 
+delay/Status-poll/Status-poll sequence.
 
-> +#need space before brace following if, while, etc
-> +		if($line=~/\(.*\){/) {
-> +			print ("need a space before the brace\n");
-> +			print "$herecurr";
-> +			$clean = 0;		
-> +		}
-> +
-> +#gotos aren't indented
+ata_wait_after_reset() immediately before ata_wait_ready() seems highly 
+redundant.  Why not just poll Status once?
 
-You mean goto labels? Surely goto statements are to be indented.
-Confusing message
+	Jeff
 
-> +		if($line=~/^\s*[A-Za-z\d_]+:/ and !($line=~/^\s*default:/)){
-> +			print "Gotos should not be indented\n";
-> +			print "$herecurr";
-> +			$clean = 0;
-> +		}
 
-emacs generates one space label in front of a goto label. I wouldn't
-outlaw this.
 
-> +# don't include <linux/video_decoder.h>
-
-It would be probably better to define some syntax that makes it possible
-to auto extract those from feature-removal-schedule.txt. Otherwise
-long term this will become messy.
-
-Possible further checks that might make sense:
-- panic() anywhere in drivers/* 
-- externs in .c files without asmlinkage
-- general checking that everything in a fully visible {} block is the right 
-indentation
-
--Andi
