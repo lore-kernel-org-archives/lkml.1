@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758550AbXE2OPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbXE2OQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758550AbXE2OPV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbXE2OPJ
+	id S1760628AbXE2OQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbXE2OQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 10:15:09 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3243 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750838AbXE2OPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 10:15:07 -0400
-Date: Tue, 29 May 2007 14:14:56 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, M Macnair <mmacnair@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Seeding /dev/random not working
-Message-ID: <20070529141456.GC5840@ucw.cz>
-References: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com> <20070529131501.GA9899@thunk.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070529131501.GA9899@thunk.org>
-User-Agent: Mutt/1.5.9i
+	Tue, 29 May 2007 10:16:23 -0400
+Received: from rtr.ca ([64.26.128.89]:3790 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752119AbXE2OQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 10:16:22 -0400
+Message-ID: <465C35B3.6050503@rtr.ca>
+Date: Tue, 29 May 2007 10:16:19 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Pavel Machek <pavel@ucw.cz>,
+       Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+References: <1179870110.16656.2.camel@localhost>  <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org>  <20070524200435.GA9604@elf.ucw.cz>  <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>  <20070524220017.GC9604@elf.ucw.cz>  <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>  <20070524221743.GD9604@elf.ucw.cz>  <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org>  <20070524231852.GG9604@elf.ucw.cz>  <alpine.LFD.0.98.0705241736120.26602@woody.linux-foundation.org>  <1180058123.3997.91.camel@nigel.suspend2.net>  <alpine.LFD.0.98.0705241905490.26602@woody.linux-foundation.org>  <1180059605.3997.100.camel@nigel.suspend2.net>  <alpine.LFD.0.98.0705241931240.26602@woody.linux-foundation.org>  <1180062040.3997.112.camel@nigel.suspend2.net>  <alpine.LFD.0.98.0705242021560.26602@woody.linux-foundation.org> <1180067587.3997.136.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705242147090.26602@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705242147090.26602@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > I have two embedded boards (one ARM, one PowerPC), running two
-> > different versions of 2.6.  They have no hard drives, keyboards or
-> > mice.  They each have a NIC, but I understand these make no
-> > contribution to the entropy pool.
-> > 
-> > 	if [ -f $random_seed ]; then
-> > 		cat $random_seed >/dev/urandom  # should seed the pool
-> > 	fi
-> > 	dd if=/dev/urandom of=$random_seed count=1 2>/dev/null # save some
-> > data from urandom for next boot
-> >
-> > I have rebooted my boards many times, and after each boot I read the
-> > contents of $random_seed.  Whilst it does not happen every time, the
-> > contents of $random_seed are /often the same/.  To give you a feel:
-> > rebooted 11 times, got a total of 3 different outputs.
+Linus Torvalds wrote:
 > 
-> Ok, so this is telling me a couple of things.  First of all, if you're
-> only getting three outputs, it means that you don't have any
-> peripherals feeding entropy into the system from the boot sequence.
-> Without any hard drives, keyboards or mice, and a NIC whose device
-> driver hasn't been configured to feed entropy, you're definitely
-> hosed.
+> On Fri, 25 May 2007, Nigel Cunningham wrote:
+>> Does that mean you never ever power off your laptop (assuming you have
+>> one), and the battery never runs out? Surely you must power it off
+>> completely sometimes?
+>
+> So? The bootup isn't that much worse than a disk suspend/resume, and it's 
+> reliable.
 
-Can we get at least time-of-boot from rtc clock to the pool? We really
-should not be getting identical outputs...
+I very much prefer suspend (to RAM) over hibernate (to DISK).
+But once in a while, primarily when travelling, I'll use hibernate.
 
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+And the "swsusp" in the kernel is just plain crappy and slow,
+which leads many people (including our beloved chief penguin, it seems)
+into thinking that hibernate *has* to be too slow to be useful.
+
+But with Suspend2, it is very quick and usable by comparism.
+Try it, you'll like it (at least a little).
+
+Cheers
