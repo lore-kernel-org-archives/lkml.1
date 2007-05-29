@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbXE2ISS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763970AbXE2IVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760279AbXE2ISS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 04:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbXE2ISJ
+	id S1763970AbXE2IVx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 04:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbXE2IVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 04:18:09 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:58033 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbXE2ISI (ORCPT
+	Tue, 29 May 2007 04:21:46 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:44632 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbXE2IVp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 04:18:08 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <292C7F80-B80D-4645-8FF5-49BF911398E1@cam.ac.uk>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Bret Towe" <magnade@gmail.com>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Makefile question (was [RFC] LZO de/compression support - take 6)
-Date: Tue, 29 May 2007 09:17:46 +0100
-To: "Nitin Gupta" <nitingupta910@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
+	Tue, 29 May 2007 04:21:45 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Tue, 29 May 2007 04:20:24 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: stuff ready to be deleted?
+In-Reply-To: <Pine.LNX.4.61.0705290807530.11140@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.64.0705290419370.23055@localhost.localdomain>
+References: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
+ <Pine.LNX.4.61.0705282326480.11140@yvahk01.tjqt.qr>
+ <Pine.LNX.4.64.0705281818370.17410@localhost.localdomain>
+ <Pine.LNX.4.61.0705290807530.11140@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28 May 2007, at 15:34, Nitin Gupta wrote:
+On Tue, 29 May 2007, Jan Engelhardt wrote:
 
-> diff --git a/lib/Kconfig b/lib/Kconfig
-> index 2e7ae6b..eb95eaa 100644
-> --- a/lib/Kconfig
-> +++ b/lib/Kconfig
-> @@ -64,6 +64,12 @@ config ZLIB_INFLATE
-> config ZLIB_DEFLATE
-> 	tristate
 >
-> +config LZO1X_COMPRESS
-> +	tristate
-> +
-> +config LZO1X_DECOMPRESS
-> +	tristate
-> +
-> #
-> # Generic allocator support is selected if needed
-> #
-> diff --git a/lib/Makefile b/lib/Makefile
-> index c8c8e20..448ae37 100644
-> --- a/lib/Makefile
-> +++ b/lib/Makefile
-> @@ -49,6 +49,8 @@ obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
-> obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
-> obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate/
-> obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
-> +obj-$(CONFIG_LZO1X_COMPRESS) += lzo1x/
-> +obj-$(CONFIG_LZO1X_DECOMPRESS) += lzo1x/
+> On May 28 2007 18:25, Robert P. J. Day wrote:
+> >On Mon, 28 May 2007, Jan Engelhardt wrote:
 >
-> obj-$(CONFIG_TEXTSEARCH) += textsearch.o
-> obj-$(CONFIG_TEXTSEARCH_KMP) += ts_kmp.o
+> >> >currently, the list contains the items:
+> >> >
+> >> >    * 4 Traffic policing
+> >>
+> >> CONFIG_NET_SCHED? CONFIG_NET_ACT_POLICE? Neither seems
+> >> marked as deprecated/obsoleted in Kconfig.
+> >
+> >the "traffic policing" entry in that list refers specifically to the
+> >config option "CLS_NET_POLICE" in net/sched/Kconfig:
+> >
+> >config NET_CLS_POLICE
+> >        bool "Traffic Policing (obsolete)"
+> >        depends on NET_CLS_ACT!=y
+> >
+> >so ... does "obsolete" really mean "obsolete"?
+>
+> Have you taken a look at the Makefile? See this oddity:
+>
+> obj-$(CONFIG_NET_ACT_POLICE)    += act_police.o
+> obj-$(CONFIG_NET_CLS_POLICE)    += act_police.o
+>
+> So is the Kconfig entry all that is obsolete?
 
-Hey there,
+ah, i hadn't noticed that.  how odd.  now i don't know *what* to
+think.
 
-Is this syntax OK for Makefile use? I'm only asking out of personal  
-ignorance and because I'd use:
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-Kconfig:
-
-config LZO1X_COMPRESS
-	select LZO1X
-	tristate
-
-config LZO1X_DECOMPRESS
-	select LZO1X
-	tristate
-
-config LZO1X
-	tristate (or boolean??)
-
-Makefile:
-
-obj-$(CONFIG_LZO1X) += lzo1x/
-
-Thanks,
-
-Michael-Luke
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
