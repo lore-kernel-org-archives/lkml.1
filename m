@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759646AbXE2Q5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbXE2Q7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759646AbXE2Q5W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 12:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXE2Q5P
+	id S1759606AbXE2Q7a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 12:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXE2Q7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 12:57:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43972 "EHLO mx1.redhat.com"
+	Tue, 29 May 2007 12:59:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44534 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbXE2Q5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 12:57:15 -0400
-Message-ID: <465C5B61.6000702@redhat.com>
-Date: Tue, 29 May 2007 12:57:05 -0400
+	id S1751180AbXE2Q7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 12:59:22 -0400
+Message-ID: <465C5BE0.4090903@redhat.com>
+Date: Tue, 29 May 2007 12:59:12 -0400
 From: Rik van Riel <riel@redhat.com>
 Organization: Red Hat, Inc
 User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: What causes iowait other than waiting for i/o?
-References: <465B4B75.2040602@tmr.com>
-In-Reply-To: <465B4B75.2040602@tmr.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
+References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au>
+In-Reply-To: <463B108C.10602@yahoo.com.au>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> I recently noted that my system was spending a lot of time in i/o wait 
-> when doing some tasks which I thought didn't involve i/o, as noted by 
-> the lack of disk light activity most of the time. I thought of network, 
-> certainly the NIC had no activity for this job. So I set up a little 
-> loop to capture all disk i/o and network activity (including loopback). 
-> That was no obvious help, and the program doesn't use pipes.
+Nick Piggin wrote:
+> Rik van Riel wrote:
+>> With lazy freeing of anonymous pages through MADV_FREE, performance of
+>> the MySQL sysbench workload more than doubles on my quad-core system.
 > 
-> At this point I'm really curious, does someone have a good clue?
+> OK, I've run some tests on a 16 core Opteron system, both sysbench with
+> MySQL 5.33 (set up as described in the freebsd vs linux page), and with
+> ebizzy.
 > 
-> Note: I don't think this is a bug or performance issue, unless the 
-> kernel is doing something and charging time to iowait instead of system 
-> I don't see anything to fix, but I would like to understand.
+> What I found is that, on this system, MADV_FREE performance improvement
+> was in the noise when you look at it on top of the MADV_DONTNEED glibc
+> and down_read(mmap_sem) patch in sysbench.
 
-All filesystem IO and direct disk IO can cause iowait.
+It turns out that setting the pte accessed bit in hardware
+can apparently take a few thousand CPU cycles - 3000 cycles
+is the number I've heard for one CPU family.
 
-This includes NFS activity.
+This is a similar number of cycles as is needed to zero out
+a page.  Giving a cache hot page to userspace could cancel
+out the rest of the cost of the page fault handling.
+
+Lets stick with the simpler MADV_DONTNEED code for now and
+save the page flag for something else...
 
 -- 
 Politics is the struggle between those who want to make their country
