@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765613AbXE2U1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765492AbXE2Ube@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765613AbXE2U1Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 16:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbXE2U1Q
+	id S1765492AbXE2Ube (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 16:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbXE2Ub1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 16:27:16 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:35704 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753109AbXE2U1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 16:27:16 -0400
-Date: Tue, 29 May 2007 22:22:43 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andi Kleen <andi@firstfloor.org>, Andrew Morton <akpm@osdl.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add a trivial patch style checker
-In-Reply-To: <465BECCC.5030001@shadowen.org>
-Message-ID: <Pine.LNX.4.61.0705292218520.11140@yvahk01.tjqt.qr>
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky> <p738xb8fjv2.fsf@bingen.suse.de>
- <465BECCC.5030001@shadowen.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Tue, 29 May 2007 16:31:27 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:40075 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759158AbXE2Ub0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 16:31:26 -0400
+Subject: Re: [PATCH 3/5] lockstat: core infrastructure
+From: Daniel Walker <dwalker@mvista.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20070529130107.112347096@chello.nl>
+References: <20070529125248.877196281@chello.nl>
+	 <20070529130107.112347096@chello.nl>
+Content-Type: text/plain
+Date: Tue, 29 May 2007 13:28:45 -0700
+Message-Id: <1180470525.32594.71.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-05-29 at 14:52 +0200, Peter Zijlstra wrote:
+> +       now = sched_clock();
+> +       waittime = now - hlock->waittime_stamp;
+> + 
 
-On May 29 2007 10:05, Andy Whitcroft wrote:
->
->>> +		if($line=~/^\s*[A-Za-z\d_]+:/ and !($line=~/^\s*default:/)){
->>> +			print "Gotos should not be indented\n";
->>> +			print "$herecurr";
->>> +			$clean = 0;
->>> +		}
->> 
->> emacs generates one space label in front of a goto label. I wouldn't
->> outlaw this.
->
->Yep, we also now allow one space something to do with diff -p not
->getting confused...
+It looks like your using sched_clock() through out .. It's a little
+troubling considering the constraints on the function .. Most
+architecture implement a jiffies sched_clock() w/ 1 millisecond or worse
+resolution.. I'd imagine a millisecond hold time is pretty rare, even a
+millisecond wait time might be fairly rare too ..  There's also no
+guarantee that sched_clock timestamps off two different cpu's can be
+compared (or at least that's my understanding) ..
 
-Not only diff and emacs. At least joe (joe.sf.net) is another editor
-whose %y tag or so also takes lines with
+Daniel
 
-	no space at the front and properly paired parens,braces,etc.
-
-as key lines for %y. Since usually, functions are the only thing at
-the beginning of a line, this works well. That's why labels should
-be allowed to be indented by one.
-
-
-	Jan
--- 
