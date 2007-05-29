@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751888AbXE2WUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751495AbXE2W0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751888AbXE2WUM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 18:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbXE2WT7
+	id S1751495AbXE2W0S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 18:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbXE2W0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 18:19:59 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:41177 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750823AbXE2WT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 18:19:59 -0400
-Subject: Re: [PATCH] Samsung LTV350QV LCD driver
-From: Richard Purdie <rpurdie@rpsys.net>
-To: David Brownell <david-b@pacbell.net>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200705291438.11581.david-b@pacbell.net>
-References: <11804683571524-git-send-email-hskinnemoen@atmel.com>
-	 <1180472477.5822.87.camel@localhost.localdomain>
-	 <200705291438.11581.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Tue, 29 May 2007 23:19:43 +0100
-Message-Id: <1180477183.5822.105.camel@localhost.localdomain>
+	Tue, 29 May 2007 18:26:05 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:37671 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750717AbXE2W0D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 18:26:03 -0400
+Date: Tue, 29 May 2007 15:25:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jason Gaston <jason.d.gaston@intel.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, stable@kernel.org
+Subject: Re: [PATCH 2.6.22-rc2] pci_ids: update patch for Intel ICH9M
+Message-Id: <20070529152545.887fda6c.akpm@linux-foundation.org>
+In-Reply-To: <200705251203.31985.jason.d.gaston@intel.com>
+References: <200705251203.31985.jason.d.gaston@intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-29 at 14:38 -0700, David Brownell wrote:
-> On Tuesday 29 May 2007, Richard Purdie wrote:
-> > The LCD class device bits look fine to me. The only change I'd request
-> > is not to change the order of things in drivers/video/backlight/Kconfig.
-> > If you do want to reword one of those entries (which is what I think you
-> > wanted to do), send it as a separate patch please.
+On Fri, 25 May 2007 12:03:31 -0700
+Jason Gaston <jason.d.gaston@intel.com> wrote:
+
+> This patch updates the Intel ICH9M LPC Controller DID's, due to a 
+> specification change.
 > 
-> One significant issue was screwed up sequencing causing
-> tools like 'xconfig' to display things wrong.  Appended
-> is a patch fixing just that goof.
-
-Put it like that, applied, thanks. :)
-
-(http://git.o-hand.com/?p=linux-rpurdie-backlight;a=shortlog;h=for-mm)
-
-> > David, any objections to the SPI bits?
+> Signed-off-by: __Jason Gaston <jason.d.gaston@intel.com>
 > 
-> They seemed fine to me, other than the write_reg() macro
-> having an embedded 'goto' ... explicitly against the
-> Documentation/CodingStyle guidelines.  ("Chapter 12",
-> point 1 = "macros that affect code flow".)
+> --- linux-2.6.22-rc2/include/linux/pci_ids.h.orig	2007-05-25 
+> 11:42:11.000000000 -0700
+> +++ linux-2.6.22-rc2/include/linux/pci_ids.h	2007-05-25 11:43:28.000000000 
+> -0700
+> @@ -2266,11 +2266,11 @@
+>  #define PCI_DEVICE_ID_INTEL_ICH8_5	0x283e
+>  #define PCI_DEVICE_ID_INTEL_ICH8_6	0x2850
+>  #define PCI_DEVICE_ID_INTEL_ICH9_0	0x2910
+> -#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2911
+> +#define PCI_DEVICE_ID_INTEL_ICH9_1	0x2917
+>  #define PCI_DEVICE_ID_INTEL_ICH9_2	0x2912
+>  #define PCI_DEVICE_ID_INTEL_ICH9_3	0x2913
+>  #define PCI_DEVICE_ID_INTEL_ICH9_4	0x2914
+> -#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2915
+> +#define PCI_DEVICE_ID_INTEL_ICH9_5	0x2919
+>  #define PCI_DEVICE_ID_INTEL_ICH9_6	0x2930
+>  #define PCI_DEVICE_ID_INTEL_82855PM_HB	0x3340
+>  #define PCI_DEVICE_ID_INTEL_82830_HB	0x3575
 
-Yes, even if it will make the code more ugly in a way, I think it needs
-to be changed...
-
-> I like seeing more of the SPI drivers go upstream.  ;)
-
-;)
-
-Cheers,
-
-Richard
-
+I assume we'll need this in 2.6.21.x as well, otherwise those devices just
+won't work when someone tries to run this kernel on them?
