@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbXE2VSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbXE2VTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752632AbXE2VSF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbXE2VRw
+	id S1752060AbXE2VTo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbXE2VTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:17:52 -0400
-Received: from smtp.osdl.org ([207.189.120.12]:41813 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068AbXE2VRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:17:50 -0400
-Date: Tue, 29 May 2007 14:01:55 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: "Gary Zambrano" <zambrano@broadcom.com>,
-       "Maximilian Engelhardt" <maxi@daemonizer.de>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
-       "Jeff Garzik" <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: b44: regression in 2.6.22 (resend)
-Message-ID: <20070529140155.07693380@freepuppy>
-In-Reply-To: <200705292245.22940.mb@bu3sch.de>
-References: <20070525172431.60affaca@freepuppy>
-	<200705281655.15105.mb@bu3sch.de>
-	<1180448075.17146.12.camel@dhcp-10-12-136-115.broadcom.com>
-	<200705292245.22940.mb@bu3sch.de>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 May 2007 17:19:35 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36922
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbXE2VTe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 17:19:34 -0400
+From: Rob Landley <rob@landley.net>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Date: Tue, 29 May 2007 17:19:18 -0400
+User-Agent: KMail/1.9.1
+Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>
+References: <200705272229.21263.rjw@sisk.pl> <9D3FC259-8391-4C2F-9F0F-AEF6CB3030E8@cam.ac.uk> <1180343171.4242.15.camel@lov.localdomain>
+In-Reply-To: <1180343171.4242.15.camel@lov.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705291719.20197.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am busy bisecting the real cause. Unfortunately, oprofile doesn't work
-on the laptop, and build time sucks...
+On Monday 28 May 2007 5:06 am, Kay Sievers wrote:
+> Well, 10 seconds are just to short for userspace to react on some
+> setups, from tiny boxes which are busy, to 512 CPU boxes enumerating
+> thousands of devices, all had problems here. Any timeout for a
+> firmware-request is just a broken concept, the request should wait
+> forever, to be fulfilled or canceled from userspace when it's ready.
 
-This how I think the IRQ should work:
+If it's spawning a new usermode helper process, then figuring out when to give 
+up and exit is that process's job.  If it _can't_ exec usermode helper, then 
+that should fail immediately.
 
---- a/drivers/net/b44.c	2007-05-29 09:47:53.000000000 -0700
-+++ b/drivers/net/b44.c	2007-05-29 09:49:50.000000000 -0700
-@@ -908,9 +908,11 @@ static irqreturn_t b44_interrupt(int irq
- 	u32 istat, imask;
- 	int handled = 0;
- 
--	spin_lock(&bp->lock);
--
- 	istat = br32(bp, B44_ISTAT);
-+	if (istat == 0 || istat == ~0)
-+		return IRQ_NONE;
-+
-+	spin_lock(&bp->lock);
- 	imask = br32(bp, B44_IMASK);
- 
- 	/* The interrupt mask register controls which interrupt bits
+Where does the timeout come in?
+
+Rob
