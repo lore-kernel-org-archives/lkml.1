@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbXE2NEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbXE2NGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbXE2NEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbXE2NEg
+	id S1752981AbXE2NGL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbXE2NFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:04:36 -0400
-Received: from loopy.telegraphics.com.au ([202.45.126.152]:54496 "EHLO
-	loopy.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbXE2NEf (ORCPT
+	Tue, 29 May 2007 09:05:55 -0400
+Received: from adelie.ubuntu.com ([82.211.81.139]:44667 "EHLO
+	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751336AbXE2NFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:04:35 -0400
-Date: Tue, 29 May 2007 23:04:33 +1000 (EST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: stuff ready to be deleted?
-In-Reply-To: <Pine.LNX.4.64.0705290953420.4790@anakin>
-Message-ID: <Pine.LNX.4.64.0705292251520.13721@loopy.telegraphics.com.au>
-References: <Pine.LNX.4.64.0705281612560.15449@localhost.localdomain>
- <Pine.LNX.4.64.0705290953420.4790@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 May 2007 09:05:53 -0400
+Subject: Re: [2/3] 2.6.22-rc3: known regressions with patches
+From: Ben Collins <ben.collins@ubuntu.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Ben Collins <bcollins@ubuntu.com>, yoshfuji@linux-ipv6.org,
+       Maximilian Engelhardt <maxi@daemonizer.de>,
+       linux-wireless@vger.kernel.org, developers@islsm.org,
+       =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Francis Russell <francisrussell@btopenworld.com>,
+       Alan Cox <alan@redhat.com>, sparclinux@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       "Horst H. von Brand" <vonbrand@inf.utfsm.cl>
+In-Reply-To: <465C2253.4070307@googlemail.com>
+References: <465C203A.1020200@googlemail.com>
+	 <465C2253.4070307@googlemail.com>
+Content-Type: text/plain
+Organization: Canonical
+Date: Tue, 29 May 2007 09:05:59 -0400
+Message-Id: <1180443959.6666.192.camel@cunning>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-05-29 at 14:53 +0200, Michal Piotrowski wrote:
 
+> Subject    : OOPS triggered by ip(8) deconfiguring a network interface
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=8491
+> Submitter  : Ben Collins <bcollins@ubuntu.com>
+> Patch      : http://marc.info/?l=linux-netdev&m=117915849224816&w=2
+>              commit 5632c5152aa621885d87ea0b8fdd5a6bb9f69c6f
+> Status     : bug probably fixed
 
-On Tue, 29 May 2007, Geert Uytterhoeven wrote:
+Seems to be fixed, and just marked it resolved on bugzilla.
 
-> On Mon, 28 May 2007, Robert P. J. Day wrote:
-> >   i'm trying to keep track of kernel janitor projects that involve
-> > removing dead content from the tree:
-> > 
-> > http://fsdev.net/wiki/index.php?title=Kernel_Janitor%27s_Todo_List
-> > 
-> > currently, the list contains the items:
-> 
->     [...]
-> 
-> >     * 11 Macintosh M68K support
-> 
-> It's not that because Mac/m68k went skipped 2.4.x that it should be removed...
+-- 
+Ubuntu   : http://www.ubuntu.com/
+Linux1394: http://wiki.linux1394.org/
 
-It is true that the MAINTAINERS file is out of date. I suggest we remove 
-the maintainers file ;-)
-
--f
