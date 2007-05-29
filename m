@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763727AbXE2FKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763959AbXE2FOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763727AbXE2FKl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 01:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbXE2FK3
+	id S1763959AbXE2FOz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 01:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbXE2FOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 01:10:29 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:47867 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753277AbXE2FK2 (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 01:10:28 -0400
+	Tue, 29 May 2007 01:14:48 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:27414 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753814AbXE2FOr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 01:14:47 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=C9WZNj5Zv3KIqFOSCgGdny33hFwvgkQCxMNiJ0R4gSaxsnacWv8kcidz/RUAnd2chDbkN627J8v6Pw7jZua1yjZSwhvQa4q93zeM5s0yDWu67se4wrb8vYxWP2DNedaTSyQ2TfCWAxtug7ksBBhqdIbLc49A2KL1Mhv4cyo5+dQ=  ;
-X-YMail-OSG: wE0DcXsVM1mTNN0gEq.tGVRqHDjjPrlOzBywd8xKRB9mWab2Xmy0ZQv95tjaGDyYmwjvuaobjQ--
-Message-ID: <465BB5BA.3050900@yahoo.com.au>
-Date: Tue, 29 May 2007 15:10:18 +1000
+  b=l9AlQIbp0nTCqLtaiRFdXGD+83GZLjHB/7Lgx/La3Rdr35e7jAbtKh0KF2IUqvqks1NwKIGOwvTyoMvoqFh3VKDvGiWEiPZUGa+mt+Z3grgFM2DY9FDY/VzL2E56/f3GwMyqi5VcIhF+XjLLK8qjmZRKKVG6hX68yc0Aoo1L3UU=  ;
+X-YMail-OSG: QbSnIfIVM1nw6zA7dD_HyTvVnHg5Uv_h1jEqsHDJQKhGdJbEJZJLB9uXe1ZRGgkAsn2ZL2VImw--
+Message-ID: <465BB6C2.7050704@yahoo.com.au>
+Date: Tue, 29 May 2007 15:14:42 +1000
 From: Nick Piggin <nickpiggin@yahoo.com.au>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
 X-Accept-Language: en
 MIME-Version: 1.0
-To: carsteno@de.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>, richard.griffiths@windriver.com,
-       Richard Griffiths <res07ml0@verizon.net>, Linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.21] cramfs: add cramfs Linear XIP
-References: <1179871779.24163.11.camel@localhost.localdomain> <20070522154905.1d7e8a2e.akpm@linux-foundation.org> <4653F264.1030807@de.ibm.com>
-In-Reply-To: <4653F264.1030807@de.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Preserve the dirty bit in init_page_buffers
+References: <m14pm5io6h.fsf@ebiederm.dsl.xmission.com>	<465A55E7.50904@yahoo.com.au>	<m18xb9a7sy.fsf@ebiederm.dsl.xmission.com>	<465A6078.6010804@yahoo.com.au> <465A6197.5010402@yahoo.com.au> <m1veed82mz.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1veed82mz.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carsten Otte wrote:
+Eric W. Biederman wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-> The current xip stack relies on having struct page behind the memory 
-> segment. This causes few impact on memory management, but occupies some 
-> more memory. The cramfs patch chose to modify copy on write in order to 
-> deal with vmas that don't have struct page behind.
-> So far, Hugh and Linus have shown strong opposition against copy on 
-> write with no struct page behind. If this implementation is acceptable 
-> to the them, it seems preferable to me over wasting memory. The xip 
-> stack should be modified to use this vma flag in that case.
+>> However we
+>>could still set_page_dirty of a block device page without buffers
+>>via an mmap.
+> 
+> 
+> After the page is made dirty via mmap we have:
+> sys_write -> ... -> block_prepare_write -> ... -> create_empty_buffers.
 
-I would rather not :P
+Yep, that's what I mean.
 
-We can copy on write without a struct page behind the source today, no?
-What is insufficient for the XIP code with the current COW?
+
+> I suspect that is a pretty rare case but it does indeed seem to exist
+> as a problem.
+
+I think so too. But either we have some misunderstanding of the
+codepaths involved, or the author of the comments there didn't
+consider this case, so...
 
 -- 
 SUSE Labs, Novell Inc.
