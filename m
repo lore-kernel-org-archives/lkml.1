@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbXE2VWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751936AbXE2V0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334AbXE2VWy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbXE2VWr
+	id S1751936AbXE2V0h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbXE2V0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:22:47 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:56572 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbXE2VWq (ORCPT
+	Tue, 29 May 2007 17:26:30 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:48538 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750815AbXE2V03 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:22:46 -0400
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, Romano Giannetti <romanol@upcomillas.es>,
-       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <465C366C.2070900@rtr.ca>
-References: <1179870110.16656.2.camel@localhost>
-	 <1180008394.15600.26.camel@localhost>
-	 <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org>
-	 <20070524200435.GA9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
-	 <20070524220017.GC9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
-	 <20070524221743.GD9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org>
-	 <20070524231852.GG9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241736120.26602@woody.linux-foundation.org>
-	 <1180058123.3997.91.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0705241905490.26602@woody.linux-foundation.org>
-	 <1180059605.3997.100.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0705241931240.26602@woody.linux-foundation.org>
-	 <1180062040.3997.112.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0705242021560.26602@woody.linux-foundation.org>
-	 <1180067587.3997.136.camel@nigel.suspend2.net>  <465C366C.2070900@rtr.ca>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-GTNmxMsT1hew58wc3n+l"
-Date: Wed, 30 May 2007 07:22:45 +1000
-Message-Id: <1180473765.20718.47.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 29 May 2007 17:26:29 -0400
+Date: Tue, 29 May 2007 23:26:25 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Nitin Gupta <nitingupta910@gmail.com>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
+       linuxcompressed-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 6
+Message-ID: <20070529212625.GS3899@stusta.de>
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com> <200705281049.48679.dhazelton@enter.net> <4cefeab80705280806m39fbcfd6v93a1c847c25e381c@mail.gmail.com> <20070528154346.GO3899@stusta.de> <4cefeab80705280903t6b2bb687g4eb1d9de2717f6ec@mail.gmail.com> <20070528171115.GQ3899@stusta.de> <Pine.LNX.4.61.0705292307320.11140@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0705292307320.11140@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-GTNmxMsT1hew58wc3n+l
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Hi.
-
-On Tue, 2007-05-29 at 10:19 -0400, Mark Lord wrote:
-> Nigel Cunningham wrote:
+On Tue, May 29, 2007 at 11:10:05PM +0200, Jan Engelhardt wrote:
+> 
+> On May 28 2007 19:11, Adrian Bunk wrote:
 > >
-> > I'm sorry to say it, but dropping process freezing still seems to me
-> > like the better way though. I prefer it because of the reliability
-> > aspect. With the current code, having frozen processes, I can look at
-> > the state of memory, calculate how much I'll need for this or that and
-> > know that I'll have sufficient memory for the atomic copy and for doing
-> > the I/O  (making assumptions about how much memory drivers will
-> > allocate) before I start to do either. If we stop freezing processes,
-> > that predictability will go away. There'll always be a possibility that
-> > some process will get memory hungry and stop me from being able to get
-> > the image on disk, and I'll have to either abort or give up and try
-> > again and again until I can complete writing the image, the battery run=
-s
-> > out or whatever...=20
->=20
-> How about blocking brk() and mmap(MAP_ANONYMOUS) in addition to
-> the filesystem VFS callers?   Or is that starting to get messy again?
+> >I have not seen any explanations:
+> >- Why did the upstream author write the code that way?
+> 
+> I guess it's along the lines of
+> - portability
+> 
+> (note how this contradicts itself). Really. I have yet to
+> figure out why everyone invents their own xxx32_t types,
+> like e.g. glib. well, integer types, one might understand, but when it
+> comes to gchar or gpointer, that's just plain microsoft-style
+> (think LPCSTR and LPCVOID...)
 
-Yeah. Getting messy again :)
+You completely miss the point of my question.
 
-Nigel
+It's about the performance improvements of the modified code that were 
+mentioned.
 
---=-GTNmxMsT1hew58wc3n+l
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+What you are talking about shouldn't have any effect on the generated 
+code.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> 	Jan
 
-iD8DBQBGXJmlN0y+n1M3mo0RAm6KAJ0b9/A/ynDMyXijKVcAmmWGy8AEXQCfX5dQ
-22D08vlcjI0rdvt7qMHPXnQ=
-=QA2w
------END PGP SIGNATURE-----
+cu
+Adrian
 
---=-GTNmxMsT1hew58wc3n+l--
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
