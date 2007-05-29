@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751379AbXE2XuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbXE2Xuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751379AbXE2XuG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 19:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbXE2Xt4
+	id S1752894AbXE2Xuc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 19:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbXE2XuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 19:49:56 -0400
-Received: from mailout05.sul.t-online.com ([194.25.134.82]:54267 "EHLO
-	mailout05.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751014AbXE2Xtz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 19:49:55 -0400
-X-Greylist: delayed 1066 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 19:49:55 EDT
-Message-ID: <465CB7CF.2060509@t-online.de>
-Date: Wed, 30 May 2007 01:31:27 +0200
-From: Bernd Schmidt <bernds_cb1@t-online.de>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070519)
+	Tue, 29 May 2007 19:50:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33353 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbXE2XuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 19:50:13 -0400
+Message-ID: <465CB524.4020006@redhat.com>
+Date: Tue, 29 May 2007 16:20:04 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Bryan Wu <bryan.wu@analog.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
-References: <11803414753217-git-send-email-bryan.wu@analog.com> <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
+To: Zach Brown <zach.brown@oracle.com>
+CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070529230931.GL7875@mami.zabbo.net>
+In-Reply-To: <20070529230931.GL7875@mami.zabbo.net>
 X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ID: SaUzGyZcYekkmDymsEo09a9ScWy1IZ+yFKMLAkbe2v7MscfwvbB9Yn
-X-TOI-MSGID: 1efca3e0-ecde-4397-b64c-4c1d21b66417
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 28 May 2007, Bryan Wu wrote:
->>  - Blackfin arch update including BF54x initial supporting
->>  - Blackfin driver update: serial/spi/rtc
->>  - Provide new Blackfin watchdog driver
->>  - binfmt_flat.c for Blackfin arch modification
-> 
-> I realize that this all just touches blackfin-specific stuff, but after 
-> -rc3 I really prefer not to bother with these things..
-> 
-> Also, for stuff that is really just an architecture that I can't even 
-> test, and where there is a clear maintainership thing, I'd actually prefer 
-> to just do a git merge, if possible. It's not like I will likely start 
-> looking at some blackfin-specific patches. Judging from the diffs, you do 
-> actually use git, do you have a place where you could export these kinds 
-> of patch-series as a git tree instead?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-The binfmt_flat patch also touches other nommu architectures.  Do you
-want these kinds of patches (which aren't just Blackfin-specific)
-separately as they come up?
+Zach Brown wrote:
+> That todo item
+> about producing documentation and distro kernels is specifically to bait
+> Uli into trying to implement posix aio on top of syslets in glibc.
 
+Get DaveJ to pick up the code for Fedora kernels and I'll get to it.
 
-Bernd
--- 
-This footer brought to you by insane German lawmakers.
-Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
-Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
-Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGXLUk2ijCOnn/RHQRAjL0AJ0UQzNnMn8xpj7ga0OeEWUhnkhZfgCfTH+j
+iQ52SLZgWwp4wmAGCy/eLZs=
+=hpyn
+-----END PGP SIGNATURE-----
