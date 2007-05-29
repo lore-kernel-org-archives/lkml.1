@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932277AbXE2VBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764492AbXE2VGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932277AbXE2VBs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758819AbXE2VBl
+	id S1764492AbXE2VGz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbXE2VGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:01:41 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:49481 "EHLO tim.rpsys.net"
+	Tue, 29 May 2007 17:06:48 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56945 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758760AbXE2VBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:01:41 -0400
-Subject: Re: [PATCH] Samsung LTV350QV LCD driver
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <11804683571524-git-send-email-hskinnemoen@atmel.com>
-References: <11804683571524-git-send-email-hskinnemoen@atmel.com>
-Content-Type: text/plain
-Date: Tue, 29 May 2007 22:01:17 +0100
-Message-Id: <1180472477.5822.87.camel@localhost.localdomain>
+	id S1750876AbXE2VGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 17:06:48 -0400
+Date: Tue, 29 May 2007 23:07:48 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] Tell modpost that any reference from .note* is OK
+Message-ID: <20070529210748.GC7738@uranus.ravnborg.org>
+References: <465C8E10.8040608@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465C8E10.8040608@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-29 at 21:52 +0200, Haavard Skinnemoen wrote:
-> This patch adds support for powering on and off the Samsung LTV350QV
-> LCD panel via SPI. The driver responds to framebuffer power
-> management, it powers off the panel on reboot/halt/poweroff, and it
-> can also be controlled through sysfs. The panel is powered up when the
-> module is loaded and off when the module is unloaded.
+On Tue, May 29, 2007 at 01:33:20PM -0700, Jeremy Fitzhardinge wrote:
+> .note* sections are ELF notes, which are typically used by external
+> tools to examine the kernel image.  Since this is removed from any
+> runtime consideration, it's OK to reference any section from a .note*
+> section.
 > 
-> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> As a side-effect, this changes secref_whitelist to accept a NULL "atsym"
+> pointer, allowing it to be called when "before" is NULL.  This is
+> needed for .note sections since they don't necessarily have any
+> symbols, and it also allows the .got2 check to to be folded into the
+> normal whitelist checks.
 
-The LCD class device bits look fine to me. The only change I'd request
-is not to change the order of things in drivers/video/backlight/Kconfig.
-If you do want to reword one of those entries (which is what I think you
-wanted to do), send it as a separate patch please.
+I did it a bit different. Adding .note to init_section_ref_ok +
+exit_section_ref_ok is much simpler.
+Next patch will move .got2 there too.
 
-David, any objections to the SPI bits?
+	Sam
 
-Richard
-
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 662deba..b824198 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1139,6 +1139,7 @@ static int init_section_ref_ok(const char *name)
+ 		".debug",
+ 		".parainstructions",
+ 		".rodata",
++		".note",		/* ignore ELF notes - may contain anything */
+ 		NULL
+ 	};
+ 	/* part of section name */
+@@ -1214,6 +1215,7 @@ static int exit_section_ref_ok(const char *name)
+ 	/* Start of section names */
+ 	const char *namelist2[] = {
+ 		".debug",
++		".note",		/* ignore ELF notes - may contain anything */
+ 		NULL
+ 	};
+ 	/* part of section name */
