@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbXE2ODh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbXE2OEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761431AbXE2ODh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbXE2OAE
+	id S1751963AbXE2OEE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbXE2OAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 10:00:04 -0400
+	Tue, 29 May 2007 10:00:08 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752188AbXE2N7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:59:49 -0400
+	id S1752224AbXE2N7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:59:50 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:37 -0700
+Date: Tue, 29 May 2007 06:48:32 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmbhh019892@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmWSE019840@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 22/22] 2.6.22-rc3 perfmon2 : new mips files
+Subject: [PATCH 18/22] 2.6.22-rc3 perfmon2 : new powerpc files
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the new mips files
-
+This patch contains the new files for powerpc.
 
 The files are as follows:
 
-arch/mips/perfmon/Kconfig:
+
+arch/powerpc/perfmon/Kconfig:
 	- add menuconfig options
 
-arch/mips/perfmon/Makefile:
+arch/powerpc/perfmon/Makefile:
 	- makefile for arch specific files
 
-arch/mips/perfmon/perfmon.c:
-	- architecture specific perfmon support. Implements architecture specific
-	  operations such as save/restore/start/stop/detect overflow counters
+arch/powerpc/perfmon/perfmon.c:
+	- architecture specific perfmon support. Implements architecrure specific
+	  operations such as save/restore/start/stop/detect overflow counters, ...
 
-arch/mips/perfmon/perfmon_mips64.c:
-	- PMU description table for various MIPS processors
+arch/powerpc/perfmon/perfmon_power5.c:
+	- PMU description table for Power 5
 
-include/asm-mips/perfmon.h:
-	- MIPS specific perfmon definitions
+arch/powerpc/perfmon/perfmon_ppc32.c:
+	- PMU description table for32-bit PowerPC
 
-include/asm-mips/perfmon_api.h:
-	- MIPS user-visible constants
+include/asm-powerpc/perfmon.h:
+	- architecture specific header definitions
+
+include/asm-powerpc/perfmon_api.h:
+	- PPC specific user-visible constants
 
 
-
-
-
---- linux-2.6.22.base/arch/mips/perfmon/Kconfig	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/arch/mips/perfmon/Kconfig	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,23 @@
+--- linux-2.6.22.base/arch/powerpc/perfmon/Kconfig	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/powerpc/perfmon/Kconfig	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,32 @@
 +menu "Hardware Performance Monitoring support"
 +config PERFMON
 +	bool "Perfmon2 performance monitoring interface"
@@ -68,30 +68,40 @@ include/asm-mips/perfmon_api.h:
 + 	help
 +  	Enables perfmon debugging support
 +
-+config PERFMON_MIPS64
-+	tristate "Support for MIPS64 hardware performance counters"
-+	depends on PERFMON
++config PERFMON_POWER5
++	tristate "Support for Power5 hardware performance counters"
++ 	depends on PERFMON && PPC64
 +	default n
 +	help
-+	Enables support for the MIPS64 hardware performance counters"
++	Enables support for the Power 5 hardware performance counters
++	If unsure, say M.
++
++config PERFMON_PPC32
++	tristate "Support for PPC32 hardware performance counters"
++ 	depends on PERFMON && PPC32
++	default n
++	help
++	Enables support for the PPC32 hardware performance counters
++	If unsure, say M.
 +endmenu
---- linux-2.6.22.base/arch/mips/perfmon/Makefile	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/arch/mips/perfmon/Makefile	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,2 @@
+--- linux-2.6.22.base/arch/powerpc/perfmon/Makefile	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/powerpc/perfmon/Makefile	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,3 @@
 +obj-$(CONFIG_PERFMON)		+= perfmon.o
-+obj-$(CONFIG_PERFMON_MIPS64)	+= perfmon_mips64.o
---- linux-2.6.22.base/arch/mips/perfmon/perfmon.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/arch/mips/perfmon/perfmon.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,312 @@
++obj-$(CONFIG_PERFMON_POWER5)	+= perfmon_power5.o
++obj-$(CONFIG_PERFMON_PPC32)	+= perfmon_ppc32.o
+--- linux-2.6.22.base/arch/powerpc/perfmon/perfmon.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/powerpc/perfmon/perfmon.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,285 @@
 +/*
-+ * This file implements the MIPS64 specific
++ * This file implements the powerpc specific
 + * support for the perfmon2 interface
 + *
-+ * Copyright (c) 2005 Philip J. Mucci
++ * Copyright (c) 2005 David Gibson, IBM Corporation.
 + *
 + * based on versions for other architectures:
-+ * Copyright (c) 2005 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@htrpl.hp.com>
++ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -106,9 +116,8 @@ include/asm-mips/perfmon_api.h:
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
-+  */
++ */
 +#include <linux/interrupt.h>
-+#include <linux/module.h>
 +#include <linux/perfmon.h>
 +
 +/*
@@ -116,29 +125,30 @@ include/asm-mips/perfmon_api.h:
 + * and from PMU interrupt handler. Must fill in set->povfl_pmds[]
 + * and set->npend_ovfls. Interrupts are masked
 + */
-+static void __pfm_get_ovfl_pmds(struct pfm_context *ctx, struct pfm_event_set *set)
++static void __pfm_get_ovfl_pmds(struct pfm_context *ctx,
++				struct pfm_event_set *set)
 +{
-+ 	u64 new_val, wmask;
++	u64 new_val, wmask;
 +	u64 *used_mask, *cnt_pmds;
 +	u64 mask[PFM_PMD_BV];
 +	unsigned int i, max;
 +
 +	max = pfm_pmu_conf->max_cnt_pmd;
-+	cnt_pmds = pfm_pmu_conf->cnt_pmds;
 +	used_mask = set->used_pmds;
++	cnt_pmds = pfm_pmu_conf->cnt_pmds;
 +	wmask = 1ULL << pfm_pmu_conf->counter_width;
-+	bitmap_and(ulp(mask),ulp(cnt_pmds),ulp(used_mask),max);
-+	
++	bitmap_and(ulp(mask), ulp(cnt_pmds), ulp(used_mask), max);
++
 +	for (i = 0; i < max; i++) {
 +		/* assume all PMD are counters */
 +		if (test_bit(i, mask)) {
 +			new_val = pfm_arch_read_pmd(ctx, i);
 +
-+ 			PFM_DBG_ovfl("pmd%u new_val=0x%llx bit=%d\n",
-+  				 i, (unsigned long long)new_val,
-+				 (new_val&wmask) ? 1 : 0);
++			PFM_DBG_ovfl("pmd%u new_val=0x%llx bit=%d",
++				     i, (unsigned long long)new_val,
++				     (new_val & wmask) ? 1 : 0);
 +
-+  			if (new_val & wmask) {
++			if (!(new_val & wmask)) {
 +				__set_bit(i, set->povfl_pmds);
 +				set->npend_ovfls++;
 +			}
@@ -146,20 +156,18 @@ include/asm-mips/perfmon_api.h:
 +	}
 +}
 +
-+static void pfm_stop_active(struct task_struct *task, struct pfm_context *ctx,
-+			       struct pfm_event_set *set)
++static void pfm_stop_active(struct task_struct *task,
++			    struct pfm_context *ctx, struct pfm_event_set *set)
 +{
 +	unsigned int i, max;
 +
 +	max = pfm_pmu_conf->max_pmc;
-+
 +	/*
 +	 * clear enable bits
 +	 */
-+	for (i = 0; i < max; i++) {
++	for (i = 0; i < max; i++)
 +		if (test_bit(i, set->used_pmcs))
 +			pfm_arch_write_pmc(ctx, i,0);
-+	}
 +
 +	if (set->npend_ovfls)
 +		return;
@@ -174,13 +182,12 @@ include/asm-mips/perfmon_api.h:
 + *
 + * for per-thread:
 + * 	must stop monitoring for the task
-+ *
 + * Return:
 + * 	non-zero : did not save PMDs (as part of stopping the PMU)
 + * 	       0 : saved PMDs (no need to save them in caller)
 + */
-+int pfm_arch_ctxswout_thread(struct task_struct *task, struct pfm_context *ctx,
-+			      struct pfm_event_set *set)
++int pfm_arch_ctxswout_thread(struct task_struct *task,
++			     struct pfm_context *ctx, struct pfm_event_set *set)
 +{
 +	/*
 +	 * disable lazy restore of PMC registers.
@@ -193,8 +200,7 @@ include/asm-mips/perfmon_api.h:
 +}
 +
 +/*
-+ * Called from pfm_stop() and pfm_ctxsw() when idle
-+ * task and EXCL_IDLE is on.
++ * Called from pfm_stop() and idle notifier
 + *
 + * Interrupts are masked. Context is locked. Set is the active set.
 + *
@@ -209,8 +215,8 @@ include/asm-mips/perfmon_api.h:
 + *
 + * must disable active monitoring. ctx cannot be NULL
 + */
-+void pfm_arch_stop(struct task_struct *task, struct pfm_context *ctx,
-+		   struct pfm_event_set *set)
++void pfm_arch_stop(struct task_struct *task,
++		   struct pfm_context *ctx, struct pfm_event_set *set)
 +{
 +	/*
 +	 * no need to go through stop_save()
@@ -227,36 +233,22 @@ include/asm-mips/perfmon_api.h:
 +}
 +
 +/*
-+ * function called from pfm_unload_context_*(). Context is locked.
-+ * interrupts are masked. task is not guaranteed to be current task.
-+ * Access to PMU is not guaranteed.
-+ *
-+ * function must do whatever arch-specific action is required on unload
-+ * of a context.
-+ *
-+ * called for both system-wide and per-thread. task is NULL for ssytem-wide
-+ */
-+void pfm_arch_unload_context(struct pfm_context *ctx, struct task_struct *task)
-+{
-+}
-+
-+/*
-+ * called from pfm_start() or pfm_ctxsw() when idle task and
-+ * EXCL_IDLE is on.
++ * called from pfm_start() and idle notifier
 + *
 + * Interrupts are masked. Context is locked. Set is the active set.
 + *
-+ * For per-trhead:
++ * For per-thread:
 + * 	Task is not necessarily current. If not current task, then task
-+ * 	is guaranteed stopped and off any cpu. Access to PMU is not guaranteed.
++ * 	is guaranteed stopped and off any cpu. No access to PMU is task
++ *	is not current.
 + *
 + * For system-wide:
 + * 	task is always current
 + *
 + * must enable active monitoring.
 + */
-+void pfm_arch_start(struct task_struct *task, struct pfm_context *ctx,
-+	            struct pfm_event_set *set)
++void pfm_arch_start(struct task_struct *task,
++		    struct pfm_context *ctx, struct pfm_event_set *set)
 +{
 +	unsigned int i, max_pmc;
 +
@@ -265,10 +257,9 @@ include/asm-mips/perfmon_api.h:
 +
 +	max_pmc = pfm_pmu_conf->max_pmc;
 +
-+	for (i = 0; i < max_pmc; i++) {
-+		if (test_bit(i, set->used_pmcs))
++	for (i = 0; i < max_pmc; i++)
++		if (test_bit(i,set->used_pmcs))
 +		    pfm_arch_write_pmc(ctx, i, set->pmcs[i]);
-+	}
 +}
 +
 +/*
@@ -297,7 +288,7 @@ include/asm-mips/perfmon_api.h:
 +	 */
 +	for (i = 0; i < max_pmd; i++) {
 +
-+		if (test_bit(i, impl_pmds) == 0)
++		if (!test_bit(i, impl_pmds))
 +			continue;
 +
 +		val = pmds[i];
@@ -314,8 +305,8 @@ include/asm-mips/perfmon_api.h:
 +
 +/*
 + * function called from pfm_switch_sets(), pfm_context_load_thread(),
-+ * pfm_context_load_sys(), pfm_ctxsw().
-+ * Context is locked. Interrupts are masked. set cannot be NULL.
++ * pfm_context_load_sys(), pfm_ctxsw(), pfm_switch_sets()
++ * context is locked. Interrupts are masked. set cannot be NULL.
 + * Access to the PMU is guaranteed.
 + *
 + * function must restore all PMC registers from set, if needed.
@@ -346,63 +337,55 @@ include/asm-mips/perfmon_api.h:
 +
 +char *pfm_arch_get_pmu_module_name(void)
 +{
-+	switch(cpu_data->cputype) {
-+#ifndef CONFIG_SMP
-+	case CPU_34K:
-+#if defined(CPU_74K)
-+	case CPU_74K:
-+#endif
-+#endif
-+	case CPU_SB1:
-+	case CPU_SB1A:
-+	case CPU_25KF:
-+	case CPU_24K:
-+	case CPU_20KC:
-+	case CPU_5KC:
-+	  return "perfmon_mips64";
-+	default:
-+	  return NULL;
++	unsigned int pvr = mfspr(SPRN_PVR);
++
++	switch (PVR_VER(pvr)) {
++	case 0x0004: /* 604 */
++	case 0x0009: /* 604e;  */
++	case 0x000A: /* 604ev */
++	case 0x0008: /* 750/740 */
++	case 0x7000: /* 750FX */
++	case 0x7001:
++	case 0x7002: /* 750GX */
++	case 0x000C: /* 7400 */
++	case 0x800C: /* 7410 */
++	case 0x8000: /* 7451/7441 */
++	case 0x8001: /* 7455/7445 */
++	case 0x8002: /* 7457/7447 */
++	case 0x8003: /* 7447A */
++	case 0x8004: /* 7448 */
++		return("perfmon_ppc32");
++	case PV_POWER4:
++	case PV_POWER4p:
++		return "perfmon_power4";
++	case PV_POWER5:
++	case PV_POWER5p:
++		return "perfmon_power5";
++	case PV_970:
++	case PV_970FX:
++	case PV_970MP:
++		return "perfmon_ppc970";
++	case PV_BE:
++		return "perfmon_cell";
 +	}
 +	return NULL;
 +}
 +
-+int perfmon_perf_irq(void)
++void pfm_arch_init_percpu(void)
 +{
-+  /* BLATANTLY STOLEN FROM OPROFILE, then modified */
-+  struct pt_regs *regs;
-+  unsigned int counters = pfm_pmu_conf->max_pmc;
-+  unsigned int control;
-+  unsigned int counter;
-+
-+  regs = get_irq_regs();
-+  switch (counters) {
-+#define HANDLE_COUNTER(n)						\
-+	case n + 1:							\
-+		control = read_c0_perfctrl ## n();			\
-+		counter = read_c0_perfcntr ## n();			\
-+		if ((control & MIPS64_PMC_INT_ENABLE_MASK) &&		\
-+		    (counter & MIPS64_PMD_INTERRUPT)) {			\
-+			pfm_interrupt_handler(instruction_pointer(regs),\
-+					      regs);                    \
-+			return(1);					\
-+		}
-+      HANDLE_COUNTER(3)
-+      HANDLE_COUNTER(2)
-+      HANDLE_COUNTER(1)
-+      HANDLE_COUNTER(0)
-+      }
-+
-+  return 0;
++#ifdef CONFIG_PPC64
++	extern void ppc64_enable_pmcs(void);
++	ppc64_enable_pmcs();
++#endif
 +}
-+EXPORT_SYMBOL(perfmon_perf_irq);
---- linux-2.6.22.base/arch/mips/perfmon/perfmon_mips64.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/arch/mips/perfmon/perfmon_mips64.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,187 @@
+--- linux-2.6.22.base/arch/powerpc/perfmon/perfmon_power5.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/powerpc/perfmon/perfmon_power5.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,96 @@
 +/*
-+ * This file contains the MIPS64 and decendent PMU register description tables
++ * This file contains the POWER5 PMU register description tables
 + * and pmc checker used by perfmon.c.
 + *
-+ * Copyright (c) 2005 Philip Mucci
++ * Copyright (c) 2005 David Gibson, IBM Corporation.
 + *
 + * Based on perfmon_p6.c:
 + * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
@@ -425,177 +408,296 @@ include/asm-mips/perfmon_api.h:
 +#include <linux/module.h>
 +#include <linux/perfmon.h>
 +
-+MODULE_AUTHOR("Philip Mucci <mucci@cs.utk.edu>");
-+MODULE_DESCRIPTION("MIPS64 PMU description tables");
++MODULE_AUTHOR("David Gibson <dwg@au1.ibm.com>");
++MODULE_DESCRIPTION("POWER5 PMU description table");
 +MODULE_LICENSE("GPL");
 +
-+/*
-+ * reserved:
-+ * 	- bit 63-9
-+ * RSVD: reserved bits must be 1
++struct pfm_arch_pmu_info pfm_power5_pmu_info = {
++	.pmu_style = PFM_POWERPC_PMU_POWER5,
++};
++
++static struct pfm_reg_desc pfm_power5_pmc_desc[]={
++/* mmcr0 */ PMC_D(PFM_REG_I, "MMCR0", MMCR0_FC, 0, 0, SPRN_MMCR0),
++/* mmcr1 */ PMC_D(PFM_REG_I, "MMCR1", 0, 0, 0, SPRN_MMCR1),
++/* mmcra */ PMC_D(PFM_REG_I, "MMCRA", 0, 0, 0, SPRN_MMCRA)
++};
++#define PFM_PM_NUM_PMCS	ARRAY_SIZE(pfm_power5_pmc_desc)
++
++/* The TB and PURR registers are read-only. Also, note that the TB register
++ * actually consists of both the 32-bit SPRN_TBRU and SPRN_TBRL registers.
++ * For Perfmon2's purposes, we'll treat it as a single 64-bit register.
 + */
-+#define PFM_MIPS64_PMC_RSVD 0xfffffffffffffe10ULL
-+#define PFM_MIPS64_PMC_VAL  (1ULL<<4)
-+
-+extern int null_perf_irq(struct pt_regs *regs);
-+extern int (*perf_irq)(struct pt_regs *regs);
-+extern int perfmon_perf_irq(struct pt_regs *regs);
-+
-+static struct pfm_arch_pmu_info pfm_mips64_pmu_info;
-+
-+static struct pfm_reg_desc pfm_mips64_pmc_desc[]={
-+/* pmc0 */  PMC_D(PFM_REG_I64, "CP0_25_0", PFM_MIPS64_PMC_VAL, PFM_MIPS64_PMC_RSVD, 0, 0),
-+/* pmc1 */  PMC_D(PFM_REG_I64, "CP0_25_1", PFM_MIPS64_PMC_VAL, PFM_MIPS64_PMC_RSVD, 0, 1),
-+/* pmc2 */  PMC_D(PFM_REG_I64, "CP0_25_2", PFM_MIPS64_PMC_VAL, PFM_MIPS64_PMC_RSVD, 0, 2),
-+/* pmc3 */  PMC_D(PFM_REG_I64, "CP0_25_3", PFM_MIPS64_PMC_VAL, PFM_MIPS64_PMC_RSVD, 0, 3)
++static struct pfm_reg_desc pfm_power5_pmd_desc[]={
++/* tb    */ PMD_D((PFM_REG_I|PFM_REG_RO), "TB", SPRN_TBRL),
++/* pmd1  */ PMD_D(PFM_REG_C, "PMC1", SPRN_PMC1),
++/* pmd2  */ PMD_D(PFM_REG_C, "PMC2", SPRN_PMC2),
++/* pmd3  */ PMD_D(PFM_REG_C, "PMC3", SPRN_PMC3),
++/* pmd4  */ PMD_D(PFM_REG_C, "PMC4", SPRN_PMC4),
++/* pmd5  */ PMD_D(PFM_REG_C, "PMC5", SPRN_PMC5),
++/* pmd6  */ PMD_D(PFM_REG_C, "PMC6", SPRN_PMC6),
++/* purr  */ PMD_D((PFM_REG_I|PFM_REG_RO), "PURR", SPRN_PURR),
 +};
-+#define PFM_MIPS64_NUM_PMCS ARRAY_SIZE(pfm_mips64_pmc_desc)
++#define PFM_PM_NUM_PMDS	ARRAY_SIZE(pfm_power5_pmd_desc)
 +
-+static struct pfm_reg_desc pfm_mips64_pmd_desc[]={
-+/* pmd0 */ PMD_D(PFM_REG_C, "CP0_25_0", 0),
-+/* pmd1 */ PMD_D(PFM_REG_C, "CP0_25_1", 1),
-+/* pmd2 */ PMD_D(PFM_REG_C, "CP0_25_2", 2),
-+/* pmd3 */ PMD_D(PFM_REG_C, "CP0_25_3", 3)
-+};
-+#define PFM_MIPS64_NUM_PMDS ARRAY_SIZE(pfm_mips64_pmd_desc)
-+
-+static int pfm_mips64_probe_pmu(void)
++static int pfm_power5_probe_pmu(void)
 +{
-+	struct cpuinfo_mips *c = &current_cpu_data;
++	unsigned long pvr = mfspr(SPRN_PVR);
 +
-+	switch (c->cputype) {
-+#ifndef CONFIG_SMP
-+	case CPU_34K:
-+#if defined(CPU_74K)
-+	case CPU_74K:
-+#endif
-+#endif
-+	case CPU_SB1:
-+	case CPU_SB1A:
-+	case CPU_25KF:
-+	case CPU_24K:
-+	case CPU_20KC:
-+	case CPU_5KC:
-+		return 0;
-+		break;
-+	default:
-+		PFM_INFO("Unknown cputype 0x%x",c->cputype);
-+	}
-+	return -1;
++	if (PVR_VER(pvr) != PV_POWER5)
++		return -1;
++
++	return 0;
 +}
 +
 +/*
 + * impl_pmcs, impl_pmds are computed at runtime to minimize errors!
 + */
-+static struct pfm_pmu_config pfm_mips64_pmu_conf = {
-+	.pmu_name = "MIPS", /* placeholder */
++static struct pfm_pmu_config pfm_power5_pmu_conf = {
++	.pmu_name = "POWER5",
 +	.counter_width = 31,
-+	.pmd_desc = pfm_mips64_pmd_desc,
-+	.pmc_desc = pfm_mips64_pmc_desc,
-+	.num_pmc_entries = PFM_MIPS64_NUM_PMCS,
-+	.num_pmd_entries = PFM_MIPS64_NUM_PMDS,
-+	.probe_pmu = pfm_mips64_probe_pmu,
++	.pmd_desc = pfm_power5_pmd_desc,
++	.pmc_desc = pfm_power5_pmc_desc,
++	.num_pmc_entries = PFM_PM_NUM_PMCS,
++	.num_pmd_entries = PFM_PM_NUM_PMDS,
++	.probe_pmu  = pfm_power5_probe_pmu,
++	.arch_info = &pfm_power5_pmu_info,
 +	.flags = PFM_PMU_BUILTIN_FLAG,
-+	.owner = THIS_MODULE,
-+	.arch_info = &pfm_mips64_pmu_info
++	.owner = THIS_MODULE
 +};
-+
-+static inline int n_counters(void)
++	
++static int __init pfm_power5_pmu_init_module(void)
 +{
-+	if (!(read_c0_config1() & MIPS64_CONFIG_PMC_MASK))
-+		return 0;
-+	if (!(read_c0_perfctrl0() & MIPS64_PMC_CTR_MASK))
-+		return 1;
-+	if (!(read_c0_perfctrl1() & MIPS64_PMC_CTR_MASK))
-+		return 2;
-+	if (!(read_c0_perfctrl2() & MIPS64_PMC_CTR_MASK))
-+		return 3;
-+	return 4;
++	return pfm_pmu_register(&pfm_power5_pmu_conf);
 +}
 +
-+static int __init pfm_mips64_pmu_init_module(void)
++static void __exit pfm_power5_pmu_cleanup_module(void)
 +{
-+	struct cpuinfo_mips *c = &current_cpu_data;
-+	int i, ret, num;
-+
-+	switch (c->cputype) {
-+	case CPU_5KC:
-+		pfm_mips64_pmu_conf.pmu_name = "MIPS5KC";
-+		break;
-+	case CPU_20KC:
-+		pfm_mips64_pmu_conf.pmu_name = "MIPS20KC";
-+		break;
-+	case CPU_24K:
-+		pfm_mips64_pmu_conf.pmu_name = "MIPS24K";
-+		break;
-+	case CPU_25KF:
-+		pfm_mips64_pmu_conf.pmu_name = "MIPS25KF";
-+		break;
-+	case CPU_SB1:
-+		pfm_mips64_pmu_conf.pmu_name = "SB1";
-+		break;
-+	case CPU_SB1A:
-+	pfm_mips64_pmu_conf.pmu_name = "SB1A";
-+		break;
-+#ifndef CONFIG_SMP
-+	case CPU_34K:
-+		pfm_mips64_pmu_conf.pmu_name = "MIPS34K";
-+		break;
-+#if defined(CPU_74K)
-+	case CPU_74K:
-+		pfm_mips64_pmu_conf.pmu_name = "MIPS74K";
-+		break;
-+#endif
-+#endif
-+	default:
-+		PFM_INFO("Unknown cputype 0x%x",c->cputype);
-+		return -1;
-+	}
-+
-+	num = n_counters();
-+	if (num == 0) {
-+		PFM_INFO("cputype 0x%x has no counters",c->cputype);
-+		return -1;
-+	}
-+	/* mark remaining counters unavailable */
-+	for(i=num; i < PFM_MIPS64_NUM_PMCS; i++) {
-+		pfm_mips64_pmc_desc[i].type = PFM_REG_NA;
-+	}
-+
-+	for(i=num; i < PFM_MIPS64_NUM_PMDS; i++) {
-+		pfm_mips64_pmd_desc[i].type = PFM_REG_NA;
-+	}
-+
-+	pfm_mips64_pmu_conf.num_pmc_entries = num;
-+	pfm_mips64_pmu_conf.num_pmd_entries = num;
-+
-+	pfm_mips64_pmu_info.pmu_style = c->cputype;
-+
-+	ret = pfm_pmu_register(&pfm_mips64_pmu_conf);
-+	if (ret == 0)
-+		perf_irq = perfmon_perf_irq;
-+	return ret;
++	pfm_pmu_unregister(&pfm_power5_pmu_conf);
 +}
 +
-+static void __exit pfm_mips64_pmu_cleanup_module(void)
-+{
-+	pfm_pmu_unregister(&pfm_mips64_pmu_conf);
-+	perf_irq = null_perf_irq;
-+}
-+
-+module_init(pfm_mips64_pmu_init_module);
-+module_exit(pfm_mips64_pmu_cleanup_module);
---- linux-2.6.22.base/include/asm-mips/perfmon.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/include/asm-mips/perfmon.h	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,370 @@
++module_init(pfm_power5_pmu_init_module);
++module_exit(pfm_power5_pmu_cleanup_module);
+--- linux-2.6.22.base/arch/powerpc/perfmon/perfmon_ppc32.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/powerpc/perfmon/perfmon_ppc32.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,207 @@
 +/*
-+ * Copyright (c) 2005 Philip Mucci.
++ * This file contains the PPC32 PMU register description tables
++ * and pmc checker used by perfmon.c.
 + *
-+ * Based on other versions:
++ * Philip Mucci, mucci@cs.utk.edu
++ *
++ * Based on code from:
++ * Copyright (c) 2005 David Gibson, IBM Corporation.
++ *
++ * Based on perfmon_p6.c:
 + * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
 + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
 + *
-+ * This file contains mips64 specific definitions for the perfmon
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/module.h>
++#include <linux/perfmon.h>
++#include <asm/reg.h>
++
++MODULE_AUTHOR("Philip Mucci <mucci@cs.utk.edu>");
++MODULE_DESCRIPTION("PPC32 PMU description table");
++MODULE_LICENSE("GPL");
++
++struct pfm_arch_pmu_info pfm_ppc32_pmu_info = {
++	.pmu_style = PFM_POWERPC_PMU_NONE,
++};
++
++static struct pfm_pmu_config pfm_ppc32_pmu_conf;
++
++static struct pfm_reg_desc pfm_ppc32_pmc_desc[] = {
++/* mmcr0 */ PMC_D(PFM_REG_I, "MMCR0", 0x0, 0, 0, SPRN_MMCR0),
++/* mmcr1 */ PMC_D(PFM_REG_I, "MMCR1", 0x0, 0, 0, SPRN_MMCR1),
++/* mmcr2 */ PMC_D(PFM_REG_I, "MMCR2", 0x0, 0, 0, SPRN_MMCR2),
++};
++#define PFM_PM_NUM_PMCS	ARRAY_SIZE(pfm_ppc32_pmc_desc)
++
++static struct pfm_reg_desc pfm_ppc32_pmd_desc[] = {
++/* pmd0  */ PMD_D(PFM_REG_C, "PMC1", SPRN_PMC1),
++/* pmd1  */ PMD_D(PFM_REG_C, "PMC2", SPRN_PMC2),
++/* pmd2  */ PMD_D(PFM_REG_C, "PMC3", SPRN_PMC3),
++/* pmd3  */ PMD_D(PFM_REG_C, "PMC4", SPRN_PMC4),
++/* pmd4  */ PMD_D(PFM_REG_C, "PMC5", SPRN_PMC5),
++/* pmd5  */ PMD_D(PFM_REG_C, "PMC6", SPRN_PMC6),
++};
++#define PFM_PM_NUM_PMDS	ARRAY_SIZE(pfm_ppc32_pmd_desc)
++
++static void perfmon_perf_irq(struct pt_regs *regs)
++{
++	u32 mmcr0;
++
++	/* BLATANTLY STOLEN FROM OPROFILE, then modified */
++
++	/* set the PMM bit (see comment below) */
++	mtmsr(mfmsr() | MSR_PMM);
++
++	pfm_interrupt_handler(instruction_pointer(regs), regs);
++
++	/* The freeze bit was set by the interrupt.
++	 * Clear the freeze bit, and reenable the interrupt.
++	 * The counters won't actually start until the rfi clears
++	 * the PMM bit.
++	 */
++
++	/* Unfreezes the counters on this CPU, enables the interrupt,
++	 * enables the counters to trigger the interrupt, and sets the
++	 * counters to only count when the mark bit is not set.
++	 */
++	mmcr0 = mfspr(SPRN_MMCR0);
++
++	mmcr0 &= ~(MMCR0_FC | MMCR0_FCM0);
++	mmcr0 |= (MMCR0_FCECE | MMCR0_PMC1CE | MMCR0_PMCnCE | MMCR0_PMXE);
++
++	mtspr(SPRN_MMCR0, mmcr0);
++}
++
++static int pfm_ppc32_probe_pmu(void)
++{
++	enum ppc32_pmu_type pm_type;
++	int nmmcr = 0, npmds = 0, intsok = 0, i;
++	unsigned int pvr;
++	char *str;
++
++	pvr = mfspr(SPRN_PVR);
++
++	switch (PVR_VER(pvr)) {
++	case 0x0004: /* 604 */
++		str = "PPC604";
++		pm_type = PFM_POWERPC_PMU_604;
++		nmmcr = 1;
++		npmds = 2;
++		break;
++	case 0x0009: /* 604e;  */
++	case 0x000A: /* 604ev */
++		str = "PPC604e";
++		pm_type = PFM_POWERPC_PMU_604e;
++		nmmcr = 2;
++		npmds = 4;
++		break;
++	case 0x0008: /* 750/740 */
++		str = "PPC750";
++		pm_type = PFM_POWERPC_PMU_750;
++		nmmcr = 2;
++		npmds = 4;
++		break;
++	case 0x7000: /* 750FX */
++	case 0x7001:
++		str = "PPC750";
++		pm_type = PFM_POWERPC_PMU_750;
++		nmmcr = 2;
++		npmds = 4;
++		if ((pvr & 0xFF0F) >= 0x0203)
++			intsok = 1;
++		break;
++	case 0x7002: /* 750GX */
++		str = "PPC750";
++		pm_type = PFM_POWERPC_PMU_750;
++		nmmcr = 2;
++		npmds = 4;
++		intsok = 1;
++	case 0x000C: /* 7400 */
++		str = "PPC7400";
++		pm_type = PFM_POWERPC_PMU_7400;
++		nmmcr = 3;
++		npmds = 4;
++		break;
++	case 0x800C: /* 7410 */
++		str = "PPC7410";
++		pm_type = PFM_POWERPC_PMU_7400;
++		nmmcr = 3;
++		npmds = 4;
++		if ((pvr & 0xFFFF) >= 0x01103)
++			intsok = 1;
++		break;
++	case 0x8000: /* 7451/7441 */
++	case 0x8001: /* 7455/7445 */
++	case 0x8002: /* 7457/7447 */
++	case 0x8003: /* 7447A */
++	case 0x8004: /* 7448 */
++		str = "PPC7450";
++		pm_type = PFM_POWERPC_PMU_7450;
++		nmmcr = 3; npmds = 6;
++		intsok = 1;
++		break;
++	default:
++		PFM_INFO("Unknown PVR_VER(0x%x)\n", PVR_VER(pvr));
++		return -1;
++	}
++
++	/*
++	 * deconfigure unimplemented registers
++	 */
++	for (i = npmds; i < PFM_PM_NUM_PMDS; i++)
++		pfm_ppc32_pmd_desc[i].type = PFM_REG_NA;
++
++	for (i = nmmcr; i < PFM_PM_NUM_PMCS; i++)
++		pfm_ppc32_pmc_desc[i].type = PFM_REG_NA;
++
++	/*
++	 * update PMU description structure
++	 */
++	pfm_ppc32_pmu_conf.pmu_name = str;
++	pfm_ppc32_pmu_info.pmu_style = pm_type;
++	pfm_ppc32_pmu_conf.num_pmc_entries = nmmcr;
++	pfm_ppc32_pmu_conf.num_pmd_entries = npmds;
++
++	if (intsok == 0)
++		PFM_INFO("Interrupts unlikely to work\n");
++
++	return reserve_pmc_hardware(perfmon_perf_irq);
++}
++
++static struct pfm_pmu_config pfm_ppc32_pmu_conf = {
++	.counter_width = 31,
++	.pmd_desc = pfm_ppc32_pmd_desc,
++	.pmc_desc = pfm_ppc32_pmc_desc,
++	.probe_pmu  = pfm_ppc32_probe_pmu,
++	.flags = PFM_PMU_BUILTIN_FLAG,
++	.owner = THIS_MODULE,
++	.version = "0.1",
++	.arch_info = &pfm_ppc32_pmu_info,
++};
++	
++static int __init pfm_ppc32_pmu_init_module(void)
++{
++	return pfm_pmu_register(&pfm_ppc32_pmu_conf);
++}
++
++static void __exit pfm_ppc32_pmu_cleanup_module(void)
++{
++	release_pmc_hardware();
++	pfm_pmu_unregister(&pfm_ppc32_pmu_conf);
++}
++
++module_init(pfm_ppc32_pmu_init_module);
++module_exit(pfm_ppc32_pmu_cleanup_module);
+--- linux-2.6.22.base/include/asm-powerpc/perfmon.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/include/asm-powerpc/perfmon.h	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,365 @@
++/*
++ * Copyright (c) 2005 David Gibson, IBM Corporation.
++ *
++ * Based on other versions:
++ * Copyright (c) 2005 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * This file contains powerpc specific definitions for the perfmon
 + * interface.
 + *
 + * This file MUST never be included directly. Use linux/perfmon.h.
@@ -613,59 +715,35 @@ include/asm-mips/perfmon_api.h:
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
-+  */
-+#ifndef _ASM_MIPS64_PERFMON_H_
-+#define _ASM_MIPS64_PERFMON_H_
++ */
++#ifndef _ASM_POWERPC_PERFMON_H_
++#define _ASM_POWERPC_PERFMON_H_
 +
 +#ifdef __KERNEL__
 +
-+#define PFM_ARCH_PMD_STK_ARG	2
-+#define PFM_ARCH_PMC_STK_ARG	2
++#include <asm/pmc.h>
 +
-+struct pfm_arch_pmu_info {
-+	u32 pmu_style;
++enum powerpc_pmu_type {
++	PFM_POWERPC_PMU_NONE,
++	PFM_POWERPC_PMU_604,
++	PFM_POWERPC_PMU_604e,
++	PFM_POWERPC_PMU_750,	/* XXX: Minor event set diffs between IBM and Moto. */
++	PFM_POWERPC_PMU_7400,
++	PFM_POWERPC_PMU_7450,
++	PFM_POWERPC_PMU_POWER5,
 +};
 +
-+#define MIPS64_CONFIG_PMC_MASK (1 << 4)
-+#define MIPS64_PMC_INT_ENABLE_MASK (1 << 4)
-+#define MIPS64_PMC_CNT_ENABLE_MASK (0xf)
-+#define MIPS64_PMC_EVT_MASK (0x7 << 6)
-+#define MIPS64_PMC_CTR_MASK (1 << 31)
-+#define MIPS64_PMD_INTERRUPT (1 << 31)
++struct pfm_arch_pmu_info {
++	enum powerpc_pmu_type pmu_style;
++};
 +
-+/* Coprocessor register 25 contains the PMU interface. */
-+/* Sel 0 is control for counter 0 */
-+/* Sel 1 is count for counter 0. */
-+/* Sel 2 is control for counter 1. */
-+/* Sel 3 is count for counter 1. */
-+
-+/*
-+
-+31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4  3 2 1 0
-+M  0--------------------------------------------------------------0 Event-- IE U S K EXL
-+
-+M 31 If this bit is one, another pair of Performance Control
-+and Counter registers is implemented at a MTC0
-+
-+Event 8:5 Counter event enabled for this counter. Possible events
-+are listed in Table 6-30. R/W Undefined
-+
-+IE 4 Counter Interrupt Enable. This bit masks bit 31 of the
-+associated count register from the interrupt exception
-+request output. R/W 0
-+
-+U 3 Count in User Mode. When this bit is set, the specified
-+event is counted in User Mode. R/W Undefined
-+
-+S 2 Count in Supervisor Mode. When this bit is set, the
-+specified event is counted in Supervisor Mode. R/W Undefined
-+
-+K 1 Count in Kernel Mode. When this bit is set, count the
-+event in Kernel Mode when EXL and ERL both are 0. R/W Undefined
-+
-+EXL 0 Count when EXL. When this bit is set, count the event
-+when EXL = 1 and ERL = 0. R/W Undefined
-+*/
++#ifdef CONFIG_PPC32
++#define PFM_ARCH_PMD_STK_ARG	6 /* conservative value */
++#define PFM_ARCH_PMC_STK_ARG	6 /* conservative value */
++#else
++#define PFM_ARCH_PMD_STK_ARG	8 /* conservative value */
++#define PFM_ARCH_PMC_STK_ARG	8 /* conservative value */
++#endif
 +
 +static inline void pfm_arch_resend_irq(void)
 +{}
@@ -673,110 +751,117 @@ include/asm-mips/perfmon_api.h:
 +static inline void pfm_arch_serialize(void)
 +{}
 +
-+
-+static inline void pfm_arch_unfreeze_pmu(void)
-+{}
-+
-+/*
-+ * MIPS does not save the PMDs during pfm_arch_intr_freeze_pmu(), thus
-+ * this routine needs to do it when switching sets on overflow
-+ */
-+static inline void pfm_arch_save_pmds_from_intr(struct pfm_context *ctx,
-+					   struct pfm_event_set *set)
-+{
-+	pfm_save_pmds(ctx, set);
-+}
-+
 +static inline void pfm_arch_write_pmc(struct pfm_context *ctx,
-+				      unsigned int cnum, u64 value)
++				      unsigned int cnum,
++				      u64 value)
 +{
-+  /*
-+   * we only write to the actual register when monitoring is
-+   * active (pfm_start was issued)
-+   */
-+  if (ctx && (ctx->flags.started == 0))
-+	  return;
++	/*
++	 * we only write to the actual register when monitoring is
++	 * active (pfm_start was issued)
++	 */
++	if (ctx && (ctx->flags.started == 0))
++		return;
 +
-+  switch(pfm_pmu_conf->pmc_desc[cnum].hw_addr) {
-+  case 0:
-+    write_c0_perfctrl0(value);
-+    break;
-+  case 1:
-+    write_c0_perfctrl1(value);
-+    break;
-+  case 2:
-+    write_c0_perfctrl2(value);
-+    break;
-+  case 3:
-+    write_c0_perfctrl3(value);
-+    break;
-+  default:
-+    BUG();
-+  }
-+}
-+
-+static inline void pfm_arch_write_pmd(struct pfm_context *ctx,
-+				      unsigned int cnum, u64 value)
-+{
-+  value &= pfm_pmu_conf->ovfl_mask;
-+
-+  switch(pfm_pmu_conf->pmd_desc[cnum].hw_addr) {
-+  case 0:
-+    write_c0_perfcntr0(value);
-+    break;
-+  case 1:
-+    write_c0_perfcntr1(value);
-+    break;
-+  case 2:
-+    write_c0_perfcntr2(value);
-+    break;
-+  case 3:
-+    write_c0_perfcntr3(value);
-+    break;
-+  default:
-+    BUG();
-+  }
-+}
-+
-+static inline u64 pfm_arch_read_pmd(struct pfm_context *ctx, unsigned int cnum)
-+{
-+	switch(pfm_pmu_conf->pmd_desc[cnum].hw_addr) {
-+	case 0:
-+		return read_c0_perfcntr0();
++	switch (pfm_pmu_conf->pmc_desc[cnum].hw_addr) {
++	case SPRN_MMCR0:
++		mtspr(SPRN_MMCR0, value);
 +		break;
-+	case 1:
-+		return read_c0_perfcntr1();
++	case SPRN_MMCR1:
++		mtspr(SPRN_MMCR1, value);
 +		break;
-+	case 2:
-+		return read_c0_perfcntr2();
++#ifdef CONFIG_PPC64
++	case SPRN_MMCRA:
++		mtspr(SPRN_MMCRA, value);
 +		break;
-+	case 3:
-+		return read_c0_perfcntr3();
++#else
++	case SPRN_MMCR2:
++		mtspr(SPRN_MMCR2, value);
 +		break;
++#endif
 +	default:
 +		BUG();
-+		return 0;
 +	}
 +}
 +
 +static inline u64 pfm_arch_read_pmc(struct pfm_context *ctx, unsigned int cnum)
 +{
-+	switch(pfm_pmu_conf->pmc_desc[cnum].hw_addr) {
-+	case 0:
-+		return read_c0_perfctrl0();
-+		break;
-+	case 1:
-+		return read_c0_perfctrl1();
-+		break;
-+	case 2:
-+		return read_c0_perfctrl2();
-+		break;
-+	case 3:
-+		return read_c0_perfctrl3();
-+		break;
++	switch (pfm_pmu_conf->pmc_desc[cnum].hw_addr) {
++	case SPRN_MMCR0:
++		return mfspr(SPRN_MMCR0);
++	case SPRN_MMCR1:
++		return mfspr(SPRN_MMCR1);
++#ifdef CONFIG_PPC64
++	case SPRN_MMCRA:
++		return mfspr(SPRN_MMCRA);
++#else
++	case SPRN_MMCR2:
++		return mfspr(SPRN_MMCR2);
++#endif
 +	default:
 +		BUG();
-+		return 0;
++	}
++}
++
++static inline void pfm_arch_write_pmd(struct pfm_context *ctx,
++				      unsigned int cnum, u64 value)
++{
++	value &= pfm_pmu_conf->ovfl_mask;
++
++	switch (pfm_pmu_conf->pmd_desc[cnum].hw_addr) {
++	case SPRN_PMC1:
++		mtspr(SPRN_PMC1, value);
++		break;
++	case SPRN_PMC2:
++		mtspr(SPRN_PMC2, value);
++		break;
++	case SPRN_PMC3:
++		mtspr(SPRN_PMC3, value);
++		break;
++	case SPRN_PMC4:
++		mtspr(SPRN_PMC4, value);
++		break;
++	case SPRN_PMC5:
++		mtspr(SPRN_PMC5, value);
++		break;
++	case SPRN_PMC6:
++		mtspr(SPRN_PMC6, value);
++		break;
++#ifdef CONFIG_PPC64
++	case SPRN_PMC7:
++		mtspr(SPRN_PMC7, value);
++		break;
++	case SPRN_PMC8:
++		mtspr(SPRN_PMC8, value);
++		break;
++#endif
++	default:
++		BUG();
++	}
++}
++
++static inline u64 pfm_arch_read_pmd(struct pfm_context *ctx, unsigned int cnum)
++{
++	switch (pfm_pmu_conf->pmd_desc[cnum].hw_addr) {
++	case SPRN_PMC1:
++		return mfspr(SPRN_PMC1);
++	case SPRN_PMC2:
++		return mfspr(SPRN_PMC2);
++	case SPRN_PMC3:
++		return mfspr(SPRN_PMC3);
++	case SPRN_PMC4:
++		return mfspr(SPRN_PMC4);
++	case SPRN_PMC5:
++		return mfspr(SPRN_PMC5);
++	case SPRN_PMC6:
++		return mfspr(SPRN_PMC6);
++#ifdef CONFIG_PPC64
++	case SPRN_PMC7:
++		return mfspr(SPRN_PMC7);
++	case SPRN_PMC8:
++		return mfspr(SPRN_PMC8);
++#endif
++	default:
++		BUG();
 +	}
 +}
 +
@@ -788,16 +873,16 @@ include/asm-mips/perfmon_api.h:
 +static inline void pfm_arch_ovfl_reset_pmd(struct pfm_context *ctx,
 +					   unsigned int cnum)
 +{
-+  u64 val;
-+  val = pfm_arch_read_pmd(ctx, cnum);
-+  /* This masks out overflow bit 31 */
-+  pfm_arch_write_pmd(ctx, cnum, val);
++	u64 val = pfm_arch_read_pmd(ctx, cnum);
++
++	/* This masks out overflow bit 31 */
++	pfm_arch_write_pmd(ctx, cnum, val);
 +}
 +
 +/*
 + * At certain points, perfmon needs to know if monitoring has been
 + * explicitely started/stopped by user via pfm_start/pfm_stop. The
-+ * information is tracked in ctx.flags.started. However on certain
++ * information is tracked in flags.started. However on certain
 + * architectures, it may be possible to start/stop directly from
 + * user level with a single assembly instruction bypassing
 + * the kernel. This function must be used to determine by
@@ -809,42 +894,45 @@ include/asm-mips/perfmon_api.h:
 +}
 +
 +static inline void pfm_arch_ctxswout_sys(struct task_struct *task,
-+					 struct pfm_context *ctx,
++		           		 struct pfm_context *ctx,
 +					 struct pfm_event_set *set)
 +{}
 +
 +static inline void pfm_arch_ctxswin_sys(struct task_struct *task,
-+                                         struct pfm_context *ctx,
-+                                         struct pfm_event_set *set)
++					struct pfm_context *ctx,
++					struct pfm_event_set *set)
 +{}
 +
 +static inline void pfm_arch_ctxswin_thread(struct task_struct *task,
-+                                         struct pfm_context *ctx,
-+                                         struct pfm_event_set *set)
++					   struct pfm_context *ctx,
++					   struct pfm_event_set *set)
 +{}
 +
++void pfm_arch_init_percpu(void);
 +int  pfm_arch_is_monitoring_active(struct pfm_context *ctx);
-+int  pfm_arch_ctxswout_thread(struct task_struct *task,
-+			      struct pfm_context *ctx, struct pfm_event_set *set);
++int  pfm_arch_ctxswout_thread(struct task_struct *task, struct pfm_context *ctx,
++			      struct pfm_event_set *set);
 +void pfm_arch_stop(struct task_struct *task, struct pfm_context *ctx,
-+		   struct pfm_event_set *set);
++			  struct pfm_event_set *set);
 +void pfm_arch_start(struct task_struct *task, struct pfm_context *ctx,
-+		    struct pfm_event_set *set);
++			   struct pfm_event_set *set);
 +void pfm_arch_restore_pmds(struct pfm_context *ctx, struct pfm_event_set *set);
 +void pfm_arch_restore_pmcs(struct pfm_context *ctx, struct pfm_event_set *set);
++int  pfm_arch_get_ovfl_pmds(struct pfm_context *ctx,
++			    struct pfm_event_set *set);
 +char *pfm_arch_get_pmu_module_name(void);
-+
-+static inline void pfm_arch_intr_freeze_pmu(struct pfm_context *ctx,
-+					    struct pfm_event_set *set)
++/*
++ * called from __pfm_interrupt_handler(). ctx is not NULL.
++ * ctx is locked. PMU interrupt is masked.
++ *
++ * must stop all monitoring to ensure handler has consistent view.
++ * must collect overflowed PMDs bitmask  into povfls_pmds and
++ * npend_ovfls. If no interrupt detected then npend_ovfls
++ * must be set to zero.
++ */
++static inline void pfm_arch_intr_freeze_pmu(struct pfm_context *ctx, struct pfm_event_set *set)
 +{
 +	pfm_arch_stop(current, ctx, set);
-+	/*
-+	 * we mark monitoring as stopped to avoid
-+	 * certain side effects especially in
-+	 * pfm_switch_sets_from_intr() on
-+	 * pfm_arch_restore_pmcs()
-+	 */
-+	ctx->flags.started = 0;
 +}
 +
 +/*
@@ -866,14 +954,19 @@ include/asm-mips/perfmon_api.h:
 +	pfm_arch_restore_pmcs(ctx, ctx->active_set);
 +}
 +
-+static inline int pfm_arch_pmu_config_init(struct _pfm_pmu_config *cfg)
++/*
++ * PowerPC does not save the PMDs during pfm_arch_intr_freeze_pmu(), thus
++ * this routine needs to do it when switching sets on overflow
++ */
++static inline void pfm_arch_save_pmds_from_intr(struct pfm_context *ctx,
++					   struct pfm_event_set *set)
 +{
-+	return 0;
++	pfm_save_pmds(ctx, set);
 +}
 +
 +/*
 + * this function is called from the PMU interrupt handler ONLY.
-+ * On MIPS, the PMU is frozen via arch_stop, masking would be implemented
++ * On PPC, the PMU is frozen via arch_stop, masking would be implemented
 + * via arch-stop as well. Given that the PMU is already stopped when
 + * entering the interrupt handler, we do not need to stop it again, so
 + * this function is a nop.
@@ -883,7 +976,7 @@ include/asm-mips/perfmon_api.h:
 +{}
 +
 +/*
-+ * on MIPS masking/unmasking uses the start/stop mechanism, so we simply
++ * on x86 masking/unmasking uses the start/stop mechanism, so we simply
 + * need to start here.
 + */
 +static inline void pfm_arch_unmask_monitoring(struct pfm_context *ctx,
@@ -892,16 +985,24 @@ include/asm-mips/perfmon_api.h:
 +	pfm_arch_start(current, ctx, set);
 +}
 +
-+static inline void pfm_arch_pmu_config_remove(void)
-+{}
 +
-+static inline int pfm_arch_context_initialize(struct pfm_context *ctx,
-+					      u32 ctx_flags)
++static inline int pfm_arch_pmu_config_init(struct _pfm_pmu_config *cfg)
 +{
 +	return 0;
 +}
 +
-+void pfm_arch_unload_context(struct pfm_context *ctx, struct task_struct *task);
++static inline void pfm_arch_pmu_config_remove(void)
++{}
++
++static inline int pfm_arch_context_initialize(struct pfm_context *ctx,
++					       u32 ctx_flags)
++{
++	return 0;
++}
++
++static inline void pfm_arch_unload_context(struct pfm_context *ctx,
++					   struct task_struct *task)
++{}
 +
 +/*
 + * function called from pfm_setfl_sane(). Context is locked
@@ -914,8 +1015,7 @@ include/asm-mips/perfmon_api.h:
 + * 	1 when flags are valid
 + *      0 on error
 + */
-+static inline int
-+pfm_arch_setfl_sane(struct pfm_context *ctx, u32 flags)
++static inline int pfm_arch_setfl_sane(struct pfm_context *ctx, u32 flags)
 +{
 +	return 0;
 +}
@@ -925,9 +1025,6 @@ include/asm-mips/perfmon_api.h:
 +	return 0;
 +}
 +
-+static inline void pfm_arch_init_percpu(void)
-+{}
-+
 +static inline int pfm_arch_load_context(struct pfm_context *ctx,
 +					struct pfm_event_set *set,
 +					struct task_struct *task)
@@ -936,7 +1033,7 @@ include/asm-mips/perfmon_api.h:
 +}
 +
 +/*
-+ * not used for mips
++ * not applicable to powerpc
 + */
 +static inline int pfm_smpl_buffer_alloc_compat(struct pfm_context *ctx,
 +					       size_t rsize, struct file *filp)
@@ -954,18 +1051,18 @@ include/asm-mips/perfmon_api.h:
 +	/* empty */
 +};
 +
-+#define PFM_ARCH_CTX_SIZE	sizeof(struct pfm_arch_context)
++#define PFM_ARCH_CTX_SIZE sizeof(struct pfm_arch_context)
 +
 +#endif /* __KERNEL__ */
-+#endif /* _ASM_MIPS64_PERFMON_H_ */
---- linux-2.6.22.base/include/asm-mips/perfmon_api.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/include/asm-mips/perfmon_api.h	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,40 @@
++#endif /* _ASM_POWERPC_PERFMON_H_ */
+--- linux-2.6.22.base/include/asm-powerpc/perfmon_api.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/include/asm-powerpc/perfmon_api.h	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,41 @@
 +/*
 + * Copyright (c) 2007 Hewlett-Packard Development Company, L.P.
 + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
 + *
-+ * This file contains mips64 specific definitions for the perfmon
++ * This file contains powerpc specific definitions for the perfmon
 + * interface.
 + *
 + * This file MUST never be included directly. Use linux/perfmon.h.
@@ -984,8 +1081,8 @@ include/asm-mips/perfmon_api.h:
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
 +  */
-+#ifndef _ASM_MIPS64_PERFMON_API_H_
-+#define _ASM_MIPS64_PERFMON_API_H_
++#ifndef _ASM_POWERPC_PERFMON_API_H_
++#define _ASM_POWERPC_PERFMON_API_H_
 +
 +#define PFM_ARCH_MAX_HW_PMCS	256 /* maximum number of PMC registers */
 +#define PFM_ARCH_MAX_HW_PMDS	256 /* maximum number of PMD registers */
@@ -1000,4 +1097,5 @@ include/asm-mips/perfmon_api.h:
 +#define PFM_ARCH_MAX_SW_PMCS	64 /* max virtual PMCS */
 +#define PFM_ARCH_MAX_SW_PMDS	64 /* max virtual PMDS */
 +
-+#endif /* _ASM_MIPS64_PERFMON_API_H_ */
++
++#endif /* _ASM_POWERPC_PERFMON_API_H_ */
