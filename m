@@ -1,101 +1,437 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbXE2OCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760546AbXE2OCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760103AbXE2OCL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbXE2N7x
+	id S1760546AbXE2OCd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXE2N7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:59:53 -0400
+	Tue, 29 May 2007 09:59:54 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751507AbXE2N7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751942AbXE2N7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 09:59:47 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:18 -0700
+Date: Tue, 29 May 2007 06:48:35 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmILh019658@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmZrR019866@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 04/22] 2.6.22-rc3 perfmon2 : sysfs support
+Subject: [PATCH 20/22] 2.6.22-rc3 perfmon2 : new x86_64 files
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the sysfs support.
+This patch contains the new x86_64 files.
 
-We use the sysfs interface fot two reasons:
-	- perfmon2 administration
-	- user level information
-
-Perfmon2 creates new directories in /sys:
-	- /sys/kernel/perfmon: for adminstration and global information
-	- /sys/devices/system/cpu/cpuXX/perfmon: per-cpu statistics (debugging)
-
-In /sys/kernel/perfmon we find:
-	- arg_size_max (R/W): maximum size of vector arguments in bytes
-	- smpl_buffer_mem_max (R/W):  maximum aggregated size of all smapling buffers
-	- smpl_buffer_mem_cur (R): current consumption of buf_size_max
-	- debug (R/W) : enable perfmon2 debugging messages
-	- debug_ovfl (R/W): enable perfmon2 interrupt debugging messages
-	- formats/	: information about available sampling formats
-	- pmc_max_fast_arg (R): how many vector arguments can be processed on the stack for pfarg_pmc_t
-	- pmd_max_fast_arg (R):  how many vector arguments can be processed on the stack for pfarg_pmd_t
-
-	- reset_stats (W):  reset statistics
-	- sys_group (R/W): which user group is allowed to create systemwide perfmon2 contexts
-	- task_group (R/W): which user group is allowed to create per-thread perfmon2 contexts
-	- sys_sessions_count (R):  number of active per-thread contexts
-	- task_sessions_count (R): number of active system-wide contexts
-	- version (R): perfmon2 version
-
-In /sys/kernel/perfmon/pmu_desc (created at first use of subsystem):
-	- model (R): name of active PMU description module
-	- one subdirs for each pmd or pmc register
-
-In /sys/kernel/perfmon/pmu_desc/pmdX:
-	- addr	 (R) : hardware address or index of register
-	- dfl_val (R): default value
-	- counter_width	(R): PMU HW counter width
-	- name    (R): logical name
-	- rsvd_msk(R): reserved bits 
-
-In /sys/kernel/perfmon/pmu_desc/pmcX:
-	- addr	 (R) : hardware address or index of register
-	- dfl_val (R): default value
-	- name    (R): logical name
-	- rsvd_msk(R): reserved bits 
-
-The statistics we maintained in /sys/system/devices/cpu/cpuXX are mostly
-for debugging purposes at this point. Added/removed on CPU hotplug events.
+The files are as follows:
 
 
+arch/x86_64/perfmon/Kconfig:
+	- add menuconfig options
+
+arch/x86_64/perfmon/Makefile:
+	- makefile for arch specific files
+
+arch/x86_64/perfmon/perfmon_k8.c:
+	- PMU description for Opteron/Althon64 PMU for both 32 and 64-bit modes
+
+arch/x86_64/perfmon/perfmon_core.c:
+	- PMU description for Intel Core-bsaed processors
+
+include/asm-x86_64/perfmon.h:
+	- architecture specific header definitions
+
+include/asm-i386/perfmon_api.h:
+	- i386/x86_64 user-visible constants
 
 
---- linux-2.6.22.base/perfmon/perfmon_sysfs.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/perfmon/perfmon_sysfs.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,935 @@
+--- linux-2.6.22.base/arch/x86_64/perfmon/Kconfig	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/x86_64/perfmon/Kconfig	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,55 @@
++menu "Hardware Performance Monitoring support"
++config PERFMON
++ 	bool "Perfmon2 performance monitoring interface"
++	default n
++ 	help
++  	Enables the perfmon2 interface to access the hardware
++	performance counters. See <http://perfmon2.sf.net/> for
++ 	more details.
++
++config PERFMON_DEBUG
++ 	bool "Perfmon debugging"
++	default n
++	depends on PERFMON
++ 	help
++  	Enables perfmon debugging support
++
++config X86_64_PERFMON_K8
++	tristate "Support 64-bit mode AMD Athlon64 and Opteron64 hardware performance counters"
++	depends on PERFMON
++	default n
++	help
++	Enables support for 64-bit mode AMD Athlon64 and Opteron64 processors
++	hardware performance counters.
++
++config X86_64_PERFMON_P4
++	tristate "Support for Intel 64-bit Pentium 4/Xeon hardware performance counters"
++	depends on PERFMON
++	default n
++	help
++	Enables support for Intel 64-bit mode Pentium 4/Xeon hardware performance
++	counters.
++
++config  X86_64_PERFMON_CORE
++	tristate "Support for Intel Core-based performance counters"
++	depends on PERFMON
++	default n
++	help
++	Enables 64-bit support for Intel Core-based performance counters. Enable
++	this option to support Intel Core 2 Duo processors.
++
++config X86_64_PERFMON_GEN_IA32
++	tristate "Support for Intel architectural performance counters"
++	depends on PERFMON
++	default n
++	help
++	Enables 64-bit support for Intel architectural performance counters.
++
++config X86_64_PERFMON_PEBS
++	tristate "Support for Intel Precise Event-Based Sampling (PEBS)"
++	depends on PERFMON
++	default n
++	help
++	Enables support for 64-bit Precise Event-Based Sampling (PEBS) on the Intel
++	Pentium 4, Xeon, and Core-based processors which support it.
++endmenu
+--- linux-2.6.22.base/arch/x86_64/perfmon/Makefile	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/x86_64/perfmon/Makefile	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,16 @@
++#
++# Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
++# Contributed by Stephane Eranian <eranian@hpl.hp.com>
++#
++
++obj-$(CONFIG_PERFMON)			+= perfmon.o
++obj-$(CONFIG_X86_64_PERFMON_K8)		+= perfmon_k8.o
++obj-$(CONFIG_X86_64_PERFMON_P4)		+= perfmon_p4.o
++obj-$(CONFIG_X86_64_PERFMON_CORE)	+= perfmon_core.o
++obj-$(CONFIG_X86_64_PERFMON_GEN_IA32)	+= perfmon_gen_ia32.o
++obj-$(CONFIG_X86_64_PERFMON_PEBS)	+= perfmon_pebs_smpl.o
++
++perfmon-$(subst m,y,$(CONFIG_PERFMON)) += ../../i386/perfmon/perfmon.o
++perfmon_p4-$(subst m,y,$(CONFIG_X86_64_PERFMON_P4)) += ../../i386/perfmon/perfmon_p4.o
++perfmon_gen_ia32-$(subst m,y,$(CONFIG_X86_64_PERFMON_GEN_IA32)) += ../../i386/perfmon/perfmon_gen_ia32.o
++perfmon_pebs_smpl-$(subst m,y,$(CONFIG_X86_64_PERFMON_PEBS)) += ../../i386/perfmon/perfmon_pebs_smpl.o
+--- linux-2.6.22.base/arch/x86_64/perfmon/perfmon_core.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/x86_64/perfmon/perfmon_core.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,298 @@
 +/*
-+ * perfmon_sysfs.c: perfmon2 sysfs interface
++ * This file contains the Intel Core PMU registers description tables.
++ * Intel Core 2 processor are based on the Intel Core microarchitecture.
 + *
-+ * This file implements the perfmon2 interface which
-+ * provides access to the hardware performance counters
-+ * of the host processor.
-+ *
-+ * The initial version of perfmon.c was written by
-+ * Ganesh Venkitachalam, IBM Corp.
-+ *
-+ * Then it was modified for perfmon-1.x by Stephane Eranian and
-+ * David Mosberger, Hewlett Packard Co.
-+ *
-+ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
-+ * by Stephane Eranian, Hewlett Packard Co.
-+ *
-+ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Copyright (c) 2006 Hewlett-Packard Development Company, L.P.
 + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ */
++#include <linux/module.h>
++#include <linux/perfmon.h>
++#include <asm/nmi.h>
++
++MODULE_AUTHOR("Stephane Eranian <eranian@hpl.hp.com>");
++MODULE_DESCRIPTION("Intel Core");
++MODULE_LICENSE("GPL");
++
++static int force_nmi;
++MODULE_PARM_DESC(force_nmi, "bool: force use of NMI for PMU interrupt");
++module_param(force_nmi, bool, 0600);
++
++/*
++ * - upper 32 bits are reserved
++ * - INT: APIC enable bit is reserved (forced to 1)
++ * - bit 21 is reserved
 + *
-+ * More information about perfmon available at:
-+ * 	http://perfmon2.sf.net
++ *   RSVD: reserved bits must be 1
++ */
++#define PFM_CORE_PMC_RSVD ((~((1ULL<<32)-1)) \
++		  	| (1ULL<<20)   \
++			| (1ULL<<21))
++
++/*
++ * force Local APIC interrupt on overflow
++ * disable with NO_EMUL64
++ */
++#define PFM_CORE_PMC_VAL	(1ULL<<20)
++#define PFM_CORE_NO64		(1ULL<<20)
++
++#define PFM_CORE_NA { .reg_type = PFM_REGT_NA}
++
++#define PFM_CORE_CA(m, c, t) \
++	{ \
++	  .addrs[0] = m, \
++	  .ctr = c, \
++	  .reg_type = t \
++	}
++/*
++ * physical addresses of MSR controlling the perfevtsel and counter registers
++ */
++struct pfm_arch_pmu_info pfm_core_pmu_info={
++	.pmc_addrs = {
++		PFM_CORE_CA(MSR_CORE_PERF_GLOBAL_CTRL, 0, PFM_REGT_EN),
++		PFM_CORE_CA(MSR_IA32_PEBS_ENABLE, 0, PFM_REGT_EN),
++		PFM_CORE_CA(MSR_CORE_PERF_FIXED_CTR_CTRL, 0, PFM_REGT_OTH),
++		PFM_CORE_NA,
++		PFM_CORE_CA(MSR_P6_EVNTSEL0, 4, PFM_REGT_OTH),
++		PFM_CORE_CA(MSR_P6_EVNTSEL1, 5, PFM_REGT_OTH)
++	},
++	.pmd_addrs = {
++		PFM_CORE_CA(MSR_CORE_PERF_FIXED_CTR0, 0, PFM_REGT_CTR),
++		PFM_CORE_CA(MSR_CORE_PERF_FIXED_CTR1, 0, PFM_REGT_CTR),
++		PFM_CORE_CA(MSR_CORE_PERF_FIXED_CTR2, 0, PFM_REGT_CTR),
++		PFM_CORE_NA,
++		PFM_CORE_CA(MSR_P6_PERFCTR0, 0, PFM_REGT_CTR),
++		PFM_CORE_CA(MSR_P6_PERFCTR1, 0, PFM_REGT_CTR)
++	},
++	.pebs_ctr_idx = 4, /* IA32_PMC0 */
++	.pmu_style = PFM_X86_PMU_CORE
++};
++
++/*
++ * force PMI bit on
++ */
++#define PFM_CORE_CTR_CTRL_VAL  (0x444ULL)
++#define PFM_CORE_CTR_CTRL_RSVD (~0xfffULL)
++
++static struct pfm_reg_desc pfm_core_pmc_desc[]={
++/* pmc0  */ { .type = PFM_REG_I,
++	      .desc = "GLOBAL_CTRL",
++	      .dfl_val = 0,
++	      .rsvd_msk = 0xfffffff8fffffffcULL,
++	      .no_emul64_msk = 0,
++	      .hw_addr = MSR_CORE_PERF_GLOBAL_CTRL
++	    },
++/* pmc1  */ { .type = PFM_REG_I,
++	      .desc = "PEBS_ENABLE",
++	      .dfl_val = 0,
++	      .rsvd_msk = 0xfffffffffffffffeULL,
++	      .no_emul64_msk = 0,
++	      .hw_addr = MSR_IA32_PEBS_ENABLE
++	    },
++/* pmc2  */ { .type = PFM_REG_W,
++	      .desc = "FIXED_CTRL",
++	      .dfl_val = 0x888ULL,
++	      .rsvd_msk = 0xfffffffffffff444ULL,
++	      .no_emul64_msk = 0,
++	      .hw_addr = MSR_CORE_PERF_FIXED_CTR_CTRL
++	    },
++/* pmc3  */ PMX_NA,
++/* pmc4  */ {
++	      .type = PFM_REG_I64,
++	      .desc = "PERFEVTSEL0",
++	      .dfl_val = PFM_CORE_PMC_VAL,
++	      .rsvd_msk = PFM_CORE_PMC_RSVD,
++	      .no_emul64_msk = PFM_CORE_NO64,
++	      .hw_addr = MSR_P6_EVNTSEL0
++	    },
++/* pmc5  */ {
++	      .type = PFM_REG_W64,
++	      .desc = "PERFEVTSEL1",
++	      .dfl_val = PFM_CORE_PMC_VAL,
++	      .rsvd_msk = PFM_CORE_PMC_RSVD,
++	      .no_emul64_msk = PFM_CORE_NO64,
++	      .hw_addr = MSR_P6_EVNTSEL1
++	    }
++};
++
++#define PFM_CORE_D(n) PMD_D(PFM_REG_C, "PMC"#n, MSR_P6_PERFCTR0+n)
++#define PFM_CORE_FD(n) PMD_D(PFM_REG_C, "FIXED_CTR"#n, MSR_CORE_PERF_FIXED_CTR0+n)
++
++static int nmi_uses_pmc0;
++
++static struct pfm_reg_desc pfm_core_pmd_desc[]={
++/* pmd0  */ PFM_CORE_FD(0),
++/* pmd1  */ PFM_CORE_FD(1),
++/* pmd2  */ PFM_CORE_FD(2),
++/* pmd3  */ PMX_NA,
++/* pmd4  */ PFM_CORE_D(0),
++/* pmd5  */ PFM_CORE_D(1)
++};
++#define PFM_CORE_NUM_PMCS	ARRAY_SIZE(pfm_core_pmc_desc)
++#define PFM_CORE_NUM_PMDS	ARRAY_SIZE(pfm_core_pmd_desc)
++
++static struct pfm_pmu_config pfm_core_pmu_conf;
++
++static int pfm_core_detect_nmi(void)
++{
++	unsigned int i;
++	int cnt, disabled = -1;
++
++	PFM_INFO("nmi_watchdog=%d nmi_active=%d force_nmi=%d",
++		nmi_watchdog, atomic_read(&nmi_active), force_nmi);
++
++
++	/* NMI not using PMU */
++	if (nmi_watchdog != NMI_LOCAL_APIC) {
++		if (force_nmi)
++			pfm_core_pmu_info.flags |= PFM_X86_FL_USE_NMI;
++		return 0;
++	}
++
++	/*
++	 * assume NMI does not used the fixed counter. In any case, it cannot
++	 * because FIXED_CTR_CTRL is common to all fixed counters, so it would be
++	 * hard to share the other 2 fixed counters with somebody else.
++	 */
++
++	/* test IA32_PMC0, IA32_PMC1 */
++	for (i=4; i < 6; i++) {
++		if (avail_to_resrv_perfctr_nmi(pfm_core_pmd_desc[i].hw_addr))
++			continue;
++		if (disabled != -1) {
++			PFM_INFO("more than one counter used by NMI, not supported");
++			return -1;
++		}
++		PFM_INFO("NMI watchdog using %s/%s, disabling them for perfmon",
++			pfm_core_pmd_desc[i].desc,
++			pfm_core_pmc_desc[i].desc);
++
++		pfm_core_pmc_desc[i].type = PFM_REG_NA;
++		pfm_core_pmu_info.pmc_addrs[i].reg_type = PFM_REGT_EN;
++
++		pfm_core_pmd_desc[i].type = PFM_REG_NA;
++		pfm_core_pmu_info.pmd_addrs[i].reg_type = PFM_REGT_NA;
++		disabled = i;
++	}
++	/*
++	 * if NMI uses IA32_PMC0 or IA32_PMC1, we cannot use global controls
++	 * to start stop all counters. We disabled the global controls and
++	 * mark generic counters as each having enbale bits
++	 */
++
++	/* disable GLOBAL_CTRL */
++	pfm_core_pmc_desc[0].type = PFM_REG_NA;
++	pfm_core_pmu_info.pmc_addrs[0].reg_type = PFM_REGT_NA;
++
++	cnt = disabled == 4 ? 5 : 4;
++
++	/* mark fixed counters as having enable bit. All 3 controlled together */
++	pfm_core_pmu_info.pmc_addrs[2].reg_type = PFM_REGT_EN;/* FIXED_CTR_CTRL */
++
++	/* mark left-over counter as having enable bit */
++	pfm_core_pmu_info.pmc_addrs[cnt].reg_type = PFM_REGT_EN;
++
++	if (disabled == 4)
++		nmi_uses_pmc0 = 1;
++
++	pfm_core_pmu_info.flags |= PFM_X86_FL_USE_NMI;
++
++	return 0;
++}
++
++static int pfm_core_probe_pmu(void)
++{
++	int ret;
++
++	/*
++	 * only works on Intel processors
++	 */
++	if (cpu_data->x86_vendor != X86_VENDOR_INTEL) {
++		PFM_INFO("not running on Intel processor");
++		return -1;
++	}
++
++	if (cpu_data->x86 != 6 || cpu_data->x86_model != 15)
++		return -1;
++
++	if (!cpu_has_apic) {
++		PFM_INFO("no Local APIC, unsupported");
++		return -1;
++	}
++
++	ret = pfm_core_detect_nmi();
++	if (ret == -1)
++		return -1;
++
++	/*
++	 * verify that DS/PEBS support is present
++	 */
++	if (cpu_has_ds) {
++		PFM_INFO("Data Save Area (DS) supported");
++
++		pfm_core_pmu_info.flags |= PFM_X86_FL_PMU_DS;
++
++		if (cpu_has_pebs && nmi_uses_pmc0 == 0) {
++			pfm_core_pmu_info.flags |= PFM_X86_FL_PMU_PEBS;
++			PFM_INFO("PEBS supported, enabled");
++		} else {
++			if (cpu_has_pebs && nmi_uses_pmc0)
++				PFM_INFO("PEBS supported, but disabled because NMI uses IA32_PMC0");
++			pfm_core_pmc_desc[1].type = PFM_REG_NA;
++			pfm_core_pmu_info.pmc_addrs[1].reg_type = PFM_REGT_NA;
++		}
++	} else {
++		PFM_INFO("PEBS not supported");
++		pfm_core_pmc_desc[1].type = PFM_REG_NA;
++		pfm_core_pmu_info.pmc_addrs[1].reg_type = PFM_REGT_NA;
++	}
++	return 0;
++}
++
++static int pfm_core_pmc_check(struct pfm_context *ctx,
++			     struct pfm_event_set *set,
++			     struct pfarg_pmc *req)
++{
++	struct pfm_arch_context *ctx_arch;
++
++	ctx_arch = pfm_ctx_arch(ctx);
++
++	/*
++	 * we come here only for the PMC that are forbidden
++	 * when PEBS is enabled
++	 */
++	return ctx_arch->flags & PFM_X86_USE_PEBS ?  -EINVAL : 0;
++}
++
++/*
++ * Counters may have model-specific width. Yet the documentation says
++ * that only the lower 32 bits can be written to. bits [w-32]
++ * are sign extensions of bit 31. As such the effective width of
++ * a counter is 31 bits only.
++ */
++static struct pfm_pmu_config pfm_core_pmu_conf={
++	.pmu_name = "Intel Core",
++	.pmd_desc = pfm_core_pmd_desc,
++	.counter_width = 31,
++	.num_pmc_entries = PFM_CORE_NUM_PMCS,
++	.num_pmd_entries = PFM_CORE_NUM_PMDS,
++	.pmc_write_check = pfm_core_pmc_check,
++	.pmc_desc = pfm_core_pmc_desc,
++	.probe_pmu = pfm_core_probe_pmu,
++	.version = "1.0",
++	.flags = PFM_PMU_BUILTIN_FLAG,
++	.owner = THIS_MODULE,
++	.arch_info = &pfm_core_pmu_info
++};
++	
++static int __init pfm_core_pmu_init_module(void)
++{
++	return pfm_pmu_register(&pfm_core_pmu_conf);
++}
++
++static void __exit pfm_core_pmu_cleanup_module(void)
++{
++	pfm_pmu_unregister(&pfm_core_pmu_conf);
++}
++
++module_init(pfm_core_pmu_init_module);
++module_exit(pfm_core_pmu_cleanup_module);
+--- linux-2.6.22.base/arch/x86_64/perfmon/perfmon_k8.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/arch/x86_64/perfmon/perfmon_k8.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,360 @@
++/*
++ * This file contains the PMU description for the Ahtlon64 and Opteron64
++ * processors. It supports 32 and 64-bit modes.
++ *
++ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -112,900 +448,417 @@ for debugging purposes at this point. Added/removed on CPU hotplug events.
 + * 02111-1307 USA
 +  */
 +#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/smp_lock.h>
-+#include <linux/proc_fs.h>
-+#include <linux/list.h>
-+#include <linux/version.h>
 +#include <linux/perfmon.h>
-+#include <linux/device.h>
-+#include <linux/cpu.h>
++#include <linux/vmalloc.h>
++#include <asm/nmi.h>
 +
-+#include <asm/bitops.h>
-+#include <asm/errno.h>
-+#include <asm/processor.h>
++MODULE_AUTHOR("Stephane Eranian <eranian@hpl.hp.com>");
++MODULE_DESCRIPTION("Athlon/Opteron 64 (K8) PMU description table");
++MODULE_LICENSE("GPL");
 +
-+struct pfm_attribute {
-+	struct attribute attr;
-+	ssize_t (*show)(void *, char *);
-+	ssize_t (*store)(void *, const char *, size_t);
++static int force_nmi;
++MODULE_PARM_DESC(force_nmi, "bool: force use of NMI for PMU interrupt");
++module_param(force_nmi, bool, 0600);
++
++static struct pfm_arch_pmu_info pfm_k8_pmu_info={
++	.pmc_addrs = {
++		{{MSR_K7_EVNTSEL0, 0}, 0, PFM_REGT_EN},
++		{{MSR_K7_EVNTSEL1, 0}, 1, PFM_REGT_EN},
++		{{MSR_K7_EVNTSEL2, 0}, 2, PFM_REGT_EN},
++		{{MSR_K7_EVNTSEL3, 0}, 3, PFM_REGT_EN},
++	},
++	.pmd_addrs = {
++		{{MSR_K7_PERFCTR0, 0}, 0, PFM_REGT_CTR},
++		{{MSR_K7_PERFCTR1, 0}, 0, PFM_REGT_CTR},
++		{{MSR_K7_PERFCTR2, 0}, 0, PFM_REGT_CTR},
++		{{MSR_K7_PERFCTR3, 0}, 0, PFM_REGT_CTR},
++	},
++	.pmu_style = PFM_X86_PMU_P6
 +};
-+#define to_attr(n) container_of(n, struct pfm_attribute, attr);
-+
-+#define PFM_RO_ATTR(_name) \
-+struct pfm_attribute attr_##_name = __ATTR_RO(_name)
-+
-+#define PFM_RW_ATTR(_name,_mode,_show,_store) 			\
-+struct pfm_attribute attr_##_name = __ATTR(_name,_mode,_show,_store);
-+
-+static int pfm_sysfs_init_done;	/* true when pfm_sysfs_init() completed */
-+
-+int pfm_sysfs_add_pmu(struct _pfm_pmu_config *pmu);
-+
-+struct pfm_controls pfm_controls = {
-+	.sys_group = PFM_GROUP_PERM_ANY,
-+	.task_group = PFM_GROUP_PERM_ANY,
-+	.arg_mem_max = PAGE_SIZE,
-+	.smpl_buffer_mem_max = ~0,
-+};
-+EXPORT_SYMBOL(pfm_controls);
-+
-+DECLARE_PER_CPU(struct pfm_stats, pfm_stats);
-+
-+static struct kobject pfm_kernel_kobj, pfm_kernel_fmt_kobj;
-+
-+static void pfm_reset_stats(int cpu)
-+{
-+	struct pfm_stats *st;
-+	unsigned long flags;
-+
-+	st = &per_cpu(pfm_stats, cpu);
-+
-+	local_irq_save(flags);
-+
-+	/*
-+	 * cannot use memset because of kobj member
-+	 */
-+	st->ovfl_intr_replay_count = 0;
-+	st->ovfl_intr_regular_count = 0;
-+	st->ovfl_intr_all_count = 0;
-+	st->ovfl_intr_ns = 0;
-+	st->ovfl_intr_phase1 = 0;
-+	st->ovfl_intr_phase2 = 0;
-+	st->ovfl_intr_phase3 = 0;
-+	st->ovfl_intr_nmi_count = 0;
-+	st->handle_work_count = 0;
-+	st->ovfl_notify_count = 0;
-+	st->reset_pmds_count = 0;
-+	st->pfm_restart_count = 0;
-+	st->ccnt0 = 0;
-+	st->ccnt1 = 0;
-+	st->ccnt2 = 0;
-+	st->ccnt3 = 0;
-+	st->ccnt4 = 0;
-+	st->ccnt5 = 0;
-+	st->ccnt6 = 0;
-+	st->fmt_handler_calls = 0;
-+	st->fmt_handler_ns = 0;
-+	st->set_switch_count = 0;
-+	st->set_switch_ns = 0;
-+	st->ctxsw_count = 0;
-+	st->ctxsw_ns = 0;
-+	st->handle_timeout_count = 0;
-+
-+	local_irq_restore(flags);
-+}
-+
-+static ssize_t pfm_fmt_attr_show(struct kobject *kobj,
-+		struct attribute *attr, char *buf)
-+{
-+	struct pfm_smpl_fmt *fmt = to_smpl_fmt(kobj);
-+	struct pfm_attribute *attribute = to_attr(attr);
-+	return attribute->show ? attribute->show(fmt, buf) : -EIO;
-+}
-+
-+static ssize_t pfm_pmu_attr_show(struct kobject *kobj,
-+		struct attribute *attr, char *buf)
-+{
-+	struct _pfm_pmu_config *pmu= to_pmu(kobj);
-+	struct pfm_attribute *attribute = to_attr(attr);
-+	return attribute->show ? attribute->show(pmu, buf) : -EIO;
-+}
-+
-+static ssize_t pfm_stats_attr_show(struct kobject *kobj,
-+		struct attribute *attr, char *buf)
-+{
-+	struct pfm_stats *st = to_stats(kobj);
-+	struct pfm_attribute *attribute = to_attr(attr);
-+	return attribute->show ? attribute->show(st, buf) : -EIO;
-+}
-+
-+static ssize_t pfm_regs_attr_show(struct kobject *kobj,
-+		struct attribute *attr, char *buf)
-+{
-+	struct pfm_reg_desc *reg = to_reg(kobj);
-+	struct pfm_attribute *attribute = to_attr(attr);
-+	return attribute->show ? attribute->show(reg, buf) : -EIO;
-+}
-+
-+static ssize_t pfm_stats_attr_store(struct kobject *kobj,
-+		struct attribute *attr, const char *buf, size_t count)
-+{
-+	struct pfm_stats *st = to_stats(kobj);
-+	struct pfm_attribute *attribute = to_attr(attr);
-+	return attribute->store ? attribute->store(st, buf, count) : -EIO;
-+}
-+
-+static struct sysfs_ops pfm_fmt_sysfs_ops = {
-+	.show = pfm_fmt_attr_show
-+};
-+
-+static struct sysfs_ops pfm_pmu_sysfs_ops = {
-+	.show = pfm_pmu_attr_show
-+};
-+
-+static struct sysfs_ops pfm_stats_sysfs_ops = {
-+	.show  = pfm_stats_attr_show,
-+	.store = pfm_stats_attr_store
-+};
-+
-+static struct sysfs_ops pfm_regs_sysfs_ops = {
-+	.show  = pfm_regs_attr_show
-+};
-+
-+static struct kobj_type pfm_fmt_ktype = {
-+	.sysfs_ops = &pfm_fmt_sysfs_ops,
-+};
-+
-+static struct kobj_type pfm_pmu_ktype = {
-+	.sysfs_ops = &pfm_pmu_sysfs_ops,
-+};
-+
-+static struct kobj_type pfm_stats_ktype = {
-+	.sysfs_ops = &pfm_stats_sysfs_ops,
-+};
-+
-+static struct kobj_type pfm_regs_ktype = {
-+	.sysfs_ops = &pfm_regs_sysfs_ops,
-+};
-+
-+decl_subsys_name(pfm_fmt, pfm_fmt, &pfm_fmt_ktype, NULL);
-+decl_subsys_name(pfm_pmu, pfm_pmu, &pfm_pmu_ktype, NULL);
-+decl_subsys_name(pfm_stats, pfm_stats, &pfm_stats_ktype, NULL);
-+decl_subsys_name(pfm_regs, pfm_regs, &pfm_regs_ktype, NULL);
-+
-+static ssize_t version_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%u.%u\n",  PFM_VERSION_MAJ, PFM_VERSION_MIN);
-+}
-+
-+static ssize_t pmd_max_fast_arg_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%u\n",  PFM_PMD_STK_ARG);
-+}
-+
-+static ssize_t pmc_max_fast_arg_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%u\n",  PFM_PMC_STK_ARG);
-+}
-+
-+static ssize_t task_sessions_count_show(void *info, char *buf)
-+{
-+	return pfm_sysfs_session_show(buf, PAGE_SIZE, 0);
-+}
-+
-+static ssize_t sys_sessions_count_show(void *info, char *buf)
-+{
-+	return pfm_sysfs_session_show(buf, PAGE_SIZE, 1);
-+}
-+
-+static ssize_t smpl_buffer_mem_cur_show(void *info, char *buf)
-+{
-+	return pfm_sysfs_session_show(buf, PAGE_SIZE, 2);
-+}
-+
-+static ssize_t debug_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", pfm_controls.debug);
-+}
-+
-+static ssize_t debug_store(void *info, const char *buf, size_t sz)
-+{
-+	int d, i;
-+
-+	if (sscanf(buf,"%d", &d) != 1)
-+		return -EINVAL;
-+
-+	pfm_controls.debug = d;
-+
-+	if (d == 0) {
-+		for_each_online_cpu(i) {
-+			pfm_reset_stats(i);
-+		}
-+	}
-+	return sz;
-+}
-+
-+static ssize_t debug_ovfl_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", pfm_controls.debug_ovfl);
-+}
-+
-+static ssize_t debug_ovfl_store(void *info, const char *buf, size_t sz)
-+{
-+	int d;
-+
-+	if (sscanf(buf,"%d", &d) != 1)
-+		return -EINVAL;
-+
-+	pfm_controls.debug_ovfl = d;
-+
-+	return strnlen(buf, PAGE_SIZE);
-+}
-+
-+static ssize_t reset_stats_show(void *info, char *buf)
-+{
-+	buf[0]='0';
-+	buf[1]='\0';
-+	return strnlen(buf, PAGE_SIZE);
-+}
-+
-+static ssize_t reset_stats_store(void *info, const char *buf, size_t count)
-+{
-+	int i;
-+
-+	for_each_online_cpu(i) {
-+		pfm_reset_stats(i);
-+	}
-+	return count;
-+}
-+
-+static ssize_t sys_group_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", pfm_controls.sys_group);
-+}
-+
-+static ssize_t sys_group_store(void *info, const char *buf, size_t sz)
-+{
-+	int d;
-+
-+	if (sscanf(buf,"%d", &d) != 1)
-+		return -EINVAL;
-+
-+	pfm_controls.sys_group = d;
-+
-+	return strnlen(buf, PAGE_SIZE);
-+}
-+
-+static ssize_t task_group_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%d\n", pfm_controls.task_group);
-+}
-+
-+static ssize_t task_group_store(void *info, const char *buf, size_t sz)
-+{
-+	int d;
-+
-+	if (sscanf(buf,"%d", &d) != 1)
-+		return -EINVAL;
-+
-+	pfm_controls.task_group = d;
-+
-+	return strnlen(buf, PAGE_SIZE);
-+}
-+
-+static ssize_t buf_size_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%zu\n", pfm_controls.smpl_buffer_mem_max);
-+}
-+
-+static ssize_t buf_size_store(void *info, const char *buf, size_t sz)
-+{
-+	size_t d;
-+
-+	if (sscanf(buf,"%zu", &d) != 1)
-+		return -EINVAL;
-+	/*
-+	 * we impose a page as the minimum
-+	 */
-+	if (d < PAGE_SIZE)
-+		return -EINVAL;
-+
-+	pfm_controls.smpl_buffer_mem_max = d;
-+
-+	return strnlen(buf, PAGE_SIZE);
-+}
-+
-+static ssize_t arg_size_show(void *info, char *buf)
-+{
-+	return snprintf(buf, PAGE_SIZE, "%zu\n", pfm_controls.arg_mem_max);
-+}
-+
-+static ssize_t arg_size_store(void *info, const char *buf, size_t sz)
-+{
-+	size_t d;
-+
-+	if (sscanf(buf,"%zu", &d) != 1)
-+		return -EINVAL;
-+
-+	/*
-+	 * we impose a page as the minimum.
-+	 *
-+	 * This limit may be smaller than the stack buffer
-+	 * available and that is fine.
-+	 */
-+	if (d < PAGE_SIZE)
-+		return -EINVAL;
-+
-+	pfm_controls.arg_mem_max = d;
-+
-+	return strnlen(buf, PAGE_SIZE);
-+}
 +
 +/*
-+ * /sys/kernel/perfmon attributes
++ * reserved bits must be zero
++ *
++ * - upper 32 bits are reserved
++ * - APIC enable bit is reserved (forced to 1)
++ * - bit 21 is reserved
 + */
-+static PFM_RO_ATTR(version);
-+static PFM_RO_ATTR(task_sessions_count);
-+static PFM_RO_ATTR(sys_sessions_count);
-+static PFM_RO_ATTR(smpl_buffer_mem_cur);
-+static PFM_RO_ATTR(pmd_max_fast_arg);
-+static PFM_RO_ATTR(pmc_max_fast_arg);
++#define PFM_K8_RSVD	((~((1ULL<<32)-1)) \
++			| (1ULL<<20)	\
++			| (1ULL<<21))
 +
-+static PFM_RW_ATTR(debug, 0644, debug_show, debug_store);
-+static PFM_RW_ATTR(debug_ovfl, 0644, debug_ovfl_show, debug_ovfl_store);
-+static PFM_RW_ATTR(reset_stats, 0644, reset_stats_show, reset_stats_store);
-+static PFM_RW_ATTR(sys_group, 0644, sys_group_show, sys_group_store);
-+static PFM_RW_ATTR(task_group, 0644, task_group_show, task_group_store);
-+static PFM_RW_ATTR(smpl_buffer_mem_max, 0644, buf_size_show, buf_size_store);
-+static PFM_RW_ATTR(arg_mem_max, 0644, arg_size_show, arg_size_store);
++/*
++ * force Local APIC interrupt on overflow
++ */
++#define PFM_K8_VAL	(1ULL<<20)
++#define PFM_K8_NO64	(1ULL<<20)
 +
-+static struct attribute *pfm_kernel_attrs[] = {
-+	&attr_version.attr,
-+	&attr_task_sessions_count.attr,
-+	&attr_sys_sessions_count.attr,
-+	&attr_smpl_buffer_mem_cur.attr,
-+	&attr_pmd_max_fast_arg.attr,
-+	&attr_pmc_max_fast_arg.attr,
-+	&attr_debug.attr,
-+	&attr_debug_ovfl.attr,
-+	&attr_reset_stats.attr,
-+	&attr_sys_group.attr,
-+	&attr_task_group.attr,
-+	&attr_smpl_buffer_mem_max.attr,
-+	&attr_arg_mem_max.attr,
-+	NULL
++static struct pfm_reg_desc pfm_k8_pmc_desc[]={
++/* pmc0  */ PMC_D(PFM_REG_I64, "PERFSEL0", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL0),
++/* pmc1  */ PMC_D(PFM_REG_I64, "PERFSEL1", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL1),
++/* pmc2  */ PMC_D(PFM_REG_I64, "PERFSEL2", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL2),
++/* pmc3  */ PMC_D(PFM_REG_I64, "PERFSEL3", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL3),
 +};
++#define PFM_AMD_NUM_PMCS ARRAY_SIZE(pfm_k8_pmc_desc)
 +
-+static struct attribute_group pfm_kernel_attr_group = {
-+	.attrs = pfm_kernel_attrs,
++static struct pfm_reg_desc pfm_k8_pmd_desc[]={
++/* pmd0  */ PMD_D(PFM_REG_C, "PERFCTR0", MSR_K7_PERFCTR0),
++/* pmd1  */ PMD_D(PFM_REG_C, "PERFCTR1", MSR_K7_PERFCTR1),
++/* pmd2  */ PMD_D(PFM_REG_C, "PERFCTR2", MSR_K7_PERFCTR2),
++/* pmd3  */ PMD_D(PFM_REG_C, "PERFCTR3", MSR_K7_PERFCTR3),
 +};
++#define PFM_AMD_NUM_PMDS ARRAY_SIZE(pfm_k8_pmd_desc)
 +
-+int __init pfm_init_sysfs(void)
++static struct pfm_context **pfm_nb_sys_owners;
++static struct pfm_context *pfm_nb_task_owner;
++
++static struct pfm_pmu_config pfm_k8_pmu_conf;
++
++/*
++ * There can only one user per socket for the Northbridge (NB) events
++ * so we enforce mutual exclusion as follows:
++ * 	- per-thread : only one context machine-wide can use NB events
++ * 	- system-wide: only one context per processor socket
++ *
++ * Exclusion is enforced at:
++ * 	- pfm_load_context()
++ * 	- pfm_write_pmcs() for attached contexts
++ *
++ * Exclusion is released at:
++ * 	- pfm_unload_context() or any calls that implicitely uses it
++ *
++ * return:
++ * 	0  : successfully acquire NB access
++ * 	< 0:  errno, failed to acquire NB access
++ */
++static int pfm_k8_acquire_nb(struct pfm_context *ctx)
 +{
-+	int ret;
-+	int done_fmt = 0, done_pmu = 0, done_stats = 0, done_regs = 0;
-+	int done_kobj_fmt = 0, done_kobj_kernel = 0;
-+	int i, cpu = -1;
-+	
-+	ret = subsystem_register(&pfm_fmt_subsys);
-+	if (ret) {
-+		PFM_INFO("cannot register pfm_fmt_subsys: %d", ret);
-+		goto error;
-+	}
-+	done_fmt = 1;
++	struct pfm_context **entry, *old;
++	int proc_id;
 +
-+	ret = subsystem_register(&pfm_pmu_subsys);
-+	if (ret) {
-+		PFM_INFO("cannot register pfm_pmu_subsys: %d", ret);
-+		goto error;
-+	}
-+	done_pmu = 1;
++#ifdef CONFIG_SMP
++	proc_id = topology_physical_package_id(smp_processor_id());
++#else
++	proc_id = 0;
++#endif
 +
-+	ret = subsystem_register(&pfm_stats_subsys);
-+	if (ret) {
-+		PFM_INFO("cannot register pfm_stats_subsys: %d", ret);
-+		goto error;
-+	}
-+	done_stats = 1;
++	if (ctx->flags.system)
++		entry = &pfm_nb_sys_owners[proc_id];
++	else
++		entry = &pfm_nb_task_owner;
 +
-+	ret = subsystem_register(&pfm_regs_subsys);
-+	if (ret) {
-+		PFM_INFO("cannot register pfm_regs_subsys: %d", ret);
-+		goto error;
-+	}
-+	done_regs = 1;
-+
-+	kobject_init(&pfm_kernel_kobj);
-+	kobject_init(&pfm_kernel_fmt_kobj);
-+
-+	pfm_kernel_kobj.parent = &kernel_subsys.kobj;
-+	kobject_set_name(&pfm_kernel_kobj, "perfmon");
-+
-+	pfm_kernel_fmt_kobj.parent = &pfm_kernel_kobj;
-+	kobject_set_name(&pfm_kernel_fmt_kobj, "formats");
-+
-+	ret = kobject_add(&pfm_kernel_kobj);
-+	if (ret) {
-+		PFM_INFO("cannot add kernel object: %d", ret);
-+		goto error;
-+	}
-+	done_kobj_kernel = 1;
-+
-+	ret = kobject_add(&pfm_kernel_fmt_kobj);
-+	if (ret) {
-+		PFM_INFO("cannot add fmt object: %d", ret);
-+		goto error;
-+	}
-+	done_kobj_fmt = 1;
-+
-+	ret = sysfs_create_group(&pfm_kernel_kobj, &pfm_kernel_attr_group);
-+	if (ret) {
-+		PFM_INFO("cannot create kernel group");
-+		goto error;
-+	}
-+
-+	/*
-+	 * must be set before builtin_fmt and
-+	 * add_pmu() calls
-+	 */
-+	pfm_sysfs_init_done = 1;
-+
-+	pfm_sysfs_builtin_fmt_add();
-+
-+	if (pfm_pmu_conf)
-+		pfm_sysfs_add_pmu(pfm_pmu_conf);
-+
-+	for_each_online_cpu(cpu) {
-+		ret = pfm_sysfs_add_cpu(cpu);
-+		if (ret)
-+			goto error;
++	old = cmpxchg(entry, NULL, ctx);	
++ 	if (!old) {
++		if (ctx->flags.system)
++			PFM_DBG("acquired Northbridge event access on socket %u", proc_id);
++		else
++			PFM_DBG("acquired Northbridge event access globally");
++	} else if (old != ctx) {
++		if (ctx->flags.system)
++			PFM_DBG("NorthBridge event conflict on socket %u", proc_id);
++		else
++			PFM_DBG("global NorthBridge event conflict");
++		return -EBUSY;
 +	}
 +	return 0;
-+error:
-+	if (done_fmt)
-+		subsystem_unregister(&pfm_fmt_subsys);
-+	if (done_pmu)
-+		subsystem_unregister(&pfm_pmu_subsys);
-+	if (done_stats)
-+		subsystem_unregister(&pfm_stats_subsys);
-+	if (done_regs)
-+		subsystem_unregister(&pfm_regs_subsys);
-+	if (done_kobj_kernel)
-+		kobject_del(&pfm_kernel_kobj);
-+	if (done_kobj_fmt)
-+		kobject_del(&pfm_kernel_fmt_kobj);
-+
-+	for (i=0; i < cpu; i++)
-+		pfm_sysfs_del_cpu(i);
-+
-+	return ret;
 +}
 +
 +/*
-+ * per-cpu perfmon stats attributes
++ * invoked from pfm_write_pmcs() when pfm_nb_sys_owners is not NULL,i.e.,
++ * when we have detected a multi-core processor.
++ *
++ * context is locked, interrupts are masked
 + */
-+#define PFM_DECL_STATS_ATTR(name) \
-+static ssize_t name##_show(void *info, char *buf) \
-+{ \
-+	struct pfm_stats *st = info;\
-+	return snprintf(buf, PAGE_SIZE, "%llu\n", \
-+			(unsigned long long)st->name); \
-+} \
-+static PFM_RO_ATTR(name)
-+
-+PFM_DECL_STATS_ATTR(ovfl_intr_replay_count);
-+PFM_DECL_STATS_ATTR(ovfl_intr_all_count);
-+PFM_DECL_STATS_ATTR(ovfl_intr_ns);
-+PFM_DECL_STATS_ATTR(fmt_handler_calls);
-+PFM_DECL_STATS_ATTR(fmt_handler_ns);
-+PFM_DECL_STATS_ATTR(set_switch_count);
-+PFM_DECL_STATS_ATTR(set_switch_ns);
-+PFM_DECL_STATS_ATTR(ctxsw_count);
-+PFM_DECL_STATS_ATTR(ctxsw_ns);
-+PFM_DECL_STATS_ATTR(handle_timeout_count);
-+PFM_DECL_STATS_ATTR(ovfl_intr_nmi_count);
-+PFM_DECL_STATS_ATTR(handle_work_count);
-+PFM_DECL_STATS_ATTR(ovfl_notify_count);
-+PFM_DECL_STATS_ATTR(reset_pmds_count);
-+PFM_DECL_STATS_ATTR(pfm_restart_count);
-+PFM_DECL_STATS_ATTR(ccnt0);
-+PFM_DECL_STATS_ATTR(ccnt1);
-+PFM_DECL_STATS_ATTR(ccnt2);
-+PFM_DECL_STATS_ATTR(ccnt3);
-+PFM_DECL_STATS_ATTR(ccnt4);
-+PFM_DECL_STATS_ATTR(ccnt5);
-+PFM_DECL_STATS_ATTR(ccnt6);
-+
-+/*
-+ * per-reg attributes
-+ */
-+static ssize_t name_show(void *info, char *buf)
++static int pfm_k8_pmc_write_check(struct pfm_context *ctx,
++			     struct pfm_event_set *set,
++			     struct pfarg_pmc *req)
 +{
-+	struct pfm_reg_desc *reg = info;
-+	return snprintf(buf, PAGE_SIZE, "%s\n", reg->desc);
-+}
-+static PFM_RO_ATTR(name);
-+
-+static ssize_t dfl_val_show(void *info, char *buf)
-+{
-+	struct pfm_reg_desc *reg = info;
-+	return snprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			(unsigned long long)reg->dfl_val);
-+}
-+static PFM_RO_ATTR(dfl_val);
-+
-+static ssize_t rsvd_msk_show(void *info, char *buf)
-+{
-+	struct pfm_reg_desc *reg = info;
-+	return snprintf(buf, PAGE_SIZE, "0x%llx\n",
-+			(unsigned long long)reg->rsvd_msk);
-+}
-+static PFM_RO_ATTR(rsvd_msk);
-+
-+static ssize_t width_show(void *info, char *buf)
-+{
-+	struct pfm_reg_desc *reg = info;
-+	int w;
-+
-+	w = (reg->type & PFM_REG_C64) ? pfm_pmu_conf->counter_width : 64;
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", w);
-+}
-+static PFM_RO_ATTR(width);
-+
-+
-+static ssize_t addr_show(void *info, char *buf)
-+{
-+	struct pfm_reg_desc *reg = info;
-+	return snprintf(buf, PAGE_SIZE, "0x%lx\n", reg->hw_addr);
-+}
-+static PFM_RO_ATTR(addr);
-+
-+static ssize_t ovfl_intr_spurious_count_show(void *info, char *buf)
-+{
-+	struct pfm_stats *st = info;
-+	return snprintf(buf, PAGE_SIZE, "%llu\n",
-+			(unsigned long long)(st->ovfl_intr_all_count
-+					     - st->ovfl_intr_regular_count));
-+}
-+
-+static ssize_t ovfl_intr_regular_count_show(void *info, char *buf)
-+{
-+	struct pfm_stats *st = info;
-+	return snprintf(buf, PAGE_SIZE, "%llu\n",
-+			(unsigned long long)(st->ovfl_intr_regular_count
-+					     - st->ovfl_intr_replay_count));
-+}
-+
-+static PFM_RO_ATTR(ovfl_intr_spurious_count);
-+static PFM_RO_ATTR(ovfl_intr_regular_count);
-+
-+static struct attribute *pfm_cpu_attrs[] = {
-+	&attr_ovfl_intr_spurious_count.attr,
-+	&attr_ovfl_intr_replay_count.attr,
-+	&attr_ovfl_intr_regular_count.attr,
-+	&attr_ovfl_intr_all_count.attr,
-+	&attr_ovfl_intr_ns.attr,
-+	&attr_handle_work_count.attr,
-+	&attr_ovfl_notify_count.attr,
-+	&attr_reset_pmds_count.attr,
-+	&attr_pfm_restart_count.attr,
-+	&attr_ccnt0.attr,
-+	&attr_ccnt1.attr,
-+	&attr_ccnt2.attr,
-+	&attr_ccnt3.attr,
-+	&attr_ccnt4.attr,
-+	&attr_ccnt5.attr,
-+	&attr_ccnt6.attr,
-+	&attr_fmt_handler_calls.attr,
-+	&attr_fmt_handler_ns.attr,
-+	&attr_set_switch_count.attr,
-+	&attr_set_switch_ns.attr,
-+	&attr_ctxsw_count.attr,
-+	&attr_ctxsw_ns.attr,
-+	&attr_handle_timeout_count.attr,
-+	&attr_ovfl_intr_nmi_count.attr,
-+	NULL
-+};
-+
-+static struct attribute_group pfm_cpu_attr_group = {
-+	.attrs = pfm_cpu_attrs,
-+};
-+
-+int pfm_sysfs_add_cpu(int mycpu)
-+{
-+	struct sys_device *cpudev;
-+	struct pfm_stats *st;
-+	int ret;
-+
-+	cpudev = get_cpu_sysdev(mycpu);
-+	if (!cpudev)
-+		return -EINVAL;
-+
-+	st = &per_cpu(pfm_stats, mycpu);
-+
-+	kobject_init(&st->kobj);
-+
-+	st->kobj.parent = &cpudev->kobj;
-+	kobject_set_name(&st->kobj, "perfmon");
-+	kobj_set_kset_s(st, pfm_stats_subsys);
-+
-+	ret = kobject_add(&st->kobj);
-+	if (ret)
-+		return ret;
-+
-+	ret = sysfs_create_group(&st->kobj, &pfm_cpu_attr_group);
-+	if (ret)
-+		kobject_del(&st->kobj);
-+
-+	pfm_reset_stats(mycpu);
-+
-+	return ret;
-+}
-+
-+void pfm_sysfs_del_cpu(int mycpu)
-+{
-+	struct sys_device *cpudev;
-+	struct pfm_stats *st;
-+
-+	cpudev = get_cpu_sysdev(mycpu);
-+	if (!cpudev)
-+		return;
-+
-+	st = &per_cpu(pfm_stats, mycpu);
-+	kobject_del(&st->kobj);
-+
-+	sysfs_remove_group(&st->kobj, &pfm_cpu_attr_group);
-+}
-+
-+static ssize_t smpl_version_show(void *data, char *buf)
-+{
-+	struct pfm_smpl_fmt *fmt = data;
-+
-+	return snprintf(buf, PAGE_SIZE, "%u.%u",
-+		fmt->fmt_version >>16 & 0xffff,
-+		fmt->fmt_version & 0xffff);
-+}
-+PFM_RO_ATTR(smpl_version);
-+
-+static ssize_t smpl_argsize_show(void *data, char *buf)
-+{
-+	struct pfm_smpl_fmt *fmt = data;
-+
-+	return snprintf(buf, PAGE_SIZE, "%zu", fmt->fmt_arg_size);
-+}
-+PFM_RO_ATTR(smpl_argsize);
-+
-+static struct attribute *pfm_fmt_attrs[] = {
-+	&attr_smpl_version.attr,
-+	&attr_smpl_argsize.attr,
-+	NULL
-+};
-+
-+static struct attribute_group pfm_fmt_attr_group = {
-+	.attrs = pfm_fmt_attrs,
-+};
-+
-+
-+/*
-+ * when a sampling format module is inserted, we populate
-+ * sysfs with some information
-+ */
-+int pfm_sysfs_add_fmt(struct pfm_smpl_fmt *fmt)
-+{
-+	int ret;
-+
-+	if (pfm_sysfs_init_done == 0)
++	unsigned int event;
++	/*
++	 * delay checking NB event until we load the context
++	 */
++	if (ctx->state == PFM_CTX_UNLOADED)
 +		return 0;
 +
-+	kobject_init(&fmt->kobj);
-+	kobject_set_name(&fmt->kobj, fmt->fmt_name);
-+	kobj_set_kset_s(fmt, pfm_fmt_subsys);
-+	fmt->kobj.parent = &pfm_kernel_fmt_kobj;
++	/*
++	 * check event is NB event
++	 */
++	event = (unsigned int)(req->reg_value & 0xff);
++	if (event < 0xee)
++		return 0;
 +
-+	ret = kobject_add(&fmt->kobj);
-+	if (ret)
-+		return ret;
-+
-+	ret = sysfs_create_group(&fmt->kobj, &pfm_fmt_attr_group);
-+	if (ret)
-+		kobject_del(&fmt->kobj);
-+
-+	return ret;
++	return pfm_k8_acquire_nb(ctx);
 +}
 +
 +/*
-+ * when a sampling format module is removed, its information
-+ * must also be removed from sysfs
++ * invoked on pfm_load_context().
++ * context is locked, interrupts are masked
 + */
-+int pfm_sysfs_remove_fmt(struct pfm_smpl_fmt *fmt)
++static int pfm_k8_load_context(struct pfm_context *ctx)
 +{
-+	if (pfm_sysfs_init_done == 0)
++	struct pfm_event_set *set;
++	unsigned int i, n;
++
++	/*
++	 * scan all sets for NB events
++	 */
++	list_for_each_entry(set, &ctx->list, list) {
++		n = set->nused_pmcs;
++		for(i=0; n; i++) {
++			if (!test_bit(i, ulp(set->used_pmcs)))
++				continue;
++			if ((set->pmcs[i] & 0xff) >= 0xee)
++				goto found;
++			n--;
++		}
++	}
++	return 0;
++found:
++	return pfm_k8_acquire_nb(ctx);
++}
++
++/*
++ * invoked on pfm_unload_context()
++ */
++static int pfm_k8_unload_context(struct pfm_context *ctx)
++{
++	struct pfm_context **entry, *old;
++	int proc_id;
++
++#ifdef CONFIG_SMP
++	proc_id = topology_physical_package_id(smp_processor_id());
++#else
++	proc_id = 0;
++#endif
++
++	/*
++	 * unload always happens on the monitored CPU in system-wide
++	 */
++	if (ctx->flags.system)
++		entry = &pfm_nb_sys_owners[proc_id];
++	else
++		entry = &pfm_nb_task_owner;
++
++	old = cmpxchg(entry, ctx, NULL);	
++	if (old == ctx) {
++		if (ctx->flags.system)
++			PFM_DBG("released NorthBridge on socket %u", proc_id);
++		else
++			PFM_DBG("released NorthBridge events globally");
++	}
++	return 0;
++}
++
++/*
++ * detect if we need to active NorthBridge event access control
++ */
++static int pfm_k8_setup_nb_event_control(void)
++{
++	unsigned int c, n = 0;
++	unsigned int max_phys = 0;
++
++#ifdef CONFIG_SMP
++	for_each_present_cpu(c) {
++		if (cpu_data[c].phys_proc_id > max_phys)
++			max_phys = cpu_data[c].phys_proc_id;
++	}
++#else
++	max_phys = 0;
++#endif
++	if (max_phys > 255) {
++		PFM_INFO("socket id %d is too big to handle", max_phys);
++		return -ENOMEM;
++	}
++
++	n = max_phys + 1;
++	if (n < 2)
 +		return 0;
 +
-+	sysfs_remove_group(&fmt->kobj, &pfm_fmt_attr_group);
-+	kobject_del(&fmt->kobj);
++	pfm_nb_sys_owners = vmalloc(n * sizeof(*pfm_nb_sys_owners));
++	if (!pfm_nb_sys_owners)
++		return -ENOMEM;
++
++	memset(pfm_nb_sys_owners, 0, n * sizeof(*pfm_nb_sys_owners));
++	pfm_nb_task_owner = NULL;
++
++	/*
++	 * activate write-checker for PMC registers
++	 */
++	for(c=0; c < PFM_AMD_NUM_PMCS; c++) {
++		pfm_k8_pmc_desc[c].type |= PFM_REG_WC;
++	}
++
++	pfm_k8_pmu_conf.load_context = pfm_k8_load_context;
++	pfm_k8_pmu_conf.unload_context = pfm_k8_unload_context;
++	pfm_k8_pmu_conf.pmc_write_check = pfm_k8_pmc_write_check;
++
++	PFM_INFO("NorthBridge event access control enabled");
 +
 +	return 0;
 +}
 +
-+static struct attribute *pfm_reg_attrs[] = {
-+	&attr_name.attr,
-+	&attr_dfl_val.attr,
-+	&attr_rsvd_msk.attr,
-+	&attr_width.attr,
-+	&attr_addr.attr,
-+	NULL
-+};
-+
-+static struct attribute_group pfm_reg_attr_group = {
-+	.attrs = pfm_reg_attrs,
-+};
-+
-+static ssize_t model_show(void *info, char *buf)
++static int pfm_k8_detect_nmi(void)
 +{
-+	struct _pfm_pmu_config *p = info;
-+	return snprintf(buf, PAGE_SIZE, "%s\n", p->pmu_name);
-+}
-+static PFM_RO_ATTR(model);
-+
-+static struct attribute *pfm_pmu_desc_attrs[] = {
-+	&attr_model.attr,
-+	NULL
-+};
-+
-+static struct attribute_group pfm_pmu_desc_attr_group = {
-+	.attrs = pfm_pmu_desc_attrs,
-+};
-+
-+static int pfm_sysfs_add_pmu_regs(struct _pfm_pmu_config *pmu)
-+{
-+	struct pfm_reg_desc *reg;
-+	unsigned int i, j, k;
-+	int ret;
-+	char reg_name[8];
-+
-+	reg = pmu->pmc_desc;
-+	for(i=0; i < pmu->max_pmc; i++, reg++) {
-+
-+		if (!(reg->type & PFM_REG_I))
-+			continue;
-+
-+		kobject_init(&reg->kobj);
-+
-+		reg->kobj.parent = &pmu->kobj;
-+		snprintf(reg_name, sizeof(reg_name), "pmc%u", i);
-+		kobject_set_name(&reg->kobj, reg_name);
-+		kobj_set_kset_s(reg, pfm_regs_subsys);
-+
-+		ret = kobject_add(&reg->kobj);
-+		if (ret)
-+			goto undo_pmcs;
-+
-+		ret = sysfs_create_group(&reg->kobj, &pfm_reg_attr_group);
-+		if (ret) {
-+			kobject_del(&reg->kobj);
-+			goto undo_pmcs;
-+		}
-+	}
-+
-+	reg = pmu->pmd_desc;
-+	for(j=0; j < pmu->max_pmd; j++, reg++) {
-+
-+		if (!(reg->type & PFM_REG_I))
-+			continue;
-+
-+		kobject_init(&reg->kobj);
-+
-+		reg->kobj.parent = &pmu->kobj;
-+		snprintf(reg_name, sizeof(reg_name), "pmd%u", j);
-+		kobject_set_name(&reg->kobj, reg_name);
-+		kobj_set_kset_s(reg, pfm_regs_subsys);
-+
-+		ret = kobject_add(&reg->kobj);
-+		if (ret)
-+			goto undo_pmds;
-+
-+		ret = sysfs_create_group(&reg->kobj, &pfm_reg_attr_group);
-+		if (ret) {
-+			kobject_del(&reg->kobj);
-+			goto undo_pmds;
-+		}
-+	}
-+	return 0;
-+undo_pmds:
-+	reg = pmu->pmd_desc;
-+	for(k = 0; k < j; k++, reg++) {
-+		if (!(reg->type & PFM_REG_I))
-+			continue;
-+		sysfs_remove_group(&reg->kobj, &pfm_reg_attr_group);
-+		kobject_del(&reg->kobj);
-+	}
-+undo_pmcs:
-+	reg = pmu->pmc_desc;
-+	for(k=0; k < i; k++, reg++) {
-+		if (!(reg->type & PFM_REG_I))
-+			continue;
-+		sysfs_remove_group(&reg->kobj, &pfm_reg_attr_group);
-+		kobject_del(&reg->kobj);
-+	}
-+	return ret;
-+}
-+
-+static int pfm_sysfs_del_pmu_regs(struct _pfm_pmu_config *pmu)
-+{
-+	struct pfm_reg_desc *reg;
 +	unsigned int i;
 +
-+	reg = pmu->pmc_desc;
-+	for(i=0; i < pmu->max_pmc; i++, reg++) {
-+
-+		if (!(reg->type & PFM_REG_I))
-+			continue;
-+
-+		sysfs_remove_group(&reg->kobj, &pfm_reg_attr_group);
-+		kobject_del(&reg->kobj);
++	if (nmi_watchdog != NMI_LOCAL_APIC) {
++		if (force_nmi)
++			pfm_k8_pmu_info.flags |= PFM_X86_FL_USE_NMI;
++		return 0;
 +	}
 +
-+	reg = pmu->pmd_desc;
-+	for(i=0; i < pmu->max_pmd; i++, reg++) {
-+
-+		if (!(reg->type & PFM_REG_I))
++	/*
++	 * assume NMI watchdog is initialized before PMU description module
++	 * auto-detect which perfctr/eventsel is used by NMI watchdog
++	 */
++	for (i=0; i < PFM_AMD_NUM_PMDS; i++) {
++		if (avail_to_resrv_perfctr_nmi(pfm_k8_pmd_desc[i].hw_addr))
 +			continue;
 +
-+		sysfs_remove_group(&reg->kobj, &pfm_reg_attr_group);
-+		kobject_del(&reg->kobj);
++		PFM_INFO("NMI watchdog using %s/%s, disabling for perfmon",
++				pfm_k8_pmc_desc[i].desc,
++				pfm_k8_pmd_desc[i].desc);
++
++		pfm_k8_pmc_desc[i].type = PFM_REG_NA;
++		pfm_k8_pmd_desc[i].type = PFM_REG_NA;
++		pfm_k8_pmu_info.pmc_addrs[i].reg_type = PFM_REGT_NA;
++		pfm_k8_pmu_info.pmd_addrs[i].reg_type = PFM_REGT_NA;
 +	}
++	pfm_k8_pmu_info.flags |= PFM_X86_FL_USE_NMI;
 +	return 0;
 +}
 +
-+/*
-+ * when a PMU description module is inserted, we create
-+ * a pmu_desc subdir in sysfs and we populate it with
-+ * PMU specific information, such as register mappings
-+ */
-+int pfm_sysfs_add_pmu(struct _pfm_pmu_config *pmu)
++static int pfm_k8_probe_pmu(void)
 +{
-+	int ret;
-+
-+	if (pfm_sysfs_init_done == 0)
-+		return 0;
-+
-+	kobject_init(&pmu->kobj);
-+	kobject_set_name(&pmu->kobj, "pmu_desc");
-+	kobj_set_kset_s(pmu, pfm_pmu_subsys);
-+	pmu->kobj.parent = &pfm_kernel_kobj;
-+
-+	ret = kobject_add(&pmu->kobj);
-+	if (ret)
-+		return ret;
-+
-+	ret = sysfs_create_group(&pmu->kobj, &pfm_pmu_desc_attr_group);
-+	if (ret)
-+		kobject_del(&pmu->kobj);
-+
-+	ret = pfm_sysfs_add_pmu_regs(pmu);
-+	if (ret) {
-+		sysfs_remove_group(&pmu->kobj, &pfm_pmu_desc_attr_group);
-+                kobject_del(&pmu->kobj);
++	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD) {
++		PFM_INFO("not an AMD processor");
++		return -1;
 +	}
-+	return ret;
-+}
 +
-+/*
-+ * when a PMU description module is removed, we also remove
-+ * all its information from sysfs, i.e., the pmu_desc subdir
-+ * disappears
-+ */
-+int pfm_sysfs_remove_pmu(struct _pfm_pmu_config *pmu)
-+{
-+	if (pfm_sysfs_init_done == 0)
-+		return 0;
++	if (current_cpu_data.x86 != 15) {
++		PFM_INFO("unsupported family=%d", current_cpu_data.x86);
++		return -1;
++	}
 +
-+	pfm_sysfs_del_pmu_regs(pmu);
-+	sysfs_remove_group(&pmu->kobj, &pfm_pmu_desc_attr_group);
-+	kobject_del(&pmu->kobj);
++	/*
++	 * check for local APIC (required)
++	 */
++	if (!cpu_has_apic) {
++		PFM_INFO("no local APIC, unsupported");
++		return -1;
++	}
++	if (pfm_k8_detect_nmi()) {
++		PFM_INFO("NMI detection failed");
++		return -1;
++	}
++	if (current_cpu_data.x86_max_cores > 1)
++		pfm_k8_setup_nb_event_control();
 +
 +	return 0;
 +}
++
++static struct pfm_pmu_config pfm_k8_pmu_conf={
++	.pmu_name = "AMD K8",
++	.counter_width = 47,
++	.pmd_desc = pfm_k8_pmd_desc,
++	.pmc_desc = pfm_k8_pmc_desc,
++	.num_pmc_entries = PFM_AMD_NUM_PMCS,
++	.num_pmd_entries = PFM_AMD_NUM_PMDS,
++	.probe_pmu = pfm_k8_probe_pmu,
++	.version = "1.1",
++	.arch_info = &pfm_k8_pmu_info,
++	.flags = PFM_PMU_BUILTIN_FLAG,
++	.owner = THIS_MODULE
++};
++	
++static int __init pfm_k8_pmu_init_module(void)
++{
++	return pfm_pmu_register(&pfm_k8_pmu_conf);
++}
++
++static void __exit pfm_k8_pmu_cleanup_module(void)
++{
++	if (pfm_nb_sys_owners)
++		vfree(pfm_nb_sys_owners);
++
++	pfm_pmu_unregister(&pfm_k8_pmu_conf);
++}
++
++module_init(pfm_k8_pmu_init_module);
++module_exit(pfm_k8_pmu_cleanup_module);
+--- linux-2.6.22.base/include/asm-x86_64/perfmon.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/include/asm-x86_64/perfmon.h	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,24 @@
++/*
++ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * This file contains X86-64 Processor Family specific definitions
++ * for the perfmon interface.
++ *
++ * This file MUST never be included directly. Use linux/perfmon.h.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++  */
++#include <asm-i386/perfmon.h>
+--- linux-2.6.22.base/include/asm-x86_64/perfmon_api.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/include/asm-x86_64/perfmon_api.h	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,24 @@
++/*
++ * Copyright (c) 2007 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * This file contains x86-64 specific definitions for the perfmon
++ * interface.
++ *
++ * This file MUST never be included directly. Use linux/perfmon.h.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++  */
++#include <asm-i386/perfmon_api.h>
+--- linux-2.6.22.base/include/asm-x86_64/perfmon_pebs_smpl.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/include/asm-x86_64/perfmon_pebs_smpl.h	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,19 @@
++/*
++ * Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++  */
++#include <asm-i386/perfmon_pebs_smpl.h>
