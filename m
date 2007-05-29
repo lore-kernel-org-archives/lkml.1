@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765237AbXE2UD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761501AbXE2UDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765237AbXE2UD0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 16:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbXE2UDS
+	id S1761501AbXE2UDu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 16:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765504AbXE2UDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 16:03:18 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:50463 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751460AbXE2UDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 16:03:17 -0400
-Date: Tue, 29 May 2007 22:00:38 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add a trivial patch style checker
-In-Reply-To: <465BEBE5.5070008@shadowen.org>
-Message-ID: <Pine.LNX.4.61.0705292153310.11140@yvahk01.tjqt.qr>
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky>
- <Pine.LNX.4.61.0705281123000.11140@yvahk01.tjqt.qr> <465BEBE5.5070008@shadowen.org>
+	Tue, 29 May 2007 16:03:37 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:64126 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765495AbXE2UDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 16:03:34 -0400
+Message-ID: <465C871F.708@cfl.rr.com>
+Date: Tue, 29 May 2007 16:03:43 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: David Chinner <dgc@sgi.com>
+CC: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
+ and dm/md.
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com>
+In-Reply-To: <20070528024559.GA85884050@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 May 2007 20:03:48.0241 (UTC) FILETIME=[7835F010:01C7A22C]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15206.000
+X-TM-AS-Result: No--7.286100-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Chinner wrote:
+> Sounds good to me, but how do we test to see if the underlying
+> device supports barriers? Do we just assume that they do and
+> only change behaviour if -o nobarrier is specified in the mount
+> options?
 
-On May 29 2007 10:01, Andy Whitcroft wrote:
->> 
->> The consistent style quite looses after this point, esp. space around
->> operators ;-)
->
->Yep thats on my list for cleanup ...
+The idea is that ALL block devices will support barriers; if the 
+underlying driver doesn't, then the block layer will work around it.
 
-Hey, you might even try running patch-trivia-detector.pl through itself. :)
+> The use of barriers in XFS assumes the commit write to be on stable
+> storage before it returns.  One of the ordering guarantees that we
+> need is that the transaction (commit write) is on disk before the
+> metadata block containing the change in the transaction is written
+> to disk and the current barrier behaviour gives us that.
 
-
->> Attention span ran out. :)
->
->Thanks for bothering.  Any review is appreciated.
-
-Followup comes..
+Barrier != synchronous write, so if XFS relies on that block being on 
+the media when the request is completed, then it is broken.  It should 
+only care that the ordering of log-data-log is maintained, not exactly 
+when each specific request completes.
 
 
-	Jan
--- 
