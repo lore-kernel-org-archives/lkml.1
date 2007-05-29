@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760051AbXEaKMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760215AbXEaKUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760051AbXEaKMS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 May 2007 06:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXEaKMH
+	id S1760215AbXEaKUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 May 2007 06:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbXEaKUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 May 2007 06:12:07 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:3746 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756890AbXEaKMF (ORCPT
+	Thu, 31 May 2007 06:20:09 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:38442 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756780AbXEaKUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 May 2007 06:12:05 -0400
-Date: Thu, 31 May 2007 11:12:00 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] serial_core.h: Include <linux/sysrq.h>
-Message-ID: <Pine.LNX.4.64N.0705311106160.7856@blysk.ds.pg.gda.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 May 2007 06:20:08 -0400
+Date: Tue, 29 May 2007 13:35:57 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Trent Waddington <trent.waddington@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Portable syscall inspection
+Message-ID: <20070529123557.GA21684@linux-mips.org>
+References: <3d57814d0705281559y56576567r2c23edda5f22c3cf@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3d57814d0705281559y56576567r2c23edda5f22c3cf@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The <linux/serial_core.h> header refers to handle_sysrq(), but does not 
-include <linux/sysrq.h> which provides a declaration of the function.  
-This may result in an implicit declaration and a warning if the actual one 
-is seen later on.
+On Tue, May 29, 2007 at 08:59:37AM +1000, Trent Waddington wrote:
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
+> Someone finally noticed that my program that uses ptrace only works on 
+> i386..
+> and, by the looks of it, there is no portable way to refer to the
+> registers of a
+> user_regs_struct when inspecting a system call.
 
- Please apply.
+Correct.
 
-  Maciej
+> I will probably end up making a header file for each architecture that
+> defines where
+> in the user_regs_struct things like the syscall number, the return
+> value and the first 3 parameters are..
 
-patch-2.6.22-rc2-serial-sysrq-2
-diff -up --recursive --new-file linux-2.6.22-rc2.macro/include/linux/serial_core.h linux-2.6.22-rc2/include/linux/serial_core.h
---- linux-2.6.22-rc2.macro/include/linux/serial_core.h	2007-05-27 15:12:02.000000000 +0000
-+++ linux-2.6.22-rc2/include/linux/serial_core.h	2007-05-30 20:33:10.000000000 +0000
-@@ -152,6 +152,7 @@
- #include <linux/sched.h>
- #include <linux/tty.h>
- #include <linux/mutex.h>
-+#include <linux/sysrq.h>
- 
- struct uart_port;
- struct uart_info;
+Also consider that some architectures pass parts of the arguments in
+registers which on yet others are passed in memory.  Sometimes padding
+arguments are needed and many more oddities.  Similar for results.
+Inescapably such a program is a perment maintenance nightmare.
+
+> has anyone done this already?  or can otherwise save me a lot of time?
+
+Similar things have been tried before but nothing that would be remotely
+sane.
+
+  Ralf
