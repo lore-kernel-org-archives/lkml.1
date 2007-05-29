@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765152AbXE2UkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765866AbXE2Ulf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765152AbXE2UkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 16:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758931AbXE2UkO
+	id S1765866AbXE2Ulf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 16:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758931AbXE2Ul2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 16:40:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37337 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758384AbXE2UkN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 16:40:13 -0400
-Subject: Re: BUG in 2.6.22-rc2-mm1: Parts of Alsa sound architecture broken
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Takashi Iwai <tiwai@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>
-In-Reply-To: <Pine.LNX.4.61.0705292212120.11140@yvahk01.tjqt.qr>
-References: <20070524200052.234330@gmx.net>
-	 <20070524130921.8dbd3777.akpm@linux-foundation.org>
-	 <s5hiragopsx.wl%tiwai@suse.de>
-	 <20070525102806.77ee9c0c.akpm@linux-foundation.org>
-	 <s5h1wh4si5l.wl%tiwai@suse.de>
-	 <Pine.LNX.4.61.0705261248150.7344@yvahk01.tjqt.qr>
-	 <s5hveebziom.wl%tiwai@suse.de>
-	 <Pine.LNX.4.61.0705292212120.11140@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 29 May 2007 17:39:06 -0300
-Message-Id: <1180471146.9509.115.camel@localhost>
+	Tue, 29 May 2007 16:41:28 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:45517 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755396AbXE2Ul1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 16:41:27 -0400
+Date: Tue, 29 May 2007 22:42:28 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: 2.6.22-rc3: regression: make M=$PWD modules_install does nothing
+Message-ID: <20070529204228.GA7738@uranus.ravnborg.org>
+References: <200705280634.37420.arvidjaar@mail.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705280634.37420.arvidjaar@mail.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Ter, 2007-05-29 às 22:18 +0200, Jan Engelhardt escreveu:
-> On May 29 2007 18:41, Takashi Iwai wrote:
-> >
-> >Well, I find the change of CONFIG_SND to menuconfig is fine, too.
-> >But CONFIG_SND_PCI_DRIVERS and others don't make much sense to me.
-> >How is it useful at all?
+Hi Andrey
+
+> This has been working up and including -rc2:
+
+I have tried to reproduce here - but it just works.
+I then took a second look at your excellent bug-report and noticed:
 > 
-> Hah, I just tell you some of my own experience.
-> In summer 2003, I bought the last new machine, and it got these
-> shiny new ports they like to call USB. :)
-> I did not have much use for it, but I left it on - you never know
-> what standard next is the big win of the decade. And actually,
-> it did not took long (well, summer 2005) to get my first USB device.
-> Still, I am hell as sure I do not have USB-based sound devices
-> anytime soon, so it would be cool to deactivate the whole usbsound
-> menu at once. I think I said that in the patch description, did not I?
+> {pts/1}% sudo make -C ~/src/linux-git O=$HOME/build/linux-2.6.22 M=PWD V=1 
 
-For me, this seems to be a good idea. Makes clear to users what is
-inside each menu, improving their notion on what should be deactivated.
+that in this commandline you say M=PWD
 
-> >Anyway, I'd like to confirm that this really works before merging to
-> >the ALSA tree.  As Mauro suspected, kconfig seems not working as
-> >expected...
-> 
-> Unfortunately, there are sometimes non-visible options in menus (the
-> Networking>QoS menu for example) that, when converted to menuconfig-if-endif,
-> also get lost when the menuconfig object is deactivated. In case of QoS, this
-> can break compilation. For most subsystems however, it works alright because
-> the particular subsystem referencing CONFIG_INVISIBLE_THING is deactivated
-> anyway and does not get compiled.
-> Such strange menus (like QoS) have not been menuconfigized so far, it's just
-> too hard to keep the bits together. As far as other subsystems are concerned,
-> please give it some testing.
+> modules_install
+> make: Entering directory `/home/bor/src/linux-git'
+> make -C /home/bor/build/linux-2.6.22 \
+>         KBUILD_SRC=/home/bor/src/linux-git \
+>         KBUILD_EXTMOD="PWD" -f /home/bor/src/linux-git/Makefile
 
-Hmm... probably, this is what happened with V4L: there are several
-invisible items there for selecting some core items.
+which tell kbuild that module is in a directory named 'PWD' as seen in the
+assignment to KBUILD_EXTMOD in the above line.
 
-In the case of V4L, the problem is that, when the menu item is
-activated, sometimes, kconfig doesn't properly honor module/static link
-heritage.
+Could it be that you by accident omitted a '$' in front of PWD?
+This would then tell kbuild that module are in the directory pointed to by $PWD.
 
- 
-Cheers,
-Mauro
-
+	Sam
