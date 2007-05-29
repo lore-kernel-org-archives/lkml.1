@@ -1,167 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763544AbXE2GXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763975AbXE2GYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763544AbXE2GXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 02:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXE2GXI
+	id S1763975AbXE2GYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 02:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbXE2GYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 02:23:08 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:33905 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752235AbXE2GXH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 02:23:07 -0400
-X-IronPort-AV: i="4.14,587,1170651600"; 
-   d="scan'208"; a="40377352:sNHT22456826"
-From: Bryan Wu <bryan.wu@analog.com>
-To: linux-kernel@vger.kernel.org
-Cc: Bernd Schmidt <bernd.schmidt@analog.com>, Bryan Wu <bryan.wu@analog.com>,
-       David McCullough <davidm@snapgear.com>,
-       Greg Ungerer <gerg@snapgear.com>
-Subject: [PATCH] binfmt_flat: minimum support for the Blackfin relocations
-Date: Tue, 29 May 2007 14:24:27 +0800
-Message-Id: <1180419867864-git-send-email-bryan.wu@analog.com>
-X-Mailer: git-send-email 1.5.2
+	Tue, 29 May 2007 02:24:07 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58721 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753732AbXE2GYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 02:24:06 -0400
+From: Neil Brown <neilb@suse.de>
+To: linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Tue, 29 May 2007 16:23:50 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18011.50934.994731.272859@notabene.brown>
+Cc: Peter Linich <plinich@cse.unsw.edu.au>
+Subject: [PATCH/RFC] Is it OK for 'read' to return nuls for a file
+   that never had nuls in it?
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bernd Schmidt <bernd.schmidt@analog.com>
 
-This just adds minimum support for the Blackfin relocations,
-since we don't have enough space in each reloc. The idea
-is to store a value with one relocation so that subsequent ones can
-access it.
 
-Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-Cc: David McCullough <davidm@snapgear.com>
-Cc: Greg Ungerer <gerg@snapgear.com>
----
- fs/binfmt_flat.c             |    5 ++++-
- include/asm-h8300/flat.h     |    3 ++-
- include/asm-m32r/flat.h      |    3 ++-
- include/asm-m68knommu/flat.h |    3 ++-
- include/asm-sh/flat.h        |    3 ++-
- include/asm-v850/flat.h      |    4 +++-
- 6 files changed, 15 insertions(+), 6 deletions(-)
+It appears that there is a race when reading from a file that is
+concurrently being truncated.  It is possible to read a number of
+bytes that matches the size of the file before the truncate, but the
+actual bytes are all nuls - values that had never been in the file.
 
-diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
-index 7b0265d..13b58f8 100644
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -742,6 +742,7 @@ static int load_flat_file(struct linux_binprm * bprm,
- 	 * __start to address 4 so that is okay).
- 	 */
- 	if (rev > OLD_FLAT_VERSION) {
-+		unsigned long persistent = 0;
- 		for (i=0; i < relocs; i++) {
- 			unsigned long addr, relval;
+Below is a simple C program to demonstrate this, and a patch that
+might fix it (initial testing is positive, but it might just make the
+window smaller).
+To trial the program run two instances, naming the same file as the
+only argument.  Every '!' indicates a read that found a nul.  I get
+one every few minutes.
+e.g.  cc -o race race.c ; ./race /tmp/testfile & ./race /tmp/tracefile
+
+My exploration suggests the problem is in do_generic_mapping_read in
+mm/filemap.c. 
+This code:
+   gets the size of the file
+   triggers readahead
+   gets the appropriate page
+   If the page is up-to-date, return data.
+
+If a truncate happens just before readahead is triggered, then
+the size will be the pre-truncate size of the file, while the page
+could have been read by the readahead and so will be up-to-date and
+full of nuls.
+
+Note that if do_generic_mapping_read calls readpage explicitly, it
+samples the value of inode->i_size again after the read.  However if
+the readpage is called by the readahead code, i_size is not
+re-sampled.
+
+I am not 100% confident of every aspect of this explanation (I haven't
+traced all the way through the read-ahead code) but it seems to fit
+the available data including the fact that if I disable read-ahead
+(blockdev --setra 0) then the apparent problem goes away.
+
+The patch below moves the code for re-sampling i_size from after the
+readpage call to before the "actor" call.
+
+Questions:
+  - Is this a problem, and should it be fixed (I think "yes").
+  - Is the patch appropriate, and does it have no negative
+    consequences?.
+    (Obviously some comments should be tidied up to reflect the new
+    reality).
+
+Thanks,
+NeilBrown
+
+------------------------------------------------------------
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+int main(int argc, char *argv[])
+{
+	char buf1[4096];
+	char buf2[4096];
+	int i;
+
+	for (i=0; i<4096; i++) buf1[i] = 'x';
+
+	while(1) {
+		int fd = open(argv[1], O_WRONLY|O_CREAT|O_TRUNC, 0600);
+		int n;
+		if (fd < 0) {
+			perror("open-write");
+			exit(1);
+		}
+		if (write(fd, buf1, 4096) != 4096) {
+			perror("write1");
+			exit(1);
+		}
+		close(fd);
+		fd = open(argv[1], O_RDONLY, 0600);
+		if (fd < 0) {
+			perror("open-read");
+			exit(1);
+		}
+		n = read(fd, buf2, 4096);
+		if (n == 0) {
+			// printf(".");
+			fflush(stdout);
+			close(fd);
+			continue;
+		}
+		if (n != 4096) {
+			perror("read1");
+			exit(1);
+		}
+		if (buf2[0] == 0) {
+			printf("!");
+			fflush(stdout);
+		}
+		close(fd);
+	}
+}
+
+---------------------------------------------------------
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./mm/filemap.c |   35 ++++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
+
+diff .prev/mm/filemap.c ./mm/filemap.c
+--- .prev/mm/filemap.c	2007-05-29 09:41:06.000000000 +1000
++++ ./mm/filemap.c	2007-05-29 12:06:03.000000000 +1000
+@@ -930,6 +930,24 @@ find_page:
+ 			goto page_not_up_to_date;
+ page_ok:
  
-@@ -749,6 +750,8 @@ static int load_flat_file(struct linux_binprm * bprm,
- 			   relocated (of course, the address has to be
- 			   relocated first).  */
- 			relval = ntohl(reloc[i]);
-+			if (flat_set_persistent (relval, &persistent))
-+				continue;
- 			addr = flat_get_relocate_addr(relval);
- 			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
- 			if (rp == (unsigned long *)RELOC_FAILED) {
-@@ -757,7 +760,7 @@ static int load_flat_file(struct linux_binprm * bprm,
- 			}
++		isize = i_size_read(inode);
++		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++		if (unlikely(!isize || index > end_index)) {
++			page_cache_release(page);
++			goto out;
++		}
++
++		/* nr is the maximum number of bytes to copy from this page */
++		nr = PAGE_CACHE_SIZE;
++		if (index == end_index) {
++			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
++			if (nr <= offset) {
++				page_cache_release(page);
++				goto out;
++			}
++		}
++		nr = nr - offset;
++
+ 		/* If users can be writing to this page using arbitrary
+ 		 * virtual addresses, take care about potential aliasing
+ 		 * before reading the page on the kernel side.
+@@ -1023,23 +1041,6 @@ readpage:
+ 		 * part of the page is not copied back to userspace (unless
+ 		 * another truncate extends the file - this is desired though).
+ 		 */
+-		isize = i_size_read(inode);
+-		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
+-		if (unlikely(!isize || index > end_index)) {
+-			page_cache_release(page);
+-			goto out;
+-		}
+-
+-		/* nr is the maximum number of bytes to copy from this page */
+-		nr = PAGE_CACHE_SIZE;
+-		if (index == end_index) {
+-			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
+-			if (nr <= offset) {
+-				page_cache_release(page);
+-				goto out;
+-			}
+-		}
+-		nr = nr - offset;
+ 		goto page_ok;
  
- 			/* Get the pointer's value.  */
--			addr = flat_get_addr_from_rp(rp, relval, flags);
-+			addr = flat_get_addr_from_rp(rp, relval, flags, &persistent);
- 			if (addr != 0) {
- 				/*
- 				 * Do the relocation.  PIC relocs in the data section are
-diff --git a/include/asm-h8300/flat.h b/include/asm-h8300/flat.h
-index c20eee7..2a87350 100644
---- a/include/asm-h8300/flat.h
-+++ b/include/asm-h8300/flat.h
-@@ -9,6 +9,7 @@
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		1
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
-+#define	flat_set_persistent(relval, p)		0
- 
- /*
-  * on the H8 a couple of the relocations have an instruction in the
-@@ -18,7 +19,7 @@
-  */
- 
- #define	flat_get_relocate_addr(rel)		(rel)
--#define flat_get_addr_from_rp(rp, relval, flags) \
-+#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
-         (get_unaligned(rp) & ((flags & FLAT_FLAG_GOTPIC) ? 0xffffffff: 0x00ffffff))
- #define flat_put_addr_at_rp(rp, addr, rel) \
- 	put_unaligned (((*(char *)(rp)) << 24) | ((addr) & 0x00ffffff), rp)
-diff --git a/include/asm-m32r/flat.h b/include/asm-m32r/flat.h
-index 1b285f6..d851cf0 100644
---- a/include/asm-m32r/flat.h
-+++ b/include/asm-m32r/flat.h
-@@ -15,9 +15,10 @@
- #define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
-+#define	flat_set_persistent(relval, p)		0
- #define	flat_reloc_valid(reloc, size)		\
- 	(((reloc) - textlen_for_m32r_lo16_data) <= (size))
--#define flat_get_addr_from_rp(rp, relval, flags) \
-+#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
- 	m32r_flat_get_addr_from_rp(rp, relval, (text_len) )
- 
- #define flat_put_addr_at_rp(rp, addr, relval) \
-diff --git a/include/asm-m68knommu/flat.h b/include/asm-m68knommu/flat.h
-index 2d836ed..814b517 100644
---- a/include/asm-m68knommu/flat.h
-+++ b/include/asm-m68knommu/flat.h
-@@ -9,8 +9,9 @@
- #define	flat_argvp_envp_on_stack()		1
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
--#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
-+#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
- #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
- #define	flat_get_relocate_addr(rel)		(rel)
-+#define	flat_set_persistent(relval, p)		0
- 
- #endif /* __M68KNOMMU_FLAT_H__ */
-diff --git a/include/asm-sh/flat.h b/include/asm-sh/flat.h
-index 0d5cc04..dc4f595 100644
---- a/include/asm-sh/flat.h
-+++ b/include/asm-sh/flat.h
-@@ -16,8 +16,9 @@
- #define	flat_argvp_envp_on_stack()		0
- #define	flat_old_ram_flag(flags)		(flags)
- #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
--#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
-+#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
- #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
- #define	flat_get_relocate_addr(rel)		(rel)
-+#define	flat_set_persistent(relval, p)		0
- 
- #endif /* __ASM_SH_FLAT_H */
-diff --git a/include/asm-v850/flat.h b/include/asm-v850/flat.h
-index 3888f59..17f0ea5 100644
---- a/include/asm-v850/flat.h
-+++ b/include/asm-v850/flat.h
-@@ -25,6 +25,7 @@
- #define	flat_stack_align(sp)		/* nothing needed */
- #define	flat_argvp_envp_on_stack()	0
- #define	flat_old_ram_flag(flags)	(flags)
-+#define	flat_set_persistent(relval, p)	0
- 
- /* We store the type of relocation in the top 4 bits of the `relval.' */
- 
-@@ -46,7 +47,8 @@ flat_get_relocate_addr (unsigned long relval)
-    For the v850, RP should always be half-word aligned.  */
- static inline unsigned long flat_get_addr_from_rp (unsigned long *rp,
- 						   unsigned long relval,
--						   unsigned long flags)
-+						   unsigned long flags,
-+						   unsigned long *persistent)
- {
- 	short *srp = (short *)rp;
- 
--- 
-1.5.2
+ readpage_error:
