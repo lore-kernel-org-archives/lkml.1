@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbXE2QUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760069AbXE2QVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759009AbXE2QUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 12:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbXE2QUp
+	id S1760069AbXE2QVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 12:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXE2QVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 12:20:45 -0400
-Received: from keil-draco.com ([216.193.185.50]:50340 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752289AbXE2QUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 12:20:45 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Subject: Re: JFFS2 using 'private' zlib header (was [RFC] LZO de/compression support - take 6)
-Date: Tue, 29 May 2007 12:20:38 -0400
-User-Agent: KMail/1.9.6
-Cc: "Michael-Luke Jones" <mlj28@cam.ac.uk>,
-       lkml <linux-kernel@vger.kernel.org>, dwmw2@infradead.org,
-       madler@alumni.caltech.edu, jloup@gzip.org
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <200705290943.11176.dhazelton@enter.net> <a781481a0705290815y32758055te52cb8657f34acc@mail.gmail.com>
-In-Reply-To: <a781481a0705290815y32758055te52cb8657f34acc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 29 May 2007 12:21:15 -0400
+Received: from gw.ac.upc.es ([147.83.30.3]:49176 "EHLO gw.ac.upc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753383AbXE2QVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 12:21:14 -0400
+In-Reply-To: <465C50FC.8050604@austin.ibm.com>
+References: <9a1288909c10f2935af82ec5cea0c46b@pinky> <Pine.LNX.4.61.0705281123000.11140@yvahk01.tjqt.qr> <465BEBE5.5070008@shadowen.org> <465C50FC.8050604@austin.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B907D7E4-D348-4795-9B55-74F7392F548C@ac.upc.edu>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>, Andrew Morton <akpm@osdl.org>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705291220.39154.dhazelton@enter.net>
+From: "Julio M. Merino Vidal" <jmerino@ac.upc.edu>
+Subject: Re: [PATCH] add a trivial patch style checker
+Date: Tue, 29 May 2007 18:20:54 +0200
+To: Joel Schopp <jschopp@austin.ibm.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 May 2007 11:15:41 Satyam Sharma wrote:
-> [ Trimmed Cc list; added original zlib authors. ]
->
-> > On Tuesday 29 May 2007 09:33:51 Michael-Luke Jones wrote:
-> > > On 29 May 2007, at 12:27, Satyam Sharma wrote:
-> > > > Right, actually, zlib could be switched over to [using a common
-> > > > directory].
-> > > > Because zlib_deflate/ and zlib_inflate/ too share a private header
-> > > > zutil.h which has unfortunately been stuck into include/linux/ with
-> > > > a big
-> > > > /* WARNING: this file should *not* be used by applications. */
-> > > > comment ...
-> > >
-> > > Well, unfortunately zutil.h is currently being used in-kernel by fs/
-> > > jffs2/compr_zlib.c despite the "WARNING: this file should *not* be
-> > > used by applications" notice.
->
-> Hmmm, either jffs2 thinks the zlib interfaces exposed through
-> include/linux/zlib.h are insufficient, or it isn't using zlib properly
-> (or at least the way it was supposed to be used :-)
->
-> Looking at fs/jffs2/compr_zlib.c, however, it just seems to be
-> an optimization -- skipping some checksum calculation if some
-> flag (PRESET_DICT) is absent from the input stream about to
-> be decompressed ...
->
-> This /looks/ like an optimization that might make sense for other
-> users of zlib too, in which case that entire check and
-> skip-the-checksum thing could actually be put into zlib proper. (?)
+On 29/05/2007, at 18:12, Joel Schopp wrote:
 
-This *is* a good idea. If someone doesn't beat me to it I'll make sure I've 
-got the latest git and do up a patch that does this.
+>>>> +		if(!($prevline=~/\/\*\*/) && length($lineforcounting) > 80){
+>>> Actually, I think this should be "> 79" (after stripping a .diff's
+>>> control column), since the cursor may move to the 81th column when
+>>> editing an 80-col line - which is what we want to avoid, no?
+>> 80 tends to work for me because of that "if on 80 then don't wrap  
+>> until
+>> there is another character" behaviour of most terminals.  Anyone else
+>> with a firm opinion.
+>
+> I think 80 is good.  What the specific number is does not matter  
+> much, we all have screens wider than 80 characters.  The point is  
+> just to have a number that prevents really long lines and prevents  
+> people from indenting too many levels past our minds ability to  
+> keep up.  We've already all been coding to 80, and it happens to be  
+> a nice round number we can all remember and love.  The only reason  
+> I see to select 79 is that prime numbers are generally cooler than  
+> other numbers.
 
-DRH
+We do have screens wider than 80 characters, but almost all the time  
+I spend in terminal windows, they are set to 24x80 (the default  
+size).  It is a matter of habit, and I bet I'm not alone.  Hence, 80  
+is "annoying" not only because patches will wrap, but also because in  
+some editors the 80th character will also wrap.
 
-> > > So moving this header to a truly private location isn't possible
-> > > right now, unfortunately,
-> > >
-> > > Michael-Luke Jones
-> > > [added David Whitehouse to cc]
->
-> On 5/29/07, Daniel Hazelton <dhazelton@enter.net> wrote:
-> > I've looked at that code and it seems to need that file for one constant.
-> > Perhaps it'd be better for jffs2/compr_zlib.c to define that constant
-> > itself (or use it as a "Magic Number") rather than include the zlib
-> > private header. Another possibility would be to move that constant out of
-> > zutil.h and into zconf.h or zlih.b - doing any of those would allow the
-> > zlib private header to be moved such that zlib could be changed to use a
-> > common directory *and* have said private header in that directory.
->
-> Moving PRESET_DICT to zlib.h robs lib/zlib_deflate/deflate.c from
-> being able to resolve that macro. FWIW, a dirty hack could be to
-> simply duplicate it in zlib.h. But then, implementation and interface
-> are decoupled for good reasons ...
->
-> Satyam
+Just my 2 cents,
+
+-- 
+Julio M. Merino Vidal <jmerino@ac.upc.edu>
 
 
