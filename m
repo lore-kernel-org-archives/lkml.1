@@ -1,441 +1,841 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764382AbXE2SmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765358AbXE2Smd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764382AbXE2SmL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbXE2SiW
+	id S1765358AbXE2Smd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763984AbXE2Sig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:38:22 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43952 "EHLO smtp.polymtl.ca"
+	Tue, 29 May 2007 14:38:36 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:44047 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751362AbXE2SiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:38:15 -0400
-Message-Id: <20070529183758.910835109@polymtl.ca>
+	id S1764056AbXE2Sid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:38:33 -0400
+Message-Id: <20070529183800.857689823@polymtl.ca>
 References: <20070529183725.179570071@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 May 2007 14:37:26 -0400
+Date: Tue, 29 May 2007 14:37:31 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       <linux-arch@vger.kernel.org>
-Subject: [patch 1/6] Use EXTRA_RWDATA in architectures
-Content-Disposition: inline; filename=use-extra_rwdata-in-architectures.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:37:59 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 6/6] Port of blktrace to the Linux Kernel Markers.
+Content-Disposition: inline; filename=linux-kernel-markers-port-blktrace-to-markers.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:38:01 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds a place to declare rw data that will not be far from the .data content,
-therefore limiting the impact on cache of data declared in sections part of the
-EXTRA_RWDATA.
+Here is a proof of concept patch, for demonstration purpose, of moving
+blktrace to the markers.
+
+A few remarks : this patch has the positive effect of removing some code
+from the block io tracing hot paths, minimizing the i-cache impact in a
+system where the io tracing is compiled in but inactive.
+
+It also moves the blk tracing code from a header (and therefore from the
+body of the instrumented functions) to a separate C file.
+
+There, as soon as one device has to be traced, every devices have to
+fall into the tracing function call. This is slower than the previous
+inline function which tested the condition quickly. If it becomes a
+show stopper, it could be fixed by having the possibility to test a
+supplementary condition, dependant of the marker context, at the marker
+site, just after the enable/disable test.
+
+It does not make the code smaller, since I left all the specialized
+tracing functions for requests, bio, generic, remap, which would go away
+once a generic infrastructure is in place to serialize the information
+passed to the marker. This is mostly why I consider it a proof a
+concept.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: <linux-arch@vger.kernel.org>
 ---
 
- arch/alpha/kernel/vmlinux.lds.S            |    1 +
- arch/arm/kernel/vmlinux.lds.S              |    1 +
- arch/arm26/kernel/vmlinux-arm26-xip.lds.in |    1 +
- arch/arm26/kernel/vmlinux-arm26.lds.in     |    1 +
- arch/avr32/kernel/vmlinux.lds.c            |    1 +
- arch/cris/arch-v10/vmlinux.lds.S           |    1 +
- arch/cris/arch-v32/vmlinux.lds.S           |    1 +
- arch/frv/kernel/vmlinux.lds.S              |    1 +
- arch/h8300/kernel/vmlinux.lds.S            |    4 +++-
- arch/i386/kernel/vmlinux.lds.S             |    1 +
- arch/ia64/kernel/vmlinux.lds.S             |    2 +-
- arch/m32r/kernel/vmlinux.lds.S             |    1 +
- arch/m68k/kernel/vmlinux-std.lds           |    1 +
- arch/m68k/kernel/vmlinux-sun3.lds          |    1 +
- arch/m68knommu/kernel/vmlinux.lds.S        |    1 +
- arch/mips/kernel/vmlinux.lds.S             |    2 ++
- arch/parisc/kernel/vmlinux.lds.S           |    1 +
- arch/powerpc/kernel/vmlinux.lds.S          |    2 ++
- arch/ppc/kernel/vmlinux.lds.S              |    1 +
- arch/s390/kernel/vmlinux.lds.S             |    1 +
- arch/sh/kernel/vmlinux.lds.S               |    1 +
- arch/sh64/kernel/vmlinux.lds.S             |    1 +
- arch/sparc/kernel/vmlinux.lds.S            |    1 +
- arch/sparc64/kernel/vmlinux.lds.S          |    1 +
- arch/um/kernel/dyn.lds.S                   |    1 +
- arch/um/kernel/uml.lds.S                   |    1 +
- arch/v850/kernel/vmlinux.lds.S             |    1 +
- arch/x86_64/kernel/vmlinux.lds.S           |    1 +
- arch/xtensa/kernel/vmlinux.lds.S           |    2 +-
- include/asm-generic/vmlinux.lds.h          |    2 ++
- 30 files changed, 35 insertions(+), 3 deletions(-)
+ block/Kconfig                |    1 
+ block/blktrace.c             |  281 ++++++++++++++++++++++++++++++++++++++++++-
+ block/elevator.c             |    6 
+ block/ll_rw_blk.c            |   27 ++--
+ drivers/block/cciss.c        |    4 
+ drivers/md/dm.c              |   14 +-
+ fs/bio.c                     |    4 
+ include/linux/blktrace_api.h |  146 +---------------------
+ mm/bounce.c                  |    4 
+ mm/highmem.c                 |    2 
+ 10 files changed, 322 insertions(+), 167 deletions(-)
 
-Index: linux-2.6-lttng/arch/alpha/kernel/vmlinux.lds.S
+Index: linux-2.6-lttng/block/elevator.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/alpha/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/alpha/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -90,6 +90,7 @@
-   _data = .;
-   .data : {					/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
-   }
+--- linux-2.6-lttng.orig/block/elevator.c	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/block/elevator.c	2007-05-17 02:14:05.000000000 -0400
+@@ -32,7 +32,7 @@
+ #include <linux/init.h>
+ #include <linux/compiler.h>
+ #include <linux/delay.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <linux/hash.h>
  
-Index: linux-2.6-lttng/arch/arm/kernel/vmlinux.lds.S
+ #include <asm/uaccess.h>
+@@ -551,7 +551,7 @@
+ 	unsigned ordseq;
+ 	int unplug_it = 1;
+ 
+-	blk_add_trace_rq(q, rq, BLK_TA_INSERT);
++	trace_mark(blk_request_insert, "%p %p", q, rq);
+ 
+ 	rq->q = q;
+ 
+@@ -730,7 +730,7 @@
+ 			 * not be passed by new incoming requests
+ 			 */
+ 			rq->cmd_flags |= REQ_STARTED;
+-			blk_add_trace_rq(q, rq, BLK_TA_ISSUE);
++			trace_mark(blk_request_issue, "%p %p", q, rq);
+ 		}
+ 
+ 		if (!q->boundary_rq || q->boundary_rq == rq) {
+Index: linux-2.6-lttng/block/ll_rw_blk.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/arm/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/arm/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -159,6 +159,7 @@
- 		 * and the usual data section
- 		 */
- 		*(.data)
-+		EXTRA_RWDATA
- 		CONSTRUCTORS
- 
- 		_edata = .;
-Index: linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26-xip.lds.in
-===================================================================
---- linux-2.6-lttng.orig/arch/arm26/kernel/vmlinux-arm26-xip.lds.in	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26-xip.lds.in	2007-05-15 18:44:20.000000000 -0400
-@@ -112,6 +112,7 @@
- 		 * and the usual data section
- 		 */
- 		*(.data)
-+		EXTRA_RWDATA
- 		CONSTRUCTORS
- 
- 		*(.init.data)
-Index: linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26.lds.in
-===================================================================
---- linux-2.6-lttng.orig/arch/arm26/kernel/vmlinux-arm26.lds.in	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26.lds.in	2007-05-15 18:44:20.000000000 -0400
-@@ -107,6 +107,7 @@
- 		 * and the usual data section
- 		 */
- 		*(.data)
-+		EXTRA_RWDATA
- 		CONSTRUCTORS
- 
- 		_edata = .;
-Index: linux-2.6-lttng/arch/avr32/kernel/vmlinux.lds.c
-===================================================================
---- linux-2.6-lttng.orig/arch/avr32/kernel/vmlinux.lds.c	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/avr32/kernel/vmlinux.lds.c	2007-05-15 18:44:20.000000000 -0400
-@@ -113,6 +113,7 @@
- 		/* And the rest... */
- 		*(.data.rel*)
- 		*(.data)
-+		EXTRA_RWDATA
- 		CONSTRUCTORS
- 
- 		_edata = .;
-Index: linux-2.6-lttng/arch/cris/arch-v10/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/cris/arch-v10/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/cris/arch-v10/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -45,6 +45,7 @@
- 	__Sdata = . ;
- 	.data : {                     /* Data */
- 		*(.data)
-+		EXTRA_RWDATA
- 	}
- 	__edata = . ;                 /* End of data section */
- 	_edata = . ;
-Index: linux-2.6-lttng/arch/cris/arch-v32/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/cris/arch-v32/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/cris/arch-v32/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -50,6 +50,7 @@
- 	__Sdata = . ;
- 	.data : {                     /* Data */
- 		*(.data)
-+		EXTRA_RWDATA
- 	}
- 	__edata = . ;		/* End of data section. */
- 	_edata = . ;
-Index: linux-2.6-lttng/arch/frv/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/frv/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/frv/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -137,6 +137,7 @@
-   .data : {			/* Data */
- 	*(.data .data.*)
- 	*(.exit.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/h8300/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/h8300/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/h8300/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -105,7 +105,9 @@
- 	. = ALIGN(0x4) ;
- 		*(.data)
- 	. = ALIGN(0x4) ;
--		*(.data.*)	
-+		*(.data.*)
-+	. = ALIGN(0x4) ;
-+	EXTRA_RWDATA
- 
- 	. = ALIGN(0x4) ;
- 	___init_begin = .;
-Index: linux-2.6-lttng/arch/i386/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -77,6 +77,7 @@
-   . = ALIGN(4096);
-   .data : AT(ADDR(.data) - LOAD_OFFSET) {	/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	} :data
- 
-Index: linux-2.6-lttng/arch/ia64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/ia64/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/ia64/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -214,7 +214,7 @@
- 
-   data : { } :data
-   .data : AT(ADDR(.data) - LOAD_OFFSET)
--	{ *(.data) *(.data1) *(.gnu.linkonce.d*) CONSTRUCTORS }
-+	{ *(.data) *(.data1) *(.gnu.linkonce.d*) EXTRA_RWDATA CONSTRUCTORS }
- 
-   . = ALIGN(16);	/* gp must be 16-byte aligned for exc. table */
-   .got : AT(ADDR(.got) - LOAD_OFFSET)
-Index: linux-2.6-lttng/arch/m32r/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/m32r/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/m32r/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -51,6 +51,7 @@
- 	*(.spu)
- 	*(.spi)
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/m68k/kernel/vmlinux-std.lds
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/kernel/vmlinux-std.lds	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/m68k/kernel/vmlinux-std.lds	2007-05-15 18:44:20.000000000 -0400
-@@ -29,6 +29,7 @@
- 
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/m68k/kernel/vmlinux-sun3.lds
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/kernel/vmlinux-sun3.lds	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/m68k/kernel/vmlinux-sun3.lds	2007-05-15 18:44:20.000000000 -0400
-@@ -24,6 +24,7 @@
- 
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	. = ALIGN(16);		/* Exception table */
- 	__start___ex_table = .;
-Index: linux-2.6-lttng/arch/m68knommu/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/m68knommu/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/m68knommu/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -134,6 +134,7 @@
- 		. = ALIGN(4);
- 		_sdata = . ;
- 		*(.data)
-+		EXTRA_RWDATA
- 		. = ALIGN(8192) ;
- 		*(.data.init_task)
- 		_edata = . ;
-Index: linux-2.6-lttng/arch/mips/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/mips/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/mips/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -64,6 +64,8 @@
- 
-     *(.data)
- 
-+    EXTRA_RWDATA
-+
-     CONSTRUCTORS
-   }
-   _gp = . + 0x8000;
-Index: linux-2.6-lttng/arch/parisc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/parisc/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/parisc/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -92,6 +92,7 @@
-   . = ALIGN(L1_CACHE_BYTES);
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -170,11 +170,13 @@
- 		*(.data)
- 		*(.sdata)
- 		*(.got.plt) *(.got)
-+		EXTRA_RWDATA
- 	}
- #else
- 	.data : {
- 		*(.data .data.rel* .toc1)
- 		*(.branch_lt)
-+		EXTRA_RWDATA
- 	}
- 
- 	.opd : {
-Index: linux-2.6-lttng/arch/ppc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/ppc/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/ppc/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -73,6 +73,7 @@
-     *(.sdata2)
-     *(.got.plt) *(.got)
-     *(.dynamic)
-+    EXTRA_RWDATA
-     CONSTRUCTORS
-   }
- 
-Index: linux-2.6-lttng/arch/s390/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/s390/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -49,6 +49,7 @@
- 
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/sh/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sh/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/sh/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -42,6 +42,7 @@
- 
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 
-  	 /* Align the initial ramdisk image (INITRD) on page boundaries. */
-  	 . = ALIGN(PAGE_SIZE);
-Index: linux-2.6-lttng/arch/sh64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sh64/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/sh64/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -79,6 +79,7 @@
- 
-   .data : C_PHYS(.data) {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/sparc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -23,6 +23,7 @@
-   .data    :
-   {
-     *(.data)
-+    EXTRA_RWDATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/sparc64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc64/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc64/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
+--- linux-2.6-lttng.orig/block/ll_rw_blk.c	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/block/ll_rw_blk.c	2007-05-17 02:14:05.000000000 -0400
 @@ -28,6 +28,7 @@
-   .data    :
-   {
-     *(.data)
-+    EXTRA_RWDATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/um/kernel/dyn.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/um/kernel/dyn.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/um/kernel/dyn.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -98,6 +98,7 @@
-     . = ALIGN(KERNEL_STACK_SIZE);		/* init_task */
-     *(.data.init_task)
-     *(.data .data.* .gnu.linkonce.d.*)
-+    EXTRA_RWDATA
-     SORT(CONSTRUCTORS)
-   }
-   .data1          : { *(.data1) }
-Index: linux-2.6-lttng/arch/um/kernel/uml.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/um/kernel/uml.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/um/kernel/uml.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -61,6 +61,7 @@
-     *(.data.init_task)
-     *(.data)
-     *(.gnu.linkonce.d*)
-+    EXTRA_RWDATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/v850/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/v850/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/v850/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -116,6 +116,7 @@
-         	*(.data)						      \
- 			*(.exit.data)	/* 2.5 convention */		      \
- 			*(.data.exit)	/* 2.4 convention */		      \
-+		EXTRA_RWDATA						      \
- 		. = ALIGN (16) ;					      \
- 		*(.data.cacheline_aligned)				      \
- 		. = ALIGN (0x2000) ;					      \
-Index: linux-2.6-lttng/arch/x86_64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -56,6 +56,7 @@
- 				/* Data */
-   .data : AT(ADDR(.data) - LOAD_OFFSET) {
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	} :data
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/interrupt.h>
+ #include <linux/cpu.h>
++#include <linux/marker.h>
+ #include <linux/blktrace_api.h>
+ #include <linux/fault-inject.h>
  
-Index: linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/xtensa/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
-+++ linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
-@@ -144,7 +144,7 @@
-   _fdata = .;
-   .data :
-   {
--    *(.data) CONSTRUCTORS
-+    *(.data) EXTRA_RWDATA CONSTRUCTORS
-     . = ALIGN(XCHAL_ICACHE_LINESIZE);
-     *(.data.cacheline_aligned)
-   }
-Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-05-15 18:44:11.000000000 -0400
-+++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-05-15 18:44:20.000000000 -0400
-@@ -143,6 +143,8 @@
- 									\
- 	. = ALIGN(4096);
+@@ -1551,7 +1552,7 @@
  
-+#define EXTRA_RWDATA
+ 	if (!test_and_set_bit(QUEUE_FLAG_PLUGGED, &q->queue_flags)) {
+ 		mod_timer(&q->unplug_timer, jiffies + q->unplug_delay);
+-		blk_add_trace_generic(q, NULL, 0, BLK_TA_PLUG);
++		trace_mark(blk_plug_device, "%p %p %d", q, NULL, 0);
+ 	}
+ }
+ 
+@@ -1617,7 +1618,7 @@
+ 	 * devices don't necessarily have an ->unplug_fn defined
+ 	 */
+ 	if (q->unplug_fn) {
+-		blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
++		trace_mark(blk_pdu_unplug_io, "%p %p %d", q, NULL,
+ 					q->rq.count[READ] + q->rq.count[WRITE]);
+ 
+ 		q->unplug_fn(q);
+@@ -1628,7 +1629,7 @@
+ {
+ 	request_queue_t *q = container_of(work, request_queue_t, unplug_work);
+ 
+-	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
++	trace_mark(blk_pdu_unplug_io, "%p %p %d", q, NULL,
+ 				q->rq.count[READ] + q->rq.count[WRITE]);
+ 
+ 	q->unplug_fn(q);
+@@ -1638,7 +1639,7 @@
+ {
+ 	request_queue_t *q = (request_queue_t *)data;
+ 
+-	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_TIMER, NULL,
++	trace_mark(blk_pdu_unplug_timer, "%p %p %d", q, NULL,
+ 				q->rq.count[READ] + q->rq.count[WRITE]);
+ 
+ 	kblockd_schedule_work(&q->unplug_work);
+@@ -2150,7 +2151,7 @@
+ 	
+ 	rq_init(q, rq);
+ 
+-	blk_add_trace_generic(q, bio, rw, BLK_TA_GETRQ);
++	trace_mark(blk_get_request, "%p %p %d", q, bio, rw);
+ out:
+ 	return rq;
+ }
+@@ -2180,7 +2181,7 @@
+ 		if (!rq) {
+ 			struct io_context *ioc;
+ 
+-			blk_add_trace_generic(q, bio, rw, BLK_TA_SLEEPRQ);
++			trace_mark(blk_sleep_request, "%p %p %d", q, bio, rw);
+ 
+ 			__generic_unplug_device(q);
+ 			spin_unlock_irq(q->queue_lock);
+@@ -2254,7 +2255,7 @@
+  */
+ void blk_requeue_request(request_queue_t *q, struct request *rq)
+ {
+-	blk_add_trace_rq(q, rq, BLK_TA_REQUEUE);
++	trace_mark(blk_requeue, "%p %p", q, rq);
+ 
+ 	if (blk_rq_tagged(rq))
+ 		blk_queue_end_tag(q, rq);
+@@ -2940,7 +2941,7 @@
+ 			if (!ll_back_merge_fn(q, req, bio))
+ 				break;
+ 
+-			blk_add_trace_bio(q, bio, BLK_TA_BACKMERGE);
++			trace_mark(blk_bio_backmerge, "%p %p", q, bio);
+ 
+ 			req->biotail->bi_next = bio;
+ 			req->biotail = bio;
+@@ -2957,7 +2958,7 @@
+ 			if (!ll_front_merge_fn(q, req, bio))
+ 				break;
+ 
+-			blk_add_trace_bio(q, bio, BLK_TA_FRONTMERGE);
++			trace_mark(blk_bio_frontmerge, "%p %p", q, bio);
+ 
+ 			bio->bi_next = req->bio;
+ 			req->bio = bio;
+@@ -3187,10 +3188,10 @@
+ 		blk_partition_remap(bio);
+ 
+ 		if (old_sector != -1)
+-			blk_add_trace_remap(q, bio, old_dev, bio->bi_sector, 
+-					    old_sector);
++			trace_mark(blk_remap, "%p %p %u %llu %llu", q, bio, old_dev,
++					(u64)bio->bi_sector, (u64)old_sector);
+ 
+-		blk_add_trace_bio(q, bio, BLK_TA_QUEUE);
++		trace_mark(blk_bio_queue, "%p %p", q, bio);
+ 
+ 		old_sector = bio->bi_sector;
+ 		old_dev = bio->bi_bdev->bd_dev;
+@@ -3383,7 +3384,7 @@
+ 	int total_bytes, bio_nbytes, error, next_idx = 0;
+ 	struct bio *bio;
+ 
+-	blk_add_trace_rq(req->q, req, BLK_TA_COMPLETE);
++	trace_mark(blk_request_complete, "%p %p", req->q, req);
+ 
+ 	/*
+ 	 * extend uptodate bool to allow < 0 value to be direct io error
+Index: linux-2.6-lttng/block/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/block/Kconfig	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/block/Kconfig	2007-05-17 02:14:05.000000000 -0400
+@@ -32,6 +32,7 @@
+ 	depends on SYSFS
+ 	select RELAY
+ 	select DEBUG_FS
++	select MARKERS
+ 	help
+ 	  Say Y here, if you want to be able to trace the block layer actions
+ 	  on a given queue. Tracing allows you to see any traffic happening
+Index: linux-2.6-lttng/block/blktrace.c
+===================================================================
+--- linux-2.6-lttng.orig/block/blktrace.c	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/block/blktrace.c	2007-05-17 02:14:05.000000000 -0400
+@@ -23,11 +23,19 @@
+ #include <linux/mutex.h>
+ #include <linux/debugfs.h>
+ #include <linux/time.h>
++#include <linux/marker.h>
+ #include <asm/uaccess.h>
+ 
+ static DEFINE_PER_CPU(unsigned long long, blk_trace_cpu_offset) = { 0, };
+ static unsigned int blktrace_seq __read_mostly = 1;
+ 
++/* Global reference count of probes */
++static DEFINE_MUTEX(blk_probe_mutex);
++static int blk_probes_ref;
 +
- #define SECURITY_INIT							\
- 	.security_initcall.init : AT(ADDR(.security_initcall.init) - LOAD_OFFSET) { \
- 		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
++int blk_probe_arm(void);
++void blk_probe_disarm(void);
++
+ /*
+  * Send out a notify message.
+  */
+@@ -179,7 +187,7 @@
+ EXPORT_SYMBOL_GPL(__blk_add_trace);
+ 
+ static struct dentry *blk_tree_root;
+-static struct mutex blk_tree_mutex;
++static DEFINE_MUTEX(blk_tree_mutex);
+ static unsigned int root_users;
+ 
+ static inline void blk_remove_root(void)
+@@ -229,6 +237,10 @@
+ 	blk_remove_tree(bt->dir);
+ 	free_percpu(bt->sequence);
+ 	kfree(bt);
++	mutex_lock(&blk_probe_mutex);
++	if (--blk_probes_ref == 0)
++		blk_probe_disarm();
++	mutex_unlock(&blk_probe_mutex);
+ }
+ 
+ static int blk_trace_remove(request_queue_t *q)
+@@ -386,6 +398,11 @@
+ 		goto err;
+ 	}
+ 
++	mutex_lock(&blk_probe_mutex);
++	if (!blk_probes_ref++)
++		blk_probe_arm();
++	mutex_unlock(&blk_probe_mutex);
++
+ 	return 0;
+ err:
+ 	if (dir)
+@@ -549,9 +566,269 @@
+ #endif
+ }
+ 
++/**
++ * blk_add_trace_rq - Add a trace for a request oriented action
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @rq:		the source request
++ *
++ * Description:
++ *     Records an action against a request. Will log the bio offset + size.
++ *
++ **/
++static void blk_add_trace_rq(const struct __mark_marker *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	u32 what;
++	struct blk_trace *bt;
++	int rw;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct request *rq;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	rq = va_arg(args, struct request *);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++	rw = rq->cmd_flags & 0x03;
++
++	if (likely(!bt))
++		return;
++
++	if (blk_pc_request(rq)) {
++		what |= BLK_TC_ACT(BLK_TC_PC);
++		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors, sizeof(rq->cmd), rq->cmd);
++	} else  {
++		what |= BLK_TC_ACT(BLK_TC_FS);
++		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9, rw, what, rq->errors, 0, NULL);
++	}
++}
++
++/**
++ * blk_add_trace_bio - Add a trace for a bio oriented action
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ *
++ * Description:
++ *     Records an action against a bio. Will log the bio offset + size.
++ *
++ **/
++static void blk_add_trace_bio(const struct __mark_marker *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	u32 what;
++	struct blk_trace *bt;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct bio *bio;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	bio = va_arg(args, struct bio *);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++
++	if (likely(!bt))
++		return;
++
++	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), 0, NULL);
++}
++
++/**
++ * blk_add_trace_generic - Add a trace for a generic action
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ * @rw:		the data direction
++ *
++ * Description:
++ *     Records a simple trace
++ *
++ **/
++static void blk_add_trace_generic(const struct __mark_marker *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	struct blk_trace *bt;
++	u32 what;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct bio *bio;
++	int rw;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	bio = va_arg(args, struct bio *);
++	rw = va_arg(args, int);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++
++	if (likely(!bt))
++		return;
++
++	if (bio)
++		blk_add_trace_bio(mdata, "%p %p", q, bio);
++	else
++		__blk_add_trace(bt, 0, 0, rw, what, 0, 0, NULL);
++}
++
++/**
++ * blk_add_trace_pdu_int - Add a trace for a bio with an integer payload
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ * @pdu:	the integer payload
++ *
++ * Description:
++ *     Adds a trace with some integer payload. This might be an unplug
++ *     option given as the action, with the depth at unplug time given
++ *     as the payload
++ *
++ **/
++static void blk_add_trace_pdu_int(const struct __mark_marker *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	struct blk_trace *bt;
++	u32 what;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct bio *bio;
++	unsigned int pdu;
++	__be64 rpdu;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	bio = va_arg(args, struct bio *);
++	pdu = va_arg(args, unsigned int);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++	rpdu = cpu_to_be64(pdu);
++
++	if (likely(!bt))
++		return;
++
++	if (bio)
++		__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), sizeof(rpdu), &rpdu);
++	else
++		__blk_add_trace(bt, 0, 0, 0, what, 0, sizeof(rpdu), &rpdu);
++}
++
++/**
++ * blk_add_trace_remap - Add a trace for a remap operation
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ * @dev:	target device
++ * @from:	source sector
++ * @to:		target sector
++ *
++ * Description:
++ *     Device mapper or raid target sometimes need to split a bio because
++ *     it spans a stripe (or similar). Add a trace for that action.
++ *
++ **/
++static void blk_add_trace_remap(const struct __mark_marker *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	struct blk_trace *bt;
++	struct blk_io_trace_remap r;
++	u32 what;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct bio *bio;
++	u64 dev, from, to;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	bio = va_arg(args, struct bio *);
++	dev = va_arg(args, u64);
++	from = va_arg(args, u64);
++	to = va_arg(args, u64);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++
++	if (likely(!bt))
++		return;
++
++	r.device = cpu_to_be32(dev);
++	r.sector = cpu_to_be64(to);
++
++	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
++}
++
++#define FACILITY_NAME "blk"
++
++static struct blk_probe_data probe_array[] =
++{
++	{ "blk_bio_queue", "%p %p", BLK_TA_QUEUE, blk_add_trace_bio },
++	{ "blk_bio_backmerge", "%p %p", BLK_TA_BACKMERGE, blk_add_trace_bio },
++	{ "blk_bio_frontmerge", "%p %p", BLK_TA_FRONTMERGE, blk_add_trace_bio },
++	{ "blk_get_request", "%p %p %d", BLK_TA_GETRQ, blk_add_trace_generic },
++	{ "blk_sleep_request", "%p %p %d", BLK_TA_SLEEPRQ,
++		blk_add_trace_generic },
++	{ "blk_requeue", "%p %p", BLK_TA_REQUEUE, blk_add_trace_rq },
++	{ "blk_request_issue", "%p %p", BLK_TA_ISSUE, blk_add_trace_rq },
++	{ "blk_request_complete", "%p %p", BLK_TA_COMPLETE, blk_add_trace_rq },
++	{ "blk_plug_device", "%p %p %d", BLK_TA_PLUG, blk_add_trace_generic },
++	{ "blk_pdu_unplug_io", "%p %p %d", BLK_TA_UNPLUG_IO,
++		blk_add_trace_pdu_int },
++	{ "blk_pdu_unplug_timer", "%p %p %d", BLK_TA_UNPLUG_TIMER,
++		blk_add_trace_pdu_int },
++	{ "blk_request_insert", "%p %p", BLK_TA_INSERT,
++		blk_add_trace_rq },
++	{ "blk_pdu_split", "%p %p %d", BLK_TA_SPLIT,
++		blk_add_trace_pdu_int },
++	{ "blk_bio_bounce", "%p %p", BLK_TA_BOUNCE, blk_add_trace_bio },
++	{ "blk_remap", "%p %p %u %llu %llu", BLK_TA_REMAP,
++		blk_add_trace_remap },
++};
++
++
++int blk_probe_arm(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_arm_probe(probe_array[i].name,
++				probe_array[i].format,
++				probe_array[i].callback, &probe_array[i]);
++		if (result)
++			printk(KERN_INFO
++				"blktrace unable to register probe %s\n",
++				probe_array[i].name);
++	}
++	return 0;
++}
++
++void blk_probe_disarm(void)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		marker_disarm_probe(probe_array[i].name);
++	}
++}
++
++
+ static __init int blk_trace_init(void)
+ {
+-	mutex_init(&blk_tree_mutex);
+ 	on_each_cpu(blk_trace_check_cpu_time, NULL, 1, 1);
+ 	blk_trace_set_ht_offsets();
+ 
+Index: linux-2.6-lttng/include/linux/blktrace_api.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/blktrace_api.h	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/include/linux/blktrace_api.h	2007-05-17 02:14:05.000000000 -0400
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/blkdev.h>
+ #include <linux/relay.h>
++#include <linux/marker.h>
+ 
+ /*
+  * Trace categories
+@@ -142,149 +143,24 @@
+ 	u32 pid;
+ };
+ 
++/* Probe data used for probe-marker connection */
++struct blk_probe_data {
++	const char *name;
++	const char *format;
++	u32 flags;
++	marker_probe_func *callback;
++};
++
+ #if defined(CONFIG_BLK_DEV_IO_TRACE)
+ extern int blk_trace_ioctl(struct block_device *, unsigned, char __user *);
+ extern void blk_trace_shutdown(request_queue_t *);
+ extern void __blk_add_trace(struct blk_trace *, sector_t, int, int, u32, int, int, void *);
+-
+-/**
+- * blk_add_trace_rq - Add a trace for a request oriented action
+- * @q:		queue the io is for
+- * @rq:		the source request
+- * @what:	the action
+- *
+- * Description:
+- *     Records an action against a request. Will log the bio offset + size.
+- *
+- **/
+-static inline void blk_add_trace_rq(struct request_queue *q, struct request *rq,
+-				    u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	int rw = rq->cmd_flags & 0x03;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (blk_pc_request(rq)) {
+-		what |= BLK_TC_ACT(BLK_TC_PC);
+-		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors, sizeof(rq->cmd), rq->cmd);
+-	} else  {
+-		what |= BLK_TC_ACT(BLK_TC_FS);
+-		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9, rw, what, rq->errors, 0, NULL);
+-	}
+-}
+-
+-/**
+- * blk_add_trace_bio - Add a trace for a bio oriented action
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @what:	the action
+- *
+- * Description:
+- *     Records an action against a bio. Will log the bio offset + size.
+- *
+- **/
+-static inline void blk_add_trace_bio(struct request_queue *q, struct bio *bio,
+-				     u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), 0, NULL);
+-}
+-
+-/**
+- * blk_add_trace_generic - Add a trace for a generic action
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @rw:		the data direction
+- * @what:	the action
+- *
+- * Description:
+- *     Records a simple trace
+- *
+- **/
+-static inline void blk_add_trace_generic(struct request_queue *q,
+-					 struct bio *bio, int rw, u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (bio)
+-		blk_add_trace_bio(q, bio, what);
+-	else
+-		__blk_add_trace(bt, 0, 0, rw, what, 0, 0, NULL);
+-}
+-
+-/**
+- * blk_add_trace_pdu_int - Add a trace for a bio with an integer payload
+- * @q:		queue the io is for
+- * @what:	the action
+- * @bio:	the source bio
+- * @pdu:	the integer payload
+- *
+- * Description:
+- *     Adds a trace with some integer payload. This might be an unplug
+- *     option given as the action, with the depth at unplug time given
+- *     as the payload
+- *
+- **/
+-static inline void blk_add_trace_pdu_int(struct request_queue *q, u32 what,
+-					 struct bio *bio, unsigned int pdu)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	__be64 rpdu = cpu_to_be64(pdu);
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (bio)
+-		__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), sizeof(rpdu), &rpdu);
+-	else
+-		__blk_add_trace(bt, 0, 0, 0, what, 0, sizeof(rpdu), &rpdu);
+-}
+-
+-/**
+- * blk_add_trace_remap - Add a trace for a remap operation
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @dev:	target device
+- * @from:	source sector
+- * @to:		target sector
+- *
+- * Description:
+- *     Device mapper or raid target sometimes need to split a bio because
+- *     it spans a stripe (or similar). Add a trace for that action.
+- *
+- **/
+-static inline void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+-				       dev_t dev, sector_t from, sector_t to)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	struct blk_io_trace_remap r;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	r.device = cpu_to_be32(dev);
+-	r.sector = cpu_to_be64(to);
+-
+-	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
+-}
++extern int blk_probe_connect(void);
++extern void blk_probe_disconnect(void);
+ 
+ #else /* !CONFIG_BLK_DEV_IO_TRACE */
+ #define blk_trace_ioctl(bdev, cmd, arg)		(-ENOTTY)
+ #define blk_trace_shutdown(q)			do { } while (0)
+-#define blk_add_trace_rq(q, rq, what)		do { } while (0)
+-#define blk_add_trace_bio(q, rq, what)		do { } while (0)
+-#define blk_add_trace_generic(q, rq, rw, what)	do { } while (0)
+-#define blk_add_trace_pdu_int(q, what, bio, pdu)	do { } while (0)
+-#define blk_add_trace_remap(q, bio, dev, f, t)	do {} while (0)
+ #endif /* CONFIG_BLK_DEV_IO_TRACE */
+ 
+ #endif
+Index: linux-2.6-lttng/mm/bounce.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/bounce.c	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/mm/bounce.c	2007-05-17 02:14:05.000000000 -0400
+@@ -13,7 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/hash.h>
+ #include <linux/highmem.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <asm/tlbflush.h>
+ 
+ #define POOL_SIZE	64
+@@ -237,7 +237,7 @@
+ 	if (!bio)
+ 		return;
+ 
+-	blk_add_trace_bio(q, *bio_orig, BLK_TA_BOUNCE);
++	trace_mark(blk_bio_bounce, "%p %p", q, *bio_orig);
+ 
+ 	/*
+ 	 * at least one page was bounced, fill in possible non-highmem
+Index: linux-2.6-lttng/mm/highmem.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/highmem.c	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/mm/highmem.c	2007-05-17 02:14:05.000000000 -0400
+@@ -26,7 +26,7 @@
+ #include <linux/init.h>
+ #include <linux/hash.h>
+ #include <linux/highmem.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <asm/tlbflush.h>
+ 
+ /*
+Index: linux-2.6-lttng/fs/bio.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/bio.c	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/fs/bio.c	2007-05-17 02:14:05.000000000 -0400
+@@ -25,7 +25,7 @@
+ #include <linux/module.h>
+ #include <linux/mempool.h>
+ #include <linux/workqueue.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <scsi/sg.h>		/* for struct sg_iovec */
+ 
+ #define BIO_POOL_SIZE 2
+@@ -1081,7 +1081,7 @@
+ 	if (!bp)
+ 		return bp;
+ 
+-	blk_add_trace_pdu_int(bdev_get_queue(bi->bi_bdev), BLK_TA_SPLIT, bi,
++	trace_mark(blk_pdu_split, "%p %p %d", bdev_get_queue(bi->bi_bdev), bi,
+ 				bi->bi_sector + first_sectors);
+ 
+ 	BUG_ON(bi->bi_vcnt != 1);
+Index: linux-2.6-lttng/drivers/block/cciss.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/block/cciss.c	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/drivers/block/cciss.c	2007-05-17 02:14:05.000000000 -0400
+@@ -37,7 +37,7 @@
+ #include <linux/hdreg.h>
+ #include <linux/spinlock.h>
+ #include <linux/compat.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+ 
+@@ -2502,7 +2502,7 @@
+ 	}
+ 	cmd->rq->data_len = 0;
+ 	cmd->rq->completion_data = cmd;
+-	blk_add_trace_rq(cmd->rq->q, cmd->rq, BLK_TA_COMPLETE);
++	trace_mark(blk_request_complete, "%p %p", cmd->rq->q, cmd->rq);
+ 	blk_complete_request(cmd->rq);
+ }
+ 
+Index: linux-2.6-lttng/drivers/md/dm.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/md/dm.c	2007-05-17 02:13:19.000000000 -0400
++++ linux-2.6-lttng/drivers/md/dm.c	2007-05-17 02:14:05.000000000 -0400
+@@ -19,7 +19,7 @@
+ #include <linux/slab.h>
+ #include <linux/idr.h>
+ #include <linux/hdreg.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <linux/smp_lock.h>
+ 
+ #define DM_MSG_PREFIX "core"
+@@ -485,8 +485,8 @@
+ 			wake_up(&io->md->wait);
+ 
+ 		if (io->error != DM_ENDIO_REQUEUE) {
+-			blk_add_trace_bio(io->md->queue, io->bio,
+-					  BLK_TA_COMPLETE);
++			trace_mark(blk_request_complete, "%p %p",
++				io->md->queue, io->bio);
+ 
+ 			bio_endio(io->bio, io->bio->bi_size, io->error);
+ 		}
+@@ -582,10 +582,10 @@
+ 	r = ti->type->map(ti, clone, &tio->info);
+ 	if (r == DM_MAPIO_REMAPPED) {
+ 		/* the bio has been remapped so dispatch it */
+-
+-		blk_add_trace_remap(bdev_get_queue(clone->bi_bdev), clone,
+-				    tio->io->bio->bi_bdev->bd_dev, sector,
+-				    clone->bi_sector);
++		trace_mark(blk_remap, "%p %p %u %llu %llu",
++			bdev_get_queue(clone->bi_bdev), clone,
++			(u64)tio->io->bio->bi_bdev->bd_dev, (u64)sector,
++			(u64)clone->bi_sector);
+ 
+ 		generic_make_request(clone);
+ 	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
 
 -- 
 Mathieu Desnoyers
