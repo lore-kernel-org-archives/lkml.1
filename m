@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761093AbXE2N2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXE2NeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761093AbXE2N2k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762675AbXE2N0j
+	id S1757119AbXE2NeT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXE2NeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:26:39 -0400
-Received: from mail.tmr.com ([64.65.253.246]:33344 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762734AbXE2N0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:26:38 -0400
-Message-ID: <465C2A11.5070208@tmr.com>
-Date: Tue, 29 May 2007 09:26:41 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: What causes iowait other than waiting for i/o?
-References: <465B4B75.2040602@tmr.com> <a781481a0705282328u54a14143jc60194fcf7b5aa23@mail.gmail.com>
-In-Reply-To: <a781481a0705282328u54a14143jc60194fcf7b5aa23@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 May 2007 09:34:01 -0400
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:58375 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbXE2NeA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:34:00 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <292C7F80-B80D-4645-8FF5-49BF911398E1@cam.ac.uk> <a781481a0705290341w4c403c1ej43565a1e66805522@mail.gmail.com> <37DB6EAF-8954-448D-BD29-864FEC6540CE@cam.ac.uk> <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <231C137C-D0BF-44F7-B2D5-AE610284D00A@cam.ac.uk>
+Cc: Nitin Gupta <nitingupta910@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-mm-cc@laptop.org, linuxcompressed-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
+       dwmw2@infradead.org
 Content-Transfer-Encoding: 7bit
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: JFFS2 using 'private' zlib header (was [RFC] LZO de/compression support - take 6)
+Date: Tue, 29 May 2007 14:33:51 +0100
+To: Satyam Sharma <satyam.sharma@gmail.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> Hi Bill,
->
-> On 5/29/07, Bill Davidsen <davidsen@tmr.com> wrote:
->> I recently noted that my system was spending a lot of time in i/o wait
->> when doing some tasks which I thought didn't involve i/o, as noted by
->> the lack of disk light activity most of the time. I thought of network,
->> certainly the NIC had no activity for this job. So I set up a little
->> loop to capture all disk i/o and network activity (including loopback).
->> That was no obvious help, and the program doesn't use pipes.
->>
->> At this point I'm really curious, does someone have a good clue?
->>
->> Note: I don't think this is a bug or performance issue, unless the
->> kernel is doing something and charging time to iowait instead of system
->> I don't see anything to fix, but I would like to understand.
->
-> What tool / kernel instrumentation / mechanism are you using to
-> determine that some task(s) are indeed blocked waiting for i/o? Perhaps
-> some userspace process accounting tools could be "broken" in the sense
-> that they generalize all uninterruptible sleep as waiting for i/o ...
+On 29 May 2007, at 12:27, Satyam Sharma wrote:
 
-I wouldn't expect /proc/stat and similar to be broken in that way, but 
-If no one has a better idea I guess I will assume there's a check needed 
-of where time is added to iowait. I was hoping to avoid a full kernel 
-search. Never thought of /proc data as a user space tool, but I guess.
+> Right, actually, zlib could be switched over to [using a common  
+> directory].
+> Because zlib_deflate/ and zlib_inflate/ too share a private header
+> zutil.h which has unfortunately been stuck into include/linux/ with  
+> a big
+> /* WARNING: this file should *not* be used by applications. */  
+> comment ...
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-  "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Well, unfortunately zutil.h is currently being used in-kernel by fs/ 
+jffs2/compr_zlib.c despite the "WARNING: this file should *not* be  
+used by applications" notice.
 
+So moving this header to a truly private location isn't possible  
+right now, unfortunately,
+
+Michael-Luke Jones
+[added David Whitehouse to cc]
