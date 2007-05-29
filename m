@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbXE2SK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbXE2SNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbXE2SK1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbXE2SKT
+	id S1760057AbXE2SNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXE2SNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:10:19 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53154 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbXE2SKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:10:18 -0400
-Subject: Re: Apparent Deadlock with nfsd/jfs on 2.6.21.1 under bonnie.
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Roger Heflin <rheflin@atipa.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <465C5FDF.4070401@atipa.com>
-References: <4649BED9.6090207@atipa.com>
-	 <pan.2007.05.15.22.03.07.359081@linux.vnet.ibm.com>
-	 <464C68A0.2050003@atipa.com>
-	 <1179413287.13965.24.camel@kleikamp.austin.ibm.com>
-	 <465C5FDF.4070401@atipa.com>
-Content-Type: text/plain
-Date: Tue, 29 May 2007 13:10:15 -0500
-Message-Id: <1180462215.10013.2.camel@kleikamp.austin.ibm.com>
+	Tue, 29 May 2007 14:13:31 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:14562 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbXE2SNb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:13:31 -0400
+Date: Tue, 29 May 2007 11:19:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] FILESYSTEMS:  Delete unused "int dummy[5]" from
+ inodes_stat_t.
+Message-Id: <20070529111902.27055fd0.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0705291406040.4617@localhost.localdomain>
+References: <Pine.LNX.4.64.0705291307001.32601@localhost.localdomain>
+	<20070529110041.49bf57f1.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705291406040.4617@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-29 at 12:16 -0500, Roger Heflin wrote:
+On Tue, 29 May 2007 14:07:01 -0400 (EDT) Robert P. J. Day wrote:
 
-> Dave,
+> On Tue, 29 May 2007, Andrew Morton wrote:
 > 
-> Apparently there appears to be another different similar lockup,
-> The MTBF has risen from 1-2 hours without that patch to >100 hours,
-> so I am fairly sure the patch did correct the original lockup, or
-> at the very least make it a lot less likely.
+> > On Tue, 29 May 2007 13:11:07 -0400 (EDT)
+> > "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+> >
+> > >
+> > > Delete the apparently unused array "int dummy[5]" from struct
+> > > inodes_stat_t.
+> > >
+> > > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> > >
+> > > ---
+> > >
+> > >   no idea what that array is for, but no one seems to care about it.
+> > > removal compile-tested on x86 with "make allyesconfig" and nobody
+> > > misses it (unless it's used for padding of some kind).
+> > >
+> > >
+> > > diff --git a/include/linux/fs.h b/include/linux/fs.h
+> > > index 7cf0c54..dec83dd 100644
+> > > --- a/include/linux/fs.h
+> > > +++ b/include/linux/fs.h
+> > > @@ -44,7 +44,6 @@ extern int get_max_files(void);
+> > >  struct inodes_stat_t {
+> > >  	int nr_inodes;
+> > >  	int nr_unused;
+> > > -	int dummy[5];
+> > >  };
+> > >  extern struct inodes_stat_t inodes_stat;
+> > >
+> >
+> > kernel/sysctl.c:
+> >
+> > 	{
+> > 		.ctl_name	= FS_STATINODE,
+> > 		.procname	= "inode-state",
+> > 		.data		= &inodes_stat,
+> > 		.maxlen		= 7*sizeof(int),
+> > 		.mode		= 0444,
+> > 		.proc_handler	= &proc_dointvec,
+> > 	},
+> >
+> > akpm:/home/akpm> cat /proc/sys/fs/inode-state
+> > 608039  178454  0       0       0       0       0
+> >
+> > So it _is_ used: to present those five zeroes.  I think this is for
+> > back-compatibility with some cretaceous-era kernel.
 > 
-> I hit the machine across NFS for 5 days before it deadlocked, before
-> the patch I could only get an hour or two (2-4 different tries).
-> 
-> Given that pdflush is "D" it does not appear to be an NFS issue.
-> 
-> Included is the sysrq-t.
-> 
-> This is with 2.6.21.1 + the JFSIO patch.
+> ah, gotcha.  well, i'll leave this up to someone else to do anything
+> with if they are so inclined.
 
-Is the system still in this state?  Can you cat /proc/fs/jfs/TxAnchor
-(if CONFIG_JFS_DEBUG is defined) and /proc/fs/jfs/txstats (if
-CONFIG_JFS_STATISTICS is defined)?
+There's little to be done, except possibly put a /* comment */
+on the struct's dummy line so that we don't go thru this again
+in N years.
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
