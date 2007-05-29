@@ -1,130 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764760AbXE2SkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764343AbXE2Skh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764760AbXE2SkA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759822AbXE2Shb
+	id S1764343AbXE2Skh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760366AbXE2Shd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:37:31 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43738 "EHLO smtp.polymtl.ca"
+	Tue, 29 May 2007 14:37:33 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43737 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751371AbXE2ShZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751126AbXE2ShZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 14:37:25 -0400
-Message-Id: <20070529183710.683711996@polymtl.ca>
+Message-Id: <20070529183710.320104255@polymtl.ca>
 References: <20070529183356.192838687@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 May 2007 14:34:05 -0400
+Date: Tue, 29 May 2007 14:34:04 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 9/9] Scheduler profiling - Use conditional calls
-Content-Disposition: inline; filename=profiling-use-cond-calls.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:37:11 +0000
+Subject: [patch 8/9] F00F bug fixup for i386 - use conditional calls
+Content-Disposition: inline; filename=f00f-bug-use-cond-calls.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:37:10 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use conditional calls with lower d-cache hit in optimized version as a
-condition for scheduler profiling call.
+Use the faster conditional calls for F00F bug handling in do_page_fault.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
 ---
- kernel/profile.c |    4 ++++
- kernel/sched.c   |   32 +++++++++++++++++++-------------
- 2 files changed, 23 insertions(+), 13 deletions(-)
+ arch/i386/Kconfig.cpu    |    1 +
+ arch/i386/kernel/traps.c |    2 ++
+ arch/i386/mm/fault.c     |   35 ++++++++++++++++++++++-------------
+ 3 files changed, 25 insertions(+), 13 deletions(-)
 
-Index: linux-2.6-lttng/kernel/profile.c
+Index: linux-2.6-lttng/arch/i386/kernel/traps.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/profile.c	2007-05-29 11:33:11.000000000 -0400
-+++ linux-2.6-lttng/kernel/profile.c	2007-05-29 11:37:46.000000000 -0400
-@@ -23,6 +23,7 @@
- #include <linux/profile.h>
- #include <linux/highmem.h>
- #include <linux/mutex.h>
-+#include <linux/condcall.h>
- #include <asm/sections.h>
- #include <asm/semaphore.h>
- #include <asm/irq_regs.h>
-@@ -91,6 +92,8 @@
- 		printk(KERN_INFO "kernel profiling enabled (shift: %ld)\n",
- 			prof_shift);
- 	}
-+	if (prof_on)
-+		BUG_ON(cond_call_arm("profile_on"));
- 	return 1;
- }
- __setup("profile=", profile_setup);
-@@ -555,6 +558,7 @@
- 	return 0;
- out_cleanup:
- 	prof_on = 0;
-+	cond_call_disarm("profile_on");
- 	smp_mb();
- 	on_each_cpu(profile_nop, NULL, 0, 1);
- 	for_each_online_cpu(cpu) {
-Index: linux-2.6-lttng/kernel/sched.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/sched.c	2007-05-29 11:38:06.000000000 -0400
-+++ linux-2.6-lttng/kernel/sched.c	2007-05-29 11:42:36.000000000 -0400
-@@ -54,6 +54,7 @@
- #include <linux/kprobes.h>
- #include <linux/delayacct.h>
- #include <linux/reciprocal_div.h>
+--- linux-2.6-lttng.orig/arch/i386/kernel/traps.c	2007-05-29 11:05:30.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/traps.c	2007-05-29 11:07:07.000000000 -0400
+@@ -31,6 +31,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/nmi.h>
+ #include <linux/bug.h>
 +#include <linux/condcall.h>
  
- #include <asm/tlb.h>
- #include <asm/unistd.h>
-@@ -972,6 +973,21 @@
+ #ifdef CONFIG_EISA
+ #include <linux/ioport.h>
+@@ -1084,6 +1085,7 @@
+ 	 */
+ 	idt_descr.address = fix_to_virt(FIX_F00F_IDT);
+ 	load_idt(&idt_descr);
++	BUG_ON(cond_call_arm("fix_f00f"));
  }
- 
- /*
-+ * Sleep time is in units of nanosecs, so shift by 20 to get a
-+ * milliseconds-range estimation of the amount of time that the task
-+ * spent sleeping:
-+ */
-+static inline void activate_task_prof(struct task_struct *p,
-+		unsigned long long now)
-+{
-+	if (unlikely(prof_on == SLEEP_PROFILING)) {
-+		if (p->state == TASK_UNINTERRUPTIBLE)
-+			profile_hits(SLEEP_PROFILING, (void *)get_wchan(p),
-+				     (now - p->timestamp) >> 20);
-+	}
-+}
-+
-+/*
-  * activate_task - move a task to the runqueue and do priority recalculation
-  *
-  * Update all the scheduling statistics stuff. (sleep average
-@@ -993,18 +1009,7 @@
- 			+ rq->most_recent_timestamp;
- 	}
  #endif
--
--	/*
--	 * Sleep time is in units of nanosecs, so shift by 20 to get a
--	 * milliseconds-range estimation of the amount of time that the task
--	 * spent sleeping:
--	 */
--	if (unlikely(prof_on == SLEEP_PROFILING)) {
--		if (p->state == TASK_UNINTERRUPTIBLE)
--			profile_hits(SLEEP_PROFILING, (void *)get_wchan(p),
--				     (now - p->timestamp) >> 20);
--	}
--
-+	cond_call(profile_on, activate_task_prof(p, now));
- 	p->prio = recalc_task_prio(p, now);
  
- 	/*
-@@ -3534,7 +3539,8 @@
- 			print_irqtrace_events(current);
- 		dump_stack();
+Index: linux-2.6-lttng/arch/i386/mm/fault.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/mm/fault.c	2007-05-29 11:05:48.000000000 -0400
++++ linux-2.6-lttng/arch/i386/mm/fault.c	2007-05-29 11:13:16.000000000 -0400
+@@ -25,6 +25,7 @@
+ #include <linux/kprobes.h>
+ #include <linux/uaccess.h>
+ #include <linux/kdebug.h>
++#include <linux/condcall.h>
+ 
+ #include <asm/system.h>
+ #include <asm/desc.h>
+@@ -221,6 +222,25 @@
+ 
+ fastcall void do_invalid_op(struct pt_regs *, unsigned long);
+ 
++#ifdef CONFIG_X86_F00F_BUG
++/*
++ * Pentium F0 0F C7 C8 bug workaround.
++ */
++static inline int do_f00f_workaround(struct pt_regs *regs,
++		unsigned long address)
++{
++	unsigned long nr;
++
++	nr = (address - idt_descr.address) >> 3;
++
++	if (nr == 6) {
++		do_invalid_op(regs, 0);
++		return 1;
++	}
++	return 0;
++}
++#endif
++
+ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
+ {
+ 	unsigned index = pgd_index(address);
+@@ -474,19 +494,8 @@
  	}
--	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
-+	cond_call(profile_on,
-+		profile_hit(SCHED_PROFILING, __builtin_return_address(0)));
  
- need_resched:
- 	preempt_disable();
+ #ifdef CONFIG_X86_F00F_BUG
+-	/*
+-	 * Pentium F0 0F C7 C8 bug workaround.
+-	 */
+-	if (boot_cpu_data.f00f_bug) {
+-		unsigned long nr;
+-		
+-		nr = (address - idt_descr.address) >> 3;
+-
+-		if (nr == 6) {
+-			do_invalid_op(regs, 0);
+-			return;
+-		}
+-	}
++	if (cond_call(fix_f00f, do_f00f_workaround(regs, address)))
++		return;
+ #endif
+ 
+ no_context:
+Index: linux-2.6-lttng/arch/i386/Kconfig.cpu
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/Kconfig.cpu	2007-05-29 11:51:46.000000000 -0400
++++ linux-2.6-lttng/arch/i386/Kconfig.cpu	2007-05-29 11:52:08.000000000 -0400
+@@ -275,6 +275,7 @@
+ config X86_F00F_BUG
+ 	bool
+ 	depends on M586MMX || M586TSC || M586 || M486 || M386
++	select COND_CALL
+ 	default y
+ 
+ config X86_WP_WORKS_OK
 
 -- 
 Mathieu Desnoyers
