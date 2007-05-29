@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751921AbXE2V3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbXE2V36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751921AbXE2V3a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbXE2V3Y
+	id S1752641AbXE2V36 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbXE2V3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:29:24 -0400
-Received: from smtp5-g19.free.fr ([212.27.42.35]:43968 "EHLO smtp5-g19.free.fr"
+	Tue, 29 May 2007 17:29:48 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:51369 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750980AbXE2V3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:29:23 -0400
-Date: Tue, 29 May 2007 23:29:20 +0200
-From: Jeremie Le Hen <jeremie@le-hen.org>
-To: linux-kernel@vger.kernel.org
-Cc: jeremie@le-hen.org
-Subject: Puzzling lag in some syscalls
-Message-ID: <20070529212920.GD31507@obiwan.tataz.chchile.org>
+	id S1750818AbXE2V3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 17:29:47 -0400
+Date: Tue, 29 May 2007 23:29:42 +0200 (CEST)
+From: Jan Kratochvil <honza@jikos.cz>
+To: rpurdie@rpsys.net, dtor@mail.ru
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Support for controlling leds on xbox 360 pad.
+In-Reply-To: <alpine.LRH.0.98.0705292250430.22353@twin.jikos.cz>
+Message-ID: <alpine.LRH.0.98.0705292312150.22353@twin.jikos.cz>
+References: <alpine.LRH.0.98.0705292250430.22353@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
+   I have question, probably for Richard. Why is 
+/sys/class/leds/whatsoever/brightness mode set to 0644? Is it really necessary?
+I feel like I'll be happy to allow anybody to change the state of this led. (Ok 
+this maybe doesn't apply to other leds)
 
-Please Cc: me when replying, since I'm not subscribed.
+> So this patch uses led subystem in such way that it makes led in
+> /sys/class/leds/xpad:[0-9][0-9]/ for each attached xbox 360 pad.
+>
 
+I have the impression that the led subsystem doesn't actually count with 
+possibility to have more then one device of one type, right? In my case there 
+can by lots of pads, so I made it on my own, using counter. Is it ok?
 
-I dare to ask this here because I have a problem that seems to be
-either kernel or hardware related.  Unfortunately I can't see any
-error message to direct me for further investigation.
-
-I'm using 2.6.18-4-686 (Debian's kernel), but I've tried with 2.6.16.49
-and 2.6.20.7 without success.
-
-The problem is a big lag (more that 10 or 20 seconds) for some system
-calls, for numerous unrelated applications (top, vim, apt-cache).
-What is even more puzzling is that once the application has successfully
-started, I can run it again without any lag.
-
-
-I've used strace to catch a few lags.  "strace -fttT" has been used.
-Note that you can view the content of these files directly in your
-browser:
-
-msync(0xb708f000, 8536, MS_SYNC), line 146/1035
-http://tataz.chchile.org/~tataz/strace/strace.apt-cache.gz
-
-select(0, NULL, NULL, NULL, {0, 500000}), line 575/1793
-http://tataz.chchile.org/~tataz/strace/strace.top.gz
-
-read(3, "diff --git a/.gitignore b/.gitig"..., 8192), line 797/2443
-http://tataz.chchile.org/~tataz/strace/strace.vim.gz
-
-
-Thank in advance.
-Best regards,
--- 
-Jeremie Le Hen
-< jeremie at le-hen dot org >< ttz at chchile dot org >
+Thanks
+Jan Kratochvil
