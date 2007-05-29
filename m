@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762825AbXE2SO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbXE2SQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762825AbXE2SO2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXE2SOS
+	id S1761470AbXE2SQW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbXE2SQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:14:18 -0400
-Received: from 125.14.124.24.cm.sunflower.com ([24.124.14.125]:27076 "EHLO
-	mail.atipa.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751912AbXE2SOR (ORCPT
+	Tue, 29 May 2007 14:16:15 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:16327 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751702AbXE2SQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:14:17 -0400
-Message-ID: <465C6D78.9030009@atipa.com>
-Date: Tue, 29 May 2007 13:14:16 -0500
-From: Roger Heflin <rheflin@atipa.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
-MIME-Version: 1.0
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Apparent Deadlock with nfsd/jfs on 2.6.21.1 under bonnie.
-References: <4649BED9.6090207@atipa.com>	 <pan.2007.05.15.22.03.07.359081@linux.vnet.ibm.com>	 <464C68A0.2050003@atipa.com>	 <1179413287.13965.24.camel@kleikamp.austin.ibm.com>	 <465C5FDF.4070401@atipa.com> <1180462215.10013.2.camel@kleikamp.austin.ibm.com>
-In-Reply-To: <1180462215.10013.2.camel@kleikamp.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 May 2007 14:16:14 -0400
+Date: Tue, 29 May 2007 11:22:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] Make usb-autosuspend timer 1 sec jiffy aligned
+Message-Id: <20070529112230.c2687091.randy.dunlap@oracle.com>
+In-Reply-To: <20070529175821.GA5411@linux-os.sc.intel.com>
+References: <20070529175821.GA5411@linux-os.sc.intel.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 May 2007 18:16:59.0171 (UTC) FILETIME=[8C1B7730:01C7A21D]
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Kleikamp wrote:
-> On Tue, 2007-05-29 at 12:16 -0500, Roger Heflin wrote:
+On Tue, 29 May 2007 10:58:21 -0700 Venki Pallipadi wrote:
+
 > 
->> Dave,
->>
->> Apparently there appears to be another different similar lockup,
->> The MTBF has risen from 1-2 hours without that patch to >100 hours,
->> so I am fairly sure the patch did correct the original lockup, or
->> at the very least make it a lot less likely.
->>
->> I hit the machine across NFS for 5 days before it deadlocked, before
->> the patch I could only get an hour or two (2-4 different tries).
->>
->> Given that pdflush is "D" it does not appear to be an NFS issue.
->>
->> Included is the sysrq-t.
->>
->> This is with 2.6.21.1 + the JFSIO patch.
 > 
-> Is the system still in this state?  Can you cat /proc/fs/jfs/TxAnchor
-> (if CONFIG_JFS_DEBUG is defined) and /proc/fs/jfs/txstats (if
-> CONFIG_JFS_STATISTICS is defined)?
+> Below are a bunch of random timers, that were active on my system,
+> that can better be round_jiffies() aligned.
+
+and these 4 patches help with (a) power usage, or (b) cache
+usage/niceness, or (c) other (be specific)...
+
+Thanks.
+
+> I guess we need a audit of all timer usages atleast in kernel-core.
 > 
-> Thanks,
-> Shaggy
+> This patch:
+> 
+> Make usb autosuspend timers 1sec jiffy aligned.
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> 
+> Index: linux-2.6.22-rc-mm/drivers/usb/core/driver.c
+> ===================================================================
+> --- linux-2.6.22-rc-mm.orig/drivers/usb/core/driver.c	2007-05-24 11:16:00.000000000 -0700
+> +++ linux-2.6.22-rc-mm/drivers/usb/core/driver.c	2007-05-25 10:00:50.000000000 -0700
+> @@ -974,7 +974,7 @@
+>  			 * or for the past.
+>  			 */
+>  			queue_delayed_work(ksuspend_usb_wq, &udev->autosuspend,
+> -					suspend_time - jiffies);
+> +				round_jiffies_relative(suspend_time - jiffies));
+>  			}
+>  		return -EAGAIN;
+>  	}
+> -
 
-Yes, the machine is still in that state.
-
-Apparently I don't have either of those configured.
-
-Anything else that we can collect before I rebuild the kernel with
-those options setup?
-
-                              Roger
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
