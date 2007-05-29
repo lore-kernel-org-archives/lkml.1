@@ -1,94 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbXE2NPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbXE2NSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbXE2NPU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbXE2NPI
+	id S1758206AbXE2NSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbXE2NSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:15:08 -0400
-Received: from thunk.org ([69.25.196.29]:55491 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752375AbXE2NPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:15:06 -0400
-Date: Tue, 29 May 2007 09:15:01 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: M Macnair <mmacnair@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Seeding /dev/random not working
-Message-ID: <20070529131501.GA9899@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	M Macnair <mmacnair@gmail.com>, linux-kernel@vger.kernel.org
-References: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Tue, 29 May 2007 09:18:36 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:65098 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753116AbXE2NSf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:18:35 -0400
+X-Greylist: delayed 967 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:18:35 EDT
+Message-Id: <20070529130106.864404378@chello.nl>
+References: <20070529125248.877196281@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Tue, 29 May 2007 14:52:50 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 2/5] lockdep: sanitise CONFIG_PROVE_LOCKING
+Content-Disposition: inline; filename=lockdep-prove-locking.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 12:53:10PM +0100, M Macnair wrote:
-> I have two embedded boards (one ARM, one PowerPC), running two
-> different versions of 2.6.  They have no hard drives, keyboards or
-> mice.  They each have a NIC, but I understand these make no
-> contribution to the entropy pool.
-> 
-> 	if [ -f $random_seed ]; then
-> 		cat $random_seed >/dev/urandom  # should seed the pool
-> 	fi
-> 	dd if=/dev/urandom of=$random_seed count=1 2>/dev/null # save some
-> data from urandom for next boot
->
-> I have rebooted my boards many times, and after each boot I read the
-> contents of $random_seed.  Whilst it does not happen every time, the
-> contents of $random_seed are /often the same/.  To give you a feel:
-> rebooted 11 times, got a total of 3 different outputs.
+Ensure that all of the lock dependency tracking code is under
+CONFIG_PROVE_LOCKING. This allows us to use the held lock tracking code
+for other purposes.
 
-Ok, so this is telling me a couple of things.  First of all, if you're
-only getting three outputs, it means that you don't have any
-peripherals feeding entropy into the system from the boot sequence.
-Without any hard drives, keyboards or mice, and a NIC whose device
-driver hasn't been configured to feed entropy, you're definitely
-hosed.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Jason Baron <jbaron@redhat.com>
+---
+ kernel/lockdep.c  |   13 ++++++++++++-
+ kernel/spinlock.c |    4 ++--
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
-Secondly, and more importantly, your boot scripts aren't set up
-correctly.  You really want to make sure that you save the some
-entropy at shutdown.  i.e., run at shutdown the same sequence that was
-run at the boot-time.  (You don't really need the "cat $random_seed >
-/dev/urandom", but it's harmless.)  Repeating this sequence at
-shutdown is useful because it saves any entropy gathered from the
-current boot session and saves it to be used at the next boot session.
-I've noticed a number of distro's have gotten this wrong, and I guess
-I should have filed more bugs to get this fixed.  In your case, since
-you don't have anything wired up to feed entropy into your pool, it
-will make /dev/urandom effectively a psuedo-random number generator,
-but at least you won't get repeating outputs.
+Index: linux-2.6-git/kernel/lockdep.c
+===================================================================
+--- linux-2.6-git.orig/kernel/lockdep.c
++++ linux-2.6-git/kernel/lockdep.c
+@@ -95,6 +95,7 @@ static int lockdep_initialized;
+ unsigned long nr_list_entries;
+ static struct lock_list list_entries[MAX_LOCKDEP_ENTRIES];
+ 
++#ifdef CONFIG_PROVE_LOCKING
+ /*
+  * Allocate a lockdep entry. (assumes the graph_lock held, returns
+  * with NULL on failure)
+@@ -111,6 +112,7 @@ static struct lock_list *alloc_list_entr
+ 	}
+ 	return list_entries + nr_list_entries++;
+ }
++#endif
+ 
+ /*
+  * All data structures here are protected by the global debug_lock.
+@@ -140,7 +142,9 @@ LIST_HEAD(all_lock_classes);
+ static struct list_head classhash_table[CLASSHASH_SIZE];
+ 
+ unsigned long nr_lock_chains;
++#ifdef CONFIG_PROVE_LOCKING
+ static struct lock_chain lock_chains[MAX_LOCKDEP_CHAINS];
++#endif
+ 
+ /*
+  * We put the lock dependency chains into a hash-table as well, to cache
+@@ -486,6 +490,7 @@ static void print_lock_dependencies(stru
+ 	}
+ }
+ 
++#ifdef CONFIG_PROVE_LOCKING
+ /*
+  * Add a new dependency to the head of the list:
+  */
+@@ -545,6 +550,7 @@ print_circular_bug_entry(struct lock_lis
+ 
+ 	return 0;
+ }
++#endif
+ 
+ static void print_kernel_version(void)
+ {
+@@ -553,6 +559,7 @@ static void print_kernel_version(void)
+ 		init_utsname()->version);
+ }
+ 
++#ifdef CONFIG_PROVE_LOCKING
+ /*
+  * When a circular dependency is detected, print the
+  * header first:
+@@ -643,6 +650,7 @@ check_noncircular(struct lock_class *sou
+ 	}
+ 	return 1;
+ }
++#endif
+ 
+ static int very_verbose(struct lock_class *class)
+ {
+@@ -827,6 +835,7 @@ check_usage(struct task_struct *curr, st
+ 
+ #endif
+ 
++#ifdef CONFIG_PROVE_LOCKING
+ static int
+ print_deadlock_bug(struct task_struct *curr, struct held_lock *prev,
+ 		   struct held_lock *next)
+@@ -1091,7 +1100,7 @@ out_bug:
+ 
+ 	return 0;
+ }
+-
++#endif
+ 
+ /*
+  * Is this the address of a static object:
+@@ -1311,6 +1320,7 @@ out_unlock_set:
+ 	return class;
+ }
+ 
++#ifdef CONFIG_PROVE_LOCKING
+ /*
+  * Look up a dependency chain. If the key is not present yet then
+  * add it and return 1 - in this case the new dependency chain is
+@@ -1385,6 +1395,7 @@ cache_hit:
+ 
+ 	return 1;
+ }
++#endif
+ 
+ /*
+  * We are building curr_chain_key incrementally, so double-check
+Index: linux-2.6-git/kernel/spinlock.c
+===================================================================
+--- linux-2.6-git.orig/kernel/spinlock.c
++++ linux-2.6-git/kernel/spinlock.c
+@@ -88,7 +88,7 @@ unsigned long __lockfunc _spin_lock_irqs
+ 	 * _raw_spin_lock_flags() code, because lockdep assumes
+ 	 * that interrupts are not re-enabled during lock-acquire:
+ 	 */
+-#ifdef CONFIG_PROVE_LOCKING
++#ifdef CONFIG_LOCKDEP
+ 	_raw_spin_lock(lock);
+ #else
+ 	_raw_spin_lock_flags(lock, &flags);
+@@ -305,7 +305,7 @@ unsigned long __lockfunc _spin_lock_irqs
+ 	 * _raw_spin_lock_flags() code, because lockdep assumes
+ 	 * that interrupts are not re-enabled during lock-acquire:
+ 	 */
+-#ifdef CONFIG_PROVE_SPIN_LOCKING
++#ifdef CONFIG_LOCKDEP
+ 	_raw_spin_lock(lock);
+ #else
+ 	_raw_spin_lock_flags(lock, &flags);
 
-Another thing which I noticed is that when Matt Mackall took over
-maintainership of /dev/random, he apparently took out one of the
-safeguards I had, which was that before, when entropy was extracted
-from the pool the time stamp when it was extracted was mixed back into
-the pool.  The theory was that an external attacker might not know
-when a program might be calling /dev/random, so mixing in the time of
-that entropy was extracted wouldn't hurt, and might help.  I'll submit
-a patch to add that support back in, which will help you a little.
+--
 
-HOWEVER, the more important thing to remember is that /dev/random
-isn't magic.  If you don't have any entropy sources to mix in, and you
-don't do anything at the application level to mix in data that might
-not be known by external attackers, you will always be vulnerable,
-especially if your threat model includes government funded
-intelligence agencies.  So if you are planning on using /dev/urandom
-for cryptographic purposes, while some of these fixes will avoid at
-least the embarassing result of repeating outputs from /dev/urandom,
-it's not really going to result in high-quality unpredictable results
-against a well-funded, determined adversary.  
-
-If that is your threat model, then you really should consider adding
-hardware random number generator into your product design.
-
-Regards,
-
-					- Ted
