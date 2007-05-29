@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764907AbXE2MoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765088AbXE2Mop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764907AbXE2MoS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 08:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbXE2MoG
+	id S1765088AbXE2Mop (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 08:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764797AbXE2Moh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 08:44:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42446 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751590AbXE2MoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 08:44:05 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070527161252.GA12804@fieldses.org>
-References: <20070527161252.GA12804@fieldses.org> <20070527022502.GB10867@fieldses.org> <20070526022342.GA20905@fieldses.org> <20070524165554.22292.38887.stgit@warthog.cambridge.redhat.com> <7436.1180223730@redhat.com> <18750.1180255870@redhat.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] AFS: Implement file locking
-X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
-Date: Tue, 29 May 2007 13:43:29 +0100
-Message-ID: <11388.1180442609@redhat.com>
+	Tue, 29 May 2007 08:44:37 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:35188 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764718AbXE2Mog (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 08:44:36 -0400
+In-Reply-To: <adalkfe6rxk.fsf@cisco.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+MIME-Version: 1.0
+Subject: Re: [PATCH] IB/ehca: Refactor "maybe missed event" code
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OFA7B951E3.8AFF22C4-ONC12572EA.0045F4E8-C12572EA.00461997@de.ibm.com>
+Date: Tue, 29 May 2007 14:44:32 +0200
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 29/05/2007 14:44:34,
+	Serialize complete at 29/05/2007 14:44:34
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields <bfields@fieldses.org> wrote:
+Roland Dreier <rdreier@cisco.com> wrote on 24.05.2007 19:40:39:
 
-> > At the moment, yes.  Don't the POSIX and flock lock-handling routines in the
-> > kernel normally do that anyway?
-> 
-> No, they'd upgrade in that case.
+> This isn't fixing anything is it?  I think it's 2.6.23 material;
+> correct me if I'm wrong.
 
-I just checked.  The OpenAFS server supports neither lock upgrading nor lock
-downgrading.  Attempts to do either incur an abort with code 0x02f6df0a
-(which I believe to be equivalent to EAGAIN).
+Right, it doesn't fix things, just coalesces some code.
 
-This means that I can't practically support lock upgrading.  Lock downgrading
-I can emulate by handing apparent readlocks to local processes whilst holding
-a writelock on the server.
-
-David
+Joachim
