@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752200AbXE2W7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbXE2XC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752200AbXE2W7k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 18:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbXE2W7b
+	id S1752000AbXE2XC1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 19:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbXE2XCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 18:59:31 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:2602 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbXE2W72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 18:59:28 -0400
-X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
-Subject: Re: b44: regression in 2.6.22 (resend)
-From: "Gary Zambrano" <zambrano@broadcom.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-cc: "Michael Buesch" <mb@bu3sch.de>,
-       "Maximilian Engelhardt" <maxi@daemonizer.de>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-wireless" <linux-wireless@vger.kernel.org>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>,
-       "Arnaldo Carvalho de Melo" <acme@ghostprotocols.net>,
-       netdev@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <465CABA3.10003@pobox.com>
-References: <20070525172431.60affaca@freepuppy>
- <200705281655.15105.mb@bu3sch.de>
- <1180448075.17146.12.camel@dhcp-10-12-136-115.broadcom.com>
- <200705292245.22940.mb@bu3sch.de>
- <1180472741.17711.19.camel@dhcp-10-12-136-115.broadcom.com>
- <465CABA3.10003@pobox.com>
-Date: Tue, 29 May 2007 14:36:51 -0700
-Message-ID: <1180474611.17711.26.camel@dhcp-10-12-136-115.broadcom.com>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5)
-X-WSS-ID: 6A426FC137035436522-01-01
-Content-Type: text/plain
+	Tue, 29 May 2007 19:02:21 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58705
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750938AbXE2XCU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 19:02:20 -0400
+Date: Tue, 29 May 2007 16:02:33 -0700 (PDT)
+Message-Id: <20070529.160233.45506339.davem@davemloft.net>
+To: tglx@linutronix.de
+Cc: michal.k.k.piotrowski@gmail.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] NOHZ: prevent multiplication overflow - stop timer for
+ huge timeouts
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1180475259.20546.26.camel@chaos>
+References: <465C188F.9000900@googlemail.com>
+	<465C222A.8060003@googlemail.com>
+	<1180475259.20546.26.camel@chaos>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-29 at 18:39 -0400, Jeff Garzik wrote:
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 29 May 2007 23:47:39 +0200
 
-> We check for 0xffffffff because that is often how a fault is indicated, 
-> when the memory location is read during or immediately after hotplug (or 
-> if the PCI bus is truly faulty).  So for most hardware, you see
+> get_next_timer_interrupt() returns a delta of (LONG_MAX > 1) in case
+> there is no timer pending. On 64 bit machines this results in a
+> multiplication overflow in tick_nohz_stop_sched_tick(). 
 > 
-> tmp = read(irq status)
-> if (!tmp)
-> 	return irq-none		/* no irq events raised */
-> if (tmp == 0xffffffff)
-> 	return irq-none		/* hot unplug or h/w fault */
+> Reported by: Dave Miller <davem@davemloft.net>
 > 
-> and the method that determines no interrupt handling is needed.
+> Make the return value a constant and limit the return value to a 32 bit
+> value.
 > 
+> When the max timeout value is returned, we can safely stop the tick
+> timer device. The max jiffies delta results in a 12 days timeout for
+> HZ=1000.
+> 
+> In the long term the get_next_timer_interrupt() code needs to be
+> reworked to return ktime instead of jiffies, but we have to wait until
+> the last users of the original NO_IDLE_HZ code are converted.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-I guess you are right, but then shouldn't the driver be checking for
-faults in other parts of the code too? What if a fault/hotplug occurs
-immediately after an interrupt, but before a tx?
-Thanks,
-Gary
-
+Acked-off-by: David S. Miller <davem@davemloft.net>
