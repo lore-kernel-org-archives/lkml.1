@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbXE2Kwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764509AbXE2LLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765035AbXE2Kwk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 06:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764850AbXE2KwG
+	id S1764509AbXE2LLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 07:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbXE2LLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 06:52:06 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:54309 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764839AbXE2KwD (ORCPT
+	Tue, 29 May 2007 07:11:43 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:36750 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753579AbXE2LLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 06:52:03 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <a781481a0705290341w4c403c1ej43565a1e66805522@mail.gmail.com>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <292C7F80-B80D-4645-8FF5-49BF911398E1@cam.ac.uk> <a781481a0705290341w4c403c1ej43565a1e66805522@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <37DB6EAF-8954-448D-BD29-864FEC6540CE@cam.ac.uk>
-Cc: "Nitin Gupta" <nitingupta910@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Bret Towe" <magnade@gmail.com>
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: Makefile question (was [RFC] LZO de/compression support - take 6)
-Date: Tue, 29 May 2007 11:51:48 +0100
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
+	Tue, 29 May 2007 07:11:42 -0400
+Date: Tue, 29 May 2007 13:11:41 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Christoph Hellwig <hch@lst.de>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+In-Reply-To: <20070529104948.GC29351@lst.de>
+Message-ID: <Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>
+References: <20070525083607.784351000@sonycom.com> <20070525083632.677742000@sonycom.com>
+ <20070529104948.GC29351@lst.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29 May 2007, at 11:41, Satyam Sharma wrote:
+On Tue, 29 May 2007, Christoph Hellwig wrote:
+> [Note that all scsi lldds should go to linux-scsi]
 
-> This is syntactically correct (and wouldn't produce any build errors),
-> but it's quite ... strange, still. Why would I even want to /build/  
-> the
-> compress code if all I selected was the decompress option?
+I'll Cc linux-scsi next time.
 
-Apologies, you gave me the answer I was looking for (make is  
-'intelligent' enough not to build the same file twice in this  
-situation...) but I think you may have missed the makefile in the  
-lzo1x directory:
+> > +	sgpnt = cmd->request_buffer;
+> > +	active = 1;
+> > +	for (k = 0, req_len = 0, act_len = 0; k < cmd->use_sg; ++k, ++sgpnt) {
+> > +		if (active) {
+> > +			kaddr = kmap_atomic(sgpnt->page, KM_USER0);
+> > +			if (!kaddr)
+> > +				return DID_ERROR << 16;
+> > +			len = sgpnt->length;
+> > +			if ((req_len + len) > buflen) {
+> > +				active = 0;
+> > +				len = buflen - req_len;
+> > +			}
+> > +			memcpy(kaddr + sgpnt->offset, buf + req_len, len);
+> > +			kunmap_atomic(kaddr, KM_USER0);
+> > +			act_len += len;
+> > +		}
+> > +		req_len += sgpnt->length;
+> > +	}
+> > +	cmd->resid = req_len - act_len;
+> 
+> This looks very inefficient.  Just set sg_tablesize of your driver
+> to 1 to avoid getting mutiple segments.
 
-> diff --git a/lib/lzo1x/Makefile b/lib/lzo1x/Makefile
-> new file mode 100644
-> index 0000000..7b56a4d
-> --- /dev/null
-> +++ b/lib/lzo1x/Makefile
-> @@ -0,0 +1,2 @@
-> +obj-$(CONFIG_LZO1X_COMPRESS) += lzo1x_compress.o
-> +obj-$(CONFIG_LZO1X_DECOMPRESS) += lzo1x_decompress.o
+The disadvantage of setting sg_tablesize = 1 is that the driver will get small
+requests (PAGE_SIZE) most of the time, which is very bad for performance.
 
-Thus, the Kconfig options for compress/decompress won't be simply  
-'dummy' options...
+Gr{oetje,eeting}s,
 
-Given the shared private header between the compress and decompress  
-code, I don't think there is any need to separate the code into two  
-directories a la the zlib code.
+						Geert
 
-Sorry for noise,
-
-Michael-Luke
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
