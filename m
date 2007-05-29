@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761545AbXE2RTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbXE2RVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761545AbXE2RTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 13:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbXE2RTN
+	id S1761313AbXE2RVL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 13:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXE2RU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 13:19:13 -0400
-Received: from rtr.ca ([64.26.128.89]:4537 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbXE2RTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 13:19:12 -0400
-Message-ID: <465C608E.3040303@rtr.ca>
-Date: Tue, 29 May 2007 13:19:10 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 29 May 2007 13:20:58 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:12808 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752554AbXE2RU5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 13:20:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=St7xDfbKaKDXZzXu5QEVvroZjo9w/BbwohE/YCG9QG7L57PhLlG97Qtep9XuLcI1vBU6wzJW9Elli88tL8Ca6dIpX5DF/HYe9RjOqgeubXAXxfz4SW1UbxHB7oaUkwnwaNIIjGq19wjNdGLu+7xYJ7octFNjVqZwGyOUSFMsGV4=
+Message-ID: <8bd0f97a0705291020p5263b0bco88c556ff8cabf05c@mail.gmail.com>
+Date: Tue, 29 May 2007 13:20:52 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <bryan.wu@analog.com>
+Subject: Re: [PATCH 19/20] Blackfin on-chip watchdog driver
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org,
+       "Mike Frysinger" <michael.frysinger@analog.com>,
+       "Wim Van Sebroeck" <wim@iguana.be>
+In-Reply-To: <11803414821370-git-send-email-bryan.wu@analog.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle on Intel
- chipset
-References: <465C566E.4030009@rtr.ca> <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11803414753217-git-send-email-bryan.wu@analog.com>
+	 <11803414821370-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> I just "upgraded" from 2.6.21.3 to 2.6.22-rc3,
-> but will be rebooting back into 2.6.21.xx shortly.
-> 
-> Suspend/Resume (RAM) works perfectly on this Dell i9400 dual-core notebook.
-> Except with 2.6.22-rc3, all USB devices are non-functional on resume.
-> Most of the time.
-> Once in five reboots, my mouse worked after the first suspend/resume cycle,
-> but not thereafter.  'lsusb' also hangs after resume.
-> 
-> I'm attaching a full syslog with USB_DEBUG=y.
-> I cannot use PM_DEBUG=y due to an unresolved race condition
-> in the HRTIMER stuff (previously reported/discussed with no attempt at 
-> resolution).
-> 
-> This notebook uses very mainstream Intel chips for most stuff:
-..
-> There are a zillion USB patches in 2.6.22-rc*.
-> Greg: got any good suggestions on which one to revert first?
+On 5/28/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> From: Mike Frysinger <michael.frysinger@analog.com>
+>
+> This patch implements the driver necessary use the Analog Devices
+> Blackfin processor's on-chip watchdog controller, supports
+> BF53[123]/BF53[467]/BF561.
+>
+> Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> Cc: Wim Van Sebroeck <wim@iguana.be>
 
-Okay, I used the "targeted revert" method instead of "git-bisect",
-and nailed it in one try by reverting these two commits by Alan Stern:
+we probably want to NACK this and wait for me to rip out the timer
+bits into a sep clockevents driver
 
-7ed92f1a149dddc3cb537ccd7441e98adac12c3e USB: make the autosuspend workqueue thread freezable
-ef7f6c7084b333c7524dcd297e0578d43733a2a2 USB: more autosuspend timer stuff
+>  drivers/char/watchdog/Kconfig.orig      |  768 +++++++++++++++++++++++++++++++
 
-I yanked them both, as they appeared to be releated based on the titles.
-Reverting this pair of commits fixes the USB suspend/resume regression.
-
-Alan Stern:  your ball now.
-
--ml
-
-
+looks like you got cruft in this patch anyways ...
+-mike
