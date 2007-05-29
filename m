@@ -1,36 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbXE2MyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbXE2M4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbXE2MyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 08:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbXE2Mxl
+	id S1754865AbXE2M4p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 08:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXE2M4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 08:53:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:37005 "EHLO
+	Tue, 29 May 2007 08:56:35 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:41624 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753914AbXE2Mxj (ORCPT
+	with ESMTP id S1751684AbXE2M4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 08:53:39 -0400
+	Tue, 29 May 2007 08:56:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=tvgNN2ysXOF4QGyiq9hnz+utf4vlut7g4j9W0Ox5AnuwrOzD9jIwijjLrY4fTekX2kornVVnSppFixb590QX51UAf23I0y4wF5DeXr0ysnsQddDy1Ujlzp+xrlmMQumcYF0wztN1qreWePAbBSNZRaq0AxPw1g0stZK5R27AwiE=
-Message-ID: <465C2249.40400@googlemail.com>
-Date: Tue, 29 May 2007 14:53:29 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=uH5NnPTSaFxVCQyLkffYxdrY3tWZAtOMM3d8rzIYVHwLD3B7LlJYIVEOqfZNC6H8gl9p/UU4fKotr2bzjCBmHecOmlUs25Dz0in0S9vxWoWGvZZYEuN1nOQJUG1gVvWn0Nmu3lh01wG1I0Njb4tpsvlQes6bcmdSWcPxy3aa1pE=
+Message-ID: <465C22F4.8080505@googlemail.com>
+Date: Tue, 29 May 2007 14:56:20 +0200
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk, Qi Yong <qiyong@fc-cn.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, viro@zeniv.linux.org.uk,
-       Uwe Bugla <uwe.bugla@gmx.de>, Ken Chen <kenchen@google.com>,
-       dri-devel@lists.sourceforge.net,
-       "Cherwin R. Nooitmeer" <cherwin@gmail.com>,
-       Dave Airlie <airlied@linux.ie>, xfs-masters@oss.sgi.com,
-       Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Andrea Righi <righiandr@users.sourceforge.net>
-Subject: [1/3] 2.6.22-rc3: known regressions with patches
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Ruben <nahoo82@terra.es>, Stephen Hemminger <shemminger@osdl.org>,
+       linux-pci@atrey.karlin.mff.cuni.cz, Greg KH <greg@kroah.com>,
+       "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
+       tom.l.nguyen@intel.com, linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Gregor Jasny <gjasny@googlemail.com>,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [2/4] 2.6.22-rc3: known regressions
+References: <465C188F.9000900@googlemail.com>
+In-Reply-To: <465C188F.9000900@googlemail.com>
 X-Enigmail-Version: 0.94.1.1
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 8bit
@@ -40,58 +42,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi all,
 
-Here is a list of some known regressions in 2.6.22-rc3
-with patches available.
+Here is a list of some known regressions in 2.6.22-rc3.
 
 Feel free to add new regressions/remove fixed etc.
 http://kernelnewbies.org/known_regressions
 
 
 
-ARM
+Networking
 
-Subject    : arch/arm/plat-s3c24xx/devs.c build errors
-References : http://lkml.org/lkml/2007/5/28/18
-Submitter  : Qi Yong <qiyong@fc-cn.com>
-Status     : patch available in -arm tree
-
-
-
-Block devices
-
-Subject    : loop devices limited to one single device
-References : http://lkml.org/lkml/2007/5/16/229
-Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
-Handled-By : Ken Chen <kenchen@google.com>
-Patch      : http://lkml.org/lkml/2007/5/21/483
-Status     : patch available
-
-
-DRM
-
-Subject    : kernel BUG at include/linux/slub_def.h:88 kmalloc_index()
-References : http://bugzilla.kernel.org/show_bug.cgi?id=8476
-Submitter  : Cherwin R. Nooitmeer <cherwin@gmail.com>
-Status     : "Fix should be in my drm tree for the next mm.." Dave Airlie
+Subject    : Network card not usable - sky2
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8539
+Submitter  : Ruben <nahoo82@terra.es>
+Status     : Unknown
 
 
 
-File systems
+PCI
 
-Subject    : 2.6.21-git10/11: files getting truncated on xfs
-References : http://lkml.org/lkml/2007/5/9/410
-Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-Handled-By : David Chinner <dgc@sgi.com>
-Patch      : http://lkml.org/lkml/2007/5/12/93
-Status     : patch available
+Subject    : Oops on 2.6.22-rc2 when unloading the cciss driver
+References : http://lkml.org/lkml/2007/5/24/172
+Submitter  : Mike Miller (OS Dev) <mikem@beardog.cca.cpqcorp.net>
+Status     : Unknown
 
 
-Memory management
 
-Subject    : bug in i386 MTRR initialization
-References : http://lkml.org/lkml/2007/5/19/93
-Submitter  : Andrea Righi <righiandr@users.sourceforge.net>
-Status     : patch available
+PCMCIA
+
+Subject    : libata and legacy ide pcmcia failure
+References : http://lkml.org/lkml/2007/5/17/305
+Submitter  : Robert de Rooy <robert.de.rooy@gmail.com>
+Status     : Unknown
+
+
+
+SATA/PATA
+
+Subject    : 22-rc3 broke the CDROM in Dell notebook
+References : http://lkml.org/lkml/2007/5/27/63
+Submitter  : Gregor Jasny <gjasny@googlemail.com>
+Handled-By : Tejun Heo <htejun@gmail.com>
+             Jeff Garzik <jeff@garzik.org>
+Caused-By  : Tejun Heo <htejun@gmail.com>
+             commit d4b2bab4f26345ea1803feb23ea92fbe3f6b77bc
+Status     : problem is being debugged
+
+
+
+Sparc64
+
+Subject    : 2.6.22-rc broke X on Ultra5
+References : http://lkml.org/lkml/2007/5/22/78
+Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+Status     : Unknown
 
 
 
@@ -101,5 +104,4 @@ Michal
 --
 "Najbardziej brakowa³o mi twojego milczenia."
 -- Andrzej Sapkowski "Co¶ wiêcej"
-
 
