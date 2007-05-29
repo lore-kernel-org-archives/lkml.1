@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759572AbXE2Lib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761535AbXE2Lkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759572AbXE2Lib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 07:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbXE2LiZ
+	id S1761535AbXE2Lkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 07:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbXE2Lkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 07:38:25 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39233 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750758AbXE2LiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 07:38:24 -0400
-Date: Tue, 29 May 2007 13:38:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Neil Brown <neilb@suse.de>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>,
-       Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       ext3-users@redhat.com
-Subject: Re: fs periodic check (was Re: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted)
-Message-ID: <20070529113812.GE23046@elf.ucw.cz>
-References: <20070518090604.GA10841@ribosome.natur.cuni.cz> <9a8748490705180720u3baf9785l910581a2a76a6eb@mail.gmail.com> <20070518143529.GB14611@ribosome.natur.cuni.cz> <20070518215731.GB10655@thunk.org> <20070520195526.GA5235@ucw.cz> <20070522180158.GA4668@thunk.org> <20070524173911.GA4541@ucw.cz> <20070529025534.GD24003@thunk.org> <18011.39033.841231.377192@notabene.brown>
+	Tue, 29 May 2007 07:40:47 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47930 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750792AbXE2Lkr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 07:40:47 -0400
+Date: Tue, 29 May 2007 13:40:43 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Michael-Luke Jones <mlj28@cam.ac.uk>
+Cc: Nitin Gupta <nitingupta910@gmail.com>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
+       linuxcompressed-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 6
+Message-ID: <20070529114043.GR3899@stusta.de>
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com> <200705281049.48679.dhazelton@enter.net> <4cefeab80705280806m39fbcfd6v93a1c847c25e381c@mail.gmail.com> <20070528171115.GQ3899@stusta.de> <7A4314A3-24D8-49E2-BEEF-D760595255A2@cam.ac.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <18011.39033.841231.377192@notabene.brown>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <7A4314A3-24D8-49E2-BEEF-D760595255A2@cam.ac.uk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2007-05-29 13:05:29, Neil Brown wrote:
-> On Monday May 28, tytso@mit.edu wrote:
-> > On Thu, May 24, 2007 at 05:39:11PM +0000, Pavel Machek wrote:
-> > > Right. Could we get more helpful message here? 'Filesystem check on
-> > > next boot on AC power'? 
-> > 
-> > So "(check deferred; on battery)" wasn't explicit enough?  I guess I
-> > assumed that users would understand that the opposite of "on battery"
-> > was "on AC power".  I guess I could say "(check defferred 'til on AC
-> > power)" if people think it would be clearer.
-> > 
-> 
-> So when I use my travelling power adapter which I plug into the 12V-DC
-> power in my car, and it delivers DC power to my notebook.....
-> My note book tells me that I am using AC power....
-> 
-> I really think "AC" as the opposite of "battery" is wrong and should
-> be stamped out everywhere, certainly not introduced here.
+On Tue, May 29, 2007 at 09:08:27AM +0100, Michael-Luke Jones wrote:
+> On 28 May 2007, at 18:11, Adrian Bunk wrote:
+>
+>> I have not seen any explanations:
+>> - Why did the upstream author write the code that way?
+>
+> Apparently due to his requirement for extreme portability. The original 
+> code was designed to work on everything from 16-bit DOS through CRAY 
+> supercomputers through Windows, Unices and Linux.
 
-> "external power" maybe?
+Sure, this could be the reason in some or all cases.
 
-Well, on one sunny day, we'll want to tell the difference between
-"cheap" power and "expensive" power.
+The upstream author knows the code best, and discussing such issues with 
+him will in many cases be a win:
 
-zaurus running on AC or car adapter is "cheap".
+It could be that there was in some cases no good reason, and the 
+upstream code that gets used by many other projects could become faster.
 
-zaurus running from external notebook's battery is something in
-between -- given that notebook battery should keep zaurus powered for
-few weeks.
+Or there was a good reason that applies also to the in-kernel version 
+and a change breaks some corner case.
 
-zaurus running on external 4xAA batteries or on internal li-ion is
-"expensive".
+> The author has stated on the thread that it's a good idea to remove 
+> unnecessary ifdefs when porting the code into the kernel, given that the 
+> portability requirements are obviously no longer needed.
 
-...but I'm afraid it will take long time before we can worry about that.
+"remove unnecessary ifdefs" implies "generated code is identical".
 
->   Check deferred until system is externally powered.
+That's quite different from "code is 10% faster".
 
-Check deferred; on battery is completely fine; I just did not see that
-message for some reason.
-									Pavel
+> Michael-Luke
+
+cu
+Adrian
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
