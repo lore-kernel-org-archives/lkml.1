@@ -1,160 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbXE2NSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbXE2NS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbXE2NSp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbXE2NSg
+	id S1759373AbXE2NS5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbXE2NSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:18:36 -0400
+	Tue, 29 May 2007 09:18:39 -0400
 Received: from viefep18-int.chello.at ([213.46.255.22]:65098 "EHLO
 	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753116AbXE2NSf (ORCPT
+	with ESMTP id S1753302AbXE2NSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:18:35 -0400
+	Tue, 29 May 2007 09:18:38 -0400
 X-Greylist: delayed 967 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:18:35 EDT
-Message-Id: <20070529130106.864404378@chello.nl>
+Message-Id: <20070529130107.586807989@chello.nl>
 References: <20070529125248.877196281@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 29 May 2007 14:52:50 +0200
+Date: Tue, 29 May 2007 14:52:53 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
        Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
        Christoph Hellwig <hch@infradead.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/5] lockdep: sanitise CONFIG_PROVE_LOCKING
-Content-Disposition: inline; filename=lockdep-prove-locking.patch
+Subject: [PATCH 5/5] lockstat: hook into spinlock_t, rwlock_t, rwsem and mutex
+Content-Disposition: inline; filename=lockstat-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure that all of the lock dependency tracking code is under
-CONFIG_PROVE_LOCKING. This allows us to use the held lock tracking code
-for other purposes.
+Call the new lockstat tracking functions from the various lock primitives.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Acked-by: Ingo Molnar <mingo@elte.hu>
 Acked-by: Jason Baron <jbaron@redhat.com>
 ---
- kernel/lockdep.c  |   13 ++++++++++++-
- kernel/spinlock.c |    4 ++--
- 2 files changed, 14 insertions(+), 3 deletions(-)
+ kernel/mutex.c    |    8 ++++++++
+ kernel/rwsem.c    |    8 ++++----
+ kernel/spinlock.c |   28 ++++++++++++++--------------
+ 3 files changed, 26 insertions(+), 18 deletions(-)
 
-Index: linux-2.6-git/kernel/lockdep.c
+Index: linux-2.6-git/kernel/mutex.c
 ===================================================================
---- linux-2.6-git.orig/kernel/lockdep.c
-+++ linux-2.6-git/kernel/lockdep.c
-@@ -95,6 +95,7 @@ static int lockdep_initialized;
- unsigned long nr_list_entries;
- static struct lock_list list_entries[MAX_LOCKDEP_ENTRIES];
+--- linux-2.6-git.orig/kernel/mutex.c
++++ linux-2.6-git/kernel/mutex.c
+@@ -139,6 +139,12 @@ __mutex_lock_common(struct mutex *lock, 
+ 	list_add_tail(&waiter.list, &lock->wait_list);
+ 	waiter.task = task;
  
-+#ifdef CONFIG_PROVE_LOCKING
- /*
-  * Allocate a lockdep entry. (assumes the graph_lock held, returns
-  * with NULL on failure)
-@@ -111,6 +112,7 @@ static struct lock_list *alloc_list_entr
++	old_val = atomic_xchg(&lock->count, -1);
++	if (old_val == 1)
++		goto done;
++
++	lock_contended(&lock->dep_map, _RET_IP_);
++
+ 	for (;;) {
+ 		/*
+ 		 * Lets try to take the lock again - this is needed even if
+@@ -174,6 +180,8 @@ __mutex_lock_common(struct mutex *lock, 
+ 		spin_lock_mutex(&lock->wait_lock, flags);
  	}
- 	return list_entries + nr_list_entries++;
- }
-+#endif
  
- /*
-  * All data structures here are protected by the global debug_lock.
-@@ -140,7 +142,9 @@ LIST_HEAD(all_lock_classes);
- static struct list_head classhash_table[CLASSHASH_SIZE];
++	lock_acquired(&lock->dep_map);
++done:
+ 	/* got the lock - rejoice! */
+ 	mutex_remove_waiter(lock, &waiter, task_thread_info(task));
+ 	debug_mutex_set_owner(lock, task_thread_info(task));
+Index: linux-2.6-git/kernel/rwsem.c
+===================================================================
+--- linux-2.6-git.orig/kernel/rwsem.c
++++ linux-2.6-git/kernel/rwsem.c
+@@ -20,7 +20,7 @@ void down_read(struct rw_semaphore *sem)
+ 	might_sleep();
+ 	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
  
- unsigned long nr_lock_chains;
-+#ifdef CONFIG_PROVE_LOCKING
- static struct lock_chain lock_chains[MAX_LOCKDEP_CHAINS];
-+#endif
- 
- /*
-  * We put the lock dependency chains into a hash-table as well, to cache
-@@ -486,6 +490,7 @@ static void print_lock_dependencies(stru
- 	}
+-	__down_read(sem);
++	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
  }
  
-+#ifdef CONFIG_PROVE_LOCKING
- /*
-  * Add a new dependency to the head of the list:
-  */
-@@ -545,6 +550,7 @@ print_circular_bug_entry(struct lock_lis
+ EXPORT_SYMBOL(down_read);
+@@ -47,7 +47,7 @@ void down_write(struct rw_semaphore *sem
+ 	might_sleep();
+ 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
  
- 	return 0;
- }
-+#endif
- 
- static void print_kernel_version(void)
- {
-@@ -553,6 +559,7 @@ static void print_kernel_version(void)
- 		init_utsname()->version);
+-	__down_write(sem);
++	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
  }
  
-+#ifdef CONFIG_PROVE_LOCKING
- /*
-  * When a circular dependency is detected, print the
-  * header first:
-@@ -643,6 +650,7 @@ check_noncircular(struct lock_class *sou
- 	}
- 	return 1;
- }
-+#endif
+ EXPORT_SYMBOL(down_write);
+@@ -111,7 +111,7 @@ void down_read_nested(struct rw_semaphor
+ 	might_sleep();
+ 	rwsem_acquire_read(&sem->dep_map, subclass, 0, _RET_IP_);
  
- static int very_verbose(struct lock_class *class)
- {
-@@ -827,6 +835,7 @@ check_usage(struct task_struct *curr, st
- 
- #endif
- 
-+#ifdef CONFIG_PROVE_LOCKING
- static int
- print_deadlock_bug(struct task_struct *curr, struct held_lock *prev,
- 		   struct held_lock *next)
-@@ -1091,7 +1100,7 @@ out_bug:
- 
- 	return 0;
- }
--
-+#endif
- 
- /*
-  * Is this the address of a static object:
-@@ -1311,6 +1320,7 @@ out_unlock_set:
- 	return class;
+-	__down_read(sem);
++	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
  }
  
-+#ifdef CONFIG_PROVE_LOCKING
- /*
-  * Look up a dependency chain. If the key is not present yet then
-  * add it and return 1 - in this case the new dependency chain is
-@@ -1385,6 +1395,7 @@ cache_hit:
+ EXPORT_SYMBOL(down_read_nested);
+@@ -130,7 +130,7 @@ void down_write_nested(struct rw_semapho
+ 	might_sleep();
+ 	rwsem_acquire(&sem->dep_map, subclass, 0, _RET_IP_);
  
- 	return 1;
+-	__down_write_nested(sem, subclass);
++	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
  }
-+#endif
  
- /*
-  * We are building curr_chain_key incrementally, so double-check
+ EXPORT_SYMBOL(down_write_nested);
 Index: linux-2.6-git/kernel/spinlock.c
 ===================================================================
 --- linux-2.6-git.orig/kernel/spinlock.c
 +++ linux-2.6-git/kernel/spinlock.c
-@@ -88,7 +88,7 @@ unsigned long __lockfunc _spin_lock_irqs
- 	 * _raw_spin_lock_flags() code, because lockdep assumes
+@@ -72,7 +72,7 @@ void __lockfunc _read_lock(rwlock_t *loc
+ {
+ 	preempt_disable();
+ 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_read_lock(lock);
++	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
+ }
+ EXPORT_SYMBOL(_read_lock);
+ 
+@@ -89,7 +89,7 @@ unsigned long __lockfunc _spin_lock_irqs
  	 * that interrupts are not re-enabled during lock-acquire:
  	 */
--#ifdef CONFIG_PROVE_LOCKING
-+#ifdef CONFIG_LOCKDEP
- 	_raw_spin_lock(lock);
+ #ifdef CONFIG_LOCKDEP
+-	_raw_spin_lock(lock);
++	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
  #else
  	_raw_spin_lock_flags(lock, &flags);
-@@ -305,7 +305,7 @@ unsigned long __lockfunc _spin_lock_irqs
- 	 * _raw_spin_lock_flags() code, because lockdep assumes
+ #endif
+@@ -102,7 +102,7 @@ void __lockfunc _spin_lock_irq(spinlock_
+ 	local_irq_disable();
+ 	preempt_disable();
+ 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_spin_lock(lock);
++	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
+ }
+ EXPORT_SYMBOL(_spin_lock_irq);
+ 
+@@ -111,7 +111,7 @@ void __lockfunc _spin_lock_bh(spinlock_t
+ 	local_bh_disable();
+ 	preempt_disable();
+ 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_spin_lock(lock);
++	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
+ }
+ EXPORT_SYMBOL(_spin_lock_bh);
+ 
+@@ -122,7 +122,7 @@ unsigned long __lockfunc _read_lock_irqs
+ 	local_irq_save(flags);
+ 	preempt_disable();
+ 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_read_lock(lock);
++	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
+ 	return flags;
+ }
+ EXPORT_SYMBOL(_read_lock_irqsave);
+@@ -132,7 +132,7 @@ void __lockfunc _read_lock_irq(rwlock_t 
+ 	local_irq_disable();
+ 	preempt_disable();
+ 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_read_lock(lock);
++	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
+ }
+ EXPORT_SYMBOL(_read_lock_irq);
+ 
+@@ -141,7 +141,7 @@ void __lockfunc _read_lock_bh(rwlock_t *
+ 	local_bh_disable();
+ 	preempt_disable();
+ 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_read_lock(lock);
++	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
+ }
+ EXPORT_SYMBOL(_read_lock_bh);
+ 
+@@ -152,7 +152,7 @@ unsigned long __lockfunc _write_lock_irq
+ 	local_irq_save(flags);
+ 	preempt_disable();
+ 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_write_lock(lock);
++	LOCK_CONTENDED(lock, _raw_write_trylock, _raw_write_lock);
+ 	return flags;
+ }
+ EXPORT_SYMBOL(_write_lock_irqsave);
+@@ -162,7 +162,7 @@ void __lockfunc _write_lock_irq(rwlock_t
+ 	local_irq_disable();
+ 	preempt_disable();
+ 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_write_lock(lock);
++	LOCK_CONTENDED(lock, _raw_write_trylock, _raw_write_lock);
+ }
+ EXPORT_SYMBOL(_write_lock_irq);
+ 
+@@ -171,7 +171,7 @@ void __lockfunc _write_lock_bh(rwlock_t 
+ 	local_bh_disable();
+ 	preempt_disable();
+ 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_write_lock(lock);
++	LOCK_CONTENDED(lock, _raw_write_trylock, _raw_write_lock);
+ }
+ EXPORT_SYMBOL(_write_lock_bh);
+ 
+@@ -179,7 +179,7 @@ void __lockfunc _spin_lock(spinlock_t *l
+ {
+ 	preempt_disable();
+ 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_spin_lock(lock);
++	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
+ }
+ 
+ EXPORT_SYMBOL(_spin_lock);
+@@ -188,7 +188,7 @@ void __lockfunc _write_lock(rwlock_t *lo
+ {
+ 	preempt_disable();
+ 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+-	_raw_write_lock(lock);
++	LOCK_CONTENDED(lock, _raw_write_trylock, _raw_write_lock);
+ }
+ 
+ EXPORT_SYMBOL(_write_lock);
+@@ -289,7 +289,7 @@ void __lockfunc _spin_lock_nested(spinlo
+ {
+ 	preempt_disable();
+ 	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
+-	_raw_spin_lock(lock);
++	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
+ }
+ 
+ EXPORT_SYMBOL(_spin_lock_nested);
+@@ -306,7 +306,7 @@ unsigned long __lockfunc _spin_lock_irqs
  	 * that interrupts are not re-enabled during lock-acquire:
  	 */
--#ifdef CONFIG_PROVE_SPIN_LOCKING
-+#ifdef CONFIG_LOCKDEP
- 	_raw_spin_lock(lock);
+ #ifdef CONFIG_LOCKDEP
+-	_raw_spin_lock(lock);
++	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
  #else
  	_raw_spin_lock_flags(lock, &flags);
+ #endif
 
 --
 
