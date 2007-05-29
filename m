@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbXE3Gik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752529AbXE3Giw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbXE3Gik (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 02:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXE3Gic
+	id S1752529AbXE3Giw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 02:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbXE3Gid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 02:38:32 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:48686 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346AbXE3Gib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 02:38:33 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:10071 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbXE3Gib (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 May 2007 02:38:31 -0400
-Date: Wed, 30 May 2007 08:39:31 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tej Parkash <tejparkash.d@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: warning while building module.
-Message-ID: <20070530063931.GA12203@uranus.ravnborg.org>
-References: <2bd9ebfa0705282145t34ed211bs48c7b31fcd9420a5@mail.gmail.com> <20070529185725.GC5846@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070529185725.GC5846@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=jhejqxK9SKMp2YtetcN1iHBSCJlEDKZlpoJlVQwAe1EUdCYi24VI3M48RlL/OL4HES1Q8fny12aEIYtLNRzk2GDQX2Rd2oydzvL4mc2uOy7jXqLeXl2j/nRn0ahI0bX42KUwIbfCwaTXIbXKQB8fCFZK+7t1AB1kG8mUrWt2bW4=
+Message-ID: <465C809C.60507@gmail.com>
+Date: Wed, 30 May 2007 04:35:56 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: davids@webmaster.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: epoll,threading
+References: <MDEHLPKNGKAHNMBLJOLKGEJIEBAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEJIEBAC.davids@webmaster.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 08:57:25PM +0200, Sam Ravnborg wrote:
-> On Tue, May 29, 2007 at 10:15:58AM +0530, Tej Parkash wrote:
-> > hi all
-> > 
-> > while building module i was getting following warning and it terminate
-> > module building stage
-> The below are only warnings and your build should succeed.
+David Schwartz wrote:
+>> I want to know in detail about , what the events (epoll or /dev/poll or
+>> select ) achieve in contrast to  thread per client.
+>>
+>> i can have a thread per client and use send and recv system call directly
+>> right? Why do i go for these event mechanisms?
+>>
+>> Please help me to understand this.
 > 
-> It is obviously i386 - is it a clean allmodconfig or any changes?
-> Is it latest -linus or some older version of the codebase?
-Did an allmodconfig build of i386 - I see (almost) all warnings here.
-So I will take a look based on this.
+> Aside from the obvious, consider a server that needs to do a little bit of
+> work on each of 1,000 clients on a single CPU system. With a
+> thread-per-client approach, 1,000 context switches will be needed. With an
+> epoll thread pool approach, none are needed and five or six are typical.
+> 
+> Both get you the major advantages of threading. You can take full advantage
+> of multiple CPUs. You can write code that blocks occasionally without
+> bringing the whole server down. A page fault doesn't stall your whole
+> server.
 
-The MODPOST stage took a while but it proceeded with no hick-ups.
-MDOPSOT deals with ~2000 modules in my case and that consumes a bit
-of memory. Maybe you are hitting the limit with respect to available RAM / SWAP?
+It all depends on the workload but thread switching overhead can be
+negligible - after all all it does is entering kernel, schedule, swap
+processor context and return.  Maybe using separate stack has minor
+impact on cache hit ratio.  You need benchmark numbers to claim one way
+or the other.
 
-	Sam
+In my experience with web caches, epoll or similar for idle clients and
+thread per active client scaled and performed pretty well - it needed
+more memory but the performance wasn't worse than asynchronous design
+and doing complex server in async model is a lot of pain.
+
+-- 
+tejun
+
