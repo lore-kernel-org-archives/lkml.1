@@ -1,81 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764191AbXE2F3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbXE2Fsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764191AbXE2F3i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 01:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759635AbXE2F3a
+	id S1756799AbXE2Fsj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 01:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbXE2Fsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 01:29:30 -0400
-Received: from smtp3-g19.free.fr ([212.27.42.29]:33952 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753629AbXE2F33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 01:29:29 -0400
-X-Greylist: delayed 28766 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 01:29:29 EDT
-Message-ID: <465BBAFB.30906@free.fr>
-Date: Tue, 29 May 2007 07:32:43 +0200
-From: Thierry Merle <thierry.merle@free.fr>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 29 May 2007 01:48:31 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:32685 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbXE2Fsb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 01:48:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oftvNBu5wc/OY/MjHsxm5x7LkwjgDS0GDJXElq0IsKHYsHPyZO5QVK6k0q1FHe3E8J3YLnjn5dHukNkKQIIRMqc9BVXMruiBrh4eIxxXYC8z+vHQia2OhJhhSmgE/k0668JleXEevgKRXI5KMAAR6tG22oFvABnoChrjWEZnFXI=
+Message-ID: <4cefeab80705282248pd595302v519b3ae6c6f41daa@mail.gmail.com>
+Date: Tue, 29 May 2007 11:18:29 +0530
+From: "Nitin Gupta" <nitingupta910@gmail.com>
+To: "Bret Towe" <magnade@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 6
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
+       linuxcompressed-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Richard Purdie" <richard@openedhand.com>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>
+In-Reply-To: <dda83e780705281557raeb2769q73ec59249674e704@mail.gmail.com>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: linux-kernel@vger.kernel.org, video4linux-list@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-References: <2172422218943432279@wsc.cz>	<1180364420.21547.160.camel@localhost>	<d9def9db0705280814h8fbd0b7qaf8b324ff20e83d6@mail.gmail.com>	<1180378677.21547.189.camel@localhost>	<d9def9db0705281217t514462e1wef412de7a9c81826@mail.gmail.com>	<1180383071.21547.230.camel@localhost> <465B49EB.4080204@free.fr>
-In-Reply-To: <465B49EB.4080204@free.fr>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
+	 <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com>
+	 <dda83e780705281557raeb2769q73ec59249674e704@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 5/29/07, Bret Towe <magnade@gmail.com> wrote:
+> On 5/28/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
+> > Hi,
+> >
+> > Attached is tester code used for testing.
+> > (developed by Daniel Hazelton -- modified slightly to now use 'take 6'
+> > version for 'TinyLZO')
+> >
+> > Cheers,
+> > Nitin
+> >
+> > On 5/28/07, Nitin Gupta <nitingupta910@gmail.com> wrote:
+> > > (Using tester program from Daniel)
+> > >
+> > > Following compares this kernel port ('take 6') vs original miniLZO code:
+> > >
+> > > 'TinyLZO' refers to this kernel port.
+> > >
+> > > 10000 run averages:
+> > > 'Tiny LZO':
+> > >        Combined: 61.2223 usec
+> > >        Compression: 41.8412 usec
+> > >        Decompression: 19.3811 usec
+> > > 'miniLZO':
+> > >        Combined: 66.0444 usec
+> > >        Compression: 46.6323 usec
+> > >        Decompression: 19.4121 usec
+> > >
+> > > Result:
+> > > Overall: TinyLZO is 7.3% faster
+> > > Compressor: TinyLZO is 10.2% faster
+> > > Decompressor: TinyLZO is 0.15% faster
+> > >
+> >
+> >
+>
+> 10000 run averages:
+> 'Tiny LZO':
+>         Combined: 112.6642 usec
+>         Compression: 56.3321 usec
+>         Decompression: 56.3321 usec
+> 'miniLZO':
+>         Combined: 77.6642 usec
+>         Compression: 56.3416 usec
+>         Decompression: 21.3226 usec
+>
+> now the interesting bit I thought was the following
+> root@mini:/usr/src/lzo1x-test-4# ./fulltest
+> [test_lzo.c::compress (93)] run took 42 microseconds
+> [test_lzo.c::decompress (127)] run took 20 microseconds
+> root@mini:/usr/src/lzo1x-test-4# ./tinytest
+> [test.c::compress (91)] run took 44 microseconds
+> [test.c::decompress (117)] BUG: lzo1x_decompress has failed ( t == -6 )
+> [test.c::main (149)] BUG: Decompression routine failure
+>
 
 
-Thierry Merle a écrit :
-> Mauro Carvalho Chehab a écrit :
->>>> As Luca pointed, if we add conversion for one driver, we should add 
->>>> for
->>>> the rest.
->>>>
->>>> Instead, it would be better if Jiri sends the decoding and the 
->>>> rescaling
->>>> stuff as a patch to v4l2-apps/lib, starting the API decoding library.
->>>> Once we have a library, we can ask the userspace developers to use it
->>>> for the formats not recognized by their userspace apps.
->>>>
->>>>       
->>> I think it would be better to evaluate existing solutions (eg. libpw).
->>>     
->>
->> Agreed. Volunteers?
->>
->>   
-> Hi Mauro and Markus,
-> Just to summ up what I understood we need:
->
-> What do we need in userspace, only for v4l (dvb is not concerned):
-> - colorspace translations
-> - filters that be done in hardware if the selected hardware can, 
-> otherwise software plugin
-> - decompression algorithm like stk11xx or usbvision (the decompression 
-> algorithm is in kernelspace since it is of linear complexity but shall 
-> be moved to userspace)
->
-> Using pwlib will not mean that application developers will use pwlib 
-> to decode v4l driver outputs.
-> C bindings are much more popular than C++ bindings and do not prevent 
-> object oriented design.
-> Application developers implement their own codecs.
-> As an example, every application do deinterlacing internally or not...
-> Application developers will probably not use pwlib v4l extensions 
-> because they will prefer to write adapted codecs for their framework.
->
-> Much more important for me is to see the actual specification of the 
-> needed v4l extensions points, with advice/participation of 
-> application/codec developers.
-As an example, we could empacket frames with a header containing 
-audio/video format as it is done for MPEG streams.
-Is it possible without breaking the current ABI?
-Do application developers would cope with that?
->
-> Thierry
->
+Did you use x86 for above test? Maybe some problem with testing
+script? What data did you use for this test?
 
+
+- Nitin
