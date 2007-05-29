@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbXE2OAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbXE2OA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752408AbXE2OAm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbXE2N7q
+	id S1758018AbXE2OA5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbXE2N7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:59:46 -0400
+	Tue, 29 May 2007 09:59:47 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbXE2N7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:59:43 -0400
+	id S1750792AbXE2N7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:59:44 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:22 -0700
+Date: Tue, 29 May 2007 06:48:19 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmMt9019710@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmJNe019671@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 08/22] 2.6.22-rc3 perfmon2 : session allocation
+Subject: [PATCH 05/22] 2.6.22-rc3 perfmon2 : sampling format support
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This files contains the sampling format support.
 
-This file contains some resource accounting functions for:
-	- sampling buffer memory managment
-	- context management
+Perfmon2 supports an in-kernel sampling buffer for performance
+reasons. Yet to ensure maximum flexibility to applications,
+the formats is which infmration is recorded into the kernel
+buffer is not specified by the interface. Instead it is
+delegated to a kernel plug-in modules called sampling formats.
 
-pfm_reserve_buf_space(size_t size), pfm_release_buf_space(size_t size):
-	- keep track of memory used for sampling buffers
-	- there is a per process limit set using the RLIMIT_MEMLOCK attribute
-	- there is a global limit controlled by perfmon and configurable via /sys/kernel/perfmon/buf_size_max
+Each formats controls:
+	- what is recorded in the the sampling buffer
+	- how the information is recorded
+	- when to notify the application to extract the information
+	- how the buffer is exported to user level
+	- hoe the buffer is allocated
+
+Each format is identified via a 128-bit UUID which can be requested
+when the context is created with pfm_create_context().
+
+The interface comes with a simple default sampling format. It records
+information sequentially in the buffer. Each entry, called sample,
+is composed of a fixed size header and a variable size body where
+the values of PMDS can be recorded based upon the user's request.
+
+Sampling formats can be dynamically registered with perfmon. The management
+of sampling formats is implemented in perfmon_fmt.c:
+
+pfm_register_smpl_fmt(struct pfm_smpl_fmt *fmt):
+	- register a new sampling format
+		
+pfm_unregister_smpl_fmt(pfm_uuid_t uuid):
+	- unregister a sampling format
+
+It is possible to list the available formats by looking at /sys/kernel/perfmon/formats.
 
 
-pfm_reserve_session(int is_system, u32 cpu), pfm_release_session(int is_system, u32 cpu):
-	- keep track of per-thread and system-wide sessions
-	- handle mutual exclusion between per-thread and system-wide context
-	- ensure no two system-wide context can be bound to the same CPU
-	- register/unregister idle notifier for system-wide context
 
 
 
-
---- linux-2.6.22.base/perfmon/perfmon_res.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/perfmon/perfmon_res.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,344 @@
+--- linux-2.6.22.base/perfmon/perfmon_fmt.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/perfmon/perfmon_fmt.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,218 @@
 +/*
-+ * perfmon_res.c:  perfmon2 resource allocations
++ * perfmon_fmt.c: perfmon2 sampling buffer format management
 + *
 + * This file implements the perfmon2 interface which
 + * provides access to the hardware performance counters
@@ -80,311 +98,276 @@ pfm_reserve_session(int is_system, u32 cpu), pfm_release_session(int is_system, 
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
-+ */
-+#include <linux/spinlock.h>
-+#include <linux/perfmon.h>
++  */
 +#include <linux/module.h>
++#include <linux/perfmon.h>
++
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_smpl_fmt_lock);
++static LIST_HEAD(pfm_smpl_fmt_list);
++
++static inline int fmt_is_mod(struct pfm_smpl_fmt *f)
++{
++	return !(f->fmt_flags & PFM_FMTFL_IS_BUILTIN);
++}
++
++static struct pfm_smpl_fmt *pfm_find_fmt(char *name)
++{
++	struct pfm_smpl_fmt * entry;
++
++	list_for_each_entry(entry, &pfm_smpl_fmt_list, fmt_list) {
++		if (!strcmp(entry->fmt_name, name))
++			return entry;
++	}
++	return NULL;
++}
++/*
++ * find a buffer format based on its name
++ */
++struct pfm_smpl_fmt *pfm_smpl_fmt_get(char *name)
++{
++	struct pfm_smpl_fmt * fmt;
++
++	spin_lock(&pfm_smpl_fmt_lock);
++
++	fmt = pfm_find_fmt(name);
++
++	/*
++	 * increase module refcount
++	 */
++	if (fmt && fmt_is_mod(fmt) && !try_module_get(fmt->owner))
++		fmt = NULL;
++
++	spin_unlock(&pfm_smpl_fmt_lock);
++
++	return fmt;
++}
++
++void pfm_smpl_fmt_put(struct pfm_smpl_fmt *fmt)
++{
++	if (fmt == NULL || !fmt_is_mod(fmt))
++		return;
++	BUG_ON(fmt->owner == NULL);
++
++	spin_lock(&pfm_smpl_fmt_lock);
++	module_put(fmt->owner);
++	spin_unlock(&pfm_smpl_fmt_lock);
++}
++
++int pfm_fmt_register(struct pfm_smpl_fmt *fmt)
++{
++	int ret = 0;
++
++	if (atomic_read(&perfmon_disabled)) {
++		PFM_INFO("perfmon disabled, cannot add sampling format");
++		return -ENOSYS;
++	}
++
++	/* some sanity checks */
++	if (fmt == NULL) {
++		PFM_INFO("perfmon: NULL format for register");
++		return -EINVAL;
++	}
++
++	if (fmt->fmt_name == NULL) {
++		PFM_INFO("perfmon: format has no name");
++		return -EINVAL;
++	}
++
++	if (fmt->fmt_qdepth > PFM_MSGS_COUNT) {
++		PFM_INFO("perfmon: format %s requires %u msg queue depth (max %d)",
++		       fmt->fmt_name,
++		       fmt->fmt_qdepth,
++		       PFM_MSGS_COUNT);
++		return -EINVAL;
++	}
++
++	/*
++	 * fmt is missing the initialization of .owner = THIS_MODULE
++	 * this is only valid when format is compiled as a module
++	 */
++	if (fmt->owner == NULL && fmt_is_mod(fmt)) {
++		PFM_INFO("format %s has no module owner", fmt->fmt_name);
++		return -EINVAL;
++	}
++	/*
++	 * we need at least a handler
++	 */
++	if (fmt->fmt_handler == NULL) {
++		PFM_INFO("format %s has no handler", fmt->fmt_name);
++		return -EINVAL;
++	}
++
++	/*
++	 * format argument size cannot be bigger than PAGE_SIZE
++	 */
++	if (fmt->fmt_arg_size > PAGE_SIZE) {
++		PFM_INFO("format %s arguments too big", fmt->fmt_name);
++		return -EINVAL;
++	}
++
++	spin_lock(&pfm_smpl_fmt_lock);
++
++	/*
++	 * because of sysfs, we cannot have two formats with the same name
++	 */
++	if (pfm_find_fmt(fmt->fmt_name)) {
++		PFM_INFO("format %s already registered", fmt->fmt_name);
++		ret = -EBUSY;
++		goto out;
++	}
++
++	ret = pfm_sysfs_add_fmt(fmt);
++	if (ret) {
++		PFM_INFO("sysfs cannot add format entry for %s", fmt->fmt_name);
++		goto out;
++	}
++
++	list_add(&fmt->fmt_list, &pfm_smpl_fmt_list);
++
++	PFM_INFO("added sampling format %s", fmt->fmt_name);
++out:
++	spin_unlock(&pfm_smpl_fmt_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL(pfm_fmt_register);
++
++int pfm_fmt_unregister(struct pfm_smpl_fmt *fmt)
++{
++	struct pfm_smpl_fmt *fmt2;
++	int ret = 0;
++
++	if (!fmt || !fmt->fmt_name) {
++		PFM_DBG("invalid fmt");
++		return -EINVAL;
++	}
++
++	spin_lock(&pfm_smpl_fmt_lock);
++
++	fmt2 = pfm_find_fmt(fmt->fmt_name);
++	if (!fmt) {
++		PFM_INFO("unregister failed, format not registered");
++		ret = -EINVAL;
++		goto out;
++	}
++	list_del_init(&fmt->fmt_list);
++
++	pfm_sysfs_remove_fmt(fmt);
++
++	PFM_INFO("removed sampling format: %s", fmt->fmt_name);
++
++out:
++	spin_unlock(&pfm_smpl_fmt_lock);
++	return ret;
++
++}
++EXPORT_SYMBOL(pfm_fmt_unregister);
 +
 +/*
-+ * global information about all sessions
-+ * mostly used to synchronize between system wide and per-process
++ * we defer adding the builtin formats to /sys/kernel/perfmon/formats
++ * until after the pfm sysfs subsystem is initialized. This function
++ * is called from pfm_sysfs_init()
 + */
-+struct pfm_sessions {
-+	u32		pfs_task_sessions;/* #num loaded per-thread sessions */
-+	size_t		pfs_smpl_buffer_mem_cur; /* current smpl buf mem usage */
-+	cpumask_t	pfs_sys_cpumask;  /* bitmask of used cpus (system-wide) */
++void pfm_sysfs_builtin_fmt_add(void)
++{
++	struct pfm_smpl_fmt * entry;
++
++	/*
++	 * locking not needed, kernel not fully booted
++	 * when called
++	 */
++	list_for_each_entry(entry, &pfm_smpl_fmt_list, fmt_list) {
++		pfm_sysfs_add_fmt(entry);
++	}
++}
+--- linux-2.6.22.base/include/linux/perfmon_fmt.h	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/include/linux/perfmon_fmt.h	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,88 @@
++/*
++ * Copyright (c) 2001-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *
++ * Interface for custom sampling buffer format modules
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++  */
++#ifndef __PERFMON_FMT_H__
++#define __PERFMON_FMT_H__ 1
++
++#include <linux/kobject.h>
++
++struct pfm_ovfl_arg {
++	u16 ovfl_pmd;	/* index of overflowed PMD  */
++	u16 active_set;	/* set active at the time of the overflow */
++	u32 ovfl_ctrl;	/* control flags */
++	u64 pmd_last_reset;	/* last reset value of overflowed PMD */
++	u64 smpl_pmds_values[PFM_MAX_PMDS]; 	/* values of other PMDs */
++	u64 pmd_eventid;	/* eventid associated with PMD */
++	u16 num_smpl_pmds;	/* number of PMDS in smpl_pmd_values */
 +};
 +
-+static struct pfm_sessions pfm_sessions;
-+
-+static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_sessions_lock);
-+
 +/*
-+ * sampling buffer allocated by perfmon must be
-+ * checked against max usage thresholds for security
-+ * reasons.
-+ *
-+ * The first level check is against the system wide limit
-+ * as indicated by the system administrator in /proc/sys/kernel/perfmon
-+ *
-+ * The second level check is on a per-process basis using
-+ * RLIMIT_MEMLOCK limit.
-+ *
-+ * Operating on the current task only.
++ * ovfl_ctrl bitmask of flags
 + */
-+int pfm_reserve_buf_space(size_t size)
-+{
-+	struct mm_struct *mm;
-+	unsigned long locked;
-+	unsigned long buf_mem, buf_mem_max;
-+	unsigned long flags;
++#define PFM_OVFL_CTRL_NOTIFY	0x1	/* notify user */
++#define PFM_OVFL_CTRL_RESET	0x2	/* reset overflowed pmds */
++#define PFM_OVFL_CTRL_MASK	0x4	/* mask monitoring */
 +
-+	spin_lock_irqsave(&pfm_sessions_lock, flags);
 +
-+	/*
-+	 * check against global buffer limit
-+	 */
-+	buf_mem_max = pfm_controls.smpl_buffer_mem_max;
-+	buf_mem = pfm_sessions.pfs_smpl_buffer_mem_cur + size;
++typedef int (*fmt_validate_t )(u32 flags, u16 npmds, void *arg);
++typedef	int (*fmt_getsize_t)(u32 flags, void *arg, size_t *size);
++typedef int (*fmt_init_t)(struct pfm_context *ctx, void *buf, u32 flags, u16 nmpds, void *arg);
++typedef int (*fmt_restart_t)(int is_active, u32 *ovfl_ctrl, void *buf);
++typedef int (*fmt_exit_t)(void *buf);
++typedef int (*fmt_handler_t)(void *buf, struct pfm_ovfl_arg *arg,
++			     unsigned long ip, u64 stamp, void *data);
 +
-+	if (buf_mem <= buf_mem_max) {
-+		pfm_sessions.pfs_smpl_buffer_mem_cur = buf_mem;
++struct pfm_smpl_fmt {
++	char		*fmt_name;	/* name of the format (required) */
++	size_t		fmt_arg_size;	/* size of fmt args for ctx create */
++	u32		fmt_flags;	/* format specific flags */
++	u32		fmt_version;	/* format version number */
 +
-+		PFM_DBG("buf_mem_max=%lu current_buf_mem=%lu",
-+			buf_mem_max,
-+			buf_mem);
-+	}
-+	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
++	fmt_validate_t	fmt_validate;	/* validate context flags */
++	fmt_getsize_t	fmt_getsize;	/* get size for sampling buffer */
++	fmt_init_t	fmt_init;	/* initialize buffer area */
++	fmt_handler_t	fmt_handler;	/* overflow handler (required) */
++	fmt_restart_t	fmt_restart;	/* restart after notification  */
++	fmt_exit_t	fmt_exit;	/* context termination */
 +
-+	if (buf_mem > buf_mem_max) {
-+		PFM_DBG("smpl buffer memory threshold reached");
-+		return -ENOMEM;
-+	}
++	struct list_head fmt_list;	/* internal use only */
 +
-+	/*
-+	 * check against RLIMIT_MEMLOCK
-+	 */
-+	mm = get_task_mm(current);
++	struct kobject	kobj;		/* sysfs internal use only */
++	struct module	*owner;		/* pointer to module owner */
++	u32		fmt_qdepth;	/* Max notify queue depth (required) */
++};
++#define to_smpl_fmt(n) container_of(n, struct pfm_smpl_fmt, kobj)
 +
-+	down_write(&mm->mmap_sem);
-+
-+	locked  = mm->locked_vm << PAGE_SHIFT;
-+	locked += size;
-+
-+	if (locked > current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur) {
-+
-+		PFM_DBG("RLIMIT_MEMLOCK reached ask_locked=%lu rlim_cur=%lu",
-+			locked,
-+			current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur);
-+
-+		up_write(&mm->mmap_sem);
-+		mmput(mm);
-+		goto unres;
-+	}
-+
-+	mm->locked_vm = locked >> PAGE_SHIFT;
-+
-+	up_write(&mm->mmap_sem);
-+
-+	mmput(mm);
-+
-+	return 0;
-+
-+unres:
-+	/*
-+	 * remove global buffer memory allocation
-+	 */
-+	spin_lock_irqsave(&pfm_sessions_lock, flags);
-+
-+	pfm_sessions.pfs_smpl_buffer_mem_cur -= size;
-+
-+	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
-+
-+	return -ENOMEM;
-+}
++#define PFM_FMTFL_IS_BUILTIN	0x1	/* fmt is compiled in */
 +/*
-+ *There exist multiple paths leading to this function. We need to
-+ * be very careful withlokcing on the mmap_sem as it may already be
-+ * held by the time we come here.
-+ * The following paths exist:
-+ *
-+ * exit path:
-+ * sys_exit_group
-+ *    do_group_exit
-+ *     do_exit
-+ *      exit_mm
-+ *       mmput
-+ *        exit_mmap
-+ *         remove_vma
-+ *          fput
-+ *           __fput
-+ *            pfm_close
-+ *             __pfm_close
-+ *              pfm_context_free
-+ * 	         pfm_release_buf_space
-+ * munmap path:
-+ * sys_munmap
-+ *  do_munmap
-+ *   remove_vma
-+ *    fput
-+ *     __fput
-+ *      pfm_close
-+ *       __pfm_close
-+ *        pfm_context_free
-+ *         pfm_release_buf_space
-+ *
-+ * close path:
-+ * sys_close
-+ *  filp_close
-+ *   fput
-+ *    __fput
-+ *     pfm_close
-+ *      __pfm_close
-+ *       pfm_context_free
-+ *        pfm_release_buf_space
-+ *
-+ * The issue is that on the munmap() path, the mmap_sem is already held
-+ * in write-mode by the time we come here. To avoid the deadlock, we need
-+ * to know where we are coming from and skip down_write(). If is fairly
-+ * difficult to know this because of the lack of good hooks and
-+ * the fact that, there may not have been any mmap() of the sampling buffer
-+ * (i.e. create_context() followed by close() or exit()).
-+ *
-+ * We use a set flag ctx->flags.mmap_nlock which is toggle in the vm_ops
-+ * callback in remove_vma() which is called systematically for the call, so
-+ * on all but the pure close() path. The exit path does not already hold
-+ * the lock but this is exit so there is no task->mm by the time we come here.
-+ *
-+ * The mmap_nlock is set only when unmapping and this is the LAST reference
-+ * to the file (i.e., close() followed by munmap()).
++ * we need to know whether the format is builtin or compiled
++ * as a module
 + */
-+void pfm_release_buf_space(struct pfm_context *ctx, size_t size)
-+{
-+	unsigned long flags;
-+	struct mm_struct *mm;
++#ifdef MODULE
++#define PFM_FMT_BUILTIN_FLAG	0	/* not built as a module */
++#else
++#define PFM_FMT_BUILTIN_FLAG	PFM_PMUFL_IS_BUILTIN /* built as a module */
++#endif
 +
-+	mm = get_task_mm(current);
-+	if (mm) {
-+		if (ctx->flags.mmap_nlock == 0) {
-+			PFM_DBG("doing down_write");
-+			down_write(&mm->mmap_sem);
-+		}
++int pfm_fmt_register(struct pfm_smpl_fmt *fmt);
++int pfm_fmt_unregister(struct pfm_smpl_fmt *fmt);
++void pfm_sysfs_builtin_fmt_add(void);
 +
-+		mm->locked_vm -= size >> PAGE_SHIFT;
-+
-+		PFM_DBG("locked_vm=%lu size=%zu", mm->locked_vm, size);
-+
-+		if (ctx->flags.mmap_nlock == 0)
-+			up_write(&mm->mmap_sem);
-+
-+		mmput(mm);
-+	}
-+
-+	spin_lock_irqsave(&pfm_sessions_lock, flags);
-+
-+	pfm_sessions.pfs_smpl_buffer_mem_cur -= size;
-+
-+	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
-+}
-+
-+int pfm_reserve_session(int is_system, u32 cpu)
-+{
-+	unsigned long flags;
-+	u32 nsys_cpus;
-+
-+	/*
-+	 * validy checks on cpu_mask have been done upstream
-+	 */
-+	spin_lock_irqsave(&pfm_sessions_lock, flags);
-+
-+	nsys_cpus = cpus_weight(pfm_sessions.pfs_sys_cpumask);
-+
-+	PFM_DBG("in  sys=%u task=%u is_sys=%d cpu=%u",
-+		nsys_cpus,
-+		pfm_sessions.pfs_task_sessions,
-+		is_system,
-+		cpu);
-+
-+	if (is_system) {
-+		/*
-+		 * cannot mix system wide and per-task sessions
-+		 */
-+		if (pfm_sessions.pfs_task_sessions > 0) {
-+			PFM_DBG("%u conflicting task_sessions",
-+			  	pfm_sessions.pfs_task_sessions);
-+			goto abort;
-+		}
-+
-+		if (cpu_isset(cpu, pfm_sessions.pfs_sys_cpumask)) {
-+			PFM_DBG("conflicting session on CPU%u", cpu);
-+			goto abort;
-+		}
-+
-+		PFM_DBG("reserved session on CPU%u", cpu);
-+
-+		cpu_set(cpu, pfm_sessions.pfs_sys_cpumask);
-+		nsys_cpus++;
-+	} else {
-+		if (nsys_cpus)
-+			goto abort;
-+		pfm_sessions.pfs_task_sessions++;
-+	}
-+
-+	PFM_DBG("out sys=%u task=%u is_sys=%d cpu=%u",
-+		nsys_cpus,
-+		pfm_sessions.pfs_task_sessions,
-+		is_system,
-+		cpu);
-+
-+	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
-+
-+	return 0;
-+
-+abort:
-+	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
-+
-+	return -EBUSY;
-+}
-+
-+/*
-+ * called from __pfm_unload_context()
-+ */
-+int pfm_release_session(int is_system, u32 cpu)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&pfm_sessions_lock, flags);
-+
-+	PFM_DBG("in sys_sessions=%u task_sessions=%u syswide=%d cpu=%u",
-+		cpus_weight(pfm_sessions.pfs_sys_cpumask),
-+		pfm_sessions.pfs_task_sessions,
-+		is_system, cpu);
-+
-+	if (is_system)
-+		cpu_clear(cpu, pfm_sessions.pfs_sys_cpumask);
-+	else
-+		pfm_sessions.pfs_task_sessions--;
-+
-+	PFM_DBG("out sys_sessions=%u task_sessions=%u syswide=%d cpu=%u",
-+		cpus_weight(pfm_sessions.pfs_sys_cpumask),
-+		pfm_sessions.pfs_task_sessions,
-+		is_system, cpu);
-+
-+	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
-+	return 0;
-+}
-+
-+/*
-+ * called from perfmon_sysfs.c:
-+ *  what=0 : pfs_task_sessions
-+ *  what=1 : cpus_weight(pfs_sys_cpumask)
-+ *  what=2 : smpl_buffer_mem_cur
-+ *  what=3 : pmu model name
-+ *
-+ * return number of bytes written into buf (up to sz)
-+ */
-+ssize_t pfm_sysfs_session_show(char *buf, size_t sz, int what)
-+{
-+	unsigned long flags;
-+
-+	if (pfm_pmu_conf) {
-+		spin_lock_irqsave(&pfm_sessions_lock, flags);
-+		switch (what) {
-+		case 0: snprintf(buf, sz, "%u\n", pfm_sessions.pfs_task_sessions);
-+			break;
-+		case 1: snprintf(buf, sz, "%d\n", cpus_weight(pfm_sessions.pfs_sys_cpumask));
-+			break;
-+		case 2: snprintf(buf, sz, "%zu\n", pfm_sessions.pfs_smpl_buffer_mem_cur);
-+			break;
-+		case 3:
-+			snprintf(buf, sz, "%s\n", pfm_pmu_conf->pmu_name);
-+		}
-+		spin_unlock_irqrestore(&pfm_sessions_lock, flags);
-+	} else {
-+		if (what == 3)
-+			strcpy(buf, "unknown\n");
-+		else
-+			strcpy(buf, "0\n");
-+	}
-+	return strlen(buf);
-+}
++#endif /* __PERFMON_FMT_H__ */
