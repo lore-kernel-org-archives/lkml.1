@@ -1,65 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760322AbXE2STS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbXE2SVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760322AbXE2STS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbXE2STK
+	id S1761505AbXE2SVv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbXE2SVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:19:10 -0400
-Received: from rtr.ca ([64.26.128.89]:1560 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbXE2STJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:19:09 -0400
-Message-ID: <465C6E9B.2040605@rtr.ca>
-Date: Tue, 29 May 2007 14:19:07 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 29 May 2007 14:21:44 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:38266 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753141AbXE2SVn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:21:43 -0400
+Date: Tue, 29 May 2007 19:21:40 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Christoph Lameter <clameter@sgi.com>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 3/7] Allow CONFIG_MIGRATION to be set without CONFIG_NUMA
+In-Reply-To: <Pine.LNX.4.64.0705291057170.24126@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0705291910430.5669@skynet.skynet.ie>
+References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
+ <20070529173710.1570.91203.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0705291057170.24126@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle on Intel
- chipset
-References: <465C566E.4030009@rtr.ca> <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org> <465C608E.3040303@rtr.ca> <465C64D1.3030604@rtr.ca> <alpine.LFD.0.98.0705291048020.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705291048020.26602@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Tue, 29 May 2007, Mark Lord wrote:
->> Okay, just to make it trivial,
->> I've narrowed it down to only this commit from Alan Stern:
+On Tue, 29 May 2007, Christoph Lameter wrote:
+
+> On Tue, 29 May 2007, Mel Gorman wrote:
+>
+>> CONFIG_MIGRATION currently depends on CONFIG_NUMA. move_pages() is the only
+>> user of migration today and as this system call is only meaningful on NUMA,
+>> it makes sense. However, memory compaction will operate within a zone and is
+>> useful on both NUMA and non-NUMA systems. This patch allows CONFIG_MIGRATION
+>> to be used in all memory models. To preserve existing behaviour, move_pages()
+>> is only available when CONFIG_NUMA is set.
+>
+> Hmmm... I thought I had this already set up so that it would be easy to
+> switch page migration to not depend on CONFIG_NUMA. Not so it seems.
+>
+
+It's only policy_zone that it got hung-up on. In an earlir version, I just 
+defined policy_zone outside of mempolicy but it was messy looking.
+
+>> --- linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/migrate.h	2007-05-28 14:11:32.000000000 +0100
+>> +++ linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/migrate.h	2007-05-29 10:00:09.000000000 +0100
+>> @@ -7,7 +7,7 @@
 >>
->> 7ed92f1a149dddc3cb537ccd7441e98adac12c3e USB: make the autosuspend workqueue
->> thread freezable
-> 
-> Heh. Have I mentioned how much I *hate* those kernel threads being frozen?
-> 
-> Just for fun, could you try if the patch that just rips out the freezer 
-> calls from the STR code just fixes the problem too (instead of reverting 
-> that commit?)
-> 
-> It was done by Matthew Garrett <mjg59@srcf.ucam.org>, and you should be 
-> able to find it in the kernel archives under the subject
-> 
-> 	Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-> 	Message-ID: <20070527184402.GA21161@srcf.ucam.org>
+>>  typedef struct page *new_page_t(struct page *, unsigned long private, int **);
+>>
+>> -#ifdef CONFIG_MIGRATION
+>> +#ifdef CONFIG_SYSCALL_MOVE_PAGES
+>>  /* Check if a vma is migratable */
+>>  static inline int vma_migratable(struct vm_area_struct *vma)
+>>  {
+>> @@ -24,7 +24,14 @@ static inline int vma_migratable(struct
+>>  			return 0;
+>>  	return 1;
+>>  }
+>> +#else
+>> +static inline int vma_migratable(struct vm_area_struct *vma)
+>> +{
+>> +	return 0;
+>> +}
+>> +#endif
+>
+> I guess we get compilation failures because of the reference to
+> policy_zone here for the !NUMA case? I think vma migratable is not used at
+> all if !NUMA.
+>
 
-Okay, I tried that one, but the machine just hung on the VGA console screen
-at suspend time.  No alt-sysrq or anything.  Power-cycled it to recover.
+It isn't that I could tell.
 
-> and it would be interesting to hear if that just solves the problem for 
-> you too.
-> 
-> There's a different (but related to all the same freezer problems) patch 
-> by Rafael Wysocki <rjw@sisk.pl>:
-> 
-> 	Re: [RFC][PATCH][EXPERIMENTAL] Make kernel threads nonfreezable by default
-> 	Message-Id: <200705291415.31970.rjw@sisk.pl>
+>
+>> +#ifdef CONFIG_MIGRATION
+>>  extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
+>>  extern int putback_lru_pages(struct list_head *l);
+>>  extern int migrate_page(struct address_space *,
+>> @@ -40,8 +47,6 @@ extern int migrate_vmas(struct mm_struct
+>>  		const nodemask_t *from, const nodemask_t *to,
+>>  		unsigned long flags);
+>>  #else
+>> -static inline int vma_migratable(struct vm_area_struct *vma)
+>> -					{ return 0; }
+>
+> Maybe this block is not necessary?
+>
 
-I'll hunt for Rafael's patch next.
+Agreed. For a long time I didn't have it included at all but put it back 
+in to preserve existing behaviour. I'll remove it.
+
+>> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/mm.h linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/mm.h
+>> --- linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/mm.h	2007-05-24 10:13:34.000000000 +0100
+>> +++ linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/mm.h	2007-05-28 14:13:44.000000000 +0100
+>> @@ -242,6 +242,8 @@ struct vm_operations_struct {
+>>  	int (*set_policy)(struct vm_area_struct *vma, struct mempolicy *new);
+>>  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
+>>  					unsigned long addr);
+>> +#endif /* CONFIG_NUMA */
+>> +#ifdef CONFIG_MIGRATION
+>>  	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
+>>  		const nodemask_t *to, unsigned long flags);
+>>  #endif
+>
+> Correct.
+>
+>> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-005_migrate_nocontext/mm/Kconfig linux-2.6.22-rc2-mm1-015_migration_flatmem/mm/Kconfig
+>> --- linux-2.6.22-rc2-mm1-005_migrate_nocontext/mm/Kconfig	2007-05-24 10:13:34.000000000 +0100
+>> +++ linux-2.6.22-rc2-mm1-015_migration_flatmem/mm/Kconfig	2007-05-29 09:57:23.000000000 +0100
+>> @@ -145,13 +145,16 @@ config SPLIT_PTLOCK_CPUS
+>>  config MIGRATION
+>>  	bool "Page migration"
+>>  	def_bool y
+>> -	depends on NUMA
+>>  	help
+>>  	  Allows the migration of the physical location of pages of processes
+>>  	  while the virtual addresses are not changed. This is useful for
+>>  	  example on NUMA systems to put pages nearer to the processors accessing
+>>  	  the page.
+>>
+>> +config SYSCALL_MOVE_PAGES
+>> +	def_bool y
+>> +	depends on MIGRATION && NUMA
+>> +
+>
+> Do we really need the CONFIG_SYSCALL_MOVE_PAGES? I think you will directly
+> access the lower levels. So why have it? CONFIG_SYSCALL_MOVE_PAGES ==
+> CONFIG_NUMA.
+
+Without SYSCALL_MOVE_PAGES, the check in migrate.h becomes
+
+#if defined(CONFIG_NUMA) && defined(CONFIG_MIGRATION)
+/* Check if a vma is migratable */
+static inline int vma_migratable(struct vm_area_struct *vma)
+#endif
+
+That in itself is fine but in mm/migrate.c I didn't want to define 
+sys_move_pages() in the non-NUMA case. Whatever about the header file 
+where SYSCALL_MOVE_PAGES obscures understanding, I think it makes sense to 
+have SYSCALL_MOVE_PAGES for mm/migrate.c . What do you think?
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
