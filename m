@@ -1,390 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763475AbXE2Shs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbXE2SiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763475AbXE2Shs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758017AbXE2ShQ
+	id S1763995AbXE2SiI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbXE2ShX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:37:16 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43683 "EHLO smtp.polymtl.ca"
+	Tue, 29 May 2007 14:37:23 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43725 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757782AbXE2ShO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:37:14 -0400
-Message-Id: <20070529183707.918804607@polymtl.ca>
+	id S1759009AbXE2ShV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:37:21 -0400
+Message-Id: <20070529183708.246508003@polymtl.ca>
 References: <20070529183356.192838687@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 May 2007 14:33:58 -0400
+Date: Tue, 29 May 2007 14:33:59 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 2/9] Conditional Calls - Hash Table
-Content-Disposition: inline; filename=conditional-calls-hash-table.patch
+Subject: [patch 3/9] Conditional Calls - Non Optimized Architectures
+Content-Disposition: inline; filename=conditional-calls-non-optimized-architectures.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:37:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reimplementation of the cond calls which uses a hash table to hold the active
-cond_calls. It permits to first arm a cond_call and then load supplementary
-modules that contain this cond_call.
-
-Without this, the order of loading a module containing a cond_call and arming a
-cond_call matters and there is no symbol dependency to check this.
-
-At module load time, each cond_call checks if it is enabled in the hash table
-and is set accordingly.
+Architecture agnostic, generic, version of the cond_calls.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/condcall.h |    2 
- kernel/module.c          |  205 +++++++++++++++++++++++++++++------------------
- 2 files changed, 129 insertions(+), 78 deletions(-)
+ include/asm-alpha/condcall.h     |    1 +
+ include/asm-arm/condcall.h       |    1 +
+ include/asm-arm26/condcall.h     |    1 +
+ include/asm-cris/condcall.h      |    1 +
+ include/asm-frv/condcall.h       |    1 +
+ include/asm-generic/condcall.h   |   25 +++++++++++++++++++++++++
+ include/asm-h8300/condcall.h     |    1 +
+ include/asm-i386/condcall.h      |    1 +
+ include/asm-ia64/condcall.h      |    1 +
+ include/asm-m32r/condcall.h      |    1 +
+ include/asm-m68k/condcall.h      |    1 +
+ include/asm-m68knommu/condcall.h |    1 +
+ include/asm-mips/condcall.h      |    1 +
+ include/asm-parisc/condcall.h    |    1 +
+ include/asm-powerpc/condcall.h   |    1 +
+ include/asm-ppc/condcall.h       |    1 +
+ include/asm-s390/condcall.h      |    1 +
+ include/asm-sh/condcall.h        |    1 +
+ include/asm-sh64/condcall.h      |    1 +
+ include/asm-sparc/condcall.h     |    1 +
+ include/asm-sparc64/condcall.h   |    1 +
+ include/asm-um/condcall.h        |    1 +
+ include/asm-v850/condcall.h      |    1 +
+ include/asm-x86_64/condcall.h    |    1 +
+ include/asm-xtensa/condcall.h    |    1 +
+ 25 files changed, 49 insertions(+)
 
-Index: linux-2.6-lttng/kernel/module.c
+Index: linux-2.6-lttng/include/asm-generic/condcall.h
 ===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-05-17 01:42:50.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2007-05-17 01:46:42.000000000 -0400
-@@ -33,6 +33,8 @@
- #include <linux/moduleparam.h>
- #include <linux/errno.h>
- #include <linux/condcall.h>
-+#include <linux/jhash.h>
-+#include <linux/list.h>
- #include <linux/err.h>
- #include <linux/vermagic.h>
- #include <linux/notifier.h>
-@@ -71,6 +73,20 @@
- 
- static BLOCKING_NOTIFIER_HEAD(module_notify_list);
- 
-+#ifdef CONFIG_COND_CALL
-+/* Conditional call hash table, containing the active cond_calls.
-+ * Protected by module_mutex. */
-+#define COND_CALL_HASH_BITS 6
-+#define COND_CALL_TABLE_SIZE (1 << COND_CALL_HASH_BITS)
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-generic/condcall.h	2007-05-29 11:56:07.000000000 -0400
+@@ -0,0 +1,25 @@
++#ifndef _ASM_GENERIC_CONDCALL_H
++#define _ASM_GENERIC_CONDCALL_H
 +
-+struct cond_call_entry {
-+	struct hlist_node hlist;
-+	char name[0];
-+};
++/* Default flags, used by _cond_call() */
++#define CF_DEFAULT			0
 +
-+static struct hlist_head cond_call_table[COND_CALL_TABLE_SIZE];
-+#endif //CONFIG_COND_CALL
++/* Fallback on the generic cond_call, since no optimized version is available */
++#define cond_call_optimized		cond_call_generic
++#define _cond_call(flags, name, func) cond_call_generic(flags, name, func)
 +
- int register_module_notifier(struct notifier_block * nb)
- {
- 	return blocking_notifier_chain_register(&module_notify_list, nb);
-@@ -305,6 +321,68 @@
- }
- 
- #ifdef CONFIG_COND_CALL
-+/* Check if the cond_call is present in the hash table.
-+ * Returns 1 if present, 0 if not. */
-+static int hash_check_cond_call(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct cond_call_entry *e;
-+	size_t len = strlen(name);
-+	u32 hash = jhash(name, len, 0);
++/* cond_call with default behavior */
++#define cond_call(name, func) _cond_call(CF_DEFAULT, name, func)
 +
-+	head = &cond_call_table[hash & ((1 << COND_CALL_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name))
-+			return 1;
-+	return 0;
-+}
++/* Architecture dependant cond_call information, used internally for cond_call
++ * activation. */
 +
-+/* Add the cond_call to the hash table. Must be called with mutex_lock held. */
-+static int hash_add_cond_call(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct cond_call_entry *e;
-+	size_t len = strlen(name);
-+	u32 hash = jhash(name, len, 0);
++#define COND_CALL_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET \
++		COND_CALL_GENERIC_ENABLE_IMMEDIATE_OFFSET
++#define COND_CALL_OPTIMIZED_ENABLE_TYPE	COND_CALL_GENERIC_ENABLE_TYPE
++/* Dereference enable as lvalue from a pointer to its instruction */
++#define COND_CALL_OPTIMIZED_ENABLE	COND_CALL_GENERIC_ENABLE
 +
-+	head = &cond_call_table[hash & ((1 << COND_CALL_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name))
-+			return 0;	/* Already there */
-+	/* Using kmalloc here to allocate a variable length element. Could
-+	 * cause some memory fragmentation if overused. */
-+	e = kmalloc(sizeof(struct cond_call_entry) + len + 1, GFP_KERNEL);
-+	if (!e)
-+		return -ENOMEM;
-+	memcpy(&e->name[0], name, len + 1);
-+	hlist_add_head(&e->hlist, head);
-+	return 0;
-+}
++#define cond_call_optimized_set_enable cond_call_generic_set_enable
 +
-+/* Remove the cond_call from the hash table. Must be called with mutex_lock
-+ * held. */
-+static void hash_remove_cond_call(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct cond_call_entry *e;
-+	int found = 0;
-+	size_t len = strlen(name);
-+	u32 hash = jhash(name, len, 0);
-+
-+	head = &cond_call_table[hash & ((1 << COND_CALL_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name)) {
-+			found = 1;
-+			break;
-+		}
-+	if (found) {
-+		hlist_del(&e->hlist);
-+		kfree(e);
-+	}
-+}
- 
- /* Set the enable bit of the cond_call, choosing the generic or architecture
-  * specific functions depending on the cond_call's flags.
-@@ -317,59 +395,53 @@
- 		return cond_call_generic_set_enable(address, enable);
- }
- 
--/* Query the state of a cond_calls range. */
--static int _cond_call_query_range(const char *name,
--	const struct __cond_call_struct *begin,
--	const struct __cond_call_struct *end)
-+static int cond_call_get_enable(void *address, int flags)
-+{
-+	if (flags & CF_OPTIMIZED)
-+		return COND_CALL_OPTIMIZED_ENABLE(address);
-+	else
-+		return COND_CALL_GENERIC_ENABLE(address);
-+}
-+
-+/* Setup the cond_call according to the data present in the cond_call hash
-+ * upon module load. */
-+void module_cond_call_setup(struct module *mod)
- {
- 	const struct __cond_call_struct *iter;
--	int ret = 0;
-+	int enable;
- 
--	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->name) != 0)
--			continue;
--		if (iter->flags & CF_OPTIMIZED)
--			ret = COND_CALL_OPTIMIZED_ENABLE(iter->enable);
--		else
--			ret = COND_CALL_GENERIC_ENABLE(iter->enable);
--		if (ret)
--			break;
-+	for (iter = mod->cond_calls;
-+		iter < mod->cond_calls+mod->num_cond_calls; iter++) {
-+		enable = hash_check_cond_call(iter->name);
-+		if (enable != cond_call_get_enable(iter->enable, iter->flags))
-+			cond_call_set_enable(iter->enable, enable, iter->flags);
- 	}
--	return ret;
- }
- 
- /* Sets a range of cond_calls to a enabled state : set the enable bit. */
--static int _cond_call_arm_range(const char *name,
-+static void _cond_call_arm_range(const char *name,
- 	const struct __cond_call_struct *begin,
- 	const struct __cond_call_struct *end)
- {
- 	const struct __cond_call_struct *iter;
--	int found = 0;
- 
- 	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->name) != 0)
--			continue;
--		cond_call_set_enable(iter->enable, 1, iter->flags);
--		found++;
-+		if (!strcmp(name, iter->name))
-+			cond_call_set_enable(iter->enable, 1, iter->flags);
- 	}
--	return found;
- }
- 
- /* Sets a range of cond_calls to a disabled state : unset the enable bit. */
--static int _cond_call_disarm_range(const char *name,
-+static void _cond_call_disarm_range(const char *name,
- 	const struct __cond_call_struct *begin,
- 	const struct __cond_call_struct *end)
- {
- 	const struct __cond_call_struct *iter;
--	int found = 0;
- 
- 	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->name) != 0)
--			continue;
--		cond_call_set_enable(iter->enable, 0, iter->flags);
--		found++;
-+		if (!strcmp(name, iter->name))
-+			cond_call_set_enable(iter->enable, 0, iter->flags);
- 	}
--	return found;
- }
- 
- /* Provides a listing of the cond_calls present in the kernel with their type
-@@ -397,105 +469,79 @@
- 	return found;
- }
- 
--/* Calls _cond_call_query_range for the core cond_calls and modules cond_calls.
-- */
--static int _cond_call_query(const char *name)
--{
--	struct module *mod;
--	int ret = 0;
--
--	/* Core kernel cond_calls */
--	ret = _cond_call_query_range(name,
--			__start___cond_call, __stop___cond_call);
--	if (ret)
--		return ret;
--	/* Cond_calls in modules. */
--	list_for_each_entry(mod, &modules, list) {
--		if (mod->taints)
--			continue;
--		ret = _cond_call_query_range(name,
--			mod->cond_calls, mod->cond_calls+mod->num_cond_calls);
--		if (ret)
--			break;
--	}
--	return ret;
--}
--
- /* Cond_call enabling/disabling use the module_mutex to synchronize.
-- * Returns 1 if enabled, 0 if disabled or not present. */
-+ * Returns 1 if enabled, 0 if disabled. */
- int cond_call_query(const char *name)
- {
--	int ret = 0;
-+	int ret;
- 
- 	mutex_lock(&module_mutex);
--	ret = _cond_call_query(name);
-+	ret = hash_check_cond_call(name);
- 	mutex_unlock(&module_mutex);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(cond_call_query);
- 
--/* Calls _cond_call_arm_range for the core cond_calls and modules cond_calls.
-- * FIXME : cond_call will not be active on modules loaded later than the
-- * cond_call_arm. */
-+/* Calls _cond_call_arm_range for the core cond_calls and modules cond_calls. */
- static int _cond_call_arm(const char *name)
- {
- 	struct module *mod;
--	int found = 0;
-+	int ret;
-+
-+	ret = hash_add_cond_call(name);
-+	if (ret)
-+		return ret;
- 
- 	/* Core kernel cond_calls */
--	found += _cond_call_arm_range(name,
-+	_cond_call_arm_range(name,
- 			__start___cond_call, __stop___cond_call);
- 	/* Cond_calls in modules. */
- 	list_for_each_entry(mod, &modules, list) {
- 		if (mod->taints)
- 			continue;
--		found += _cond_call_arm_range(name,
-+		_cond_call_arm_range(name,
- 			mod->cond_calls, mod->cond_calls+mod->num_cond_calls);
- 	}
--	return found;
-+	return ret;
- }
- 
- /* Cond_call enabling/disabling use the module_mutex to synchronize. */
- int cond_call_arm(const char *name)
- {
--	int found = 0;
-+	int ret;
- 
- 	mutex_lock(&module_mutex);
--	found = _cond_call_arm(name);
-+	ret = _cond_call_arm(name);
- 	mutex_unlock(&module_mutex);
--	return found;
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(cond_call_arm);
- 
- /* Calls _cond_call_disarm_range for the core cond_calls and modules cond_calls.
-  */
--static int _cond_call_disarm(const char *name)
-+static void _cond_call_disarm(const char *name)
- {
- 	struct module *mod;
--	int found = 0;
- 
- 	/* Core kernel cond_calls */
--	found += _cond_call_disarm_range(name,
-+	_cond_call_disarm_range(name,
- 			__start___cond_call, __stop___cond_call);
- 	/* Cond_calls in modules. */
- 	list_for_each_entry(mod, &modules, list) {
- 		if (mod->taints)
- 			continue;
--		found += _cond_call_disarm_range(name,
-+		_cond_call_disarm_range(name,
- 			mod->cond_calls, mod->cond_calls+mod->num_cond_calls);
- 	}
--	return found;
-+	hash_remove_cond_call(name);
- }
- 
- /* Cond_call enabling/disabling use the module_mutex to synchronize. */
--int cond_call_disarm(const char *name)
-+void cond_call_disarm(const char *name)
- {
--	int found = 0;
--
- 	mutex_lock(&module_mutex);
--	found = _cond_call_disarm(name);
-+	_cond_call_disarm(name);
- 	mutex_unlock(&module_mutex);
--	return found;
- }
- EXPORT_SYMBOL_GPL(cond_call_disarm);
- 
-@@ -525,7 +571,10 @@
- 	return found;
- }
- EXPORT_SYMBOL_GPL(cond_call_list);
--
-+#else
-+static void module_cond_call_setup(struct module *mod)
-+{
-+}
- #endif
- 
- #ifdef CONFIG_SMP
-@@ -2211,6 +2260,8 @@
- 
- 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
- 
-+	module_cond_call_setup(mod);
-+
- 	err = module_finalize(hdr, sechdrs, mod);
- 	if (err < 0)
- 		goto cleanup;
-Index: linux-2.6-lttng/include/linux/condcall.h
++#endif /* _ASM_GENERIC_MARKER_H */
+Index: linux-2.6-lttng/include/asm-alpha/condcall.h
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/condcall.h	2007-05-17 01:42:50.000000000 -0400
-+++ linux-2.6-lttng/include/linux/condcall.h	2007-05-17 01:46:42.000000000 -0400
-@@ -81,7 +81,7 @@
- #define COND_CALL_MAX_FORMAT_LEN	1024
- 
- extern int cond_call_arm(const char *name);
--extern int cond_call_disarm(const char *name);
-+extern void cond_call_disarm(const char *name);
- 
- /* cond_call_query : Returns 1 if enabled, 0 if disabled or not present */
- extern int cond_call_query(const char *name);
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-alpha/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-arm/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-arm/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-arm26/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-arm26/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-cris/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-cris/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-frv/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-frv/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-h8300/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-h8300/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-ia64/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-ia64/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-m32r/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-m32r/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-m68k/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-m68k/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-m68knommu/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-m68knommu/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-mips/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-mips/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-parisc/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-parisc/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-ppc/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-ppc/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-s390/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-s390/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-sh/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-sh/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-sh64/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-sh64/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-sparc/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-sparc/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-sparc64/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-sparc64/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-um/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-um/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-v850/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-v850/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-x86_64/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-x86_64/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-xtensa/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-xtensa/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-i386/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-i386/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
+Index: linux-2.6-lttng/include/asm-powerpc/condcall.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-powerpc/condcall.h	2007-05-29 11:55:58.000000000 -0400
+@@ -0,0 +1 @@
++#include <asm-generic/condcall.h>
 
 -- 
 Mathieu Desnoyers
