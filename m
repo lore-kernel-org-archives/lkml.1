@@ -1,677 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765037AbXE2Sld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765200AbXE2Slu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765037AbXE2Sld (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764029AbXE2SiT
+	id S1765200AbXE2Slu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762554AbXE2SiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:38:19 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43947 "EHLO smtp.polymtl.ca"
+	Tue, 29 May 2007 14:38:20 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43951 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764035AbXE2SiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1764033AbXE2SiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 14:38:14 -0400
-Message-Id: <20070529183759.652375960@polymtl.ca>
+Message-Id: <20070529183800.440905544@polymtl.ca>
 References: <20070529183725.179570071@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 May 2007 14:37:28 -0400
+Date: Tue, 29 May 2007 14:37:30 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 3/6] Linux Kernel Markers - Hash Table
-Content-Disposition: inline; filename=linux-kernel-markers-hash-table.patch
+Subject: [patch 5/6] Linux Kernel Markers - Documentation
+Content-Disposition: inline; filename=linux-kernel-markers-documentation.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:38:00 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rewrite of the markers using a hash table as a basic container for the enabled
-probes. It permits to first arm a probe and then load modules containing
-markers for this probe and still be coherent.
-
-At module load time, each marker is checked for an active probe in the hash
-table.
+Here is some documentation explaining what is/how to use the Linux
+Kernel Markers.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/marker.h |    2 
- kernel/module.c        |  485 +++++++++++++++++++++++++++----------------------
- 2 files changed, 277 insertions(+), 210 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/marker.h
+ Documentation/marker.txt |  253 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 253 insertions(+)
+
+Index: linux-2.6-lttng/Documentation/marker.txt
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/marker.h	2007-05-17 00:52:36.000000000 -0400
-+++ linux-2.6-lttng/include/linux/marker.h	2007-05-17 00:53:06.000000000 -0400
-@@ -91,7 +91,7 @@
- #define marker_arm_probe(name, format, probe, pdata) \
- 		_marker_arm_probe(CF_DEFAULT, name, format, probe, pdata)
- 
--extern int marker_disarm_probe(const char *name);
-+extern void marker_disarm_probe(const char *name);
- extern int marker_list_probe(marker_probe_func *probe);
- const struct __mark_marker *marker_query(const char *name, int instance);
- 
-Index: linux-2.6-lttng/kernel/module.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-05-17 00:52:36.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2007-05-17 00:53:40.000000000 -0400
-@@ -88,6 +88,24 @@
- static struct hlist_head cond_call_table[COND_CALL_TABLE_SIZE];
- #endif //CONFIG_COND_CALL
- 
-+#ifdef CONFIG_MARKERS
-+/* Marker hash table, containing the active markers.
-+ * Protected by module_mutex. */
-+#define MARKER_HASH_BITS 6
-+#define MARKER_TABLE_SIZE (1 << MARKER_HASH_BITS)
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/marker.txt	2007-05-29 14:08:27.000000000 -0400
+@@ -0,0 +1,253 @@
++ 	             Using the Linux Kernel Markers
 +
-+struct marker_entry {
-+	struct hlist_node hlist;
-+	int flags;
-+	char *format;
-+	marker_probe_func *probe;
-+	void *pdata;
-+	char name[0];	/* Contains name'\0'format'\0' */
++			    Mathieu Desnoyers
++
++
++This document introduces Linux Kernel Markers and their use. It provides
++examples of how to insert markers in the kernel and connect probe functions to
++them and provides some examples of probe functions.
++
++
++* Purpose of markers
++
++A marker placed in your code provides a hook to call a function (probe) that
++you can provide at runtime. A marker can be "on" (a probe is connected to it)
++or "off" (no probe is attached). When a marker is "off" it has no
++effect. When a marker is "on", the function you provide is called each
++time the marker is executed, in the execution context of the
++caller. When the function provided ends its execution, it returns to the
++caller (continuing from the marker site).
++
++You can put markers at important locations in the code. Markers are
++lightweight hooks that can pass an arbitrary number of parameters,
++described in a printk-like format string, to the attached probe function.
++
++They can be used for tracing and performance accounting.
++
++
++* Usage
++
++In order to use the macro trace_mark, you should include linux/marker.h.
++
++#include <linux/marker.h>
++
++Add, in your code :
++
++trace_mark(subsystem_event, "%d %s", someint, somestring);
++Where :
++- subsystem_event is an identifier unique to your event
++    - subsystem is the name of your subsystem.
++    - event is the name of the event to mark.
++- "%d %s" is the formatted string for the serializer.
++- someint is an integer.
++- somestring is a char pointer.
++
++Connecting a function (probe) to a marker is done by providing a probe
++(function to call) for the specific marker through marker_arm_probe(). It will
++automatically connect the function and enable the marker site. Removing a probe
++is done through marker_disarm_probe(). Probe removal is preempt-safe because
++preemption is disabled around the probe call. See the "Probe example" section
++below for a sample probe module.
++
++The marker mechanism supports inserting multiple instances of the same marker.
++Markers can be put in inline functions, inlined static functions, and
++unrolled loops.
++
++Note: It is safe to put markers within preempt-safe code : preempt_enable()
++will not call the scheduler due to the tests in preempt_schedule().
++
++
++* Optimization for a given architecture
++
++One can implement optimized markers for a given architecture by replacing
++asm-$ARCH/marker.h.
++
++The CF_* flags can be used to control the type of marker. See the
++include/linux/condcall.h header for the list of flags. They can be specified as
++the first parameter of the _trace_mark() macro, as in the following example,
++which is safe with respect to lockdep.c (useful for marking lockdep.c and printk
++functions).
++
++_trace_mark(CF_DEFAULT | ~CF_LOCKDEP, subsystem_eventb, MARK_NOARGS);
++
++Another example is to specify that a specific marker must never call printk:
++_trace_mark(CF_DEFAULT | ~CF_PRINTK, subsystem_eventc,
++  "%d %s", someint, somestring);
++
++Flag compatibility is checked before connecting the probe to the marker: the
++right flags must be given to _marker_arm_probe().
++
++
++* Probe example
++
++You can build the kernel modules, probe-example.ko and marker-example.ko,
++using the following Makefile:
++------------------------------ CUT -------------------------------------
++obj-m := probe-example.o marker-example.o
++KDIR := /lib/modules/$(shell uname -r)/build
++PWD := $(shell pwd)
++default:
++	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
++clean:
++	rm -f *.mod.c *.ko *.o
++------------------------------ CUT -------------------------------------
++/* probe-example.c
++ *
++ * Connects two functions to marker call sites.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <asm/atomic.h>
++
++struct probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
 +};
 +
-+static struct hlist_head marker_table[MARKER_TABLE_SIZE];
-+#endif //CONFIG_MARKERS
-+
- int register_module_notifier(struct notifier_block * nb)
- {
- 	return blocking_notifier_chain_register(&module_notify_list, nb);
-@@ -161,8 +179,8 @@
- extern const unsigned long __start___kcrctab_unused_gpl[];
- extern const struct __cond_call_struct __start___cond_call[];
- extern const struct __cond_call_struct __stop___cond_call[];
--extern const struct __mark_marker __start___markers[];
--extern const struct __mark_marker __stop___markers[];
-+extern struct __mark_marker __start___markers[];
-+extern struct __mark_marker __stop___markers[];
- 
- #ifndef CONFIG_MODVERSIONS
- #define symversion(base, idx) NULL
-@@ -581,159 +599,267 @@
- #endif
- 
- #ifdef CONFIG_MARKERS
--
- /* Empty callback provided as a probe to the markers. By providing this to a
-  * disabled marker, we makes sure the  execution flow is always valid even
-  * though the function pointer change and the marker enabling are two distinct
-  * operations that modifies the execution flow of preemptible code. */
--void __mark_empty_function(const struct __mark_marker_data *mdata,
-+void __mark_empty_function(const struct __mark_marker *mdata,
- 	const char *fmt, ...)
- {
- }
- EXPORT_SYMBOL_GPL(__mark_empty_function);
- 
--/* Sets the probe callback corresponding to a range of markers.
-- */
--static int _marker_set_probe_range(int flags, const char *name,
--	const char *format,
--	marker_probe_func *probe,
--	void *pdata,
--	const struct __mark_marker *begin,
--	const struct __mark_marker *end)
-+/* Get marker if the marker is present in the hash table.
-+ * Returns NULL if not present. */
-+static struct marker_entry *hash_get_marker(const char *name)
- {
--	const struct __mark_marker *iter;
--	int found = 0;
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct marker_entry *e;
-+	size_t len = strlen(name);
-+	u32 hash = jhash(name, len, 0);
- 
--	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->mdata->name) != 0)
--			continue;
-+	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name))
-+			return e;
-+	return NULL;
-+}
- 
--		if (format) {
--			if (strcmp(format, iter->mdata->format) != 0) {
--				printk(KERN_NOTICE
--					"Format mismatch for probe %s "
--					"(%s), marker (%s)\n",
--					name,
--					format,
--					iter->mdata->format);
--				continue;
--			}
--		} else
--			format = iter->mdata->format;
-+/* Add the marker to the hash table. Must be called with mutex_lock held. */
-+static int hash_add_marker(int flags, const char *name,
-+	const char *format, marker_probe_func *probe, void *pdata)
++void probe_subsystem_event(const struct __mark_marker_c *mdata,
++		const char *format, ...)
 +{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct marker_entry *e;
-+	size_t name_len = strlen(name);
-+	size_t format_len = strlen(format);
-+	u32 hash = jhash(name, name_len, 0);
- 
--		if (flags & CF_LOCKDEP
--			&& !(iter->mdata->flags & CF_LOCKDEP)) {
--			printk(KERN_NOTICE
--				"Incompatible lockdep flags for "
--				"probe %s\n",
--				name);
--			continue;
--		}
--		if (flags & CF_PRINTK
--			&& !(iter->mdata->flags & CF_PRINTK)) {
-+	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name)) {
- 			printk(KERN_NOTICE
--				"Incompatible printk flags for "
--				"probe %s\n",
--				name);
--			continue;
-+				"Marker %s busy, probe %p already installed\n",
-+				name, e->probe);
-+			return -EBUSY;	/* Already there */
- 		}
--		if (probe == __mark_empty_function) {
--			if (iter->mdata->call != __mark_empty_function)
--				iter->mdata->call = __mark_empty_function;
--		} else {
--			if (iter->mdata->call != __mark_empty_function) {
--				if (iter->mdata->call != probe) {
--					printk(KERN_NOTICE
--						"Marker %s busy, "
--						"probe %p already "
--						"installed\n",
--						name,
--						iter->mdata->call);
--					continue;
--				}
--			} else
--				iter->mdata->call = probe;
--			iter->mdata->pdata = pdata;
-+	/* Using kmalloc here to allocate a variable length element. Could
-+	 * cause some memory fragmentation if overused. */
-+	e = kmalloc(sizeof(struct marker_entry) + name_len + 1 + format_len + 1,
-+			GFP_KERNEL);
-+	if (!e)
-+		return -ENOMEM;
-+	memcpy(&e->name[0], name, name_len + 1);
-+	e->format = &e->name[name_len + 1];
-+	memcpy(e->format, format, format_len + 1);
-+	e->flags = flags;
-+	e->probe = probe;
-+	e->pdata = pdata;
-+	hlist_add_head(&e->hlist, head);
++	va_list ap;
++	/* Declare args */
++	unsigned int value;
++	const char *mystr;
++
++	/* Assign args */
++	va_start(ap, format);
++	value = va_arg(ap, typeof(value));
++	mystr = va_arg(ap, typeof(mystr));
++
++	/* Call printk */
++	printk("Value %u, string %s\n", value, mystr);
++
++	/* or count, check rights, serialize data in a buffer */
++
++	va_end(ap);
++}
++
++atomic_t eventb_count = ATOMIC_INIT(0);
++
++void probe_subsystem_eventb(const struct __mark_marker_c *mdata,
++	const char *format, ...)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++static struct probe_data probe_array[] =
++{
++	{	.name = "subsystem_event",
++		.format = "%d %s",
++		.probe_func = probe_subsystem_event },
++	{	.name = "subsystem_eventb",
++		.format = MARK_NOARGS,
++		.probe_func = probe_subsystem_eventb },
++};
++
++static int __init probe_init(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_arm_probe(probe_array[i].name,
++				probe_array[i].format,
++				probe_array[i].probe_func, &probe_array[i]);
++		if (result)
++			printk(KERN_INFO "Unable to register probe %s\n",
++				probe_array[i].name);
++	}
 +	return 0;
 +}
 +
-+/* Remove the marker from the hash table. Must be called with mutex_lock
-+ * held. */
-+static void hash_remove_marker(const char *name)
++static void __exit probe_fini(void)
 +{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct marker_entry *e;
-+	int found = 0;
-+	size_t len = strlen(name);
-+	u32 hash = jhash(name, len, 0);
++	int i;
 +
-+	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name)) {
-+			found = 1;
-+			break;
- 		}
--		found++;
-+	if (found) {
-+		hlist_del(&e->hlist);
-+		kfree(e);
- 	}
--	return found;
- }
- 
--/* Sets a range of markers to a disabled state : unset the enable bit and
-- * provide the empty callback.
-- * Keep a count of other markers connected to the same module as the one
-- * provided as parameter. */
--static int marker_remove_probe_range(const char *name,
-+/* Sets the probe callback corresponding to one marker.
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		marker_disarm_probe(probe_array[i].name);
++	}
++	printk("Number of event b : %u\n", atomic_read(&eventb_count));
++}
++
++module_init(probe_init);
++module_exit(probe_fini);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("SUBSYSTEM Probe");
++------------------------------ CUT -------------------------------------
++/* marker-example.c
++ *
++ * Executes a marker when /proc/marker-example is opened.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
 + */
-+static int set_marker(int flags, const char *name, const char *format,
-+			marker_probe_func *probe, void *pdata,
-+			struct __mark_marker *elem)
-+{
-+	BUG_ON(strcmp(name, elem->name) != 0);
 +
-+	if (format)
-+		if (strcmp(format, elem->format) != 0) {
-+			printk(KERN_NOTICE
-+				"Format mismatch for probe %s "
-+				"(%s), marker (%s)\n",
-+				name,
-+				format,
-+				elem->format);
-+			return -EPERM;
-+		}
-+	if (flags & CF_LOCKDEP
-+		&& !(elem->flags & CF_LOCKDEP)) {
-+		printk(KERN_NOTICE
-+			"Incompatible lockdep flags for "
-+			"probe %s\n",
-+			name);
-+		return -EPERM;
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <linux/sched.h>
++#include <linux/proc_fs.h>
++
++struct proc_dir_entry *pentry_example = NULL;
++
++static int my_open(struct inode *inode, struct file *file)
++{
++	int i;
++
++	trace_mark(subsystem_event, "%d %s", 123, "example string");
++	for (i=0; i<10; i++) {
++		trace_mark(subsystem_eventb, MARK_NOARGS);
 +	}
-+	if (flags & CF_PRINTK
-+		&& !(elem->flags & CF_PRINTK)) {
-+		printk(KERN_NOTICE
-+			"Incompatible printk flags for "
-+			"probe %s\n",
-+			name);
++	return -EPERM;
++}
++
++static struct file_operations mark_ops = {
++	.open = my_open,
++};
++
++static int example_init(void)
++{
++	printk(KERN_ALERT "example init\n");
++	pentry_example = create_proc_entry("marker-example", 0444, NULL);
++	if (pentry_example)
++		pentry_example->proc_fops = &mark_ops;
++	else
 +		return -EPERM;
-+	}
-+	elem->call = probe;
-+	elem->pdata = pdata;
 +	return 0;
 +}
 +
-+static void disable_marker(struct __mark_marker *elem)
++static void example_exit(void)
 +{
-+	elem->call = __mark_empty_function;
-+	/* Leave the pdata there, because removal is racy and should be done
-+	 * only after a synchronize_sched(). It's never used anyway. */
++	printk(KERN_ALERT "example exit\n");
++	remove_proc_entry("marker-example", NULL);
 +}
 +
-+/* Updates the probe callback corresponding to a range of markers. */
-+static int marker_update_probe_range(
-+	struct __mark_marker *begin,
-+	struct __mark_marker *end,
- 	struct module *probe_module,
--	int *ref_count,
--	const struct __mark_marker *begin,
--	const struct __mark_marker *end)
-+	int *refcount)
- {
--	const struct __mark_marker *iter;
--	int found = 0;
-+	struct __mark_marker *iter;
-+	struct marker_entry *hash_mark;
-+	int ret;
- 
- 	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->mdata->name) != 0) {
-+		hash_mark = hash_get_marker(iter->name);
-+		if (hash_mark) {
-+			ret = set_marker(hash_mark->flags,
-+				hash_mark->name, hash_mark->format,
-+				hash_mark->probe, hash_mark->pdata,
-+				iter);
-+			if (ret)
-+				return ret;
- 			if (probe_module)
--				if (__module_text_address(
--					(unsigned long)iter->mdata->call)
--						== probe_module)
--					(*ref_count)++;
--			continue;
-+				if (probe_module ==
-+			__module_text_address((unsigned long)hash_mark->probe))
-+					(*refcount)++;
-+		} else {
-+			disable_marker(iter);
- 		}
--		iter->mdata->call = __mark_empty_function;
--		found++;
- 	}
--	return found;
-+	return 0;
- }
- 
--/* Provides a listing of the markers present in the kernel along with their
-- * callback and format string. */
--static int marker_list_probe_range(marker_probe_func *probe,
--	const struct __mark_marker *begin,
--	const struct __mark_marker *end)
-+/* Update probes, removing the faulty probes.
-+ * Issues a synchronize_sched() when no reference to the module passed
-+ * as parameter is found in the probes so the probe module can be
-+ * safely unloaded from now on. */
-+static int marker_update_probes(struct module *probe_module)
- {
--	const struct __mark_marker *iter;
--	int found = 0;
-+	struct module *mod;
-+	int ret;
-+	int refcount = 0;
- 
--	for (iter = begin; iter < end; iter++) {
--		if (probe)
--			if (probe != iter->mdata->call) continue;
--		printk("name %s func 0x%p format \"%s\"\n",
--			iter->mdata->name,
--			iter->mdata->call, iter->mdata->format);
--		found++;
-+	mutex_lock(&module_mutex);
-+	/* Core kernel markers */
-+	ret = marker_update_probe_range(__start___markers,
-+			__stop___markers, probe_module, &refcount);
-+	if (ret)
-+		goto end;
-+	/* Markers in modules. */
-+	list_for_each_entry(mod, &modules, list)
-+		if (!mod->taints) {
-+			ret = marker_update_probe_range(mod->markers,
-+				mod->markers+mod->num_markers,
-+				probe_module, &refcount);
-+			if (ret)
-+				goto end;
-+		}
-+end:
-+	mutex_unlock(&module_mutex);
-+	if (!ret && probe_module && refcount == 0)
-+		synchronize_sched();
-+	return ret;
-+}
++module_init(example_init)
++module_exit(example_exit)
 +
-+/* Setup the marker according to the data present in the marker hash
-+ * upon module load. If an error occur during the set probe range,
-+ * refuse to load the module. */
-+static int module_marker_update(struct module *mod)
-+{
-+	if (!mod->taints)
-+		return marker_update_probe_range(mod->markers,
-+			mod->markers+mod->num_markers, NULL, NULL);
-+	return 0;
-+}
-+
-+/* Arm the probe : set the callback for each marker and arm the cond_call.
-+ * If the marker update fails, remove the probe and refresh the markers. */
-+int _marker_arm_probe(int flags, const char *name, const char *format,
-+			marker_probe_func *probe, void *pdata)
-+{
-+	int ret = 0;
-+
-+	ret = hash_add_marker(flags, name,
-+			format, probe, pdata);
-+	if (ret)
-+		return ret;
-+	ret = marker_update_probes(NULL);
-+	if (ret) {
-+		hash_remove_marker(name);
-+		ret = marker_update_probes(NULL);
-+		BUG_ON(ret);
- 	}
--	return found;
-+	ret = cond_call_arm(name);
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(_marker_arm_probe);
- 
- /* Get the module to which the probe handler's text belongs.
-  * Called with module_mutex taken.
-  * Returns NULL if the probe handler is not in a module. */
- static struct module *__marker_get_probe_module(const char *name)
- {
--	struct module *mod;
--	const struct __mark_marker *iter;
-+	struct marker_entry *hash_mark;
- 
--	list_for_each_entry(mod, &modules, list) {
--		if (mod->taints)
--			continue;
--		for (iter = mod->markers;
--			iter < mod->markers+mod->num_markers; iter++) {
--			if (strcmp(name, iter->mdata->name) != 0)
--				continue;
--			if (iter->mdata->call)
--				return __module_text_address(
--					(unsigned long)iter->mdata->call);
--		}
--	}
-+	hash_mark = hash_get_marker(name);
-+	if (hash_mark)
-+		return __module_text_address((unsigned long)hash_mark->probe);
- 	return NULL;
- }
- 
-+/* Disarm the probe : disarm the con_call and set the empty callback for each
-+ * marker. */
-+void marker_disarm_probe(const char *name)
-+{
-+	struct module *probe_module;
-+	int ret;
-+
-+	cond_call_disarm(name);
-+
-+	/* In what module is the probe handler ? */
-+	probe_module = __marker_get_probe_module(name);
-+
-+	hash_remove_marker(name);
-+	ret = marker_update_probes(probe_module);
-+	BUG_ON(ret);
-+}
-+EXPORT_SYMBOL_GPL(marker_disarm_probe);
-+
- /* Looks up a marker by its name and instance number within the specificed
-  * range and returns the associated data structure. */
--const struct __mark_marker_data *marker_query_range(const char *name,
-+static const struct __mark_marker *marker_query_range(const char *name,
- 	int instance,
- 	const struct __mark_marker *begin,
- 	const struct __mark_marker *end)
-@@ -742,96 +868,61 @@
- 	int found = 0;
- 
- 	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->mdata->name) != 0)
-+		if (strcmp(name, iter->name) != 0)
- 			continue;
--
- 		if (found++ == instance)
--			return iter->mdata;
-+			return iter;
- 	}
- 	return NULL;
- }
- 
--/* Calls _marker_set_probe_range for the core markers and modules markers.
-- * Marker arm uses the modlist_lock to synchronise. */
--static int marker_set_probe(int flags, const char *name, const char *format,
--				marker_probe_func *probe,
--				void *pdata)
-+/* Looks up a marker by its name and instance number and returns the
-+ * associated data structure. */
-+const struct __mark_marker *marker_query(const char *name, int instance)
- {
- 	struct module *mod;
--	int found = 0;
-+	const struct __mark_marker *mdata;
- 
- 	mutex_lock(&module_mutex);
- 	/* Core kernel markers */
--	found += _marker_set_probe_range(flags, name, format, probe,
--			pdata,
-+	mdata = marker_query_range(name, instance,
- 			__start___markers, __stop___markers);
--	/* Markers in modules. */
--	list_for_each_entry(mod, &modules, list) {
--		if (!mod->taints)
--			found += _marker_set_probe_range(flags, name, format,
--			probe, pdata,
--			mod->markers, mod->markers+mod->num_markers);
-+	if (!mdata) {
-+		/* Markers in modules. */
-+		list_for_each_entry(mod, &modules, list)
-+			if (!mod->taints) {
-+				mdata = marker_query_range(name, instance,
-+					mod->markers,
-+					mod->markers+mod->num_markers);
-+				if (mdata)
-+					break;
-+			}
- 	}
- 	mutex_unlock(&module_mutex);
--	return found;
-+	return mdata;
- }
-+EXPORT_SYMBOL_GPL(marker_query);
- 
--/* Calls _marker_remove_probe_range for the core markers and modules markers.
-- * Marker enabling/disabling use the modlist_lock to synchronise.
-- * ref_count is the number of markers still connected to the same module
-- * as the one in which sits the probe handler currently removed, excluding the
-- * one currently removed. If the count is 0, we issue a synchronize_sched() to
-- * make sure the module can safely unload. */
--static int marker_remove_probe(const char *name)
-+/* Provides a listing of the markers present in the kernel along with their
-+ * callback and format string. */
-+static int marker_list_probe_range(marker_probe_func *probe,
-+	const struct __mark_marker *begin,
-+	const struct __mark_marker *end)
- {
--	struct module *mod, *probe_module;
-+	const struct __mark_marker *iter;
- 	int found = 0;
--	int ref_count = 0;
- 
--	mutex_lock(&module_mutex);
--	/* In what module is the probe handler ? */
--	probe_module = __marker_get_probe_module(name);
--	/* Core kernel markers */
--	found += marker_remove_probe_range(name, probe_module, &ref_count,
--			__start___markers, __stop___markers);
--	/* Markers in modules. */
--	list_for_each_entry(mod, &modules, list) {
--		if (!mod->taints)
--			found += marker_remove_probe_range(name, probe_module,
--				&ref_count,
--				mod->markers, mod->markers+mod->num_markers);
-+	for (iter = begin; iter < end; iter++) {
-+		if (probe)
-+			if (probe != iter->call) continue;
-+		printk("name %s func 0x%p format \"%s\"\n",
-+			iter->name,
-+			iter->call, iter->format);
-+		found++;
- 	}
--	mutex_unlock(&module_mutex);
--	if (!ref_count)
--		synchronize_sched();
- 	return found;
- }
- 
--/* Arming a probe (set handler, enable cond_call). */
--int _marker_arm_probe(int flags, const char *name, const char *format,
--				marker_probe_func *probe, void *pdata)
--{
--	int ret;
--
--	ret = marker_set_probe(flags, name, format, probe, pdata);
--	if (ret)
--		ret = cond_call_arm(name);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(_marker_arm_probe);
--
--/* Disarm a probe (disable cond_call, remove handler). */
--int marker_disarm_probe(const char *name)
--{
--	int ret;
--
--	ret = cond_call_disarm(name);
--	if (ret)
--		ret = marker_remove_probe(name);
--	return ret;
--}
--EXPORT_SYMBOL_GPL(marker_disarm_probe);
--
- /* Calls _marker_list_probe_range for the core markers and modules markers.
-  * Marker listing uses the modlist_lock to synchronise.
-  * TODO : should output this listing to a procfs file. */
-@@ -858,33 +949,11 @@
- 	return found;
- }
- EXPORT_SYMBOL_GPL(marker_list_probe);
--
--/* Looks up a marker by its name and instance number and returns the
-- * associated data structure. */
--const struct __mark_marker_data *marker_query(const char *name, int instance)
-+#else
-+static int module_marker_update(struct module *mod)
- {
--	struct module *mod;
--	const struct __mark_marker_data *mdata;
--
--	mutex_lock(&module_mutex);
--	/* Core kernel markers */
--	mdata = marker_query_range(name, instance,
--			__start___markers, __stop___markers);
--	if (!mdata) {
--		/* Markers in modules. */
--		list_for_each_entry(mod, &modules, list)
--			if (!mod->taints) {
--				mdata = marker_query_range(name, instance,
--					mod->markers,
--					mod->markers+mod->num_markers);
--				if (mdata)
--					break;
--			}
--	}
--	mutex_unlock(&module_mutex);
--	return mdata;
-+	return 0;
- }
--EXPORT_SYMBOL_GPL(marker_query);
- #endif
- 
- #ifdef CONFIG_SMP
-@@ -2247,7 +2316,6 @@
- 	unsigned int condcallindex;
- 	unsigned int condcallstringsindex;
- 	unsigned int markersindex;
--	unsigned int markersdataindex;
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-@@ -2347,7 +2415,6 @@
- 	condcallindex = find_sec(hdr, sechdrs, secstrings, "__cond_call");
- 	condcallstringsindex = find_sec(hdr, sechdrs, secstrings, "__cond_call_strings");
- 	markersindex = find_sec(hdr, sechdrs, secstrings, "__markers");
--	markersdataindex = find_sec(hdr, sechdrs, secstrings, "__markers_data");
- 
- 	/* Don't keep modinfo section */
- 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
-@@ -2373,13 +2440,9 @@
- #ifdef CONFIG_MARKERS
- 	if (markersindex)
- 		sechdrs[markersindex].sh_flags |= SHF_ALLOC;
--	if (markersdataindex)
--		sechdrs[markersdataindex].sh_flags |= SHF_ALLOC;
- #else
- 	if (markersindex)
- 		sechdrs[markersindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
--	if (markersdataindex)
--		sechdrs[markersdataindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
- #endif
- 
- 	/* Check module struct version now, before we try to use module. */
-@@ -2590,6 +2653,10 @@
- 
- 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
- 
-+	err = module_marker_update(mod);
-+	if (err < 0)
-+		goto cleanup;
-+
- 	module_cond_call_setup(mod);
- 
- 	err = module_finalize(hdr, sechdrs, mod);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Linux Trace Toolkit example");
++------------------------------ CUT -------------------------------------
++Sequence of operations : (as root)
++make
++insmod marker-example.ko
++insmod probe-example.ko
++  (it is important to load the probe after the marked code)
++cat /proc/marker-example (returns an expected error)
++rmmod marker-example probe-example
++dmesg
++------------------------------ CUT -------------------------------------
 
 -- 
 Mathieu Desnoyers
