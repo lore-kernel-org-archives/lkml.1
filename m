@@ -1,219 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763561AbXE2H3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764192AbXE2H3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763561AbXE2H3T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 03:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXE2H3N
+	id S1764192AbXE2H3f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 03:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761036AbXE2H30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 03:29:13 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:26802 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754421AbXE2H3M (ORCPT
+	Tue, 29 May 2007 03:29:26 -0400
+Received: from heisenberg.zen.co.uk ([212.23.3.141]:49481 "EHLO
+	heisenberg.zen.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761064AbXE2H3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 03:29:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=6YBfcqgjJzJLNvadCqABGbGEF66EvyWhu5XpRllm+ZUBmqgFIPRmRmmb0Jr5i/cEiNRv++V9tl4XhJXTt89NF0bbih1zl090mXZd8N8t1jbrjlX0zX637jovbLo3l95/MwkWzvlO+8nQJbq7KiS5Go9QxNCxOsFynkOecN3O2Dk=  ;
-X-YMail-OSG: WTCKzUIVM1m2v3EPvcqvEbTYLSzNlZ8RikpSccwVXKzgJ2nULV.hb8m9Cn8euSPyDQaT9RC5qA--
-Message-ID: <465BD63B.5020603@yahoo.com.au>
-Date: Tue, 29 May 2007 17:28:59 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 29 May 2007 03:29:25 -0400
+Message-ID: <465BD64A.3040302@gmail.com>
+Date: Tue, 29 May 2007 08:29:14 +0100
+From: Matt Keenan <tank.en.mate@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Peter Linich <plinich@cse.unsw.edu.au>, Ram Pai <linuxram@us.ibm.com>
-Subject: Re: [PATCH/RFC] Is it OK for 'read' to return nuls for a file   that
- never had nuls in it?
-References: <18011.51290.257450.26100@notabene.brown>	<465BCAA9.3070707@yahoo.com.au> <18011.53140.20314.43413@notabene.brown>
-In-Reply-To: <18011.53140.20314.43413@notabene.brown>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: young dave <hidave.darkstar@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, "J. Bruce Fields" <bfields@fieldses.org>,
+       Andrew Morton <akpm@linux-foundation.org>, neilb@suse.de,
+       nfs@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [NFS] [PATCH] NFSD: fix uninitialized variable
+References: <20070527103442.GA10594@havoc.gtf.org>	 <20070529030050.GB20631@fieldses.org> <465B9BB9.7060300@garzik.org> <a8e1da0705282131w72fbed65g8cb28589202298c1@mail.gmail.com>
+In-Reply-To: <a8e1da0705282131w72fbed65g8cb28589202298c1@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Originating-Heisenberg-IP: [82.69.27.224]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Tuesday May 29, nickpiggin@yahoo.com.au wrote:
-> 
->>>Questions:
->>>  - Is this a problem, and should it be fixed (I think "yes").
->>
->>I think you are right.
-> 
-> 
-> That's encouraging - thanks.
-> 
-> 
->>>  - Is the patch appropriate, and does it have no negative
->>>    consequences?.
->>>    (Obviously some comments should be tidied up to reflect the new
->>>    reality).
->>
->>Would it be better (and closer to following the existing logic) if
->>we sampled i_size before testing each page for uptodateness? It might
->>also cost a little less in the fastpath case of finding an uptodate
->>page.
-> 
-> 
-> Uhm. no.
-> 
-> It doesn't address the issue which is that we need to check i_size
-> *after* we have got hold of the page and believe it to be uptodate.
+young dave wrote:
+> Hi,
+>
+>> Given what you said above, I don't see gcc, on its best day, will ever
+>> know enough to validate that that variable is indeed always initialized.
+>>   So I would vote for silencing it on those grounds.
+>
+> I agree too. How about this one:
+>
+> diff -dur linux/fs/nfsd/nfs4acl.c linux.new/fs/nfsd/nfs4acl.c
+> --- linux/fs/nfsd/nfs4acl.c     2007-05-29 12:28:29.000000000 +0000
+> +++ linux.new/fs/nfsd/nfs4acl.c 2007-05-29 12:30:45.000000000 +0000
+> @@ -183,8 +183,6 @@
+> summarize_posix_acl(struct posix_acl *acl, struct posix_acl_summary *pas)
+> {
+>        struct posix_acl_entry *pa, *pe;
+> -       pas->users = 0;
+> -       pas->groups = 0;
+>        pas->mask = 07;
+>
+>        pe = acl->a_entries + acl->a_count;
+> @@ -229,6 +227,7 @@
+>        int eflag = ((flags & NFS4_ACL_TYPE_DEFAULT) ?
+>                NFS4_INHERITANCE_FLAGS | NFS4_ACE_INHERIT_ONLY_ACE : 0);
+>
+> +       memset(pas, 0, sizeof(struct posix_acl_summary);
+>        BUG_ON(pacl->a_count < 3);
+>        summarize_posix_acl(pacl, &pas);
+>
+                                                                          
+^^^^^
 
-Hmm OK, I thought the logic worked for a single page but was broken for
-subsequent patches... but we can readahead the first page before checking
-it is uptodate, can't we? (or even if we didn't, someone else might
-concurrently).
-
-But then I think a problem remains after your patch that if the page is
-partially truncated after you test that it is uptodate and resample i_size,
-then the page tail can be zero filled and then you'll again get back a
-nul tail from read(2), don't we? We could probably fix this beautifully by
-doing a lock_page over do_generic_mapping_read... ha ha, that would be
-popular.
-
-For now I think your patch probably eliminates some classes of the bug
-completely and remainder are a small race-window rather than a straight-line
-bug, so it is probably the best way to go for now. I'd say
-Acked-by: Nick Piggin <npiggin@suse.de>. Ram Pai I believe also worked on
-similar issues with me, so I'll cc him.
-
-Longer term, I have a few other issues with the fs layer returning non
-uptodate pages to do_generic_mapping_read which could also require wider
-scale rework...
-
-> 
-> And just to check, I race the test with your patch and I get a nice
-> little row of "!!!!!" - it is finding zeros still.
-> 
-> But we could possibly remove the early checks on end_index, that
-> makes sense (I've also moved the comment).
-> 
-> Thanks,
-> NeilBrown
-> 
-> 
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
-> ### Diffstat output
->  ./mm/filemap.c |   72 ++++++++++++++++++++++-----------------------------------
->  1 file changed, 28 insertions(+), 44 deletions(-)
-> 
-> diff .prev/mm/filemap.c ./mm/filemap.c
-> --- .prev/mm/filemap.c	2007-05-29 16:45:26.000000000 +1000
-> +++ ./mm/filemap.c	2007-05-29 16:58:23.000000000 +1000
-> @@ -875,13 +875,11 @@ void do_generic_mapping_read(struct addr
->  {
->  	struct inode *inode = mapping->host;
->  	unsigned long index;
-> -	unsigned long end_index;
->  	unsigned long offset;
->  	unsigned long last_index;
->  	unsigned long next_index;
->  	unsigned long prev_index;
->  	unsigned int prev_offset;
-> -	loff_t isize;
->  	struct page *cached_page;
->  	int error;
->  	struct file_ra_state ra = *_ra;
-> @@ -894,27 +892,12 @@ void do_generic_mapping_read(struct addr
->  	last_index = (*ppos + desc->count + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
->  	offset = *ppos & ~PAGE_CACHE_MASK;
->  
-> -	isize = i_size_read(inode);
-> -	if (!isize)
-> -		goto out;
-> -
-> -	end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
->  	for (;;) {
->  		struct page *page;
-> +		unsigned long end_index;
-> +		loff_t isize;
->  		unsigned long nr, ret;
->  
-> -		/* nr is the maximum number of bytes to copy from this page */
-> -		nr = PAGE_CACHE_SIZE;
-> -		if (index >= end_index) {
-> -			if (index > end_index)
-> -				goto out;
-> -			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
-> -			if (nr <= offset) {
-> -				goto out;
-> -			}
-> -		}
-> -		nr = nr - offset;
-> -
->  		cond_resched();
->  		if (index == next_index)
->  			next_index = page_cache_readahead(mapping, &ra, filp,
-> @@ -929,6 +912,32 @@ find_page:
->  		if (!PageUptodate(page))
->  			goto page_not_up_to_date;
->  page_ok:
-> +		/*
-> +		 * i_size must be checked after we know the page is Uptodate.
-> +		 *
-> +		 * Checking i_size after the check allows us to calculate
-> +		 * the correct value for "nr", which means the zero-filled
-> +		 * part of the page is not copied back to userspace (unless
-> +		 * another truncate extends the file - this is desired though).
-> +		 */
-> +
-> +		isize = i_size_read(inode);
-> +		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-> +		if (unlikely(!isize || index > end_index)) {
-> +			page_cache_release(page);
-> +			goto out;
-> +		}
-> +
-> +		/* nr is the maximum number of bytes to copy from this page */
-> +		nr = PAGE_CACHE_SIZE;
-> +		if (index == end_index) {
-> +			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
-> +			if (nr <= offset) {
-> +				page_cache_release(page);
-> +				goto out;
-> +			}
-> +		}
-> +		nr = nr - offset;
->  
->  		/* If users can be writing to this page using arbitrary
->  		 * virtual addresses, take care about potential aliasing
-> @@ -1015,31 +1024,6 @@ readpage:
->  			unlock_page(page);
->  		}
->  
-> -		/*
-> -		 * i_size must be checked after we have done ->readpage.
-> -		 *
-> -		 * Checking i_size after the readpage allows us to calculate
-> -		 * the correct value for "nr", which means the zero-filled
-> -		 * part of the page is not copied back to userspace (unless
-> -		 * another truncate extends the file - this is desired though).
-> -		 */
-> -		isize = i_size_read(inode);
-> -		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
-> -		if (unlikely(!isize || index > end_index)) {
-> -			page_cache_release(page);
-> -			goto out;
-> -		}
-> -
-> -		/* nr is the maximum number of bytes to copy from this page */
-> -		nr = PAGE_CACHE_SIZE;
-> -		if (index == end_index) {
-> -			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
-> -			if (nr <= offset) {
-> -				page_cache_release(page);
-> -				goto out;
-> -			}
-> -		}
-> -		nr = nr - offset;
->  		goto page_ok;
->  
->  readpage_error:
-> 
+apart from the fact that this patch won't compile let alone run...
 
 
--- 
-SUSE Labs, Novell Inc.
+Matt
+
