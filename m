@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759555AbXE2PCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbXE2PKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759555AbXE2PCr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 11:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbXE2PCl
+	id S1758039AbXE2PKs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 11:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbXE2PKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 11:02:41 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:34040 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750756AbXE2PCk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 11:02:40 -0400
-Date: Tue, 29 May 2007 08:01:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+	Tue, 29 May 2007 11:10:38 -0400
+Received: from smtp.osdl.org ([207.189.120.12]:37796 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750924AbXE2PKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 11:10:37 -0400
+Date: Tue, 29 May 2007 08:01:45 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH][EXPERIMENTAL] Make kernel threads nonfreezable by
- default
-In-Reply-To: <200705291415.31970.rjw@sisk.pl>
-Message-ID: <alpine.LFD.0.98.0705290759020.26602@woody.linux-foundation.org>
-References: <200705270012.59177.rjw@sisk.pl> <200705282011.11526.rjw@sisk.pl>
- <20070529113114.GB23046@elf.ucw.cz> <200705291415.31970.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Ruben <nahoo82@terra.es>, linux-pci@atrey.karlin.mff.cuni.cz,
+       Greg KH <greg@kroah.com>,
+       "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>,
+       tom.l.nguyen@intel.com, linux-pcmcia@lists.infradead.org,
+       Robert de Rooy <robert.de.rooy@gmail.com>, Alan Cox <alan@redhat.com>,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, Gregor Jasny <gjasny@googlemail.com>,
+       sparclinux@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [2/4] 2.6.22-rc3: known regressions
+Message-ID: <20070529080145.60be9018@freepuppy>
+In-Reply-To: <465C22F4.8080505@googlemail.com>
+References: <465C188F.9000900@googlemail.com>
+	<465C22F4.8080505@googlemail.com>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 May 2007 14:56:20 +0200
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+
+> Hi all,
+> 
+> Here is a list of some known regressions in 2.6.22-rc3.
+> 
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+> 
+> 
+> 
+> Networking
+> 
+> Subject    : Network card not usable - sky2
+> References : http://bugzilla.kernel.org/show_bug.cgi?id=8539
+> Submitter  : Ruben <nahoo82@terra.es>
+> Status     : Unknown
+> 
 
 
-On Tue, 29 May 2007, Rafael J. Wysocki wrote:
->
->  64 files changed, 230 insertions(+), 113 deletions(-)
+Not a regression. Read the bug report:
+	Most recent kernel where this bug did *NOT* occur:
 
-Heh. Your previous patch removed more lines than it added, this one adds 
-more lines than it removes. Snif..
+	It's been happening for a long time (I'd say always).
 
-I realize that it's all from that Documentation update:
 
- Documentation/power/freezing-of-tasks.txt |  160 ++++++++++++++++++++++++++++++
- Documentation/power/kernel_threads.txt    |   40 -------
- Documentation/power/swsusp.txt            |   18 ---
 
-so it's all good. Anyway, I'll happily do this (along with the patch to 
-not do freezer at all for STR) after 2.6.22 is out, but until then I'll 
-obviously be ignoring the patches flying around..
+There is a regression since 2.6.22-rc1 where the b44 driver has
+receive performance/interrupt lockup issues.
 
-		Linus
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
