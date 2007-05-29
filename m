@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764192AbXE2H3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763589AbXE2Hen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764192AbXE2H3f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 03:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761036AbXE2H30
+	id S1763589AbXE2Hen (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 03:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXE2Heg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 03:29:26 -0400
-Received: from heisenberg.zen.co.uk ([212.23.3.141]:49481 "EHLO
-	heisenberg.zen.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761064AbXE2H3Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 03:29:25 -0400
-Message-ID: <465BD64A.3040302@gmail.com>
-Date: Tue, 29 May 2007 08:29:14 +0100
-From: Matt Keenan <tank.en.mate@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	Tue, 29 May 2007 03:34:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54705 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752268AbXE2Hef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 03:34:35 -0400
 MIME-Version: 1.0
-To: young dave <hidave.darkstar@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>, "J. Bruce Fields" <bfields@fieldses.org>,
-       Andrew Morton <akpm@linux-foundation.org>, neilb@suse.de,
-       nfs@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [NFS] [PATCH] NFSD: fix uninitialized variable
-References: <20070527103442.GA10594@havoc.gtf.org>	 <20070529030050.GB20631@fieldses.org> <465B9BB9.7060300@garzik.org> <a8e1da0705282131w72fbed65g8cb28589202298c1@mail.gmail.com>
-In-Reply-To: <a8e1da0705282131w72fbed65g8cb28589202298c1@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Originating-Heisenberg-IP: [82.69.27.224]
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Satoru Takeuchi <takeuchi_satoru.jp@fujitsu.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] signal: multithread program returns with wrong errno on receiving SIGSTOP
+In-Reply-To: Oleg Nesterov's message of  Monday, 28 May 2007 11:07:53 +0400 <20070528070753.GA989@tv-sign.ru>
+X-Shopping-List: (1) Conscientious socks
+   (2) Capricious configurations
+   (3) Inconspicuous acidic animal propositions
+   (4) Fanatical despondent deception
+   (5) Tenacious perilous connotations
+Message-Id: <20070529073354.729431F8511@magilla.localdomain>
+Date: Tue, 29 May 2007 00:33:54 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-young dave wrote:
-> Hi,
->
->> Given what you said above, I don't see gcc, on its best day, will ever
->> know enough to validate that that variable is indeed always initialized.
->>   So I would vote for silencing it on those grounds.
->
-> I agree too. How about this one:
->
-> diff -dur linux/fs/nfsd/nfs4acl.c linux.new/fs/nfsd/nfs4acl.c
-> --- linux/fs/nfsd/nfs4acl.c     2007-05-29 12:28:29.000000000 +0000
-> +++ linux.new/fs/nfsd/nfs4acl.c 2007-05-29 12:30:45.000000000 +0000
-> @@ -183,8 +183,6 @@
-> summarize_posix_acl(struct posix_acl *acl, struct posix_acl_summary *pas)
-> {
->        struct posix_acl_entry *pa, *pe;
-> -       pas->users = 0;
-> -       pas->groups = 0;
->        pas->mask = 07;
->
->        pe = acl->a_entries + acl->a_count;
-> @@ -229,6 +227,7 @@
->        int eflag = ((flags & NFS4_ACL_TYPE_DEFAULT) ?
->                NFS4_INHERITANCE_FLAGS | NFS4_ACE_INHERIT_ONLY_ACE : 0);
->
-> +       memset(pas, 0, sizeof(struct posix_acl_summary);
->        BUG_ON(pacl->a_count < 3);
->        summarize_posix_acl(pacl, &pas);
->
-                                                                          
-^^^^^
+Your fix seems like the only way to go.  From skimming all the ERESTART*
+uses, I think that in all cases (except for n_tty.c:job_control before your
+patch), TIF_SIGPENDING is indeed set when a thread returns -ERESTART*.
 
-apart from the fact that this patch won't compile let alone run...
+But it makes me realize that there is a danger of leaking a -ERESTART*
+return code to userland when TIF_SIGPENDING gets cleared by another thread
+doing a recalc_sigpending_tsk.  Because of -ERESTART* I think we must make
+it a rule that no thread can clear another thread's TIF_SIGPENDING, only
+set it (unless it's known to be stopped in the signal code or something).
+>From our recent work on it, I think that do_sigaction is in fact the only
+place this can happen.  So that says we should err in the other direction
+from what I said before in do_sigaction, and not have it do recalc at all.
 
 
-Matt
-
+Thanks,
+Roland
