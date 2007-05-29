@@ -1,216 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbXE2N75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbXE2OAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255AbXE2N75 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXE2N7n
+	id S1754164AbXE2OAY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXE2N7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:59:43 -0400
+	Tue, 29 May 2007 09:59:44 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750753AbXE2N7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750699AbXE2N7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 09:59:42 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:16 -0700
+Date: Tue, 29 May 2007 06:48:31 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmG1Y019632@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmVGp019827@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 02/22] 2.6.22-rc3 perfmon2 : generic kernel modifications
+Subject: [PATCH 17/22] 2.6.22-rc3 perfmon2 : modified powerpc files
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains all the modified generic files:
-
-linux/include/linux/sched.h:
-	- add pfm_context pointer to struct task_struct. This is used
-	  to connect a perfmon2 context to a task when doing per-thread
-	  monitoring.
-
-linux/include/linux/syscalls.h:
-	- declare prototypes of our new system calls
-
-linux/kernel/sched.c:
-	- add include perfmon.h to ensure pfm_ctxsw() has a defined prototype
-
-linux/kernel/sys_ni.c:
-	- add perfmon2 cond_syscall() definitions (when CONFIG_PERFMON is off)
-
-drivers/oprofile/oprofile_files.c:
-linux-2.6.22.base/drivers/oprofile/timer_int.c:
-include/linux/oprofile.h:
-	- add new implementation entry for oprofilefs. used to check if oprofile is
-	  using perfmon vs. runs natively
+This patch contains the modified powerpc files.
 
 
+The modified files are as follows:
 
-Only in linux-2.6.22/Documentation: perfmon2.txt
-diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/Makefile linux-2.6.22/Makefile
---- linux-2.6.22.base/Makefile	2007-05-29 03:17:15.000000000 -0700
-+++ linux-2.6.22/Makefile	2007-05-29 03:24:14.000000000 -0700
-@@ -553,7 +553,7 @@ export mod_strip_cmd
+arch/powerpc/Kconfig:
+	- add link to perfmon menuconfig options
+
+arch/powerpc/Makefile:
+	- add perfmon subdir
+
+arch/powerpc/kernel/entry_64.S:
+	- add hook for extra work before kernel exit. Need to block a thread after a overflow with
+	  user level notification. Also needed to do some bookeeeping, such as reset certain counters
+	  and cleanup in some difficult corner cases
+
+arch/powerpc/kernel/process.c:
+	- add hook in exit_thread() to cleanup perfmon2 context
+	- add hook in copy_thread() to cleanup perfmon2 context in child (perfmon2 context
+	  is never inherited)
+	- add hook in __switch_to() for PMU state save/restore
+
+arch/powerpc/kernel/systbl.S:
+	- add new system calls definitions
+
+include/asm-powerpc/thread_info.h:
+	- add TIF_PERFMON which is used for PMU context switching in __switch_to()
+
+include/asm-powerpc/unistd.h:
+	- add new system calls
+
+
+
+
+diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/Kconfig linux-2.6.22/arch/powerpc/Kconfig
+--- linux-2.6.22.base/arch/powerpc/Kconfig	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/powerpc/Kconfig	2007-05-29 03:24:14.000000000 -0700
+@@ -392,6 +392,9 @@ config NOT_COHERENT_CACHE
  
- 
- ifeq ($(KBUILD_EXTMOD),)
--core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
-+core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ perfmon/
- 
- vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
- 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
-diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/drivers/oprofile/oprofile_files.c linux-2.6.22/drivers/oprofile/oprofile_files.c
---- linux-2.6.22.base/drivers/oprofile/oprofile_files.c	2007-05-29 03:17:41.000000000 -0700
-+++ linux-2.6.22/drivers/oprofile/oprofile_files.c	2007-05-29 03:24:14.000000000 -0700
-@@ -117,7 +117,17 @@ static ssize_t dump_write(struct file * 
- static const struct file_operations dump_fops = {
- 	.write		= dump_write,
- };
-- 
+ config CONFIG_CHECK_CACHE_COHERENCY
+ 	bool
++ 
++source "arch/powerpc/perfmon/Kconfig"
 +
-+static ssize_t implementation(struct file * file, char __user * buf, size_t count, loff_t * offset)
-+{
-+	return oprofilefs_str_to_user(oprofile_ops.implementation, buf, count, offset);
-+}
-+
-+
-+static struct file_operations implementation_fops = {
-+	.read		= implementation,
-+};
-+
- void oprofile_create_files(struct super_block * sb, struct dentry * root)
- {
- 	oprofilefs_create_file(sb, root, "enable", &enable_fops);
-@@ -127,6 +137,7 @@ void oprofile_create_files(struct super_
- 	oprofilefs_create_ulong(sb, root, "buffer_watershed", &fs_buffer_watershed);
- 	oprofilefs_create_ulong(sb, root, "cpu_buffer_size", &fs_cpu_buffer_size);
- 	oprofilefs_create_file(sb, root, "cpu_type", &cpu_type_fops); 
-+	oprofilefs_create_file(sb, root, "implementation", &implementation_fops);
- 	oprofilefs_create_file(sb, root, "backtrace_depth", &depth_fops);
- 	oprofilefs_create_file(sb, root, "pointer_size", &pointer_size_fops);
- 	oprofile_create_stats_files(sb, root);
-diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/drivers/oprofile/timer_int.c linux-2.6.22/drivers/oprofile/timer_int.c
---- linux-2.6.22.base/drivers/oprofile/timer_int.c	2007-05-29 03:17:41.000000000 -0700
-+++ linux-2.6.22/drivers/oprofile/timer_int.c	2007-05-29 03:24:14.000000000 -0700
-@@ -43,4 +43,5 @@ void __init oprofile_timer_init(struct o
- 	ops->start = timer_start;
- 	ops->stop = timer_stop;
- 	ops->cpu_type = "timer";
-+	ops->implementation = "timer";
- }
-diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/include/linux/oprofile.h linux-2.6.22/include/linux/oprofile.h
---- linux-2.6.22.base/include/linux/oprofile.h	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/include/linux/oprofile.h	2007-05-29 03:24:14.000000000 -0700
-@@ -39,6 +39,8 @@ struct oprofile_operations {
- 	void (*backtrace)(struct pt_regs * const regs, unsigned int depth);
- 	/* CPU identification string. */
- 	char * cpu_type;
-+	/* Identify method of  string. */
-+	char * implementation;
- };
+ endmenu
  
- /**
-Only in linux-2.6.22/include/linux: perfmon.h
-Only in linux-2.6.22/include/linux: perfmon_dfl_smpl.h
-Only in linux-2.6.22/include/linux: perfmon_fmt.h
-Only in linux-2.6.22/include/linux: perfmon_pmu.h
-diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/include/linux/sched.h linux-2.6.22/include/linux/sched.h
---- linux-2.6.22.base/include/linux/sched.h	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/include/linux/sched.h	2007-05-29 03:24:14.000000000 -0700
-@@ -89,6 +89,7 @@ struct sched_param {
- struct exec_domain;
- struct futex_pi_state;
- struct bio;
-+struct pfm_context;
+ source "init/Kconfig"
+diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/Makefile linux-2.6.22/arch/powerpc/Makefile
+--- linux-2.6.22.base/arch/powerpc/Makefile	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/powerpc/Makefile	2007-05-29 03:24:14.000000000 -0700
+@@ -137,6 +137,7 @@ core-y				+= arch/powerpc/kernel/ \
+ 				   arch/powerpc/platforms/
+ core-$(CONFIG_MATH_EMULATION)	+= arch/powerpc/math-emu/
+ core-$(CONFIG_XMON)		+= arch/powerpc/xmon/
++core-$(CONFIG_PERFMON)		+= arch/powerpc/perfmon/
  
- /*
-  * List of flags we want to share for kernel threads,
-@@ -1076,6 +1077,9 @@ struct task_struct {
- #ifdef CONFIG_FAULT_INJECTION
- 	int make_it_fail;
+ drivers-$(CONFIG_OPROFILE)	+= arch/powerpc/oprofile/
+ 
+diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/kernel/entry_32.S linux-2.6.22/arch/powerpc/kernel/entry_32.S
+--- linux-2.6.22.base/arch/powerpc/kernel/entry_32.S	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/powerpc/kernel/entry_32.S	2007-05-29 03:24:14.000000000 -0700
+@@ -38,7 +38,7 @@
+  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
+  */
+ #if MSR_KERNEL >= 0x10000
+-#define LOAD_MSR_KERNEL(r, x)	lis r,(x)@h; ori r,r,(x)@l
++#define LOAD_MSR_KERNEL(r, x)	lis r,(x)@ha; ori r,r,(x)@l
+ #else
+ #define LOAD_MSR_KERNEL(r, x)	li r,(x)
  #endif
+diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/kernel/entry_64.S linux-2.6.22/arch/powerpc/kernel/entry_64.S
+--- linux-2.6.22.base/arch/powerpc/kernel/entry_64.S	2007-05-29 03:20:21.000000000 -0700
++++ linux-2.6.22/arch/powerpc/kernel/entry_64.S	2007-05-29 03:24:14.000000000 -0700
+@@ -587,6 +587,10 @@ user_work:
+ 	b	.ret_from_except_lite
+ 
+ 1:	bl	.save_nvgprs
 +#ifdef CONFIG_PERFMON
-+	struct pfm_context *pfm_context;
-+#endif
- };
- 
- static inline pid_t process_group(struct task_struct *tsk)
-diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/include/linux/syscalls.h linux-2.6.22/include/linux/syscalls.h
---- linux-2.6.22.base/include/linux/syscalls.h	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/include/linux/syscalls.h	2007-05-29 03:24:14.000000000 -0700
-@@ -29,6 +29,13 @@ struct msqid_ds;
- struct new_utsname;
- struct nfsctl_arg;
- struct __old_kernel_stat;
-+struct pfarg_ctx;
-+struct pfarg_pmc;
-+struct pfarg_pmd;
-+struct pfarg_start;
-+struct pfarg_load;
-+struct pfarg_setinfo;
-+struct pfarg_setdesc;
- struct pollfd;
- struct rlimit;
- struct rusage;
-@@ -611,4 +618,27 @@ asmlinkage long sys_eventfd(unsigned int
- 
- int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
- 
-+asmlinkage long sys_pfm_create_context(struct pfarg_ctx __user *ureq,
-+				       void __user *uarg, size_t smpl_size);
-+asmlinkage long sys_pfm_write_pmcs(int fd, struct pfarg_pmc __user *ureq,
-+				   int count);
-+asmlinkage long sys_pfm_write_pmds(int fd, struct pfarg_pmd __user *ureq,
-+				   int count);
-+asmlinkage long sys_pfm_read_pmds(int fd, struct pfarg_pmd __user *ureq,
-+				  int count);
-+asmlinkage long sys_pfm_restart(int fd);
-+asmlinkage long sys_pfm_stop(int fd);
-+asmlinkage long sys_pfm_start(int fd, struct pfarg_start __user *ureq);
-+asmlinkage long sys_pfm_load_context(int fd, struct pfarg_load __user *ureq);
-+asmlinkage long sys_pfm_unload_context(int fd);
-+asmlinkage long sys_pfm_delete_evtsets(int fd,
-+				       struct pfarg_setinfo __user *ureq,
-+				       int count);
-+asmlinkage long sys_pfm_create_evtsets(int fd,
-+				       struct pfarg_setdesc __user *ureq,
-+				       int count);
-+asmlinkage long sys_pfm_getinfo_evtsets(int fd,
-+					struct pfarg_setinfo __user *ureq,
-+					int count);
-+
- #endif
-diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/kernel/sched.c linux-2.6.22/kernel/sched.c
---- linux-2.6.22.base/kernel/sched.c	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/kernel/sched.c	2007-05-29 03:24:14.000000000 -0700
-@@ -53,6 +53,7 @@
- #include <linux/kprobes.h>
- #include <linux/delayacct.h>
- #include <linux/reciprocal_div.h>
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	.__pfm_handle_work
++#endif /* CONFIG_PERFMON */
+ 	li	r3,0
+ 	addi	r4,r1,STACK_FRAME_OVERHEAD
+ 	bl	.do_signal
+diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/kernel/process.c linux-2.6.22/arch/powerpc/kernel/process.c
+--- linux-2.6.22.base/arch/powerpc/kernel/process.c	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/powerpc/kernel/process.c	2007-05-29 03:24:14.000000000 -0700
+@@ -33,6 +33,7 @@
+ #include <linux/mqueue.h>
+ #include <linux/hardirq.h>
+ #include <linux/utsname.h>
 +#include <linux/perfmon.h>
  
- #include <asm/tlb.h>
- #include <asm/unistd.h>
-diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/kernel/sys_ni.c linux-2.6.22/kernel/sys_ni.c
---- linux-2.6.22.base/kernel/sys_ni.c	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/kernel/sys_ni.c	2007-05-29 03:24:14.000000000 -0700
-@@ -113,6 +113,19 @@ cond_syscall(sys_vm86);
- cond_syscall(compat_sys_ipc);
- cond_syscall(compat_sys_sysctl);
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+@@ -322,6 +323,9 @@ struct task_struct *__switch_to(struct t
+ 		new_thread->start_tb = current_tb;
+ 	}
+ #endif
++	if (test_tsk_thread_flag(new, TIF_PERFMON_CTXSW)
++	    || test_tsk_thread_flag(prev, TIF_PERFMON_CTXSW))
++		pfm_ctxsw(prev, new);
  
-+cond_syscall(sys_pfm_create_context);
-+cond_syscall(sys_pfm_write_pmcs);
-+cond_syscall(sys_pfm_write_pmds);
-+cond_syscall(sys_pfm_read_pmds);
-+cond_syscall(sys_pfm_restart);
-+cond_syscall(sys_pfm_start);
-+cond_syscall(sys_pfm_stop);
-+cond_syscall(sys_pfm_load_context);
-+cond_syscall(sys_pfm_unload_context);
-+cond_syscall(sys_pfm_create_evtsets);
-+cond_syscall(sys_pfm_delete_evtsets);
-+cond_syscall(sys_pfm_getinfo_evtsets);
-+ 
- /* arch-specific weak syscall entries */
- cond_syscall(sys_pciconfig_read);
- cond_syscall(sys_pciconfig_write);
-Only in linux-2.6.22: perfmon
+ 	local_irq_save(flags);
+ 
+@@ -455,6 +459,7 @@ void show_regs(struct pt_regs * regs)
+ void exit_thread(void)
+ {
+ 	discard_lazy_cpu_state();
++	pfm_exit_thread(current);
+ }
+ 
+ void flush_thread(void)
+@@ -570,6 +575,7 @@ int copy_thread(int nr, unsigned long cl
+ #else
+ 	kregs->nip = (unsigned long)ret_from_fork;
+ #endif
++	pfm_copy_thread(p);
+ 
+ 	return 0;
+ }
+Only in linux-2.6.22/arch/powerpc: perfmon
+Only in linux-2.6.22/include/asm-powerpc: perfmon.h
+Only in linux-2.6.22/include/asm-powerpc: perfmon_api.h
+diff --exclude=.git -urp linux-2.6.22.base/include/asm-powerpc/systbl.h linux-2.6.22/include/asm-powerpc/systbl.h
+--- linux-2.6.22.base/include/asm-powerpc/systbl.h	2007-05-29 03:17:57.000000000 -0700
++++ linux-2.6.22/include/asm-powerpc/systbl.h	2007-05-29 03:24:14.000000000 -0700
+@@ -311,3 +311,15 @@ COMPAT_SYS_SPU(utimensat)
+ COMPAT_SYS_SPU(signalfd)
+ COMPAT_SYS_SPU(timerfd)
+ SYSCALL_SPU(eventfd)
++SYSCALL(pfm_create_context)
++SYSCALL(pfm_write_pmcs)
++SYSCALL(pfm_write_pmds)
++SYSCALL(pfm_read_pmds)
++SYSCALL(pfm_load_context)
++SYSCALL(pfm_start)
++SYSCALL(pfm_stop)
++SYSCALL(pfm_restart)
++SYSCALL(pfm_create_evtsets)
++SYSCALL(pfm_getinfo_evtsets)
++SYSCALL(pfm_delete_evtsets)
++SYSCALL(pfm_unload_context)
+diff --exclude=.git -urp linux-2.6.22.base/include/asm-powerpc/thread_info.h linux-2.6.22/include/asm-powerpc/thread_info.h
+--- linux-2.6.22.base/include/asm-powerpc/thread_info.h	2007-05-29 03:20:21.000000000 -0700
++++ linux-2.6.22/include/asm-powerpc/thread_info.h	2007-05-29 03:24:14.000000000 -0700
+@@ -112,16 +112,18 @@ static inline struct thread_info *curren
+ #define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
+ 					   TIF_NEED_RESCHED */
+ #define TIF_32BIT		4	/* 32 bit binary */
+-#define TIF_RUNLATCH		5	/* Is the runlatch enabled? */
+-#define TIF_ABI_PENDING		6	/* 32/64 bit switch needed */
++#define TIF_PERFMON_WORK	5	/* work for pfm_handle_work() */
++#define TIF_PERFMON_CTXSW	6	/* perfmon needs ctxsw calls */
+ #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+ #define TIF_SINGLESTEP		8	/* singlestepping active */
+ #define TIF_MEMDIE		9
+ #define TIF_SECCOMP		10	/* secure computing */
+ #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
+-#define TIF_NOERROR		14	/* Force successful syscall return */
+-#define TIF_RESTORE_SIGMASK	15	/* Restore signal mask in do_signal */
+-#define TIF_FREEZE		16	/* Freezing for suspend */
++#define TIF_NOERROR		12	/* Force successful syscall return */
++#define TIF_RESTORE_SIGMASK	13	/* Restore signal mask in do_signal */
++#define TIF_FREEZE		14	/* Freezing for suspend */
++#define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
++#define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -129,8 +131,8 @@ static inline struct thread_info *curren
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_32BIT		(1<<TIF_32BIT)
+-#define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+-#define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
++#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
++#define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+ #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+@@ -138,10 +140,14 @@ static inline struct thread_info *curren
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
++#define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
++#define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
++#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
++#define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
+ 
+-#define _TIF_USER_WORK_MASK	( _TIF_SIGPENDING | \
+-				 _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
++#define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | \
++				 _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK| _TIF_PERFMON_WORK)
+ #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
+ 
+ /* Bits in local_flags */
+diff --exclude=.git -urp linux-2.6.22.base/include/asm-powerpc/unistd.h linux-2.6.22/include/asm-powerpc/unistd.h
+--- linux-2.6.22.base/include/asm-powerpc/unistd.h	2007-05-29 03:17:57.000000000 -0700
++++ linux-2.6.22/include/asm-powerpc/unistd.h	2007-05-29 03:24:14.000000000 -0700
+@@ -330,10 +330,22 @@
+ #define __NR_signalfd		305
+ #define __NR_timerfd		306
+ #define __NR_eventfd		307
++#define __NR_pfm_create_context	308
++#define __NR_pfm_write_pmcs	(__NR_pfm_create_context+1)
++#define __NR_pfm_write_pmds	(__NR_pfm_create_context+2)
++#define __NR_pfm_read_pmds	(__NR_pfm_create_context+3)
++#define __NR_pfm_load_context	(__NR_pfm_create_context+4)
++#define __NR_pfm_start		(__NR_pfm_create_context+5)
++#define __NR_pfm_stop		(__NR_pfm_create_context+6)
++#define __NR_pfm_restart	(__NR_pfm_create_context+7)
++#define __NR_pfm_create_evtsets	(__NR_pfm_create_context+8)
++#define __NR_pfm_getinfo_evtsets (__NR_pfm_create_context+9)
++#define __NR_pfm_delete_evtsets (__NR_pfm_create_context+10)
++#define __NR_pfm_unload_context	(__NR_pfm_create_context+11)
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		308
++#define __NR_syscalls		319
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
