@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765023AbXE2Lb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765109AbXE2Lco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765023AbXE2Lb2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 07:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757709AbXE2LbR
+	id S1765109AbXE2Lco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 07:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760387AbXE2Lcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 07:31:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54744 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755010AbXE2LbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 07:31:15 -0400
-Date: Tue, 29 May 2007 13:31:14 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH][EXPERIMENTAL] Make kernel threads nonfreezable by default
-Message-ID: <20070529113114.GB23046@elf.ucw.cz>
-References: <200705270012.59177.rjw@sisk.pl> <20070528103302.GD18807@elf.ucw.cz> <200705282011.11526.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705282011.11526.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Tue, 29 May 2007 07:32:35 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54993 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755010AbXE2Lce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 07:32:34 -0400
+Subject: Re: [patch 6/7] ps3: ROM Storage Driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Christoph Hellwig <hch@lst.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>
+References: <20070525083607.784351000@sonycom.com>
+	 <20070525083632.677742000@sonycom.com> <20070529104948.GC29351@lst.de>
+	 <Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>
+Content-Type: text/plain
+Date: Tue, 29 May 2007 21:31:59 +1000
+Message-Id: <1180438319.19517.150.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > Index: linux-2.6.22-rc3/Documentation/power/kernel_threads.txt
-> > > ===================================================================
-> > > --- linux-2.6.22-rc3.orig/Documentation/power/kernel_threads.txt
-> > > +++ linux-2.6.22-rc3/Documentation/power/kernel_threads.txt
-> > > @@ -1,13 +1,22 @@
-> > > -KERNEL THREADS
-> > > +The Freezer and Kernel Threads
-> > >  
-> > > -
-> > > -Freezer
-> > > -
-> > > -Upon entering a suspended state the system will freeze all
-> > > -tasks. This is done by delivering pseudosignals. This affects
-> > > -kernel threads, too. To successfully freeze a kernel thread
-> > > -the thread has to check for the pseudosignal and enter the
-> > > -refrigerator. Code to do this looks like this:
-> > > +Before entering a system-wide suspend state as well as before creating a
-> > > +hibernation snapshot image the system will freeze all tasks, which is done
-> > > +by delivering fake signals.  This affects kernel threads too, but they won't be
-> > > +frozen unless they declare that they want to.  For this purpose
-> > 
-> > Well... and unless thread that does disk writes or DMA _wants_ to, you
-> > have nice disk corruption... It should be pointed out that it is not
-> > voluntary for those types of threads.
+On Tue, 2007-05-29 at 13:11 +0200, Geert Uytterhoeven wrote:
+> > This looks very inefficient.  Just set sg_tablesize of your driver
+> > to 1 to avoid getting mutiple segments.
 > 
-> Well, that really depends.
-> 
-> I think the only thing that must not be written to disk is filesystem stuff.
-> The other things (eg. writing directly to block devices etc.) doesn't hurt us.
+> The disadvantage of setting sg_tablesize = 1 is that the driver will
+> get small
+> requests (PAGE_SIZE) most of the time, which is very bad for
+> performance.
 
-Well.. it can write anywhere it wants (filesystem or not) as long as
-the system is not going to be confused after resume by its caches not
-matching on-disk state. I'd prefer it not to write anywhere at all.
+And the joke is that not only the HW can do scatter & gather but you
+also have an iommu ...
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ben.
+
+
