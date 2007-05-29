@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764928AbXE2L2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764933AbXE2LaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764928AbXE2L2R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 07:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756963AbXE2L2B
+	id S1764933AbXE2LaI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 07:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756458AbXE2L35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 07:28:01 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:46330 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756172AbXE2L17 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 07:27:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WvN023JZLqE3KaWhQ9iZtvSoGS9nEGNFOCvWoHRtNsXL0kBqhcLNNSzwXNZWfG4DUVlWTF4E386lxUsC1Mxh6sa3/wEijm9T61REnL+1j+J3KiX+WHcfSNY+UdfEtY5XjtNbB8jS76n2i2DysvIEOFlJm9lMyiTFGpSImKsEbgY=
-Message-ID: <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>
-Date: Tue, 29 May 2007 16:57:57 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Michael-Luke Jones" <mlj28@cam.ac.uk>
-Subject: Re: Makefile question (was [RFC] LZO de/compression support - take 6)
-Cc: "Nitin Gupta" <nitingupta910@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Bret Towe" <magnade@gmail.com>
-In-Reply-To: <37DB6EAF-8954-448D-BD29-864FEC6540CE@cam.ac.uk>
+	Tue, 29 May 2007 07:29:57 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54741 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756172AbXE2L34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 07:29:56 -0400
+Date: Tue, 29 May 2007 13:29:53 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Bill Davidsen <davidsen@tmr.com>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.21.1] resume doesn't run suspended kernel?
+Message-ID: <20070529112952.GA23046@elf.ucw.cz>
+References: <4658B7DD.3060309@tmr.com> <465AD746.7090008@tmr.com> <20070528132625.GQ18807@elf.ucw.cz> <200705281957.38954.rjw@sisk.pl> <1180392482.4149.15.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
-	 <292C7F80-B80D-4645-8FF5-49BF911398E1@cam.ac.uk>
-	 <a781481a0705290341w4c403c1ej43565a1e66805522@mail.gmail.com>
-	 <37DB6EAF-8954-448D-BD29-864FEC6540CE@cam.ac.uk>
+In-Reply-To: <1180392482.4149.15.camel@nigel.suspend2.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/29/07, Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
-> On 29 May 2007, at 11:41, Satyam Sharma wrote:
->
-> > This is syntactically correct (and wouldn't produce any build errors),
-> > but it's quite ... strange, still. Why would I even want to /build/
-> > the
-> > compress code if all I selected was the decompress option?
->
-> Apologies, you gave me the answer I was looking for (make is
-> 'intelligent' enough not to build the same file twice in this
-> situation...) but I think you may have missed the makefile in the
-> lzo1x directory:
->
-> > diff --git a/lib/lzo1x/Makefile b/lib/lzo1x/Makefile
-> > new file mode 100644
-> > index 0000000..7b56a4d
-> > --- /dev/null
-> > +++ b/lib/lzo1x/Makefile
-> > @@ -0,0 +1,2 @@
-> > +obj-$(CONFIG_LZO1X_COMPRESS) += lzo1x_compress.o
-> > +obj-$(CONFIG_LZO1X_DECOMPRESS) += lzo1x_decompress.o
+Hi!
 
-Ah, yes, I only saw the mail and didn't check lib/lzo1x/Makefile, thanks.
-So effectively, we've done precisely what zlib does too ... only, in a
-smarter way!
+> > Yup.  Don't we do something like this for the (ACPI-based) suspend to RAM
+> > already?
+> 
+> Yeah, I was thinking about this overnight too. It should be doable. In
+> addition to what we already do, I think you'd want:
+> 
+> - to copy the assembly to do the copying to a safe page;
+> - to put the location of the cpu state that was saved in the image
+> header so that it can be used after the data is copied back;
 
-> Thus, the Kconfig options for compress/decompress won't be simply
-> 'dummy' options...
->
-> Given the shared private header between the compress and decompress
-> code, I don't think there is any need to separate the code into two
-> directories a la the zlib code.
+...alternatively, we can just rely on copy routine (and its data) not
+changing frequently.
 
-Right, actually, zlib could be switched over to this style, in fact.
-Because zlib_deflate/ and zlib_inflate/ too share a private header
-zutil.h which has unfortunately been stuck into include/linux/ with a big
-/* WARNING: this file should *not* be used by applications. */ comment ...
+> - to copy the nosave data to a 'safe' page.
+> 
+> What else?
 
-Satyam
+page directories need to be on a safe place, too.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
