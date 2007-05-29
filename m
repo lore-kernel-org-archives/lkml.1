@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbXE2XtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751379AbXE2XuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751623AbXE2XtV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 19:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbXE2XtI
+	id S1751379AbXE2XuG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 19:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbXE2Xt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 19:49:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45078 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750744AbXE2XtG (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 19:49:06 -0400
-Date: Wed, 30 May 2007 09:48:32 +1000
-From: David Chinner <dgc@sgi.com>
-To: Phillip Susi <psusi@cfl.rr.com>
-Cc: David Chinner <dgc@sgi.com>, Neil Brown <neilb@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-Message-ID: <20070529234832.GT85884050@sgi.com>
-References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465C871F.708@cfl.rr.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 29 May 2007 19:49:56 -0400
+Received: from mailout05.sul.t-online.com ([194.25.134.82]:54267 "EHLO
+	mailout05.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751014AbXE2Xtz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 19:49:55 -0400
+X-Greylist: delayed 1066 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 19:49:55 EDT
+Message-ID: <465CB7CF.2060509@t-online.de>
+Date: Wed, 30 May 2007 01:31:27 +0200
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070519)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Bryan Wu <bryan.wu@analog.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
+References: <11803414753217-git-send-email-bryan.wu@analog.com> <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-ID: SaUzGyZcYekkmDymsEo09a9ScWy1IZ+yFKMLAkbe2v7MscfwvbB9Yn
+X-TOI-MSGID: 1efca3e0-ecde-4397-b64c-4c1d21b66417
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 04:03:43PM -0400, Phillip Susi wrote:
-> David Chinner wrote:
-> >The use of barriers in XFS assumes the commit write to be on stable
-> >storage before it returns.  One of the ordering guarantees that we
-> >need is that the transaction (commit write) is on disk before the
-> >metadata block containing the change in the transaction is written
-> >to disk and the current barrier behaviour gives us that.
+Linus Torvalds wrote:
 > 
-> Barrier != synchronous write,
+> On Mon, 28 May 2007, Bryan Wu wrote:
+>>  - Blackfin arch update including BF54x initial supporting
+>>  - Blackfin driver update: serial/spi/rtc
+>>  - Provide new Blackfin watchdog driver
+>>  - binfmt_flat.c for Blackfin arch modification
+> 
+> I realize that this all just touches blackfin-specific stuff, but after 
+> -rc3 I really prefer not to bother with these things..
+> 
+> Also, for stuff that is really just an architecture that I can't even 
+> test, and where there is a clear maintainership thing, I'd actually prefer 
+> to just do a git merge, if possible. It's not like I will likely start 
+> looking at some blackfin-specific patches. Judging from the diffs, you do 
+> actually use git, do you have a place where you could export these kinds 
+> of patch-series as a git tree instead?
 
-Of course. FYI, XFS only issues barriers on *async* writes.
+The binfmt_flat patch also touches other nommu architectures.  Do you
+want these kinds of patches (which aren't just Blackfin-specific)
+separately as they come up?
 
-But barrier semantics - as far as they've been described by everyone
-but you indicate that the barrier write is guaranteed to be on stable
-storage when it returns.
 
-> so if XFS relies on that block being on 
-> the media when the request is completed, then it is broken.
-
-XFS relies on the block being stable before any other write
-goes to disk. That is the semantic that the barrier I/Os currently
-have. How that is implemented in the device is irrelevant to me,
-but if I issue a barrier I/O, I do not expect *any* I/O to be
-reordered around it.
-
-> It should 
-> only care that the ordering of log-data-log is maintained, not exactly 
-> when each specific request completes.
-
-Yes, and that is provided to XFS by the fact that barrier I/Os are
-full barriers....
-
-Cheers,
-
-Dave.
+Bernd
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+This footer brought to you by insane German lawmakers.
+Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
+Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
