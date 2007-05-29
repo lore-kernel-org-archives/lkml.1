@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765022AbXE2UWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764655AbXE2UYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765022AbXE2UWp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 16:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbXE2UWY
+	id S1764655AbXE2UYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 16:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXE2UYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 16:22:24 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:60997 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753109AbXE2UWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 16:22:23 -0400
-Date: Tue, 29 May 2007 22:18:05 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Takashi Iwai <tiwai@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, Uwe Bugla <uwe.bugla@gmx.de>,
-       linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: BUG in 2.6.22-rc2-mm1: Parts of Alsa sound architecture broken
-In-Reply-To: <s5hveebziom.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.61.0705292212120.11140@yvahk01.tjqt.qr>
-References: <20070524200052.234330@gmx.net> <20070524130921.8dbd3777.akpm@linux-foundation.org>
- <s5hiragopsx.wl%tiwai@suse.de> <20070525102806.77ee9c0c.akpm@linux-foundation.org>
- <s5h1wh4si5l.wl%tiwai@suse.de> <Pine.LNX.4.61.0705261248150.7344@yvahk01.tjqt.qr>
- <s5hveebziom.wl%tiwai@suse.de>
+	Tue, 29 May 2007 16:24:11 -0400
+Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:37737 "HELO
+	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750832AbXE2UYK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 16:24:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Y0MKj+w4g2E7CvvBgSOkLvzzyeX+rtAs30fH62kDEUgYzjQOh0xG+KSExONtsvrXK2snCBfHkPMHy6r+Cxfu9wF/7YgiJeUdIq1woDyQGCfQQocZvTqDknE5VMErldw+aXKtnQAxoZ5Y8Y0pjTfLQFqbAmvG3bPfCpm9Md7b9EA=  ;
+X-YMail-OSG: 9j7xv.QVM1mq.F2XT_oXYbSzg7gj6YoIHg0NcZ7QC1pdS4UDPSDCdDAVd9ue5uVJNtzfF.dOhw--
+From: David Brownell <david-b@pacbell.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware before hibernation/suspend
+Date: Tue, 29 May 2007 13:09:47 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0705281719200.10323-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0705281719200.10323-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705291309.47559.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 28 May 2007, Alan Stern wrote:
 
-On May 29 2007 18:41, Takashi Iwai wrote:
+> This is a matter of one's philosophy.  In suspend-to-RAM, should tasks
+> be frozen or should I/O queues be frozen?
+> 
+> With the USB subsystem I have followed the approach taken by the PM
+> core, which is that tasks are frozen.  But one can -- and Linus has on
+> at least one occasion -- make a good case that tasks should be left
+> running while only I/O is frozen. 
+
+In fact that makes a heck of a lot more sense to me from the
+conceptual point of view.  From the hardware perspective, the
+task of preparing to enter true suspend states (STR, or suspend
+for ACPI; embedded systems have more options) focusses on what
+I/O signals are disabled.
+
+Once the relevant I/O signals are first idled, then disabled,
+the CPU can do whatever it likes.  Whether it runs or not is
+purely a workload decision...
+
+Remember too that not all systems suffer from the constraints
+that ACPI decrees.  In particular, it's not uncommon that some
+parts of the system be active in certain suspend states.  The
+whole point is to turn off as much of the system as possible,
+especially the high power portions, while letting work proceed.
+
+Turning off some clocks and peripherals doesn't need to imply
+turning them all off, or disabling DMA ... and should not need
+to be triggered by a user (or userspace tool) explicitly saying
+"go into STR".
+
+
+> This would require the subsystem to 
+> distinguish between a selective device suspend and a system-wide
+> suspend-to-RAM, so that selective resume could be enabled on demand in
+> one case but not the other.
+
+Exactly.  "Selective suspend" of parts of the system is a far
+more general model.  It fits well with runtime power management,
+degrades smoothly to states where memory goes into self-refresh
+(maybe the system idle loop when NO_HZ is being effective) or
+even hibernation (as discussed elsewhere).
+
+- Dave
+
+> It's quite doable in principle -- it's just not the technique I used.
+> 
+> Alan Stern
+> 
 >
->Well, I find the change of CONFIG_SND to menuconfig is fine, too.
->But CONFIG_SND_PCI_DRIVERS and others don't make much sense to me.
->How is it useful at all?
-
-Hah, I just tell you some of my own experience.
-In summer 2003, I bought the last new machine, and it got these
-shiny new ports they like to call USB. :)
-I did not have much use for it, but I left it on - you never know
-what standard next is the big win of the decade. And actually,
-it did not took long (well, summer 2005) to get my first USB device.
-Still, I am hell as sure I do not have USB-based sound devices
-anytime soon, so it would be cool to deactivate the whole usbsound
-menu at once. I think I said that in the patch description, did not I?
-
->Anyway, I'd like to confirm that this really works before merging to
->the ALSA tree.  As Mauro suspected, kconfig seems not working as
->expected...
-
-Unfortunately, there are sometimes non-visible options in menus (the
-Networking>QoS menu for example) that, when converted to menuconfig-if-endif,
-also get lost when the menuconfig object is deactivated. In case of QoS, this
-can break compilation. For most subsystems however, it works alright because
-the particular subsystem referencing CONFIG_INVISIBLE_THING is deactivated
-anyway and does not get compiled.
-Such strange menus (like QoS) have not been menuconfigized so far, it's just
-too hard to keep the bits together. As far as other subsystems are concerned,
-please give it some testing.
-
-
-	Jan
--- 
