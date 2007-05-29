@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475AbXE2VvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbXE2VzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751475AbXE2VvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbXE2VvJ
+	id S1753174AbXE2VzR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbXE2VzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:51:09 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:53003 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753413AbXE2VvI (ORCPT
+	Tue, 29 May 2007 17:55:05 -0400
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:45551 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751080AbXE2VzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:51:08 -0400
-Date: Tue, 29 May 2007 14:49:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Zach Brown <zach.brown@oracle.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-In-Reply-To: <20070529212718.GH7875@mami.zabbo.net>
-Message-ID: <alpine.LFD.0.98.0705291447440.26602@woody.linux-foundation.org>
-References: <20070529212718.GH7875@mami.zabbo.net>
+	Tue, 29 May 2007 17:55:03 -0400
+Date: Tue, 29 May 2007 17:55:01 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: akpm@linux-foundation.org
+Cc: wcohen@redhat.com, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ralf@linux-mips.org
+Subject: reduce-size-of-task_struct-on-64-bit-machines.patch removed from -mm tree
+Message-ID: <20070529215501.GA15944@fattire.cabal.ca>
+References: <200705090244.l492i4kH008542@shell0.pdx.osdl.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705090244.l492i4kH008542@shell0.pdx.osdl.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 08, 2007 at 07:44:04PM -0700, akpm@linux-foundation.org wrote:
+> -	unsigned long flags;	/* per process flags, defined below */
+> -	unsigned long ptrace;
+> +	unsigned int flags;	/* per process flags, defined below */
+> +	unsigned int ptrace;
+>  
 
+So.
 
-On Tue, 29 May 2007, Zach Brown wrote:
-> 
-> Included in this patch series is an experimental patch which reworks fs/aio.c
-> to reuse the syslet subsystem to process iocb requests from user space.  The
-> intent of this work is to simplify the code and broaden aio functionality.  
+I realize I don't have much right to cry over spilled milk here, seeing
+as this has been floating around for, what, four months now?
 
-.. so don't keep us in suspense. Do you have any numbers for anything 
-(like Oracle, to pick a random thing out of thin air ;) that might 
-actually indicate whether this actually works or not?
+But seriously, if people are going to fuck around with extremely core
+pieces of generic code, could they please check all the users[1]?
 
-Or is it just so experimental that no real program that uses aio can 
-actually work yet?
+Other 64-bit arch maintainers should check that they're using a 32-bit
+load/store on these fields in their assembly now (we were using a
+#define to do word on 32bit and doubleword on 64bit, which broke, badly,
+when these changed.)
 
-		Linus
+Thanks,
+	Kyle M.
+
+1: Adding __deprecated or something to the field would give you an idea
+of where it is used, in this case asm-offsets.c...
