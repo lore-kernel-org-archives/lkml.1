@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbXE2FZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763968AbXE2F06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760946AbXE2FZV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 01:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbXE2FZJ
+	id S1763968AbXE2F06 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 01:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbXE2F0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 01:25:09 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:46792 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbXE2FZI (ORCPT
+	Tue, 29 May 2007 01:26:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51574 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbXE2F0u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 01:25:08 -0400
-Date: Mon, 28 May 2007 23:25:02 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Network broken in kernel level.
-In-reply-to: <fa.FYU0TmYcs8tw7er8ovzop6Z2Qgc@ifi.uio.no>
-To: Wang Penghui <wangpenghui@westea.org>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <465BB92E.2000005@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.FYU0TmYcs8tw7er8ovzop6Z2Qgc@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 29 May 2007 01:26:50 -0400
+Date: Mon, 28 May 2007 22:23:14 -0700
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Chris Wright <chrisw@sous-sol.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Romano Giannetti <romanol@upcomillas.es>,
+       Randy Dunlap <rdunlap@xenotime.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] pcmcia resume 60 second hang. Re: [patch 00/69]
+	-stable review
+Message-ID: <20070529052314.GA15067@kroah.com>
+References: <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org> <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org> <20070524221743.GD9604@elf.ucw.cz> <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org> <20070527155738.GA20006@srcf.ucam.org> <alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org> <20070528100448.GB18276@elf.ucw.cz> <alpine.LFD.0.98.0705280935560.26602@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705280935560.26602@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wang Penghui wrote:
-> Hello, list,
+On Mon, May 28, 2007 at 09:53:50AM -0700, Linus Torvalds wrote:
 > 
-> Recently, i have messed up with the follow problem, i have two server
-> both with two ethernet cards. Here are them:
+> Before we suspend a device, we call the subsystem that that device has 
+> been registered with. Ie, we have code like this:
 > 
-> [root@db1 ~]# lspci | grep -i eth
-> 05:00.0 Ethernet controller: Marvell Technology Group Ltd. Gigabit
-> Ethernet Controller (rev 18)
-> 07:04.0 Ethernet controller: Intel Corp. 82541GI/PI Gigabit Ethernet
-> Controller (rev 05)
+> 	if (dev->class && dev->class->suspend)
+> 		error = dev->class->suspend(dev, state);
 > 
-> And they are running MySQL server on both of them. The OS is RHEL 4 with
-> the default kernel 2.6.9-5.ELsmp. These days there are lots of error
-> message comming out in /var/log/message and dmesg.
+> which was very much designed so that individual devices wouldn't have to 
+> always know - if the upper layer devices for that class can handle these 
+> things, they should.
+> 
+> Do people actually _do_ this, right now? No. But we do actually have the 
+> infrastructure, and I think we have one or two classes that actually do 
+> use it (at least the "rfkill_class" has a suspend member, dunno how well 
+> this model actually works).
+> 
+> I think Greg had some patches to make network drivers use this, for 
+> example. Network drivers right now all end up doing stuff that really 
+> doesn't belong in the driver at all when they suspend, and the 
+> infrastructure _should_ just do it for them (ie do all the _network_ 
+> related stuff, as opposed to the actual hardware-related stuff).
 
-That kernel is very old, you should get the latest RHEL errata update 
-kernel and see if that helps. There have been hundreds of bugfixes in 
-RHEL kernels since that version.
+Yes, I started to work on it, as it is the correct thing to do, but got
+sidetracked, sorry :(
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+> (Examples of things that we probably _should_ do for network devices on a 
+> class level:
+> 
+> 	suspend:
+> 		netif_poll_disable()
+> 		if (netif_running(dev))
+> 			dev->stop(dev);
+> 
+> 	resume:
+> 		if (netif_running(dev))
+> 			dev->start(dev);
+> 		netif_poll_enable(dev);
+> 
+> or something similar).
 
+I'll try to hack something together later this week along this line and
+see how it works...
+
+thanks,
+
+greg k-h
