@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763618AbXE2Tqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763031AbXE2Twm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763618AbXE2Tqj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 15:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbXE2Tqb
+	id S1763031AbXE2Twm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 15:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbXE2Twf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 15:46:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46380 "EHLO mx1.redhat.com"
+	Tue, 29 May 2007 15:52:35 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:46618 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754105AbXE2Tqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 15:46:30 -0400
-Date: Tue, 29 May 2007 15:46:28 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add procfs tunable to enable immediate panic when there
- are busy inodes after umount
-Message-Id: <20070529154628.ae4f6c7a.jlayton@redhat.com>
-In-Reply-To: <20070529193813.GC5666@martell.zuzino.mipt.ru>
-References: <20070529114042.5fe0b810.jlayton@redhat.com>
-	<20070529193813.GC5666@martell.zuzino.mipt.ru>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.8; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752063AbXE2Twe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 15:52:34 -0400
+Date: Tue, 29 May 2007 15:52:27 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, neilb@suse.de,
+       nfs@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [NFS] [PATCH] NFSD: fix uninitialized variable
+Message-ID: <20070529195227.GG6815@fieldses.org>
+References: <20070527103442.GA10594@havoc.gtf.org> <20070529030050.GB20631@fieldses.org> <465B9BB9.7060300@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465B9BB9.7060300@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 23:38:13 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Mon, May 28, 2007 at 11:19:21PM -0400, Jeff Garzik wrote:
+> J. Bruce Fields wrote:
+> >But I don't want anyone else wasting their time on this.  Should we cave
+> >in and add the initialization here just to shut up gcc?  Or would a
+> >comment here help?
+> 
+> Given what you said above, I don't see gcc, on its best day, will ever 
+> know enough to validate that that variable is indeed always initialized. 
 
-> On Tue, May 29, 2007 at 11:40:42AM -0400, Jeff Layton wrote:
-> > After spending quite a bit of time tracking down a "VFS: busy inodes
-> > after unmount" problem, it occurs to me that it would be nice to be
-> > able to force a panic when that occurs. While an oops message alone is
-> > not generally helpful for tracking down this sort of problem,
-> > collecting and analyzing a coredump when this occurs can be.
-> >
-> > The following patch adds a procfs tunable that allows you to force a
-> > core when a "busy inodes after umount" problem occurs. It also changes
-> > the classic error message to be something a bit less cryptic to users.
-> 
-> > @@ -303,10 +305,15 @@ void generic_shutdown_super(struct super_block *sb)
-> >  			sop->put_super(sb);
-> >
-> >  		/* Forget any remaining inodes */
-> > -		if (invalidate_inodes(sb)) {
-> > -			printk("VFS: Busy inodes after unmount of %s. "
-> > -			   "Self-destruct in 5 seconds.  Have a nice day...\n",
-> > -			   sb->s_id);
-> > +		if (busy = invalidate_inodes(sb)) {
-> > +			printk("VFS: %d busy inodes after unmount of %s. ",
-> > +				 busy, sb->s_id);
-> > +			if (umount_debug != 0) {
-> > +				printk("Crashing host on request.\n");
-> > +				BUG();
-> > +			} else {
-> > +				printk("This machine will likely crash eventually. Consider a reboot.\n");
-> > +			}
-> 
-> You can add just BUG_ON here and do
-> 
-> 	echo 1 >/proc/sys/kernel/panic_on_oops
-> 
+I recall there being arguments before about when to add initializations.
+Unfortunately I can't remember the content of those arguments.  But I
+thought that on the gcc-haters side the complaint was exactly that gcc
+was emitting warnings in cases where it could never hope to determine
+whether an initialization is required.  Am I misremembering?
 
-I certainly could, but the problem is that there's little point in
-panicing immediately here if you can't collect a coredump. Oops
-messages aren't very helpful for tracking this sort of thing down, so
-I'd think we want the BUG() conditional on something more granular
-than panic_on_oops.
+>  So I would vote for silencing it on those grounds.
 
--- 
-Jeff Layton <jlayton@redhat.com>
+That said, I'm OK with the extra initialization.  Might be worth a
+comment, though, just to avoid giving the wrong impression about the
+assumptions here; something like:
+
+--b.
+
+diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
+index cc3b7ba..4adb5ee 100644
+--- a/fs/nfsd/nfs4acl.c
++++ b/fs/nfsd/nfs4acl.c
+@@ -183,8 +183,13 @@ static void
+ summarize_posix_acl(struct posix_acl *acl, struct posix_acl_summary *pas)
+ {
+ 	struct posix_acl_entry *pa, *pe;
+-	pas->users = 0;
+-	pas->groups = 0;
++
++	/*
++	 * Only pas.users and pas.groups need initialization; previous
++	 * posix_acl_valid() calls ensure that the other fields will be
++	 * initialized in the following loop.  But, just to placate gcc:
++	 */
++	memset(pas, 0, sizeof(*pas));
+ 	pas->mask = 07;
+ 
+ 	pe = acl->a_entries + acl->a_count;
