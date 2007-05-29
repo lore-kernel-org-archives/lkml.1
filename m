@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763765AbXE2JZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbXE2JfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763765AbXE2JZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 05:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbXE2JZp
+	id S1760316AbXE2JfB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 05:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbXE2Jev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 05:25:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:48372 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbXE2JZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 05:25:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qWjdbIY+pR8+olkPAohvYFRBmxEQU5B76mWWhNrNRHyuluVwThLfOLoeMrPe+MWHgBmRVshX1WVcX4o28zz7qcbIIs88hbTyrZEq9wNTINeTTydojbDNiORXbb8Jk+4xbDnKmsuInqHtkV4OpfAOC9+hXK5zG/yW7hd+0p5+r0o=
-Message-ID: <5201e28f0705290225v14fdac44hb0382a4137a84d01@mail.gmail.com>
-Date: Tue, 29 May 2007 11:25:42 +0200
-From: "Stefan Bader" <sbader3@googlemail.com>
-To: "device-mapper development" <dm-devel@redhat.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
-       "David Chinner" <dgc@sgi.com>, "Phillip Susi" <psusi@cfl.rr.com>,
-       "Stefan Bader" <Stefan.Bader@de.ibm.com>,
-       "Andreas Dilger" <adilger@clusterfs.com>,
-       "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-In-Reply-To: <20070528094358.GM25091@agk.fab.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <18006.38689.818186.221707@notabene.brown>
-	 <18010.12472.209452.148229@notabene.brown>
-	 <20070528094358.GM25091@agk.fab.redhat.com>
+	Tue, 29 May 2007 05:34:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52130 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750707AbXE2Jeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 05:34:50 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070527161252.GA12804@fieldses.org>
+References: <20070527161252.GA12804@fieldses.org> <20070527022502.GB10867@fieldses.org> <20070526022342.GA20905@fieldses.org> <20070524165554.22292.38887.stgit@warthog.cambridge.redhat.com> <7436.1180223730@redhat.com> <18750.1180255870@redhat.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement file locking
+X-Mailer: MH-E 8.0; nmh 1.2-20070115cvs; GNU Emacs 22.0.50
+Date: Tue, 29 May 2007 10:34:41 +0100
+Message-ID: <28654.1180431281@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/28, Alasdair G Kergon <agk@redhat.com>:
-> On Mon, May 28, 2007 at 11:30:32AM +1000, Neil Brown wrote:
-> > 1/ A BIO_RW_BARRIER request should never fail with -EOPNOTSUP.
->
-> The device-mapper position has always been that we require
->
-> >  a zero-length BIO_RW_BARRIER
->
-> (i.e. containing no data to read or write - or emulated, possibly
-> device-specific)
->
-> before we can provide full barrier support.
->   (Consider multiple active paths - each must see barrier.)
->
+J. Bruce Fields <bfields@fieldses.org> wrote:
 
-Couldn't the same be ac hived by doing a sort of suspend, issuing the
-barrier request, calling flush to all mapped devices and then wait for
-in-flight I/O to go to zero? This certainly has the aspect of
-performance degradation (but that seem to be a generic problem with
-barriers not being specific enough).
+> You can contrive examples of applications that would be correct given
+> the standard fcntl behavior, but that would deadlock on a system that
+> didn't allow read locks to jump the queue in the above situation.
 
-> Until every device supports barriers -EOPNOTSUP support is required.
->   (Consider reconfiguration of stacks of devices - barrier support is a
->    dynamic block device property that can switch between available and
->    unavailable at any time.)
->
-Is only an issue if not doing barrier handling in dm. In that case the
-support in the devices is helpful but not required.
+Yes, but you can also contrive starvation if you allow locks to jump the
+queue.  Obviously, the Linux kernel behaviour is to allow readlocks to jump
+the queue if a readlock is currently in force, so I have to conform to that,
+whether I like it or not.
 
-For something else: Alasdair, I am not a hundred percent sure about
-that but I think that just passing the barrier flag on to mapped
-devices might in some (maybe they are rare) cases cause a layer above
-to think all data is on-disk while this isn't necessarily true (see my
-previous post). What do you think?
+I'll need to test the upgrade/downgrade case.  I don't know whether the AFS
+server supports that.  If it doesn't, I can emulate downgrade, but not upgrade
+- not unless I only ever ask it for exclusive locks.
 
-Stefan
+Lock upgrading is really, really easy to contrive deadlock for.
+
+David
