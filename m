@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbXE2NGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbXE2NFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981AbXE2NGL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbXE2NFz
+	id S1752381AbXE2NFk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbXE2NF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:05:55 -0400
-Received: from adelie.ubuntu.com ([82.211.81.139]:44667 "EHLO
-	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbXE2NFx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:05:53 -0400
-Subject: Re: [2/3] 2.6.22-rc3: known regressions with patches
-From: Ben Collins <ben.collins@ubuntu.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Ben Collins <bcollins@ubuntu.com>, yoshfuji@linux-ipv6.org,
-       Maximilian Engelhardt <maxi@daemonizer.de>,
-       linux-wireless@vger.kernel.org, developers@islsm.org,
-       =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Francis Russell <francisrussell@btopenworld.com>,
-       Alan Cox <alan@redhat.com>, sparclinux@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       "Horst H. von Brand" <vonbrand@inf.utfsm.cl>
-In-Reply-To: <465C2253.4070307@googlemail.com>
-References: <465C203A.1020200@googlemail.com>
-	 <465C2253.4070307@googlemail.com>
-Content-Type: text/plain
-Organization: Canonical
-Date: Tue, 29 May 2007 09:05:59 -0400
-Message-Id: <1180443959.6666.192.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 May 2007 09:05:28 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34594 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751507AbXE2NF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:05:27 -0400
+Date: Tue, 29 May 2007 15:04:59 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+Message-ID: <20070529130459.GJ23046@elf.ucw.cz>
+References: <20070524200435.GA9604@elf.ucw.cz> <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org> <20070524220017.GC9604@elf.ucw.cz> <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org> <20070524221743.GD9604@elf.ucw.cz> <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org> <20070527155738.GA20006@srcf.ucam.org> <alpine.LFD.0.98.0705270924310.26602@woody.linux-foundation.org> <20070528100448.GB18276@elf.ucw.cz> <alpine.LFD.0.98.0705280935560.26602@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705280935560.26602@woody.linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-29 at 14:53 +0200, Michal Piotrowski wrote:
+Hi!
 
-> Subject    : OOPS triggered by ip(8) deconfiguring a network interface
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=8491
-> Submitter  : Ben Collins <bcollins@ubuntu.com>
-> Patch      : http://marc.info/?l=linux-netdev&m=117915849224816&w=2
->              commit 5632c5152aa621885d87ea0b8fdd5a6bb9f69c6f
-> Status     : bug probably fixed
+> > I guess we should warn the driver authors, then; and decide what driver 
+> > authors should do.
+> 
+> Drivers really shouldn't do anythign at all.
 
-Seems to be fixed, and just marked it resolved on bugzilla.
+*)
+
+> > If I'm video4linux driver for grabbing screen, have been suspended, and 
+> > someone asks me to read a frame, should I
+> > 
+> > a) return -ESORRYIMSUSPENDED
+> > 
+> > b) just block the caller
+> 
+> The "subsystem" thing should have stopped the queues, and the device 
+> should never even _see_ this.
+
+Okay, _if_ there's a subsystem, subsystem should have stopped the
+queues. End result should be that userspace is blocked when trying to
+access suspended device/suspended subsystem.
+
+I guess we are in violent agreement.
+								Pavel
 
 -- 
-Ubuntu   : http://www.ubuntu.com/
-Linux1394: http://wiki.linux1394.org/
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
