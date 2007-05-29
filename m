@@ -1,419 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762968AbXE2GVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763544AbXE2GXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762968AbXE2GVs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 02:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbXE2GVl
+	id S1763544AbXE2GXR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 02:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXE2GXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 02:21:41 -0400
-Received: from mga01.intel.com ([192.55.52.88]:6122 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752708AbXE2GVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 02:21:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,587,1170662400"; 
-   d="scan'208";a="250607626"
-Date: Tue, 29 May 2007 14:21:25 +0800
-From: Wang Zhenyu <zhenyu.z.wang@intel.com>
-To: Dave Jones <davej@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Keith Packard <keithp@keithp.com>,
-       Eric Anholt <eric@anholt.net>
-Subject: [PATCH 2/2] [AGPGART] intel_agp: use table for device probe
-Message-ID: <20070529062125.GB5097@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Keith Packard <keithp@keithp.com>, Eric Anholt <eric@anholt.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
-X-Mailer: mutt
-X-Operating-System: Linux 2.6.15-1.2054_FC5smp i686
+	Tue, 29 May 2007 02:23:08 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:33905 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752235AbXE2GXH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 02:23:07 -0400
+X-IronPort-AV: i="4.14,587,1170651600"; 
+   d="scan'208"; a="40377352:sNHT22456826"
+From: Bryan Wu <bryan.wu@analog.com>
+To: linux-kernel@vger.kernel.org
+Cc: Bernd Schmidt <bernd.schmidt@analog.com>, Bryan Wu <bryan.wu@analog.com>,
+       David McCullough <davidm@snapgear.com>,
+       Greg Ungerer <gerg@snapgear.com>
+Subject: [PATCH] binfmt_flat: minimum support for the Blackfin relocations
+Date: Tue, 29 May 2007 14:24:27 +0800
+Message-Id: <1180419867864-git-send-email-bryan.wu@analog.com>
+X-Mailer: git-send-email 1.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Bernd Schmidt <bernd.schmidt@analog.com>
 
-[PATCH 2/2] [AGPGART] intel_agp: use table for device probe
+This just adds minimum support for the Blackfin relocations,
+since we don't have enough space in each reloc. The idea
+is to store a value with one relocation so that subsequent ones can
+access it.
 
-Remove big switch to make things clear. Eric Anholt
-was the original author.
-
-Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
+Signed-off-by: Bernd Schmidt <bernd.schmidt@analog.com>
+Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+Cc: David McCullough <davidm@snapgear.com>
+Cc: Greg Ungerer <gerg@snapgear.com>
 ---
- drivers/char/agp/intel-agp.c |  324 ++++++++++++++++--------------------------
- 1 files changed, 122 insertions(+), 202 deletions(-)
+ fs/binfmt_flat.c             |    5 ++++-
+ include/asm-h8300/flat.h     |    3 ++-
+ include/asm-m32r/flat.h      |    3 ++-
+ include/asm-m68knommu/flat.h |    3 ++-
+ include/asm-sh/flat.h        |    3 ++-
+ include/asm-v850/flat.h      |    4 +++-
+ 6 files changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index 151d444..6bfcf64 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -1717,41 +1717,119 @@ static const struct agp_bridge_driver intel_7505_driver = {
- 	.agp_type_to_mask_type  = agp_generic_type_to_mask_type,
- };
+diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+index 7b0265d..13b58f8 100644
+--- a/fs/binfmt_flat.c
++++ b/fs/binfmt_flat.c
+@@ -742,6 +742,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 	 * __start to address 4 so that is okay).
+ 	 */
+ 	if (rev > OLD_FLAT_VERSION) {
++		unsigned long persistent = 0;
+ 		for (i=0; i < relocs; i++) {
+ 			unsigned long addr, relval;
  
--static int find_i810(u16 device)
--{
--	struct pci_dev *i810_dev;
+@@ -749,6 +750,8 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 			   relocated (of course, the address has to be
+ 			   relocated first).  */
+ 			relval = ntohl(reloc[i]);
++			if (flat_set_persistent (relval, &persistent))
++				continue;
+ 			addr = flat_get_relocate_addr(relval);
+ 			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
+ 			if (rp == (unsigned long *)RELOC_FAILED) {
+@@ -757,7 +760,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 			}
  
--	i810_dev = pci_get_device(PCI_VENDOR_ID_INTEL, device, NULL);
--	if (!i810_dev)
--		return 0;
--	intel_private.pcidev = i810_dev;
--	return 1;
--}
--
--static int find_i830(u16 device)
-+static int find_gmch(u16 device)
+ 			/* Get the pointer's value.  */
+-			addr = flat_get_addr_from_rp(rp, relval, flags);
++			addr = flat_get_addr_from_rp(rp, relval, flags, &persistent);
+ 			if (addr != 0) {
+ 				/*
+ 				 * Do the relocation.  PIC relocs in the data section are
+diff --git a/include/asm-h8300/flat.h b/include/asm-h8300/flat.h
+index c20eee7..2a87350 100644
+--- a/include/asm-h8300/flat.h
++++ b/include/asm-h8300/flat.h
+@@ -9,6 +9,7 @@
+ #define	flat_argvp_envp_on_stack()		1
+ #define	flat_old_ram_flag(flags)		1
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
++#define	flat_set_persistent(relval, p)		0
+ 
+ /*
+  * on the H8 a couple of the relocations have an instruction in the
+@@ -18,7 +19,7 @@
+  */
+ 
+ #define	flat_get_relocate_addr(rel)		(rel)
+-#define flat_get_addr_from_rp(rp, relval, flags) \
++#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+         (get_unaligned(rp) & ((flags & FLAT_FLAG_GOTPIC) ? 0xffffffff: 0x00ffffff))
+ #define flat_put_addr_at_rp(rp, addr, rel) \
+ 	put_unaligned (((*(char *)(rp)) << 24) | ((addr) & 0x00ffffff), rp)
+diff --git a/include/asm-m32r/flat.h b/include/asm-m32r/flat.h
+index 1b285f6..d851cf0 100644
+--- a/include/asm-m32r/flat.h
++++ b/include/asm-m32r/flat.h
+@@ -15,9 +15,10 @@
+ #define	flat_stack_align(sp)		(*sp += (*sp & 3 ? (4 - (*sp & 3)): 0))
+ #define	flat_argvp_envp_on_stack()		0
+ #define	flat_old_ram_flag(flags)		(flags)
++#define	flat_set_persistent(relval, p)		0
+ #define	flat_reloc_valid(reloc, size)		\
+ 	(((reloc) - textlen_for_m32r_lo16_data) <= (size))
+-#define flat_get_addr_from_rp(rp, relval, flags) \
++#define flat_get_addr_from_rp(rp, relval, flags, persistent) \
+ 	m32r_flat_get_addr_from_rp(rp, relval, (text_len) )
+ 
+ #define flat_put_addr_at_rp(rp, addr, relval) \
+diff --git a/include/asm-m68knommu/flat.h b/include/asm-m68knommu/flat.h
+index 2d836ed..814b517 100644
+--- a/include/asm-m68knommu/flat.h
++++ b/include/asm-m68knommu/flat.h
+@@ -9,8 +9,9 @@
+ #define	flat_argvp_envp_on_stack()		1
+ #define	flat_old_ram_flag(flags)		(flags)
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+-#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
++#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
+ #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
+ #define	flat_get_relocate_addr(rel)		(rel)
++#define	flat_set_persistent(relval, p)		0
+ 
+ #endif /* __M68KNOMMU_FLAT_H__ */
+diff --git a/include/asm-sh/flat.h b/include/asm-sh/flat.h
+index 0d5cc04..dc4f595 100644
+--- a/include/asm-sh/flat.h
++++ b/include/asm-sh/flat.h
+@@ -16,8 +16,9 @@
+ #define	flat_argvp_envp_on_stack()		0
+ #define	flat_old_ram_flag(flags)		(flags)
+ #define	flat_reloc_valid(reloc, size)		((reloc) <= (size))
+-#define	flat_get_addr_from_rp(rp, relval, flags)	get_unaligned(rp)
++#define	flat_get_addr_from_rp(rp, relval, flags, p)	get_unaligned(rp)
+ #define	flat_put_addr_at_rp(rp, val, relval)	put_unaligned(val,rp)
+ #define	flat_get_relocate_addr(rel)		(rel)
++#define	flat_set_persistent(relval, p)		0
+ 
+ #endif /* __ASM_SH_FLAT_H */
+diff --git a/include/asm-v850/flat.h b/include/asm-v850/flat.h
+index 3888f59..17f0ea5 100644
+--- a/include/asm-v850/flat.h
++++ b/include/asm-v850/flat.h
+@@ -25,6 +25,7 @@
+ #define	flat_stack_align(sp)		/* nothing needed */
+ #define	flat_argvp_envp_on_stack()	0
+ #define	flat_old_ram_flag(flags)	(flags)
++#define	flat_set_persistent(relval, p)	0
+ 
+ /* We store the type of relocation in the top 4 bits of the `relval.' */
+ 
+@@ -46,7 +47,8 @@ flat_get_relocate_addr (unsigned long relval)
+    For the v850, RP should always be half-word aligned.  */
+ static inline unsigned long flat_get_addr_from_rp (unsigned long *rp,
+ 						   unsigned long relval,
+-						   unsigned long flags)
++						   unsigned long flags,
++						   unsigned long *persistent)
  {
--	struct pci_dev *i830_dev;
-+	struct pci_dev *gmch_device;
+ 	short *srp = (short *)rp;
  
--	i830_dev = pci_get_device(PCI_VENDOR_ID_INTEL, device, NULL);
--	if (i830_dev && PCI_FUNC(i830_dev->devfn) != 0) {
--		i830_dev = pci_get_device(PCI_VENDOR_ID_INTEL,
--				device, i830_dev);
-+	gmch_device = pci_get_device(PCI_VENDOR_ID_INTEL, device, NULL);
-+	if (gmch_device && PCI_FUNC(gmch_device->devfn) != 0) {
-+		gmch_device = pci_get_device(PCI_VENDOR_ID_INTEL,
-+                                device, gmch_device);
- 	}
- 
--	if (!i830_dev)
-+	if (!gmch_device)
- 		return 0;
- 
--	intel_private.pcidev = i830_dev;
-+	intel_private.pcidev = gmch_device;
- 	return 1;
- }
- 
-+/* Table to describe Intel GMCH and AGP/PCIE GART drivers.  At least one of
-+ * driver and gmch_driver must be non-null, and find_gmch will determine
-+ * which one should be used if a gmch_chip_id is present.
-+ */
-+static const struct intel_driver_description {
-+	unsigned int chip_id;
-+	unsigned int gmch_chip_id;
-+	char *name;
-+	struct agp_bridge_driver *driver;
-+	struct agp_bridge_driver *gmch_driver;
-+} intel_agp_chipsets[] = {
-+	{ PCI_DEVICE_ID_INTEL_82443LX_0, 0, "440LX",
-+            (struct agp_bridge_driver *)&intel_generic_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82443BX_0, 0, "440BX",
-+            (struct agp_bridge_driver *)&intel_generic_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82443GX_0, 0, "440GX",
-+            (struct agp_bridge_driver *)&intel_generic_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82810_MC1, PCI_DEVICE_ID_INTEL_82810_IG1, "i810",
-+            NULL, (struct agp_bridge_driver *)&intel_810_driver },
-+	{ PCI_DEVICE_ID_INTEL_82810_MC3, PCI_DEVICE_ID_INTEL_82810_IG3, "i810",
-+            NULL, (struct agp_bridge_driver *)&intel_810_driver },
-+	{ PCI_DEVICE_ID_INTEL_82810E_MC, PCI_DEVICE_ID_INTEL_82810E_IG, "i810",
-+            NULL, (struct agp_bridge_driver *)&intel_810_driver },
-+	{ PCI_DEVICE_ID_INTEL_82815_MC, PCI_DEVICE_ID_INTEL_82815_CGC, "i815",
-+            (struct agp_bridge_driver *)&intel_810_driver,
-+            (struct agp_bridge_driver *)&intel_815_driver },
-+	{ PCI_DEVICE_ID_INTEL_82820_HB, 0, "i820",
-+            (struct agp_bridge_driver *)&intel_820_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82820_UP_HB, 0, "i820",
-+            (struct agp_bridge_driver *)&intel_820_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82830_HB, PCI_DEVICE_ID_INTEL_82830_CGC, "830M",
-+            (struct agp_bridge_driver *)&intel_830mp_driver,
-+            (struct agp_bridge_driver *)&intel_830_driver },
-+	{ PCI_DEVICE_ID_INTEL_82840_HB, 0, "i840",
-+            (struct agp_bridge_driver *)&intel_840_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82845_HB, 0, "845G",
-+            (struct agp_bridge_driver *)&intel_845_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82845G_HB, PCI_DEVICE_ID_INTEL_82845G_IG, "830M",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_830_driver },
-+	{ PCI_DEVICE_ID_INTEL_82850_HB, 0, "i850",
-+	    (struct agp_bridge_driver *)&intel_850_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82855PM_HB, 0, "855PM",
-+            (struct agp_bridge_driver *)&intel_845_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82855GM_HB, PCI_DEVICE_ID_INTEL_82855GM_IG, "855GM",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_830_driver },
-+	{ PCI_DEVICE_ID_INTEL_82860_HB, 0, "i860",
-+            (struct agp_bridge_driver *)&intel_860_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82865_HB, PCI_DEVICE_ID_INTEL_82865_IG, "865",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_830_driver },
-+	{ PCI_DEVICE_ID_INTEL_82875_HB, 0, "i875",
-+            (struct agp_bridge_driver *)&intel_845_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_82915G_HB, PCI_DEVICE_ID_INTEL_82915G_IG, "915G",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_915_driver },
-+	{ PCI_DEVICE_ID_INTEL_82915GM_HB, PCI_DEVICE_ID_INTEL_82915GM_IG, "915GM",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_915_driver },
-+	{ PCI_DEVICE_ID_INTEL_82945G_HB, PCI_DEVICE_ID_INTEL_82945G_IG, "945G",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_915_driver },
-+	{ PCI_DEVICE_ID_INTEL_82945GM_HB, PCI_DEVICE_ID_INTEL_82945GM_IG, "945GM",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_915_driver },
-+	{ PCI_DEVICE_ID_INTEL_82946GZ_HB, PCI_DEVICE_ID_INTEL_82946GZ_IG, "946GZ",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_82965G_1_HB, PCI_DEVICE_ID_INTEL_82965G_1_IG, "965G",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_82965Q_HB, PCI_DEVICE_ID_INTEL_82965Q_IG, "965Q",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_82965G_HB, PCI_DEVICE_ID_INTEL_82965G_IG, "965G",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_82965GM_HB, PCI_DEVICE_ID_INTEL_82965GM_IG, "965GM",
-+            (struct agp_bridge_driver *)&intel_845_driver,
-+            (struct agp_bridge_driver *)&intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_7505_0, 0, "E7505",
-+            (struct agp_bridge_driver *)&intel_7505_driver, NULL },
-+	{ PCI_DEVICE_ID_INTEL_7205_0, 0, "E7205",
-+            (struct agp_bridge_driver *)&intel_7505_driver, NULL },
-+	{ 0, 0, NULL, NULL, NULL }
-+};
-+
- static int __devinit agp_intel_probe(struct pci_dev *pdev,
- 				     const struct pci_device_id *ent)
- {
- 	struct agp_bridge_data *bridge;
--	char *name = "(unknown)";
- 	u8 cap_ptr = 0;
- 	struct resource *r;
-+	int i;
- 
- 	cap_ptr = pci_find_capability(pdev, PCI_CAP_ID_AGP);
- 
-@@ -1759,191 +1837,39 @@ static int __devinit agp_intel_probe(struct pci_dev *pdev,
- 	if (!bridge)
- 		return -ENOMEM;
- 
--	switch (pdev->device) {
--	case PCI_DEVICE_ID_INTEL_82443LX_0:
--		bridge->driver = &intel_generic_driver;
--		name = "440LX";
--		break;
--	case PCI_DEVICE_ID_INTEL_82443BX_0:
--		bridge->driver = &intel_generic_driver;
--		name = "440BX";
--		break;
--	case PCI_DEVICE_ID_INTEL_82443GX_0:
--		bridge->driver = &intel_generic_driver;
--		name = "440GX";
--		break;
--	case PCI_DEVICE_ID_INTEL_82810_MC1:
--		name = "i810";
--		if (!find_i810(PCI_DEVICE_ID_INTEL_82810_IG1))
--			goto fail;
--		bridge->driver = &intel_810_driver;
--		break;
--	case PCI_DEVICE_ID_INTEL_82810_MC3:
--		name = "i810 DC100";
--		if (!find_i810(PCI_DEVICE_ID_INTEL_82810_IG3))
--			goto fail;
--		bridge->driver = &intel_810_driver;
--		break;
--	case PCI_DEVICE_ID_INTEL_82810E_MC:
--		name = "i810 E";
--		if (!find_i810(PCI_DEVICE_ID_INTEL_82810E_IG))
--			goto fail;
--		bridge->driver = &intel_810_driver;
--		break;
--	 case PCI_DEVICE_ID_INTEL_82815_MC:
--		/*
--		 * The i815 can operate either as an i810 style
--		 * integrated device, or as an AGP4X motherboard.
--		 */
--		if (find_i810(PCI_DEVICE_ID_INTEL_82815_CGC))
--			bridge->driver = &intel_810_driver;
--		else
--			bridge->driver = &intel_815_driver;
--		name = "i815";
--		break;
--	case PCI_DEVICE_ID_INTEL_82820_HB:
--	case PCI_DEVICE_ID_INTEL_82820_UP_HB:
--		bridge->driver = &intel_820_driver;
--		name = "i820";
--		break;
--	case PCI_DEVICE_ID_INTEL_82830_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82830_CGC))
--			bridge->driver = &intel_830_driver;
--		else
--			bridge->driver = &intel_830mp_driver;
--		name = "830M";
--		break;
--	case PCI_DEVICE_ID_INTEL_82840_HB:
--		bridge->driver = &intel_840_driver;
--		name = "i840";
--		break;
--	case PCI_DEVICE_ID_INTEL_82845_HB:
--		bridge->driver = &intel_845_driver;
--		name = "i845";
--		break;
--	case PCI_DEVICE_ID_INTEL_82845G_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82845G_IG))
--			bridge->driver = &intel_830_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "845G";
--		break;
--	case PCI_DEVICE_ID_INTEL_82850_HB:
--		bridge->driver = &intel_850_driver;
--		name = "i850";
--		break;
--	case PCI_DEVICE_ID_INTEL_82855PM_HB:
--		bridge->driver = &intel_845_driver;
--		name = "855PM";
--		break;
--	case PCI_DEVICE_ID_INTEL_82855GM_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82855GM_IG)) {
--			bridge->driver = &intel_830_driver;
--			name = "855";
--		} else {
--			bridge->driver = &intel_845_driver;
--			name = "855GM";
--		}
--		break;
--	case PCI_DEVICE_ID_INTEL_82860_HB:
--		bridge->driver = &intel_860_driver;
--		name = "i860";
--		break;
--	case PCI_DEVICE_ID_INTEL_82865_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82865_IG))
--			bridge->driver = &intel_830_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "865";
--		break;
--	case PCI_DEVICE_ID_INTEL_82875_HB:
--		bridge->driver = &intel_845_driver;
--		name = "i875";
--		break;
--	case PCI_DEVICE_ID_INTEL_82915G_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82915G_IG))
--			bridge->driver = &intel_915_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "915G";
--		break;
--	case PCI_DEVICE_ID_INTEL_82915GM_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82915GM_IG))
--			bridge->driver = &intel_915_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "915GM";
--		break;
--	case PCI_DEVICE_ID_INTEL_82945G_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82945G_IG))
--			bridge->driver = &intel_915_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "945G";
--		break;
--	case PCI_DEVICE_ID_INTEL_82945GM_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82945GM_IG))
--			bridge->driver = &intel_915_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "945GM";
--		break;
--	case PCI_DEVICE_ID_INTEL_82946GZ_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82946GZ_IG))
--			bridge->driver = &intel_i965_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "946GZ";
--		break;
--	case PCI_DEVICE_ID_INTEL_82965G_1_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82965G_1_IG))
--			bridge->driver = &intel_i965_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "965G";
--		break;
--	case PCI_DEVICE_ID_INTEL_82965Q_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82965Q_IG))
--			bridge->driver = &intel_i965_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "965Q";
--		break;
--	case PCI_DEVICE_ID_INTEL_82965G_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82965G_IG))
--			bridge->driver = &intel_i965_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "965G";
--		break;
--	case PCI_DEVICE_ID_INTEL_82965GM_HB:
--		if (find_i830(PCI_DEVICE_ID_INTEL_82965GM_IG))
--			bridge->driver = &intel_i965_driver;
--		else
--			bridge->driver = &intel_845_driver;
--		name = "965GM";
--		break;
--	case PCI_DEVICE_ID_INTEL_7505_0:
--		bridge->driver = &intel_7505_driver;
--		name = "E7505";
--		break;
--	case PCI_DEVICE_ID_INTEL_7205_0:
--		bridge->driver = &intel_7505_driver;
--		name = "E7205";
--		break;
--	default:
-+	for (i = 0; intel_agp_chipsets[i].name != NULL; i++) {
-+		if (pdev->device == intel_agp_chipsets[i].chip_id)
-+		    break;
-+	}
-+
-+	if (intel_agp_chipsets[i].name == NULL) {
- 		if (cap_ptr)
--			printk(KERN_WARNING PFX "Unsupported Intel chipset (device id: %04x)\n",
--			    pdev->device);
-+			printk(KERN_WARNING PFX "Unsupported Intel chipset"
-+                               "(device id: %04x)\n", pdev->device);
- 		agp_put_bridge(bridge);
- 		return -ENODEV;
--	};
-+	}
-+
-+	if (intel_agp_chipsets[i].gmch_chip_id != 0 &&
-+		find_gmch(intel_agp_chipsets[i].gmch_chip_id)) {
-+	    bridge->driver = intel_agp_chipsets[i].gmch_driver;
-+	} else {
-+	    bridge->driver = intel_agp_chipsets[i].driver;
-+	}
-+
-+	if (bridge->driver == NULL) {
-+		printk(KERN_WARNING PFX "Failed to find bridge device "
-+			"(chip_id: %04x)\n", intel_agp_chipsets[i].gmch_chip_id);
-+		agp_put_bridge(bridge);
-+		return -ENODEV;
-+        }
- 
- 	bridge->dev = pdev;
- 	bridge->capndx = cap_ptr;
- 	bridge->dev_private_data = &intel_private;
- 
--	printk(KERN_INFO PFX "Detected an Intel %s Chipset.\n", name);
-+	printk(KERN_INFO PFX "Detected an Intel %s Chipset.\n",
-+		intel_agp_chipsets[i].name);
- 
- 	/*
- 	* The following fixes the case where the BIOS has "forgotten" to
-@@ -1979,12 +1905,6 @@ static int __devinit agp_intel_probe(struct pci_dev *pdev,
- 
- 	pci_set_drvdata(pdev, bridge);
- 	return agp_add_bridge(bridge);
--
--fail:
--	printk(KERN_ERR PFX "Detected an Intel %s chipset, "
--		"but could not find the secondary device.\n", name);
--	agp_put_bridge(bridge);
--	return -ENODEV;
- }
- 
- static void __devexit agp_intel_remove(struct pci_dev *pdev)
 -- 
-1.4.4.4
+1.5.2
