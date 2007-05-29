@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXE2ShA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761235AbXE2Shg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbXE2ShA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbXE2Sgx
+	id S1761235AbXE2Shg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757946AbXE2ShO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:36:53 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54847 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750816AbXE2Sgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:36:52 -0400
-Date: Tue, 29 May 2007 11:36:51 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 3/7] Allow CONFIG_MIGRATION to be set without CONFIG_NUMA
-In-Reply-To: <Pine.LNX.4.64.0705291910430.5669@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0705291133380.24473@schroedinger.engr.sgi.com>
-References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
- <20070529173710.1570.91203.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0705291057170.24126@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705291910430.5669@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 May 2007 14:37:14 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43674 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753459AbXE2ShN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:37:13 -0400
+Message-Id: <20070529183356.192838687@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 29 May 2007 14:33:56 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/9] Conditional Calls
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:37:07 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007, Mel Gorman wrote:
+Hi,
 
-> > > +config SYSCALL_MOVE_PAGES
-> > > +	def_bool y
-> > > +	depends on MIGRATION && NUMA
-> > > +
-> > 
-> > Do we really need the CONFIG_SYSCALL_MOVE_PAGES? I think you will directly
-> > access the lower levels. So why have it? CONFIG_SYSCALL_MOVE_PAGES ==
-> > CONFIG_NUMA.
-> 
-> Without SYSCALL_MOVE_PAGES, the check in migrate.h becomes
-> 
-> #if defined(CONFIG_NUMA) && defined(CONFIG_MIGRATION)
-> /* Check if a vma is migratable */
-> static inline int vma_migratable(struct vm_area_struct *vma)
-> #endif
+Following Andi Kleen's advice, I splitted the jump-over-call into a speparate
+piece of infrastructure so it can be used more widely.
 
-Why do you need vma_migratable for the CONFIG_MIGRATION case? The use of 
-vma_migratable in a !NUMA sitation would not be working right as far as I 
-can tell.
+It also use a hash table to permit cond_call enable/disable both when the
+cond_call is armed and when a module containing an armed cond_call is loaded.
 
-#ifdef CONFIG_NUMA
+Please add at the end of the 2.6.22-mm1 series,
 
-is fine.
+conditional-calls-architecture-independent-code.patch
+conditional-calls-hash-table.patch
+conditional-calls-non-optimized-architectures.patch
+conditional-calls-kconfig-menus.patch
+conditional-calls-i386-optimization.patch
+conditional-calls-powerpc-optimization.patch
+conditional-calls-documentation.patch
+#
+f00f-bug-use-cond-calls.patch
+profiling-use-cond-calls.patch
 
-> That in itself is fine but in mm/migrate.c I didn't want to define
-> sys_move_pages() in the non-NUMA case. Whatever about the header file where
-> SYSCALL_MOVE_PAGES obscures understanding, I think it makes sense to have
-> SYSCALL_MOVE_PAGES for mm/migrate.c . What do you think?
+Mathieu
 
-Why do you need sys_move_pages for the non-NUMA case?
-
-The low level function that I intended to be used by defrag is 
-migrate_pages and that one is outside of #ifdef CONFIG_NUMA.
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
