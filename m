@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762170AbXE2EbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbXE2EqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762170AbXE2EbV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 00:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbXE2EbO
+	id S1761619AbXE2EqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 00:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbXE2EqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 00:31:14 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:63935 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821AbXE2EbO (ORCPT
+	Tue, 29 May 2007 00:46:00 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:53139 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821AbXE2Ep7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 00:31:14 -0400
+	Tue, 29 May 2007 00:45:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GFuZAKP3OHTIPBHb7d/59+bUk1fMT2gketocxS2SNMEQ6uBQMwfaeuymBdzKkRv4+SJrRKrXGlnqbRVN+y2Pv2vSkZ/TNVB2U+iTxjMNn4qz/jXu7RhzVX57qvGczuxMa7db3P6YW0zfP4E/nGWJQaaALKKZUfTdIPzL+iRziTY=
-Message-ID: <a8e1da0705282131w72fbed65g8cb28589202298c1@mail.gmail.com>
-Date: Tue, 29 May 2007 04:31:12 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [NFS] [PATCH] NFSD: fix uninitialized variable
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, neilb@suse.de,
-       nfs@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <465B9BB9.7060300@garzik.org>
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=mv0FcWfxng1fJ+SctqygGOyIQ9JBd6MpPhmUJp9/VRwATr/9Lrrl+wlB8wKlt11YxluDTQmnBL/pUmnpw6iipZflsOa+dwnBBffZ3XN3NFRElAQBrZ2fJvvQYIntXc3lKp3Yc6eB/SXr0u6x2IcKWuHW6RrK/trDPLKUStQ7v+U=
+Message-ID: <2bd9ebfa0705282145t34ed211bs48c7b31fcd9420a5@mail.gmail.com>
+Date: Tue, 29 May 2007 10:15:58 +0530
+From: "Tej Parkash" <tejparkash.d@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: warning while building module.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070527103442.GA10594@havoc.gtf.org>
-	 <20070529030050.GB20631@fieldses.org> <465B9BB9.7060300@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+hi all
 
-> Given what you said above, I don't see gcc, on its best day, will ever
-> know enough to validate that that variable is indeed always initialized.
->   So I would vote for silencing it on those grounds.
+while building module i was getting following warning and it terminate
+module building stage
 
-I agree too. How about this one:
+ MODPOST 1889 modules
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:start_kernel from .text between 'is386' (at offset
+0xc0101171) and 'check_x87'
+WARNING: vmlinux - Section mismatch: reference to .init.text: from
+.text between 'rest_init' (at offset 0xc0101458) and 'try_name'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:__alloc_bootmem from .text between 'init_gdt' (at offset
+0xc010adfb) and 'cpu_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:__alloc_bootmem from .text between 'init_gdt' (at offset
+0xc010ae11) and 'cpu_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:sysenter_setup from .text between 'identify_cpu' (at offset
+0xc010b46b) and 'display_cacheinfo'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:mtrr_bp_init from .text between 'identify_cpu' (at offset
+0xc010b475) and 'display_cacheinfo'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:trap_init_f00f_bug from .text between 'init_intel' (at
+offset 0xc010d576) and 'cpuid4_cache_lookup'
+WARNING: vmlinux - Section mismatch: reference to .init.text: from
+.text between 'iret_exc' (at offset 0xc02f2c2e) and '_etext'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:initkmem_list3 from .text between 'set_up_list3s' (at
+offset 0xc0173aff) and 's_start'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:eisa_root_register from .text between
+'virtual_eisa_root_init' (at offset 0xc026fecf) and
+'cpufreq_unregister_driver'
+WARNING: vmlinux - Section mismatch: reference to .init.text: from
+.text between 'iret_exc' (at offset 0xc02f32c8) and '_etext'
 
-diff -dur linux/fs/nfsd/nfs4acl.c linux.new/fs/nfsd/nfs4acl.c
---- linux/fs/nfsd/nfs4acl.c     2007-05-29 12:28:29.000000000 +0000
-+++ linux.new/fs/nfsd/nfs4acl.c 2007-05-29 12:30:45.000000000 +0000
-@@ -183,8 +183,6 @@
- summarize_posix_acl(struct posix_acl *acl, struct posix_acl_summary *pas)
- {
-        struct posix_acl_entry *pa, *pe;
--       pas->users = 0;
--       pas->groups = 0;
-        pas->mask = 07;
+i was trying to fix with online available patches but does not help out.
+please cc to me
 
-        pe = acl->a_entries + acl->a_count;
-@@ -229,6 +227,7 @@
-        int eflag = ((flags & NFS4_ACL_TYPE_DEFAULT) ?
-                NFS4_INHERITANCE_FLAGS | NFS4_ACE_INHERIT_ONLY_ACE : 0);
-
-+       memset(pas, 0, sizeof(struct posix_acl_summary);
-        BUG_ON(pacl->a_count < 3);
-        summarize_posix_acl(pacl, &pas);
-
-Regards
-dave
+thanks
+TEJ
