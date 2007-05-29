@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbXE2Qtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbXE2QwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091AbXE2Qtj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 12:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbXE2Qta
+	id S1760605AbXE2QwQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 12:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbXE2QwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 12:49:30 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41089 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754128AbXE2Qt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 12:49:29 -0400
-Date: Tue, 29 May 2007 08:58:50 -0700
-From: Greg KH <gregkh@suse.de>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Tejun Heo <htejun@gmail.com>, dmitry.torokhov@gmail.com, oneukum@suse.de,
-       rpurdie@rpsys.net, stern@rowland.harvard.edu, maneesh@in.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET 2.6.22-rc2-mm1] sysfs: assorted fixes
-Message-ID: <20070529155850.GB7068@suse.de>
-References: <1180368625600-git-send-email-htejun@gmail.com> <20070529160243.7ea4023d@gondolin.boeblingen.de.ibm.com>
+	Tue, 29 May 2007 12:52:03 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:26887 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751781AbXE2QwB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 12:52:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=b10iZhWZApHiunPrCwCnujbnwVRbSd8qjt0WNOV96naIiOVYyOW3VydQZiOfak5a5bGF6ImjG8HG5xYVfCG8PYjc7QXPsV77a2VH3L1F5Lgsq0LaNAFwNrs11Zflye+Qy9rMA4xWFH6IJBnIa71R2w4Gw0m/nOuz80XuZd3dODg=
+Message-ID: <9e4733910705290951t3f59ae6dyc42a41e96b0c6cac@mail.gmail.com>
+Date: Tue, 29 May 2007 12:51:53 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [RFC] enhancing the kernel's graphics subsystem
+Cc: "Dave Airlie" <airlied@gmail.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "Jesse Barnes" <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+In-Reply-To: <20070529142631.GA6460@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070529160243.7ea4023d@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+References: <465228E2.1030405@garzik.org>
+	 <200705211856.56228.jbarnes@virtuousgeek.org>
+	 <9e4733910705220727t605f2522tc4eb97257735c0fb@mail.gmail.com>
+	 <21d7e9970705220735j37bc8eeck87db7193c08c4c24@mail.gmail.com>
+	 <9e4733910705220813i479a68faxf365697962317c60@mail.gmail.com>
+	 <21d7e9970705221025r2f798dc5x310947db040c6521@mail.gmail.com>
+	 <9e4733910705221258v660d8f42j16cc596ca820e8b8@mail.gmail.com>
+	 <20070528201213.GA5840@ucw.cz>
+	 <9e4733910705281357x592f0853re9492efdb5ef82e8@mail.gmail.com>
+	 <20070529142631.GA6460@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 04:02:43PM +0200, Cornelia Huck wrote:
-> On Tue, 29 May 2007 01:10:25 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
-> > Hello, all.
-> > 
-> > This patchset contains two cleanups and three fixes.
-> > 
-> > #01: make-sysfs_alloc_ino-static, cleanup
-> > #02: fix-parent-refcounting, fix
-> > #03: reorganize-sysfs_new_inode-and-sysfs_create, cleanup and prep for #04
-> > #04: use-iget_locked-instead-of-new_inode, fix
-> > #05: fix-root-sysfs_dirent-root-dentry-association, fix
-> > 
-> >  fs/sysfs/dir.c   |  143 +++++++++++++++++++++++--------------------------------
-> >  fs/sysfs/inode.c |  114 ++++++++++++++++++++++++-------------------
-> >  fs/sysfs/mount.c |   19 ++++---
-> >  fs/sysfs/sysfs.h |    6 +-
-> >  4 files changed, 137 insertions(+), 145 deletions(-)
-> > 
-> > Please apply.  Thanks.
-> 
-> I've tested this patchset a bit on s390 (device attach/detach and
-> moving devices around) and didn't encounter problems. As far as I can
-> see, this looks sane.
+On 5/29/07, Pavel Machek <pavel@ucw.cz> wrote:
+> > I have already implemented this once and submitted a
+> > patch.
+>
+> Seems you were not persistent enough. 'I submitted a patch long time
+> ago' is still no reason to block new work.
 
-It boots on this laptop just fine too :)
+This is a well researched area and the flaws are widely know. Adding
+this new mode setting code to the kernel is not adding a new
+subsystem, it is an attempt to replace an existing subsystem.  In
+order to replace a subsystem the general rule is that the new one must
+be better than the old one. I have not seen sufficient arguments made
+to justify replacing fbdev instead of extending it.
 
-Thanks for testing,
+As for writing more patches, I have been burnt once by "show us the
+code" being used as a way to getting rid of someone when the people
+saying "show us the code" have no intention of agreeing to the changes
+being proposed. I'm not going to fall for it again.
 
-greg k-h
+-- 
+Jon Smirl
+jonsmirl@gmail.com
