@@ -1,148 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761505AbXE2SVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761684AbXE2SXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761505AbXE2SVv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbXE2SVo
+	id S1761684AbXE2SXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbXE2SX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:21:44 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:38266 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753141AbXE2SVn (ORCPT
+	Tue, 29 May 2007 14:23:26 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45925 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893AbXE2SXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:21:43 -0400
-Date: Tue, 29 May 2007 19:21:40 +0100 (IST)
-From: Mel Gorman <mel@csn.ul.ie>
-X-X-Sender: mel@skynet.skynet.ie
-To: Christoph Lameter <clameter@sgi.com>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 3/7] Allow CONFIG_MIGRATION to be set without CONFIG_NUMA
-In-Reply-To: <Pine.LNX.4.64.0705291057170.24126@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0705291910430.5669@skynet.skynet.ie>
-References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
- <20070529173710.1570.91203.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0705291057170.24126@schroedinger.engr.sgi.com>
+	Tue, 29 May 2007 14:23:25 -0400
+X-Originating-Ip: 72.143.65.211
+Date: Tue, 29 May 2007 14:21:10 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] FILESYSTEMS:  Delete unused "int dummy[5]" from
+ inodes_stat_t.
+In-Reply-To: <20070529111902.27055fd0.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0705291416470.4736@localhost.localdomain>
+References: <Pine.LNX.4.64.0705291307001.32601@localhost.localdomain>
+ <20070529110041.49bf57f1.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705291406040.4617@localhost.localdomain>
+ <20070529111902.27055fd0.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007, Christoph Lameter wrote:
+On Tue, 29 May 2007, Randy Dunlap wrote:
 
-> On Tue, 29 May 2007, Mel Gorman wrote:
+> On Tue, 29 May 2007 14:07:01 -0400 (EDT) Robert P. J. Day wrote:
 >
->> CONFIG_MIGRATION currently depends on CONFIG_NUMA. move_pages() is the only
->> user of migration today and as this system call is only meaningful on NUMA,
->> it makes sense. However, memory compaction will operate within a zone and is
->> useful on both NUMA and non-NUMA systems. This patch allows CONFIG_MIGRATION
->> to be used in all memory models. To preserve existing behaviour, move_pages()
->> is only available when CONFIG_NUMA is set.
+> > On Tue, 29 May 2007, Andrew Morton wrote:
+> >
+> > > kernel/sysctl.c:
+> > >
+> > > 	{
+> > > 		.ctl_name	= FS_STATINODE,
+> > > 		.procname	= "inode-state",
+> > > 		.data		= &inodes_stat,
+> > > 		.maxlen		= 7*sizeof(int),    <-----
+> > > 		.mode		= 0444,
+> > > 		.proc_handler	= &proc_dointvec,
+> > > 	},
+> > >
+> > > akpm:/home/akpm> cat /proc/sys/fs/inode-state
+> > > 608039  178454  0       0       0       0       0
+> > >
+> > > So it _is_ used: to present those five zeroes.  I think this is
+> > > for back-compatibility with some cretaceous-era kernel.
+> >
+> > ah, gotcha.  well, i'll leave this up to someone else to do
+> > anything with if they are so inclined.
 >
-> Hmmm... I thought I had this already set up so that it would be easy to
-> switch page migration to not depend on CONFIG_NUMA. Not so it seems.
->
+> There's little to be done, except possibly put a /* comment */ on
+> the struct's dummy line so that we don't go thru this again in N
+> years.
 
-It's only policy_zone that it got hung-up on. In an earlir version, I just 
-defined policy_zone outside of mempolicy but it was messy looking.
+  so, just to clarify, what *is* the value of those trailing five
+zeroes?  andrew suggests it's to be backward-compatible with an old
+kernel, which doesn't make much sense to me.  it would make more sense
+to say that that's backward-compatible with some old userspace app
+that always wants to see seven values and just ignores the last five.
 
->> --- linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/migrate.h	2007-05-28 14:11:32.000000000 +0100
->> +++ linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/migrate.h	2007-05-29 10:00:09.000000000 +0100
->> @@ -7,7 +7,7 @@
->>
->>  typedef struct page *new_page_t(struct page *, unsigned long private, int **);
->>
->> -#ifdef CONFIG_MIGRATION
->> +#ifdef CONFIG_SYSCALL_MOVE_PAGES
->>  /* Check if a vma is migratable */
->>  static inline int vma_migratable(struct vm_area_struct *vma)
->>  {
->> @@ -24,7 +24,14 @@ static inline int vma_migratable(struct
->>  			return 0;
->>  	return 1;
->>  }
->> +#else
->> +static inline int vma_migratable(struct vm_area_struct *vma)
->> +{
->> +	return 0;
->> +}
->> +#endif
->
-> I guess we get compilation failures because of the reference to
-> policy_zone here for the !NUMA case? I think vma migratable is not used at
-> all if !NUMA.
->
+  in any event, from Documentation/filesystems/proc.txt:
 
-It isn't that I could tell.
+"inode-state contains two actual numbers and five dummy values. The
+numbers are nr_inodes and nr_free_inodes (in order of appearance)."
 
->
->> +#ifdef CONFIG_MIGRATION
->>  extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
->>  extern int putback_lru_pages(struct list_head *l);
->>  extern int migrate_page(struct address_space *,
->> @@ -40,8 +47,6 @@ extern int migrate_vmas(struct mm_struct
->>  		const nodemask_t *from, const nodemask_t *to,
->>  		unsigned long flags);
->>  #else
->> -static inline int vma_migratable(struct vm_area_struct *vma)
->> -					{ return 0; }
->
-> Maybe this block is not necessary?
->
+if even the documentation calls them dummy values, do they really have
+any residual value at this point?  and on that note, i'll stop harping
+on this and move on.
 
-Agreed. For a long time I didn't have it included at all but put it back 
-in to preserve existing behaviour. I'll remove it.
-
->> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/mm.h linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/mm.h
->> --- linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/mm.h	2007-05-24 10:13:34.000000000 +0100
->> +++ linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/mm.h	2007-05-28 14:13:44.000000000 +0100
->> @@ -242,6 +242,8 @@ struct vm_operations_struct {
->>  	int (*set_policy)(struct vm_area_struct *vma, struct mempolicy *new);
->>  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
->>  					unsigned long addr);
->> +#endif /* CONFIG_NUMA */
->> +#ifdef CONFIG_MIGRATION
->>  	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
->>  		const nodemask_t *to, unsigned long flags);
->>  #endif
->
-> Correct.
->
->> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-005_migrate_nocontext/mm/Kconfig linux-2.6.22-rc2-mm1-015_migration_flatmem/mm/Kconfig
->> --- linux-2.6.22-rc2-mm1-005_migrate_nocontext/mm/Kconfig	2007-05-24 10:13:34.000000000 +0100
->> +++ linux-2.6.22-rc2-mm1-015_migration_flatmem/mm/Kconfig	2007-05-29 09:57:23.000000000 +0100
->> @@ -145,13 +145,16 @@ config SPLIT_PTLOCK_CPUS
->>  config MIGRATION
->>  	bool "Page migration"
->>  	def_bool y
->> -	depends on NUMA
->>  	help
->>  	  Allows the migration of the physical location of pages of processes
->>  	  while the virtual addresses are not changed. This is useful for
->>  	  example on NUMA systems to put pages nearer to the processors accessing
->>  	  the page.
->>
->> +config SYSCALL_MOVE_PAGES
->> +	def_bool y
->> +	depends on MIGRATION && NUMA
->> +
->
-> Do we really need the CONFIG_SYSCALL_MOVE_PAGES? I think you will directly
-> access the lower levels. So why have it? CONFIG_SYSCALL_MOVE_PAGES ==
-> CONFIG_NUMA.
-
-Without SYSCALL_MOVE_PAGES, the check in migrate.h becomes
-
-#if defined(CONFIG_NUMA) && defined(CONFIG_MIGRATION)
-/* Check if a vma is migratable */
-static inline int vma_migratable(struct vm_area_struct *vma)
-#endif
-
-That in itself is fine but in mm/migrate.c I didn't want to define 
-sys_move_pages() in the non-NUMA case. Whatever about the header file 
-where SYSCALL_MOVE_PAGES obscures understanding, I think it makes sense to 
-have SYSCALL_MOVE_PAGES for mm/migrate.c . What do you think?
-
+rday
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
