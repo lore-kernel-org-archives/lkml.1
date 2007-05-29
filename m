@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764971AbXE2U5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765947AbXE2U6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764971AbXE2U5R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 16:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXE2U5H
+	id S1765947AbXE2U6E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 16:58:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbXE2U5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 16:57:07 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:55637 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752929AbXE2U5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 16:57:04 -0400
-Date: Tue, 29 May 2007 13:56:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Nathan Lynch <nathanl@austin.ibm.com>,
-       Joel Schopp <jschopp@austin.ibm.com>, Ashok Raj <ashok.raj@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
-       Dipankar <dipankar@in.ibm.com>
-Subject: Re: CPU hotplug: system hang on CPU hot remove during `pfmon
- --system-wide'
-In-Reply-To: <20070528065550.GL6157@in.ibm.com>
-Message-ID: <alpine.LFD.0.98.0705291347320.26602@woody.linux-foundation.org>
-References: <87bqg5emqk.wl%takeuchi_satoru@jp.fujitsu.com>
- <20070528065550.GL6157@in.ibm.com>
+	Tue, 29 May 2007 16:57:54 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:57847 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757533AbXE2U5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 16:57:53 -0400
+Date: Tue, 29 May 2007 22:48:45 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Nitin Gupta <nitingupta910@gmail.com>
+cc: lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
+       linuxcompressed-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Hazelton <dhazelton@enter.net>,
+       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Subject: Re: [RFC] LZO de/compression support - take 6
+In-Reply-To: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705292236490.11140@yvahk01.tjqt.qr>
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Mon, 28 May 2007, Srivatsa Vaddagiri wrote:
+On May 28 2007 20:04, Nitin Gupta wrote:
 >
-> 	So is it settled now on what approach we are going to follow (freezer 
-> vs lock based) for cpu hotplug? I thought that Linus was not favouring freezer 
-> based approach sometime back ..
+> * Changelog vs. original LZO:
+> 1) Used standard/kernel defined data types: (this eliminated _huge_
+> #ifdef chunks)
+> lzo_bytep -> unsigned char *
+> lzo_uint -> size_t
+> lzo_xint -> size_t
 
-As far as I'm concerned, we should
- - use "preempt_disable()" to protect against CPU's coming and going 
- - use "stop_machine()" or similar that already honors preemption, and 
-   which I trust a whole lot  more than freezer.
- - .. especially since this is already how we are supposed to be protected 
-   against CPU's going away, and we've already started doing that (for an 
-   example of this, see things like e18f3ffb9c from Andrew)
+Is this safe (as far as compressed LZO stream is concerned) --
+or is it even needed (could it be unsigned int)? 
 
-It really does seem fairly straightforward to make "__cpu_up()" be called 
-through stop_machine too. Looking at _cpu_down:
+> -                             m_pos -= (*(const unsigned short *)ip) >> 2;
+> -#else
+> -                             m_pos = op - 1;
+> -                             m_pos -= (ip[0] >> 2) + (ip[1] << 6);
+> -#endif
+>
+> + m_pos = op - 1 - (cpu_to_le16(*(const u16 *)ip) >> 2);
+>
+> (Andrey suggested le16_to_cpu for above but I think it should be cpu_to_le16).
+> *** Need testing on big endian machine ***
 
-        mutex_lock(&cpu_bitmask_lock);
-        p = __stop_machine_run(take_cpu_down, NULL, cpu);
-        mutex_unlock(&cpu_bitmask_lock);
+On i386, both cpu_to_le16 and le16_to_cpu do nothing.
+On sparc for example, cpu_to_leXX and leXX_to_cpu do 'the same' ;-)
+they swap 1234<->4321.
 
-and then looking at _cpu_up:
+It is the bytestream (ip) that is reinterpreted as uint16_t.
+And I really doubt that the LZO author has a big-endian machine,
+given the days of ubiquitous x86. le16_to_cpu it is.
 
-        mutex_lock(&cpu_bitmask_lock);
-        ret = __cpu_up(cpu);
-        mutex_unlock(&cpu_bitmask_lock);
 
-I just go "Aww, wouldn't it be nice to just make that "__cpu_up()" call be 
-done through __stop_machine_run() too?"
 
-Hmm?
-
-Then, you could get the "cpu_bitmask_lock" if you need to sleep, but if 
-you don't want to do that (and quite often you don't), just doing a 
-"preempt_disable()" or taking a spinlock will *also* guarantee that no new 
-CPU's suddenly show up, so it's safe to look at the CPU online bitmasks.
-
-Do we really need anything else?
-
-As mentioned, it's actually fairly easy to add verification calls to make 
-sure that certain accesses are done with preemption disabled, so..
-
-			Linus
+	Jan
+-- 
