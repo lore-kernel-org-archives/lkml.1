@@ -1,264 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbXE2Occ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbXE2OhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbXE2Occ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbXE2OcY
+	id S1755865AbXE2OhY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbXE2OhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 10:32:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:38413 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbXE2OcX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 10:32:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=sAU65Abzt1l7bpCHJ0XppWtCfznuxBIa89pfrbIBNhwiv1GZ3lB0S3167y0KJ9tY6dL8ISdPlE7D8C/VBr/5Syoj/gAJvELw2rP472lkXHl6Yeu4wUKTmQMh9J3XskXRK/cgHRZNdrkVJO1fye9oEa8IveNRAXoc7e0hRbhLIO8=
-Message-ID: <465C3973.3090303@gmail.com>
-Date: Tue, 29 May 2007 15:32:19 +0100
-From: Michael-Luke Jones <mike.luke.jones@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Macintosh/20070326)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dwmw2@infradead.org
-Subject: [-mm] Move zlib compression library to common directory
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 29 May 2007 10:37:12 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59118 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751230AbXE2OhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 10:37:11 -0400
+Date: Wed, 30 May 2007 00:37:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Stephane Eranian <eranian@frankl.hpl.hp.com>
+Cc: linux-kernel@vger.kernel.org, eranian@hpl.hp.com
+Subject: Re: [PATCH 01/22] 2.6.22-rc3 perfmon2: arch-specific infrastructure
+ changes
+Message-Id: <20070530003702.88220bd3.sfr@canb.auug.org.au>
+In-Reply-To: <200705291348.l4TDmF4w019619@frankl.hpl.hp.com>
+References: <200705291348.l4TDmF4w019619@frankl.hpl.hp.com>
+X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__30_May_2007_00_37_02_+1000_x_l+zbFLLe_zt9Ah"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the zlib compression and decompression code
-to a common directory. The zutil.h header, which is not meant
-to be public, is moved from include/linux/ to lib/zlib/.
+--Signature=_Wed__30_May_2007_00_37_02_+1000_x_l+zbFLLe_zt9Ah
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-In addition, the PRESET_DICT definition from zutil.h, used by 
-fs/jffs2/compr_zlib.c is moved to the 'true' public zlib header
-include/linux/zlib.h. This move is documented in comments.
+Hi Stephane,
 
-Conditional compile of only inflate or deflate code is
-preserved by this patch.
+Just a few white space nits.
 
-Signed-off-by: Michael-Luke Jones <mike.luke.jones@gmail.com>
+On Tue, 29 May 2007 06:48:15 -0700 Stephane Eranian <eranian@frankl.hpl.hp.com> wrote:
+>
+> diff -urNp --exclude=.git linux-2.6.22.orig/arch/mips/kernel/smp.c linux-2.6.22.base/arch/mips/kernel/smp.c
+> --- linux-2.6.22.orig/arch/mips/kernel/smp.c	2007-04-25 20:08:32.000000000 -0700
+> +++ linux-2.6.22.base/arch/mips/kernel/smp.c	2007-05-29 03:20:21.000000000 -0700
+> @@ -203,6 +203,52 @@ void smp_call_function_interrupt(void)
+>  	}
+>  }
+>
+> +int smp_call_function_single (int cpu, void (*func) (void *info), void *info, int retry,
 
-diff --git a/fs/jffs2/compr_zlib.c b/fs/jffs2/compr_zlib.c
-index 2b87fcc..e2cc6c7 100644
---- a/fs/jffs2/compr_zlib.c
-+++ b/fs/jffs2/compr_zlib.c
-@@ -16,7 +16,6 @@
-  #include <linux/kernel.h>
-  #include <linux/slab.h>
-  #include <linux/zlib.h>
--#include <linux/zutil.h>
-  #include "nodelist.h"
-  #include "compr.h"
+We don't put spaces between the function name and the open parenthesis.
 
-diff --git a/include/linux/zlib.h b/include/linux/zlib.h
-index 9e3192a..e9d32c5 100644
---- a/include/linux/zlib.h
-+++ b/include/linux/zlib.h
-@@ -177,6 +177,9 @@ typedef z_stream *z_streamp;
-  #define Z_DEFLATED   8
-  /* The deflate compression method (the only one supported in this 
-version) */
+> +			      int wait)
+> +{
+> +  struct call_data_struct data;
+> +  int me = smp_processor_id();
+> +
+> +  /*
+> +     * Can die spectacularly if this CPU isn't yet marked online
+> +      */
+> +  BUG_ON(!cpu_online(me));
+> +  if (cpu == me) {
+> +    WARN_ON(1);
+> +    return -EBUSY;
+> +    }
+> +
+> +  /* Can deadlock when called with interrupts disabled */
+> +  WARN_ON(irqs_disabled());
+> +
+> +  data.func = func;
+> +  data.info = info;
+> +  atomic_set(&data.started, 0);
+> +  data.wait = wait;
+> +  if (wait)
+> +    atomic_set(&data.finished, 0);
+> +
+> +  spin_lock(&smp_call_lock);
+> +  call_data = &data;
+> +  mb();
+> +
+> +  /* Send a message to the other CPU */
+> +  core_send_ipi(cpu, SMP_CALL_FUNCTION);
+> +
+> +  /* Wait for response */
+> +  /* FIXME: lock-up detection, backtrace on lock-up */
+> +  while (atomic_read(&data.started) != 1)
+> +    barrier();
+> +
+> +  if (wait)
+> +    while (atomic_read(&data.finished) != 1)
+> +      barrier();
+> +  call_data = NULL;
+> +  spin_unlock(&smp_call_lock);
+> +
+> +  return 0;
+> +}
 
-+#define PRESET_DICT 0x20 /* preset dictionary flag in zlib header */
-+/* Required by fs/jffs2/compr_zlib.c */
-+
-                          /* basic functions */
+Please use tabs for indentation ...
 
-  extern int zlib_deflate_workspacesize (void);
-diff --git a/lib/Makefile b/lib/Makefile
-index c8c8e20..42c3903 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -46,8 +46,8 @@ obj-$(CONFIG_CRC32)	+= crc32.o
-  obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
-  obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
+> diff -urNp --exclude=.git linux-2.6.22.orig/include/asm-avr32/thread_info.h linux-2.6.22.base/include/asm-avr32/thread_info.h
+> --- linux-2.6.22.orig/include/asm-avr32/thread_info.h	2007-05-29 03:16:27.000000000 -0700
+> +++ linux-2.6.22.base/include/asm-avr32/thread_info.h	2007-05-29 03:20:21.000000000 -0700
+> @@ -74,20 +74,18 @@ static inline struct thread_info *curren
+>   * - other flags in MSW
+>   */
+>  #define TIF_SYSCALL_TRACE       0       /* syscall trace active */
+> -#define TIF_NOTIFY_RESUME       1       /* resumption notification requested */
+> -#define TIF_SIGPENDING          2       /* signal pending */
+> -#define TIF_NEED_RESCHED        3       /* rescheduling necessary */
+> -#define TIF_POLLING_NRFLAG      4       /* true if poll_idle() is polling
+> +#define TIF_SIGPENDING          1       /* signal pending */
+> +#define TIF_NEED_RESCHED        2       /* rescheduling necessary */
+> +#define TIF_POLLING_NRFLAG      3       /* true if poll_idle() is polling
 
--obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
--obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate/
-+obj-$(CONFIG_ZLIB_INFLATE) += zlib/
-+obj-$(CONFIG_ZLIB_DEFLATE) += zlib/
-  obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
+These could be tab indented since you are changing them anyway.  And
+similarly in some of the other files.
 
-  obj-$(CONFIG_TEXTSEARCH) += textsearch.o
-diff --git a/lib/zlib_inflate/Makefile b/lib/zlib/Makefile
-similarity index 71%
-rename from lib/zlib_inflate/Makefile
-rename to lib/zlib/Makefile
-index bf06548..528d903 100644
---- a/lib/zlib_inflate/Makefile
-+++ b/lib/zlib/Makefile
-@@ -2,8 +2,8 @@
-  # This is a modified version of zlib, which does all memory
-  # allocation ahead of time.
-  #
--# This is only the decompression, see zlib_deflate for the
--# the compression
-+# The compression (deflate) and decompression (inflate) code
-+# is present in this folder.
-  #
-  # Decompression needs to be serialized for each memory
-  # allocation.
-@@ -17,3 +17,7 @@ obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate.o
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-  zlib_inflate-objs := inffast.o inflate.o \
-  		     inftrees.o inflate_syms.o
-+
-+obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate.o
-+
-+zlib_deflate-objs := deflate.o deftree.o deflate_syms.o
-diff --git a/lib/zlib_deflate/deflate.c b/lib/zlib/deflate.c
-similarity index 100%
-rename from lib/zlib_deflate/deflate.c
-rename to lib/zlib/deflate.c
-index c3e4a2b..1137780 100644
---- a/lib/zlib_deflate/deflate.c
-+++ b/lib/zlib/deflate.c
-@@ -49,10 +49,9 @@
-   */
+--Signature=_Wed__30_May_2007_00_37_02_+1000_x_l+zbFLLe_zt9Ah
+Content-Type: application/pgp-signature
 
-  #include <linux/module.h>
--#include <linux/zutil.h>
-+#include "zutil.h"
-  #include "defutil.h"
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--
-  /* 
-===========================================================================
-   *  Function prototypes.
-   */
-diff --git a/lib/zlib_deflate/deflate_syms.c b/lib/zlib/deflate_syms.c
-similarity index 100%
-rename from lib/zlib_deflate/deflate_syms.c
-rename to lib/zlib/deflate_syms.c
-diff --git a/lib/zlib_deflate/deftree.c b/lib/zlib/deftree.c
-similarity index 100%
-rename from lib/zlib_deflate/deftree.c
-rename to lib/zlib/deftree.c
-index ddf3482..d5ce87d 100644
---- a/lib/zlib_deflate/deftree.c
-+++ b/lib/zlib/deftree.c
-@@ -34,7 +34,7 @@
+iD8DBQFGXDqUFdBgD/zoJvwRAkGkAJ97wHuqWhleI2MHi4sQBm7wwdKgLQCeOboD
+iyC9qBdcj+mIP321kUEM0mc=
+=6YGF
+-----END PGP SIGNATURE-----
 
-  /* #include "deflate.h" */
-
--#include <linux/zutil.h>
-+#include "zutil.h"
-  #include "defutil.h"
-
-  #ifdef DEBUG_ZLIB
-diff --git a/lib/zlib_deflate/defutil.h b/lib/zlib/defutil.h
-similarity index 100%
-rename from lib/zlib_deflate/defutil.h
-rename to lib/zlib/defutil.h
-diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib/inffast.c
-similarity index 100%
-rename from lib/zlib_inflate/inffast.c
-rename to lib/zlib/inffast.c
-index d84560c..50d3de1 100644
---- a/lib/zlib_inflate/inffast.c
-+++ b/lib/zlib/inffast.c
-@@ -3,7 +3,7 @@
-   * For conditions of distribution and use, see copyright notice in zlib.h
-   */
-
--#include <linux/zutil.h>
-+#include "zutil.h"
-  #include "inftrees.h"
-  #include "inflate.h"
-  #include "inffast.h"
-diff --git a/lib/zlib_inflate/inffast.h b/lib/zlib/inffast.h
-similarity index 100%
-rename from lib/zlib_inflate/inffast.h
-rename to lib/zlib/inffast.h
-diff --git a/lib/zlib_inflate/inffixed.h b/lib/zlib/inffixed.h
-similarity index 100%
-rename from lib/zlib_inflate/inffixed.h
-rename to lib/zlib/inffixed.h
-diff --git a/lib/zlib_inflate/inflate.c b/lib/zlib/inflate.c
-similarity index 100%
-rename from lib/zlib_inflate/inflate.c
-rename to lib/zlib/inflate.c
-index 7e1e311..ba58871 100644
---- a/lib/zlib_inflate/inflate.c
-+++ b/lib/zlib/inflate.c
-@@ -9,7 +9,7 @@
-   *
-   */
-
--#include <linux/zutil.h>
-+#include "zutil.h"
-  #include "inftrees.h"
-  #include "inflate.h"
-  #include "inffast.h"
-diff --git a/lib/zlib_inflate/inflate.h b/lib/zlib/inflate.h
-similarity index 100%
-rename from lib/zlib_inflate/inflate.h
-rename to lib/zlib/inflate.h
-diff --git a/lib/zlib_inflate/inflate_syms.c b/lib/zlib/inflate_syms.c
-similarity index 100%
-rename from lib/zlib_inflate/inflate_syms.c
-rename to lib/zlib/inflate_syms.c
-diff --git a/lib/zlib_inflate/inftrees.c b/lib/zlib/inftrees.c
-similarity index 100%
-rename from lib/zlib_inflate/inftrees.c
-rename to lib/zlib/inftrees.c
-index 3fe6ce5..faf6f75 100644
---- a/lib/zlib_inflate/inftrees.c
-+++ b/lib/zlib/inftrees.c
-@@ -3,7 +3,7 @@
-   * For conditions of distribution and use, see copyright notice in zlib.h
-   */
-
--#include <linux/zutil.h>
-+#include "zutil.h"
-  #include "inftrees.h"
-
-  #define MAXBITS 15
-diff --git a/lib/zlib_inflate/inftrees.h b/lib/zlib/inftrees.h
-similarity index 100%
-rename from lib/zlib_inflate/inftrees.h
-rename to lib/zlib/inftrees.h
-diff --git a/lib/zlib_inflate/infutil.h b/lib/zlib/infutil.h
-similarity index 100%
-rename from lib/zlib_inflate/infutil.h
-rename to lib/zlib/infutil.h
-diff --git a/lib/zlib/patch-zlib b/lib/zlib/patch-zlib
-new file mode 100644
-index 0000000..d4a011b
-Binary files /dev/null and b/lib/zlib/patch-zlib differ
-diff --git a/include/linux/zutil.h b/lib/zlib/zutil.h
-similarity index 98%
-rename from include/linux/zutil.h
-rename to lib/zlib/zutil.h
-index 6adfa9a..0467c8c 100644
---- a/include/linux/zutil.h
-+++ b/lib/zlib/zutil.h
-@@ -32,7 +32,7 @@ typedef unsigned long  ulg;
-  #define MAX_MATCH  258
-  /* The minimum and maximum match lengths */
-
--#define PRESET_DICT 0x20 /* preset dictionary flag in zlib header */
-+/* PRESET_DICT #define moved to <linux/zlib.h> for JFFS2 */
-
-          /* target dependencies */
-
-diff --git a/lib/zlib_deflate/Makefile b/lib/zlib_deflate/Makefile
-deleted file mode 100644
-index 86275e3..0000000
---- a/lib/zlib_deflate/Makefile
-+++ /dev/null
-@@ -1,11 +0,0 @@
--#
--# This is a modified version of zlib, which does all memory
--# allocation ahead of time.
--#
--# This is the compression code, see zlib_inflate for the
--# decompression code.
--#
--
--obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate.o
--
--zlib_deflate-objs := deflate.o deftree.o deflate_syms.o
-
+--Signature=_Wed__30_May_2007_00_37_02_+1000_x_l+zbFLLe_zt9Ah--
