@@ -1,93 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763907AbXE2TYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760788AbXE2T1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763907AbXE2TYS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 15:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbXE2TYA
+	id S1760788AbXE2T1m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 15:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbXE2T1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 15:24:00 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:42766 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753302AbXE2TX7 (ORCPT
+	Tue, 29 May 2007 15:27:35 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:53421 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbXE2T1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 15:23:59 -0400
-Message-ID: <465C7DB3.104@cosmosbay.com>
-Date: Tue, 29 May 2007 21:23:31 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Theodore Tso <tytso@mit.edu>, M Macnair <mmacnair@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Seeding /dev/random not working
-References: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com> <20070529131501.GA9899@thunk.org> <20070529174614.GG11166@waste.org>
-In-Reply-To: <20070529174614.GG11166@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 29 May 2007 21:23:37 +0200 (CEST)
+	Tue, 29 May 2007 15:27:35 -0400
+Date: Tue, 29 May 2007 12:33:26 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Josh Boyer" <jwboyer@gmail.com>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Alexander Viro" <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] FILESYSTEMS: Delete unused "int dummy[5]" from
+ inodes_stat_t.
+Message-Id: <20070529123326.a8a1bd64.randy.dunlap@oracle.com>
+In-Reply-To: <625fc13d0705291144u1aef3b6dx4b00873f3d05b652@mail.gmail.com>
+References: <Pine.LNX.4.64.0705291307001.32601@localhost.localdomain>
+	<20070529110041.49bf57f1.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705291406040.4617@localhost.localdomain>
+	<20070529111902.27055fd0.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0705291416470.4736@localhost.localdomain>
+	<465C71EA.5040706@oracle.com>
+	<625fc13d0705291144u1aef3b6dx4b00873f3d05b652@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall a écrit :
-> On Tue, May 29, 2007 at 09:15:01AM -0400, Theodore Tso wrote:
->> Another thing which I noticed is that when Matt Mackall took over
->> maintainership of /dev/random, he apparently took out one of the
->> safeguards I had, which was that before, when entropy was extracted
->> from the pool the time stamp when it was extracted was mixed back into
->> the pool.  The theory was that an external attacker might not know
->> when a program might be calling /dev/random, so mixing in the time of
->> that entropy was extracted wouldn't hurt, and might help.  I'll submit
->> a patch to add that support back in, which will help you a little.
+On Tue, 29 May 2007 13:44:42 -0500 Josh Boyer wrote:
+
+> On 5/29/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > Robert P. J. Day wrote:
+> > > On Tue, 29 May 2007, Randy Dunlap wrote:
+> > >
+> > >> On Tue, 29 May 2007 14:07:01 -0400 (EDT) Robert P. J. Day wrote:
+> > >>
+> > >>> On Tue, 29 May 2007, Andrew Morton wrote:
+> > >>>
+> > >>>> kernel/sysctl.c:
+> > >>>>
+> > >>>>    {
+> > >>>>            .ctl_name       = FS_STATINODE,
+> > >>>>            .procname       = "inode-state",
+> > >>>>            .data           = &inodes_stat,
+> > >>>>            .maxlen         = 7*sizeof(int),    <-----
+> > >>>>            .mode           = 0444,
+> > >>>>            .proc_handler   = &proc_dointvec,
+> > >>>>    },
+> > >>>>
+> > >>>> akpm:/home/akpm> cat /proc/sys/fs/inode-state
+> > >>>> 608039  178454  0       0       0       0       0
+> > >>>>
+> > >>>> So it _is_ used: to present those five zeroes.  I think this is
+> > >>>> for back-compatibility with some cretaceous-era kernel.
+> > >>> ah, gotcha.  well, i'll leave this up to someone else to do
+> > >>> anything with if they are so inclined.
+> > >> There's little to be done, except possibly put a /* comment */ on
+> > >> the struct's dummy line so that we don't go thru this again in N
+> > >> years.
+> > >
+> > >   so, just to clarify, what *is* the value of those trailing five
+> > > zeroes?  andrew suggests it's to be backward-compatible with an old
+> > > kernel, which doesn't make much sense to me.  it would make more sense
+> > > to say that that's backward-compatible with some old userspace app
+> > > that always wants to see seven values and just ignores the last five.
+> >
+> > Agreed, it's for compat with some (unknown) userspace app that reads
+> > /proc/sys/fs/inode-state and scans for 7 (or more than 2) numbers there.
+> > The mantra is "don't break userspace," so we leave the numbers there...
 > 
-> It's still there, and in the same place, it just looks different:
-> 
-> static void add_timer_randomness(struct timer_rand_state *state,
-> unsigned num)
-> {
-> ...
->         sample.jiffies = jiffies;
->         sample.cycles = get_cycles();
->         sample.num = num;
->         add_entropy_words(&input_pool, (u32 *)&sample,
-> 	sizeof(sample)/4);
-> 
-> Trouble is the write(2) interface calls add_entropy_words directly, as
-> does the pool initialization function.
-> 
-> We might as well mix jiffies and cycles in at init time in a manner
-> similar to the above. Something like this (untested):
-> 
-> Index: l/drivers/char/random.c
-> ===================================================================
-> --- l.orig/drivers/char/random.c	2007-05-29 12:45:00.000000000 -0500
-> +++ l/drivers/char/random.c	2007-05-29 12:44:02.000000000 -0500
-> @@ -559,6 +559,26 @@ static struct timer_rand_state input_tim
->  static struct timer_rand_state *irq_timer_state[NR_IRQS];
->  
->  /*
-> + * Mix a sample of the current time into the pool with no entropy
-> + * accounting
-> + */
-> +static long __add_timer_randomness(void)
-> +{
-> +	struct {
-> +		cycles_t cycles;
-> +		long jiffies;
-> +		unsigned num;
-> +	} sample;
-> +
-> +	sample.jiffies = jiffies;
-> +	sample.cycles = get_cycles();
-> +	sample.num = num;
-> +	add_entropy_words(&input_pool, (u32 *)&sample, sizeof(sample)/4);
+> Couldn't you remove the dummy member and just have the proc entry
+> print out 5 dummy zeros?
 
-Well, you need to pass 'num' argument I guess.
-
-But... How is this supposed to work on 64 bits arches ?
-
-Because of alignment, 'struct sample' will include a 4 bytes filler after 
-'unsigned num', and sizeof(sample) will include this (null) filler in entropy 
-pool.
-
-Shouldn't we use __attribute__((packed)) on 'struct sample' definition ?
+In theory someone could do that, but it would (a) require a comment
+so that someone else didn't try to remove it 5 years from now and
+(b) require more proc/sysctl code just for that one sysctl entry
+since the sysctl entries are all table-driven right now and printing
+5 zeros would require a new /proc/sys handler for just this one
+sysctl.
 
 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
