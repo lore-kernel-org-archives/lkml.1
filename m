@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbXE2Czv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbXE2C7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760233AbXE2Czv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 May 2007 22:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXE2Czo
+	id S1761188AbXE2C7h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 May 2007 22:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXE2C7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 May 2007 22:55:44 -0400
-Received: from thunk.org ([69.25.196.29]:50473 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751330AbXE2Czo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 May 2007 22:55:44 -0400
-Date: Mon, 28 May 2007 22:55:34 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>,
-       Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       ext3-users@redhat.com
-Subject: Re: fs periodic check (was Re: 2.6.22-rc1 killed my ext3 filesystem cleanly unmounted)
-Message-ID: <20070529025534.GD24003@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-	Martin Mokrejs <mmokrejs@ribosome.natur.cuni.cz>,
-	Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-	ext3-users@redhat.com
-References: <20070518090604.GA10841@ribosome.natur.cuni.cz> <9a8748490705180720u3baf9785l910581a2a76a6eb@mail.gmail.com> <20070518143529.GB14611@ribosome.natur.cuni.cz> <20070518215731.GB10655@thunk.org> <20070520195526.GA5235@ucw.cz> <20070522180158.GA4668@thunk.org> <20070524173911.GA4541@ucw.cz>
+	Mon, 28 May 2007 22:59:30 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:15345 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751834AbXE2C73 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 May 2007 22:59:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=lcmxUUocQMuf4MGW9+FrmXTSLCG38aD81Yrcw19fSPbD3Cu8yP4ibxiwHKqqIr9sh6GaG0E2V8kgHJ/RD7JkGY/QQY48aCXRrg/kMUuPj0t7VXcmdfYIz0+TIBwFYkGbHSzj8DeJ1fP4KtydCiKNYoKfX5AjrUQ/ove1zVS1xS4=
+Message-ID: <787b0d920705281959l53e74d02g21a6fecd86d73219@mail.gmail.com>
+Date: Mon, 28 May 2007 22:59:28 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: linux-kernel@vger.kernel.org, holt@sgi.com, ebiederm@xmission.com,
+       oleg@tv-sign.ru, roland@redhat.com, davidel@xmailserver.org,
+       mingo@elte.hu, torvalds@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: [RFC, PATCH 1/3] introduce SYS_CLONE_MASK
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070524173911.GA4541@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 24, 2007 at 05:39:11PM +0000, Pavel Machek wrote:
-> Right. Could we get more helpful message here? 'Filesystem check on
-> next boot on AC power'? 
+Robin Holt writes:
+> On Mon, Apr 09, 2007 at 08:36:21AM -0600, Eric W. Biederman wrote:
+>> Robin Holt <holt@sgi.com> writes:
 
-So "(check deferred; on battery)" wasn't explicit enough?  I guess I
-assumed that users would understand that the opposite of "on battery"
-was "on AC power".  I guess I could say "(check defferred 'til on AC
-power)" if people think it would be clearer.
+>>> I would say this is more a benefit than a problem.  With a couple
+>>> of these systems we are testing, the number of kernel threads is
+>>> far greater than the number of user processes and having pstree
+>>> not normally show them, but maybe have an option we add later to
+>>> show them again would be beneficial.
+>>
+>> Sure.
+>>
+>> Robin how many kernel thread per cpu are you seeing?
+>
+> 10.
 
-> Or maybe keep counting, and when we reach 2x mount-count-limit,
-> force a fsck, battery power or not?
+This has long been rotten. Mind fixing it for us? :-)
 
-We do that already.  It's just tough to make that all fit on an 80
-status message.  :-)
+We have N types of thread on M CPUs. Pick something, N or M,
+to be at the top level in /proc. The other goes below, in the
+per-process task directories.
 
-						- Ted
+You then have either N or M things showing up in ps, not N*M.
+
+Note that both ps and top can print the CPU number just fine.
+Abusing the task name for this is just retarded. This suggests
+that the top level should be the type of task, with the lower
+level in /proc/*/task being per-CPU and not needing distinct
+naming at all.
