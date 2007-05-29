@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbXE2RVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbXE2RXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761313AbXE2RVL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 13:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXE2RU6
+	id S1759410AbXE2RXm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 13:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXE2RXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 13:20:58 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:12808 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752554AbXE2RU5 (ORCPT
+	Tue, 29 May 2007 13:23:35 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:51198 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752554AbXE2RXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 13:20:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=St7xDfbKaKDXZzXu5QEVvroZjo9w/BbwohE/YCG9QG7L57PhLlG97Qtep9XuLcI1vBU6wzJW9Elli88tL8Ca6dIpX5DF/HYe9RjOqgeubXAXxfz4SW1UbxHB7oaUkwnwaNIIjGq19wjNdGLu+7xYJ7octFNjVqZwGyOUSFMsGV4=
-Message-ID: <8bd0f97a0705291020p5263b0bco88c556ff8cabf05c@mail.gmail.com>
-Date: Tue, 29 May 2007 13:20:52 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bryan Wu" <bryan.wu@analog.com>
-Subject: Re: [PATCH 19/20] Blackfin on-chip watchdog driver
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org,
-       "Mike Frysinger" <michael.frysinger@analog.com>,
-       "Wim Van Sebroeck" <wim@iguana.be>
-In-Reply-To: <11803414821370-git-send-email-bryan.wu@analog.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 May 2007 13:23:34 -0400
+Date: Tue, 29 May 2007 19:23:34 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>, gregkh@suse.de,
+       oneukum@suse.de, rpurdie@rpsys.net, stern@rowland.harvard.edu,
+       maneesh@in.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET 2.6.22-rc2-mm1] sysfs: reduce memory footprint of
+ sysfs_dirent
+Message-ID: <20070529192334.4725ea90@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070529181759.4d4a664f@gondolin.boeblingen.de.ibm.com>
+References: <118036944617-git-send-email-htejun@gmail.com>
+	<d120d5000705290904s706763bfj7beb837397f54d86@mail.gmail.com>
+	<20070529181759.4d4a664f@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11803414753217-git-send-email-bryan.wu@analog.com>
-	 <11803414821370-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/28/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> From: Mike Frysinger <michael.frysinger@analog.com>
->
-> This patch implements the driver necessary use the Analog Devices
-> Blackfin processor's on-chip watchdog controller, supports
-> BF53[123]/BF53[467]/BF561.
->
-> Signed-off-by: Mike Frysinger <michael.frysinger@analog.com>
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
-> Cc: Wim Van Sebroeck <wim@iguana.be>
+On Tue, 29 May 2007 18:17:59 +0200,
+Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
 
-we probably want to NACK this and wait for me to rip out the timer
-bits into a sep clockevents driver
+> The patchset seems to work fine so far on the (small z/VM guest) system
+> I tested it a bit on; I'll try a huge (LPAR) system next.
 
->  drivers/char/watchdog/Kconfig.orig      |  768 +++++++++++++++++++++++++++++++
-
-looks like you got cruft in this patch anyways ...
--mike
+Seems fine as well. I got 12MB more of free memory, with ~3000
+subchannels (a ccw device behind each) and a few system devices.
