@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbXE2V4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbXE2V5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbXE2V4U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbXE2V4L
+	id S1754005AbXE2V5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbXE2V5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:56:11 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:36993 "EHLO mailer.gwdg.de"
+	Tue, 29 May 2007 17:57:40 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:43167 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbXE2V4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:56:10 -0400
-Date: Tue, 29 May 2007 23:53:33 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Takashi Iwai <tiwai@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>
-Subject: Re: BUG in 2.6.22-rc2-mm1: Parts of Alsa sound architecture broken
-In-Reply-To: <1180471146.9509.115.camel@localhost>
-Message-ID: <Pine.LNX.4.61.0705292349280.11140@yvahk01.tjqt.qr>
-References: <20070524200052.234330@gmx.net>  <20070524130921.8dbd3777.akpm@linux-foundation.org>
-  <s5hiragopsx.wl%tiwai@suse.de>  <20070525102806.77ee9c0c.akpm@linux-foundation.org>
-  <s5h1wh4si5l.wl%tiwai@suse.de>  <Pine.LNX.4.61.0705261248150.7344@yvahk01.tjqt.qr>
-  <s5hveebziom.wl%tiwai@suse.de>  <Pine.LNX.4.61.0705292212120.11140@yvahk01.tjqt.qr>
- <1180471146.9509.115.camel@localhost>
+	id S1750717AbXE2V5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 17:57:39 -0400
+Date: Tue, 29 May 2007 17:57:36 -0400
+To: David Howells <dhowells@redhat.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] AFS: Implement file locking [try #2]
+Message-ID: <20070529215736.GO6815@fieldses.org>
+References: <20070529145426.19366.35289.stgit@warthog.cambridge.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070529145426.19366.35289.stgit@warthog.cambridge.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+One more vague question I had while skimming the previous version--
 
-On May 29 2007 17:39, Mauro Carvalho Chehab wrote:
->> >Anyway, I'd like to confirm that this really works before merging to
->> >the ALSA tree.  As Mauro suspected, kconfig seems not working as
->> >expected...
->> 
->> Unfortunately, there are sometimes non-visible options in menus (the
->> Networking>QoS menu for example) that, when converted to menuconfig-if-endif,
->> also get lost when the menuconfig object is deactivated. In case of QoS, this
->> can break compilation. For most subsystems however, it works alright because
->> the particular subsystem referencing CONFIG_INVISIBLE_THING is deactivated
->> anyway and does not get compiled.
->> Such strange menus (like QoS) have not been menuconfigized so far, it's just
->> too hard to keep the bits together. As far as other subsystems are concerned,
->> please give it some testing.
->
->Hmm... probably, this is what happened with V4L: there are several
->invisible items there for selecting some core items.
+On Tue, May 29, 2007 at 03:54:27PM +0100, David Howells wrote:
+> +static void afs_grant_locks(struct afs_vnode *vnode, struct file_lock *fl)
+> +{
+> +	struct file_lock *p, *_p;
+> +
+> +	list_move_tail(&fl->fl_u.afs.link, &vnode->granted_locks);
+> +	if (fl->fl_type == F_RDLCK) {
+> +		list_for_each_entry_safe(p, _p, &vnode->pending_locks,
+> +					 fl_u.afs.link) {
+> +			if (p->fl_type == F_RDLCK) {
+> +				p->fl_u.afs.state = AFS_LOCK_GRANTED;
+> +				list_move_tail(&p->fl_u.afs.link,
+> +					       &vnode->granted_locks);
+> +				wake_up(&p->fl_wait);
+> +			}
+> +		}
+> +	}
+> +}
 
-Well, what I wanted to describe is that CONFIG_RANDOM_INVISIBLE_THING
-can be referenced _outside_ the particular subsys, and then it
-breaks right on the spot -- some easier to find thanks to compile
-failure, or a link failure, others may remain hidden until runtime.
-A misplacement of invisible objects, I'd say, but that is another
-story, another day, another patch perhaps.
+--without having tried to understand how they're actually used, these
+data structures (like the pending_locks and granted_locks lists) seem to
+duplicate stuff that's already kept in fs/locks.c.  Is there a reason
+they're required?
 
->In the case of V4L, the problem is that, when the menu item is
->activated, sometimes, kconfig doesn't properly honor module/static link
->heritage.
-
-RFC 1925, item 7 seems to fit ;-)
-
-
-	Jan
--- 
+--b.
