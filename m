@@ -1,132 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbXE2Rhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763042AbXE2Rhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762346AbXE2Rhe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 13:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbXE2RhP
+	id S1763042AbXE2Rhu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 13:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbXE2Rh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 13:37:15 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:48614 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756238AbXE2RhN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 13:37:13 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: Mel Gorman <mel@csn.ul.ie>, kamezawa.hiroyu@jp.fujitsu.com,
-       clameter@sgi.com
-Message-Id: <20070529173710.1570.91203.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
-References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 3/7] Allow CONFIG_MIGRATION to be set without CONFIG_NUMA
-Date: Tue, 29 May 2007 18:37:10 +0100 (IST)
+	Tue, 29 May 2007 13:37:26 -0400
+Received: from rtr.ca ([64.26.128.89]:3148 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932083AbXE2RhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 13:37:24 -0400
+Message-ID: <465C64D1.3030604@rtr.ca>
+Date: Tue, 29 May 2007 13:37:21 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle on Intel
+ chipset
+References: <465C566E.4030009@rtr.ca> <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org> <465C608E.3040303@rtr.ca>
+In-Reply-To: <465C608E.3040303@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark Lord wrote:
+>..
+> 7ed92f1a149dddc3cb537ccd7441e98adac12c3e USB: make the autosuspend 
+> workqueue thread freezable
+> ef7f6c7084b333c7524dcd297e0578d43733a2a2 USB: more autosuspend timer stuff
+> 
+> I yanked them both, as they appeared to be releated based on the titles.
+> Reverting this pair of commits fixes the USB suspend/resume regression.
 
-CONFIG_MIGRATION currently depends on CONFIG_NUMA. move_pages() is the only
-user of migration today and as this system call is only meaningful on NUMA,
-it makes sense. However, memory compaction will operate within a zone and is
-useful on both NUMA and non-NUMA systems. This patch allows CONFIG_MIGRATION
-to be used in all memory models. To preserve existing behaviour, move_pages()
-is only available when CONFIG_NUMA is set.
+Okay, just to make it trivial,
+I've narrowed it down to only this commit from Alan Stern:
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Acked-by: Andy Whitcroft <apw@shadowen.org>
----
-
- include/linux/migrate.h |   11 ++++++++---
- include/linux/mm.h      |    2 ++
- mm/Kconfig              |    5 ++++-
- mm/migrate.c            |    4 ++--
- 4 files changed, 16 insertions(+), 6 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/migrate.h linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/migrate.h
---- linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/migrate.h	2007-05-28 14:11:32.000000000 +0100
-+++ linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/migrate.h	2007-05-29 10:00:09.000000000 +0100
-@@ -7,7 +7,7 @@
- 
- typedef struct page *new_page_t(struct page *, unsigned long private, int **);
- 
--#ifdef CONFIG_MIGRATION
-+#ifdef CONFIG_SYSCALL_MOVE_PAGES
- /* Check if a vma is migratable */
- static inline int vma_migratable(struct vm_area_struct *vma)
- {
-@@ -24,7 +24,14 @@ static inline int vma_migratable(struct 
- 			return 0;
- 	return 1;
- }
-+#else
-+static inline int vma_migratable(struct vm_area_struct *vma)
-+{
-+	return 0;
-+}
-+#endif
- 
-+#ifdef CONFIG_MIGRATION
- extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
- extern int putback_lru_pages(struct list_head *l);
- extern int migrate_page(struct address_space *,
-@@ -40,8 +47,6 @@ extern int migrate_vmas(struct mm_struct
- 		const nodemask_t *from, const nodemask_t *to,
- 		unsigned long flags);
- #else
--static inline int vma_migratable(struct vm_area_struct *vma)
--					{ return 0; }
- 
- static inline int isolate_lru_page(struct page *p, struct list_head *list)
- 					{ return -ENOSYS; }
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/mm.h linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/mm.h
---- linux-2.6.22-rc2-mm1-005_migrate_nocontext/include/linux/mm.h	2007-05-24 10:13:34.000000000 +0100
-+++ linux-2.6.22-rc2-mm1-015_migration_flatmem/include/linux/mm.h	2007-05-28 14:13:44.000000000 +0100
-@@ -242,6 +242,8 @@ struct vm_operations_struct {
- 	int (*set_policy)(struct vm_area_struct *vma, struct mempolicy *new);
- 	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
- 					unsigned long addr);
-+#endif /* CONFIG_NUMA */
-+#ifdef CONFIG_MIGRATION
- 	int (*migrate)(struct vm_area_struct *vma, const nodemask_t *from,
- 		const nodemask_t *to, unsigned long flags);
- #endif
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-005_migrate_nocontext/mm/Kconfig linux-2.6.22-rc2-mm1-015_migration_flatmem/mm/Kconfig
---- linux-2.6.22-rc2-mm1-005_migrate_nocontext/mm/Kconfig	2007-05-24 10:13:34.000000000 +0100
-+++ linux-2.6.22-rc2-mm1-015_migration_flatmem/mm/Kconfig	2007-05-29 09:57:23.000000000 +0100
-@@ -145,13 +145,16 @@ config SPLIT_PTLOCK_CPUS
- config MIGRATION
- 	bool "Page migration"
- 	def_bool y
--	depends on NUMA
- 	help
- 	  Allows the migration of the physical location of pages of processes
- 	  while the virtual addresses are not changed. This is useful for
- 	  example on NUMA systems to put pages nearer to the processors accessing
- 	  the page.
- 
-+config SYSCALL_MOVE_PAGES
-+	def_bool y
-+	depends on MIGRATION && NUMA
-+
- config RESOURCES_64BIT
- 	bool "64 bit Memory and IO resources (EXPERIMENTAL)" if (!64BIT && EXPERIMENTAL)
- 	default 64BIT
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.22-rc2-mm1-005_migrate_nocontext/mm/migrate.c linux-2.6.22-rc2-mm1-015_migration_flatmem/mm/migrate.c
---- linux-2.6.22-rc2-mm1-005_migrate_nocontext/mm/migrate.c	2007-05-28 14:11:32.000000000 +0100
-+++ linux-2.6.22-rc2-mm1-015_migration_flatmem/mm/migrate.c	2007-05-29 10:01:40.000000000 +0100
-@@ -761,7 +761,7 @@ int migrate_pages_nocontext(struct list_
- 	return __migrate_pages(from, get_new_page, private, 1);
- }
- 
--#ifdef CONFIG_NUMA
-+#ifdef CONFIG_SYSCALL_MOVE_PAGES
- /*
-  * Move a list of individual pages
-  */
-@@ -1018,7 +1018,7 @@ out2:
- 	mmput(mm);
- 	return err;
- }
--#endif
-+#endif /* CONFIG_SYSCALL_MOVE_PAGES */
- 
- /*
-  * Call migration functions in the vma_ops that may prepare
+7ed92f1a149dddc3cb537ccd7441e98adac12c3e USB: make the autosuspend workqueue thread freezable
+> 
+> From: Alan Stern <stern@rowland.harvard.edu>
+> Date: Tue, 22 May 2007 13:38:39 +0000 (-0400)
+> Subject: USB: make the autosuspend workqueue thread freezable
+> 
+> USB: make the autosuspend workqueue thread freezable
+> 
+> This patch (as881b) makes the ksuspend_usb_wq workqueue freezable.  We
+> don't want a rogue workqueue thread running around, unexpectedly
+> suspending or resuming USB devices in the middle of a system sleep
+> transition.
+> 
+> This fixes Bugzilla #8498.
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+> 
+> diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+> index 18ddc5e..80627b6 100644
+> --- a/drivers/usb/core/usb.c
+> +++ b/drivers/usb/core/usb.c
+> @@ -205,7 +205,11 @@ struct device_type usb_device_type = {
+>  
+>  static int ksuspend_usb_init(void)
+>  {
+> -	ksuspend_usb_wq = create_singlethread_workqueue("ksuspend_usbd");
+> +	/* This workqueue is supposed to be both freezable and
+> +	 * singlethreaded.  Its job doesn't justify running on more
+> +	 * than one CPU.
+> +	 */
+> +	ksuspend_usb_wq = create_freezeable_workqueue("ksuspend_usbd");
+>  	if (!ksuspend_usb_wq)
+>  		return -ENOMEM;
+>  	return 0;
+> 
