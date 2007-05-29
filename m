@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765492AbXE2Ube@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765866AbXE2Ucp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765492AbXE2Ube (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 16:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbXE2Ub1
+	id S1765866AbXE2Ucp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 16:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760226AbXE2Uci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 16:31:27 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:40075 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759158AbXE2Ub0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 16:31:26 -0400
-Subject: Re: [PATCH 3/5] lockstat: core infrastructure
-From: Daniel Walker <dwalker@mvista.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20070529130107.112347096@chello.nl>
-References: <20070529125248.877196281@chello.nl>
-	 <20070529130107.112347096@chello.nl>
-Content-Type: text/plain
-Date: Tue, 29 May 2007 13:28:45 -0700
-Message-Id: <1180470525.32594.71.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Tue, 29 May 2007 16:32:38 -0400
+Received: from mail.tmr.com ([64.65.253.246]:33587 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759597AbXE2Uci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 16:32:38 -0400
+Message-ID: <465C8DEC.3050903@tmr.com>
+Date: Tue, 29 May 2007 16:32:44 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel
+To: Tommy Vercetti <vercetti@zlew.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21.1 - 97% wait time on IDE operations
+References: <200705261505.38109@gj-laptop>
+In-Reply-To: <200705261505.38109@gj-laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-29 at 14:52 +0200, Peter Zijlstra wrote:
-> +       now = sched_clock();
-> +       waittime = now - hlock->waittime_stamp;
-> + 
+Tommy Vercetti wrote:
+> Hi folks, 
+> 
+> I was trying to get answer to my question around, but no one knows.
+> I do have DMA turned on, etc, yet - on extensive harddrive operations wait 
+> time is 90+% , which means that machine is waiting, rather than doing 
+> something meanwhile. (I guess). 
+> Can someone describe to me , in more detail why is that happening, and what 
+> steps should I consider to avoid it ? I couldn't find any answers that would 
+> have help me on net.
+> 
+> thanks.
 
-It looks like your using sched_clock() through out .. It's a little
-troubling considering the constraints on the function .. Most
-architecture implement a jiffies sched_clock() w/ 1 millisecond or worse
-resolution.. I'd imagine a millisecond hold time is pretty rare, even a
-millisecond wait time might be fairly rare too ..  There's also no
-guarantee that sched_clock timestamps off two different cpu's can be
-compared (or at least that's my understanding) ..
+ From later posts I suspect that your disk performance just sucks, but 
+do  use one of the monitoring tools and follow the actual disk work, in 
+term of seeks and transfer rate.
 
-Daniel
+I've been looking at high iowait while disk and network are (nearly) 
+idle, but it sounds as if you just have a bad match of CPU and disk speed.
 
+Can you borrow a USB drive to use for some testing? USB 2 needed to be 
+faster than your old 4200 rpm drive.
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
