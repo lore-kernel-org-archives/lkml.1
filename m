@@ -1,107 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764587AbXE2LR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764748AbXE2LUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764587AbXE2LR7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 07:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbXE2LRt
+	id S1764748AbXE2LUS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 07:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757713AbXE2LUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 07:17:49 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:29921 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755453AbXE2LRs (ORCPT
+	Tue, 29 May 2007 07:20:06 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:16048 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757645AbXE2LUE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 07:17:48 -0400
+	Tue, 29 May 2007 07:20:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=dd9S7vqV9m5haLS/HqChaaP7fiVy8Jjiod9/KWTu0Y2oXofH03lC3ZgToINh/MF6geJauzLwUE0A8z3IBX/KcHlLSXBBELWMdosHIYcGqUO2R3sPbC6VRTuMTXgaAZCA3RctVaa0WZG38qYd9/NZxSlXNn8Qhq2laUOqf1sPrNw=
-Message-ID: <91b13c310705290417u4bf9cdedif07a0e907acd3108@mail.gmail.com>
-Date: Tue, 29 May 2007 19:17:46 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH] merge dst_discard in & out into one, removed a duplicate function
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, trivial@kernel.org
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=qZZsxH9qWmc4tZAgHkqCWlY1dzdwBt8DMgXoFPcotZ1FHyLBWpshnp6BTp1TyVywzJ00Nfq7ffJEWcXNz0HdrIe1OaTs20en5fYxsVBnhEen5663BYCTnmapm6gcp+0r6TeYHMwB/Rh/Sk2RyjdBW2qfwePhiBZRsSIrOb6Ef7Y=
+Message-ID: <465BF244.5080200@gmail.com>
+Date: Tue, 29 May 2007 11:28:36 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Gregor Jasny <gjasny@googlemail.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Linux v2.6.22-rc3
+References: <alpine.LFD.0.98.0705252008210.26602@woody.linux-foundation.org>	 <9d2cd630705270801m2826be60p3f802c502b26c531@mail.gmail.com>	 <46599E6B.1000209@pobox.com>	 <9d2cd630705270907y4722653cpf79f073fa8f12f08@mail.gmail.com>	 <alpine.LFD.0.98.0705270922030.26602@woody.linux-foundation.org>	 <9d2cd630705271315x7030c91ew2f175c921c022880@mail.gmail.com>	 <465AA536.6080608@gmail.com> <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com>
+In-Reply-To: <9d2cd630705280707h4921900fxc93a07a87f0bdf66@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/28/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> Uhm, just replace every invocation of dst_discard_in/_out() directly
-> by dst_discard ... don't add macros for that.
+Hello, Gregor.
 
-merge dst_discard in & out into one, this removed a duplicate function.
+Gregor Jasny wrote:
+> [   18.639188] ata_piix 0000:00:07.1: version 2.11
+> [   18.639718] scsi0 : ata_piix
+> [   18.640189] scsi1 : ata_piix
+> [   18.640541] ata1: PATA max UDMA/33 cmd 0x000101f0 ctl 0x000103f6
+> bmdma 0x00010860 irq 14
+> [   18.641148] ata2: PATA max UDMA/33 cmd 0x00010170 ctl 0x00010376
+> bmdma 0x00010868 irq 15
+> [    0.653333] Marking TSC unstable due to: possible TSC halt in C2.
+> [    0.656666] Time: acpi_pm clocksource has been installed.
+> [    0.656666] Switched to NOHz mode on CPU #0
+> [    0.779999] ata1.00: ata_hpa_resize 1: sectors = 78242976,
+> hpa_sectors = 78242976
+> [    0.779999] ata1.00: ATA-7: SAMSUNG MP0402H, UC100-14, max UDMA/100
+> [    0.796666] ata1.00: 78242976 sectors, multi 8: LBA48
+> [    0.816666] ata1.00: ata_hpa_resize 1: sectors = 78242976,
+> hpa_sectors = 78242976
+> [    0.829999] ata1.00: configured for UDMA/33
+> [    1.376666] Clocksource tsc unstable (delta = -496294688 ns)
+> [   10.866665] ata2: SRST failed (errno=-16)
+> [   20.899997] ata2: SRST failed (errno=-16)
+> [   55.946661] ata2: SRST failed (errno=-16)
+> [   60.966660] ata2: SRST failed (errno=-16)
+> [   60.979993] ata2: reset failed, giving up
 
-Signed-off-by: Denis Cheng <crquan@gmail.com>
----
+Aieee, so the drive doesn't like the new SRST sequence.  Indan pointed
+me to your original posting and before the reset sequence update your
+drive was reset successfully but only after 30sec delay, right?  If you
+change the first entry in ata_eh_reset_timeouts[] table at the top of
+libata-eh.c to 35 * HZ, does it work?
 
-Is there anybody also found this duplicate? I found this duplcate had
-existed from linux-2.2 linux-2.4 to the latest kernel tree, you could
-check it in the lxr site conveniently:
-http://lxr.linux.no/source/net/core/dst.c?v=2.2.26
-http://lxr.linux.no/source/net/core/dst.c?v=2.4.18
-http://lxr.linux.no/source/net/core/dst.c
-With little difference, the 2.2 and 2.4 version use two different
-function name: dst_discard and dst_blackhole, but the definition of
-them are the same, so they are  same substantially. Additionally, the
-two same function are two local(static) functions in a single file
-dst.c, I don't know why there should exist two same functions. I
-wonder what the consideration of this design is, because I'm just a
-kernel newbie; this problem has been confusing me for many days, so if
-you know why, please drop me some directions.
-
-diff --git a/net/core/dst.c b/net/core/dst.c
-index 764bccb..c6a0587 100644
---- a/net/core/dst.c
-+++ b/net/core/dst.c
-@@ -111,13 +111,7 @@ out:
-        spin_unlock(&dst_lock);
- }
-
--static int dst_discard_in(struct sk_buff *skb)
--{
--       kfree_skb(skb);
--       return 0;
--}
--
--static int dst_discard_out(struct sk_buff *skb)
-+static int dst_discard(struct sk_buff *skb)
- {
-        kfree_skb(skb);
-        return 0;
-@@ -138,8 +132,7 @@ void * dst_alloc(struct dst_ops * ops)
-        dst->ops = ops;
-        dst->lastuse = jiffies;
-        dst->path = dst;
--       dst->input = dst_discard_in;
--       dst->output = dst_discard_out;
-+       dst->input = dst->output = dst_discard;
- #if RT_CACHE_DEBUG >= 2
-        atomic_inc(&dst_total);
- #endif
-@@ -153,8 +146,7 @@ static void ___dst_free(struct dst_entry * dst)
-           protocol module is unloaded.
-         */
-        if (dst->dev == NULL || !(dst->dev->flags&IFF_UP)) {
--               dst->input = dst_discard_in;
--               dst->output = dst_discard_out;
-+               dst->input = dst->output = dst_discard;
-        }
-        dst->obsolete = 2;
- }
-@@ -242,8 +234,7 @@ static inline void dst_ifdown(struct dst_entry
-*dst, struct net_device *dev,
-                return;
-
-        if (!unregister) {
--               dst->input = dst_discard_in;
--               dst->output = dst_discard_out;
-+               dst->input = dst->output = dst_discard;
-        } else {
-                dst->dev = &loopback_dev;
-                dev_hold(&loopback_dev);
+Thanks.
 
 -- 
-Denis Cheng
-Linux Application Developer
+tejun
+
