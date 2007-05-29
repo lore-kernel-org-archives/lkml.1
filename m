@@ -1,83 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759862AbXE2TLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763281AbXE2TLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759862AbXE2TLI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 15:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbXE2TK4
+	id S1763281AbXE2TLu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 15:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbXE2TLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 15:10:56 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:52869 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbXE2TKz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 15:10:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ANbWZIItaolRU13IvWbklCwTwCsydhuG0PH9v1Fc0Fqra18a7yWg1g6VVqcdVU7InJ8LvZGzmhRHuauI6HduvJ51wDmg/Qq6AgTSJUngK29tlddQdbUkSHZpEUwHiB1v45uM3vhoLIBn2z9/6e/molT/ixd66mciXj/xjjUsvng=
-Message-ID: <625fc13d0705291144u1aef3b6dx4b00873f3d05b652@mail.gmail.com>
-Date: Tue, 29 May 2007 13:44:42 -0500
-From: "Josh Boyer" <jwboyer@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] FILESYSTEMS: Delete unused "int dummy[5]" from inodes_stat_t.
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Alexander Viro" <viro@zeniv.linux.org.uk>
-In-Reply-To: <465C71EA.5040706@oracle.com>
+	Tue, 29 May 2007 15:11:43 -0400
+Received: from rtr.ca ([64.26.128.89]:3500 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbXE2TLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 15:11:42 -0400
+Message-ID: <465C7AEB.7030304@rtr.ca>
+Date: Tue, 29 May 2007 15:11:39 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle on Intel
+ chipset
+References: <Pine.LNX.4.44L0.0705291428230.3340-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0705291428230.3340-100000@iolanthe.rowland.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0705291307001.32601@localhost.localdomain>
-	 <20070529110041.49bf57f1.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0705291406040.4617@localhost.localdomain>
-	 <20070529111902.27055fd0.randy.dunlap@oracle.com>
-	 <Pine.LNX.4.64.0705291416470.4736@localhost.localdomain>
-	 <465C71EA.5040706@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/29/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> Robert P. J. Day wrote:
-> > On Tue, 29 May 2007, Randy Dunlap wrote:
-> >
-> >> On Tue, 29 May 2007 14:07:01 -0400 (EDT) Robert P. J. Day wrote:
-> >>
-> >>> On Tue, 29 May 2007, Andrew Morton wrote:
-> >>>
-> >>>> kernel/sysctl.c:
-> >>>>
-> >>>>    {
-> >>>>            .ctl_name       = FS_STATINODE,
-> >>>>            .procname       = "inode-state",
-> >>>>            .data           = &inodes_stat,
-> >>>>            .maxlen         = 7*sizeof(int),    <-----
-> >>>>            .mode           = 0444,
-> >>>>            .proc_handler   = &proc_dointvec,
-> >>>>    },
-> >>>>
-> >>>> akpm:/home/akpm> cat /proc/sys/fs/inode-state
-> >>>> 608039  178454  0       0       0       0       0
-> >>>>
-> >>>> So it _is_ used: to present those five zeroes.  I think this is
-> >>>> for back-compatibility with some cretaceous-era kernel.
-> >>> ah, gotcha.  well, i'll leave this up to someone else to do
-> >>> anything with if they are so inclined.
-> >> There's little to be done, except possibly put a /* comment */ on
-> >> the struct's dummy line so that we don't go thru this again in N
-> >> years.
-> >
-> >   so, just to clarify, what *is* the value of those trailing five
-> > zeroes?  andrew suggests it's to be backward-compatible with an old
-> > kernel, which doesn't make much sense to me.  it would make more sense
-> > to say that that's backward-compatible with some old userspace app
-> > that always wants to see seven values and just ignores the last five.
->
-> Agreed, it's for compat with some (unknown) userspace app that reads
-> /proc/sys/fs/inode-state and scans for 7 (or more than 2) numbers there.
-> The mantra is "don't break userspace," so we leave the numbers there...
+Alan Stern wrote:
+> On Tue, 29 May 2007, Mark Lord wrote:
+>> Mark Lord wrote:
+>>> 7ed92f1a149dddc3cb537ccd7441e98adac12c3e USB: make the autosuspend 
+>>> workqueue thread freezable
+>>> ef7f6c7084b333c7524dcd297e0578d43733a2a2 USB: more autosuspend timer stuff
+>>>
+>>> I yanked them both, as they appeared to be releated based on the titles.
+>>> Reverting this pair of commits fixes the USB suspend/resume regression.
+>> Okay, just to make it trivial,
+>> I've narrowed it down to only this commit from Alan Stern:
+>>
+>> 7ed92f1a149dddc3cb537ccd7441e98adac12c3e USB: make the autosuspend workqueue thread freezable
+> 
+> I'm a little surprised; I would have expected the other patch to be the 
+> one responsible.  Are you sure you got the right one?
 
-Couldn't you remove the dummy member and just have the proc entry
-print out 5 dummy zeros?
+Absolutely, 100% sure.
 
-josh
+> Your symptoms suggest that the ksuspend_usbd and khubd kernel threads
+> are in deadlock.
+..
+> If this is indeed the case, the patch below ought to fix your problem.  
+> Essentially it replaces calls to flush_workqueue() with
+> cancel_sync_work().  I sent it to Andrew last week, but his problem
+> occurs only sporadically so it's hard to test.
+
+I didn't re-break the kernel to do the alt-sysrq thing,
+but I did reapply the b0rken commit plus your new patch (below).
+
+So far, so good with that combination, thanks.
+..
+
+> Index: 2.6.22-rc3/drivers/usb/core/hub.c
+> ===================================================================
+> --- 2.6.22-rc3.orig/drivers/usb/core/hub.c
+> +++ 2.6.22-rc3/drivers/usb/core/hub.c
+> @@ -1158,6 +1158,30 @@ static void release_address(struct usb_d
+>  	}
+>  }
+>  
+> +#ifdef	CONFIG_USB_SUSPEND
+> +
+> +static void usb_stop_pm(struct usb_device *udev)
+> +{
+> +	/* Synchronize with the ksuspend thread to prevent any more
+> +	 * autosuspend requests from being submitted, and decrement
+> +	 * the parent's count of unsuspended children.
+> +	 */
+> +	usb_pm_lock(udev);
+> +	if (udev->parent && !udev->discon_suspended)
+> +		usb_autosuspend_device(udev->parent);
+> +	usb_pm_unlock(udev);
+> +
+> +	/* Stop any autosuspend requests already submitted */
+> +	cancel_rearming_delayed_work(&udev->autosuspend);
+> +}
+> +
+> +#else
+> +
+> +static inline void usb_stop_pm(struct usb_device *udev)
+> +{ }
+> +
+> +#endif
+> +
+>  /**
+>   * usb_disconnect - disconnect a device (usbcore-internal)
+>   * @pdev: pointer to device being disconnected
+> @@ -1224,13 +1248,7 @@ void usb_disconnect(struct usb_device **
+>  	*pdev = NULL;
+>  	spin_unlock_irq(&device_state_lock);
+>  
+> -	/* Decrement the parent's count of unsuspended children */
+> -	if (udev->parent) {
+> -		usb_pm_lock(udev);
+> -		if (!udev->discon_suspended)
+> -			usb_autosuspend_device(udev->parent);
+> -		usb_pm_unlock(udev);
+> -	}
+> +	usb_stop_pm(udev);
+>  
+>  	put_device(&udev->dev);
+>  }
+> Index: 2.6.22-rc3/drivers/usb/core/usb.c
+> ===================================================================
+> --- 2.6.22-rc3.orig/drivers/usb/core/usb.c
+> +++ 2.6.22-rc3/drivers/usb/core/usb.c
+> @@ -184,10 +184,6 @@ static void usb_release_dev(struct devic
+>  
+>  	udev = to_usb_device(dev);
+>  
+> -#ifdef	CONFIG_USB_SUSPEND
+> -	cancel_delayed_work(&udev->autosuspend);
+> -	flush_workqueue(ksuspend_usb_wq);
+> -#endif
+>  	usb_destroy_configuration(udev);
+>  	usb_put_hcd(bus_to_hcd(udev->bus));
+>  	kfree(udev->product);
+> Index: 2.6.22-rc3/drivers/usb/core/hcd.c
+> ===================================================================
+> --- 2.6.22-rc3.orig/drivers/usb/core/hcd.c
+> +++ 2.6.22-rc3/drivers/usb/core/hcd.c
+> @@ -1681,7 +1681,7 @@ void usb_remove_hcd(struct usb_hcd *hcd)
+>  	spin_unlock_irq (&hcd_root_hub_lock);
+>  
+>  #ifdef CONFIG_PM
+> -	flush_workqueue(ksuspend_usb_wq);
+> +	cancel_work_sync(&hcd->wakeup_work);
+>  #endif
+>  
+>  	mutex_lock(&usb_bus_list_lock);
+
