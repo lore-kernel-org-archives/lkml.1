@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbXE2V5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbXE2V6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005AbXE2V5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbXE2V5k
+	id S1754697AbXE2V6I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbXE2V5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:57:40 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:43167 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbXE2V5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:57:39 -0400
-Date: Tue, 29 May 2007 17:57:36 -0400
-To: David Howells <dhowells@redhat.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] AFS: Implement file locking [try #2]
-Message-ID: <20070529215736.GO6815@fieldses.org>
-References: <20070529145426.19366.35289.stgit@warthog.cambridge.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070529145426.19366.35289.stgit@warthog.cambridge.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Tue, 29 May 2007 17:57:50 -0400
+Received: from mxfep04.bredband.com ([195.54.107.79]:47066 "EHLO
+	mxfep04.bredband.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753613AbXE2V5t (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 17:57:49 -0400
+Subject: [BUG] Something goes wrong with timer statistics.
+From: Ian Kumlien <iank@bredband.net>
+To: Linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Tue, 29 May 2007 23:38:48 +0200
+Message-Id: <1180474738.22497.25.camel@pi.pomac.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One more vague question I had while skimming the previous version--
+Hi, 
 
-On Tue, May 29, 2007 at 03:54:27PM +0100, David Howells wrote:
-> +static void afs_grant_locks(struct afs_vnode *vnode, struct file_lock *fl)
-> +{
-> +	struct file_lock *p, *_p;
-> +
-> +	list_move_tail(&fl->fl_u.afs.link, &vnode->granted_locks);
-> +	if (fl->fl_type == F_RDLCK) {
-> +		list_for_each_entry_safe(p, _p, &vnode->pending_locks,
-> +					 fl_u.afs.link) {
-> +			if (p->fl_type == F_RDLCK) {
-> +				p->fl_u.afs.state = AFS_LOCK_GRANTED;
-> +				list_move_tail(&p->fl_u.afs.link,
-> +					       &vnode->granted_locks);
-> +				wake_up(&p->fl_wait);
-> +			}
-> +		}
-> +	}
-> +}
+As the daystar sets, i try to play some with my new would be
+firewall/server, but since this will be running for quite some time i
+have been experimenting with powertop to find out what i can do to limit
+it's power usage.
 
---without having tried to understand how they're actually used, these
-data structures (like the pending_locks and granted_locks lists) seem to
-duplicate stuff that's already kept in fs/locks.c.  Is there a reason
-they're required?
+But, if i run powertop for too long or a few times to many... this
+happens:
+http://pomac.netswarm.net/pics/kernel_panic.jpg
 
---b.
+If i don't run powertop, it is rock solid... Compiling for hours,
+running memtest for hours etc etc... 
+
+-- 
+Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
