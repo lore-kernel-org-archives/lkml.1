@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXE2Sx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764903AbXE2Sxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764248AbXE2Sx0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbXE2SxS
+	id S1764903AbXE2Sxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbXE2Sxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:53:18 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:52816 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759420AbXE2SxR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:53:17 -0400
-Date: Tue, 29 May 2007 11:59:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22-rc2-mm1: SLUB
-Message-Id: <20070529115900.405908a3.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0705291131010.24395@schroedinger.engr.sgi.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
-	<20070528212250.eb38af64.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0705291012120.23611@schroedinger.engr.sgi.com>
-	<465C6D4B.90403@oracle.com>
-	<Pine.LNX.4.64.0705291131010.24395@schroedinger.engr.sgi.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 29 May 2007 14:53:30 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4015 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764482AbXE2Sx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:53:29 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: about redundant(?) argument checks
+Date: Tue, 29 May 2007 20:53:26 +0200
+User-Agent: KMail/1.9.5
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200705292053.27105.m.kozlowski@tuxland.pl>
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 11:32:27 -0700 (PDT) Christoph Lameter wrote:
+Hello,
 
-> Oh. I forgot the usual instruction: Try to boot with slub_debug on the 
-> kernel command line. SLUB will attempt to remedy the situation to allow 
-> the boot to continue if it finds anything that goes wrong.
+	I found a couple of places in kernel where the argument of function
+is checked right before the function is called but the function does similar
+check itself.
 
-Yes, that boots, thanks.
+ie. backlight_device_unregister() defined in drivers/video/backlight/backlight.c
+this way:
 
-Problem was the dmi-off-by-one kmalloc.  I used the patch
-that Andrew has merged and it works fine now.
+266 void backlight_device_unregister(struct backlight_device *bd)
+267 {
+268         int i;
+269 
+270         if (!bd)
+271                 return;
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+then if you look at drivers/acpi/asus_acpi.c
+
+1360 static void __exit asus_acpi_exit(void)
+1361 {
+1362         if (asus_backlight_device)
+1363                 backlight_device_unregister(asus_backlight_device);
+
+the check in line 1362 looks redundant. From this point of view it would
+be better to remove it. The thing is that when you look at the object
+size it actually grows (24 bytes) when the redundant check is removed (why?).
+
+without the patch -> 114368 bytes
+with the patch    -> 114392 bytes
+
+(the patch is attached below)
+
+24 bytes is not much but ... ;) Should I dig and send patches for similar
+cases or not? Or to put it another way. Is the object size more important
+than 'clean' code?
+
+Regards,
+
+	Mariusz
+
+
+
+diff -upr linux-2.6.22-rc2-mm1-a/drivers/acpi/asus_acpi.c linux-2.6.22-rc2-mm1-b/drivers/acpi/asus_acpi.c
+--- linux-2.6.22-rc2-mm1-a/drivers/acpi/asus_acpi.c	2007-05-19 06:06:17.000000000 +0200
++++ linux-2.6.22-rc2-mm1-b/drivers/acpi/asus_acpi.c	2007-05-29 18:23:58.000000000 +0200
+@@ -1359,8 +1359,7 @@ static struct backlight_ops asus_backlig
+ 
+ static void __exit asus_acpi_exit(void)
+ {
+-	if (asus_backlight_device)
+-		backlight_device_unregister(asus_backlight_device);
++	backlight_device_unregister(asus_backlight_device);
+ 
+ 	acpi_bus_unregister_driver(&asus_hotk_driver);
+ 	remove_proc_entry(PROC_ASUS, acpi_root_dir);
