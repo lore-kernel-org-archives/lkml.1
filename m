@@ -1,108 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761906AbXE2Siy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764054AbXE2SjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761906AbXE2Siy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXE2Sh1
+	id S1764054AbXE2SjU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbXE2Sh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:37:27 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43731 "EHLO smtp.polymtl.ca"
+	Tue, 29 May 2007 14:37:28 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43733 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759619AbXE2ShY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751202AbXE2ShY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 14:37:24 -0400
-Message-Id: <20070529183709.536941809@polymtl.ca>
+Message-Id: <20070529183709.943985314@polymtl.ca>
 References: <20070529183356.192838687@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 29 May 2007 14:34:02 -0400
+Date: Tue, 29 May 2007 14:34:03 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 6/9] Conditional Calls - PowerPC Optimization
-Content-Disposition: inline; filename=conditional-calls-powerpc-optimization.patch
+Subject: [patch 7/9] Conditional Calls - Documentation
+Content-Disposition: inline; filename=conditional-calls-documentation.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Tue, 29 May 2007 18:37:10 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC optimization of the cond_calls which uses a li instruction, patched with
-an immediate value 0 or 1 to enable/disable the cond_call.
-
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/asm-powerpc/condcall.h |   68 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 67 insertions(+), 1 deletion(-)
+ Documentation/condcall.txt |   60 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-powerpc/condcall.h
+Index: linux-2.6-lttng/Documentation/condcall.txt
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-powerpc/condcall.h	2007-05-29 11:55:58.000000000 -0400
-+++ linux-2.6-lttng/include/asm-powerpc/condcall.h	2007-05-29 11:56:43.000000000 -0400
-@@ -1 +1,67 @@
--#include <asm-generic/condcall.h>
-+#ifndef _ASM_POWERPC_CONDCALL_H
-+#define _ASM_POWERPC_CONDCALL_H
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/condcall.txt	2007-05-17 01:55:05.000000000 -0400
+@@ -0,0 +1,60 @@
++		        Using the Conditional Calls
 +
-+/*
-+ * Conditional function calls. PowerPC architecture optimizations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
++			    Mathieu Desnoyers
 +
-+#include <asm/asm-compat.h>
 +
-+#ifdef CONFIG_COND_CALL
++This document introduces Conditional Calls and their use.
 +
-+#define CF_DEFAULT (CF_OPTIMIZED | CF_LOCKDEP | CF_PRINTK)
++* Purpose of conditional calls
 +
-+/* Optimized version of the cond_call */
-+#define cond_call_optimized(flags, name, func) \
-+	({ \
-+		static const char __cstrtab_name_##name[] \
-+		__attribute__((section("__cond_call_strings"))) = #name; \
-+		char condition; \
-+		asm (	".section __cond_call, \"a\", @progbits;\n\t" \
-+					PPC_LONG "%1, 0f, %2;\n\t" \
-+					".previous;\n\t" \
-+					".align 4\n\t" \
-+					"0:\n\t" \
-+					"li %0,%3;\n\t" \
-+				: "=r" (condition) \
-+				: "i" (__cstrtab_name_##name), \
-+				  "i" (flags), \
-+				  "i" ((flags) & CF_STATIC_ENABLE)); \
-+		(unlikely(condition)) ? \
-+			(func) : \
-+			(__typeof__(func))0; \
-+	})
++A conditional call is used to compile into the kernel a function call that is
++disabled at compile-time. Then, at runtime, it can be enabled dynamically. As
++explained below, the opposite can also be done.
 +
-+/* cond_call macro selecting the generic or optimized version of cond_call,
-+ * depending on the flags specified. */
-+#define _cond_call(flags, name, func) \
-+({ \
-+	((flags) & CF_OPTIMIZED) ? \
-+		cond_call_optimized(flags, name, func) : \
-+		cond_call_generic(flags, name, func); \
-+})
 +
-+/* cond_call with default behavior */
-+#define cond_call(name, func) _cond_call(CF_DEFAULT, name, func)
++* Usage
 +
-+/* Architecture dependant cond_call information, used internally for cond_call
-+ * activation. */
++In order to use the macro cond_call, you should include linux/condcall.h.
 +
-+/* Offset of the immediate value from the start of the addi instruction (result
-+ * of the li mnemonic), in bytes. */
-+#define COND_CALL_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET 2
-+#define COND_CALL_OPTIMIZED_ENABLE_TYPE unsigned short
-+/* Dereference enable as lvalue from a pointer to its instruction */
-+#define COND_CALL_OPTIMIZED_ENABLE(a) \
-+	*(COND_CALL_OPTIMIZED_ENABLE_TYPE*) \
-+		((char*)a+COND_CALL_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET)
++#include <linux/condcall.h>
 +
-+extern int cond_call_optimized_set_enable(void *address, char enable);
++Add, in your code :
 +
-+#endif
-+#endif //_ASM_POWERPC_CONDCALL_H
++ret = cond_call(examplecondcall, myfunc(a, b));
++
++Where :
++- examplecondcall is the conditional call identifier
++- myfunc(a, b) is a call to myfunc with valid parameters.
++- "ret" is, optionally, the variable in which the return value of myfunc() must
++  be put. If the conditional call is disabled, ret will be set to 0 casted to
++  the type of the return value of myfunc().
++
++Use cond_call_arm("examplecondcall") to activate the conditional call.
++
++Use cond_call_disarm("examplecondcall") to deactivate the conditional call.
++
++Use cond_call_query("examplecondcall") to query the conditional call state.
++
++The cond_call mechanism supports inserting multiple instances of the same
++cond_call. Conditional calls can be put in inline functions, inlined static
++functions, and unrolled loops.
++
++
++* Optimization for a given architecture
++
++One can implement optimized conditional calls for a given architecture by
++replacing asm-$ARCH/condcall.h.
++
++The CF_* flags can be used to control the type of conditional call. See the
++include/linux/condcall.h header for the list of flags. They can be specified as
++the first parameter of the _cond_call() macro, as in the following example,
++which declares a cond_call enabled statically (which can be disabled/reenabled
++dynamically)
++
++ret = _cond_call(CF_DEFAULT | CF_STATIC_ENABLE, examplecondcall, myfunc(a, b));
++
++Another example of flag usage is to declare a cond_call that always uses the
++generic version of the cond_calls. It can be useful to use this when cond_calls
++are placed in kernel code presenting particular reentrancy challenges.
++
++ret = _cond_call(CF_DEFAULT & ~CF_OPTIMIZED, examplecondcall, myfunc(a, b));
 
 -- 
 Mathieu Desnoyers
