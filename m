@@ -1,80 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764903AbXE2Sxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765255AbXE2SyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764903AbXE2Sxm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbXE2Sxa
+	id S1765255AbXE2SyK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764865AbXE2Sxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:53:30 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4015 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764482AbXE2Sx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:53:29 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: about redundant(?) argument checks
-Date: Tue, 29 May 2007 20:53:26 +0200
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
+	Tue, 29 May 2007 14:53:41 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:42265 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764814AbXE2Sxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:53:39 -0400
+Date: Tue, 29 May 2007 20:54:38 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch 1/6] Use EXTRA_RWDATA in architectures
+Message-ID: <20070529185438.GB5846@uranus.ravnborg.org>
+References: <20070529183725.179570071@polymtl.ca> <20070529183758.910835109@polymtl.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705292053.27105.m.kozlowski@tuxland.pl>
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070529183758.910835109@polymtl.ca>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Mathieu
+> Adds a place to declare rw data that will not be far from the .data content,
+> therefore limiting the impact on cache of data declared in sections part of the
+> EXTRA_RWDATA.
 
-	I found a couple of places in kernel where the argument of function
-is checked right before the function is called but the function does similar
-check itself.
+No comments on the aim of the path - but a few implementation comments.
 
-ie. backlight_device_unregister() defined in drivers/video/backlight/backlight.c
-this way:
-
-266 void backlight_device_unregister(struct backlight_device *bd)
-267 {
-268         int i;
-269 
-270         if (!bd)
-271                 return;
-
-then if you look at drivers/acpi/asus_acpi.c
-
-1360 static void __exit asus_acpi_exit(void)
-1361 {
-1362         if (asus_backlight_device)
-1363                 backlight_device_unregister(asus_backlight_device);
-
-the check in line 1362 looks redundant. From this point of view it would
-be better to remove it. The thing is that when you look at the object
-size it actually grows (24 bytes) when the redundant check is removed (why?).
-
-without the patch -> 114368 bytes
-with the patch    -> 114392 bytes
-
-(the patch is attached below)
-
-24 bytes is not much but ... ;) Should I dig and send patches for similar
-cases or not? Or to put it another way. Is the object size more important
-than 'clean' code?
-
-Regards,
-
-	Mariusz
+I'm glad to see asm-generic/vmlinux.lds.h used - thanks.
+The general naming is USAGE_{DATA|TEXT}
+To keep with this albait vague then established naming scheme
+please consider using: EXTRARW_DATA
 
 
+> Index: linux-2.6-lttng/arch/h8300/kernel/vmlinux.lds.S
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/h8300/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
+> +++ linux-2.6-lttng/arch/h8300/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
+> @@ -105,7 +105,9 @@
+>  	. = ALIGN(0x4) ;
+>  		*(.data)
+>  	. = ALIGN(0x4) ;
+> -		*(.data.*)	
+> +		*(.data.*)
+> +	. = ALIGN(0x4) ;
+> +	EXTRA_RWDATA
 
-diff -upr linux-2.6.22-rc2-mm1-a/drivers/acpi/asus_acpi.c linux-2.6.22-rc2-mm1-b/drivers/acpi/asus_acpi.c
---- linux-2.6.22-rc2-mm1-a/drivers/acpi/asus_acpi.c	2007-05-19 06:06:17.000000000 +0200
-+++ linux-2.6.22-rc2-mm1-b/drivers/acpi/asus_acpi.c	2007-05-29 18:23:58.000000000 +0200
-@@ -1359,8 +1359,7 @@ static struct backlight_ops asus_backlig
- 
- static void __exit asus_acpi_exit(void)
- {
--	if (asus_backlight_device)
--		backlight_device_unregister(asus_backlight_device);
-+	backlight_device_unregister(asus_backlight_device);
- 
- 	acpi_bus_unregister_driver(&asus_hotk_driver);
- 	remove_proc_entry(PROC_ASUS, acpi_root_dir);
+The usage of ALIGN seems a bit arbitary. If there is a requirement to align
+data for EXTRA_RWDATA usage then pass alignment requirment as parameter or do
+alignment in the define.
+
+
+> Index: linux-2.6-lttng/arch/ia64/kernel/vmlinux.lds.S
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/ia64/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
+> +++ linux-2.6-lttng/arch/ia64/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
+> @@ -214,7 +214,7 @@
+>  
+>    data : { } :data
+>    .data : AT(ADDR(.data) - LOAD_OFFSET)
+> -	{ *(.data) *(.data1) *(.gnu.linkonce.d*) CONSTRUCTORS }
+> +	{ *(.data) *(.data1) *(.gnu.linkonce.d*) EXTRA_RWDATA CONSTRUCTORS }
+>  
+Try to think of linker scripts a C-files.
+In C you would never do like this:
+
+-	int i; struct type foo;
++	int i; struct type foo; struct type2 bar;
+
+You would certainly place the new variable on a new line and maybe
+fix the bad code-style in another patch.
+My point is that you should not continue the bad-taste style used here
+but just add EXTRA_RWDATA on a single line.
+
+If no-one beats me I plan to go through all linker scrip files and add
+some sanity with respect to indent style etc. so they start to follow
+C-style for indent.
+
+
+> Index: linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S
+> ===================================================================
+> --- linux-2.6-lttng.orig/arch/xtensa/kernel/vmlinux.lds.S	2007-05-15 18:41:05.000000000 -0400
+> +++ linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S	2007-05-15 18:44:20.000000000 -0400
+> @@ -144,7 +144,7 @@
+>    _fdata = .;
+>    .data :
+>    {
+> -    *(.data) CONSTRUCTORS
+> +    *(.data) EXTRA_RWDATA CONSTRUCTORS
+>      . = ALIGN(XCHAL_ICACHE_LINESIZE);
+>      *(.data.cacheline_aligned)
+
+again..
+>    }
+> Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-05-15 18:44:11.000000000 -0400
+> +++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-05-15 18:44:20.000000000 -0400
+> @@ -143,6 +143,8 @@
+>  									\
+>  	. = ALIGN(4096);
+>  
+> +#define EXTRA_RWDATA
+> +
+Please add comment that describe the purpose of EXTRA_RWDATA - verbatim
+copy from changlog is almost enough.
+
+	Sam
