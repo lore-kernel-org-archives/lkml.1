@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXE2RHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762712AbXE2RIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762041AbXE2RHw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 13:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXE2RHn
+	id S1762712AbXE2RIV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 13:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbXE2RIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 13:07:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:59550 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbXE2RHm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 13:07:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DV0gA0iLoZCicwlaf/9zwz21+pCVJDHbvvaKjGWsDKeYEezhgzWaCh4vorfT9/LrxjZRauxCKhWK3mv/aE8zJipxt+IEbDAO1ZxeNN++y/U2sXtyVhHModkcAH7beOJBTwPh4r1CtrkVEQp8p/SFBG5sNoPDxrAa171cuDp5usk=
-Message-ID: <29495f1d0705291007p2448ea9dl51fa597c59a2d16f@mail.gmail.com>
-Date: Tue, 29 May 2007 10:07:40 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Mark Lord" <lkml@rtr.ca>
-Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle on Intel chipset
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <465C5D25.2050303@rtr.ca>
+	Tue, 29 May 2007 13:08:06 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53381 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753559AbXE2RIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 13:08:04 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Tetsuo Handa <from-lsm@i-love.sakura.ne.jp>
+Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSMhook
+Date: Tue, 29 May 2007 19:07:29 +0200
+User-Agent: KMail/1.9.5
+Cc: crispin@novell.com, cliffe@iinet.net.au, casey@schaufler-ca.com,
+       mrmacman_g4@mac.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <653438.15244.qm@web36612.mail.mud.yahoo.com> <465B57D7.2040101@novell.com> <200705291946.FDB72328.NtTGSNMP@I-love.SAKURA.ne.jp>
+In-Reply-To: <200705291946.FDB72328.NtTGSNMP@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <465C566E.4030009@rtr.ca>
-	 <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org>
-	 <465C5C16.7020001@rtr.ca> <465C5D25.2050303@rtr.ca>
+Message-Id: <200705291907.29547.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/29/07, Mark Lord <lkml@rtr.ca> wrote:
-> Mmmm.. is there a way to get the raw patches out of the http://git.kernel.org/
-> browser windows ?
->
-> Clicking on "diff" gives me a fancy HTML coloured diff,
-> whereas I need just the raw patch so I can revert it.
+On Tuesday 29 May 2007 12:46, Tetsuo Handa wrote:
+> But, from the pathname-based access control's point of view,
+> bind mount interferes severely with pathname-based access control
+> because it is impossible to determine which pathname was requested.
 
-Click on "raw"? e.g.:
+Wrong. It is very well possible to determine the path of a particular dentry 
+(+ vfsmount) with bind mounts.
 
-summary | shortlog | log | commit | commitdiff | tree
-raw (parent: 1ea0975)
+> Although both pathnames point to the same object, TOMOYO focuses on the
+> PROCEDURE FOR REACHING AN OBJECT and being able to know the procedure is
+> very important.
 
-Neare the top.
+This doesn't make sense, either. With the following sequence of syscalls of 
+processes A and B (both of them in the namespace root),
 
-Thanks,
-Nish
+	A:				B:
+	mkdir("/tmp/a")
+	chdir("/tmp/a")
+					rename("/tmp/a", "/tmp/b")
+	creat("f")
+
+the path being checked for the creat call must be "/tmp/b/f", even though 
+process A never explicitly used "b". If that's not what TOMOYO is doing, then 
+that's badly broken.
+
+Andreas
