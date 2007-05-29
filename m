@@ -1,41 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbXE2Mxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbXE2Mxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753730AbXE2Mxg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 08:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbXE2MxS
+	id S1754280AbXE2Mxy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 08:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbXE2MxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 08:53:18 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:37005 "EHLO
+	Tue, 29 May 2007 08:53:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:36795 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbXE2MxP (ORCPT
+	with ESMTP id S1752081AbXE2MxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 08:53:15 -0400
+	Tue, 29 May 2007 08:53:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=h3JodViXqpHWUxgCtfwiLUYMwUs0MVs8bLzW7gWJegtsu2RrW1zwUxmNMxZk7Tf8BQnWEfqf0+wxxw24vy3tjYJ12Wr2DLp0Uyc5J4tiu1lAadUmF9HtQ7A2KAxwwMsB9J2IbdwBDSH3S2NrKyyISIRQaaucqqbzh+h4QhXby48=
-Message-ID: <465C222A.8060003@googlemail.com>
-Date: Tue, 29 May 2007 14:52:58 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=R6wZPCgbVur42L7o7iRVGBaGTbK8GvtkQyWf2ftP8V1az9pF0O8fvJeQ7Sn2Ze845wvabbVNaSN2/rJ6rlD9RnPn7VuTDoaGRYdaephLXPQgWQCOUf6xgV//W6RtcpO+WYxRjrgCiGHPGaOFuT3Tg/cTE2ue1AaJJEIT2gDAIkM=
+Message-ID: <465C222C.3020203@googlemail.com>
+Date: Tue, 29 May 2007 14:53:00 +0200
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Marcus Better <marcus@better.se>,
-       linux1394-devel@lists.sourceforge.net,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@bitplanet.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Tero Roponen <teanropo@jyu.fi>,
-       linux-usb-devel@lists.sourceforge.net,
-       "art@usfltd.com" <art@usfltd.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [3/4] 2.6.22-rc3: known regressions
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, video4linux@list.redhat.com,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>, Robert Fitzsimons <robfitz@273k.net>,
+       Len Brown <lenb@kernel.org>, Thierry Volpiatto <tvolpiatt@neuf.fr>,
+       Andi Kleen <ak@suse.de>, discuss@x86-64.org,
+       Ioan Ionita <opslynx@gmail.com>
+Subject: Re: [4/4] 2.6.22-rc3: known regressions
 References: <465C188F.9000900@googlemail.com>
 In-Reply-To: <465C188F.9000900@googlemail.com>
 X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 8bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -50,40 +45,23 @@ http://kernelnewbies.org/known_regressions
 
 
 
-Suspend
+V4L
 
-Subject    : 2.6.22-rc1 suspend to RAM problem
-References : http://permalink.gmane.org/gmane.linux.power-management.general/5819
-Submitter  : Marcus Better <marcus@better.se>
-Handled-By : Stefan Richter <stefanr@s5r6.in-berlin.de>
-             Kristian HÃ¸gsberg <krh@bitplanet.net>
-Status     : caused by fw-ohci module
-
-
-
-Timers
-
-Subject    : hrtimer overflow bug on 64-bit systems
-References : http://lkml.org/lkml/2007/5/24/391
-Submitter  : David Miller <davem@davemloft.net>
+Subject    : V4L ABI breakage
+References : http://lkml.org/lkml/2007/5/14/42
+Submitter  : Robert Fitzsimons <robfitz@273k.net>
+Caused-By  : Hans Verkuil <hverkuil@xs4all.nl>
+             Mauro Carvalho Chehab <mchehab@infradead.org>
+             commit 206ebaf32795cf1582b1e2ff2ec6a560c9e986b8
+Workaround : http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=15ac2d293b08b6975c6ca1a80eb839d4cb0dddbf
 Status     : problem is being debugged
 
 
+x86-64
 
-TTY
-
-Subject    : tty-related oops in latest kernel(s)
-References : http://lkml.org/lkml/2007/5/27/104
-Submitter  : Tero Roponen <teanropo@jyu.fi>
-Status     : problem is being debugged
-
-
-
-USB
-
-Subject    : usb hotplug/udev cannot correctly register usb/scanners
-References : http://lkml.org/lkml/2007/5/15/205
-Submitter  : art@usfltd.com <art@usfltd.com>
+Subject    : x86-64 2.6.22-rc2 random segfaults
+References : http://lkml.org/lkml/2007/5/24/275
+Submitter  : Ioan Ionita <opslynx@gmail.com>
 Status     : Unknown
 
 
@@ -92,6 +70,7 @@ Regards,
 Michal
 
 --
-"Najbardziej brakowaÅ‚o mi twojego milczenia."
--- Andrzej Sapkowski "CoÅ› wiÄ™cej"
+"Najbardziej brakowa³o mi twojego milczenia."
+-- Andrzej Sapkowski "Co¶ wiêcej"
+
 
