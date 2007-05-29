@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbXE2NiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757798AbXE2Ni5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbXE2NiY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXE2NiR
+	id S1757798AbXE2Ni5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbXE2Nis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:38:17 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:60536 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbXE2NiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:38:15 -0400
-In-Reply-To: <20070526062906.GA26553@nineveh.local>
-To: jfannin@gmail.com (Joseph Fannin)
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Safford <safford@us.ibm.com>, jfannin@gmail.com,
-       linux-kernel@vger.kernel.org, Mimi Zohar <zohar@us.ibm.com>,
-       serue@linux.vnet.ibm.com
+	Tue, 29 May 2007 09:38:48 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:9867 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926AbXE2Niq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:38:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mTd0Xe1zoInhB4IalGLBLKjQt2uuktEWHOyCsbTRMh6OTE4MnxNoFXYebxq+6a4ZAbMc2KkAXV7oP9Jrg91CAgJ5vNrVjMDLF01yfaDblmroqxM2IRZqudtGARWVqoHYnui9DQR3xBRKKQ3jCGEJrktJZMVUiuvqE8UtynB9lNM=
+Message-ID: <de6d2b4f0705290638w3e862274jd49b18135790cea5@mail.gmail.com>
+Date: Tue, 29 May 2007 14:38:45 +0100
+From: "M Macnair" <mmacnair@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>, "M Macnair" <mmacnair@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Seeding /dev/random not working
+In-Reply-To: <20070529131501.GA9899@thunk.org>
 MIME-Version: 1.0
-Subject: Re: 2.6.22-rc1-mm1: evm BUG when reading sysfs file
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF92C62155.924AEB85-ON852572EA.004A8D21-852572EA.004AE5DE@us.ibm.com>
-From: Reiner Sailer <sailer@us.ibm.com>
-Date: Tue, 29 May 2007 09:38:15 -0400
-X-MIMETrack: Serialize by Router on D01ML605/01/M/IBM(Build V80_M4_03042007|March 04, 2007) at
- 05/29/2007 09:38:15,
-	Serialize complete at 05/29/2007 09:38:15
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <de6d2b4f0705290453kec2b050pb4d0bebc256b87a5@mail.gmail.com>
+	 <20070529131501.GA9899@thunk.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jfannin@gmail.com (Joseph Fannin) wrote on 05/26/2007 02:29:07 AM:
+On 5/29/07, Theodore Tso <tytso@mit.edu> wrote:
+> On Tue, May 29, 2007 at 12:53:10PM +0100, M Macnair wrote:
+> Ok, so this is telling me a couple of things.  First of all, if you're
+> only getting three outputs, it means that you don't have any
+> peripherals feeding entropy into the system from the boot sequence.
+> Without any hard drives, keyboards or mice, and a NIC whose device
+> driver hasn't been configured to feed entropy, you're definitely
+> hosed.
 
-> On Fri, May 25, 2007 at 10:28:22PM -0400, Reiner Sailer wrote:
-> > On Tue, 22 May 2007 03:25:48 -0400
-> > jfannin@gmail.com (Joseph Fannin) wrote:
-> >
-> 
-> > > I've been getting this since 2.6.21-rc7-mm1:
-> 
-....
-> >
-> > Joseph,
-> >
-> > thank you for posting this problem. I cannot reconstruct it on my 
-machine.
-> >
-> > Could you tell us which kernel configuration you used 
-(drivers/char/tpm
-> > and security settings) ?
-> > Does it disappear when IMA is disabled in the kernel config?
-> 
->     I've found that disabling CONFIG_SYSFS_DEPRECATED makes the
-> BUG message go away; maybe that's what you're missing?
-> 
->     I've also attached my .config -- but it has lots of stuff turned
-> on, so it may be faster to try flipping CONFIG_SYSFS_DEPRECATED on a
-> slimmer config, if you'd like.
-> 
->     Disabling IMA doesn't change the message; it's still there.
-> 
->     Thanks!
-> --
-> Joseph Fannin
-> jfannin@gmail.com
-> 
+Yes.  However this isn't the issue I'm concerned with at the moment.
 
-Thank you very much for these helpful details. We are working on a 
-solution.
+> Secondly, and more importantly, your boot scripts aren't set up
+> correctly.
 
-Best
-Reiner
+Sorry, I only posted the startup bit - the same does indeed happen on
+shutdown, however I wasn't interested in it for the purposes of the
+tests.
+
+The key point I was trying to put across was that I can't get the
+seeding process to work.  No matter what I wrote to /dev/urandom on
+startup, the output from reading /dev/urandom immediately afterwards
+was the same (ignoring the occasional variation that I put down to
+timing).  As I understand it (from man 4 random and the boot script
+examples), writing to /dev/[u]random should increase the amount of
+entropy, thereby altering the output from the PRNG.
+
+> Another thing which I noticed is that when Matt Mackall took over
+> maintainership of /dev/random, he apparently took out one of the
+> safeguards I had, which was that before, when entropy was extracted
+> from the pool the time stamp when it was extracted was mixed back into
+> the pool.  The theory was that an external attacker might not know
+> when a program might be calling /dev/random, so mixing in the time of
+> that entropy was extracted wouldn't hurt, and might help.  I'll submit
+> a patch to add that support back in, which will help you a little.
+
+When did Matt take over?  From my experiments it would appear as
+though the time is having an effect on the output, though as I say I'm
+not totally sure.
+
+Regards,
+Michael Macnair
