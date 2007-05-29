@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbXE2OWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbXE2OX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759001AbXE2OWu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbXE2OWm
+	id S1761601AbXE2OX1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbXE2OXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 10:22:42 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:34967 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751230AbXE2OWl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 10:22:41 -0400
-Date: Tue, 29 May 2007 16:22:22 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, Andrew Morton <akpm@osdl.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add a trivial patch style checker
-Message-ID: <20070529142222.GC18437@osiris.boeblingen.de.ibm.com>
-References: <9a1288909c10f2935af82ec5cea0c46b@pinky> <p738xb8fjv2.fsf@bingen.suse.de> <20070529115324.GB18437@osiris.boeblingen.de.ibm.com> <20070529131903.GA5024@one.firstfloor.org>
+	Tue, 29 May 2007 10:23:17 -0400
+Received: from styx.suse.cz ([82.119.242.94]:32813 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751242AbXE2OXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 10:23:15 -0400
+Date: Tue, 29 May 2007 16:34:59 +0200
+From: Jan Kara <jack@suse.cz>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>, Thierry Volpiatto <tvolpiatt@neuf.fr>,
+       alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@suse.cz>, Ben Collins <bcollins@ubuntu.com>,
+       Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
+       Florin Iucha <florin@iucha.net>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [1/4] 2.6.22-rc3: known regressions
+Message-ID: <20070529143459.GE25278@duck.suse.cz>
+References: <465C2225.2000100@googlemail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070529131903.GA5024@one.firstfloor.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <465C2225.2000100@googlemail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Possible further checks that might make sense:
-> > > - panic() anywhere in drivers/* 
-> > 
-> > A driver should be allowed to panic. E.g. if it detects that due to a
-> > firmware or driver bug memory corruption happened. IMHO the best thing
-> > to do then is panic.
-> 
-> That is not how Linux normally operates. A BUG() doesn't panic() by
-> default either.
-> 
-> And on systems with IOMMU that is exactly the wrong thing to do.
-> 
-> Besides the problem is that bad drivers tend to badly abuse it
-> (e.g. see some particular BSD derviced SCSI drivers). We definitely
-> don't want any more of such code.
+  Hi,
 
-So you prefer random data corruption over an emergency stop?
-That doesn't make much sense to me...
+On Tue 29-05-07 14:52:53, Michal Piotrowski wrote:
+> Here is a list of some known regressions in 2.6.22-rc3.
+> 
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+> 
+  <snip>
+> File systems
+> 
+> Subject    : Oops in dentry_iput with 2.6.22-rc2 on AMD64
+> References : http://lkml.org/lkml/2007/5/22/4
+> Submitter  : Florin Iucha <florin@iucha.net>
+> Status     : Unknown
+  Actually, the bug seems to be unreproducible and it has probably been a
+1-bit flip. So I'd be reluctant to call it a regression...
+
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
