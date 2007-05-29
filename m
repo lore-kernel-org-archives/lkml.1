@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299AbXE2RGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbXE2RHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756299AbXE2RGn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 13:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762040AbXE2RGV
+	id S1762041AbXE2RHw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 13:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXE2RHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 13:06:21 -0400
-Received: from [206.168.112.78] ([206.168.112.78]:34519 "EHLO
-	mail.clusterfs.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1762015AbXE2RGU (ORCPT
+	Tue, 29 May 2007 13:07:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:59550 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbXE2RHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 13:06:20 -0400
-Date: Tue, 29 May 2007 19:06:10 +0200
-From: Johann Lombardi <johann@clusterfs.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Clear PG_error before reading a page
-Message-ID: <20070529170610.GB15502@chiva>
-Mail-Followup-To: Johann Lombardi <johann@clusterfs.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20070515143726.GC2160@chiva> <20070515101144.f7072476.akpm@linux-foundation.org> <20070515210124.GA23698@chiva> <20070515142339.4d9098f3.akpm@linux-foundation.org> <20070516153919.GC2630@chiva> <20070516091217.b9bb5797.akpm@linux-foundation.org> <20070517114250.GA2141@chiva> <20070517094730.5cdfaa64.akpm@linux-foundation.org>
+	Tue, 29 May 2007 13:07:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DV0gA0iLoZCicwlaf/9zwz21+pCVJDHbvvaKjGWsDKeYEezhgzWaCh4vorfT9/LrxjZRauxCKhWK3mv/aE8zJipxt+IEbDAO1ZxeNN++y/U2sXtyVhHModkcAH7beOJBTwPh4r1CtrkVEQp8p/SFBG5sNoPDxrAa171cuDp5usk=
+Message-ID: <29495f1d0705291007p2448ea9dl51fa597c59a2d16f@mail.gmail.com>
+Date: Tue, 29 May 2007 10:07:40 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Mark Lord" <lkml@rtr.ca>
+Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle on Intel chipset
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Greg KH" <gregkh@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <465C5D25.2050303@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070517094730.5cdfaa64.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <465C566E.4030009@rtr.ca>
+	 <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org>
+	 <465C5C16.7020001@rtr.ca> <465C5D25.2050303@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2007 at 09:47:30AM -0700, Andrew Morton wrote:
-> So running ioctl(BLKFLSBUF) against the device will fix things up?
+On 5/29/07, Mark Lord <lkml@rtr.ca> wrote:
+> Mmmm.. is there a way to get the raw patches out of the http://git.kernel.org/
+> browser windows ?
+>
+> Clicking on "diff" gives me a fancy HTML coloured diff,
+> whereas I need just the raw patch so I can revert it.
 
-No, 'blockdev --flushbufs /dev/sdb' doesn't help.
+Click on "raw"? e.g.:
 
-> Perhaps not, and we should invalidate all the file data as well. The
-> only ways we have of doing that are umount+mount or /proc/sys/vm/drop_caches.
+summary | shortlog | log | commit | commitdiff | tree
+raw (parent: 1ea0975)
 
-'echo > /proc/sys/vm/drop_caches' works. Thanks.
+Neare the top.
 
-Johann
+Thanks,
+Nish
