@@ -1,373 +1,407 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbXE2OA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbXE2OBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbXE2OA5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbXE2N7r
+	id S1757082AbXE2OBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbXE2N7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:59:47 -0400
+	Tue, 29 May 2007 09:59:48 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750792AbXE2N7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750976AbXE2N7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 May 2007 09:59:44 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:19 -0700
+Date: Tue, 29 May 2007 06:48:36 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmJNe019671@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmajk019879@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 05/22] 2.6.22-rc3 perfmon2 : sampling format support
+Subject: [PATCH 21/22] 2.6.22-rc3 perfmon2 : modified mips files
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This files contains the sampling format support.
-
-Perfmon2 supports an in-kernel sampling buffer for performance
-reasons. Yet to ensure maximum flexibility to applications,
-the formats is which infmration is recorded into the kernel
-buffer is not specified by the interface. Instead it is
-delegated to a kernel plug-in modules called sampling formats.
-
-Each formats controls:
-	- what is recorded in the the sampling buffer
-	- how the information is recorded
-	- when to notify the application to extract the information
-	- how the buffer is exported to user level
-	- hoe the buffer is allocated
-
-Each format is identified via a 128-bit UUID which can be requested
-when the context is created with pfm_create_context().
-
-The interface comes with a simple default sampling format. It records
-information sequentially in the buffer. Each entry, called sample,
-is composed of a fixed size header and a variable size body where
-the values of PMDS can be recorded based upon the user's request.
-
-Sampling formats can be dynamically registered with perfmon. The management
-of sampling formats is implemented in perfmon_fmt.c:
-
-pfm_register_smpl_fmt(struct pfm_smpl_fmt *fmt):
-	- register a new sampling format
-		
-pfm_unregister_smpl_fmt(pfm_uuid_t uuid):
-	- unregister a sampling format
-
-It is possible to list the available formats by looking at /sys/kernel/perfmon/formats.
+This patch contains the modified mips files
 
 
+Modified files are as follows:
+
+arch/mips/Kconfig:
+	- add link to configuration menu in arch/mips/perfmon/Kconfig
+
+arch/mips/Makefile:
+	- add perfmon subdir
+
+arch/mips/kernel/scall32-o32.S
+	- add new system calls
+
+arch/mips/kernel/scall64-64.S
+	- add new system calls
+
+arch/mips/kernel/scall64-n32.S
+	- add new system calls
+
+arch/mips/kernel/scall64-o32.S
+	- add new system calls
+
+arch/mips/kernel/time.c
+	- add hook for perfmon time-base set switching
+
+arch/mips/mips-boards/generic/time.c
+	- add perfmon.h header to list of includes
+
+arch/mips/kernel/process.c:
+	- add hook in exit_thread() to cleanup perfmon2 context
+	- add hook in copy_thread() to cleanup perfmon2 context in child (perfmon2 context
+	  is never inherited)
+
+arch/mips/kernel/signal.c:
+	- add hook for extra work before kernel exit. Need to block a thread after a overflow with
+	  user level notification. Also needed to do some bookeeeping, such as reset certain counters
+	  and cleanup in some difficult corner cases
+
+include/asm-mips/system.h
+	- add context switch hook
+
+asm-mips/thread_info.h
+	- add TIF flags
+
+include/asm-mips/unistd.h
+	- add new system calls
 
 
 
---- linux-2.6.22.base/perfmon/perfmon_fmt.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/perfmon/perfmon_fmt.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,218 @@
-+/*
-+ * perfmon_fmt.c: perfmon2 sampling buffer format management
-+ *
-+ * This file implements the perfmon2 interface which
-+ * provides access to the hardware performance counters
-+ * of the host processor.
-+ *
-+ * The initial version of perfmon.c was written by
-+ * Ganesh Venkitachalam, IBM Corp.
-+ *
-+ * Then it was modified for perfmon-1.x by Stephane Eranian and
-+ * David Mosberger, Hewlett Packard Co.
-+ *
-+ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
-+ * by Stephane Eranian, Hewlett Packard Co.
-+ *
-+ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *                David Mosberger-Tang <davidm@hpl.hp.com>
-+ *
-+ * More information about perfmon available at:
-+ * 	http://perfmon2.sf.net
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+  */
-+#include <linux/module.h>
+
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/Kconfig linux-2.6.22/arch/mips/Kconfig
+--- linux-2.6.22.base/arch/mips/Kconfig	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/Kconfig	2007-05-29 03:24:14.000000000 -0700
+@@ -1774,6 +1774,8 @@ config SECCOMP
+ 
+ 	  If unsure, say Y. Only embedded should say N here.
+ 
++source "arch/mips/perfmon/Kconfig"
++
+ endmenu
+ 
+ config RWSEM_GENERIC_SPINLOCK
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/Makefile linux-2.6.22/arch/mips/Makefile
+--- linux-2.6.22.base/arch/mips/Makefile	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/Makefile	2007-05-29 03:24:14.000000000 -0700
+@@ -148,6 +148,12 @@ endif
+ endif
+ 
+ #
++# Perfmon support
++#
++
++core-$(CONFIG_PERFMON)		+= arch/mips/perfmon/
++
++#
+ # Firmware support
+ #
+ libs-$(CONFIG_ARC)		+= arch/mips/arc/
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/process.c linux-2.6.22/arch/mips/kernel/process.c
+--- linux-2.6.22.base/arch/mips/kernel/process.c	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/kernel/process.c	2007-05-29 03:24:14.000000000 -0700
+@@ -25,6 +25,7 @@
+ #include <linux/init.h>
+ #include <linux/completion.h>
+ #include <linux/kallsyms.h>
 +#include <linux/perfmon.h>
+ 
+ #include <asm/bootinfo.h>
+ #include <asm/cpu.h>
+@@ -90,6 +91,7 @@ void start_thread(struct pt_regs * regs,
+ 
+ void exit_thread(void)
+ {
++  pfm_exit_thread(current);
+ }
+ 
+ void flush_thread(void)
+@@ -164,6 +166,8 @@ int copy_thread(int nr, unsigned long cl
+ 	if (clone_flags & CLONE_SETTLS)
+ 		ti->tp_value = regs->regs[7];
+ 
++	pfm_copy_thread(p);
 +
-+static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_smpl_fmt_lock);
-+static LIST_HEAD(pfm_smpl_fmt_list);
+ 	return 0;
+ }
+ 
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/scall32-o32.S linux-2.6.22/arch/mips/kernel/scall32-o32.S
+--- linux-2.6.22.base/arch/mips/kernel/scall32-o32.S	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/kernel/scall32-o32.S	2007-05-29 03:24:14.000000000 -0700
+@@ -657,7 +657,19 @@ einval:	li	v0, -EINVAL
+ 	sys	sys_getcpu		3
+ 	sys	sys_epoll_pwait		6
+ 	sys	sys_ioprio_set		3
+-	sys	sys_ioprio_get		2
++	sys	sys_ioprio_get		2	/* 4315 */
++      	sys	sys_pfm_create_context	4
++      	sys	sys_pfm_write_pmcs	3
++      	sys	sys_pfm_write_pmds	4
++      	sys	sys_pfm_read_pmds	3
++      	sys	sys_pfm_load_context	2	/* 4320 */
++      	sys	sys_pfm_start		2
++      	sys	sys_pfm_stop		1
++      	sys	sys_pfm_restart		1
++      	sys	sys_pfm_create_evtsets	3
++      	sys	sys_pfm_getinfo_evtsets 3	/* 4325 */
++      	sys	sys_pfm_delete_evtsets	3
++      	sys	sys_pfm_unload_context	1
+ 	.endm
+ 
+ 	/* We pre-compute the number of _instruction_ bytes needed to
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/scall64-64.S linux-2.6.22/arch/mips/kernel/scall64-64.S
+--- linux-2.6.22.base/arch/mips/kernel/scall64-64.S	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/kernel/scall64-64.S	2007-05-29 03:24:14.000000000 -0700
+@@ -473,4 +473,16 @@ sys_call_table:
+ 	PTR	sys_epoll_pwait
+ 	PTR	sys_ioprio_set
+ 	PTR	sys_ioprio_get
++      	PTR	sys_pfm_create_context		/* 5275 */
++      	PTR	sys_pfm_write_pmcs
++      	PTR	sys_pfm_write_pmds
++      	PTR	sys_pfm_read_pmds
++      	PTR	sys_pfm_load_context
++      	PTR	sys_pfm_start			/* 5280 */
++      	PTR	sys_pfm_stop
++      	PTR	sys_pfm_restart
++      	PTR	sys_pfm_create_evtsets
++      	PTR	sys_pfm_getinfo_evtsets
++      	PTR	sys_pfm_delete_evtsets		/* 5285 */
++ 	PTR	sys_pfm_unload_context
+ 	.size	sys_call_table,.-sys_call_table
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/scall64-n32.S linux-2.6.22/arch/mips/kernel/scall64-n32.S
+--- linux-2.6.22.base/arch/mips/kernel/scall64-n32.S	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/kernel/scall64-n32.S	2007-05-29 03:24:14.000000000 -0700
+@@ -399,4 +399,16 @@ EXPORT(sysn32_call_table)
+ 	PTR	compat_sys_epoll_pwait
+ 	PTR	sys_ioprio_set
+ 	PTR	sys_ioprio_get
++     	PTR	sys_pfm_create_context
++     	PTR	sys_pfm_write_pmcs		/* 6280 */
++     	PTR	sys_pfm_write_pmds
++     	PTR	sys_pfm_read_pmds
++     	PTR	sys_pfm_load_context
++     	PTR	sys_pfm_start
++     	PTR	sys_pfm_stop			/* 6285 */
++     	PTR	sys_pfm_restart
++     	PTR	sys_pfm_create_evtsets
++     	PTR	sys_pfm_getinfo_evtsets
++     	PTR	sys_pfm_delete_evtsets
++  	PTR	sys_pfm_unload_context		/* 6290 */
+ 	.size	sysn32_call_table,.-sysn32_call_table
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/scall64-o32.S linux-2.6.22/arch/mips/kernel/scall64-o32.S
+--- linux-2.6.22.base/arch/mips/kernel/scall64-o32.S	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/kernel/scall64-o32.S	2007-05-29 03:24:14.000000000 -0700
+@@ -521,4 +521,16 @@ sys_call_table:
+ 	PTR	compat_sys_epoll_pwait
+ 	PTR	sys_ioprio_set
+ 	PTR	sys_ioprio_get			/* 4315 */
++    	PTR	sys_pfm_create_context
++     	PTR	sys_pfm_write_pmcs
++     	PTR	sys_pfm_write_pmds
++     	PTR	sys_pfm_read_pmds
++     	PTR	sys_pfm_load_context		/* 4320 */
++     	PTR	sys_pfm_start
++     	PTR	sys_pfm_stop
++     	PTR	sys_pfm_restart
++     	PTR	sys_pfm_create_evtsets
++    	PTR	sys_pfm_getinfo_evtsets		/* 4325 */
++     	PTR	sys_pfm_delete_evtsets
++     	PTR	sys_pfm_unload_context
+ 	.size	sys_call_table,.-sys_call_table
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/signal.c linux-2.6.22/arch/mips/kernel/signal.c
+--- linux-2.6.22.base/arch/mips/kernel/signal.c	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/kernel/signal.c	2007-05-29 03:24:14.000000000 -0700
+@@ -20,6 +20,7 @@
+ #include <linux/unistd.h>
+ #include <linux/compiler.h>
+ #include <linux/uaccess.h>
++#include <linux/perfmon.h>
+ 
+ #include <asm/abi.h>
+ #include <asm/asm.h>
+@@ -696,6 +697,9 @@ static void do_signal(struct pt_regs *re
+ asmlinkage void do_notify_resume(struct pt_regs *regs, void *unused,
+ 	__u32 thread_info_flags)
+ {
++        if (thread_info_flags & _TIF_PERFMON_WORK)
++		pfm_handle_work(regs);
 +
-+static inline int fmt_is_mod(struct pfm_smpl_fmt *f)
-+{
-+	return !(f->fmt_flags & PFM_FMTFL_IS_BUILTIN);
-+}
-+
-+static struct pfm_smpl_fmt *pfm_find_fmt(char *name)
-+{
-+	struct pfm_smpl_fmt * entry;
-+
-+	list_for_each_entry(entry, &pfm_smpl_fmt_list, fmt_list) {
-+		if (!strcmp(entry->fmt_name, name))
-+			return entry;
-+	}
-+	return NULL;
-+}
-+/*
-+ * find a buffer format based on its name
-+ */
-+struct pfm_smpl_fmt *pfm_smpl_fmt_get(char *name)
-+{
-+	struct pfm_smpl_fmt * fmt;
-+
-+	spin_lock(&pfm_smpl_fmt_lock);
-+
-+	fmt = pfm_find_fmt(name);
-+
-+	/*
-+	 * increase module refcount
-+	 */
-+	if (fmt && fmt_is_mod(fmt) && !try_module_get(fmt->owner))
-+		fmt = NULL;
-+
-+	spin_unlock(&pfm_smpl_fmt_lock);
-+
-+	return fmt;
-+}
-+
-+void pfm_smpl_fmt_put(struct pfm_smpl_fmt *fmt)
-+{
-+	if (fmt == NULL || !fmt_is_mod(fmt))
-+		return;
-+	BUG_ON(fmt->owner == NULL);
-+
-+	spin_lock(&pfm_smpl_fmt_lock);
-+	module_put(fmt->owner);
-+	spin_unlock(&pfm_smpl_fmt_lock);
-+}
-+
-+int pfm_fmt_register(struct pfm_smpl_fmt *fmt)
-+{
-+	int ret = 0;
-+
-+	if (atomic_read(&perfmon_disabled)) {
-+		PFM_INFO("perfmon disabled, cannot add sampling format");
-+		return -ENOSYS;
-+	}
-+
-+	/* some sanity checks */
-+	if (fmt == NULL) {
-+		PFM_INFO("perfmon: NULL format for register");
-+		return -EINVAL;
-+	}
-+
-+	if (fmt->fmt_name == NULL) {
-+		PFM_INFO("perfmon: format has no name");
-+		return -EINVAL;
-+	}
-+
-+	if (fmt->fmt_qdepth > PFM_MSGS_COUNT) {
-+		PFM_INFO("perfmon: format %s requires %u msg queue depth (max %d)",
-+		       fmt->fmt_name,
-+		       fmt->fmt_qdepth,
-+		       PFM_MSGS_COUNT);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * fmt is missing the initialization of .owner = THIS_MODULE
-+	 * this is only valid when format is compiled as a module
-+	 */
-+	if (fmt->owner == NULL && fmt_is_mod(fmt)) {
-+		PFM_INFO("format %s has no module owner", fmt->fmt_name);
-+		return -EINVAL;
-+	}
-+	/*
-+	 * we need at least a handler
-+	 */
-+	if (fmt->fmt_handler == NULL) {
-+		PFM_INFO("format %s has no handler", fmt->fmt_name);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * format argument size cannot be bigger than PAGE_SIZE
-+	 */
-+	if (fmt->fmt_arg_size > PAGE_SIZE) {
-+		PFM_INFO("format %s arguments too big", fmt->fmt_name);
-+		return -EINVAL;
-+	}
-+
-+	spin_lock(&pfm_smpl_fmt_lock);
-+
-+	/*
-+	 * because of sysfs, we cannot have two formats with the same name
-+	 */
-+	if (pfm_find_fmt(fmt->fmt_name)) {
-+		PFM_INFO("format %s already registered", fmt->fmt_name);
-+		ret = -EBUSY;
-+		goto out;
-+	}
-+
-+	ret = pfm_sysfs_add_fmt(fmt);
-+	if (ret) {
-+		PFM_INFO("sysfs cannot add format entry for %s", fmt->fmt_name);
-+		goto out;
-+	}
-+
-+	list_add(&fmt->fmt_list, &pfm_smpl_fmt_list);
-+
-+	PFM_INFO("added sampling format %s", fmt->fmt_name);
-+out:
-+	spin_unlock(&pfm_smpl_fmt_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(pfm_fmt_register);
-+
-+int pfm_fmt_unregister(struct pfm_smpl_fmt *fmt)
-+{
-+	struct pfm_smpl_fmt *fmt2;
-+	int ret = 0;
-+
-+	if (!fmt || !fmt->fmt_name) {
-+		PFM_DBG("invalid fmt");
-+		return -EINVAL;
-+	}
-+
-+	spin_lock(&pfm_smpl_fmt_lock);
-+
-+	fmt2 = pfm_find_fmt(fmt->fmt_name);
-+	if (!fmt) {
-+		PFM_INFO("unregister failed, format not registered");
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+	list_del_init(&fmt->fmt_list);
-+
-+	pfm_sysfs_remove_fmt(fmt);
-+
-+	PFM_INFO("removed sampling format: %s", fmt->fmt_name);
-+
-+out:
-+	spin_unlock(&pfm_smpl_fmt_lock);
-+	return ret;
-+
-+}
-+EXPORT_SYMBOL(pfm_fmt_unregister);
-+
-+/*
-+ * we defer adding the builtin formats to /sys/kernel/perfmon/formats
-+ * until after the pfm sysfs subsystem is initialized. This function
-+ * is called from pfm_sysfs_init()
-+ */
-+void pfm_sysfs_builtin_fmt_add(void)
-+{
-+	struct pfm_smpl_fmt * entry;
-+
-+	/*
-+	 * locking not needed, kernel not fully booted
-+	 * when called
-+	 */
-+	list_for_each_entry(entry, &pfm_smpl_fmt_list, fmt_list) {
-+		pfm_sysfs_add_fmt(entry);
-+	}
-+}
---- linux-2.6.22.base/include/linux/perfmon_fmt.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/include/linux/perfmon_fmt.h	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,88 @@
-+/*
-+ * Copyright (c) 2001-2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *
-+ * Interface for custom sampling buffer format modules
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+  */
-+#ifndef __PERFMON_FMT_H__
-+#define __PERFMON_FMT_H__ 1
-+
-+#include <linux/kobject.h>
-+
-+struct pfm_ovfl_arg {
-+	u16 ovfl_pmd;	/* index of overflowed PMD  */
-+	u16 active_set;	/* set active at the time of the overflow */
-+	u32 ovfl_ctrl;	/* control flags */
-+	u64 pmd_last_reset;	/* last reset value of overflowed PMD */
-+	u64 smpl_pmds_values[PFM_MAX_PMDS]; 	/* values of other PMDs */
-+	u64 pmd_eventid;	/* eventid associated with PMD */
-+	u16 num_smpl_pmds;	/* number of PMDS in smpl_pmd_values */
-+};
-+
-+/*
-+ * ovfl_ctrl bitmask of flags
-+ */
-+#define PFM_OVFL_CTRL_NOTIFY	0x1	/* notify user */
-+#define PFM_OVFL_CTRL_RESET	0x2	/* reset overflowed pmds */
-+#define PFM_OVFL_CTRL_MASK	0x4	/* mask monitoring */
-+
-+
-+typedef int (*fmt_validate_t )(u32 flags, u16 npmds, void *arg);
-+typedef	int (*fmt_getsize_t)(u32 flags, void *arg, size_t *size);
-+typedef int (*fmt_init_t)(struct pfm_context *ctx, void *buf, u32 flags, u16 nmpds, void *arg);
-+typedef int (*fmt_restart_t)(int is_active, u32 *ovfl_ctrl, void *buf);
-+typedef int (*fmt_exit_t)(void *buf);
-+typedef int (*fmt_handler_t)(void *buf, struct pfm_ovfl_arg *arg,
-+			     unsigned long ip, u64 stamp, void *data);
-+
-+struct pfm_smpl_fmt {
-+	char		*fmt_name;	/* name of the format (required) */
-+	size_t		fmt_arg_size;	/* size of fmt args for ctx create */
-+	u32		fmt_flags;	/* format specific flags */
-+	u32		fmt_version;	/* format version number */
-+
-+	fmt_validate_t	fmt_validate;	/* validate context flags */
-+	fmt_getsize_t	fmt_getsize;	/* get size for sampling buffer */
-+	fmt_init_t	fmt_init;	/* initialize buffer area */
-+	fmt_handler_t	fmt_handler;	/* overflow handler (required) */
-+	fmt_restart_t	fmt_restart;	/* restart after notification  */
-+	fmt_exit_t	fmt_exit;	/* context termination */
-+
-+	struct list_head fmt_list;	/* internal use only */
-+
-+	struct kobject	kobj;		/* sysfs internal use only */
-+	struct module	*owner;		/* pointer to module owner */
-+	u32		fmt_qdepth;	/* Max notify queue depth (required) */
-+};
-+#define to_smpl_fmt(n) container_of(n, struct pfm_smpl_fmt, kobj)
-+
-+#define PFM_FMTFL_IS_BUILTIN	0x1	/* fmt is compiled in */
-+/*
-+ * we need to know whether the format is builtin or compiled
-+ * as a module
-+ */
-+#ifdef MODULE
-+#define PFM_FMT_BUILTIN_FLAG	0	/* not built as a module */
-+#else
-+#define PFM_FMT_BUILTIN_FLAG	PFM_PMUFL_IS_BUILTIN /* built as a module */
-+#endif
-+
-+int pfm_fmt_register(struct pfm_smpl_fmt *fmt);
-+int pfm_fmt_unregister(struct pfm_smpl_fmt *fmt);
-+void pfm_sysfs_builtin_fmt_add(void);
-+
-+#endif /* __PERFMON_FMT_H__ */
+ 	/* deal with pending signal delivery */
+ 	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
+ 		do_signal(regs);
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/time.c linux-2.6.22/arch/mips/kernel/time.c
+--- linux-2.6.22.base/arch/mips/kernel/time.c	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/kernel/time.c	2007-05-29 03:24:14.000000000 -0700
+@@ -23,6 +23,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
++#include <linux/perfmon.h>
+ 
+ #include <asm/bootinfo.h>
+ #include <asm/cache.h>
+@@ -140,6 +141,7 @@ static long last_rtc_update;
+ void local_timer_interrupt(int irq, void *dev_id)
+ {
+ 	profile_tick(CPU_PROFILING);
++ 	pfm_handle_switch_timeout();
+ 	update_process_times(user_mode(get_irq_regs()));
+ }
+ 
+diff --exclude=.git -urp linux-2.6.22.base/arch/mips/mips-boards/generic/time.c linux-2.6.22/arch/mips/mips-boards/generic/time.c
+--- linux-2.6.22.base/arch/mips/mips-boards/generic/time.c	2007-05-29 03:17:16.000000000 -0700
++++ linux-2.6.22/arch/mips/mips-boards/generic/time.c	2007-05-29 03:24:14.000000000 -0700
+@@ -27,6 +27,7 @@
+ #include <linux/time.h>
+ #include <linux/timex.h>
+ #include <linux/mc146818rtc.h>
++#include <linux/perfmon.h>
+ 
+ #include <asm/mipsregs.h>
+ #include <asm/mipsmtregs.h>
+Only in linux-2.6.22/arch/mips: perfmon
+Only in linux-2.6.22/include/asm-mips: perfmon.h
+Only in linux-2.6.22/include/asm-mips: perfmon_api.h
+diff --exclude=.git -urp linux-2.6.22.base/include/asm-mips/system.h linux-2.6.22/include/asm-mips/system.h
+--- linux-2.6.22.base/include/asm-mips/system.h	2007-05-29 03:17:57.000000000 -0700
++++ linux-2.6.22/include/asm-mips/system.h	2007-05-29 03:24:14.000000000 -0700
+@@ -65,6 +65,9 @@ do {									\
+ do {									\
+ 	if (cpu_has_dsp)						\
+ 		__save_dsp(prev);					\
++	if (test_tsk_thread_flag(prev, TIF_PERFMON_CTXSW)		\
++	    || test_tsk_thread_flag(next, TIF_PERFMON_CTXSW))		\
++		pfm_ctxsw(prev, next);					\
+ 	(last) = resume(prev, next, task_thread_info(next));		\
+ 	if (cpu_has_dsp)						\
+ 		__restore_dsp(current);					\
+diff --exclude=.git -urp linux-2.6.22.base/include/asm-mips/thread_info.h linux-2.6.22/include/asm-mips/thread_info.h
+--- linux-2.6.22.base/include/asm-mips/thread_info.h	2007-05-29 03:20:21.000000000 -0700
++++ linux-2.6.22/include/asm-mips/thread_info.h	2007-05-29 03:24:14.000000000 -0700
+@@ -113,11 +113,13 @@ register struct thread_info *__current_t
+ #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
+ #define TIF_SYSCALL_AUDIT	3	/* syscall auditing active */
+ #define TIF_SECCOMP		4	/* secure computing */
+-#define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal() */
++#define TIF_RESTORE_SIGMASK	5	/* restore signal mask in do_signal() */
++#define TIF_PERFMON_WORK	6	/* work for pfm_handle_work() */
+ #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
+ #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		18
+ #define TIF_FREEZE		19
++#define TIF_PERFMON_CTXSW	21	/* perfmon needs ctxsw calls */
+ #define TIF_SYSCALL_TRACE	31	/* syscall trace active */
+ 
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -129,6 +131,8 @@ register struct thread_info *__current_t
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
++#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
++#define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
+ 
+ /* work to do on interrupt/exception return */
+ #define _TIF_WORK_MASK		(0x0000ffef & ~_TIF_SECCOMP)
+diff --exclude=.git -urp linux-2.6.22.base/include/asm-mips/unistd.h linux-2.6.22/include/asm-mips/unistd.h
+--- linux-2.6.22.base/include/asm-mips/unistd.h	2007-05-29 03:17:57.000000000 -0700
++++ linux-2.6.22/include/asm-mips/unistd.h	2007-05-29 03:24:14.000000000 -0700
+@@ -336,16 +336,28 @@
+ #define __NR_epoll_pwait		(__NR_Linux + 313)
+ #define __NR_ioprio_set			(__NR_Linux + 314)
+ #define __NR_ioprio_get			(__NR_Linux + 315)
+-
++#define __NR_pfm_create_context         (__NR_Linux + 316)
++#define __NR_pfm_write_pmcs		(__NR_pfm_create_context+1)
++#define __NR_pfm_write_pmds		(__NR_pfm_create_context+2)
++#define __NR_pfm_read_pmds		(__NR_pfm_create_context+3)
++#define __NR_pfm_load_context		(__NR_pfm_create_context+4)
++#define __NR_pfm_start			(__NR_pfm_create_context+5)
++#define __NR_pfm_stop			(__NR_pfm_create_context+6)
++#define __NR_pfm_restart		(__NR_pfm_create_context+7)
++#define __NR_pfm_create_evtsets		(__NR_pfm_create_context+8)
++#define __NR_pfm_getinfo_evtsets 	(__NR_pfm_create_context+9)
++#define __NR_pfm_delete_evtsets 	(__NR_pfm_create_context+10)
++#define __NR_pfm_unload_context		(__NR_pfm_create_context+11)
++ 
+ /*
+  * Offset of the last Linux o32 flavoured syscall
+  */
+-#define __NR_Linux_syscalls		315
++#define __NR_Linux_syscalls		327
+ 
+ #endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
+ 
+ #define __NR_O32_Linux			4000
+-#define __NR_O32_Linux_syscalls		315
++#define __NR_O32_Linux_syscalls		327
+ 
+ #if _MIPS_SIM == _MIPS_SIM_ABI64
+ 
+@@ -628,16 +640,28 @@
+ #define __NR_epoll_pwait		(__NR_Linux + 272)
+ #define __NR_ioprio_set			(__NR_Linux + 273)
+ #define __NR_ioprio_get			(__NR_Linux + 274)
+-
++#define __NR_pfm_create_context         (__NR_Linux + 275)
++#define __NR_pfm_write_pmcs		(__NR_pfm_create_context+1)
++#define __NR_pfm_write_pmds		(__NR_pfm_create_context+2)
++#define __NR_pfm_read_pmds		(__NR_pfm_create_context+3)
++#define __NR_pfm_load_context		(__NR_pfm_create_context+4)
++#define __NR_pfm_start			(__NR_pfm_create_context+5)
++#define __NR_pfm_stop			(__NR_pfm_create_context+6)
++#define __NR_pfm_restart		(__NR_pfm_create_context+7)
++#define __NR_pfm_create_evtsets		(__NR_pfm_create_context+8)
++#define __NR_pfm_getinfo_evtsets 	(__NR_pfm_create_context+9)
++#define __NR_pfm_delete_evtsets 	(__NR_pfm_create_context+10)
++#define __NR_pfm_unload_context		(__NR_pfm_create_context+11)
++ 
+ /*
+  * Offset of the last Linux 64-bit flavoured syscall
+  */
+-#define __NR_Linux_syscalls		274
++#define __NR_Linux_syscalls		286
+ 
+ #endif /* _MIPS_SIM == _MIPS_SIM_ABI64 */
+ 
+ #define __NR_64_Linux			5000
+-#define __NR_64_Linux_syscalls		274
++#define __NR_64_Linux_syscalls		286
+ 
+ #if _MIPS_SIM == _MIPS_SIM_NABI32
+ 
+@@ -924,16 +948,28 @@
+ #define __NR_epoll_pwait		(__NR_Linux + 276)
+ #define __NR_ioprio_set			(__NR_Linux + 277)
+ #define __NR_ioprio_get			(__NR_Linux + 278)
+-
++#define __NR_pfm_create_context         (__NR_Linux + 279)
++#define __NR_pfm_write_pmcs		(__NR_pfm_create_context+1)
++#define __NR_pfm_write_pmds		(__NR_pfm_create_context+2)
++#define __NR_pfm_read_pmds		(__NR_pfm_create_context+3)
++#define __NR_pfm_load_context		(__NR_pfm_create_context+4)
++#define __NR_pfm_start			(__NR_pfm_create_context+5)
++#define __NR_pfm_stop			(__NR_pfm_create_context+6)
++#define __NR_pfm_restart		(__NR_pfm_create_context+7)
++#define __NR_pfm_create_evtsets		(__NR_pfm_create_context+8)
++#define __NR_pfm_getinfo_evtsets 	(__NR_pfm_create_context+9)
++#define __NR_pfm_delete_evtsets 	(__NR_pfm_create_context+10)
++#define __NR_pfm_unload_context		(__NR_pfm_create_context+11)
++ 
+ /*
+  * Offset of the last N32 flavoured syscall
+  */
+-#define __NR_Linux_syscalls		278
++#define __NR_Linux_syscalls		290
+ 
+ #endif /* _MIPS_SIM == _MIPS_SIM_NABI32 */
+ 
+ #define __NR_N32_Linux			6000
+-#define __NR_N32_Linux_syscalls		278
++#define __NR_N32_Linux_syscalls		290
+ 
+ #ifdef __KERNEL__
+ 
