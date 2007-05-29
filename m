@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbXE2Q7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761517AbXE2RAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759606AbXE2Q7a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 12:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXE2Q7X
+	id S1761517AbXE2RAU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 13:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbXE2RAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 12:59:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44534 "EHLO mx1.redhat.com"
+	Tue, 29 May 2007 13:00:09 -0400
+Received: from rtr.ca ([64.26.128.89]:4277 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbXE2Q7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 12:59:22 -0400
-Message-ID: <465C5BE0.4090903@redhat.com>
-Date: Tue, 29 May 2007 12:59:12 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	id S1751790AbXE2RAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 13:00:07 -0400
+Message-ID: <465C5C16.7020001@rtr.ca>
+Date: Tue, 29 May 2007 13:00:06 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
-References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au>
-In-Reply-To: <463B108C.10602@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle on Intel
+ chipset
+References: <465C566E.4030009@rtr.ca> <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Rik van Riel wrote:
->> With lazy freeing of anonymous pages through MADV_FREE, performance of
->> the MySQL sysbench workload more than doubles on my quad-core system.
+Linus Torvalds wrote:
 > 
-> OK, I've run some tests on a 16 core Opteron system, both sysbench with
-> MySQL 5.33 (set up as described in the freebsd vs linux page), and with
-> ebizzy.
+> On Tue, 29 May 2007, Mark Lord wrote:
+>> There are a zillion USB patches in 2.6.22-rc*.
+>> Greg: got any good suggestions on which one to revert first?
 > 
-> What I found is that, on this system, MADV_FREE performance improvement
-> was in the noise when you look at it on top of the MADV_DONTNEED glibc
-> and down_read(mmap_sem) patch in sysbench.
+> Any chance of bisecting it?
 
-It turns out that setting the pte accessed bit in hardware
-can apparently take a few thousand CPU cycles - 3000 cycles
-is the number I've heard for one CPU family.
+Ugh.  Is there a way to tell bisect to only work around the USB updates?
+I suppose so.. just pick the commits before and after the USB dump
+and let it pick through the middle.
 
-This is a similar number of cycles as is needed to zero out
-a page.  Giving a cache hot page to userspace could cancel
-out the rest of the cost of the page fault handling.
+Still, that'll take a few hours, and frankly I'm getting sick of having
+to re-debug the USB layer with each new kernel rev.
 
-Lets stick with the simpler MADV_DONTNEED code for now and
-save the page flag for something else...
+Got a pointer to the "bisect how-to" ?
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Thanks
