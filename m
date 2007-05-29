@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932356AbXE2UsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765623AbXE2Ut0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932356AbXE2UsT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 16:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758039AbXE2UsK
+	id S1765623AbXE2Ut0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 16:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757797AbXE2UtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 16:48:10 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40032 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760450AbXE2UsJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 16:48:09 -0400
-Date: Tue, 29 May 2007 16:48:08 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Re: [RFC][PATCH -mm 3/3] PM: Disable _request_firmware
- before hibernation/suspend
-In-Reply-To: <200705291309.47559.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0705291636540.2974-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 May 2007 16:49:19 -0400
+Received: from mga01.intel.com ([192.55.52.88]:7341 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756528AbXE2UtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 16:49:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,590,1170662400"; 
+   d="scan'208";a="250887327"
+Date: Tue, 29 May 2007 13:45:57 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, colpatch@us.ibm.com,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Con Kolivas <kernel@kolivas.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] CFS scheduler, -v12
+Message-ID: <20070529204557.GB3693@linux-os.sc.intel.com>
+References: <464CE8FD.4070205@bigpond.net.au> <20070518071325.GB28702@elte.hu> <464DA61A.4040406@bigpond.net.au> <b647ffbd0705210825y25331066x8b2a4d50cdb7c266@mail.gmail.com> <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au> <4655423E.6000202@bigpond.net.au> <20070524164538.GA13301@linux-os.sc.intel.com> <46561E67.3030207@bigpond.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46561E67.3030207@bigpond.net.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007, David Brownell wrote:
-
-> On Monday 28 May 2007, Alan Stern wrote:
+On Thu, May 24, 2007 at 04:23:19PM -0700, Peter Williams wrote:
+> Siddha, Suresh B wrote:
+> > On Thu, May 24, 2007 at 12:43:58AM -0700, Peter Williams wrote:
+> > >
+> > > Further testing indicates that CONFIG_SCHED_MC is not implicated and
+> > > it's CONFIG_SCHED_SMT that's causing the problem.  This rules out the
+> > > code in find_busiest_group() as it is common to both macros.
+> > >
+> > > I think this makes the scheduling domain parameter values the most
+> > > likely cause of the problem.  I'm not very familiar with this code so
+> > > I've added those who've modified this code in the last year or
+> > > so to the
+> > > address of this e-mail.
+> >
+> > What platform is this? I remember you mentioned its a 2 cpu box. Is it
+> > dual core or dual package or one with HT?
 > 
-> > This is a matter of one's philosophy.  In suspend-to-RAM, should tasks
-> > be frozen or should I/O queues be frozen?
-> > 
-> > With the USB subsystem I have followed the approach taken by the PM
-> > core, which is that tasks are frozen.  But one can -- and Linus has on
-> > at least one occasion -- make a good case that tasks should be left
-> > running while only I/O is frozen. 
-> 
-> In fact that makes a heck of a lot more sense to me from the
-> conceptual point of view.  From the hardware perspective, the
-> task of preparing to enter true suspend states (STR, or suspend
-> for ACPI; embedded systems have more options) focusses on what
-> I/O signals are disabled.
-> 
-> Once the relevant I/O signals are first idled, then disabled,
-> the CPU can do whatever it likes.  Whether it runs or not is
-> purely a workload decision...
-> 
-> Remember too that not all systems suffer from the constraints
-> that ACPI decrees.  In particular, it's not uncommon that some
-> parts of the system be active in certain suspend states.  The
-> whole point is to turn off as much of the system as possible,
-> especially the high power portions, while letting work proceed.
-> 
-> Turning off some clocks and peripherals doesn't need to imply
-> turning them all off, or disabling DMA ... and should not need
-> to be triggered by a user (or userspace tool) explicitly saying
-> "go into STR".
+> It's a single CPU HT box i.e. 2 virtual CPUs.  "cat /proc/cpuinfo"
+> produces:
 
-One can think of suspend-to-RAM as nothing more than a super-duper
-selective suspend of all devices (including the CPU!).  This
-illustrates the relationship between suspend-to-RAM and runtime PM.  
-However there is one important distinction, the DoS issue that Pavel
-raised.  With true suspend-to-RAM, autoresume on demand is not enabled
--- only on remote wakeup.  With runtime PM, both are enabled.
+Peter, I tried on a similar box and couldn't reproduce this problem
+with x86_64 2.6.22-rc3 kernel and using defconfig(has SCHED_SMT turned on).
+I am using top and just the spinners.  I don't have gkrellm running, is that
+required to reproduce the issue?
 
+I tried number of times and also in runlevels 3,5(with top running
+in a xterm incase of runlevel 5).
 
-Elegant though it is, the "freeze I/O" approach suffers from 
-implementation awkwardness.  Ideally individual drivers shouldn't have 
-to worry about it, but the subsystems certainly will.
+In runlevel 5, occasionally for one refresh screen of top, I see three
+spinners on one cpu and one spinner on other(with X or someother app
+also on the cpu with one spinner). But it balances nicely for the
+immd next refresh of the top screen.
 
-Consider as an example the class of char device drivers.  The only 
-subsystem they have in common is VFS.  It would then be necessary for 
-every entry point into VFS to check whether a suspend-to-RAM is in 
-progress, and if it is, block until the suspend is over.  Each one of 
-those entry points is on a hot path, so adding these checks is the sort 
-of thing one would like to avoid.
+I tried with various refresh rates of top too.. Do you see the issue
+at runlevel 3 too?
 
-By freezing tasks we can eliminate (most) I/O requests at the source 
-with a single, relatively small amount of code (i.e., the 
-refrigerator).  Freezing I/O, on the other hand, would involve many 
-checks dispersed throughout a large number of source files -- checks 
-that would have to execute even when a suspend wasn't in progress.
-
-Alan Stern
-
+thanks,
+suresh
