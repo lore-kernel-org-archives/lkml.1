@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXE2NeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbXE2NiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbXE2NeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 09:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXE2NeB
+	id S1756108AbXE2NiY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 09:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXE2NiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:34:01 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:58375 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751489AbXE2NeA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:34:00 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <292C7F80-B80D-4645-8FF5-49BF911398E1@cam.ac.uk> <a781481a0705290341w4c403c1ej43565a1e66805522@mail.gmail.com> <37DB6EAF-8954-448D-BD29-864FEC6540CE@cam.ac.uk> <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <231C137C-D0BF-44F7-B2D5-AE610284D00A@cam.ac.uk>
-Cc: Nitin Gupta <nitingupta910@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-mm-cc@laptop.org, linuxcompressed-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
-       dwmw2@infradead.org
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: JFFS2 using 'private' zlib header (was [RFC] LZO de/compression support - take 6)
-Date: Tue, 29 May 2007 14:33:51 +0100
-To: Satyam Sharma <satyam.sharma@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
+	Tue, 29 May 2007 09:38:17 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:60536 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750912AbXE2NiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:38:15 -0400
+In-Reply-To: <20070526062906.GA26553@nineveh.local>
+To: jfannin@gmail.com (Joseph Fannin)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Safford <safford@us.ibm.com>, jfannin@gmail.com,
+       linux-kernel@vger.kernel.org, Mimi Zohar <zohar@us.ibm.com>,
+       serue@linux.vnet.ibm.com
+MIME-Version: 1.0
+Subject: Re: 2.6.22-rc1-mm1: evm BUG when reading sysfs file
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF92C62155.924AEB85-ON852572EA.004A8D21-852572EA.004AE5DE@us.ibm.com>
+From: Reiner Sailer <sailer@us.ibm.com>
+Date: Tue, 29 May 2007 09:38:15 -0400
+X-MIMETrack: Serialize by Router on D01ML605/01/M/IBM(Build V80_M4_03042007|March 04, 2007) at
+ 05/29/2007 09:38:15,
+	Serialize complete at 05/29/2007 09:38:15
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29 May 2007, at 12:27, Satyam Sharma wrote:
+jfannin@gmail.com (Joseph Fannin) wrote on 05/26/2007 02:29:07 AM:
 
-> Right, actually, zlib could be switched over to [using a common  
-> directory].
-> Because zlib_deflate/ and zlib_inflate/ too share a private header
-> zutil.h which has unfortunately been stuck into include/linux/ with  
-> a big
-> /* WARNING: this file should *not* be used by applications. */  
-> comment ...
+> On Fri, May 25, 2007 at 10:28:22PM -0400, Reiner Sailer wrote:
+> > On Tue, 22 May 2007 03:25:48 -0400
+> > jfannin@gmail.com (Joseph Fannin) wrote:
+> >
+> 
+> > > I've been getting this since 2.6.21-rc7-mm1:
+> 
+....
+> >
+> > Joseph,
+> >
+> > thank you for posting this problem. I cannot reconstruct it on my 
+machine.
+> >
+> > Could you tell us which kernel configuration you used 
+(drivers/char/tpm
+> > and security settings) ?
+> > Does it disappear when IMA is disabled in the kernel config?
+> 
+>     I've found that disabling CONFIG_SYSFS_DEPRECATED makes the
+> BUG message go away; maybe that's what you're missing?
+> 
+>     I've also attached my .config -- but it has lots of stuff turned
+> on, so it may be faster to try flipping CONFIG_SYSFS_DEPRECATED on a
+> slimmer config, if you'd like.
+> 
+>     Disabling IMA doesn't change the message; it's still there.
+> 
+>     Thanks!
+> --
+> Joseph Fannin
+> jfannin@gmail.com
+> 
 
-Well, unfortunately zutil.h is currently being used in-kernel by fs/ 
-jffs2/compr_zlib.c despite the "WARNING: this file should *not* be  
-used by applications" notice.
+Thank you very much for these helpful details. We are working on a 
+solution.
 
-So moving this header to a truly private location isn't possible  
-right now, unfortunately,
-
-Michael-Luke Jones
-[added David Whitehouse to cc]
+Best
+Reiner
