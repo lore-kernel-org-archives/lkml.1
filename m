@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764825AbXE2Sn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764021AbXE2So7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764825AbXE2Sn5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 14:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758101AbXE2Snq
+	id S1764021AbXE2So7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 14:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbXE2Sou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 14:43:46 -0400
-Received: from mailgw01.pakom.net ([195.238.254.5]:53559 "EHLO
-	mailgw01.pakom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758075AbXE2Snp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 14:43:45 -0400
-X-Greylist: delayed 8151 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 14:43:44 EDT
-Date: Tue, 29 May 2007 23:25:46 +0600
-From: "pythagoras Dodson" <adroit@admcity.com>
-To: linux-kernel@vger.kernel.org
-Subject: Directory of Real Estate Agencies in the USA
-Message-ID: <5A3D7EE3.7684.DD15C2D5@localhost>
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-X-Proofpoint-Virus-Version: vendor=fsecure engine=4.65.5502:2.3.11,1.2.37,4.0.164 definitions=2007-05-03_05:2007-05-01,2007-05-03,2007-05-03 signatures=0
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 ipscore=0 phishscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=3.1.0-0703060001 definitions=main-0705020108
+	Tue, 29 May 2007 14:44:50 -0400
+Received: from mail.screens.ru ([213.234.233.54]:42773 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbXE2Sot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 14:44:49 -0400
+Date: Tue, 29 May 2007 22:44:35 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] tty: fix leakage of -ERESTARTSYS to userland
+Message-ID: <20070529184435.GA174@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Spotted by Satoru Takeuchi.
 
+kill_pgrp(task_pgrp(current)) sends the signal to the current's thread group,
+but can choose any sub-thread as a target for signal_wake_up(). This means
+that job_control() and tty_check_change() may return -ERESTARTSYS without
+signal_pending().
 
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Brand New USA REALTY COMPANIES Database
+--- t/drivers/char/n_tty.c~	2007-04-05 12:18:26.000000000 +0400
++++ t/drivers/char/n_tty.c	2007-05-28 10:57:58.000000000 +0400
+@@ -1191,6 +1191,7 @@ static int job_control(struct tty_struct
+ 			    is_current_pgrp_orphaned())
+ 				return -EIO;
+ 			kill_pgrp(task_pgrp(current), SIGTTIN, 1);
++			set_thread_flag(TIF_SIGPENDING);
+ 			return -ERESTARTSYS;
+ 		}
+ 	}
+--- t/drivers/char/tty_io.c~	2007-04-05 12:18:26.000000000 +0400
++++ t/drivers/char/tty_io.c	2007-05-29 22:15:52.000000000 +0400
+@@ -1121,7 +1121,8 @@ int tty_check_change(struct tty_struct *
+ 		return 0;
+ 	if (is_current_pgrp_orphaned())
+ 		return -EIO;
+-	(void) kill_pgrp(task_pgrp(current), SIGTTOU, 1);
++	kill_pgrp(task_pgrp(current), SIGTTOU, 1);
++	set_thread_flag(TIF_SIGPENDING);
+ 	return -ERESTARTSYS;
+ }
+ 
 
-1,050,902 Total Records
-85,658 Emails
-
-Fresh data just compiled this week - never before sold. 
-
-Regular price is $499
-
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-\\\SPECIAL PRICE UNTIL June 1st\\\
-\\\\\\\ONLY $299!\\\\\\\\\\\\\\\\\\
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-For additional details or to purchase this database please 
-send an email to: realtorlist@hotmail.com
-
-
-
-
-
-
-
-
-
-
-To cease future correspondence please reply with "777" in the subject heading
