@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764409AbXE2T6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765202AbXE2T65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764409AbXE2T6d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 15:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757949AbXE2T6Z
+	id S1765202AbXE2T65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 15:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764583AbXE2T6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 15:58:25 -0400
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:47767 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754601AbXE2T6Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 15:58:24 -0400
-Date: Tue, 29 May 2007 15:58:21 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: Tetsuo Handa <from-lsm@I-love.SAKURA.ne.jp>,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [AppArmor 01/41] Pass struct vfsmount to the inode_create LSMhook
-In-Reply-To: <671296.4187.qm@web36604.mail.mud.yahoo.com>
-Message-ID: <Line.LNX.4.64.0705291555020.9955@d.namei>
-References: <671296.4187.qm@web36604.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 May 2007 15:58:49 -0400
+Received: from mtaout1.012.net.il ([84.95.2.1]:53309 "EHLO mtaout1.012.net.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764726AbXE2T6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 15:58:48 -0400
+Date: Tue, 29 May 2007 22:58:27 +0300
+From: David Baron <d_baron@012.net.il>
+Subject: Re: [LAU] 2.6.21-rt7 Oopses, More
+X-012-Sender: d_baron@012.net.il
+To: linux-kernel@vger.kernel.org
+Message-id: <200705292258.27890.d_baron@012.net.il>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007, Casey Schaufler wrote:
+On Di, 29.05.07 21:37 David Baron <d_baron@012.net.il> wrote:
 
-> > Conventional UNIX's access control can't restrict
-> > which path_to_file can link with which another_path_to_file
-> > because UNIX's access control is a label-based access control.
+> >Ran for nearly two hours with none. Nada.
 > 
-> UNIX access control is attribute based, not label based. The
-> distinction may be hair splitting in the current context, but
-> could be significant later if the thread continues. 
+> >Then they started up again. What triggered them?
+> 
+> >The only thing in the logcheck at the same time as the first outputs
+> >was a pptp connect after the original connection fell. Relevant?
+> 
+> The offending functions are icmp_.... functions, most likely the more
+> used ipv4 flavor of icmp.c.
+> 
+> Example:
+> BUG: using smp_processor_id() in preemptible [00000000] code:
+> IRQ-9/1110 caller is icmp_xmit_unlock+0xb/0x30
+>  [<c01faab9>] debug_smp_processor_id+0xa9/0xb0
+>  [<c02e531b>] icmp_xmit_unlock+0xb/0x30
+>  [<c02e598e>] icmp_send+0x11e/0x3f0
+> ....
 
-What's important is that traditional DAC stores the security attributes 
-of the object with the object.  Call them what you want, it matters not.
+Could you please
 
+a) add a Re: to the subject before answering yourself, so this gets a
+thread, instead of single mails.
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+and b) maybe CC linux-kernel@vger.kernel.org as I do not think Ingo
+Molnar is subscribed to this list here, but it would be good if he also
+gets your reports in order to fix it.
+
+Thanks.
+
