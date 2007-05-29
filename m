@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbXE2WiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbXE2Wir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752511AbXE2WiW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 18:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbXE2WiN
+	id S1752653AbXE2Wir (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 18:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbXE2Wig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 18:38:13 -0400
-Received: from www.osadl.org ([213.239.205.134]:59131 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750880AbXE2WiM (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 18:38:12 -0400
-Subject: Re: [BUG] Something goes wrong with timer statistics.
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Ian Kumlien <iank@bredband.net>, Linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com>
-References: <1180474738.22497.25.camel@pi.pomac.com>
-	 <6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 00:38:08 +0200
-Message-Id: <1180478288.20546.39.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Tue, 29 May 2007 18:38:36 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:32639 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbXE2Wif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 18:38:35 -0400
+Message-ID: <465CAB5D.7060405@chelsio.com>
+Date: Tue, 29 May 2007 15:38:21 -0700
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 4/7 RESEND] cxgb3 - Update FW to 4.1
+References: <20070526231748.12319.20729.stgit@localhost.localdomain> <465B5A8B.7000701@garzik.org>
+In-Reply-To: <465B5A8B.7000701@garzik.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 May 2007 22:38:03.0227 (UTC) FILETIME=[049CBAB0:01C7A242]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-30 at 00:24 +0200, Michal Piotrowski wrote:
-> Hi Ian,
-> 
-> (Thomas "The Wizard of Time" added to CC :))
+Jeff Garzik wrote:
+> divy@chelsio.com wrote:
+>> From: Divy Le Ray <divy@chelsio.com>
+>>
+>> Bump FW version to 4.1.
+>> Modify chip tuning in consequence.
+>>
+>> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+>> ---
+>>
+>>  drivers/net/cxgb3/regs.h    |    4 ++++
+>>  drivers/net/cxgb3/t3_hw.c   |   40 
+>> ++++++++++++++++++++++------------------
+>>  drivers/net/cxgb3/version.h |    2 +-
+>>  3 files changed, 27 insertions(+), 19 deletions(-)
+>
+> You think requiring a FIRMWARE UPGRADE is something that should be 
+> done in the middle of a kernel bugfix series?  What Q/A planet are you 
+> from?
 
-Added more wizards :)
+I made a bad jugdement.
+I'll repost a patch series for 2.6.22 fixes against Linus'tree, and a 
+patch series for driver improvements against netdev-2.6#upstream, if it 
+is acceptable.
 
-> On 29/05/07, Ian Kumlien <iank@bredband.net> wrote:
-> > Hi,
-> >
-> > As the daystar sets, i try to play some with my new would be
-> > firewall/server, but since this will be running for quite some time i
-> > have been experimenting with powertop to find out what i can do to limit
-> > it's power usage.
-> >
-> > But, if i run powertop for too long or a few times to many... this
-> > happens:
-> > http://pomac.netswarm.net/pics/kernel_panic.jpg
+>
+> This is a completely ridiculous burden you are placing on the 
+> individual user.  A good driver knows that firmware NOT SHIPPED WITH 
+> THE KERNEL does not necessarily move in lock-step with the kernel driver.
 
-This was reported before. It's incredibly hard to reproduce.
+We're actively working on RDMA improvements, leading to these FW updates.
+Some of the changes are unfortunately not backward compatible, hence the 
+exact matching the driver enforces.
+The bundle driver/FW is getting finalized. New adapters will be shipped 
+with the right image once it is available.
+In the mean time, this is indeed a burden for the current users to get 
+the corresponding FW.
 
-Ian, is this happening reproducible ?
-
-> > If i don't run powertop, it is rock solid... Compiling for hours,
-> > running memtest for hours etc etc...
-> 
-> (Where is my magic ball?)
-> 
-> Let me guess - Pentium 4 with HT?
-
-I might be wrong, but it's a newer core duo thingy.
-
-	tglx
-
+Divy
 
