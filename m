@@ -1,107 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXE2Vfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbXE2ViW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753025AbXE2Vfj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 17:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbXE2VfX
+	id S1752504AbXE2ViW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 17:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbXE2ViP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 17:35:23 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:37158 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751234AbXE2VfV (ORCPT
+	Tue, 29 May 2007 17:38:15 -0400
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:44830 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751119AbXE2ViO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 17:35:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type;
-        b=ohkaWXDZ4t/IMFN4H60JqxT/YZvsvGLWYxMyK4r/IIFMRijZMT1w8lFL/0DLrfjOXz6UJ9aTBKJ6W7HI86DTcYFmrU8QmWXbVJL5XRaerHGwoQz92WGmG3nYKjNhI7n9adNttL35/e2YrSn2eDHJSlh6QwZ9KvFTJdayBSJ76Qc=
-Message-ID: <e55525570705291435i9c50addsc37c166cd469f169@mail.gmail.com>
-Date: Tue, 29 May 2007 17:35:15 -0400
-From: "Anderson Briglia" <briglia.anderson@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Trivial fixes on comments related old shrink_list reference
+	Tue, 29 May 2007 17:38:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=aBbHtTdaco+0/bRXYyyPDWFDagcu1tY/sdbTTjOdkabea37ZGl8tTDYcklmNOkXCvMxzo3nFp9Y4PqSVgkP9y8XL4clTy6Ie5HhI9KZMK1uG9sKhmP1O2FyYATBW1UGMto+6x1lBVtbesQyc9bTKss19vG/C9ogeJULgSFQHYqQ=  ;
+X-YMail-OSG: PghXp0EVM1ndvqU0Q8VW6ja0NbqE0GXFo7aPpyvTI796gKKUyKicOh8Uz1cHyuObvGoPdg.MfA--
+From: David Brownell <david-b@pacbell.net>
+To: Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH] Samsung LTV350QV LCD driver
+Date: Tue, 29 May 2007 14:38:11 -0700
+User-Agent: KMail/1.9.6
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>, linux-kernel@vger.kernel.org
+References: <11804683571524-git-send-email-hskinnemoen@atmel.com> <1180472477.5822.87.camel@localhost.localdomain>
+In-Reply-To: <1180472477.5822.87.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_33598_6862323.1180474515392"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705291438.11581.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_33598_6862323.1180474515392
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tuesday 29 May 2007, Richard Purdie wrote:
+> On Tue, 2007-05-29 at 21:52 +0200, Haavard Skinnemoen wrote:
+> > This patch adds support for powering on and off the Samsung LTV350QV
+> > LCD panel via SPI. The driver responds to framebuffer power
+> > management, it powers off the panel on reboot/halt/poweroff, and it
+> > can also be controlled through sysfs. The panel is powered up when the
+> > module is loaded and off when the module is unloaded.
+> > 
+> > Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> 
+> The LCD class device bits look fine to me. The only change I'd request
+> is not to change the order of things in drivers/video/backlight/Kconfig.
+> If you do want to reword one of those entries (which is what I think you
+> wanted to do), send it as a separate patch please.
 
-Hi all,
+One significant issue was screwed up sequencing causing
+tools like 'xconfig' to display things wrong.  Appended
+is a patch fixing just that goof.
 
-This is just a trivial patch to fix the shrink_list name on some files
-under mm/ directory.
 
-Signed-off-by: Anderson Briglia <anderson.briglia@indt.org.br>
+> David, any objections to the SPI bits?
+
+They seemed fine to me, other than the write_reg() macro
+having an embedded 'goto' ... explicitly against the
+Documentation/CodingStyle guidelines.  ("Chapter 12",
+point 1 = "macros that affect code flow".)
+
+I like seeing more of the SPI drivers go upstream.  ;)
+
+- Dave
+
+
+
+> 
+> Richard
+> 
+
+
+======	CUT HERE
+Switch the order of LCD_CLASS_DEVICE and BACKLIGHT_CLASS_DEVICE,
+so that it's possible to insert LCD devices without borking the
+dependency displays of xconfig and other config tools.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
-Index: linux-linus-2.6.git/mm/swap_state.c
-===================================================================
---- linux-linus-2.6.git.orig/mm/swap_state.c	2007-05-29 17:12:56.000000000 -0400
-+++ linux-linus-2.6.git/mm/swap_state.c	2007-05-29 17:13:59.000000000 -0400
-@@ -21,7 +21,7 @@
+ drivers/video/backlight/Kconfig |   26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
- /*
-  * swapper_space is a fiction, retained to simplify the path through
-- * vmscan's shrink_list, to make sync_page look nicer, and to allow
-+ * vmscan's shrink_page_list, to make sync_page look nicer, and to allow
-  * future use of radix_tree tags in the swap cache.
-  */
- static const struct address_space_operations swap_aops = {
-Index: linux-linus-2.6.git/mm/swapfile.c
-===================================================================
---- linux-linus-2.6.git.orig/mm/swapfile.c	2007-05-29 17:12:49.000000000 -0400
-+++ linux-linus-2.6.git/mm/swapfile.c	2007-05-29 17:13:39.000000000 -0400
-@@ -885,7 +885,7 @@ static int try_to_unuse(unsigned int typ
- 		/*
- 		 * So we could skip searching mms once swap count went
- 		 * to 1, we did not mark any present ptes as dirty: must
--		 * mark page dirty so shrink_list will preserve it.
-+		 * mark page dirty so shrink_page_list will preserve it.
- 		 */
- 		SetPageDirty(page);
- 		unlock_page(page);
-Index: linux-linus-2.6.git/mm/truncate.c
-===================================================================
---- linux-linus-2.6.git.orig/mm/truncate.c	2007-05-29 17:13:08.000000000 -0400
-+++ linux-linus-2.6.git/mm/truncate.c	2007-05-29 17:15:03.000000000 -0400
-@@ -317,8 +317,8 @@ EXPORT_SYMBOL(invalidate_mapping_pages);
-  * This is like invalidate_complete_page(), except it ignores the page's
-  * refcount.  We do this because invalidate_inode_pages2() needs stronger
-  * invalidation guarantees, and cannot afford to leave pages behind because
-- * shrink_list() has a temp ref on them, or because they're transiently sitting
-- * in the lru_cache_add() pagevecs.
-+ * shrink_page_list() has a temp ref on them, or because they're transiently
-+ * sitting in the lru_cache_add() pagevecs.
-  */
- static int
- invalidate_complete_page2(struct address_space *mapping, struct page *page)
-
-------=_Part_33598_6862323.1180474515392
-Content-Type: application/x-bzip2; name=trivial_shrink_list_comment.tar.bz2
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f2aw0kca
-Content-Disposition: attachment; filename="trivial_shrink_list_comment.tar.bz2"
-
-QlpoOTFBWSZTWamQIVsAA9J/xMowAgBA/////ibc4P/v3+gAAgAEAAhQBB6urY1mylJVIMUqflGK
-ZNonpH6p6NQ9IAA0GhpoaNP0po9QOaZGQyYIaMJgjTRoxA0yZGAAIMQRE8qYJtEmmjQaABoAGgBo
-NA5pkZDJghowmCNNGjEDTJkYAAgkhTRoaENNGginkT1D1PU0NANA0AaaNPp+/d7oYEpyQgOehrq0
-5GLJJOk+m90ZC+0TE1+D9E9PCtMKo4hbkjGoPyK6Xe+fDzc5mNk7Fd58tBMyJuvqJs4z8h4iHgyO
-zxbzC5q6ns8hefsna3yey73jGxdVed888fdbguy/Fk6MKuq+fkG914wzC2bapU1YaH4Tw7EkpBIr
-sL5U3FJ/yU2l1ZIsG9/+yU95ha+MXu7vOKOahupmxuHwY5DIRixgW5K3OIUjMFApMHz4imIgcsYb
-lsMahjBVtcooAIvATgosLqA/SLmGUdI7UqRq9zJkmCgoFRA8hMdkz/UHB91js31+Hg3pbVBt3WoL
-EEwv7V45TkMwzGiCPQJHpEwHq8vQJiDITuS8uYLpUKORdMnzkiLHs4DFgtdL0G4TdXPXbANheHpe
-TVSCvRgJ4RIOgPVV1ayBTXEdoBioWLgQRcY41ivnn5+aaIyE1Y3cuB3LwQeZl4ha0oci9FfwMcfW
-GbPDfdVi/pPlDRCq4MlYYB5JJBDKExI9TOjArJpxeM9ZlKsG0Zg0SJoBegBsjGP0hwiCPO2BfH7A
-iow2a3PwFb0zJJe0B3LWgDChHm1fhvIyDNeor2mo8K0PhHbWwyhY60vLl+F5orqEP64LqsxpIoFK
-0XBDVldWWfXUY9vbKXUkcypoYqkWyGg1LI005BIpOHDFisEN6lP6BYZzazYMZsHGNvXMwxY6mRWT
-le2DOjvbYQWLPEsNOLvwlguVcbN4YOnsAGZGvRBUlFeeW6BkQmDF3796T5gxuM+/BEhaCW2Wih2i
-YOXh03D5CxPFU2BAR+aqeuR7WquGsSZaIMTZXTmMZhoy47id5yqVMzALEPHNAyDelWSLqi0YzOR0
-QQeu11H6oN0Vjlp4xMCChcIdsai0Qf4ugvvpYMRRgxNaNOqaSKNeqQdlDByA6BL6QdgW7jbZa2Vx
-uONpCZuB4mcMKzlf3gxbNTNJnEvcKK9UGY5do4Qwxg3TTgWGYsYMbWTuGHYUbBLqegcE0MYngDuB
-iOVcZVym95uDeVCgbCkrCTs/SDKsx1sWxBxH4FhUHXBR/yNSgekNpkUm5LQaAbkR1gUaC1xux1s8
-yiiVIWhiBfBSTrJDCkDGGJCO+FipEE7zDTCii4xyCGM2WQy+bbBdjRBgWsPn7uyBK8lmWFxtEOjJ
-Bskmbja2BfUPyalw93kkl/4u5IpwoSFTIEK2
-------=_Part_33598_6862323.1180474515392--
+--- g26.orig/drivers/video/backlight/Kconfig	2007-05-29 14:31:41.000000000 -0700
++++ g26/drivers/video/backlight/Kconfig	2007-05-29 14:33:29.000000000 -0700
+@@ -8,26 +8,32 @@ menuconfig BACKLIGHT_LCD_SUPPORT
+ 	  Enable this to be able to choose the drivers for controlling the
+ 	  backlight and the LCD panel on some platforms, for example on PDAs.
+ 
+-config BACKLIGHT_CLASS_DEVICE
+-        tristate "Lowlevel Backlight controls"
++#
++# LCD
++#
++config LCD_CLASS_DEVICE
++        tristate "Lowlevel LCD controls"
+ 	depends on BACKLIGHT_LCD_SUPPORT
+ 	default m
+ 	help
+-	  This framework adds support for low-level control of the LCD
+-          backlight. This includes support for brightness and power.
++	  This framework adds support for low-level control of LCD.
++	  Some framebuffer devices connect to platform-specific LCD modules
++	  in order to have a platform-specific way to control the flat panel
++	  (contrast and applying power to the LCD (not to the backlight!)).
+ 
+ 	  To have support for your specific LCD panel you will have to
+ 	  select the proper drivers which depend on this option.
+ 
+-config LCD_CLASS_DEVICE
+-        tristate "Lowlevel LCD controls"
++#
++# Backlight
++#
++config BACKLIGHT_CLASS_DEVICE
++        tristate "Lowlevel Backlight controls"
+ 	depends on BACKLIGHT_LCD_SUPPORT
+ 	default m
+ 	help
+-	  This framework adds support for low-level control of LCD.
+-	  Some framebuffer devices connect to platform-specific LCD modules
+-	  in order to have a platform-specific way to control the flat panel
+-	  (contrast and applying power to the LCD (not to the backlight!)).
++	  This framework adds support for low-level control of the LCD
++          backlight. This includes support for brightness and power.
+ 
+ 	  To have support for your specific LCD panel you will have to
+ 	  select the proper drivers which depend on this option.
