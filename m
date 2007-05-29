@@ -1,407 +1,647 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbXE2OBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbXE2OBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbXE2OBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbXE2N7s
+	id S1759283AbXE2OBf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbXE2N7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:59:48 -0400
+	Tue, 29 May 2007 09:59:50 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750976AbXE2N7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:59:44 -0400
+	id S1751202AbXE2N7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:59:45 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:36 -0700
+Date: Tue, 29 May 2007 06:48:23 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmajk019879@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmNqL019723@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 21/22] 2.6.22-rc3 perfmon2 : modified mips files
+Subject: [PATCH 09/22] 2.6.22-rc3 perfmon2 : register read-write operations
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the modified mips files
+This patch contains the core read-write operations on the PMU registers
 
 
-Modified files are as follows:
+The patch contains the following functions:
 
-arch/mips/Kconfig:
-	- add link to configuration menu in arch/mips/perfmon/Kconfig
 
-arch/mips/Makefile:
-	- add perfmon subdir
+__pfm_write_pmds(): implements write operations on a vector of PMD registers
+__pfm_read_pmds() : implements read operations on a vector of PMD registers
+__pfm_write_pmcs(): implements write operations on a vector of PMC registers
 
-arch/mips/kernel/scall32-o32.S
-	- add new system calls
 
-arch/mips/kernel/scall64-64.S
-	- add new system calls
-
-arch/mips/kernel/scall64-n32.S
-	- add new system calls
-
-arch/mips/kernel/scall64-o32.S
-	- add new system calls
-
-arch/mips/kernel/time.c
-	- add hook for perfmon time-base set switching
-
-arch/mips/mips-boards/generic/time.c
-	- add perfmon.h header to list of includes
-
-arch/mips/kernel/process.c:
-	- add hook in exit_thread() to cleanup perfmon2 context
-	- add hook in copy_thread() to cleanup perfmon2 context in child (perfmon2 context
-	  is never inherited)
-
-arch/mips/kernel/signal.c:
-	- add hook for extra work before kernel exit. Need to block a thread after a overflow with
-	  user level notification. Also needed to do some bookeeeping, such as reset certain counters
-	  and cleanup in some difficult corner cases
-
-include/asm-mips/system.h
-	- add context switch hook
-
-asm-mips/thread_info.h
-	- add TIF flags
-
-include/asm-mips/unistd.h
-	- add new system calls
+There is no read operation on PMC because they are always set by the users.
+On some architectures, such as IA-64, Tsome PMCs may be set by hardware, but
+they are never exposed to users.
 
 
 
 
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/Kconfig linux-2.6.22/arch/mips/Kconfig
---- linux-2.6.22.base/arch/mips/Kconfig	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/Kconfig	2007-05-29 03:24:14.000000000 -0700
-@@ -1774,6 +1774,8 @@ config SECCOMP
- 
- 	  If unsure, say Y. Only embedded should say N here.
- 
-+source "arch/mips/perfmon/Kconfig"
-+
- endmenu
- 
- config RWSEM_GENERIC_SPINLOCK
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/Makefile linux-2.6.22/arch/mips/Makefile
---- linux-2.6.22.base/arch/mips/Makefile	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/Makefile	2007-05-29 03:24:14.000000000 -0700
-@@ -148,6 +148,12 @@ endif
- endif
- 
- #
-+# Perfmon support
-+#
-+
-+core-$(CONFIG_PERFMON)		+= arch/mips/perfmon/
-+
-+#
- # Firmware support
- #
- libs-$(CONFIG_ARC)		+= arch/mips/arc/
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/process.c linux-2.6.22/arch/mips/kernel/process.c
---- linux-2.6.22.base/arch/mips/kernel/process.c	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/kernel/process.c	2007-05-29 03:24:14.000000000 -0700
-@@ -25,6 +25,7 @@
- #include <linux/init.h>
- #include <linux/completion.h>
- #include <linux/kallsyms.h>
+--- linux-2.6.22.base/perfmon/perfmon_rw.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/perfmon/perfmon_rw.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,603 @@
++/*
++ * perfmon.c: perfmon2 PMC/PMD read/write system calls
++ *
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://perfmon2.sf.net/
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/module.h>
++#include <linux/kernel.h>
 +#include <linux/perfmon.h>
- 
- #include <asm/bootinfo.h>
- #include <asm/cpu.h>
-@@ -90,6 +91,7 @@ void start_thread(struct pt_regs * regs,
- 
- void exit_thread(void)
- {
-+  pfm_exit_thread(current);
- }
- 
- void flush_thread(void)
-@@ -164,6 +166,8 @@ int copy_thread(int nr, unsigned long cl
- 	if (clone_flags & CLONE_SETTLS)
- 		ti->tp_value = regs->regs[7];
- 
-+	pfm_copy_thread(p);
 +
- 	return 0;
- }
- 
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/scall32-o32.S linux-2.6.22/arch/mips/kernel/scall32-o32.S
---- linux-2.6.22.base/arch/mips/kernel/scall32-o32.S	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/kernel/scall32-o32.S	2007-05-29 03:24:14.000000000 -0700
-@@ -657,7 +657,19 @@ einval:	li	v0, -EINVAL
- 	sys	sys_getcpu		3
- 	sys	sys_epoll_pwait		6
- 	sys	sys_ioprio_set		3
--	sys	sys_ioprio_get		2
-+	sys	sys_ioprio_get		2	/* 4315 */
-+      	sys	sys_pfm_create_context	4
-+      	sys	sys_pfm_write_pmcs	3
-+      	sys	sys_pfm_write_pmds	4
-+      	sys	sys_pfm_read_pmds	3
-+      	sys	sys_pfm_load_context	2	/* 4320 */
-+      	sys	sys_pfm_start		2
-+      	sys	sys_pfm_stop		1
-+      	sys	sys_pfm_restart		1
-+      	sys	sys_pfm_create_evtsets	3
-+      	sys	sys_pfm_getinfo_evtsets 3	/* 4325 */
-+      	sys	sys_pfm_delete_evtsets	3
-+      	sys	sys_pfm_unload_context	1
- 	.endm
- 
- 	/* We pre-compute the number of _instruction_ bytes needed to
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/scall64-64.S linux-2.6.22/arch/mips/kernel/scall64-64.S
---- linux-2.6.22.base/arch/mips/kernel/scall64-64.S	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/kernel/scall64-64.S	2007-05-29 03:24:14.000000000 -0700
-@@ -473,4 +473,16 @@ sys_call_table:
- 	PTR	sys_epoll_pwait
- 	PTR	sys_ioprio_set
- 	PTR	sys_ioprio_get
-+      	PTR	sys_pfm_create_context		/* 5275 */
-+      	PTR	sys_pfm_write_pmcs
-+      	PTR	sys_pfm_write_pmds
-+      	PTR	sys_pfm_read_pmds
-+      	PTR	sys_pfm_load_context
-+      	PTR	sys_pfm_start			/* 5280 */
-+      	PTR	sys_pfm_stop
-+      	PTR	sys_pfm_restart
-+      	PTR	sys_pfm_create_evtsets
-+      	PTR	sys_pfm_getinfo_evtsets
-+      	PTR	sys_pfm_delete_evtsets		/* 5285 */
-+ 	PTR	sys_pfm_unload_context
- 	.size	sys_call_table,.-sys_call_table
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/scall64-n32.S linux-2.6.22/arch/mips/kernel/scall64-n32.S
---- linux-2.6.22.base/arch/mips/kernel/scall64-n32.S	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/kernel/scall64-n32.S	2007-05-29 03:24:14.000000000 -0700
-@@ -399,4 +399,16 @@ EXPORT(sysn32_call_table)
- 	PTR	compat_sys_epoll_pwait
- 	PTR	sys_ioprio_set
- 	PTR	sys_ioprio_get
-+     	PTR	sys_pfm_create_context
-+     	PTR	sys_pfm_write_pmcs		/* 6280 */
-+     	PTR	sys_pfm_write_pmds
-+     	PTR	sys_pfm_read_pmds
-+     	PTR	sys_pfm_load_context
-+     	PTR	sys_pfm_start
-+     	PTR	sys_pfm_stop			/* 6285 */
-+     	PTR	sys_pfm_restart
-+     	PTR	sys_pfm_create_evtsets
-+     	PTR	sys_pfm_getinfo_evtsets
-+     	PTR	sys_pfm_delete_evtsets
-+  	PTR	sys_pfm_unload_context		/* 6290 */
- 	.size	sysn32_call_table,.-sysn32_call_table
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/scall64-o32.S linux-2.6.22/arch/mips/kernel/scall64-o32.S
---- linux-2.6.22.base/arch/mips/kernel/scall64-o32.S	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/kernel/scall64-o32.S	2007-05-29 03:24:14.000000000 -0700
-@@ -521,4 +521,16 @@ sys_call_table:
- 	PTR	compat_sys_epoll_pwait
- 	PTR	sys_ioprio_set
- 	PTR	sys_ioprio_get			/* 4315 */
-+    	PTR	sys_pfm_create_context
-+     	PTR	sys_pfm_write_pmcs
-+     	PTR	sys_pfm_write_pmds
-+     	PTR	sys_pfm_read_pmds
-+     	PTR	sys_pfm_load_context		/* 4320 */
-+     	PTR	sys_pfm_start
-+     	PTR	sys_pfm_stop
-+     	PTR	sys_pfm_restart
-+     	PTR	sys_pfm_create_evtsets
-+    	PTR	sys_pfm_getinfo_evtsets		/* 4325 */
-+     	PTR	sys_pfm_delete_evtsets
-+     	PTR	sys_pfm_unload_context
- 	.size	sys_call_table,.-sys_call_table
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/signal.c linux-2.6.22/arch/mips/kernel/signal.c
---- linux-2.6.22.base/arch/mips/kernel/signal.c	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/kernel/signal.c	2007-05-29 03:24:14.000000000 -0700
-@@ -20,6 +20,7 @@
- #include <linux/unistd.h>
- #include <linux/compiler.h>
- #include <linux/uaccess.h>
-+#include <linux/perfmon.h>
- 
- #include <asm/abi.h>
- #include <asm/asm.h>
-@@ -696,6 +697,9 @@ static void do_signal(struct pt_regs *re
- asmlinkage void do_notify_resume(struct pt_regs *regs, void *unused,
- 	__u32 thread_info_flags)
- {
-+        if (thread_info_flags & _TIF_PERFMON_WORK)
-+		pfm_handle_work(regs);
++#define PFM_REGFL_PMC_ALL	(PFM_REGFL_NO_EMUL64|PFM_REG_RETFL_MASK)
++#define PFM_REGFL_PMD_ALL	(PFM_REGFL_RANDOM     | \
++				 PFM_REGFL_OVFL_NOTIFY| \
++				 PFM_REG_RETFL_MASK)
++/*
++ * function called from sys_pfm_write_pmds() to write the
++ * requested PMD registers. The function succeeds whether the context is
++ * attached or not. When attached to another thread, that thread must be
++ * stopped.
++ *
++ * compat: is used only on IA-64 to maintain backward compatibility with v2.0
++ *
++ * The context is locked and interrupts are disabled.
++ */
++int __pfm_write_pmds(struct pfm_context *ctx, struct pfarg_pmd *req, int count,
++		     int compat)
++{
++	struct pfm_event_set *set, *active_set;
++	u64 value, ovfl_mask;
++	u64 *smpl_pmds, *reset_pmds, *impl_pmds, *impl_rw_pmds;
++	u32 req_flags, flags;
++	u16 cnum, pmd_type, max_pmd, max_pmc;
++	u16 set_id, prev_set_id;
++	int i, can_access_pmu;
++	int is_counter;
++	int ret, error_code;
++	pfm_pmd_check_t	wr_func;
 +
- 	/* deal with pending signal delivery */
- 	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_RESTORE_SIGMASK))
- 		do_signal(regs);
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/kernel/time.c linux-2.6.22/arch/mips/kernel/time.c
---- linux-2.6.22.base/arch/mips/kernel/time.c	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/kernel/time.c	2007-05-29 03:24:14.000000000 -0700
-@@ -23,6 +23,7 @@
- #include <linux/spinlock.h>
- #include <linux/interrupt.h>
- #include <linux/module.h>
-+#include <linux/perfmon.h>
- 
- #include <asm/bootinfo.h>
- #include <asm/cache.h>
-@@ -140,6 +141,7 @@ static long last_rtc_update;
- void local_timer_interrupt(int irq, void *dev_id)
- {
- 	profile_tick(CPU_PROFILING);
-+ 	pfm_handle_switch_timeout();
- 	update_process_times(user_mode(get_irq_regs()));
- }
- 
-diff --exclude=.git -urp linux-2.6.22.base/arch/mips/mips-boards/generic/time.c linux-2.6.22/arch/mips/mips-boards/generic/time.c
---- linux-2.6.22.base/arch/mips/mips-boards/generic/time.c	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/mips/mips-boards/generic/time.c	2007-05-29 03:24:14.000000000 -0700
-@@ -27,6 +27,7 @@
- #include <linux/time.h>
- #include <linux/timex.h>
- #include <linux/mc146818rtc.h>
-+#include <linux/perfmon.h>
- 
- #include <asm/mipsregs.h>
- #include <asm/mipsmtregs.h>
-Only in linux-2.6.22/arch/mips: perfmon
-Only in linux-2.6.22/include/asm-mips: perfmon.h
-Only in linux-2.6.22/include/asm-mips: perfmon_api.h
-diff --exclude=.git -urp linux-2.6.22.base/include/asm-mips/system.h linux-2.6.22/include/asm-mips/system.h
---- linux-2.6.22.base/include/asm-mips/system.h	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/include/asm-mips/system.h	2007-05-29 03:24:14.000000000 -0700
-@@ -65,6 +65,9 @@ do {									\
- do {									\
- 	if (cpu_has_dsp)						\
- 		__save_dsp(prev);					\
-+	if (test_tsk_thread_flag(prev, TIF_PERFMON_CTXSW)		\
-+	    || test_tsk_thread_flag(next, TIF_PERFMON_CTXSW))		\
-+		pfm_ctxsw(prev, next);					\
- 	(last) = resume(prev, next, task_thread_info(next));		\
- 	if (cpu_has_dsp)						\
- 		__restore_dsp(current);					\
-diff --exclude=.git -urp linux-2.6.22.base/include/asm-mips/thread_info.h linux-2.6.22/include/asm-mips/thread_info.h
---- linux-2.6.22.base/include/asm-mips/thread_info.h	2007-05-29 03:20:21.000000000 -0700
-+++ linux-2.6.22/include/asm-mips/thread_info.h	2007-05-29 03:24:14.000000000 -0700
-@@ -113,11 +113,13 @@ register struct thread_info *__current_t
- #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
- #define TIF_SYSCALL_AUDIT	3	/* syscall auditing active */
- #define TIF_SECCOMP		4	/* secure computing */
--#define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal() */
-+#define TIF_RESTORE_SIGMASK	5	/* restore signal mask in do_signal() */
-+#define TIF_PERFMON_WORK	6	/* work for pfm_handle_work() */
- #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
- #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_MEMDIE		18
- #define TIF_FREEZE		19
-+#define TIF_PERFMON_CTXSW	21	/* perfmon needs ctxsw calls */
- #define TIF_SYSCALL_TRACE	31	/* syscall trace active */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -129,6 +131,8 @@ register struct thread_info *__current_t
- #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
-+#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
-+#define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK		(0x0000ffef & ~_TIF_SECCOMP)
-diff --exclude=.git -urp linux-2.6.22.base/include/asm-mips/unistd.h linux-2.6.22/include/asm-mips/unistd.h
---- linux-2.6.22.base/include/asm-mips/unistd.h	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/include/asm-mips/unistd.h	2007-05-29 03:24:14.000000000 -0700
-@@ -336,16 +336,28 @@
- #define __NR_epoll_pwait		(__NR_Linux + 313)
- #define __NR_ioprio_set			(__NR_Linux + 314)
- #define __NR_ioprio_get			(__NR_Linux + 315)
--
-+#define __NR_pfm_create_context         (__NR_Linux + 316)
-+#define __NR_pfm_write_pmcs		(__NR_pfm_create_context+1)
-+#define __NR_pfm_write_pmds		(__NR_pfm_create_context+2)
-+#define __NR_pfm_read_pmds		(__NR_pfm_create_context+3)
-+#define __NR_pfm_load_context		(__NR_pfm_create_context+4)
-+#define __NR_pfm_start			(__NR_pfm_create_context+5)
-+#define __NR_pfm_stop			(__NR_pfm_create_context+6)
-+#define __NR_pfm_restart		(__NR_pfm_create_context+7)
-+#define __NR_pfm_create_evtsets		(__NR_pfm_create_context+8)
-+#define __NR_pfm_getinfo_evtsets 	(__NR_pfm_create_context+9)
-+#define __NR_pfm_delete_evtsets 	(__NR_pfm_create_context+10)
-+#define __NR_pfm_unload_context		(__NR_pfm_create_context+11)
-+ 
- /*
-  * Offset of the last Linux o32 flavoured syscall
-  */
--#define __NR_Linux_syscalls		315
-+#define __NR_Linux_syscalls		327
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
- 
- #define __NR_O32_Linux			4000
--#define __NR_O32_Linux_syscalls		315
-+#define __NR_O32_Linux_syscalls		327
- 
- #if _MIPS_SIM == _MIPS_SIM_ABI64
- 
-@@ -628,16 +640,28 @@
- #define __NR_epoll_pwait		(__NR_Linux + 272)
- #define __NR_ioprio_set			(__NR_Linux + 273)
- #define __NR_ioprio_get			(__NR_Linux + 274)
--
-+#define __NR_pfm_create_context         (__NR_Linux + 275)
-+#define __NR_pfm_write_pmcs		(__NR_pfm_create_context+1)
-+#define __NR_pfm_write_pmds		(__NR_pfm_create_context+2)
-+#define __NR_pfm_read_pmds		(__NR_pfm_create_context+3)
-+#define __NR_pfm_load_context		(__NR_pfm_create_context+4)
-+#define __NR_pfm_start			(__NR_pfm_create_context+5)
-+#define __NR_pfm_stop			(__NR_pfm_create_context+6)
-+#define __NR_pfm_restart		(__NR_pfm_create_context+7)
-+#define __NR_pfm_create_evtsets		(__NR_pfm_create_context+8)
-+#define __NR_pfm_getinfo_evtsets 	(__NR_pfm_create_context+9)
-+#define __NR_pfm_delete_evtsets 	(__NR_pfm_create_context+10)
-+#define __NR_pfm_unload_context		(__NR_pfm_create_context+11)
-+ 
- /*
-  * Offset of the last Linux 64-bit flavoured syscall
-  */
--#define __NR_Linux_syscalls		274
-+#define __NR_Linux_syscalls		286
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_ABI64 */
- 
- #define __NR_64_Linux			5000
--#define __NR_64_Linux_syscalls		274
-+#define __NR_64_Linux_syscalls		286
- 
- #if _MIPS_SIM == _MIPS_SIM_NABI32
- 
-@@ -924,16 +948,28 @@
- #define __NR_epoll_pwait		(__NR_Linux + 276)
- #define __NR_ioprio_set			(__NR_Linux + 277)
- #define __NR_ioprio_get			(__NR_Linux + 278)
--
-+#define __NR_pfm_create_context         (__NR_Linux + 279)
-+#define __NR_pfm_write_pmcs		(__NR_pfm_create_context+1)
-+#define __NR_pfm_write_pmds		(__NR_pfm_create_context+2)
-+#define __NR_pfm_read_pmds		(__NR_pfm_create_context+3)
-+#define __NR_pfm_load_context		(__NR_pfm_create_context+4)
-+#define __NR_pfm_start			(__NR_pfm_create_context+5)
-+#define __NR_pfm_stop			(__NR_pfm_create_context+6)
-+#define __NR_pfm_restart		(__NR_pfm_create_context+7)
-+#define __NR_pfm_create_evtsets		(__NR_pfm_create_context+8)
-+#define __NR_pfm_getinfo_evtsets 	(__NR_pfm_create_context+9)
-+#define __NR_pfm_delete_evtsets 	(__NR_pfm_create_context+10)
-+#define __NR_pfm_unload_context		(__NR_pfm_create_context+11)
-+ 
- /*
-  * Offset of the last N32 flavoured syscall
-  */
--#define __NR_Linux_syscalls		278
-+#define __NR_Linux_syscalls		290
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_NABI32 */
- 
- #define __NR_N32_Linux			6000
--#define __NR_N32_Linux_syscalls		278
-+#define __NR_N32_Linux_syscalls		290
- 
- #ifdef __KERNEL__
- 
++	ovfl_mask = pfm_pmu_conf->ovfl_mask;
++	active_set = ctx->active_set;
++	max_pmd	= pfm_pmu_conf->max_pmd;
++	max_pmc	= pfm_pmu_conf->max_pmc;
++	impl_pmds = pfm_pmu_conf->impl_pmds;
++	impl_rw_pmds = pfm_pmu_conf->impl_rw_pmds;
++	wr_func = pfm_pmu_conf->pmd_write_check;
++	set = NULL;
++
++	prev_set_id = 0;
++	can_access_pmu = 0;
++
++	/*
++	 * we cannot access the actual PMD registers when monitoring is masked
++	 */
++	if (unlikely(ctx->state == PFM_CTX_LOADED))
++		can_access_pmu = __get_cpu_var(pmu_owner) == ctx->task
++			       || ctx->flags.system;
++
++	error_code = PFM_REG_RETFL_EINVAL;
++	ret = -EINVAL;
++
++	for (i = 0; i < count; i++, req++) {
++
++		cnum = req->reg_num;
++		set_id = req->reg_set;
++		req_flags = req->reg_flags;
++		smpl_pmds = req->reg_smpl_pmds;
++		reset_pmds = req->reg_reset_pmds;
++		flags = 0;
++
++		if (unlikely(cnum >= max_pmd || !test_bit(cnum, ulp(impl_pmds)))) {
++			PFM_DBG("pmd%u is not implemented/unaccessible", cnum);
++			error_code  = PFM_REG_RETFL_NOTAVAIL;
++			goto error;
++		}
++
++		pmd_type = pfm_pmu_conf->pmd_desc[cnum].type;
++		is_counter = pmd_type & PFM_REG_C64;
++
++		if (likely(!compat && is_counter)) {
++			/*
++		 	 * ensure only valid flags are set
++		 	 */
++			if (req_flags & ~(PFM_REGFL_PMD_ALL)) {
++				PFM_DBG("pmd%u: invalid flags=0x%x",
++						cnum, req_flags);
++				goto error;
++			}
++
++			if (req_flags & PFM_REGFL_OVFL_NOTIFY)
++				flags |= PFM_REGFL_OVFL_NOTIFY;
++			if (req_flags & PFM_REGFL_RANDOM)
++				flags |= PFM_REGFL_RANDOM;
++			/*
++			 * verify validity of smpl_pmds
++			 */
++			if (unlikely(!bitmap_subset(ulp(smpl_pmds),
++							ulp(impl_pmds),
++							max_pmd))) {
++				PFM_DBG("invalid smpl_pmds=0x%llx "
++						"for pmd%u",
++						(unsigned long long)smpl_pmds[0],
++						cnum);
++				goto error;
++			}
++			/*
++			 * verify validity of reset_pmds
++			 * check against impl_rw_pmds because it is not
++			 * possible to reset read-only PMDs
++			 */
++			if (unlikely(!bitmap_subset(ulp(reset_pmds),
++							ulp(impl_rw_pmds),
++							max_pmd))) {
++				PFM_DBG("invalid reset_pmds=0x%llx "
++						"for pmd%u",
++						(unsigned long long)reset_pmds[0],
++						cnum);
++				goto error;
++			}
++
++		}
++
++		/*
++		 * locate event set
++		 */
++		if (i == 0 || set_id != prev_set_id) {
++			set = pfm_find_set(ctx, set_id, 0);
++			if (set == NULL) {
++				PFM_DBG("event set%u does not exist",
++					set_id);
++				error_code = PFM_REG_RETFL_NOSET;
++				goto error;
++			}
++		}
++
++		/*
++		 * execute write checker, if any
++		 */
++		if (unlikely(wr_func && (pmd_type & PFM_REG_WC))) {
++			ret = (*wr_func)(ctx, set, req);
++			if (ret)
++				goto error;
++
++		}
++
++		value = req->reg_value;
++
++		/*
++		 * now commit changes to software state
++		 */
++		pfm_modview_begin(set);
++
++		if (likely(is_counter)) {
++			if (likely(!compat)) {
++				set->pmds[cnum].flags = flags;
++
++				/*
++				 * copy reset and sampling bitvectors
++				 */
++				bitmap_copy(ulp(set->pmds[cnum].reset_pmds),
++						ulp(reset_pmds),
++						max_pmd);
++
++				bitmap_copy(ulp(set->pmds[cnum].smpl_pmds),
++						ulp(smpl_pmds),
++						max_pmd);
++
++				set->pmds[cnum].eventid = req->reg_smpl_eventid;
++
++				/*
++				 * Mark reset/smpl PMDS as used.
++				 *
++				 * We do not keep track of PMC because we have to
++				 * systematically restore ALL of them.
++				 */
++				bitmap_or(ulp(set->used_pmds),
++					  ulp(set->used_pmds),
++					  ulp(reset_pmds), max_pmd);
++
++				bitmap_or(ulp(set->used_pmds),
++					  ulp(set->used_pmds),
++					  ulp(smpl_pmds), max_pmd);
++
++				/*
++				 * we reprogrammed the PMD hence, clear any pending
++				 * ovfl, switch based on the old value
++				 * for restart we have already established new values
++				 */
++				if (test_bit(cnum, ulp(set->povfl_pmds))) {
++					set->npend_ovfls--;
++					__clear_bit(cnum, ulp(set->povfl_pmds));
++				}
++				__clear_bit(cnum, ulp(set->ovfl_pmds));
++
++				/*
++				 * update ovfl_notify
++				 */
++				if (flags & PFM_REGFL_OVFL_NOTIFY)
++					__set_bit(cnum, ulp(set->ovfl_notify));
++				else
++					__clear_bit(cnum, ulp(set->ovfl_notify));
++			}
++			/*
++			 * reset last value to new value
++			 */
++			set->pmds[cnum].lval = value;
++
++			/*
++			 * establish new switch count
++			 */
++			set->pmds[cnum].ovflsw_thres = req->reg_ovfl_switch_cnt;
++			set->pmds[cnum].ovflsw_ref_thres = req->reg_ovfl_switch_cnt;
++		}
++
++		/*
++		 * update reset values (not just for counters)
++		 */
++		set->pmds[cnum].long_reset = req->reg_long_reset;
++		set->pmds[cnum].short_reset = req->reg_short_reset;
++
++		/*
++		 * update randomization mask
++		 */
++		set->pmds[cnum].mask = req->reg_random_mask;
++
++		/*
++		 * update set values
++		 */
++		set->view->set_pmds[cnum] = value;
++
++		pfm_modview_end(set);
++
++		__set_bit(cnum, ulp(set->used_pmds));
++
++		if (set == active_set) {
++			set->priv_flags |= PFM_SETFL_PRIV_MOD_PMDS;
++			if (can_access_pmu)
++				pfm_write_pmd(ctx, cnum, value);
++		}
++
++		/*
++		 * update number of used PMD registers
++		 */
++		set->nused_pmds = bitmap_weight(ulp(set->used_pmds), max_pmd);
++
++		pfm_retflag_set(req->reg_flags, 0);
++
++		prev_set_id = set_id;
++
++		PFM_DBG("set%u pmd%u=0x%llx flags=0x%x a_pmu=%d "
++			"ctx_pmd=0x%llx s_reset=0x%llx "
++			"l_reset=0x%llx u_pmds=0x%llx nu_pmds=%u "
++			"s_pmds=0x%llx r_pmds=0x%llx o_pmds=0x%llx "
++			"o_thres=%llu compat=%d eventid=%llx",
++			set->id,
++			cnum,
++			(unsigned long long)value,
++			set->pmds[cnum].flags,
++			can_access_pmu,
++			(unsigned long long)set->view->set_pmds[cnum],
++			(unsigned long long)set->pmds[cnum].short_reset,
++			(unsigned long long)set->pmds[cnum].long_reset,
++			(unsigned long long)set->used_pmds[0],
++			set->nused_pmds,
++			(unsigned long long)set->pmds[cnum].smpl_pmds[0],
++			(unsigned long long)set->pmds[cnum].reset_pmds[0],
++			(unsigned long long)set->ovfl_pmds[0],
++			(unsigned long long)set->pmds[cnum].ovflsw_thres,
++			compat,
++			(unsigned long long)set->pmds[cnum].eventid);
++	}
++
++	/*
++	 * make changes visible
++	 */
++	if (can_access_pmu)
++		pfm_arch_serialize();
++
++	return 0;
++
++error:
++	/*
++	 * for now, we have only one possibility for error
++	 */
++	pfm_retflag_set(req->reg_flags, error_code);
++	PFM_DBG("set%u pmd%u error=%d", set_id, cnum, error_code);
++	return ret;
++}
++
++/*
++ * function called from sys_pfm_write_pmcs() to write the
++ * requested PMC registers. The function succeeds whether the context is
++ * attached or not. When attached to another thread, that thread must be
++ * stopped.
++ *
++ * The context is locked and interrupts are disabled.
++ */
++int __pfm_write_pmcs(struct pfm_context *ctx, struct pfarg_pmc *req, int count)
++{
++	struct pfm_event_set *set, *active_set;
++	u64 value, dfl_val, rsvd_msk;
++	u64 *impl_pmcs;
++	int i, can_access_pmu;
++	int ret, error_code;
++	u16 set_id, prev_set_id;
++	u16 cnum, pmc_type, max_pmc;
++	u32 flags;
++	pfm_pmc_check_t	wr_func;
++
++	active_set = ctx->active_set;
++
++	wr_func = pfm_pmu_conf->pmc_write_check;
++	max_pmc = pfm_pmu_conf->max_pmc;
++	impl_pmcs = pfm_pmu_conf->impl_pmcs;
++
++	set = NULL;
++	prev_set_id = 0;
++	can_access_pmu = 0;
++
++	/*
++	 * we cannot access the actual PMC registers when monitoring is masked
++	 */
++	if (unlikely(ctx->state == PFM_CTX_LOADED))
++		can_access_pmu = __get_cpu_var(pmu_owner) == ctx->task
++			        || ctx->flags.system;
++
++	error_code  = PFM_REG_RETFL_EINVAL;
++
++	for (i = 0; i < count; i++, req++) {
++
++		ret = -EINVAL;
++		cnum = req->reg_num;
++		set_id = req->reg_set;
++		value = req->reg_value;
++		flags = req->reg_flags;
++
++		/*
++		 * no access to unimplemented PMC register
++		 */
++		if (unlikely(cnum >= max_pmc || !test_bit(cnum, ulp(impl_pmcs)))) {
++			PFM_DBG("pmc%u is not implemented/unaccessible", cnum);
++			error_code  = PFM_REG_RETFL_NOTAVAIL;
++			goto error;
++		}
++
++		pmc_type = pfm_pmu_conf->pmc_desc[cnum].type;
++		dfl_val = pfm_pmu_conf->pmc_desc[cnum].dfl_val;
++		rsvd_msk = pfm_pmu_conf->pmc_desc[cnum].rsvd_msk;
++
++		/*
++		 * ensure only valid flags are set
++		 */
++		if (flags & ~PFM_REGFL_PMC_ALL) {
++			PFM_DBG("pmc%u: invalid flags=0x%x", cnum, flags);
++			goto error;
++		}
++
++		/*
++		 * locate event set
++		 */
++		if (i == 0 || set_id != prev_set_id) {
++			set = pfm_find_set(ctx, set_id, 0);
++			if (set == NULL) {
++				PFM_DBG("event set%u does not exist",
++					set_id);
++				error_code = PFM_REG_RETFL_NOSET;
++				goto error;
++			}
++		}
++
++		/*
++		 * set reserved bits to default values
++		 * (reserved bits must be 1 in rsvd_msk)
++		 */
++		value = (value & ~rsvd_msk) | (dfl_val & rsvd_msk);
++
++		if (flags & PFM_REGFL_NO_EMUL64) {
++			if (!(pmc_type & PFM_REG_NO64)) {
++				PFM_DBG("pmc%u no support for "
++					"PFM_REGFL_NO_EMUL64", cnum);
++				goto error;
++			}
++			value &= ~pfm_pmu_conf->pmc_desc[cnum].no_emul64_msk;
++		}
++
++		/*
++		 * execute write checker, if any
++		 */
++		if (likely(wr_func && (pmc_type & PFM_REG_WC))) {
++			req->reg_value = value;
++			ret = (*wr_func)(ctx, set, req);
++			if (ret)
++				goto error;
++			value = req->reg_value;
++		}
++
++		/*
++		 * Now we commit the changes
++		 */
++
++		/*
++		 * mark PMC register as used
++		 * We do not track associated PMC register based on
++		 * the fact that they will likely need to be written
++		 * in order to become useful at which point the statement
++		 * below will catch that.
++		 *
++		 * The used_pmcs bitmask is only useful on architectures where
++		 * the PMC needs to be modified for particular bits, especially
++		 * on overflow or to stop/start.
++		 */
++		if (!test_bit(cnum, ulp(set->used_pmcs))) {
++			__set_bit(cnum, ulp(set->used_pmcs));
++			set->nused_pmcs++;
++		}
++
++		set->pmcs[cnum] = value;
++
++		if (set == active_set) {
++			set->priv_flags |= PFM_SETFL_PRIV_MOD_PMCS;
++			if (can_access_pmu)
++				pfm_arch_write_pmc(ctx, cnum, value);
++		}
++
++		pfm_retflag_set(req->reg_flags, 0);
++
++		prev_set_id = set_id;
++
++		PFM_DBG("set%u pmc%u=0x%llx a_pmu=%d "
++			"u_pmcs=0x%llx nu_pmcs=%u",
++			set->id,
++			cnum,
++			(unsigned long long)value,
++			can_access_pmu,
++			(unsigned long long)set->used_pmcs[0],
++			set->nused_pmcs);
++	}
++	/*
++	 * make sure the changes are visible
++	 */
++	if (can_access_pmu)
++		pfm_arch_serialize();
++
++	return 0;
++error:
++	pfm_retflag_set(req->reg_flags, error_code);
++	PFM_DBG("set%u pmc%u error=%d", set_id, cnum, error_code);
++	return ret;
++}
++
++/*
++ * function called from sys_pfm_read_pmds() to read the 64-bit value of
++ * requested PMD registers. The function succeeds whether the context is
++ * attached or not. When attached to another thread, that thread must be
++ * stopped.
++ *
++ * The context is locked and interrupts are disabled.
++ */
++int __pfm_read_pmds(struct pfm_context *ctx, struct pfarg_pmd *req, int count)
++{
++	u64 val = 0, lval, ovfl_mask, hw_val;
++	u64 sw_cnt;
++	u64 *impl_pmds;
++	struct pfm_event_set *set, *active_set;
++	int i, can_access_pmu = 0;
++	int error_code;
++	u16 cnum, pmd_type, set_id, prev_set_id, max_pmd;
++
++	ovfl_mask = pfm_pmu_conf->ovfl_mask;
++	impl_pmds = pfm_pmu_conf->impl_pmds;
++	max_pmd   = pfm_pmu_conf->max_pmd;
++	active_set = ctx->active_set;
++	set = NULL;
++	prev_set_id = 0;
++
++	if (likely(ctx->state == PFM_CTX_LOADED)) {
++		can_access_pmu = __get_cpu_var(pmu_owner) == ctx->task
++			       || ctx->flags.system;
++
++		if (can_access_pmu)
++			pfm_arch_serialize();
++	}
++	error_code = PFM_REG_RETFL_EINVAL;
++
++	/*
++	 * on both UP and SMP, we can only read the PMD from the hardware
++	 * register when the task is the owner of the local PMU.
++	 */
++	for (i = 0; i < count; i++, req++) {
++
++		cnum = req->reg_num;
++		set_id = req->reg_set;
++
++		if (unlikely(cnum >= max_pmd || !test_bit(cnum, ulp(impl_pmds)))) {
++			PFM_DBG("pmd%u is not implemented/unaccessible", cnum);
++			error_code  = PFM_REG_RETFL_NOTAVAIL;
++			goto error;
++		}
++
++		pmd_type = pfm_pmu_conf->pmd_desc[cnum].type;
++
++		/*
++		 * locate event set
++		 */
++		if (i == 0 || set_id != prev_set_id) {
++			set = pfm_find_set(ctx, set_id, 0);
++			if (set == NULL) {
++				PFM_DBG("event set%u does not exist",
++					set_id);
++				error_code = PFM_REG_RETFL_NOSET;
++				goto error;
++			}
++		}
++		/*
++		 * it is not possible to read a PMD which was not requested:
++		 * 	- explicitly written via pfm_write_pmds()
++		 * 	- provided as a reg_smpl_pmds[] to another PMD during
++		 * 	  pfm_write_pmds()
++		 *
++		 * This is motivated by security and for optimization purposes:
++		 * 	- on context switch restore, we can restore only what we
++		 * 	  use (except when regs directly readable at user level,
++		 * 	  e.g., IA-64 self-monitoring, I386 RDPMC).
++		 * 	- do not need to maintain PMC -> PMD dependencies
++		 */
++		if (unlikely(!test_bit(cnum, ulp(set->used_pmds)))) {
++			PFM_DBG("pmd%u cannot be read, because never "
++				"requested", cnum);
++			goto error;
++		}
++
++		val = set->view->set_pmds[cnum];
++		lval = set->pmds[cnum].lval;
++
++		/*
++		 * extract remaining ovfl to switch
++		 */
++		sw_cnt = set->pmds[cnum].ovflsw_thres;
++
++		/*
++		 * If the task is not the current one, then we check if the
++		 * PMU state is still in the local live register due to lazy
++		 * ctxsw. If true, then we read directly from the registers.
++		 */
++		if (set == active_set && can_access_pmu) {
++			hw_val = pfm_read_pmd(ctx, cnum);
++			if (pmd_type & PFM_REG_C64)
++				val = (val & ~ovfl_mask) | (hw_val & ovfl_mask);
++			else
++				val = hw_val;
++		}
++
++		PFM_DBG("set%u pmd%u=0x%llx sw_thr=%llu lval=0x%llx",
++			set->id,
++			cnum,
++			(unsigned long long)val,
++			(unsigned long long)sw_cnt,
++			(unsigned long long)lval);
++
++		pfm_retflag_set(req->reg_flags, 0);
++
++		req->reg_value = val;
++		req->reg_last_reset_val = lval;
++		req->reg_ovfl_switch_cnt = sw_cnt;
++
++		prev_set_id = set_id;
++	}
++	return 0;
++error:
++	pfm_retflag_set(req->reg_flags, error_code);
++	PFM_DBG("set%u pmd%u error=%d", set_id, cnum, error_code);
++	return -EINVAL;
++}
