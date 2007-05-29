@@ -1,248 +1,390 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbXE2OAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbXE2OAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbXE2OAY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXE2N7o
+	id S1752408AbXE2OAm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbXE2N7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:59:44 -0400
+	Tue, 29 May 2007 09:59:46 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbXE2N7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:59:42 -0400
+	id S1750788AbXE2N7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:59:43 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:31 -0700
+Date: Tue, 29 May 2007 06:48:22 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmVGp019827@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmMt9019710@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 17/22] 2.6.22-rc3 perfmon2 : modified powerpc files
+Subject: [PATCH 08/22] 2.6.22-rc3 perfmon2 : session allocation
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the modified powerpc files.
+
+This file contains some resource accounting functions for:
+	- sampling buffer memory managment
+	- context management
+
+pfm_reserve_buf_space(size_t size), pfm_release_buf_space(size_t size):
+	- keep track of memory used for sampling buffers
+	- there is a per process limit set using the RLIMIT_MEMLOCK attribute
+	- there is a global limit controlled by perfmon and configurable via /sys/kernel/perfmon/buf_size_max
 
 
-The modified files are as follows:
-
-arch/powerpc/Kconfig:
-	- add link to perfmon menuconfig options
-
-arch/powerpc/Makefile:
-	- add perfmon subdir
-
-arch/powerpc/kernel/entry_64.S:
-	- add hook for extra work before kernel exit. Need to block a thread after a overflow with
-	  user level notification. Also needed to do some bookeeeping, such as reset certain counters
-	  and cleanup in some difficult corner cases
-
-arch/powerpc/kernel/process.c:
-	- add hook in exit_thread() to cleanup perfmon2 context
-	- add hook in copy_thread() to cleanup perfmon2 context in child (perfmon2 context
-	  is never inherited)
-	- add hook in __switch_to() for PMU state save/restore
-
-arch/powerpc/kernel/systbl.S:
-	- add new system calls definitions
-
-include/asm-powerpc/thread_info.h:
-	- add TIF_PERFMON which is used for PMU context switching in __switch_to()
-
-include/asm-powerpc/unistd.h:
-	- add new system calls
+pfm_reserve_session(int is_system, u32 cpu), pfm_release_session(int is_system, u32 cpu):
+	- keep track of per-thread and system-wide sessions
+	- handle mutual exclusion between per-thread and system-wide context
+	- ensure no two system-wide context can be bound to the same CPU
+	- register/unregister idle notifier for system-wide context
 
 
 
 
-diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/Kconfig linux-2.6.22/arch/powerpc/Kconfig
---- linux-2.6.22.base/arch/powerpc/Kconfig	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/powerpc/Kconfig	2007-05-29 03:24:14.000000000 -0700
-@@ -392,6 +392,9 @@ config NOT_COHERENT_CACHE
- 
- config CONFIG_CHECK_CACHE_COHERENCY
- 	bool
-+ 
-+source "arch/powerpc/perfmon/Kconfig"
-+
- endmenu
- 
- source "init/Kconfig"
-diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/Makefile linux-2.6.22/arch/powerpc/Makefile
---- linux-2.6.22.base/arch/powerpc/Makefile	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/powerpc/Makefile	2007-05-29 03:24:14.000000000 -0700
-@@ -137,6 +137,7 @@ core-y				+= arch/powerpc/kernel/ \
- 				   arch/powerpc/platforms/
- core-$(CONFIG_MATH_EMULATION)	+= arch/powerpc/math-emu/
- core-$(CONFIG_XMON)		+= arch/powerpc/xmon/
-+core-$(CONFIG_PERFMON)		+= arch/powerpc/perfmon/
- 
- drivers-$(CONFIG_OPROFILE)	+= arch/powerpc/oprofile/
- 
-diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/kernel/entry_32.S linux-2.6.22/arch/powerpc/kernel/entry_32.S
---- linux-2.6.22.base/arch/powerpc/kernel/entry_32.S	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/powerpc/kernel/entry_32.S	2007-05-29 03:24:14.000000000 -0700
-@@ -38,7 +38,7 @@
-  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
-  */
- #if MSR_KERNEL >= 0x10000
--#define LOAD_MSR_KERNEL(r, x)	lis r,(x)@h; ori r,r,(x)@l
-+#define LOAD_MSR_KERNEL(r, x)	lis r,(x)@ha; ori r,r,(x)@l
- #else
- #define LOAD_MSR_KERNEL(r, x)	li r,(x)
- #endif
-diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/kernel/entry_64.S linux-2.6.22/arch/powerpc/kernel/entry_64.S
---- linux-2.6.22.base/arch/powerpc/kernel/entry_64.S	2007-05-29 03:20:21.000000000 -0700
-+++ linux-2.6.22/arch/powerpc/kernel/entry_64.S	2007-05-29 03:24:14.000000000 -0700
-@@ -587,6 +587,10 @@ user_work:
- 	b	.ret_from_except_lite
- 
- 1:	bl	.save_nvgprs
-+#ifdef CONFIG_PERFMON
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.__pfm_handle_work
-+#endif /* CONFIG_PERFMON */
- 	li	r3,0
- 	addi	r4,r1,STACK_FRAME_OVERHEAD
- 	bl	.do_signal
-diff --exclude=.git -urp linux-2.6.22.base/arch/powerpc/kernel/process.c linux-2.6.22/arch/powerpc/kernel/process.c
---- linux-2.6.22.base/arch/powerpc/kernel/process.c	2007-05-29 03:17:16.000000000 -0700
-+++ linux-2.6.22/arch/powerpc/kernel/process.c	2007-05-29 03:24:14.000000000 -0700
-@@ -33,6 +33,7 @@
- #include <linux/mqueue.h>
- #include <linux/hardirq.h>
- #include <linux/utsname.h>
+--- linux-2.6.22.base/perfmon/perfmon_res.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/perfmon/perfmon_res.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,344 @@
++/*
++ * perfmon_res.c:  perfmon2 resource allocations
++ *
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://perfmon2.sf.net
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/spinlock.h>
 +#include <linux/perfmon.h>
- 
- #include <asm/pgtable.h>
- #include <asm/uaccess.h>
-@@ -322,6 +323,9 @@ struct task_struct *__switch_to(struct t
- 		new_thread->start_tb = current_tb;
- 	}
- #endif
-+	if (test_tsk_thread_flag(new, TIF_PERFMON_CTXSW)
-+	    || test_tsk_thread_flag(prev, TIF_PERFMON_CTXSW))
-+		pfm_ctxsw(prev, new);
- 
- 	local_irq_save(flags);
- 
-@@ -455,6 +459,7 @@ void show_regs(struct pt_regs * regs)
- void exit_thread(void)
- {
- 	discard_lazy_cpu_state();
-+	pfm_exit_thread(current);
- }
- 
- void flush_thread(void)
-@@ -570,6 +575,7 @@ int copy_thread(int nr, unsigned long cl
- #else
- 	kregs->nip = (unsigned long)ret_from_fork;
- #endif
-+	pfm_copy_thread(p);
- 
- 	return 0;
- }
-Only in linux-2.6.22/arch/powerpc: perfmon
-Only in linux-2.6.22/include/asm-powerpc: perfmon.h
-Only in linux-2.6.22/include/asm-powerpc: perfmon_api.h
-diff --exclude=.git -urp linux-2.6.22.base/include/asm-powerpc/systbl.h linux-2.6.22/include/asm-powerpc/systbl.h
---- linux-2.6.22.base/include/asm-powerpc/systbl.h	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/include/asm-powerpc/systbl.h	2007-05-29 03:24:14.000000000 -0700
-@@ -311,3 +311,15 @@ COMPAT_SYS_SPU(utimensat)
- COMPAT_SYS_SPU(signalfd)
- COMPAT_SYS_SPU(timerfd)
- SYSCALL_SPU(eventfd)
-+SYSCALL(pfm_create_context)
-+SYSCALL(pfm_write_pmcs)
-+SYSCALL(pfm_write_pmds)
-+SYSCALL(pfm_read_pmds)
-+SYSCALL(pfm_load_context)
-+SYSCALL(pfm_start)
-+SYSCALL(pfm_stop)
-+SYSCALL(pfm_restart)
-+SYSCALL(pfm_create_evtsets)
-+SYSCALL(pfm_getinfo_evtsets)
-+SYSCALL(pfm_delete_evtsets)
-+SYSCALL(pfm_unload_context)
-diff --exclude=.git -urp linux-2.6.22.base/include/asm-powerpc/thread_info.h linux-2.6.22/include/asm-powerpc/thread_info.h
---- linux-2.6.22.base/include/asm-powerpc/thread_info.h	2007-05-29 03:20:21.000000000 -0700
-+++ linux-2.6.22/include/asm-powerpc/thread_info.h	2007-05-29 03:24:14.000000000 -0700
-@@ -112,16 +112,18 @@ static inline struct thread_info *curren
- #define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
- 					   TIF_NEED_RESCHED */
- #define TIF_32BIT		4	/* 32 bit binary */
--#define TIF_RUNLATCH		5	/* Is the runlatch enabled? */
--#define TIF_ABI_PENDING		6	/* 32/64 bit switch needed */
-+#define TIF_PERFMON_WORK	5	/* work for pfm_handle_work() */
-+#define TIF_PERFMON_CTXSW	6	/* perfmon needs ctxsw calls */
- #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
- #define TIF_SINGLESTEP		8	/* singlestepping active */
- #define TIF_MEMDIE		9
- #define TIF_SECCOMP		10	/* secure computing */
- #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
--#define TIF_NOERROR		14	/* Force successful syscall return */
--#define TIF_RESTORE_SIGMASK	15	/* Restore signal mask in do_signal */
--#define TIF_FREEZE		16	/* Freezing for suspend */
-+#define TIF_NOERROR		12	/* Force successful syscall return */
-+#define TIF_RESTORE_SIGMASK	13	/* Restore signal mask in do_signal */
-+#define TIF_FREEZE		14	/* Freezing for suspend */
-+#define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
-+#define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -129,8 +131,8 @@ static inline struct thread_info *curren
- #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_32BIT		(1<<TIF_32BIT)
--#define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
--#define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
-+#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
-+#define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
- #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
- #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
- #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
-@@ -138,10 +140,14 @@ static inline struct thread_info *curren
- #define _TIF_NOERROR		(1<<TIF_NOERROR)
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
-+#define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
-+#define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
-+#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
-+#define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
- 
--#define _TIF_USER_WORK_MASK	( _TIF_SIGPENDING | \
--				 _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
-+#define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | \
-+				 _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK| _TIF_PERFMON_WORK)
- #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
- 
- /* Bits in local_flags */
-diff --exclude=.git -urp linux-2.6.22.base/include/asm-powerpc/unistd.h linux-2.6.22/include/asm-powerpc/unistd.h
---- linux-2.6.22.base/include/asm-powerpc/unistd.h	2007-05-29 03:17:57.000000000 -0700
-+++ linux-2.6.22/include/asm-powerpc/unistd.h	2007-05-29 03:24:14.000000000 -0700
-@@ -330,10 +330,22 @@
- #define __NR_signalfd		305
- #define __NR_timerfd		306
- #define __NR_eventfd		307
-+#define __NR_pfm_create_context	308
-+#define __NR_pfm_write_pmcs	(__NR_pfm_create_context+1)
-+#define __NR_pfm_write_pmds	(__NR_pfm_create_context+2)
-+#define __NR_pfm_read_pmds	(__NR_pfm_create_context+3)
-+#define __NR_pfm_load_context	(__NR_pfm_create_context+4)
-+#define __NR_pfm_start		(__NR_pfm_create_context+5)
-+#define __NR_pfm_stop		(__NR_pfm_create_context+6)
-+#define __NR_pfm_restart	(__NR_pfm_create_context+7)
-+#define __NR_pfm_create_evtsets	(__NR_pfm_create_context+8)
-+#define __NR_pfm_getinfo_evtsets (__NR_pfm_create_context+9)
-+#define __NR_pfm_delete_evtsets (__NR_pfm_create_context+10)
-+#define __NR_pfm_unload_context	(__NR_pfm_create_context+11)
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		308
-+#define __NR_syscalls		319
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
++#include <linux/module.h>
++
++/*
++ * global information about all sessions
++ * mostly used to synchronize between system wide and per-process
++ */
++struct pfm_sessions {
++	u32		pfs_task_sessions;/* #num loaded per-thread sessions */
++	size_t		pfs_smpl_buffer_mem_cur; /* current smpl buf mem usage */
++	cpumask_t	pfs_sys_cpumask;  /* bitmask of used cpus (system-wide) */
++};
++
++static struct pfm_sessions pfm_sessions;
++
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_sessions_lock);
++
++/*
++ * sampling buffer allocated by perfmon must be
++ * checked against max usage thresholds for security
++ * reasons.
++ *
++ * The first level check is against the system wide limit
++ * as indicated by the system administrator in /proc/sys/kernel/perfmon
++ *
++ * The second level check is on a per-process basis using
++ * RLIMIT_MEMLOCK limit.
++ *
++ * Operating on the current task only.
++ */
++int pfm_reserve_buf_space(size_t size)
++{
++	struct mm_struct *mm;
++	unsigned long locked;
++	unsigned long buf_mem, buf_mem_max;
++	unsigned long flags;
++
++	spin_lock_irqsave(&pfm_sessions_lock, flags);
++
++	/*
++	 * check against global buffer limit
++	 */
++	buf_mem_max = pfm_controls.smpl_buffer_mem_max;
++	buf_mem = pfm_sessions.pfs_smpl_buffer_mem_cur + size;
++
++	if (buf_mem <= buf_mem_max) {
++		pfm_sessions.pfs_smpl_buffer_mem_cur = buf_mem;
++
++		PFM_DBG("buf_mem_max=%lu current_buf_mem=%lu",
++			buf_mem_max,
++			buf_mem);
++	}
++	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
++
++	if (buf_mem > buf_mem_max) {
++		PFM_DBG("smpl buffer memory threshold reached");
++		return -ENOMEM;
++	}
++
++	/*
++	 * check against RLIMIT_MEMLOCK
++	 */
++	mm = get_task_mm(current);
++
++	down_write(&mm->mmap_sem);
++
++	locked  = mm->locked_vm << PAGE_SHIFT;
++	locked += size;
++
++	if (locked > current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur) {
++
++		PFM_DBG("RLIMIT_MEMLOCK reached ask_locked=%lu rlim_cur=%lu",
++			locked,
++			current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur);
++
++		up_write(&mm->mmap_sem);
++		mmput(mm);
++		goto unres;
++	}
++
++	mm->locked_vm = locked >> PAGE_SHIFT;
++
++	up_write(&mm->mmap_sem);
++
++	mmput(mm);
++
++	return 0;
++
++unres:
++	/*
++	 * remove global buffer memory allocation
++	 */
++	spin_lock_irqsave(&pfm_sessions_lock, flags);
++
++	pfm_sessions.pfs_smpl_buffer_mem_cur -= size;
++
++	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
++
++	return -ENOMEM;
++}
++/*
++ *There exist multiple paths leading to this function. We need to
++ * be very careful withlokcing on the mmap_sem as it may already be
++ * held by the time we come here.
++ * The following paths exist:
++ *
++ * exit path:
++ * sys_exit_group
++ *    do_group_exit
++ *     do_exit
++ *      exit_mm
++ *       mmput
++ *        exit_mmap
++ *         remove_vma
++ *          fput
++ *           __fput
++ *            pfm_close
++ *             __pfm_close
++ *              pfm_context_free
++ * 	         pfm_release_buf_space
++ * munmap path:
++ * sys_munmap
++ *  do_munmap
++ *   remove_vma
++ *    fput
++ *     __fput
++ *      pfm_close
++ *       __pfm_close
++ *        pfm_context_free
++ *         pfm_release_buf_space
++ *
++ * close path:
++ * sys_close
++ *  filp_close
++ *   fput
++ *    __fput
++ *     pfm_close
++ *      __pfm_close
++ *       pfm_context_free
++ *        pfm_release_buf_space
++ *
++ * The issue is that on the munmap() path, the mmap_sem is already held
++ * in write-mode by the time we come here. To avoid the deadlock, we need
++ * to know where we are coming from and skip down_write(). If is fairly
++ * difficult to know this because of the lack of good hooks and
++ * the fact that, there may not have been any mmap() of the sampling buffer
++ * (i.e. create_context() followed by close() or exit()).
++ *
++ * We use a set flag ctx->flags.mmap_nlock which is toggle in the vm_ops
++ * callback in remove_vma() which is called systematically for the call, so
++ * on all but the pure close() path. The exit path does not already hold
++ * the lock but this is exit so there is no task->mm by the time we come here.
++ *
++ * The mmap_nlock is set only when unmapping and this is the LAST reference
++ * to the file (i.e., close() followed by munmap()).
++ */
++void pfm_release_buf_space(struct pfm_context *ctx, size_t size)
++{
++	unsigned long flags;
++	struct mm_struct *mm;
++
++	mm = get_task_mm(current);
++	if (mm) {
++		if (ctx->flags.mmap_nlock == 0) {
++			PFM_DBG("doing down_write");
++			down_write(&mm->mmap_sem);
++		}
++
++		mm->locked_vm -= size >> PAGE_SHIFT;
++
++		PFM_DBG("locked_vm=%lu size=%zu", mm->locked_vm, size);
++
++		if (ctx->flags.mmap_nlock == 0)
++			up_write(&mm->mmap_sem);
++
++		mmput(mm);
++	}
++
++	spin_lock_irqsave(&pfm_sessions_lock, flags);
++
++	pfm_sessions.pfs_smpl_buffer_mem_cur -= size;
++
++	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
++}
++
++int pfm_reserve_session(int is_system, u32 cpu)
++{
++	unsigned long flags;
++	u32 nsys_cpus;
++
++	/*
++	 * validy checks on cpu_mask have been done upstream
++	 */
++	spin_lock_irqsave(&pfm_sessions_lock, flags);
++
++	nsys_cpus = cpus_weight(pfm_sessions.pfs_sys_cpumask);
++
++	PFM_DBG("in  sys=%u task=%u is_sys=%d cpu=%u",
++		nsys_cpus,
++		pfm_sessions.pfs_task_sessions,
++		is_system,
++		cpu);
++
++	if (is_system) {
++		/*
++		 * cannot mix system wide and per-task sessions
++		 */
++		if (pfm_sessions.pfs_task_sessions > 0) {
++			PFM_DBG("%u conflicting task_sessions",
++			  	pfm_sessions.pfs_task_sessions);
++			goto abort;
++		}
++
++		if (cpu_isset(cpu, pfm_sessions.pfs_sys_cpumask)) {
++			PFM_DBG("conflicting session on CPU%u", cpu);
++			goto abort;
++		}
++
++		PFM_DBG("reserved session on CPU%u", cpu);
++
++		cpu_set(cpu, pfm_sessions.pfs_sys_cpumask);
++		nsys_cpus++;
++	} else {
++		if (nsys_cpus)
++			goto abort;
++		pfm_sessions.pfs_task_sessions++;
++	}
++
++	PFM_DBG("out sys=%u task=%u is_sys=%d cpu=%u",
++		nsys_cpus,
++		pfm_sessions.pfs_task_sessions,
++		is_system,
++		cpu);
++
++	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
++
++	return 0;
++
++abort:
++	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
++
++	return -EBUSY;
++}
++
++/*
++ * called from __pfm_unload_context()
++ */
++int pfm_release_session(int is_system, u32 cpu)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&pfm_sessions_lock, flags);
++
++	PFM_DBG("in sys_sessions=%u task_sessions=%u syswide=%d cpu=%u",
++		cpus_weight(pfm_sessions.pfs_sys_cpumask),
++		pfm_sessions.pfs_task_sessions,
++		is_system, cpu);
++
++	if (is_system)
++		cpu_clear(cpu, pfm_sessions.pfs_sys_cpumask);
++	else
++		pfm_sessions.pfs_task_sessions--;
++
++	PFM_DBG("out sys_sessions=%u task_sessions=%u syswide=%d cpu=%u",
++		cpus_weight(pfm_sessions.pfs_sys_cpumask),
++		pfm_sessions.pfs_task_sessions,
++		is_system, cpu);
++
++	spin_unlock_irqrestore(&pfm_sessions_lock, flags);
++	return 0;
++}
++
++/*
++ * called from perfmon_sysfs.c:
++ *  what=0 : pfs_task_sessions
++ *  what=1 : cpus_weight(pfs_sys_cpumask)
++ *  what=2 : smpl_buffer_mem_cur
++ *  what=3 : pmu model name
++ *
++ * return number of bytes written into buf (up to sz)
++ */
++ssize_t pfm_sysfs_session_show(char *buf, size_t sz, int what)
++{
++	unsigned long flags;
++
++	if (pfm_pmu_conf) {
++		spin_lock_irqsave(&pfm_sessions_lock, flags);
++		switch (what) {
++		case 0: snprintf(buf, sz, "%u\n", pfm_sessions.pfs_task_sessions);
++			break;
++		case 1: snprintf(buf, sz, "%d\n", cpus_weight(pfm_sessions.pfs_sys_cpumask));
++			break;
++		case 2: snprintf(buf, sz, "%zu\n", pfm_sessions.pfs_smpl_buffer_mem_cur);
++			break;
++		case 3:
++			snprintf(buf, sz, "%s\n", pfm_pmu_conf->pmu_name);
++		}
++		spin_unlock_irqrestore(&pfm_sessions_lock, flags);
++	} else {
++		if (what == 3)
++			strcpy(buf, "unknown\n");
++		else
++			strcpy(buf, "0\n");
++	}
++	return strlen(buf);
++}
