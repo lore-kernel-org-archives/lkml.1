@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbXE2OBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbXE2OCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757309AbXE2OBt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 10:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbXE2N7v
+	id S1760103AbXE2OCL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 10:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbXE2N7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 09:59:51 -0400
+	Tue, 29 May 2007 09:59:53 -0400
 Received: from madara.hpl.hp.com ([192.6.19.124]:56272 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751397AbXE2N7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 09:59:46 -0400
+	id S1751507AbXE2N7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 09:59:47 -0400
 X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 May 2007 09:59:42 EDT
-Date: Tue, 29 May 2007 06:48:26 -0700
+Date: Tue, 29 May 2007 06:48:18 -0700
 From: Stephane Eranian <eranian@frankl.hpl.hp.com>
-Message-Id: <200705291348.l4TDmQs9019762@frankl.hpl.hp.com>
+Message-Id: <200705291348.l4TDmILh019658@frankl.hpl.hp.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/22] 2.6.22-rc3 perfmon2 : PMU description table management
+Subject: [PATCH 04/22] 2.6.22-rc3 perfmon2 : sysfs support
 Cc: eranian@hpl.hp.com
 X-HPL-MailScanner: Found to be clean
 X-HPL-MailScanner-From: eranian@frankl.hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the function needed to manage the PMU description table
-and module.
+This patch contains the sysfs support.
 
-The mapping from the logical PMU view exposed by the interface (as PMC and PMD
-registers) to the actual registers is driven by a description table. That table
-is part of a kernel module which can be dynamically inserted.
+We use the sysfs interface fot two reasons:
+	- perfmon2 administration
+	- user level information
 
-The motivation for this mechanism is to allow new hardware to be supported before
-there is a new release from distributors. It also provides a way to take care of
-PMU defects and model-specific constraints. It is possible to define read or
-write PMC/PMD checkers to test for complex illegal value settings.
+Perfmon2 creates new directories in /sys:
+	- /sys/kernel/perfmon: for adminstration and global information
+	- /sys/devices/system/cpu/cpuXX/perfmon: per-cpu statistics (debugging)
 
-The PMU description module can be automically loaded by the kernel on first
-use. The implementation detects known CPUs and requests the module to be loaded.
-If CPU is unknown, then a manual insmod also works.
+In /sys/kernel/perfmon we find:
+	- arg_size_max (R/W): maximum size of vector arguments in bytes
+	- smpl_buffer_mem_max (R/W):  maximum aggregated size of all smapling buffers
+	- smpl_buffer_mem_cur (R): current consumption of buf_size_max
+	- debug (R/W) : enable perfmon2 debugging messages
+	- debug_ovfl (R/W): enable perfmon2 interrupt debugging messages
+	- formats/	: information about available sampling formats
+	- pmc_max_fast_arg (R): how many vector arguments can be processed on the stack for pfarg_pmc_t
+	- pmd_max_fast_arg (R):  how many vector arguments can be processed on the stack for pfarg_pmd_t
 
-Only one PMU description can be active at a time. A PMU description can be builtin
-or compiled as a module (preferred).
+	- reset_stats (W):  reset statistics
+	- sys_group (R/W): which user group is allowed to create systemwide perfmon2 contexts
+	- task_group (R/W): which user group is allowed to create per-thread perfmon2 contexts
+	- sys_sessions_count (R):  number of active per-thread contexts
+	- task_sessions_count (R): number of active system-wide contexts
+	- version (R): perfmon2 version
 
-This patch adds the perfmon_pmu.c and perfmon_pmu.h files. the following interface
-is provided to PMU description module:
+In /sys/kernel/perfmon/pmu_desc (created at first use of subsystem):
+	- model (R): name of active PMU description module
+	- one subdirs for each pmd or pmc register
 
-int pfm_pmu_register(struct pfm_pmu_config *cfg):
-	- register a PMU description module
-	- validate table passed by module and initialize generic data structures
-	- populate /sys with table information
-	- reset PMU to quiescent state based on the information
+In /sys/kernel/perfmon/pmu_desc/pmdX:
+	- addr	 (R) : hardware address or index of register
+	- dfl_val (R): default value
+	- counter_width	(R): PMU HW counter width
+	- name    (R): logical name
+	- rsvd_msk(R): reserved bits 
 
-void pfm_pmu_unregister(struct pfm_pmu_config *cfg):
-	- unregister a PMU description module
+In /sys/kernel/perfmon/pmu_desc/pmcX:
+	- addr	 (R) : hardware address or index of register
+	- dfl_val (R): default value
+	- name    (R): logical name
+	- rsvd_msk(R): reserved bits 
+
+The statistics we maintained in /sys/system/devices/cpu/cpuXX are mostly
+for debugging purposes at this point. Added/removed on CPU hotplug events.
 
 
 
 
---- linux-2.6.22.base/perfmon/perfmon_pmu.c	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/perfmon/perfmon_pmu.c	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,459 @@
+--- linux-2.6.22.base/perfmon/perfmon_sysfs.c	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.22/perfmon/perfmon_sysfs.c	2007-05-29 03:24:14.000000000 -0700
+@@ -0,0 +1,935 @@
 +/*
-+ * perfmon_pmu.c: perfmon2 PMU configuration management
++ * perfmon_sysfs.c: perfmon2 sysfs interface
 + *
 + * This file implements the perfmon2 interface which
 + * provides access to the hardware performance counters
@@ -96,626 +112,900 @@ void pfm_pmu_unregister(struct pfm_pmu_config *cfg):
 + * 02111-1307 USA
 +  */
 +#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/smp_lock.h>
++#include <linux/proc_fs.h>
++#include <linux/list.h>
++#include <linux/version.h>
 +#include <linux/perfmon.h>
++#include <linux/device.h>
++#include <linux/cpu.h>
 +
-+#ifndef CONFIG_MODULE_UNLOAD
-+#define module_refcount(n)	1
-+#endif
++#include <asm/bitops.h>
++#include <asm/errno.h>
++#include <asm/processor.h>
 +
-+static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_pmu_conf_lock);
-+static __cacheline_aligned_in_smp int request_mod_in_progress;
-+/*
-+ * _pfm_pmu_conf contains all the runtime PMU description information.
-+ * It is constructed from the PMU specific description implemented
-+ * by PMU description module + the architected virtual PMDS.
-+ */
-+static struct _pfm_pmu_config _pfm_pmu_conf;
++struct pfm_attribute {
++	struct attribute attr;
++	ssize_t (*show)(void *, char *);
++	ssize_t (*store)(void *, const char *, size_t);
++};
++#define to_attr(n) container_of(n, struct pfm_attribute, attr);
 +
-+/*
-+ * perfmon core must acces PMU information ONLY through pfm_pmu_conf
-+ * if pfm_pmu_conf is NULL, then no description is registered
-+ */
-+struct _pfm_pmu_config	*pfm_pmu_conf;
-+EXPORT_SYMBOL(pfm_pmu_conf);
++#define PFM_RO_ATTR(_name) \
++struct pfm_attribute attr_##_name = __ATTR_RO(_name)
 +
-+static inline int pmu_is_module(struct _pfm_pmu_config *c)
++#define PFM_RW_ATTR(_name,_mode,_show,_store) 			\
++struct pfm_attribute attr_##_name = __ATTR(_name,_mode,_show,_store);
++
++static int pfm_sysfs_init_done;	/* true when pfm_sysfs_init() completed */
++
++int pfm_sysfs_add_pmu(struct _pfm_pmu_config *pmu);
++
++struct pfm_controls pfm_controls = {
++	.sys_group = PFM_GROUP_PERM_ANY,
++	.task_group = PFM_GROUP_PERM_ANY,
++	.arg_mem_max = PAGE_SIZE,
++	.smpl_buffer_mem_max = ~0,
++};
++EXPORT_SYMBOL(pfm_controls);
++
++DECLARE_PER_CPU(struct pfm_stats, pfm_stats);
++
++static struct kobject pfm_kernel_kobj, pfm_kernel_fmt_kobj;
++
++static void pfm_reset_stats(int cpu)
 +{
-+	return !(c->flags & PFM_PMUFL_IS_BUILTIN);
++	struct pfm_stats *st;
++	unsigned long flags;
++
++	st = &per_cpu(pfm_stats, cpu);
++
++	local_irq_save(flags);
++
++	/*
++	 * cannot use memset because of kobj member
++	 */
++	st->ovfl_intr_replay_count = 0;
++	st->ovfl_intr_regular_count = 0;
++	st->ovfl_intr_all_count = 0;
++	st->ovfl_intr_ns = 0;
++	st->ovfl_intr_phase1 = 0;
++	st->ovfl_intr_phase2 = 0;
++	st->ovfl_intr_phase3 = 0;
++	st->ovfl_intr_nmi_count = 0;
++	st->handle_work_count = 0;
++	st->ovfl_notify_count = 0;
++	st->reset_pmds_count = 0;
++	st->pfm_restart_count = 0;
++	st->ccnt0 = 0;
++	st->ccnt1 = 0;
++	st->ccnt2 = 0;
++	st->ccnt3 = 0;
++	st->ccnt4 = 0;
++	st->ccnt5 = 0;
++	st->ccnt6 = 0;
++	st->fmt_handler_calls = 0;
++	st->fmt_handler_ns = 0;
++	st->set_switch_count = 0;
++	st->set_switch_ns = 0;
++	st->ctxsw_count = 0;
++	st->ctxsw_ns = 0;
++	st->handle_timeout_count = 0;
++
++	local_irq_restore(flags);
++}
++
++static ssize_t pfm_fmt_attr_show(struct kobject *kobj,
++		struct attribute *attr, char *buf)
++{
++	struct pfm_smpl_fmt *fmt = to_smpl_fmt(kobj);
++	struct pfm_attribute *attribute = to_attr(attr);
++	return attribute->show ? attribute->show(fmt, buf) : -EIO;
++}
++
++static ssize_t pfm_pmu_attr_show(struct kobject *kobj,
++		struct attribute *attr, char *buf)
++{
++	struct _pfm_pmu_config *pmu= to_pmu(kobj);
++	struct pfm_attribute *attribute = to_attr(attr);
++	return attribute->show ? attribute->show(pmu, buf) : -EIO;
++}
++
++static ssize_t pfm_stats_attr_show(struct kobject *kobj,
++		struct attribute *attr, char *buf)
++{
++	struct pfm_stats *st = to_stats(kobj);
++	struct pfm_attribute *attribute = to_attr(attr);
++	return attribute->show ? attribute->show(st, buf) : -EIO;
++}
++
++static ssize_t pfm_regs_attr_show(struct kobject *kobj,
++		struct attribute *attr, char *buf)
++{
++	struct pfm_reg_desc *reg = to_reg(kobj);
++	struct pfm_attribute *attribute = to_attr(attr);
++	return attribute->show ? attribute->show(reg, buf) : -EIO;
++}
++
++static ssize_t pfm_stats_attr_store(struct kobject *kobj,
++		struct attribute *attr, const char *buf, size_t count)
++{
++	struct pfm_stats *st = to_stats(kobj);
++	struct pfm_attribute *attribute = to_attr(attr);
++	return attribute->store ? attribute->store(st, buf, count) : -EIO;
++}
++
++static struct sysfs_ops pfm_fmt_sysfs_ops = {
++	.show = pfm_fmt_attr_show
++};
++
++static struct sysfs_ops pfm_pmu_sysfs_ops = {
++	.show = pfm_pmu_attr_show
++};
++
++static struct sysfs_ops pfm_stats_sysfs_ops = {
++	.show  = pfm_stats_attr_show,
++	.store = pfm_stats_attr_store
++};
++
++static struct sysfs_ops pfm_regs_sysfs_ops = {
++	.show  = pfm_regs_attr_show
++};
++
++static struct kobj_type pfm_fmt_ktype = {
++	.sysfs_ops = &pfm_fmt_sysfs_ops,
++};
++
++static struct kobj_type pfm_pmu_ktype = {
++	.sysfs_ops = &pfm_pmu_sysfs_ops,
++};
++
++static struct kobj_type pfm_stats_ktype = {
++	.sysfs_ops = &pfm_stats_sysfs_ops,
++};
++
++static struct kobj_type pfm_regs_ktype = {
++	.sysfs_ops = &pfm_regs_sysfs_ops,
++};
++
++decl_subsys_name(pfm_fmt, pfm_fmt, &pfm_fmt_ktype, NULL);
++decl_subsys_name(pfm_pmu, pfm_pmu, &pfm_pmu_ktype, NULL);
++decl_subsys_name(pfm_stats, pfm_stats, &pfm_stats_ktype, NULL);
++decl_subsys_name(pfm_regs, pfm_regs, &pfm_regs_ktype, NULL);
++
++static ssize_t version_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%u.%u\n",  PFM_VERSION_MAJ, PFM_VERSION_MIN);
++}
++
++static ssize_t pmd_max_fast_arg_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%u\n",  PFM_PMD_STK_ARG);
++}
++
++static ssize_t pmc_max_fast_arg_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%u\n",  PFM_PMC_STK_ARG);
++}
++
++static ssize_t task_sessions_count_show(void *info, char *buf)
++{
++	return pfm_sysfs_session_show(buf, PAGE_SIZE, 0);
++}
++
++static ssize_t sys_sessions_count_show(void *info, char *buf)
++{
++	return pfm_sysfs_session_show(buf, PAGE_SIZE, 1);
++}
++
++static ssize_t smpl_buffer_mem_cur_show(void *info, char *buf)
++{
++	return pfm_sysfs_session_show(buf, PAGE_SIZE, 2);
++}
++
++static ssize_t debug_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", pfm_controls.debug);
++}
++
++static ssize_t debug_store(void *info, const char *buf, size_t sz)
++{
++	int d, i;
++
++	if (sscanf(buf,"%d", &d) != 1)
++		return -EINVAL;
++
++	pfm_controls.debug = d;
++
++	if (d == 0) {
++		for_each_online_cpu(i) {
++			pfm_reset_stats(i);
++		}
++	}
++	return sz;
++}
++
++static ssize_t debug_ovfl_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", pfm_controls.debug_ovfl);
++}
++
++static ssize_t debug_ovfl_store(void *info, const char *buf, size_t sz)
++{
++	int d;
++
++	if (sscanf(buf,"%d", &d) != 1)
++		return -EINVAL;
++
++	pfm_controls.debug_ovfl = d;
++
++	return strnlen(buf, PAGE_SIZE);
++}
++
++static ssize_t reset_stats_show(void *info, char *buf)
++{
++	buf[0]='0';
++	buf[1]='\0';
++	return strnlen(buf, PAGE_SIZE);
++}
++
++static ssize_t reset_stats_store(void *info, const char *buf, size_t count)
++{
++	int i;
++
++	for_each_online_cpu(i) {
++		pfm_reset_stats(i);
++	}
++	return count;
++}
++
++static ssize_t sys_group_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", pfm_controls.sys_group);
++}
++
++static ssize_t sys_group_store(void *info, const char *buf, size_t sz)
++{
++	int d;
++
++	if (sscanf(buf,"%d", &d) != 1)
++		return -EINVAL;
++
++	pfm_controls.sys_group = d;
++
++	return strnlen(buf, PAGE_SIZE);
++}
++
++static ssize_t task_group_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", pfm_controls.task_group);
++}
++
++static ssize_t task_group_store(void *info, const char *buf, size_t sz)
++{
++	int d;
++
++	if (sscanf(buf,"%d", &d) != 1)
++		return -EINVAL;
++
++	pfm_controls.task_group = d;
++
++	return strnlen(buf, PAGE_SIZE);
++}
++
++static ssize_t buf_size_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%zu\n", pfm_controls.smpl_buffer_mem_max);
++}
++
++static ssize_t buf_size_store(void *info, const char *buf, size_t sz)
++{
++	size_t d;
++
++	if (sscanf(buf,"%zu", &d) != 1)
++		return -EINVAL;
++	/*
++	 * we impose a page as the minimum
++	 */
++	if (d < PAGE_SIZE)
++		return -EINVAL;
++
++	pfm_controls.smpl_buffer_mem_max = d;
++
++	return strnlen(buf, PAGE_SIZE);
++}
++
++static ssize_t arg_size_show(void *info, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%zu\n", pfm_controls.arg_mem_max);
++}
++
++static ssize_t arg_size_store(void *info, const char *buf, size_t sz)
++{
++	size_t d;
++
++	if (sscanf(buf,"%zu", &d) != 1)
++		return -EINVAL;
++
++	/*
++	 * we impose a page as the minimum.
++	 *
++	 * This limit may be smaller than the stack buffer
++	 * available and that is fine.
++	 */
++	if (d < PAGE_SIZE)
++		return -EINVAL;
++
++	pfm_controls.arg_mem_max = d;
++
++	return strnlen(buf, PAGE_SIZE);
 +}
 +
 +/*
-+ * initialize PMU configuration from PMU config descriptor
++ * /sys/kernel/perfmon attributes
 + */
-+static int pfm_pmu_config_init(struct pfm_pmu_config *cfg)
++static PFM_RO_ATTR(version);
++static PFM_RO_ATTR(task_sessions_count);
++static PFM_RO_ATTR(sys_sessions_count);
++static PFM_RO_ATTR(smpl_buffer_mem_cur);
++static PFM_RO_ATTR(pmd_max_fast_arg);
++static PFM_RO_ATTR(pmc_max_fast_arg);
++
++static PFM_RW_ATTR(debug, 0644, debug_show, debug_store);
++static PFM_RW_ATTR(debug_ovfl, 0644, debug_ovfl_show, debug_ovfl_store);
++static PFM_RW_ATTR(reset_stats, 0644, reset_stats_show, reset_stats_store);
++static PFM_RW_ATTR(sys_group, 0644, sys_group_show, sys_group_store);
++static PFM_RW_ATTR(task_group, 0644, task_group_show, task_group_store);
++static PFM_RW_ATTR(smpl_buffer_mem_max, 0644, buf_size_show, buf_size_store);
++static PFM_RW_ATTR(arg_mem_max, 0644, arg_size_show, arg_size_store);
++
++static struct attribute *pfm_kernel_attrs[] = {
++	&attr_version.attr,
++	&attr_task_sessions_count.attr,
++	&attr_sys_sessions_count.attr,
++	&attr_smpl_buffer_mem_cur.attr,
++	&attr_pmd_max_fast_arg.attr,
++	&attr_pmc_max_fast_arg.attr,
++	&attr_debug.attr,
++	&attr_debug_ovfl.attr,
++	&attr_reset_stats.attr,
++	&attr_sys_group.attr,
++	&attr_task_group.attr,
++	&attr_smpl_buffer_mem_max.attr,
++	&attr_arg_mem_max.attr,
++	NULL
++};
++
++static struct attribute_group pfm_kernel_attr_group = {
++	.attrs = pfm_kernel_attrs,
++};
++
++int __init pfm_init_sysfs(void)
 +{
-+	u16 n, n2, n_counters, i;
-+	int max1, max2, max3, first_cnt, first_i;
++	int ret;
++	int done_fmt = 0, done_pmu = 0, done_stats = 0, done_regs = 0;
++	int done_kobj_fmt = 0, done_kobj_kernel = 0;
++	int i, cpu = -1;
++	
++	ret = subsystem_register(&pfm_fmt_subsys);
++	if (ret) {
++		PFM_INFO("cannot register pfm_fmt_subsys: %d", ret);
++		goto error;
++	}
++	done_fmt = 1;
 +
-+	memset(&_pfm_pmu_conf, 0 , sizeof(_pfm_pmu_conf));
++	ret = subsystem_register(&pfm_pmu_subsys);
++	if (ret) {
++		PFM_INFO("cannot register pfm_pmu_subsys: %d", ret);
++		goto error;
++	}
++	done_pmu = 1;
++
++	ret = subsystem_register(&pfm_stats_subsys);
++	if (ret) {
++		PFM_INFO("cannot register pfm_stats_subsys: %d", ret);
++		goto error;
++	}
++	done_stats = 1;
++
++	ret = subsystem_register(&pfm_regs_subsys);
++	if (ret) {
++		PFM_INFO("cannot register pfm_regs_subsys: %d", ret);
++		goto error;
++	}
++	done_regs = 1;
++
++	kobject_init(&pfm_kernel_kobj);
++	kobject_init(&pfm_kernel_fmt_kobj);
++
++	pfm_kernel_kobj.parent = &kernel_subsys.kobj;
++	kobject_set_name(&pfm_kernel_kobj, "perfmon");
++
++	pfm_kernel_fmt_kobj.parent = &pfm_kernel_kobj;
++	kobject_set_name(&pfm_kernel_fmt_kobj, "formats");
++
++	ret = kobject_add(&pfm_kernel_kobj);
++	if (ret) {
++		PFM_INFO("cannot add kernel object: %d", ret);
++		goto error;
++	}
++	done_kobj_kernel = 1;
++
++	ret = kobject_add(&pfm_kernel_fmt_kobj);
++	if (ret) {
++		PFM_INFO("cannot add fmt object: %d", ret);
++		goto error;
++	}
++	done_kobj_fmt = 1;
++
++	ret = sysfs_create_group(&pfm_kernel_kobj, &pfm_kernel_attr_group);
++	if (ret) {
++		PFM_INFO("cannot create kernel group");
++		goto error;
++	}
++
 +	/*
-+	 * compute the number of implemented PMC from the
-+	 * description tables
-+	 *
-+	 * We separate actual PMC registers from virtual
-+	 * PMC registers. Needed for PMC save/restore routines.
++	 * must be set before builtin_fmt and
++	 * add_pmu() calls
 +	 */
-+	n = 0;
-+	max1 = max2 = -1;
-+	for (i = 0; i < cfg->num_pmc_entries;  i++) {
++	pfm_sysfs_init_done = 1;
 +
-+		_pfm_pmu_conf.pmc_desc[i] = cfg->pmc_desc[i];
++	pfm_sysfs_builtin_fmt_add();
 +
-+		/*
-+		 * non implemented registers have type 0
-+		 */
-+		if (!(cfg->pmc_desc[i].type & PFM_REG_I))
-+			continue;
++	if (pfm_pmu_conf)
++		pfm_sysfs_add_pmu(pfm_pmu_conf);
 +
-+		__set_bit(i, ulp(_pfm_pmu_conf.impl_pmcs));
-+
-+		max1 = i;
-+		n++;
++	for_each_online_cpu(cpu) {
++		ret = pfm_sysfs_add_cpu(cpu);
++		if (ret)
++			goto error;
 +	}
++	return 0;
++error:
++	if (done_fmt)
++		subsystem_unregister(&pfm_fmt_subsys);
++	if (done_pmu)
++		subsystem_unregister(&pfm_pmu_subsys);
++	if (done_stats)
++		subsystem_unregister(&pfm_stats_subsys);
++	if (done_regs)
++		subsystem_unregister(&pfm_regs_subsys);
++	if (done_kobj_kernel)
++		kobject_del(&pfm_kernel_kobj);
++	if (done_kobj_fmt)
++		kobject_del(&pfm_kernel_fmt_kobj);
 +
-+	if (!n) {
-+		PFM_INFO("%s PMU description has no PMC registers",
-+			 cfg->pmu_name);
++	for (i=0; i < cpu; i++)
++		pfm_sysfs_del_cpu(i);
++
++	return ret;
++}
++
++/*
++ * per-cpu perfmon stats attributes
++ */
++#define PFM_DECL_STATS_ATTR(name) \
++static ssize_t name##_show(void *info, char *buf) \
++{ \
++	struct pfm_stats *st = info;\
++	return snprintf(buf, PAGE_SIZE, "%llu\n", \
++			(unsigned long long)st->name); \
++} \
++static PFM_RO_ATTR(name)
++
++PFM_DECL_STATS_ATTR(ovfl_intr_replay_count);
++PFM_DECL_STATS_ATTR(ovfl_intr_all_count);
++PFM_DECL_STATS_ATTR(ovfl_intr_ns);
++PFM_DECL_STATS_ATTR(fmt_handler_calls);
++PFM_DECL_STATS_ATTR(fmt_handler_ns);
++PFM_DECL_STATS_ATTR(set_switch_count);
++PFM_DECL_STATS_ATTR(set_switch_ns);
++PFM_DECL_STATS_ATTR(ctxsw_count);
++PFM_DECL_STATS_ATTR(ctxsw_ns);
++PFM_DECL_STATS_ATTR(handle_timeout_count);
++PFM_DECL_STATS_ATTR(ovfl_intr_nmi_count);
++PFM_DECL_STATS_ATTR(handle_work_count);
++PFM_DECL_STATS_ATTR(ovfl_notify_count);
++PFM_DECL_STATS_ATTR(reset_pmds_count);
++PFM_DECL_STATS_ATTR(pfm_restart_count);
++PFM_DECL_STATS_ATTR(ccnt0);
++PFM_DECL_STATS_ATTR(ccnt1);
++PFM_DECL_STATS_ATTR(ccnt2);
++PFM_DECL_STATS_ATTR(ccnt3);
++PFM_DECL_STATS_ATTR(ccnt4);
++PFM_DECL_STATS_ATTR(ccnt5);
++PFM_DECL_STATS_ATTR(ccnt6);
++
++/*
++ * per-reg attributes
++ */
++static ssize_t name_show(void *info, char *buf)
++{
++	struct pfm_reg_desc *reg = info;
++	return snprintf(buf, PAGE_SIZE, "%s\n", reg->desc);
++}
++static PFM_RO_ATTR(name);
++
++static ssize_t dfl_val_show(void *info, char *buf)
++{
++	struct pfm_reg_desc *reg = info;
++	return snprintf(buf, PAGE_SIZE, "0x%llx\n",
++			(unsigned long long)reg->dfl_val);
++}
++static PFM_RO_ATTR(dfl_val);
++
++static ssize_t rsvd_msk_show(void *info, char *buf)
++{
++	struct pfm_reg_desc *reg = info;
++	return snprintf(buf, PAGE_SIZE, "0x%llx\n",
++			(unsigned long long)reg->rsvd_msk);
++}
++static PFM_RO_ATTR(rsvd_msk);
++
++static ssize_t width_show(void *info, char *buf)
++{
++	struct pfm_reg_desc *reg = info;
++	int w;
++
++	w = (reg->type & PFM_REG_C64) ? pfm_pmu_conf->counter_width : 64;
++
++	return snprintf(buf, PAGE_SIZE, "%d\n", w);
++}
++static PFM_RO_ATTR(width);
++
++
++static ssize_t addr_show(void *info, char *buf)
++{
++	struct pfm_reg_desc *reg = info;
++	return snprintf(buf, PAGE_SIZE, "0x%lx\n", reg->hw_addr);
++}
++static PFM_RO_ATTR(addr);
++
++static ssize_t ovfl_intr_spurious_count_show(void *info, char *buf)
++{
++	struct pfm_stats *st = info;
++	return snprintf(buf, PAGE_SIZE, "%llu\n",
++			(unsigned long long)(st->ovfl_intr_all_count
++					     - st->ovfl_intr_regular_count));
++}
++
++static ssize_t ovfl_intr_regular_count_show(void *info, char *buf)
++{
++	struct pfm_stats *st = info;
++	return snprintf(buf, PAGE_SIZE, "%llu\n",
++			(unsigned long long)(st->ovfl_intr_regular_count
++					     - st->ovfl_intr_replay_count));
++}
++
++static PFM_RO_ATTR(ovfl_intr_spurious_count);
++static PFM_RO_ATTR(ovfl_intr_regular_count);
++
++static struct attribute *pfm_cpu_attrs[] = {
++	&attr_ovfl_intr_spurious_count.attr,
++	&attr_ovfl_intr_replay_count.attr,
++	&attr_ovfl_intr_regular_count.attr,
++	&attr_ovfl_intr_all_count.attr,
++	&attr_ovfl_intr_ns.attr,
++	&attr_handle_work_count.attr,
++	&attr_ovfl_notify_count.attr,
++	&attr_reset_pmds_count.attr,
++	&attr_pfm_restart_count.attr,
++	&attr_ccnt0.attr,
++	&attr_ccnt1.attr,
++	&attr_ccnt2.attr,
++	&attr_ccnt3.attr,
++	&attr_ccnt4.attr,
++	&attr_ccnt5.attr,
++	&attr_ccnt6.attr,
++	&attr_fmt_handler_calls.attr,
++	&attr_fmt_handler_ns.attr,
++	&attr_set_switch_count.attr,
++	&attr_set_switch_ns.attr,
++	&attr_ctxsw_count.attr,
++	&attr_ctxsw_ns.attr,
++	&attr_handle_timeout_count.attr,
++	&attr_ovfl_intr_nmi_count.attr,
++	NULL
++};
++
++static struct attribute_group pfm_cpu_attr_group = {
++	.attrs = pfm_cpu_attrs,
++};
++
++int pfm_sysfs_add_cpu(int mycpu)
++{
++	struct sys_device *cpudev;
++	struct pfm_stats *st;
++	int ret;
++
++	cpudev = get_cpu_sysdev(mycpu);
++	if (!cpudev)
 +		return -EINVAL;
-+	}
 +
-+	_pfm_pmu_conf.max_pmc = max1 + 1;
-+	_pfm_pmu_conf.num_pmcs = n;
++	st = &per_cpu(pfm_stats, mycpu);
 +
-+	n = n_counters = n2 = 0;
-+	max1 = max2 = max3 = first_cnt = first_i = -1;
-+	for (i = 0; i < cfg->num_pmd_entries;  i++) {
++	kobject_init(&st->kobj);
 +
-+		_pfm_pmu_conf.pmd_desc[i] = cfg->pmd_desc[i];
++	st->kobj.parent = &cpudev->kobj;
++	kobject_set_name(&st->kobj, "perfmon");
++	kobj_set_kset_s(st, pfm_stats_subsys);
 +
-+		if (!(cfg->pmd_desc[i].type & PFM_REG_I))
-+			continue;
++	ret = kobject_add(&st->kobj);
++	if (ret)
++		return ret;
 +
-+		if (first_i == -1)
-+			first_i = i;
++	ret = sysfs_create_group(&st->kobj, &pfm_cpu_attr_group);
++	if (ret)
++		kobject_del(&st->kobj);
 +
-+		/*
-+		 * implemented registers
-+		 */
-+		__set_bit(i, ulp(_pfm_pmu_conf.impl_pmds));
-+		max1 = i;
-+		n++;
++	pfm_reset_stats(mycpu);
 +
-+		/*
-+		 * implemented read-write registers
-+		 */
-+		if (!(cfg->pmd_desc[i].type & PFM_REG_RO)) {
-+			__set_bit(i, ulp(_pfm_pmu_conf.impl_rw_pmds));
-+			max3 = i;
-+			n2++;
-+		}
++	return ret;
++}
 +
-+		/*
-+		 * counters
-+		 */
-+		if (cfg->pmd_desc[i].type & PFM_REG_C64) {
-+			__set_bit(i, ulp(_pfm_pmu_conf.cnt_pmds));
-+			max2 = i;
-+			n_counters++;
-+			if (first_cnt == -1)
-+				first_cnt = i;
-+		}
-+	}
++void pfm_sysfs_del_cpu(int mycpu)
++{
++	struct sys_device *cpudev;
++	struct pfm_stats *st;
 +
-+	if (!n) {
-+		PFM_INFO("%s PMU description has no PMD registers",
-+			 cfg->pmu_name);
-+		return -EINVAL;
-+	}
++	cpudev = get_cpu_sysdev(mycpu);
++	if (!cpudev)
++		return;
 +
-+	_pfm_pmu_conf.pmu_name = cfg->pmu_name;
-+	_pfm_pmu_conf.version = cfg->version ? cfg->version : "0.0";
-+	_pfm_pmu_conf.pmc_write_check = cfg->pmc_write_check;
-+	_pfm_pmu_conf.pmd_write_check = cfg->pmd_write_check;
-+	_pfm_pmu_conf.load_context = cfg->load_context;
-+	_pfm_pmu_conf.unload_context = cfg->unload_context;
-+	_pfm_pmu_conf.pmd_sread = cfg->pmd_sread;
-+	_pfm_pmu_conf.pmd_swrite = cfg->pmd_swrite;
-+	_pfm_pmu_conf.arch_info = cfg->arch_info;
-+	_pfm_pmu_conf.flags = cfg->flags;
-+	_pfm_pmu_conf.owner = cfg->owner;
++	st = &per_cpu(pfm_stats, mycpu);
++	kobject_del(&st->kobj);
 +
-+	_pfm_pmu_conf.max_pmd = max1 + 1;
-+	_pfm_pmu_conf.first_cnt_pmd = first_cnt == -1 ?  first_i : first_cnt;
++	sysfs_remove_group(&st->kobj, &pfm_cpu_attr_group);
++}
 +
-+	/* guaranteed to be <= PFM_MAX_HW_PMDS */
-+	_pfm_pmu_conf.max_cnt_pmd  = max2 + 1;
++static ssize_t smpl_version_show(void *data, char *buf)
++{
++	struct pfm_smpl_fmt *fmt = data;
 +
-+	_pfm_pmu_conf.num_counters = n_counters;
-+	_pfm_pmu_conf.num_pmds = n;
-+	_pfm_pmu_conf.counter_width = cfg->counter_width;
-+	_pfm_pmu_conf.ovfl_mask = (1ULL << cfg->counter_width) -1;
-+	_pfm_pmu_conf.max_rw_pmd = max3 + 1;
-+	_pfm_pmu_conf.num_rw_pmd = n2;
++	return snprintf(buf, PAGE_SIZE, "%u.%u",
++		fmt->fmt_version >>16 & 0xffff,
++		fmt->fmt_version & 0xffff);
++}
++PFM_RO_ATTR(smpl_version);
 +
-+	PFM_INFO("%s PMU detected, %u PMCs, %u PMDs, %u counters (%u bits)",
-+		 _pfm_pmu_conf.pmu_name,
-+		 _pfm_pmu_conf.num_pmcs,
-+		 _pfm_pmu_conf.num_pmds,
-+		 _pfm_pmu_conf.num_counters,
-+		 _pfm_pmu_conf.counter_width);
++static ssize_t smpl_argsize_show(void *data, char *buf)
++{
++	struct pfm_smpl_fmt *fmt = data;
++
++	return snprintf(buf, PAGE_SIZE, "%zu", fmt->fmt_arg_size);
++}
++PFM_RO_ATTR(smpl_argsize);
++
++static struct attribute *pfm_fmt_attrs[] = {
++	&attr_smpl_version.attr,
++	&attr_smpl_argsize.attr,
++	NULL
++};
++
++static struct attribute_group pfm_fmt_attr_group = {
++	.attrs = pfm_fmt_attrs,
++};
++
++
++/*
++ * when a sampling format module is inserted, we populate
++ * sysfs with some information
++ */
++int pfm_sysfs_add_fmt(struct pfm_smpl_fmt *fmt)
++{
++	int ret;
++
++	if (pfm_sysfs_init_done == 0)
++		return 0;
++
++	kobject_init(&fmt->kobj);
++	kobject_set_name(&fmt->kobj, fmt->fmt_name);
++	kobj_set_kset_s(fmt, pfm_fmt_subsys);
++	fmt->kobj.parent = &pfm_kernel_fmt_kobj;
++
++	ret = kobject_add(&fmt->kobj);
++	if (ret)
++		return ret;
++
++	ret = sysfs_create_group(&fmt->kobj, &pfm_fmt_attr_group);
++	if (ret)
++		kobject_del(&fmt->kobj);
++
++	return ret;
++}
++
++/*
++ * when a sampling format module is removed, its information
++ * must also be removed from sysfs
++ */
++int pfm_sysfs_remove_fmt(struct pfm_smpl_fmt *fmt)
++{
++	if (pfm_sysfs_init_done == 0)
++		return 0;
++
++	sysfs_remove_group(&fmt->kobj, &pfm_fmt_attr_group);
++	kobject_del(&fmt->kobj);
 +
 +	return 0;
 +}
 +
-+int pfm_pmu_register(struct pfm_pmu_config *cfg)
++static struct attribute *pfm_reg_attrs[] = {
++	&attr_name.attr,
++	&attr_dfl_val.attr,
++	&attr_rsvd_msk.attr,
++	&attr_width.attr,
++	&attr_addr.attr,
++	NULL
++};
++
++static struct attribute_group pfm_reg_attr_group = {
++	.attrs = pfm_reg_attrs,
++};
++
++static ssize_t model_show(void *info, char *buf)
 +{
-+	u16 i, nspec, nspec_ro, num_pmcs, num_pmds, num_wc = 0;
-+	int type, ret = -EBUSY;
-+
-+	if (atomic_read(&perfmon_disabled)) {
-+		PFM_INFO("perfmon disabled, cannot add PMU description");
-+		return -ENOSYS;
-+	}
-+
-+	nspec = nspec_ro = num_pmds = num_pmcs = 0;
-+
-+	/* some sanity checks */
-+	if (cfg == NULL || cfg->pmu_name == NULL) {
-+		PFM_INFO("PMU config descriptor is invalid");
-+		return -EINVAL;
-+	}
-+
-+	/* must have a probe */
-+	if (cfg->probe_pmu == NULL) {
-+		PFM_INFO("PMU config has no probe routine");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * execute probe routine before anything else as it
-+	 * may update configuration tables
-+	 */
-+	if ((*cfg->probe_pmu)() == -1) {
-+		PFM_INFO("%s PMU detection failed", cfg->pmu_name);
-+		return -EINVAL;
-+	}
-+
-+	if (!(cfg->flags & PFM_PMUFL_IS_BUILTIN) && cfg->owner == NULL) {
-+		PFM_INFO("PMU config %s is missing owner", cfg->pmu_name);
-+		return -EINVAL;
-+	}
-+
-+	if (!cfg->num_pmd_entries) {
-+		PFM_INFO("%s needs to define num_pmd_entries", cfg->pmu_name);
-+		return -EINVAL;
-+	}
-+
-+	if (!cfg->num_pmc_entries) {
-+		PFM_INFO("%s needs to define num_pmc_entries", cfg->pmu_name);
-+		return -EINVAL;
-+	}
-+
-+	if (!cfg->counter_width) {
-+		PFM_INFO("PMU config %s, zero width counters", cfg->pmu_name);
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * REG_RO, REG_V not supported on PMC registers
-+	 */
-+	for (i = 0; i < cfg->num_pmc_entries;  i++) {
-+
-+		type = cfg->pmc_desc[i].type;
-+
-+		if (type & PFM_REG_I)
-+			num_pmcs++;
-+
-+		if (type & PFM_REG_WC)
-+			num_wc++;
-+
-+		if (type & PFM_REG_V) {
-+			PFM_INFO("PFM_REG_V is not supported on "
-+				 "PMCs (PMC%d)", i);
-+			return -EINVAL;
-+		}
-+		if (type & PFM_REG_RO) {
-+			PFM_INFO("PFM_REG_RO meaningless on "
-+				 "PMCs (PMC%u)", i);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (num_wc && cfg->pmc_write_check == NULL) {
-+		PFM_INFO("PMC have write-checker but no callback provided\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * check virtual PMD registers
-+	 */
-+	num_wc= 0;
-+	for (i = 0; i < cfg->num_pmd_entries;  i++) {
-+
-+		type = cfg->pmd_desc[i].type;
-+
-+		if (type & PFM_REG_I)
-+			num_pmds++;
-+
-+		if (type & PFM_REG_V) {
-+			nspec++;
-+			if (type & PFM_REG_RO)
-+				nspec_ro++;
-+		}
-+
-+		if (type & PFM_REG_WC)
-+			num_wc++;
-+
-+		/*
-+		 * only up to HW_PMD can overflow, SW PMD cannot
-+		 */
-+		if (type & PFM_REG_C64 && i >= PFM_ARCH_MAX_HW_PMDS) {
-+			PFM_INFO("overflowing PMD counters must be < %d",
-+				PFM_ARCH_MAX_HW_PMDS);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (num_wc && cfg->pmd_write_check == NULL) {
-+		PFM_INFO("PMD have write-checker but no callback provided\n");
-+		return -EINVAL;
-+	}
-+
-+	if (nspec && cfg->pmd_sread == NULL) {
-+		PFM_INFO("PMU config is missing pmd_sread()");
-+		return -EINVAL;
-+	}
-+
-+	nspec = nspec - nspec_ro;
-+	if (nspec && cfg->pmd_swrite == NULL) {
-+		PFM_INFO("PMU config is missing pmd_swrite()");
-+		return -EINVAL;
-+	}
-+
-+	if (num_pmcs >= PFM_MAX_PMCS) {
-+		PFM_INFO("%s PMCS registers exceed name space [0-%u]",
-+			 cfg->pmu_name,
-+			 PFM_MAX_PMCS);
-+		return -EINVAL;
-+	}
-+
-+	spin_lock(&pfm_pmu_conf_lock);
-+
-+	if (pfm_pmu_conf)
-+		goto unlock;
-+
-+	ret = pfm_pmu_config_init(cfg);
-+	if (ret)
-+		goto unlock;
-+
-+	ret = pfm_arch_pmu_config_init(&_pfm_pmu_conf);
-+	if (ret)
-+		goto unlock;
-+
-+	pfm_pmu_conf = &_pfm_pmu_conf;
-+	ret = pfm_sysfs_add_pmu(pfm_pmu_conf);
-+	if (ret) {
-+		pfm_arch_pmu_config_remove();
-+		pfm_pmu_conf = NULL;
-+	}
-+
-+unlock:
-+	spin_unlock(&pfm_pmu_conf_lock);
-+
-+	if (ret) {
-+		PFM_INFO("register %s PMU error %d", cfg->pmu_name, ret);
-+	} else {
-+		PFM_INFO("%s PMU installed", cfg->pmu_name);
-+		/*
-+		 * (re)initialize PMU on each PMU now that we have a description
-+		 */
-+		on_each_cpu(__pfm_init_percpu, cfg, 0, 0);
-+	}
-+	return ret;
++	struct _pfm_pmu_config *p = info;
++	return snprintf(buf, PAGE_SIZE, "%s\n", p->pmu_name);
 +}
-+EXPORT_SYMBOL(pfm_pmu_register);
++static PFM_RO_ATTR(model);
 +
-+/*
-+ * remove PMU description. Caller must pass address of current
-+ * configuration. This is mostly for sanity checking as only
-+ * one config can exist at any time.
-+ *
-+ * We are using the module refcount mechanism to protect against
-+ * removal while the configuration is being used. As long as there is
-+ * one context, a PMU configuration cannot be removed. The protection is
-+ * managed in module logic.
-+ */
-+void pfm_pmu_unregister(struct pfm_pmu_config *cfg)
++static struct attribute *pfm_pmu_desc_attrs[] = {
++	&attr_model.attr,
++	NULL
++};
++
++static struct attribute_group pfm_pmu_desc_attr_group = {
++	.attrs = pfm_pmu_desc_attrs,
++};
++
++static int pfm_sysfs_add_pmu_regs(struct _pfm_pmu_config *pmu)
 +{
-+	if (cfg == NULL)
-+		return;
-+
-+	spin_lock(&pfm_pmu_conf_lock);
-+
-+	BUG_ON(module_refcount(pfm_pmu_conf->owner));
-+
-+	if (cfg->owner == pfm_pmu_conf->owner) {
-+		pfm_arch_pmu_config_remove();
-+		pfm_sysfs_remove_pmu(pfm_pmu_conf);
-+		pfm_pmu_conf = NULL;
-+	}
-+
-+	spin_unlock(&pfm_pmu_conf_lock);
-+}
-+EXPORT_SYMBOL(pfm_pmu_unregister);
-+
-+static int pfm_pmu_request_module(void)
-+{
-+	char *mod_name;
++	struct pfm_reg_desc *reg;
++	unsigned int i, j, k;
 +	int ret;
++	char reg_name[8];
 +
-+	mod_name = pfm_arch_get_pmu_module_name();
-+	if (mod_name == NULL)
-+		return -ENOSYS;
++	reg = pmu->pmc_desc;
++	for(i=0; i < pmu->max_pmc; i++, reg++) {
 +
-+	ret = request_module(mod_name);
++		if (!(reg->type & PFM_REG_I))
++			continue;
 +
-+	PFM_DBG("mod=%s ret=%d\n", mod_name, ret);
++		kobject_init(&reg->kobj);
++
++		reg->kobj.parent = &pmu->kobj;
++		snprintf(reg_name, sizeof(reg_name), "pmc%u", i);
++		kobject_set_name(&reg->kobj, reg_name);
++		kobj_set_kset_s(reg, pfm_regs_subsys);
++
++		ret = kobject_add(&reg->kobj);
++		if (ret)
++			goto undo_pmcs;
++
++		ret = sysfs_create_group(&reg->kobj, &pfm_reg_attr_group);
++		if (ret) {
++			kobject_del(&reg->kobj);
++			goto undo_pmcs;
++		}
++	}
++
++	reg = pmu->pmd_desc;
++	for(j=0; j < pmu->max_pmd; j++, reg++) {
++
++		if (!(reg->type & PFM_REG_I))
++			continue;
++
++		kobject_init(&reg->kobj);
++
++		reg->kobj.parent = &pmu->kobj;
++		snprintf(reg_name, sizeof(reg_name), "pmd%u", j);
++		kobject_set_name(&reg->kobj, reg_name);
++		kobj_set_kset_s(reg, pfm_regs_subsys);
++
++		ret = kobject_add(&reg->kobj);
++		if (ret)
++			goto undo_pmds;
++
++		ret = sysfs_create_group(&reg->kobj, &pfm_reg_attr_group);
++		if (ret) {
++			kobject_del(&reg->kobj);
++			goto undo_pmds;
++		}
++	}
++	return 0;
++undo_pmds:
++	reg = pmu->pmd_desc;
++	for(k = 0; k < j; k++, reg++) {
++		if (!(reg->type & PFM_REG_I))
++			continue;
++		sysfs_remove_group(&reg->kobj, &pfm_reg_attr_group);
++		kobject_del(&reg->kobj);
++	}
++undo_pmcs:
++	reg = pmu->pmc_desc;
++	for(k=0; k < i; k++, reg++) {
++		if (!(reg->type & PFM_REG_I))
++			continue;
++		sysfs_remove_group(&reg->kobj, &pfm_reg_attr_group);
++		kobject_del(&reg->kobj);
++	}
 +	return ret;
 +}
 +
++static int pfm_sysfs_del_pmu_regs(struct _pfm_pmu_config *pmu)
++{
++	struct pfm_reg_desc *reg;
++	unsigned int i;
++
++	reg = pmu->pmc_desc;
++	for(i=0; i < pmu->max_pmc; i++, reg++) {
++
++		if (!(reg->type & PFM_REG_I))
++			continue;
++
++		sysfs_remove_group(&reg->kobj, &pfm_reg_attr_group);
++		kobject_del(&reg->kobj);
++	}
++
++	reg = pmu->pmd_desc;
++	for(i=0; i < pmu->max_pmd; i++, reg++) {
++
++		if (!(reg->type & PFM_REG_I))
++			continue;
++
++		sysfs_remove_group(&reg->kobj, &pfm_reg_attr_group);
++		kobject_del(&reg->kobj);
++	}
++	return 0;
++}
++
 +/*
-+ * autoload:
-+ * 	0     : do not try to autoload the PMU description module
-+ * 	not 0 : try to autoload the PMU description module
++ * when a PMU description module is inserted, we create
++ * a pmu_desc subdir in sysfs and we populate it with
++ * PMU specific information, such as register mappings
 + */
-+int pfm_pmu_conf_get(int autoload)
++int pfm_sysfs_add_pmu(struct _pfm_pmu_config *pmu)
 +{
 +	int ret;
 +
-+	spin_lock(&pfm_pmu_conf_lock);
++	if (pfm_sysfs_init_done == 0)
++		return 0;
 +
-+	if (request_mod_in_progress) {
-+		ret = -ENOSYS;
-+		goto skip;
++	kobject_init(&pmu->kobj);
++	kobject_set_name(&pmu->kobj, "pmu_desc");
++	kobj_set_kset_s(pmu, pfm_pmu_subsys);
++	pmu->kobj.parent = &pfm_kernel_kobj;
++
++	ret = kobject_add(&pmu->kobj);
++	if (ret)
++		return ret;
++
++	ret = sysfs_create_group(&pmu->kobj, &pfm_pmu_desc_attr_group);
++	if (ret)
++		kobject_del(&pmu->kobj);
++
++	ret = pfm_sysfs_add_pmu_regs(pmu);
++	if (ret) {
++		sysfs_remove_group(&pmu->kobj, &pfm_pmu_desc_attr_group);
++                kobject_del(&pmu->kobj);
 +	}
-+	
-+	if (autoload && pfm_pmu_conf == NULL) {
-+
-+		request_mod_in_progress = 1;
-+
-+		spin_unlock(&pfm_pmu_conf_lock);
-+
-+		pfm_pmu_request_module();
-+
-+		spin_lock(&pfm_pmu_conf_lock);
-+
-+		request_mod_in_progress = 0;
-+
-+		/*
-+		 * request_module() may succeed but the module
-+		 * may not have registered properly so we need
-+		 * to check
-+		 */
-+	}
-+
-+	ret = pfm_pmu_conf == NULL ? -ENOSYS : 0;
-+	if (!ret && pmu_is_module(pfm_pmu_conf)
-+	    && !try_module_get(pfm_pmu_conf->owner))
-+		ret = -ENOSYS;
-+skip:
-+	spin_unlock(&pfm_pmu_conf_lock);
-+
 +	return ret;
 +}
 +
-+void pfm_pmu_conf_put(void)
++/*
++ * when a PMU description module is removed, we also remove
++ * all its information from sysfs, i.e., the pmu_desc subdir
++ * disappears
++ */
++int pfm_sysfs_remove_pmu(struct _pfm_pmu_config *pmu)
 +{
-+	if (pfm_pmu_conf == NULL || !pmu_is_module(pfm_pmu_conf))
-+		return;
++	if (pfm_sysfs_init_done == 0)
++		return 0;
 +
-+	spin_lock(&pfm_pmu_conf_lock);
-+	module_put(pfm_pmu_conf->owner);
-+	spin_unlock(&pfm_pmu_conf_lock);
++	pfm_sysfs_del_pmu_regs(pmu);
++	sysfs_remove_group(&pmu->kobj, &pfm_pmu_desc_attr_group);
++	kobject_del(&pmu->kobj);
++
++	return 0;
 +}
---- linux-2.6.22.base/include/linux/perfmon_pmu.h	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.22/include/linux/perfmon_pmu.h	2007-05-29 03:24:14.000000000 -0700
-@@ -0,0 +1,199 @@
-+/*
-+ * Copyright (c) 2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
-+ *
-+ * Interface for PMU description modules
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+  */
-+#ifndef __PERFMON_PMU_H__
-+#define __PERFMON_PMU_H__ 1
-+
-+/*
-+ * generic information about a PMC or PMD register
-+ */
-+struct pfm_reg_desc {
-+	u16  type;		/* role of the register */
-+	u16  reserved1;		/* for future use */
-+	u32  reserved2;		/* for future use */
-+	u64  dfl_val;		/* power-on default value (quiescent) */
-+	u64  rsvd_msk;		/* reserved bits: 1 means reserved */
-+	u64  no_emul64_msk;	/* bits to clear for PFM_REGFL_NO_EMUL64 */
-+	unsigned long hw_addr;	/* HW register address or index */
-+	struct kobject	kobj;	/* for internal use only */
-+	char *desc;		/* HW register description string */
-+};
-+#define to_reg(n) container_of(n, struct pfm_reg_desc, kobj)
-+
-+/*
-+ * pfm_reg_desc declaration help macros
-+ */
-+#define PMC_D(t,d,v,r,n, h)   \
-+	{ .type = t,          \
-+	  .desc = d,          \
-+	  .dfl_val = v,       \
-+	  .rsvd_msk = r,      \
-+	  .no_emul64_msk = n, \
-+	  .hw_addr = h	      \
-+        }
-+
-+#define PMD_D(t,d, h)         \
-+	{ .type = t,          \
-+	  .desc = d,          \
-+	  .rsvd_msk = 0,      \
-+	  .no_emul64_msk = 0, \
-+	  .hw_addr = h	      \
-+        }
-+
-+#define PMX_NA \
-+	{ .type = PFM_REG_NA }
-+
-+/*
-+ * type of a PMU register (16-bit bitmask) for use with pfm_reg_desc.type
-+ */
-+#define PFM_REG_NA	0x00  /* not avail. (not impl.,no access) must be 0 */
-+#define PFM_REG_I	0x01  /* implemented */
-+#define PFM_REG_WC	0x02  /* has write_checker */
-+#define PFM_REG_C64	0x04  /* PMD: 64-bit virtualization */
-+#define PFM_REG_RO	0x08  /* PMD: read-only (writes ignored) */
-+#define PFM_REG_V	0x10  /* PMD: virtual reg (provided by PMU description) */
-+#define PFM_REG_NO64	0x100 /* PMC: supports REGFL_NOEMUL64 */
-+
-+/*
-+ * define some shortcuts for common types
-+ */
-+#define PFM_REG_W	(PFM_REG_WC|PFM_REG_I)
-+#define PFM_REG_W64	(PFM_REG_WC|PFM_REG_NO64|PFM_REG_I)
-+#define PFM_REG_C	(PFM_REG_C64|PFM_REG_I)
-+#define PFM_REG_I64	(PFM_REG_NO64|PFM_REG_I)
-+
-+typedef int (*pfm_pmc_check_t)(struct pfm_context *ctx,
-+			       struct pfm_event_set *set,
-+			       struct pfarg_pmc *req);
-+
-+typedef int (*pfm_pmd_check_t)(struct pfm_context *ctx,
-+			       struct pfm_event_set *set,
-+			       struct pfarg_pmd *req);
-+
-+
-+typedef u64 (*pfm_pmd_sread_t)(struct pfm_context *ctx, unsigned int cnum);
-+typedef void (*pfm_pmd_swrite_t)(struct pfm_context *ctx, unsigned int cnum, u64 val);
-+
-+typedef int (*pfm_check_session_t)(struct pfm_context *ctx);
-+
-+/*
-+ * _pfm_pmu_config is for perfmon core/arch specific use only.
-+ * PMU description modules must use strutc pfm_pmu_config.
-+ *
-+ * The pfm_internal_pmu_config is shared between all CPUs. It is accessed for reading
-+ * only, as such the cache lines will be shared (replicated) and we should not
-+ * suffer any major penalty for having only one copy of the struct on large NUMA
-+ * systems.
-+ */
-+struct _pfm_pmu_config {
-+	u64 impl_pmcs[PFM_PMC_BV];		/* impl PMC */
-+	u64 impl_pmds[PFM_PMD_BV];		/* impl PMD */
-+	u64 impl_rw_pmds[PFM_PMD_BV];		/* impl RW PMD */
-+	u64 cnt_pmds[PFM_PMD_BV];		/* impl counter */
-+	u64 ovfl_mask;				/* overflow mask */
-+	u16 max_pmc;				/* highest+1 impl PMC */
-+	u16 max_pmd;				/* highest+1 impl PMD */
-+	u16 max_rw_pmd;				/* highest+1 impl RW PMD */
-+	u16 first_cnt_pmd;			/* first counting PMD */
-+	u16 max_cnt_pmd;			/* highest+1 impl counter */
-+	u16 num_rw_pmd;				/* number of impl RW PMD */
-+	u16 num_pmcs;				/* logical PMCS  */
-+	u16 num_pmds;				/* logical PMDS  */
-+	u16 num_counters;			/* PMC/PMD counter pairs */
-+
-+	char *pmu_name;				/* PMU family name */
-+	char *version;				/* config module version number */
-+	int counter_width;			/* width of hardware counter */
-+
-+	struct pfm_reg_desc	pmc_desc[PFM_MAX_PMCS+1];/* PMC register descriptions */
-+	struct pfm_reg_desc	pmd_desc[PFM_MAX_PMDS+1];/* PMD register descriptions */
-+
-+	pfm_pmc_check_t		pmc_write_check;/* PMC write checker callback (option) */
-+	pfm_pmd_check_t		pmd_write_check;/* PMD write checker callback (option) */
-+
-+	pfm_check_session_t	load_context;	/* on pfm_load_context() (option) */
-+	pfm_check_session_t	unload_context;	/* on pfm_unload_context(option)*/
-+
-+	pfm_pmd_sread_t		pmd_sread;	/* PMD model specific read (option) */
-+	pfm_pmd_swrite_t	pmd_swrite;	/* PMD model specific write (option) */
-+	void			*arch_info;	/* arch-specific information */
-+	u32			flags;		/* set of flags */
-+
-+	struct module		*owner;		/* pointer to module struct */
-+	struct kobject	kobj;			/* for internal use only */
-+};
-+#define to_pmu(n) container_of(n, struct _pfm_pmu_config, kobj)
-+
-+/*
-+ * structure used by pmu description modules
-+ *
-+ * probe_pmu() routine return value:
-+ * 	- 1 means recognized PMU
-+ * 	- 0 means not recognized PMU
-+ */
-+struct pfm_pmu_config {
-+	char *pmu_name;				/* PMU family name */
-+	char *version;				/* config module version number */
-+
-+	int counter_width;			/* width of hardware counter */
-+
-+	struct pfm_reg_desc	*pmc_desc;	/* PMC register descriptions */
-+	struct pfm_reg_desc	*pmd_desc;	/* PMD register descriptions */
-+
-+	pfm_pmc_check_t		pmc_write_check;/* PMC write checker callback (optional) */
-+	pfm_pmd_check_t		pmd_write_check;/* PMD write checker callback (optional) */
-+	pfm_pmd_check_t		pmd_read_check;	/* PMD read checker callback  (optional) */
-+
-+	pfm_check_session_t	load_context;	/* on pfm_load_context() (option) */
-+	pfm_check_session_t	unload_context;	/* on pfm_unload_context(option)*/
-+
-+	pfm_pmd_sread_t		pmd_sread;	/* PMD model specific read (optional) */
-+	pfm_pmd_swrite_t	pmd_swrite;	/* PMD model specific write (optional) */
-+
-+	int             	(*probe_pmu)(void);/* probe PMU routine */
-+
-+	u16			num_pmc_entries;/* number of entries in pmc_desc */
-+	u16			num_pmd_entries;/* number of entries in pmd_desc */
-+
-+	void			*arch_info;	/* arch-specific information */
-+	u32			flags;		/* set of flags */
-+
-+	struct module		*owner;		/* pointer to module struct */
-+};
-+
-+/*
-+ * pfm_pmu_config flags
-+ */
-+#define PFM_PMUFL_IS_BUILTIN	0x1	/* pmu config is compiled in */
-+
-+/*
-+ * we need to know whether the PMU description is builtin or compiled
-+ * as a module
-+ */
-+#ifdef MODULE
-+#define PFM_PMU_BUILTIN_FLAG	0	/* not built as a module */
-+#else
-+#define PFM_PMU_BUILTIN_FLAG	PFM_PMUFL_IS_BUILTIN /* built as a module */
-+#endif
-+
-+int pfm_pmu_register(struct pfm_pmu_config *cfg);
-+void pfm_pmu_unregister(struct pfm_pmu_config *cfg);
-+
-+#endif /* __PERFMON_PMU_H__ */
