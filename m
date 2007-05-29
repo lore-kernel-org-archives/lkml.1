@@ -1,78 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbXE2Gza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763079AbXE2HA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760179AbXE2Gza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 02:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbXE2GzW
+	id S1763079AbXE2HA6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 03:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbXE2HAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 02:55:22 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:36634 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbXE2GzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 02:55:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=RvP4wY1aeMWW97UOW6+UOwtLGUdR/zN4gkatC39v52BV2jAXM661aVvQofez3EGaTw4hVjexi8LLVQiPP8r1CRCKmuf+C5lrH4k0IQtSAVK6rahhafIO/kTbU3yqCHkrbd4+LnF4yw8EeJXz5voqt1i92YXWdndu2pLu8vvj3Iw=
-Message-ID: <3ae72650705282355j40a0b03bt96661bc1263efc35@mail.gmail.com>
-Date: Tue, 29 May 2007 08:55:20 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Romano Giannetti" <romanol@upcomillas.es>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, "Justin Forbes" <jmforbes@linuxtx.org>,
-       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>,
-       "Chuck Wolber" <chuckw@quantumlinux.com>,
-       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
-       "Michael Krufky" <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <alpine.LFD.0.98.0705241736120.26602@woody.linux-foundation.org>
+	Tue, 29 May 2007 03:00:51 -0400
+Received: from ns.suse.de ([195.135.220.2]:60556 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752601AbXE2HAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 03:00:50 -0400
+From: Neil Brown <neilb@suse.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Date: Tue, 29 May 2007 17:00:36 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1179870110.16656.2.camel@localhost>
-	 <alpine.LFD.0.98.0705240854250.26602@woody.linux-foundation.org>
-	 <20070524200435.GA9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241323361.26602@woody.linux-foundation.org>
-	 <20070524220017.GC9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241507050.26602@woody.linux-foundation.org>
-	 <20070524221743.GD9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241550030.26602@woody.linux-foundation.org>
-	 <20070524231852.GG9604@elf.ucw.cz>
-	 <alpine.LFD.0.98.0705241736120.26602@woody.linux-foundation.org>
-X-Google-Sender-Auth: e1f48f33a39a3fb5
+Message-ID: <18011.53140.20314.43413@notabene.brown>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Peter Linich <plinich@cse.unsw.edu.au>
+Subject: Re: [PATCH/RFC] Is it OK for 'read' to return nuls for a file   that
+ never had nuls in it?
+In-Reply-To: message from Nick Piggin on Tuesday May 29
+References: <18011.51290.257450.26100@notabene.brown>
+	<465BCAA9.3070707@yahoo.com.au>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/25/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> On Fri, 25 May 2007, Pavel Machek wrote:
-> >
-> > 2) we need to preload firmware during _suspend_. I AM TELLING THAT TO
-> > PEOPLE FOR FIVE YEARS NOW.
->
-> And people aren't listening. Have you thought about _why_?
->
-> The thing is, it should just work. Even without pre-loading.
->
-> > Imageine we killed freezer. Also imagine Romano has IDE card his
-> > PCMCIA slot. Kaboom, we solved nothing.
->
-> Don't be silly. We solved it. The firmware has to be loadable from
-> somewhere else, since otherwise his IDE card wouldn't have been accessible
-> in the first place!
+On Tuesday May 29, nickpiggin@yahoo.com.au wrote:
+> > 
+> > Questions:
+> >   - Is this a problem, and should it be fixed (I think "yes").
+> 
+> I think you are right.
 
-The shiny userspace firmware loading causes problems since it exists,
-every second box has problems with it, in all sorts of situations. If
-people are still sold to the idea of userspace firmware loading, why
-don't we keep the data in the driver, instead of immediately
-discarding it after the first upload? Not to waste a few hundred
-kilobytes? That doesn't sound like a convincing deal, after all the
-years people try to work around the issues it causes.
+That's encouraging - thanks.
 
-Kay
+> 
+> >   - Is the patch appropriate, and does it have no negative
+> >     consequences?.
+> >     (Obviously some comments should be tidied up to reflect the new
+> >     reality).
+> 
+> Would it be better (and closer to following the existing logic) if
+> we sampled i_size before testing each page for uptodateness? It might
+> also cost a little less in the fastpath case of finding an uptodate
+> page.
+
+Uhm. no.
+
+It doesn't address the issue which is that we need to check i_size
+*after* we have got hold of the page and believe it to be uptodate.
+
+And just to check, I race the test with your patch and I get a nice
+little row of "!!!!!" - it is finding zeros still.
+
+But we could possibly remove the early checks on end_index, that
+makes sense (I've also moved the comment).
+
+Thanks,
+NeilBrown
+
+
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./mm/filemap.c |   72 ++++++++++++++++++++++-----------------------------------
+ 1 file changed, 28 insertions(+), 44 deletions(-)
+
+diff .prev/mm/filemap.c ./mm/filemap.c
+--- .prev/mm/filemap.c	2007-05-29 16:45:26.000000000 +1000
++++ ./mm/filemap.c	2007-05-29 16:58:23.000000000 +1000
+@@ -875,13 +875,11 @@ void do_generic_mapping_read(struct addr
+ {
+ 	struct inode *inode = mapping->host;
+ 	unsigned long index;
+-	unsigned long end_index;
+ 	unsigned long offset;
+ 	unsigned long last_index;
+ 	unsigned long next_index;
+ 	unsigned long prev_index;
+ 	unsigned int prev_offset;
+-	loff_t isize;
+ 	struct page *cached_page;
+ 	int error;
+ 	struct file_ra_state ra = *_ra;
+@@ -894,27 +892,12 @@ void do_generic_mapping_read(struct addr
+ 	last_index = (*ppos + desc->count + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
+ 	offset = *ppos & ~PAGE_CACHE_MASK;
+ 
+-	isize = i_size_read(inode);
+-	if (!isize)
+-		goto out;
+-
+-	end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
+ 	for (;;) {
+ 		struct page *page;
++		unsigned long end_index;
++		loff_t isize;
+ 		unsigned long nr, ret;
+ 
+-		/* nr is the maximum number of bytes to copy from this page */
+-		nr = PAGE_CACHE_SIZE;
+-		if (index >= end_index) {
+-			if (index > end_index)
+-				goto out;
+-			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
+-			if (nr <= offset) {
+-				goto out;
+-			}
+-		}
+-		nr = nr - offset;
+-
+ 		cond_resched();
+ 		if (index == next_index)
+ 			next_index = page_cache_readahead(mapping, &ra, filp,
+@@ -929,6 +912,32 @@ find_page:
+ 		if (!PageUptodate(page))
+ 			goto page_not_up_to_date;
+ page_ok:
++		/*
++		 * i_size must be checked after we know the page is Uptodate.
++		 *
++		 * Checking i_size after the check allows us to calculate
++		 * the correct value for "nr", which means the zero-filled
++		 * part of the page is not copied back to userspace (unless
++		 * another truncate extends the file - this is desired though).
++		 */
++
++		isize = i_size_read(inode);
++		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++		if (unlikely(!isize || index > end_index)) {
++			page_cache_release(page);
++			goto out;
++		}
++
++		/* nr is the maximum number of bytes to copy from this page */
++		nr = PAGE_CACHE_SIZE;
++		if (index == end_index) {
++			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
++			if (nr <= offset) {
++				page_cache_release(page);
++				goto out;
++			}
++		}
++		nr = nr - offset;
+ 
+ 		/* If users can be writing to this page using arbitrary
+ 		 * virtual addresses, take care about potential aliasing
+@@ -1015,31 +1024,6 @@ readpage:
+ 			unlock_page(page);
+ 		}
+ 
+-		/*
+-		 * i_size must be checked after we have done ->readpage.
+-		 *
+-		 * Checking i_size after the readpage allows us to calculate
+-		 * the correct value for "nr", which means the zero-filled
+-		 * part of the page is not copied back to userspace (unless
+-		 * another truncate extends the file - this is desired though).
+-		 */
+-		isize = i_size_read(inode);
+-		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
+-		if (unlikely(!isize || index > end_index)) {
+-			page_cache_release(page);
+-			goto out;
+-		}
+-
+-		/* nr is the maximum number of bytes to copy from this page */
+-		nr = PAGE_CACHE_SIZE;
+-		if (index == end_index) {
+-			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
+-			if (nr <= offset) {
+-				page_cache_release(page);
+-				goto out;
+-			}
+-		}
+-		nr = nr - offset;
+ 		goto page_ok;
+ 
+ readpage_error:
