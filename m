@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbXE2KwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbXE2Kwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbXE2KwX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 06:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764846AbXE2KwE
+	id S1765035AbXE2Kwk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 06:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764850AbXE2KwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 06:52:04 -0400
-Received: from verein.lst.de ([213.95.11.210]:42744 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764836AbXE2KwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 06:52:01 -0400
-Date: Tue, 29 May 2007 12:51:35 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Christoph Hellwig <hch@lst.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 7/7] ps3: FLASH ROM Storage Driver
-Message-ID: <20070529105135.GE29351@lst.de>
-References: <20070525083607.784351000@sonycom.com> <20070525083632.815300000@sonycom.com> <20070529095355.GA29351@lst.de> <Pine.LNX.4.62.0705291157260.7698@pademelon.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0705291157260.7698@pademelon.sonytel.be>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	Tue, 29 May 2007 06:52:06 -0400
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:54309 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764839AbXE2KwD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 06:52:03 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <a781481a0705290341w4c403c1ej43565a1e66805522@mail.gmail.com>
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <292C7F80-B80D-4645-8FF5-49BF911398E1@cam.ac.uk> <a781481a0705290341w4c403c1ej43565a1e66805522@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <37DB6EAF-8954-448D-BD29-864FEC6540CE@cam.ac.uk>
+Cc: "Nitin Gupta" <nitingupta910@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
+       linuxcompressed-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Richard Purdie" <richard@openedhand.com>,
+       "Bret Towe" <magnade@gmail.com>
+Content-Transfer-Encoding: 7bit
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: Re: Makefile question (was [RFC] LZO de/compression support - take 6)
+Date: Tue, 29 May 2007 11:51:48 +0100
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 11:57:52AM +0200, Geert Uytterhoeven wrote:
-> On Tue, 29 May 2007, Christoph Hellwig wrote:
-> > On Fri, May 25, 2007 at 10:36:14AM +0200, Geert.Uytterhoeven@sonycom.com wrote:
-> > > Add a FLASH ROM Storage Driver for the PS3:
-> > >   - Implemented as a misc character device driver
-> > >   - Uses a fixed 256 KiB buffer allocated from boot memory as the hypervisor
-> > >     requires the writing of aligned 256 KiB blocks
-> > 
-> > Looks good, but please either make the driver aware of multiple devices
-> > even if they can't happen currently, or alternatively error out in
-> > ->probe if of some reason it's called for a second device.
-> 
-> ps3flash_probe() does return -EBUSY when called for a second device.
+On 29 May 2007, at 11:41, Satyam Sharma wrote:
 
-You're right, I missed that bit.
+> This is syntactically correct (and wouldn't produce any build errors),
+> but it's quite ... strange, still. Why would I even want to /build/  
+> the
+> compress code if all I selected was the decompress option?
+
+Apologies, you gave me the answer I was looking for (make is  
+'intelligent' enough not to build the same file twice in this  
+situation...) but I think you may have missed the makefile in the  
+lzo1x directory:
+
+> diff --git a/lib/lzo1x/Makefile b/lib/lzo1x/Makefile
+> new file mode 100644
+> index 0000000..7b56a4d
+> --- /dev/null
+> +++ b/lib/lzo1x/Makefile
+> @@ -0,0 +1,2 @@
+> +obj-$(CONFIG_LZO1X_COMPRESS) += lzo1x_compress.o
+> +obj-$(CONFIG_LZO1X_DECOMPRESS) += lzo1x_decompress.o
+
+Thus, the Kconfig options for compress/decompress won't be simply  
+'dummy' options...
+
+Given the shared private header between the compress and decompress  
+code, I don't think there is any need to separate the code into two  
+directories a la the zlib code.
+
+Sorry for noise,
+
+Michael-Luke
