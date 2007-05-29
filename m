@@ -1,124 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbXE2Kln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764436AbXE2Kor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760892AbXE2Kln (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 06:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbXE2Klf
+	id S1764436AbXE2Kor (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 06:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbXE2Kok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 06:41:35 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:25851 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756004AbXE2Kle (ORCPT
+	Tue, 29 May 2007 06:44:40 -0400
+Received: from cz-prg09a-av06.karneval.cz ([81.27.192.14]:58694 "EHLO
+	av6.karneval.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756004AbXE2Koj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 06:41:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qqT3TkvTcg37NSMwEj7buVR44/P362+Is0qFz8jvm2c2JzfIjPw8Qv2rIGTDg0/4S5KxRexohV525gu3YJhtRaVBqClaAB96fiC5EBSdtCWSh/mb9Yubas1C3M1CxE01OVX/R0/NGIOKCBOy5pNj8UXKrmzq60a9/9OUnUSO4LQ=
-Message-ID: <a781481a0705290341w4c403c1ej43565a1e66805522@mail.gmail.com>
-Date: Tue, 29 May 2007 16:11:32 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Michael-Luke Jones" <mlj28@cam.ac.uk>
-Subject: Re: Makefile question (was [RFC] LZO de/compression support - take 6)
-Cc: "Nitin Gupta" <nitingupta910@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Richard Purdie" <richard@openedhand.com>,
-       "Bret Towe" <magnade@gmail.com>
-In-Reply-To: <292C7F80-B80D-4645-8FF5-49BF911398E1@cam.ac.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
-	 <292C7F80-B80D-4645-8FF5-49BF911398E1@cam.ac.uk>
+	Tue, 29 May 2007 06:44:39 -0400
+Message-id: <253477319205412858@wsc.cz>
+Subject: [PATCH 1/2] Char: vt, use kzalloc
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Date: Tue, 29 May 2007 12:43:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/29/07, Michael-Luke Jones <mlj28@cam.ac.uk> wrote:
-> On 28 May 2007, at 15:34, Nitin Gupta wrote:
->
-> > diff --git a/lib/Kconfig b/lib/Kconfig
-> > index 2e7ae6b..eb95eaa 100644
-> > --- a/lib/Kconfig
-> > +++ b/lib/Kconfig
-> > @@ -64,6 +64,12 @@ config ZLIB_INFLATE
-> > config ZLIB_DEFLATE
-> >       tristate
-> >
-> > +config LZO1X_COMPRESS
-> > +     tristate
-> > +
-> > +config LZO1X_DECOMPRESS
-> > +     tristate
-> > +
-> > #
-> > # Generic allocator support is selected if needed
-> > #
-> > diff --git a/lib/Makefile b/lib/Makefile
-> > index c8c8e20..448ae37 100644
-> > --- a/lib/Makefile
-> > +++ b/lib/Makefile
-> > @@ -49,6 +49,8 @@ obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
-> > obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
-> > obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate/
-> > obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
-> > +obj-$(CONFIG_LZO1X_COMPRESS) += lzo1x/
-> > +obj-$(CONFIG_LZO1X_DECOMPRESS) += lzo1x/
-> >
-> > obj-$(CONFIG_TEXTSEARCH) += textsearch.o
-> > obj-$(CONFIG_TEXTSEARCH_KMP) += ts_kmp.o
->
-> Hey there,
->
-> Is this syntax OK for Makefile use? I'm only asking out of personal
-> ignorance and because I'd use:
+vt, use kzalloc
 
-> > +obj-$(CONFIG_LZO1X_COMPRESS) += lzo1x/
-> > +obj-$(CONFIG_LZO1X_DECOMPRESS) += lzo1x/
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-This is syntactically correct (and wouldn't produce any build errors),
-but it's quite ... strange, still. Why would I even want to /build/ the
-compress code if all I selected was the decompress option?
+---
+commit daa738839b831a78b895ad9cec1da0157e4b1be7
+tree 039d7b54429bd8256f59e493f17e43947a2f173e
+parent 1a5e44385253ef9a193badf768f40543af6996ca
+author Jiri Slaby <jirislaby@gmail.com> Sun, 27 May 2007 09:49:53 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Tue, 29 May 2007 12:41:08 +0200
 
-Also, when both the options are y, make would just make the first
-target, then recurse back into that same directory again and skip
-it because it just made it ... which, although harmless, is ... strange.
+ drivers/char/vt.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-So I'm not sure if we really want both the options to resolve to the
-same make target -- the kernel typically has more users of
-_decompress_ than those of _compress_, so it does make some sense
-to completely decouple the two into separate directories in lib/ and have
-separate Kconfig options (as well as Makefile target subdirs) for them.
-
-> Kconfig:
->
-> config LZO1X_COMPRESS
->         select LZO1X
->         tristate
->
-> config LZO1X_DECOMPRESS
->         select LZO1X
->         tristate
->
-> config LZO1X
->         tristate (or boolean??)
-
-Hmmm ... if this is /really/ what we want to do, what's wrong with simply:
-
-config LZO1x
-	tristate
-
-?
-
-> Makefile:
->
-> obj-$(CONFIG_LZO1X) += lzo1x/
-
-I find nothing wrong with the style being used for ZLIB presently. Agreed,
-users of ZLIB do typically want to select only decompress *without*
-compress whereas there's no such user for LZO currently, but I see
-nothing wrong in just copying over ZLIB's style for LZO too (i.e. decoupling
-the compress and decompress code into separate subdirs in lib/).
-And if not, then why have two separate (dummy) Kconfig options either?
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index bbd9fc4..1cc960a 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -729,10 +729,9 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ 	    /* although the numbers above are not valid since long ago, the
+ 	       point is still up-to-date and the comment still has its value
+ 	       even if only as a historical artifact.  --mj, July 1998 */
+-	    vc = kmalloc(sizeof(struct vc_data), GFP_KERNEL);
++	    vc = kzalloc(sizeof(struct vc_data), GFP_KERNEL);
+ 	    if (!vc)
+ 		return -ENOMEM;
+-	    memset(vc, 0, sizeof(*vc));
+ 	    vc_cons[currcons].d = vc;
+ 	    INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+ 	    visual_init(vc, currcons, 1);
