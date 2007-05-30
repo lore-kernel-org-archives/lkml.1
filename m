@@ -1,132 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbXE3N5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbXE3OAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995AbXE3N5g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbXE3N5N
+	id S1754391AbXE3OAn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXE3OAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:57:13 -0400
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:52892 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755579AbXE3N5L convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:57:11 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 30 May 2007 10:00:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33931 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753387AbXE3OAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 10:00:33 -0400
+Message-ID: <465D8379.3090109@garzik.org>
+Date: Wed, 30 May 2007 10:00:25 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: kexec and aacraid broken
-Date: Wed, 30 May 2007 09:57:08 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01A54FEE@otce2k301.adaptec.com>
-In-reply-to: <20070530132430.GA3773@in.ibm.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: kexec and aacraid broken
-Thread-Index: AceivekEnA4eXpC5T4mDHXWYbaw+sgAAL+uw
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: <vgoyal@in.ibm.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: Thomas Klein <osstklei@de.ibm.com>
+CC: Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <ossthema@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.22-rc3] ehea: Fixed multi queue RX bug
+References: <200705301239.23934.osstklei@de.ibm.com>
+In-Reply-To: <200705301239.23934.osstklei@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is clouding the issue, Vivek.
-
-There should be no harm, except to time, resetting the adapter. I do
-want to optimize for boot time, but do not view this as a 'bug' if the
-Adapter should reset during the initialization procedure. We need
-instead to harden the driver to deal with Adapters that behave in an
-untimely manner as a result of the reset since this generically deals
-with all possible transitions (boot w/o BIOS, w/BIOS, kexec and kdump).
-
-I will look into a possibility the driver is not performing the clean
-shutdown as a result of a kexec, but that is a refinement and should not
-be considered a fix for *this* reported problem; it merely moves the
-problem to a kdump. The driver only disables the interrupts when the
-driver is .remove'd (aac_remove_one) and not for .shutdown
-(aac_shutdown). The later merely tells the firmware to stop performing
-builds if in progress, flush the cache, and all subsequent writes are
-performed in write-through mode; it does not clear out the driver
-resources and leaves that to the .remove function only. The failure of
-.remove being called may be a result of this being a boot driver?
-
-Also, the code:
-
-        dev->OIMR = status = rx_readb (dev, MUnit.OIMR);
-        if ((((status & 0x0c) != 0x0c) . . .
-
-detects if the adapter's interrupts were disabled, as would happen on a
-clean shutdown. Some of the Adapters can NOT disable their interrupts,
-and some have a default state with the interrupts enabled. If the
-Adapter still has active interrupts, then there is no telling what
-transpired before and it is considered a safety measure to reset the
-Adapter in these cases. I'd prefer to err on the side of resetting the
-Adapter superfluously than deal with a condition where the Adapter could
-be in an unknown state with a possibility of sustaining an outstanding
-command and associated interrupt (which was the whole reason this code
-was introduced).
-
-In time I am sure, I will refine this code to incorporate Quirks for
-adapters that have unusual conditions for the above stated interrupt and
-remove the possible superfluous reset.
-
-Yinghai, can you please provide the Adapter designation just in case it
-could be the first in this refined list. I will NOT consider this
-refinement a bugfix for the same reasons stated above.
-
-Sincerely -- Mark Salyzyn
-
-> -----Original Message-----
-> From: Vivek Goyal [mailto:vgoyal@in.ibm.com] 
-> Sent: Wednesday, May 30, 2007 9:25 AM
-> To: Salyzyn, Mark
-> Cc: Andrew Morton; Yinghai Lu; Eric W. Biederman; Linux 
-> Kernel Mailing List; linux-scsi@vger.kernel.org; Michal Piotrowski
-> Subject: Re: kexec and aacraid broken
+Thomas Klein wrote:
+> Must access the respective queue's dummy netdev instead of the port's netdev.
 > 
-> 
-> On Wed, May 30, 2007 at 07:44:02AM -0400, Salyzyn, Mark wrote:
-> > I believe this issue is a result of the 
-> aacraid_commit_reset patch (as
-> > posted for scsi-misc-2.6, enclosed to permit testing) not 
-> yet propagated
-> > to the 2.6.22-rc3 tree.
-> > 
-> > This is the adapter taking longer than 3 minutes to start 
-> after a reset.
-> > I seriously doubt either of these patches suggested below 
-> will have an
-> > affect. And if they do, they are not root cause, one 
-> reduces the chances
-> > that the card will be reset during initialization (thus 
-> applied would
-> > likely mitigate this problem), the other prevents a panic when the
-> > Adapter is reset (removed, would result in dogs and cats 
-> sleeping with
-> > each other).
-> > 
-> > Please use kernel parameter aacraid.startup_timeout=540 
-> (merely larger
-> > than the default 180 seconds) when spawning the kexec or see if the
-> > aacraid_commit_reset.patch resolves the issue to confirm my hunch.
-> > 
-> 
-> Hi Mark,
-> 
-> During a normal kexec (not kdump) adapter reset should not have taken
-> place at all. device_shutdown() routines should have taken care to
-> bring the device to a known sane state in first kernel so that second
-> kernel can initialize it without doing a reset.
-> 
-> With reset patch, now reset triggers on every kexec. Previously
-> that was not the case with kexec and adapter used to come up. I think
-> this needs to be looked into.
-> 
-> Thanks
-> Vivek
-> 
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+
+applied
+
+
