@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbXE3GAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbXE3GB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbXE3GAG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 02:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXE3F74
+	id S1752758AbXE3GB0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 02:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbXE3GBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 01:59:56 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:24524 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbXE3F7z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 01:59:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=VyJURV+c7+2nkVjekbByxU/UAOiPTiCkxwjzHcnamcfq/eZ3SSniTx3ShhgVsyLp6pQTduXlk6hyWP7123W5lzP+/vlRZA+JR3+vo+o8QNrs+iW8ZNkxXtMVjNBUCOg+8JOvWSOsKQDqLrRuCMrlFEmIMvN0JD6Se8fpCUqez6E=
-Message-ID: <84144f020705292259o6bfe7613v9a236227ee8f13be@mail.gmail.com>
-Date: Wed, 30 May 2007 08:59:54 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Tero Roponen" <teanropo@jyu.fi>
+	Wed, 30 May 2007 02:01:20 -0400
+Received: from posti5.jyu.fi ([130.234.4.34]:40276 "EHLO posti5.jyu.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750927AbXE3GBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 02:01:19 -0400
+Date: Wed, 30 May 2007 09:00:34 +0300 (EEST)
+From: Tero Roponen <teanropo@jyu.fi>
+X-X-Sender: teanropo@jalava.cc.jyu.fi
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Whitcroft <apw@shadowen.org>
 Subject: Re: tty-related oops in latest kernel(s)?
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Andy Whitcroft" <apw@shadowen.org>
 In-Reply-To: <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705300854570.11432@jalava.cc.jyu.fi>
+References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi> 
+ <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com> 
+ <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com> 
+ <Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi> 
+ <84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com> 
+ <Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
+ <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
-	 <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
-	 <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
-	 <Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi>
-	 <84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com>
-	 <Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
-	 <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
-X-Google-Sender-Auth: 520757c684d5ce46
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/30/07, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+On Wed, 30 May 2007, Pekka Enberg wrote:
+
+> On 5/30/07, Tero Roponen <teanropo@jyu.fi> wrote:
+> > Hmmm, I just found something interesting. In 2.6.21.3 the /sbin/init
+> > gets corrupted when I watch the video!
+> >
+> > $ cp /sbin/init init.before
+> > $ mplayer kiwi.flv
+> > $ cp /sbin/init init.after
+> >
+> > The sha1sums are here:
+> >
+> > 52c8d643057619cbe137b8e69d4709ce3bdd832d  init.after
+> > 8efc7864a5b535a9e336fa82e9d7f112f3d956c1  init.before
+> >
+> > It seems that something corrupts memory somewhere...
+> 
+> To debug this a bit further:
+> 
+> $ od -a -t x1 -v init.after > init.after.dump
+> $ od -a -t x1 -v init.before > init.before.dump
+> $ diff -u init.before.dump init.after.dump | less
+> 
+> -0011340  nul nul nul  e9  f0  fe  ff  ff  ff   %   < soh enq  bs   h  80
+> -           00  00  00  e9  f0  fe  ff  ff  ff  25  3c  01  05  08  68  80
+> +0010000    y ack nul nul   y ack nul nul   y ack nul nul   y ack nul nul
+> +           79  06  00  00  79  06  00  00  79  06  00  00  79  06  00  00
+> +0010020    y ack nul nul   y ack nul nul   y ack nul nul   y ack nul nul
+> +           79  06  00  00  79  06  00  00  79  06  00  00  79  06  00  00
+> +0011340    y ack nul nul   y ack nul nul  ff   %   < soh enq  bs   h  80
+> +           79  06  00  00  79  06  00  00  ff  25  3c  01  05  08  68  80
+> 
 > The file at offset 0010000 - 0011348 is overwritten with the byte
 > pattern 79 06 00 00.
->
+> 
 > Do you see anything in the logs or is this a silent corruption? Did
 > you see this corruption with 2.6.19 or 2.6.22-rc3?
 
-Btw, please send us a strace log of the mplayer run for 2.6.20.3 and
-2.6.21-rc3 so that we can see what it's doing. Furthermore, if you can
-bisect this, please treat the bugs as separate for now.
+2.6.19.2 has been very stable for me.
+2.6.21.3 has this silent corruption (nothing in logs)
+2.6.22-rc3 oopses when watching videos.
+
+-- 
+Tero Roponen
