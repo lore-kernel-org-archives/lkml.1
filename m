@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbXE3UEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbXE3UGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbXE3UEH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:04:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXE3UDz
+	id S1757399AbXE3UGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbXE3UGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:03:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44369 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbXE3UDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:03:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: Sending signals to a kernel thread, broken in 2.6.22
-Date: Wed, 30 May 2007 22:09:20 +0200
-User-Agent: KMail/1.9.5
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0705291649010.2974-100000@iolanthe.rowland.org> <1180528720.3976.42.camel@nigel.suspend2.net>
-In-Reply-To: <1180528720.3976.42.camel@nigel.suspend2.net>
+	Wed, 30 May 2007 16:06:11 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:58200 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751424AbXE3UGK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 16:06:10 -0400
+Date: Wed, 30 May 2007 13:00:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
+ <20070530084252.GA15708@elte.hu>
+ <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705302209.20963.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 30 May 2007 14:38, Nigel Cunningham wrote:
-> Hi.
+
+
+On Wed, 30 May 2007, Davide Libenzi wrote:
 > 
-> On Tue, 2007-05-29 at 16:55 -0400, Alan Stern wrote:
-> > The g_file_storage driver uses a kernel thread and communicates with
-> > that thread in part by means of signals.  It also relies on the thread 
-> > receiving signals from userspace as an indication that the thread 
-> > should terminate.
-> > 
-> > This was all working in 2.6.21, but as of 2.6.22-rc3 the signal 
-> > delivery mechanism (entirely within the kernel!) is no longer 
-> > functional.
-> > 
-> > What's the story?  Do I need to do something new and different to get 
-> > signals working again?  Should I avoid using signals entirely?
-> > 
-> > Thanks for any help,
-> > 
-> > Alan Stern
-> 
-> Hmm. Given Oleg's reply, it could pay to check that freezable kernel
-> threads are still being frozen.
+> Here I think we are forgetting that glibc is userspace and there's no 
+> separation between the application code and glibc code. An application 
+> linking to glibc can break glibc in thousand ways, indipendently from fds 
+> or not fds. Like complaining that glibc is broken because printf() 
+> suddendly does not work anymore ;)
 
-I think they are.  Otherwise the freezer would have been failing.
+No, Davide, the problem is that some applications depend on getting 
+_specific_ file descriptors.
 
-> I'm about to go off to bed, and am away for half the day tomorrow, but
-> will check as soon as I can if noone else gets to it first. (Rafael
-> added for a heads-up, just in case he hasn't noticed this thread).
+For example, if you do
 
-I have noticed it, but thanks anyway. :-)
+	close(0);
+	.. something else ..
+	if (open("myfile", O_RDONLY) < 0)
+		exit(1);
 
-Greetings,
-Rafael
+you can (and should) depend on the open returning zero.
+
+So library routines *must not* open file descriptors in the normal space.
+
+(The same is true of real applications doing the equivalent of
+
+	for (i = 0; i < NR_OPEN; i++)
+		close(i);
+
+to clean up all file descriptors before doing something new. And yes, I 
+think it was bash that used to *literally* do something like that a long 
+time ago.
+
+Another example of the same thing: people open file descriptors and know 
+that they'll be "dense" in the result, and then use "select()" on them.
+
+So it's true that file descriptors can't be used randomly by the standard 
+libraries - they'd need to have some kind of separate "private space".
+
+Which *could* be something as simple as saying "bit 30 in the file 
+descriptor specifies a separate fd space" along with some flags to make 
+open and friends return those separate fd's. That makes them useless for 
+"select()" (which assumes a flat address space, of course), but would be 
+useful for just about anything else.
+
+		Linus
