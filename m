@@ -1,102 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbXE3V53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXE3WDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761349AbXE3V53 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759329AbXE3V5T
+	id S1760016AbXE3WDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbXE3WDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:57:19 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:50787 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759313AbXE3V5S (ORCPT
+	Wed, 30 May 2007 18:03:13 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53968 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756967AbXE3WDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:57:18 -0400
-Message-ID: <465DF272.3000108@cosmosbay.com>
-Date: Wed, 30 May 2007 23:53:54 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 30 May 2007 18:03:12 -0400
+Date: Wed, 30 May 2007 15:03:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3 -mm] slub: use lib/hexdump
+In-Reply-To: <465DF2A2.2070801@oracle.com>
+Message-ID: <Pine.LNX.4.64.0705301501470.7502@schroedinger.engr.sgi.com>
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+ <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
+ <20070523153730.e0e9e91d.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
+ <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
+ <20070524073131.GA17501@elte.hu> <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
+ <20070524142908.f39f42ea.akpm@linux-foundation.org>
+ <20070524145517.1f32cd94.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com>
+ <20070530143451.f4a844bc.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0705301443020.3358@schroedinger.engr.sgi.com>
+ <465DF135.80202@oracle.com> <Pine.LNX.4.64.0705301451140.3709@schroedinger.engr.sgi.c!
+  om> <465DF2A2.2070801@oracle.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org> <465DDF0A.8080107@cosmosbay.com> <alpine.LFD.0.98.0705301341480.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705301341480.26602@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 30 May 2007 23:54:02 +0200 (CEST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds a écrit :
-> 
-> On Wed, 30 May 2007, Eric Dumazet wrote:
->>> No, Davide, the problem is that some applications depend on getting
->>> _specific_ file descriptors.
->> Fix the application, and not adding kernel bloat ?
-> 
-> No. The application is _correct_. It's how file descriptors are defined to 
-> work. 
-> 
->> Then you can also exclude multi-threading, since a thread (even not inside
->> glibc) can also use socket()/pipe()/open()/whatever and take the zero file
->> descriptor as well.
-> 
-> Totally different. That's an application internal issue. It does *not* 
-> mean that we can break existing standards.
-> 
->> The only hardcoded thing in Unix is 0, 1 and 2 fds.
-> 
-> Wrong. I already gave an example of real code that just didn't bother to 
-> keep track of which fd's it had open, and closed them all. Partly, in 
-> fact, because you can't even _know_ which fd's you have open when somebody 
-> else just execve's you.
+I'd prefer something like this:
 
-If someone really cares, /proc/self/fd can help. But one shouldn't care at all.
+Use hexdump in slub.
 
-About the things that the process can do before execing() a process, file 
-descriptors outside of 0,1,2 are the most obvious thing, but you also have 
-alarm(), or stupid rlimits.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-> 
-> You can call it buggy, but the fact is, if you do, you're SIMPLY WRONG. 
-> 
-> You cannot just change years and years of coding practice, and standard 
-> documentations. The behaviour of file descriptors is a fact. Ignoring that 
-> fact because you don't like it is naïve and simply not realistic.
-
-I want to change nothing. Current situation is fine and well documented, thank 
-you.
-
-If a program does "for (i = 0; i < NR_OPEN; i++) close(i);", this 
-*will*/*should* work as intended : close all files descriptors from 0 to 
-NR_OPEN. Big deal.
-
-But you wont find in a program :
-
-FILE *fp = fopen("somefile", "r");
-for (i = 0; i < NR_OPEN; i++)
-     close(i);
-while (fgets(buff, sizeof(buff), fp)) {
-}
-
-
-You and/or others want to add fd namespaces and other hacks.
-
-I saw on this thread suspicious examples, I am waiting for a real one, 
-justifying all this stuff.
-
-After file descriptors separation, I guess we'll need memory space separation 
-as well, signal separations (SIGALRM comes to mind), uid/gid separation, cpu 
-time separation, and so on... setrlimit() layered for every shared lib.
-
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-05-30 14:56:14.000000000 -0700
++++ slub/mm/slub.c	2007-05-30 15:01:33.000000000 -0700
+@@ -339,34 +339,10 @@ static char *slub_debug_slabs;
+  */
+ static void print_section(char *text, u8 *addr, unsigned int length)
+ {
+-	int i, offset;
+-	int newline = 1;
+-	char ascii[17];
+-
+-	ascii[16] = 0;
+-
+-	for (i = 0; i < length; i++) {
+-		if (newline) {
+-			printk(KERN_ERR "%8s 0x%p: ", text, addr + i);
+-			newline = 0;
+-		}
+-		printk(" %02x", addr[i]);
+-		offset = i % 16;
+-		ascii[offset] = isgraph(addr[i]) ? addr[i] : '.';
+-		if (offset == 15) {
+-			printk(" %s\n",ascii);
+-			newline = 1;
+-		}
+-	}
+-	if (!newline) {
+-		i %= 16;
+-		while (i < 16) {
+-			printk("   ");
+-			ascii[i] = ' ';
+-			i++;
+-		}
+-		printk(" %s\n", ascii);
+-	}
++	char buf[10];
++
++	sprintf(buf, "%8s:", text);
++	print_hex_dump(KERN_ERR, buf, DUMP_PREFIX_ADDRESS, 16, 1, addr, length, 1);
+ }
+ 
+ static struct track *get_track(struct kmem_cache *s, void *object,
 
