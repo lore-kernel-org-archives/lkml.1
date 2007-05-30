@@ -1,329 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbXE3Obx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbXE3OcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbXE3Obx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 10:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbXE3Oas
+	id S1756665AbXE3OcR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbXE3Oa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 10:30:48 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36517 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754584AbXE3Oaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 10:30:46 -0400
-Message-Id: <20070530143044.060544510@suse.cz>
-References: <20070530125954.706423971@suse.cz>
-User-Agent: quilt/0.46-36
-Date: Wed, 30 May 2007 14:59:57 +0200
-From: Michal Marek <mmarek@suse.cz>
-To: xfs@oss.sgi.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 3/3] Fix XFS_IOC_FSBULKSTAT{,_SINGLE} and XFS_IOC_FSINUMBERS in compat mode
-Content-Disposition: inline; filename=xfs-compat-ioctl-bulkstat.patch
+	Wed, 30 May 2007 10:30:57 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:55424 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755485AbXE3Oaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 10:30:55 -0400
+Message-Id: <20070530140228.349272966@polymtl.ca>
+References: <20070530140025.917261793@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Wed, 30 May 2007 10:00:30 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 5/9] Conditional Calls - i386 Optimization
+Content-Disposition: inline; filename=conditional-calls-i386-optimization.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 30 May 2007 14:30:50 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* 32bit struct xfs_fsop_bulkreq has different size and layout of
-  members, no matter the alignment. Move the code out of the #else
-  branch (why was it there in the first place?). Define _32 variants of
-  the ioctl constants.
-* 32bit struct xfs_bstat is different on 32bit (because of time_t and on
-  i386 becaus of different padding). Create a new function
-  xfs_ioctl32_bulkstat_wrap(), which allocates extra ->ubuffer and
-  converts the elements to the 32bit format after the original ioctl
-  returns. Same for i386 struct xfs_inogrp.
+i386 optimization of the cond_calls which uses a movb with code patching to
+set/unset the value used to populate the register used for the branch test.
 
-Signed-off-by: Michal Marek <mmarek@suse.cz>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- fs/xfs/linux-2.6/xfs_ioctl32.c |  262 +++++++++++++++++++++++++++++++++++++----
- 1 file changed, 238 insertions(+), 24 deletions(-)
+ arch/i386/kernel/Makefile   |    1 
+ arch/i386/kernel/condcall.c |  140 ++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/condcall.h |   69 +++++++++++++++++++++
+ 3 files changed, 209 insertions(+), 1 deletion(-)
 
---- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl32.c
-+++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c
-@@ -109,35 +109,249 @@ STATIC unsigned long xfs_ioctl32_geom_v1
- 	return (unsigned long)p;
- }
- 
--#else
-+typedef struct xfs_inogrp32 {
-+	__u64		xi_startino;	/* starting inode number	*/
-+	__s32		xi_alloccount;	/* # bits set in allocmask	*/
-+	__u64		xi_allocmask;	/* mask of allocated inodes	*/
-+} __attribute__((packed)) xfs_inogrp32_t;
+Index: linux-2.6-lttng/include/asm-i386/condcall.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/condcall.h	2007-05-17 01:49:46.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/condcall.h	2007-05-17 01:52:38.000000000 -0400
+@@ -1 +1,68 @@
+-#include <asm-generic/condcall.h>
++#ifndef _ASM_I386_CONDCALL_H
++#define _ASM_I386_CONDCALL_H
 +
-+STATIC int xfs_inogrp_store_compat(
-+	xfs_inogrp32_t __user  *p32,
-+	xfs_inogrp_t __user *p)
-+{
-+#define copy(memb) copy_in_user(&p32->memb, &p->memb, sizeof(p32->memb))
-+	if (copy(xi_startino) ||
-+	    copy(xi_alloccount) ||
-+	    copy(xi_allocmask))
-+		return -EFAULT;
-+	return 0;
-+#undef copy
-+}
++/*
++ * Conditional function calls. i386 architecture optimizations.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++
++#ifdef CONFIG_COND_CALL
++
++#define CF_DEFAULT (CF_OPTIMIZED | CF_LOCKDEP | CF_PRINTK)
++
++/* Optimized version of the cond_call. Passing the flags as a pointer to
++ * the inline assembly to trick it into putting the flags value as third
++ * parameter in the structure. */
++#define cond_call_optimized(flags, name, func) \
++	({ \
++		static const char __cstrtab_name_##name[] \
++		__attribute__((section("__cond_call_strings"))) = #name; \
++		char condition; \
++		asm (	".section __cond_call, \"a\", @progbits;\n\t" \
++					".long %1, 0f, %2;\n\t" \
++					".previous;\n\t" \
++					".align 2\n\t" \
++					"0:\n\t" \
++					"movb %3,%0;\n\t" \
++				: "=r" (condition) \
++				: "m" (*__cstrtab_name_##name), \
++				  "m" (*(char*)flags), \
++				  "i" ((flags) & CF_STATIC_ENABLE)); \
++		(likely(!condition)) ? \
++			(__typeof__(func))0 : \
++			(func); \
++	})
++
++/* cond_call macro selecting the generic or optimized version of cond_call,
++ * depending on the flags specified. */
++#define _cond_call(flags, name, func) \
++({ \
++	(((flags) & CF_LOCKDEP) && ((flags) & CF_OPTIMIZED)) ? \
++		cond_call_optimized(flags, name, func) : \
++		cond_call_generic(flags, name, func); \
++})
++
++/* cond_call with default behavior */
++#define cond_call(name, func) _cond_call(CF_DEFAULT, name, func)
++
++/* Architecture dependant cond_call information, used internally for cond_call
++ * activation. */
++
++/* Offset of the immediate value from the start of the movb instruction, in
++ * bytes. */
++#define COND_CALL_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET 1
++#define COND_CALL_OPTIMIZED_ENABLE_TYPE unsigned char
++/* Dereference enable as lvalue from a pointer to its instruction */
++#define COND_CALL_OPTIMIZED_ENABLE(a) \
++	*(COND_CALL_OPTIMIZED_ENABLE_TYPE*) \
++		((char*)a+COND_CALL_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET)
++
++extern int cond_call_optimized_set_enable(void *address, char enable);
 +
 +#endif
++#endif //_ASM_I386_CONDCALL_H
+Index: linux-2.6-lttng/arch/i386/kernel/Makefile
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/kernel/Makefile	2007-05-17 01:42:46.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/Makefile	2007-05-17 01:52:38.000000000 -0400
+@@ -33,6 +33,7 @@
+ obj-y				+= sysenter.o vsyscall.o
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat.o
+ obj-$(CONFIG_EFI) 		+= efi.o efi_stub.o
++obj-$(CONFIG_COND_CALL_ENABLE_OPTIMIZATION)	+= condcall.o
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault.o
+ obj-$(CONFIG_SERIAL_8250)	+= legacy_serial.o
+ obj-$(CONFIG_VM86)		+= vm86.o
+Index: linux-2.6-lttng/arch/i386/kernel/condcall.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/arch/i386/kernel/condcall.c	2007-05-17 01:52:38.000000000 -0400
+@@ -0,0 +1,140 @@
++/* condcall.c
++ *
++ * - Erratum 49 fix for Intel PIII.
++ * - Still present on newer processors : Intel Core 2 Duo Processor for Intel
++ *   Centrino Duo Processor Technology Specification Update, AH33.
++ *   Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
++ *   Instruction Execution Results.
++ *
++ * Permits cond_call activation by XMC with correct serialization.
++ *
++ * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
++ * location that has preemption enabled because it involves no temporary or
++ * reused data structure.
++ *
++ * Quoting Richard J Moore, source of the information motivating this
++ * implementation which differs from the one proposed by Intel which is not
++ * suitable for kernel context (does not support NMI and would require disabling
++ * interrupts on every CPU for a long period) :
++ *
++ * "There is another issue to consider when looking into using probes other
++ * then int3:
++ *
++ * Intel erratum 54 - Unsynchronized Cross-modifying code - refers to the
++ * practice of modifying code on one processor where another has prefetched
++ * the unmodified version of the code. Intel states that unpredictable general
++ * protection faults may result if a synchronizing instruction (iret, int,
++ * int3, cpuid, etc ) is not executed on the second processor before it
++ * executes the pre-fetched out-of-date copy of the instruction.
++ *
++ * When we became aware of this I had a long discussion with Intel's
++ * microarchitecture guys. It turns out that the reason for this erratum
++ * (which incidentally Intel does not intend to fix) is because the trace
++ * cache - the stream of micorops resulting from instruction interpretation -
++ * cannot guaranteed to be valid. Reading between the lines I assume this
++ * issue arises because of optimization done in the trace cache, where it is
++ * no longer possible to identify the original instruction boundaries. If the
++ * CPU discoverers that the trace cache has been invalidated because of
++ * unsynchronized cross-modification then instruction execution will be
++ * aborted with a GPF. Further discussion with Intel revealed that replacing
++ * the first opcode byte with an int3 would not be subject to this erratum.
++ *
++ * So, is cmpxchg reliable? One has to guarantee more than mere atomicity."
++ *
++ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ */
 +
-+/* XFS_IOC_FSBULKSTAT and friends */
++#include <linux/notifier.h>
++#include <linux/mutex.h>
++#include <linux/preempt.h>
++#include <linux/smp.h>
++#include <linux/notifier.h>
++#include <linux/module.h>
++#include <linux/condcall.h>
++#include <linux/kdebug.h>
 +
-+typedef struct xfs_bstime32 {
-+	__s32		tv_sec;		/* seconds		*/
-+	__s32		tv_nsec;	/* and nanoseconds	*/
-+} xfs_bstime32_t;
++#include <asm/cacheflush.h>
 +
-+static int xfs_bstime_store_compat(
-+	xfs_bstime32_t __user *p32,
-+	xfs_bstime_t __user *p)
++#define BREAKPOINT_INSTRUCTION  0xcc
++#define BREAKPOINT_INS_LEN 1
++
++static DEFINE_MUTEX(cond_call_mutex);
++static long target_eip = 0;
++
++static void cond_call_synchronize_core(void *info)
 +{
-+	time_t sec;
-+	__s32 sec32;
++	sync_core();	/* use cpuid to stop speculative execution */
++}
 +
-+	if (get_user(sec, &p->tv_sec))
-+		return -EFAULT;
-+	sec32 = sec;
-+	if (put_user(sec32, &p32->tv_sec) ||
-+	    copy_in_user(&p32->tv_nsec, &p->tv_nsec, sizeof(__s32)))
-+		return -EFAULT;
++/* The eip value points right after the breakpoint instruction, in the second
++ * byte of the movb. Incrementing it of 1 byte makes the code resume right after
++ * the movb instruction, effectively skipping this instruction.
++ *
++ * We simply skip the 2 bytes load immediate here, leaving the register in an
++ * undefined state. We don't care about the content (0 or !0), because we are
++ * changing the value 0->1 or 1->0. This small window of undefined value
++ * doesn't matter.
++ */
++static int cond_call_notifier(struct notifier_block *nb,
++	unsigned long val, void *data)
++{
++	enum die_val die_val = (enum die_val) val;
++	struct die_args *args = (struct die_args *)data;
++
++	if (!args->regs || user_mode_vm(args->regs))
++		return NOTIFY_DONE;
++
++	if (die_val == DIE_INT3	&& args->regs->eip == target_eip) {
++		args->regs->eip += 1; /* Skip the next byte of load immediate */
++		return NOTIFY_STOP;
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block cond_call_notify = {
++	.notifier_call = cond_call_notifier,
++	.priority = 0x7fffffff,	/* we need to be notified first */
++};
++
++int cond_call_optimized_set_enable(void *address, char enable)
++{
++	char saved_byte;
++	int ret;
++	char *dest = address;
++
++	mutex_lock(&cond_call_mutex);
++
++	if (!(enable ^ dest[1])) /* Must be a state change 0<->1 to execute */
++		goto end;
++
++	target_eip = (long)address + BREAKPOINT_INS_LEN;
++	/* register_die_notifier has memory barriers */
++	register_die_notifier(&cond_call_notify);
++	saved_byte = *dest;
++	*dest = BREAKPOINT_INSTRUCTION;
++	wmb();
++	/* Execute serializing instruction on each CPU.
++	 * Acts as a memory barrier. */
++	ret = on_each_cpu(cond_call_synchronize_core, NULL, 1, 1);
++	BUG_ON(ret != 0);
++
++	dest[1] = enable;
++	wmb();
++	*dest = saved_byte;
++		/* Wait for all int3 handlers to end
++		   (interrupts are disabled in int3).
++		   This CPU is clearly not in a int3 handler,
++		   because int3 handler is not preemptible and
++		   there cannot be any more int3 handler called
++		   for this site, because we placed the original
++		   instruction back.
++		   synchronize_sched has memory barriers */
++	synchronize_sched();
++	unregister_die_notifier(&cond_call_notify);
++	/* unregister_die_notifier has memory barriers */
++	target_eip = 0;
++end:
++	mutex_unlock(&cond_call_mutex);
 +	return 0;
 +}
-+
-+typedef struct xfs_bstat32 {
-+	__u64		bs_ino;		/* inode number			*/
-+	__u16		bs_mode;	/* type and mode		*/
-+	__u16		bs_nlink;	/* number of links		*/
-+	__u32		bs_uid;		/* user id			*/
-+	__u32		bs_gid;		/* group id			*/
-+	__u32		bs_rdev;	/* device value			*/
-+	__s32		bs_blksize;	/* block size			*/
-+	__s64		bs_size;	/* file size			*/
-+	xfs_bstime32_t	bs_atime;	/* access time			*/
-+	xfs_bstime32_t	bs_mtime;	/* modify time			*/
-+	xfs_bstime32_t	bs_ctime;	/* inode change time		*/
-+	int64_t		bs_blocks;	/* number of blocks		*/
-+	__u32		bs_xflags;	/* extended flags		*/
-+	__s32		bs_extsize;	/* extent size			*/
-+	__s32		bs_extents;	/* number of extents		*/
-+	__u32		bs_gen;		/* generation count		*/
-+	__u16		bs_projid;	/* project id			*/
-+	unsigned char	bs_pad[14];	/* pad space, unused		*/
-+	__u32		bs_dmevmask;	/* DMIG event mask		*/
-+	__u16		bs_dmstate;	/* DMIG state info		*/
-+	__u16		bs_aextents;	/* attribute number of extents	*/
-+}
-+#ifdef BROKEN_X86_ALIGNMENT
-+	__attribute__((packed))
-+#endif
-+	xfs_bstat32_t;
-+
-+static int xfs_bstat_store_compat(
-+	xfs_bstat32_t __user *p32,
-+	xfs_bstat_t __user *p)
-+{
-+#define copy(memb) copy_in_user(&p32->memb, &p->memb, sizeof(p32->memb))
-+	if (copy(bs_ino) ||
-+	    copy(bs_mode) ||
-+	    copy(bs_nlink) ||
-+	    copy(bs_uid) ||
-+	    copy(bs_gid) ||
-+	    copy(bs_rdev) ||
-+	    copy(bs_blksize) ||
-+	    copy(bs_size) ||
-+	    xfs_bstime_store_compat(&p32->bs_atime, &p->bs_atime) ||
-+	    xfs_bstime_store_compat(&p32->bs_mtime, &p->bs_mtime) ||
-+	    xfs_bstime_store_compat(&p32->bs_ctime, &p->bs_ctime) ||
-+	    copy(bs_blocks) ||
-+	    copy(bs_xflags) ||
-+	    copy(bs_extsize) ||
-+	    copy(bs_extents) ||
-+	    copy(bs_gen) ||
-+	    copy(bs_projid) ||
-+	    copy(bs_pad[14]) ||
-+	    copy(bs_dmevmask) ||
-+	    copy(bs_dmstate) ||
-+	    copy(bs_aextents))
-+		return -EFAULT;
-+	return 0;
-+#undef copy
-+}
- 
- typedef struct xfs_fsop_bulkreq32 {
- 	compat_uptr_t	lastip;		/* last inode # pointer		*/
- 	__s32		icount;		/* count of entries in buffer	*/
- 	compat_uptr_t	ubuffer;	/* user buffer for inode desc.	*/
--	__s32		ocount;		/* output count pointer		*/
-+	compat_uptr_t	ocount;		/* output count pointer		*/
- } xfs_fsop_bulkreq32_t;
--
--STATIC unsigned long
--xfs_ioctl32_bulkstat(
--	unsigned long		arg)
-+#define XFS_IOC_FSBULKSTAT_32	     _IOWR('X', 101, struct xfs_fsop_bulkreq32)
-+#define XFS_IOC_FSBULKSTAT_SINGLE_32 _IOWR('X', 102, struct xfs_fsop_bulkreq32)
-+#define XFS_IOC_FSINUMBERS_32	     _IOWR('X', 103, struct xfs_fsop_bulkreq32)
-+
-+#define MAX_BSTAT_LEN \
-+	((__s32)((64*1024 - sizeof(xfs_fsop_bulkreq_t)) / sizeof(xfs_bstat_t)))
-+#define MAX_INOGRP_LEN \
-+	((__s32)((64*1024 - sizeof(xfs_fsop_bulkreq_t)) / sizeof(xfs_inogrp_t)))
-+
-+STATIC int
-+xfs_ioctl32_bulkstat_wrap(
-+	bhv_vnode_t	*vp,
-+	struct inode    *inode,
-+	struct file     *file,
-+	int             mode,
-+	unsigned        cmd,
-+	unsigned long   arg)
- {
--	xfs_fsop_bulkreq32_t	__user *p32 = (void __user *)arg;
--	xfs_fsop_bulkreq_t	__user *p = compat_alloc_user_space(sizeof(*p));
--	u32			addr;
--
--	if (get_user(addr, &p32->lastip) ||
--	    put_user(compat_ptr(addr), &p->lastip) ||
--	    copy_in_user(&p->icount, &p32->icount, sizeof(s32)) ||
--	    get_user(addr, &p32->ubuffer) ||
--	    put_user(compat_ptr(addr), &p->ubuffer) ||
--	    get_user(addr, &p32->ocount) ||
--	    put_user(compat_ptr(addr), &p->ocount))
-+	xfs_fsop_bulkreq32_t __user *p32 = (void __user *)arg;
-+	xfs_fsop_bulkreq_t tmp;
-+	u32 addr;
-+	void *buf32;
-+	int err;
-+
-+	if (get_user(addr, &p32->lastip))
-+		return 0;
-+	tmp.lastip = compat_ptr(addr);
-+	if (get_user(tmp.icount, &p32->icount) ||
-+	    get_user(addr, &p32->ubuffer))
- 		return -EFAULT;
-+	buf32 = compat_ptr(addr);
-+	if (get_user(addr, &p32->ocount))
-+		return -EFAULT;
-+	tmp.ocount = compat_ptr(addr);
- 
--	return (unsigned long)p;
--}
-+	if (tmp.icount <= 0)
-+		return -EINVAL;
-+
-+	if (cmd == XFS_IOC_FSBULKSTAT_32)
-+		cmd = XFS_IOC_FSBULKSTAT;
-+	if (cmd == XFS_IOC_FSBULKSTAT_SINGLE_32)
-+		cmd = XFS_IOC_FSBULKSTAT_SINGLE;
-+	if (cmd == XFS_IOC_FSINUMBERS_32)
-+		cmd = XFS_IOC_FSINUMBERS;
-+
-+	if (cmd == XFS_IOC_FSBULKSTAT || cmd == XFS_IOC_FSBULKSTAT_SINGLE) {
-+		xfs_fsop_bulkreq_t __user *p;
-+		xfs_bstat_t __user *bs;
-+		xfs_bstat32_t __user *bs32 = buf32;
-+		__s32 total_ocount = 0;
-+		p = compat_alloc_user_space(sizeof(*p) +
-+			sizeof(xfs_bstat_t) * min(MAX_BSTAT_LEN, tmp.icount));
-+		bs = (xfs_bstat_t __user *)(p + 1);
-+		tmp.ubuffer = bs;
-+		if (copy_to_user(p, &tmp, sizeof(*p)))
-+			return -EFAULT;
-+		while (tmp.icount) {
-+			__s32 icount = min(MAX_BSTAT_LEN, tmp.icount);
-+			__s32 ocount;
-+			int i;
-+
-+			if (put_user(icount, &p->icount))
-+				return -EFAULT;
-+			err = bhv_vop_ioctl(vp, inode, file, mode, cmd,
-+					(void __user *)p);
-+			if (err)
-+				return err;
-+			if (get_user(ocount, p->ocount))
-+				return -EFAULT;
-+			for (i = 0; i < ocount; i++) {
-+				if (xfs_bstat_store_compat(bs32 +
-+						total_ocount + i, bs + i))
-+					return -EFAULT;
-+			}
-+			total_ocount += ocount;
-+			tmp.icount -= icount;
-+		}
-+		if (put_user(total_ocount, p->ocount))
-+			return -EFAULT;
-+		return 0;
-+	}
-+	if (cmd == XFS_IOC_FSINUMBERS) {
-+#ifdef BROKEN_X86_ALIGNMENT
-+		xfs_fsop_bulkreq_t __user *p;
-+		xfs_inogrp_t __user *ig;
-+		xfs_inogrp32_t __user *ig32 = buf32;
-+		__s32 total_ocount = 0;
-+		p = compat_alloc_user_space(sizeof(*p) +
-+			sizeof(xfs_inogrp_t) * min(MAX_INOGRP_LEN, tmp.icount));
-+		ig = (xfs_inogrp_t __user *)(p + 1);
-+		tmp.ubuffer = ig;
-+		if (copy_to_user(p, &tmp, sizeof(*p)))
-+			return -EFAULT;
-+
-+		while (tmp.icount) {
-+			__s32 icount = min(MAX_INOGRP_LEN, tmp.icount);
-+			__s32 ocount;
-+			int i;
-+
-+			if (put_user(icount, &p->icount))
-+				return -EFAULT;
-+			err = bhv_vop_ioctl(vp, inode, file, mode, cmd,
-+					(void __user *)p);
-+			if (err)
-+				return err;
-+			if (get_user(ocount, p->ocount))
-+				return -EFAULT;
-+			for (i = 0; i < ocount; i++) {
-+				if (xfs_inogrp_store_compat(ig32 +
-+						total_ocount + i, ig + i))
-+					return -EFAULT;
-+			}
-+			tmp.icount -= icount;
-+			total_ocount += ocount;
-+		}
-+		if (put_user(total_ocount, p->ocount))
-+			return -EFAULT;
-+#else
-+		xfs_fsop_bulkreq_t __user *p;
-+		p = compat_alloc_user_space(sizeof(*p));
-+		tmp.ubuffer = buf32;
-+		if (copy_to_user(p, &tmp, sizeof(*p)))
-+			return -EFAULT;
-+
-+		err = bhv_vop_ioctl(vp, inode, file, mode, cmd,
-+				(void __user *)p);
-+		if (err)
-+			return err;
- #endif
-+		return 0;
-+	}
-+	return -ENOSYS;
-+}
-+
- 
- typedef struct xfs_fsop_handlereq32 {
- 	__u32		fd;		/* fd for FD_TO_HANDLE		*/
-@@ -253,12 +467,12 @@ xfs_compat_ioctl(
- 	case XFS_IOC_SWAPEXT:
- 		break;
- 
--	case XFS_IOC_FSBULKSTAT_SINGLE:
--	case XFS_IOC_FSBULKSTAT:
--	case XFS_IOC_FSINUMBERS:
--		arg = xfs_ioctl32_bulkstat(arg);
--		break;
- #endif
-+	case XFS_IOC_FSBULKSTAT_32:
-+	case XFS_IOC_FSBULKSTAT_SINGLE_32:
-+	case XFS_IOC_FSINUMBERS_32:
-+		return xfs_ioctl32_bulkstat_wrap(vp, inode, file, mode, cmd,
-+				arg);
- 	case XFS_IOC_FD_TO_HANDLE_32:
- 		arg = xfs_ioctl32_fshandle(arg);
- 		cmd = XFS_IOC_FD_TO_HANDLE;
++EXPORT_SYMBOL_GPL(cond_call_optimized_set_enable);
 
 -- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
