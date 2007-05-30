@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbXE3N47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbXE3N5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbXE3N47 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbXE3N4w
+	id S1755830AbXE3N5Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbXE3N5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:56:52 -0400
-Received: from allen.werkleitz.de ([80.190.251.108]:55318 "EHLO
-	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752663AbXE3N4v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:56:51 -0400
-Date: Wed, 30 May 2007 15:56:35 +0200
-From: Johannes Stezenbach <js@linuxtv.org>
-To: Nitin Gupta <nitingupta910@gmail.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Daniel Hazelton <dhazelton@enter.net>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
-       linuxcompressed-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Richard Purdie <richard@openedhand.com>, Bret Towe <magnade@gmail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>
-Message-ID: <20070530135635.GA21827@linuxtv.org>
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com> <4cefeab80705280740l36c00bf8t4a6f5b426a7a380a@mail.gmail.com> <200705281049.48679.dhazelton@enter.net> <4cefeab80705280806m39fbcfd6v93a1c847c25e381c@mail.gmail.com> <20070528154346.GO3899@stusta.de> <4cefeab80705280903t6b2bb687g4eb1d9de2717f6ec@mail.gmail.com> <20070528171115.GQ3899@stusta.de> <Pine.LNX.4.61.0705292307320.11140@yvahk01.tjqt.qr> <20070529212625.GS3899@stusta.de> <4cefeab80705292231g4c166cd8xd920f2721cbb9c0e@mail.gmail.com>
-MIME-Version: 1.0
+	Wed, 30 May 2007 09:57:09 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:60822 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752663AbXE3N5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 09:57:08 -0400
+Date: Wed, 30 May 2007 06:56:38 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/22] 2.6.22-rc3 perfmon2 : generic kernel modifications
+Message-ID: <20070530135638.GA21569@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <200705291348.l4TDmG1Y019632@frankl.hpl.hp.com> <20070530004658.732451ad.sfr@canb.auug.org.au> <20070530113403.GA14480@lnx-holt.americas.sgi.com> <20070530234206.ae2bec8d.sfr@canb.auug.org.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4cefeab80705292231g4c166cd8xd920f2721cbb9c0e@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 84.190.134.37
-Subject: Re: [RFC] LZO de/compression support - take 6
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
+In-Reply-To: <20070530234206.ae2bec8d.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007, Nitin Gupta wrote:
+Stephen,
+
+On Wed, May 30, 2007 at 11:42:06PM +1000, Stephen Rothwell wrote:
+> On Wed, 30 May 2007 06:34:03 -0500 Robin Holt <holt@sgi.com> wrote:
+> >
+> > That breaks git-bisect.  Just introducing new text, but not actually using
+> > it makes it appear to somebody using git-bisect to identify the source of
+> > a problem as though all the changes came in at the same time.  Bad idea.
 > 
-> Again, all the original code has been retained _as-is_. Whatever was
-> changed, has been mentioned in that detailed changelog that I post
-> along with patch.
+> But the patch set as it is includes references to files that do not exist
+> and so breaks the build.
+> 
 
-Just a general remark (I haven't been following this thread closely):
+The patches are split artificially to make it easier to read on LKML.
 
-IMHO it would be _much_ better to merge the original code and
-your changes as seperate patches. Then someone who
-wants to review it later doesn't have to jump through all
-the hoops of finding the original code himself to diff it
-and see your changes.
+There is no intention on my part to make them such that individually they
+can build a kernel. You need at least the base+common+ your arch to
+compile. The common code is divided by functionality. All functionalities
+are required.
 
-Additionally, you should also split stylistic/cleanup
-changes like "Reformatted the code to match general kernel style"
-from functional changes like "use cpu_to_le16()".
-
-Ideally each of the changes you mention in your
-"Changelog vs. original LZO" should be a seperate
-patch, this would make review much easier.
-
-
-Regards,
-Johannes
+-- 
+-Stephane
