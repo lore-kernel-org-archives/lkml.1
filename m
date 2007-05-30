@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbXE3Rhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758000AbXE3RiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757686AbXE3Rhx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbXE3Rhn
+	id S1758000AbXE3RiZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbXE3RiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:37:43 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:38701 "EHLO
-	outbound6-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752126AbXE3Rhm (ORCPT
+	Wed, 30 May 2007 13:38:17 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:46913 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753980AbXE3RiQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:37:42 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <465DB1EB.5010603@am.sony.com>
-Date: Wed, 30 May 2007 10:18:35 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 30 May 2007 13:38:16 -0400
+Date: Wed, 30 May 2007 10:37:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH -mm] 1/2: MMCONFIG: validate against ACPI motherboard
+ resources
+In-Reply-To: <20070530172331.GB2794@redhat.com>
+Message-ID: <alpine.LFD.0.98.0705301034320.26602@woody.linux-foundation.org>
+References: <465CF794.1070406@shaw.ca> <alpine.LFD.0.98.0705292125511.26602@woody.linux-foundation.org>
+ <465D8BA1.1080800@shaw.ca> <alpine.LFD.0.98.0705300804140.26602@woody.linux-foundation.org>
+ <20070530172331.GB2794@redhat.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Christoph Hellwig <hch@lst.de>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [patch 6/7] ps3: ROM Storage Driver
-References: <20070525083607.784351000@sonycom.com>	<20070525083632.677742000@sonycom.com> <20070529104948.GC29351@lst.de>	<Pine.LNX.4.62.0705291308280.7698@pademelon.sonytel.be>	<20070530101348.GD24586@lst.de> <1180525555.19517.268.camel@localhost.localdomain>
-In-Reply-To: <1180525555.19517.268.camel@localhost.localdomain>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 May 2007 17:18:36.0435 (UTC) FILETIME=[8EBA1E30:01C7A2DE]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2007-05-30 at 12:13 +0200, Christoph Hellwig wrote:
->> 
->> For any sane hypervisor or hardware the copy should be worth
->> than that.  Then again a sane hardware or hypervisor would support
->> SG requests..
-> 
-> Agreed... Sony should fix that, it's a bit ridiculous.
 
-Yes, if only to put an end to seeing this kind of comment over 
-and over again.
 
--Geoff
+On Wed, 30 May 2007, Dave Jones wrote:
+>
+> I'm convinced there's some contest to see who can make the worst
+> graphical mail client for Linux. I'm not sure what the prize is,
+> or who's winning, but the entries so far are horrific.
 
+LOL.
+
+Although in this case it was actually not a Linux MUA:
+
+	User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+
+but I didn't want to embarrass Robert publicly before you brought up the 
+issue of operating systems ;)
+
+Your procmail filter looks somewhat broken, btw. It will trigger on things 
+that aren't headers, and it will potentially _not_ trigger on headers (ie 
+if they are line continuations). But I guess it works well enough in 
+practice.
+
+			Linus
