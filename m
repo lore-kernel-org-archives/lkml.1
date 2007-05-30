@@ -1,237 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbXE3QCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbXE3QGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbXE3QCk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 12:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbXE3QCY
+	id S1752891AbXE3QGU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 12:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbXE3QGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 12:02:24 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:14855 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753597AbXE3QCX (ORCPT
+	Wed, 30 May 2007 12:06:13 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:23031 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbXE3QGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 12:02:23 -0400
-Message-Id: <20070530125336.546096780@chello.nl>
-References: <20070530124903.882133089@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Wed, 30 May 2007 14:49:09 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 6/6] lockstat: hook into spinlock_t, rwlock_t, rwsem and mutex
-Content-Disposition: inline; filename=lockstat-hooks.patch
+	Wed, 30 May 2007 12:06:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=o+Hx//aoP+FLaYg5d3Jhbi0j3mCTPogSR94TZgCjZUyGFS5tXilcsk5D4CsM0gH2gHJvKr20mmz20MAZdBB3jAoVYVrLxiKdvCXf34Ku4/WlEICdEqgyq5PSFfkzuJ0ZvggI4wb1MLEgkMoN/VgsHRWnMlN8dP3VMdBM3hyaGP0=
+Message-ID: <a781481a0705300906w69c43925xdfa95682f62c3087@mail.gmail.com>
+Date: Wed, 30 May 2007 21:36:05 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: dealing with gcc 'comparison is always false' warnings (was: [PATCH] drivers/infiniband: fix comparsion between unsigned and negative)
+Cc: openib-general@openib.org, linux-kernel@vger.kernel.org
+In-Reply-To: <a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070530080518.GA29195@nostromo.devel.redhat.com>
+	 <adazm3mqqh3.fsf@cisco.com>
+	 <a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Call the new lockstat tracking functions from the various lock primitives.
+On 5/30/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> On 5/30/07, Roland Dreier <rdreier@cisco.com> wrote:
+> > thanks... I'm wondering if there's a consensus among kernel hackers
+> > about changes like:
+> >
+> >  > -    if (hdr.cmd < 0 || hdr.cmd >= ARRAY_SIZE(ucma_cmd_table))
+> >  > +    if (hdr.cmd >= ARRAY_SIZE(ucma_cmd_table))
+> >  >              return -EINVAL;
+> >
+> > I understand that new gcc sees that hdr.cmd is unsigned and hence
+> > can't be < 0, and generates a warning for that, and having a build
+> > cluttered with warnings hides bugs and so on.  However the code here
+> > looks quite sensible to me -- otherwise we end up with missing range
+> > checking if hdr.cmd ever changes to a signed type.  This seems like a
+> > good way to introduce bugs: delete valid range checking code to shut
+> > up a silly gcc warning, and then change the type of a variable.
+>
+> You're *absolutely* correct about the issue that these "fixes" that remove
+> such conditions end up remove range-checking making the code more
+> flakey / less readable.
+>
+> However, gcc is _just as correct_. It is only crying about seeing a condition
+> that the programmer could have written with some purpose in mind but which
+> is being completely compiled away by it when generating the code because
+> of it being a tautology / contradiction ...
+>
+> > Can't we just make gcc shut up about the comparison and generate no
+> > code for it because it knows it can't be true?
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Jason Baron <jbaron@redhat.com>
----
- kernel/mutex.c    |    8 ++++++++
- kernel/rwsem.c    |    8 ++++----
- kernel/spinlock.c |   28 ++++++++++++++--------------
- 3 files changed, 26 insertions(+), 18 deletions(-)
+[ BTW gcc does not generate code for such cases already; either for the
+condition whose truth value is already known, or for the codepath that
+will never be executed as a result. ]
 
-Index: linux-2.6-git/kernel/mutex.c
-===================================================================
---- linux-2.6-git.orig/kernel/mutex.c
-+++ linux-2.6-git/kernel/mutex.c
-@@ -139,6 +139,12 @@ __mutex_lock_common(struct mutex *lock, 
- 	list_add_tail(&waiter.list, &lock->wait_list);
- 	waiter.task = task;
- 
-+	old_val = atomic_xchg(&lock->count, -1);
-+	if (old_val == 1)
-+		goto done;
-+
-+	lock_contended(&lock->dep_map, _RET_IP_);
-+
- 	for (;;) {
- 		/*
- 		 * Lets try to take the lock again - this is needed even if
-@@ -174,6 +180,8 @@ __mutex_lock_common(struct mutex *lock, 
- 		spin_lock_mutex(&lock->wait_lock, flags);
- 	}
- 
-+	lock_acquired(&lock->dep_map);
-+done:
- 	/* got the lock - rejoice! */
- 	mutex_remove_waiter(lock, &waiter, task_thread_info(task));
- 	debug_mutex_set_owner(lock, task_thread_info(task));
-Index: linux-2.6-git/kernel/rwsem.c
-===================================================================
---- linux-2.6-git.orig/kernel/rwsem.c
-+++ linux-2.6-git/kernel/rwsem.c
-@@ -20,7 +20,7 @@ void down_read(struct rw_semaphore *sem)
- 	might_sleep();
- 	rwsem_acquire_read(&sem->dep_map, 0, 0, _RET_IP_);
- 
--	__down_read(sem);
-+	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
- }
- 
- EXPORT_SYMBOL(down_read);
-@@ -47,7 +47,7 @@ void down_write(struct rw_semaphore *sem
- 	might_sleep();
- 	rwsem_acquire(&sem->dep_map, 0, 0, _RET_IP_);
- 
--	__down_write(sem);
-+	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
- }
- 
- EXPORT_SYMBOL(down_write);
-@@ -111,7 +111,7 @@ void down_read_nested(struct rw_semaphor
- 	might_sleep();
- 	rwsem_acquire_read(&sem->dep_map, subclass, 0, _RET_IP_);
- 
--	__down_read(sem);
-+	LOCK_CONTENDED(sem, __down_read_trylock, __down_read);
- }
- 
- EXPORT_SYMBOL(down_read_nested);
-@@ -130,7 +130,7 @@ void down_write_nested(struct rw_semapho
- 	might_sleep();
- 	rwsem_acquire(&sem->dep_map, subclass, 0, _RET_IP_);
- 
--	__down_write_nested(sem, subclass);
-+	LOCK_CONTENDED(sem, __down_write_trylock, __down_write);
- }
- 
- EXPORT_SYMBOL(down_write_nested);
-Index: linux-2.6-git/kernel/spinlock.c
-===================================================================
---- linux-2.6-git.orig/kernel/spinlock.c
-+++ linux-2.6-git/kernel/spinlock.c
-@@ -72,7 +72,7 @@ void __lockfunc _read_lock(rwlock_t *loc
- {
- 	preempt_disable();
- 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_read_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
- }
- EXPORT_SYMBOL(_read_lock);
- 
-@@ -89,7 +89,7 @@ unsigned long __lockfunc _spin_lock_irqs
- 	 * that interrupts are not re-enabled during lock-acquire:
- 	 */
- #ifdef CONFIG_LOCKDEP
--	_raw_spin_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
- #else
- 	_raw_spin_lock_flags(lock, &flags);
- #endif
-@@ -102,7 +102,7 @@ void __lockfunc _spin_lock_irq(spinlock_
- 	local_irq_disable();
- 	preempt_disable();
- 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_spin_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
- }
- EXPORT_SYMBOL(_spin_lock_irq);
- 
-@@ -111,7 +111,7 @@ void __lockfunc _spin_lock_bh(spinlock_t
- 	local_bh_disable();
- 	preempt_disable();
- 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_spin_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
- }
- EXPORT_SYMBOL(_spin_lock_bh);
- 
-@@ -122,7 +122,7 @@ unsigned long __lockfunc _read_lock_irqs
- 	local_irq_save(flags);
- 	preempt_disable();
- 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_read_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
- 	return flags;
- }
- EXPORT_SYMBOL(_read_lock_irqsave);
-@@ -132,7 +132,7 @@ void __lockfunc _read_lock_irq(rwlock_t 
- 	local_irq_disable();
- 	preempt_disable();
- 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_read_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
- }
- EXPORT_SYMBOL(_read_lock_irq);
- 
-@@ -141,7 +141,7 @@ void __lockfunc _read_lock_bh(rwlock_t *
- 	local_bh_disable();
- 	preempt_disable();
- 	rwlock_acquire_read(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_read_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_read_trylock, _raw_read_lock);
- }
- EXPORT_SYMBOL(_read_lock_bh);
- 
-@@ -152,7 +152,7 @@ unsigned long __lockfunc _write_lock_irq
- 	local_irq_save(flags);
- 	preempt_disable();
- 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_write_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_write_trylock, _raw_write_lock);
- 	return flags;
- }
- EXPORT_SYMBOL(_write_lock_irqsave);
-@@ -162,7 +162,7 @@ void __lockfunc _write_lock_irq(rwlock_t
- 	local_irq_disable();
- 	preempt_disable();
- 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_write_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_write_trylock, _raw_write_lock);
- }
- EXPORT_SYMBOL(_write_lock_irq);
- 
-@@ -171,7 +171,7 @@ void __lockfunc _write_lock_bh(rwlock_t 
- 	local_bh_disable();
- 	preempt_disable();
- 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_write_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_write_trylock, _raw_write_lock);
- }
- EXPORT_SYMBOL(_write_lock_bh);
- 
-@@ -179,7 +179,7 @@ void __lockfunc _spin_lock(spinlock_t *l
- {
- 	preempt_disable();
- 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_spin_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
- }
- 
- EXPORT_SYMBOL(_spin_lock);
-@@ -188,7 +188,7 @@ void __lockfunc _write_lock(rwlock_t *lo
- {
- 	preempt_disable();
- 	rwlock_acquire(&lock->dep_map, 0, 0, _RET_IP_);
--	_raw_write_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_write_trylock, _raw_write_lock);
- }
- 
- EXPORT_SYMBOL(_write_lock);
-@@ -289,7 +289,7 @@ void __lockfunc _spin_lock_nested(spinlo
- {
- 	preempt_disable();
- 	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
--	_raw_spin_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
- }
- 
- EXPORT_SYMBOL(_spin_lock_nested);
-@@ -306,7 +306,7 @@ unsigned long __lockfunc _spin_lock_irqs
- 	 * that interrupts are not re-enabled during lock-acquire:
- 	 */
- #ifdef CONFIG_LOCKDEP
--	_raw_spin_lock(lock);
-+	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
- #else
- 	_raw_spin_lock_flags(lock, &flags);
- #endif
+> No, shutting gcc up wouldn't be the right thing, IMHO. These warnings are
+> a good reminder to the programmer to go and see if there is a real bug
+> somewhere and if something really needs to be done with the code (could
+> be simply to change the type of a variable to signed that was mistakenly
+> declared unsigned, f.e.).
 
---
+A common scenario I could imagine for the above would be where a typo
+makes someone declare a var as size_t when it should've been ssize_t.
+This is clearly a real bug that would get caught with this gcc warning
+(but not with -Wall).
 
+> But yes, the kind of "fixes" you pointed out that _remove_ these conditions
+> are definitely *not* what we would want to do.
+
+Erm, to qualify my rather strong opinion above: there could perhaps be
+exceptions where the condition being removed could be truly redundant,
+of course :-)
+
+Satyam
