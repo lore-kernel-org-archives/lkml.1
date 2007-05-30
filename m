@@ -1,106 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbXE3Qr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbXE3Qx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbXE3Qr5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 12:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbXE3Qru
+	id S1754456AbXE3Qx2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 12:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbXE3QxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 12:47:50 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:57865 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751681AbXE3Qru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 12:47:50 -0400
-Date: Wed, 30 May 2007 22:25:57 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Nathan Lynch <nathanl@austin.ibm.com>,
-       Joel Schopp <jschopp@austin.ibm.com>, Ashok Raj <ashok.raj@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, akpm@linux-foundation.org,
-       Dipankar <dipankar@in.ibm.com>
-Subject: Re: CPU hotplug: system hang on CPU hot remove during `pfmon --system-wide'
-Message-ID: <20070530165557.GB1626@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <87bqg5emqk.wl%takeuchi_satoru@jp.fujitsu.com> <20070528065550.GL6157@in.ibm.com> <alpine.LFD.0.98.0705291347320.26602@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705291347320.26602@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+	Wed, 30 May 2007 12:53:18 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46165
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbXE3QxQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 12:53:16 -0400
+Date: Wed, 30 May 2007 09:52:49 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Chinner <dgc@sgi.com>
+cc: Phillip Susi <psusi@cfl.rr.com>, Neil Brown <neilb@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
+ and dm/md.
+In-Reply-To: <20070530061723.GY85884050@sgi.com>
+Message-ID: <Pine.LNX.4.64.0705300946220.8246@asgard.lang.hm>
+References: <18006.38689.818186.221707@notabene.brown>
+ <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com>
+ <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com>
+ <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm> <20070530061723.GY85884050@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 01:56:24PM -0700, Linus Torvalds wrote:
-> As far as I'm concerned, we should
->  - use "preempt_disable()" to protect against CPU's coming and going 
->  - use "stop_machine()" or similar that already honors preemption, and 
->    which I trust a whole lot  more than freezer.
->  - .. especially since this is already how we are supposed to be protected 
->    against CPU's going away, and we've already started doing that (for an 
->    example of this, see things like e18f3ffb9c from Andrew)
-> 
-> It really does seem fairly straightforward to make "__cpu_up()" be called 
-> through stop_machine too. Looking at _cpu_down:
-> 
->         mutex_lock(&cpu_bitmask_lock);
->         p = __stop_machine_run(take_cpu_down, NULL, cpu);
->         mutex_unlock(&cpu_bitmask_lock);
-> 
-> and then looking at _cpu_up:
-> 
->         mutex_lock(&cpu_bitmask_lock);
->         ret = __cpu_up(cpu);
->         mutex_unlock(&cpu_bitmask_lock);
-> 
-> I just go "Aww, wouldn't it be nice to just make that "__cpu_up()" call be 
-> done through __stop_machine_run() too?"
-> 
-> Hmm?
-> 
-> Then, you could get the "cpu_bitmask_lock" if you need to sleep,
+On Wed, 30 May 2007, David Chinner wrote:
 
-and that's where all the problems started - sleepers needing to take that mutex 
-recursively (which we did/do not support).
+> On Tue, May 29, 2007 at 05:01:24PM -0700, david@lang.hm wrote:
+>> On Wed, 30 May 2007, David Chinner wrote:
+>>
+>>> On Tue, May 29, 2007 at 04:03:43PM -0400, Phillip Susi wrote:
+>>>> David Chinner wrote:
+>>>>> The use of barriers in XFS assumes the commit write to be on stable
+>>>>> storage before it returns.  One of the ordering guarantees that we
+>>>>> need is that the transaction (commit write) is on disk before the
+>>>>> metadata block containing the change in the transaction is written
+>>>>> to disk and the current barrier behaviour gives us that.
+>>>>
+>>>> Barrier != synchronous write,
+>>>
+>>> Of course. FYI, XFS only issues barriers on *async* writes.
+>>>
+>>> But barrier semantics - as far as they've been described by everyone
+>>> but you indicate that the barrier write is guaranteed to be on stable
+>>> storage when it returns.
+>>
+>> this doesn't match what I have seen
+>>
+>> wtih barriers it's perfectly legal to have the following sequence of
+>> events
+>>
+>> 1. app writes block 10 to OS
+>> 2. app writes block 4 to OS
+>> 3. app writes barrier to OS
+>> 4. app writes block 5 to OS
+>> 5. app writes block 20 to OS
+>
+> hmmmmm - applications can't issue barriers to the filesystem.
+> However, if you consider the barrier to be an "fsync()" for example,
+> then it's still the filesystem that is issuing the barrier and
+> there's a block that needs to be written that is associated with
+> that barrier (either an inode or a transaction commit) that needs to
+> be on stable storage before the filesystem returns to userspace.
+>
+>> 6. OS writes block 4 to disk drive
+>> 7. OS writes block 10 to disk drive
+>> 8. OS writes barrier to disk drive
+>> 9. OS writes block 5 to disk drive
+>> 10. OS writes block 20 to disk drive
+>
+> Replace OS with filesystem, and combine 7+8 together - we don't have
+> zero-length barriers and hence they are *always* associated with a
+> write to a certain block on disk. i.e.:
+>
+> 1. FS writes block 4 to disk drive
+> 2. FS writes block 10 to disk drive
+> 3. FS writes *barrier* block X to disk drive
+> 4. FS writes block 5 to disk drive
+> 5. FS writes block 20 to disk drive
+>
+> The order that these are expected by the filesystem to hit stable
+> storage are:
+>
+> 1. block 4 and 10 on stable storage in any order
+> 2. barrier block X on stable storage
+> 3. block 5 and 20 on stable storage in any order
+>
+> The point I'm trying to make is that in XFS,  block 5 and 20 cannot
+> be allowed to hit the disk before the barrier block because they
+> have strict order dependency on block X being stable before them,
+> just like block X has strict order dependency that block 4 and 10
+> must be stable before we start the barrier block write.
+>
+>> 11. disk drive writes block 10 to platter
+>> 12. disk drive writes block 4 to platter
+>> 13. disk drive writes block 20 to platter
+>> 14. disk drive writes block 5 to platter
+>
+>> if the disk drive doesn't support barriers then step #8 becomes 'issue
+>> flush' and steps 11 and 12 take place before step #9, 13, 14
+>
+> No, you need a flush on either side of the block X write to maintain
+> the same semantics as barrier writes currently have.
+>
+> We have filesystems that require barriers to prevent reordering of
+> writes in both directions and to ensure that the block associated
+> with the barrier is on stable storage when I/o completion is
+> signalled.  The existing barrier implementation (where it works)
+> provide these requirements. We need barriers to retain these
+> semantics, otherwise we'll still have to do special stuff in
+> the filesystems to get the semantics that we need.
 
-	foo() takes cpu_bitmask_lock and calls
-	  foo_bar() which also needs cpu_bitmask_lock
+one of us is misunderstanding barriers here.
 
-What is a solution to that?
+you are understanding barriers to be the same as syncronous writes. (and 
+therefor the data is on persistant media before the call returns)
 
-	- Forget (hide?) this whole locking mess by using freezer, which
-	  is what Andrew wanted us to shoot for :) I am somewhat biased
-	  with Andrew here in that I think it will lead to more stabler cpu 
-	  hotplug code over time. Again I know some people will beg to differ 
-	  on this view.
+I am understanding barriers to only indicate ordering requirements. things 
+before the barrier can be reordered freely, things after the barrier can 
+be reordered freely, but things cannot be reordered across the barrier.
 
-	- extend mutexes to support recursion (which I gather Linux has 
-	  religiously avoided so far)
+if I am understanding it correctly, the big win for barriers is that you 
+do NOT have to stop and wait until the data is on persistant media before 
+you can continue.
 
-	- invent a special lock for cpu hotplug which supports recursion. 
-	  This is what Gautham tried doing with [1], with the bonus that it 
-	  made the lock extremely scalable for readers by using per-cpu 
-	  reference counters and RCU. He is preparing to resend those patches 
-	  against latest kernel atm
+in the past barriers have not been fully implmented in most cases, and as 
+a result they have been simulated by forcing a full flush of the buffers 
+to persistant media before any other writes are allowed. This has made 
+them _in practice_ operate the same way as syncronous writes (matching 
+your understanding), but the current thread is talking about fixing the 
+implementation to the official symantics for all hardware that can 
+actually support barriers (and fix it at the OS level)
 
-	- Anything else you can think of?
-
-[1] http://lkml.org/lkml/2006/10/26/73
-
-
-> but if you don't want to do that (and quite often you don't), just doing a 
-> "preempt_disable()" or taking a spinlock will *also* guarantee that no new 
-> CPU's suddenly show up, so it's safe to look at the CPU online bitmasks.
-> 
-> Do we really need anything else?
-
-see above
-
-> As mentioned, it's actually fairly easy to add verification calls to make 
-> sure that certain accesses are done with preemption disabled, so..
-
--- 
-Regards,
-vatsa
+David Lang
