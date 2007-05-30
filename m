@@ -1,58 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751537AbXE3HCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751754AbXE3HGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751537AbXE3HCj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 03:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbXE3HCa
+	id S1751754AbXE3HGV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 03:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXE3HGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 03:02:30 -0400
-Received: from antispam.upcomillas.es ([130.206.70.245]:45421 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbXE3HCa convert rfc822-to-8bit (ORCPT
+	Wed, 30 May 2007 03:06:13 -0400
+Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:56195 "EHLO
+	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbXE3HGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 03:02:30 -0400
-Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle onIntel 
-	chipset
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Nish Aravamudan <nish.aravamudan@gmail.com>
-Cc: webmaster@kernel.org, Mark Lord <lkml@rtr.ca>,
+	Wed, 30 May 2007 03:06:11 -0400
+Date: Wed, 30 May 2007 09:06:08 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <29495f1d0705291007p2448ea9dl51fa597c59a2d16f@mail.gmail.com>
-References: <465C566E.4030009@rtr.ca> 
-	<alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org> 
-	<465C5C16.7020001@rtr.ca> <465C5D25.2050303@rtr.ca> 
-	<29495f1d0705291007p2448ea9dl51fa597c59a2d16f@mail.gmail.com>
-Content-Type: text/plain;
-	charset=utf-8
-Date: Wed, 30 May 2007 09:02:29 +0200
-Message-Id: <1180508549.9181.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8BIT
+       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [patch 1/2] m68k: runtime patching infrastructure
+In-Reply-To: <465D1020.3030605@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0705300903030.31930@anakin>
+References: <20070528191630.377693320@mail.of.borg> <20070528191715.352919509@mail.of.borg>
+ <20070529173818.fd94ae81.akpm@linux-foundation.org> <465D1020.3030605@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-478399368-1180508768=:31930"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-29 at 10:07 -0700, Nish Aravamudan wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Click on "raw"? e.g.:
->
-> summary | shortlog | log | commit | commitdiff | tree
-> raw (parent: 1ea0975)
->
-> Neare the top.
+---1463808512-478399368-1180508768=:31930
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Hmmm...yes, but if you click raw, you ave "500 internal error", and a
-raw html source (that is, content: header is right :-) a least).
+On Wed, 30 May 2007, Eric Dumazet wrote:
+> Andrew Morton a �crit :
+> > On Mon, 28 May 2007 21:16:31 +0200
+> > Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > 
+> > > --- a/include/asm-m68k/module.h
+> > > +++ b/include/asm-m68k/module.h
+> > > @@ -1,7 +1,38 @@
+> > >  #ifndef _ASM_M68K_MODULE_H
+> > >  #define _ASM_M68K_MODULE_H
+> > > -struct mod_arch_specific { };
+> > > +
+> > > +struct mod_arch_specific {
+> > > +	struct m68k_fixup_info *fixup_start, *fixup_end;
+> > > +};
+> > 
+> > Here we use struct m68k_fixup_info.
+> > 
+> > > +#define MODULE_ARCH_INIT {				\
+> > > +	.fixup_start		= __start_fixup,	\
+> > > +	.fixup_end		= __stop_fixup,		\
+> > > +}
+> > > +
+> > >  #define Elf_Shdr Elf32_Shdr
+> > >  #define Elf_Sym Elf32_Sym
+> > >  #define Elf_Ehdr Elf32_Ehdr
+> > > +
+> > > +
+> > > +enum m68k_fixup_type {
+> > > +	m68k_fixup_memoffset,
+> > > +};
+> > > +
+> > > +struct m68k_fixup_info {
+> > > +	enum m68k_fixup_type type;
+> > > +	void *addr;
+> > > +};
+> > 
+> > and later we define it.
+> > 
+> > How come it doesn't spit warnings?
+> > 
+> > I think it could be tightened up even if it happens not to warn?
+> 
+> 
+> struct a {
+> 	struct not_yet_defined *start, *end;
+> };
+> 
+> struct not_yet_defined {
+> 	void *foo;
+> };
+> 
+> Is a valid and gives no warnings.
 
-Added  webmaster to Cc:, as per instruction in the error itself.
+I was puzzled by this as well, as there were no compiler warnings...
 
-Romano
+Apparently you get a warning only if the _first_ occurrence of a struct
+is declared inside a parameter list of a function.
 
+So even
 
+    struct a {
+	struct not_yet_defined *start, *end;
+    };
+
+    extern void f(struct not_yet_defined *start);
+
+    struct not_yet_defined {
+	void *foo;
+    };
+
+doesn't give a warning, because the first occurence is inside the
+definition of struct a.
+
+Gr{oetje,eeting}s,
+
+						Geert
 
 --
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---1463808512-478399368-1180508768=:31930--
