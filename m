@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbXE3PO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbXE3PSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755981AbXE3PO2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbXE3POA
+	id S1754889AbXE3PSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXE3PSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:14:00 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42180 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754828AbXE3PN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:13:58 -0400
-Date: Wed, 30 May 2007 17:14:24 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: ppc modprost warnings in 2.6.22-rc1
-Message-ID: <20070530151424.GB15335@uranus.ravnborg.org>
-References: <Pine.SOC.4.64.0705141717110.23895@math> <20070515204540.GC22966@uranus.ravnborg.org> <Pine.SOC.4.64.0705301652250.23769@math>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 May 2007 11:18:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:19588 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752767AbXE3PSi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 11:18:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JpBrr7cN5O0C5UlZc5IRvBr5dypEeIcm4rwUIdb4GCFgad+YtSa9HC7IjoK0bDqoPdG3LbK7oBHt9tdYqWx2n2vwjGWjHWap0goKKVAxRMO9Ou8j00AXdXldRa3wtYV3A6zB5pPVMESZWxlUPz7Mk4TMGw0+D8hG89lvM+X5kmw=
+Message-ID: <d9b9d95f0705300818h2eaa8130mf8a7a37966d29cc5@mail.gmail.com>
+Date: Wed, 30 May 2007 16:18:36 +0100
+From: "Renato Golin" <rengolin@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: joydev.c and saitek cyborg evo force
+Cc: linux-kernel@vger.kernel.org, "Dmitry Torokhov" <dtor@insightbb.com>
+In-Reply-To: <Pine.LNX.4.64.0705301654560.3961@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0705301652250.23769@math>
-User-Agent: Mutt/1.4.2.1i
+References: <d9b9d95f0705180654x342ff6dbwf134243dfeabed20@mail.gmail.com>
+	 <200705210016.20794.dtor@insightbb.com>
+	 <Pine.LNX.4.64.0705211444500.22906@jikos.suse.cz>
+	 <d9b9d95f0705291657o47ef42d3jea2a1dae3e31bbdb@mail.gmail.com>
+	 <Pine.LNX.4.64.0705300207160.3961@jikos.suse.cz>
+	 <d9b9d95f0705300214u7eb257fg783aefd73077d33@mail.gmail.com>
+	 <Pine.LNX.4.64.0705301654560.3961@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 04:55:30PM +0300, Meelis Roos wrote:
-> > > WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x18) and 'Mesquite_pci_IRQ_map'
-> > .....
-> > 
-> > mot_info is only used by functions marked __init.
-> > So why not mark it __init so it get discarded and we get rid of all those warnings?
-> 
-> How do I mark a initialized struct __init? Adding __init or const __init in
-> front of the declaration results in
-> 
->   CC      arch/ppc/platforms/prep_pci.o
-> arch/ppc/platforms/prep_pci.c:806: error: mot_info causes a section type conflict
+On 30/05/07, Jiri Kosina <jkosina@suse.cz> wrote:
+> do any data appear in the kernel log when you generate events with the
+> device (i.e. move the joystick, press the buttons, etc)? That should be
+> reported if DEBUG_DATA is defined properly on the older kernels.
 
->From include/linux/init.h:
- * For initialized data:
- * You should insert __initdata between the variable name and equal
- * sign followed by value, e.g.:
- *
- * static int init_variable __initdata = 0;
- * static char linux_logo[] __initdata = { 0x32, 0x36, ... };
- *
- * Don't forget to initialize data not at file scope, i.e. within a function,
- * as gcc otherwise puts the data into the bss section and not into the init
- * section.
- * 
- * Also note, that this data cannot be "const".
+Not at all... only my own debug messages from joydev (like:
+recalibrating for value 2048) when a new limit is reached. I've even
+changed "printk(KERN_DEBUG ...)" to a plain printk() as I do on joydev
+to avoid fall into the wrong log level but didn't work as well.
 
-If you need more info we would need to update this comment.
+I've changed USB DEBUG in menuconfig, saved the new conf.
 
-	Sam
+The files I've changed manually (undef -> define) were:
+ -> drivers/hid/
+hid-core.c:#undef DEBUG
+hid-core.c:#undef DEBUG_DATA
+hid-input.c:#undef DEBUG
+
+-> drivers/usb/input/
+hid-core.c:#undef DEBUG
+hid-core.c:#undef DEBUG_DATA
+hid-ff.c:#undef DEBUG
+hid-tmff.c:#undef DEBUG
+
+than
+$ make drivers/hid/hid.ko drivers/usb/input/usbhid.ko
+$ rmmod usbhid hid ; modprobe usbhid hid
+
+the output from the last mail was on both /var/log/messages and
+syslog, although syslog had other messages from the network card
+(using ndiswrapper).
+
+cheers,
+--renato
+
+Reclaim your digital rights, eliminate DRM, learn more at
+http://www.defectivebydesign.org/what_is_drm
