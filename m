@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbXE3KyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752244AbXE3LDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753007AbXE3KyD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 06:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbXE3Kxx
+	id S1752244AbXE3LDr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 07:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbXE3LDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 06:53:53 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:4321 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750888AbXE3Kxw (ORCPT
+	Wed, 30 May 2007 07:03:39 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:54129 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbXE3LDi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 06:53:52 -0400
-Date: Wed, 30 May 2007 12:53:51 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: gregkh@suse.de, dmitry.torokhov@gmail.com, oneukum@suse.de,
-       rpurdie@rpsys.net, stern@rowland.harvard.edu, maneesh@in.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET 2.6.22-rc2-mm1 REVIEW] sysfs: make directory
- dentries/inodes reclaimable
-Message-ID: <20070530125351.2002a316@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <11803701861778-git-send-email-htejun@gmail.com>
-References: <11803701861778-git-send-email-htejun@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 07:03:38 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [Cbe-oss-dev] [RFC] Cell: shutdown method for spu_sysdev_class
+Date: Wed, 30 May 2007 13:03:09 +0200
+User-Agent: KMail/1.9.6
+Cc: cbe-oss-dev@ozlabs.org, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+References: <463D1A2F.10708@am.sony.com> <200705292023.49968.arnd@arndb.de> <20070530095821.GA24373@lst.de>
+In-Reply-To: <20070530095821.GA24373@lst.de>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705301303.09616.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/ZrigjEi92t7zAB1QTbCXxnRp1rlH/xLJaJHO
+ V4yjviZbr3O7D8u85juMbW7ab6Aovo/5jezLfXCCU2aB6X30WJ
+ MBbvFwFqPTnXK3IfKQcwA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 01:36:26 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+On Wednesday 30 May 2007, Christoph Hellwig wrote:
+> 
+> > Is it documented or implied somewhere that ->shutdown must not free
+> > the device? If not, the first option is probably the safer choice.
+> 
+> It's not documented anywhere, but implicitly assumed.  I don't know
+> of any shutdown implementation that frees the device.
 
-> Please review, test, scream... :-)
+Right, I found the explanation now myself:
 
-Kernel seems a bit unhappy:
+The ->shutdown method is called for system devices that are still
+part of a linked linked list. Freeing the object would destroy that
+list.
 
-BUG: sleeping function called from invalid context at
-include/asm/uaccess.h:234 in_atomic():1, irqs_disabled():0
-00000000018b8d80 0000000000000002 0000000000000000 00000000030c3d68 
-       00000000030c3ce0 00000000003aa006 00000000003aa006 0000000000015528
-       0000000000000000 000003ffffb15750 00000000018b8d80 0000000000000000
-       000000000046de20 0000000000000000 00000000030c3d30 ffffffff0000000e
-       0000000000333fb0 0000000000015572 00000000030c3cc8 00000000030c3d10
-Call Trace:
-([<00000000000154bc>] show_trace+0xbc/0xd0)
- [<0000000000031a6e>] __might_sleep+0xfe/0x158
- [<00000000000b6836>] filldir+0xf6/0x198
- [<0000000000103a82>] sysfs_readdir+0x10a/0x228
- [<00000000000b6220>] vfs_readdir+0xb8/0xd8
- [<00000000000b63e8>] sys_getdents+0x60/0xdc
- [<00000000000222c0>] sysc_noemu+0x10/0x16
- [<00000200000de78e>] 0x200000de78e
+Geoff, please merge the patch below in your tree.
 
-But at least it comes up :)
+	Arnd <><
+---
 
-(Will take a look at the patches now)
+Subject: cell: don't free spu objects in sysdev shutdown
+
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+System devices are accessed after they are shut down, so
+we must not free the data structures.
+
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Index: linux-2.6/arch/powerpc/platforms/cell/spu_base.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linux-2.6/arch/powerpc/platforms/cell/spu_base.c
+@@ -517,7 +517,6 @@ static int spu_shutdown(struct sys_devic
+ 
+ 	spu_free_irqs(spu);
+ 	spu_destroy_spu(spu);
+-	kfree(spu);
+ 	return 0;
+ }
+ 
