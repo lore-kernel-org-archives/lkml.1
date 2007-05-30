@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbXE3WYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762085AbXE3WYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762014AbXE3WYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbXE3WY1
+	id S1762085AbXE3WYy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761936AbXE3WYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:24:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45435 "EHLO mx1.redhat.com"
+	Wed, 30 May 2007 18:24:32 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33392 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761631AbXE3WY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:24:26 -0400
-Message-ID: <465DF91F.3010201@sandeen.net>
-Date: Wed, 30 May 2007 17:22:23 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1761926AbXE3WYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 18:24:31 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: GFP_DMA32 and PAE x86 machines
+Date: Thu, 31 May 2007 00:24:25 +0200
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Linus Torvalds" <torvalds@osdl.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <21d7e9970705301410m16ded9esdf7a49371c60a155@mail.gmail.com> <465DECD7.8030104@zytor.com> <21d7e9970705301507o2a89e824xdc6a980e8dbedaaf@mail.gmail.com>
+In-Reply-To: <21d7e9970705301507o2a89e824xdc6a980e8dbedaaf@mail.gmail.com>
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
-References: <20070524165935.GB19709@duck.suse.cz> <20070524170554.GC19709@duck.suse.cz> <20070524203653.GA7693@duck.suse.cz> <465DF0B4.2050203@sandeen.net>
-In-Reply-To: <465DF0B4.2050203@sandeen.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705310024.25937.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
+On Thursday 31 May 2007 00:07:45 Dave Airlie wrote:
+> Depending on split all lowmem is below 1GB which isn't exactly
+> optimal, I'd llike all 4GB for DMA.
 
-> Jan, something seems busted here.  I'm getting lockups when testing udf
-> on a single cpu with this last patch in place...
-> 
-> I think it's the BKL stumbling on itself.
+Well it would be for a quite specialized limited use case: 
+- Memory the kernel doesn't need to map (after all kmap is evil) 
+- You need more than 500MB or so.
+- 32bit kernel and user cannot run 64bit kernel
+- Machine has >3GB of RAM 
 
-To demonstrate, try this:
+Is there clear evidence that is a common issue? If it is just a "would
+be nice to have in theory" the cost of doing a GFP_DMA32 for i386 would be
+probably not worth doing it. If it's a common issue it might be 
+considered, although the "here's a nickle. buy yourself a 64bit CPU"
+strategy would also sound attractive. 
 
-# BIGFILENAME=`seq -s '' 1 1000`
-# ln -s $BIGFILENAME foo
+Please give a very very strong rationale why you want it. Did you actually
+run into such a situation yourself yet?
 
-instant deadlock :(
-
--Eric
+-Andi
