@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbXE3TXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbXE3TaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088AbXE3TXl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXE3TXe
+	id S1756616AbXE3TaM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbXE3T37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:23:34 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:36447 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbXE3TXd (ORCPT
+	Wed, 30 May 2007 15:29:59 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:25292 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753830AbXE3T36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:23:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cXJe5AHhQdTolhp7PjLOW6VyUPQYjFH1J09aWr0fAs7Qb5l9Qp6rD0nqR7z5M1Ztln4fNhE8kN/Dj80kshtBysvBFQzE5EY9AvPW23UtRkMwCfR1OAJNxYWTOrdbA/187yMt5f2EVferQMtE4qKH+0TyVnMXLKDTNcg4Q88eGiE=
-Message-ID: <a781481a0705301223k1b52049eo33606cc158b00222@mail.gmail.com>
-Date: Thu, 31 May 2007 00:53:20 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Roland Dreier" <rdreier@cisco.com>, openib-general@openib.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: dealing with gcc 'comparison is always false' warnings (was: [PATCH] drivers/infiniband: fix comparsion between unsigned and negative)
-In-Reply-To: <20070530190937.GA5444@nostromo.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 30 May 2007 15:29:58 -0400
+Date: Wed, 30 May 2007 12:28:15 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [patch] tweak make htmldocs (nochunks and better index).
+Message-Id: <20070530122815.31ca9587.randy.dunlap@oracle.com>
+In-Reply-To: <200705301447.41421.rob@landley.net>
+References: <200705291528.34092.rob@landley.net>
+	<20070529211809.d995a5f7.randy.dunlap@oracle.com>
+	<200705301447.41421.rob@landley.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070530080518.GA29195@nostromo.devel.redhat.com>
-	 <adazm3mqqh3.fsf@cisco.com>
-	 <a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com>
-	 <20070530190937.GA5444@nostromo.devel.redhat.com>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bill,
+On Wed, 30 May 2007 14:47:41 -0400 Rob Landley wrote:
 
-On 5/31/07, Bill Nottingham <notting@redhat.com> wrote:
-> Satyam Sharma (satyam.sharma@gmail.com) said:
-> > But yes, the kind of "fixes" you pointed out that _remove_ these conditions
-> > are definitely *not* what we would want to do.
->
-> I can see that - but I think it should be at least be brought up for each
-> warning, to determine either:
->
-> 1) if it should be ignored
-> 2) if a signed type is actually intended
-> 3) if the code should be elided
+> On Wednesday 30 May 2007 12:18 am, Randy Dunlap wrote:
+> > What is <\p> supposed to do?
+> 
+> Sorry, typo.  Should be </p> instead.  My bad.
+> 
+> As to what it does in a larger sense, "make the xml people happy".  Closing
+> parentheses tags make the various xhtml validators shut up.  The main
+> difference between xhtml and html is that you close all the tags you open.  I
+> can yank it if people prefer it that way.
+> 
+> > Here's what I see in index.html (beginning lines of it):
+> > 
+> > Linux Kernel HTML Documentation
+> > Kernel Version: 2.6.22-rc3
+> > 
+> > deviceiobookBus-Independent Device Accesses <\p>
+> 
+> Yeah, that's screwed up.  (It looked fine in Konqueror. :)  *rummage*...
+> 
+> Here's an updated patch.  This time I checked that it looked ok in Firefox
+> too:
 
-Agreed. The extract you've pointed out above was too strongly worded
-unnecessarily / wrong generalization, and I corrected it later.
+Yes, /me too.  Thanks.
 
-> While not necessarily in the IB instances, there are cases where there
-> are entire blocks of code (with debugging output, error returns, etc)
-> that can never get run, and it may make sense to remove those.
+I still disagree on the use of "nochunks" though.
 
-Agreed, again.
+> --- git/Documentation/DocBook/Makefile	2007-05-23 16:36:56.000000000 -0400
+> +++ work/Documentation/DocBook/Makefile	2007-05-30 14:36:49.000000000 -0400
+> @@ -141,9 +141,12 @@
+>  		   cat $(HTML) >> $(main_idx)
+>  
+>  quiet_cmd_db2html = HTML   $@
+> -      cmd_db2html = xmlto xhtml $(XMLTOFLAGS) -o $(patsubst %.html,%,$@) $< && \
+> -		echo '<a HREF="$(patsubst %.html,%,$(notdir $@))/index.html"> \
+> -        $(patsubst %.html,%,$(notdir $@))</a><p>' > $@
+> +      cmd_db2html = xmlto xhtml-nochunks $(XMLTOFLAGS) -o $(patsubst %.html,%,$@) $< && \
+> +		NAME='$(patsubst %.html,%,$(notdir $@))'; \
+> +		echo -n "<p><a HREF=\"$$NAME/$$NAME.html\">$$NAME</a> - " >$@; \
+> +		sed -nre 's@.*<title>(.*)</title>.*@\1@p' \
+> +			"Documentation/DocBook/$$NAME/$$NAME.html" >> $@ ; \
+> +		echo '</p>' >> $@
+>  
+>  %.html:	%.xml
+>  	@(which xmlto > /dev/null 2>&1) || \
+> 
+> Rob
 
-Satyam
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
