@@ -1,104 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbXE3QLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbXE3QLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756944AbXE3QLE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 12:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbXE3QKz
+	id S1757673AbXE3QLY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 12:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbXE3QLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 12:10:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50122 "EHLO mx2.mail.elte.hu"
+	Wed, 30 May 2007 12:11:16 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:43325 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752290AbXE3QKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 12:10:54 -0400
-Date: Wed, 30 May 2007 18:09:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530160913.GA14261@elte.hu>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org> <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753397AbXE3QLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 12:11:15 -0400
+Date: Wed, 30 May 2007 18:04:27 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andy Whitcroft <apw@shadowen.org>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@osdl.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add a trivial patch style checker
+In-Reply-To: <465D9933.2000209@oracle.com>
+Message-ID: <Pine.LNX.4.61.0705301800330.11140@yvahk01.tjqt.qr>
+References: <9a1288909c10f2935af82ec5cea0c46b@pinky> <p738xb8fjv2.fsf@bingen.suse.de>
+ <465BECCC.5030001@shadowen.org> <Pine.LNX.4.61.0705292218520.11140@yvahk01.tjqt.qr>
+ <20070529153651.d65fa07c.randy.dunlap@oracle.com>
+ <Pine.LNX.4.61.0705301033470.11140@yvahk01.tjqt.qr> <465D9933.2000209@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On May 30 2007 08:33, Randy Dunlap wrote:
+>> > That's just a joe bug then.
+>> > 
+>> > diff no longer requires a beginning space, at least in the testing
+>> > that I did it worked with no leading space on a label:.
+>> 
+>> But not everyone runs the latest and greatest. diffutils 2.8.7
+>> takes /^label:/ as a marker for the @@ line.
+>
+> OK.  What does "marker for the @@ line" mean?
 
-> > To echo Uli and paraphrase an ad, "it's the interface, silly."
-> 
-> THERE IS NO INTERFACE! You're just making that up, and glossing over 
-> the most important part of the whole thing!
-> 
-> If you could actually point to something specific that matches what 
-> everybody needs, and is architecture-neutral, it would be a different 
-> issue. As is, you're just saying "memory-mapped interfaces" without 
-> actually going into enough detail to show HOW MUCH IT SUCKS.
-> 
-> There really are very few programs that would use them. [...]
+if ($_ !~ /^[\(\[\{]/ && $_ =~ /^(\S+)/) {
+    print "@@ -a,b +c,d @@ $1\n"
+}
 
-looking over the list of our new generic APIs (see further below) i 
-think there are three important things that are needed for an API to 
-become widely used:
+So
+label:
+will be the 'mark[er]' for the @@ line
 
- 1) it should solve a real problem (ha ;-), it should be intuitive to 
-    humans and it should fit into existing things naturally.
+Just try yourself:
+<<< foo.c <<<
+int main(void)
+{
+	x
+	y
+	z
+label:
+	a
+	b
+	c
+	d
+	e
+	f
+}
+>>>
+<<< foo2.c <<<
+int main(void)
+{
+	x
+	y
+	z
+label:
+	a
+	b
+	c
+	d
+	d+
+	e
+	f
+}
+>>>
+<<< diff -dpru foo.c foo2.c <<<
+--- foo.c       2007-05-30 10:33:45.714222656 +0200
++++ foo2.c      2007-05-30 18:03:43.061471495 +0200
+@@ -8,6 +8,7 @@ label:
+ 	b
+ 	c
+ 	d
++	d+
+ 	e
+ 	f
+ }
+>>>
 
- 2) it should be ubiquitous. (if it's about IO it should cover block IO,
-    network IO, timers, signals and everything) Even if it might look
-    silly in some of the cases, having complete, utter, no compromises,
-    100% coverage for everything massively helps the uptake of an API, 
-    because it allows the user-space coder to pick just one paradigm 
-    that is closest to his application and stick to it and only to it.
-
- 3) it should be end-to-end supported by glibc.
-
-our failed API attempts so far were:
-
- - sendfile(). This API mainly failed on #2. It partly failed on #1 too.
-   (couldnt be used in certain types of scenarios so was unintuitive.)
-   splice() fixes this almost completely.
-
- - KAIO. It fails on #2 and #3.
-
-our more successful new APIs:
-
- - futexes. After some hickups they form the base of all modern 
-   user-space locking.
-
- - splice. (a bit too early to tell but it's looking good so far. Would
-   be nice if someone did a brute-force memcpy() based vmsplice to user
-   memory, just to make usage fully symmetric.)
-
-partially successful, not yet failed new APIs:
-
- - epoll. It currently fails at #2 (v2.6.22 mostly fills the gaps but
-   not completely). Despite the non-complete coverage of event domains a
-   good number of apps are using it, and in particular a couple really
-   'high end' apps with massive amounts of event sources - which apps 
-   would have no chance with poll, select or threads.
-
- - inotify. It's being used quite happily on the desktop, despite some
-   of its limitations. (Possibly integratable into epoll?)
-
-	Ingo
+	Jan
+-- 
