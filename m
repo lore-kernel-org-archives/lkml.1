@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762065AbXE3Wao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760893AbXE3WbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762065AbXE3Wao (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbXE3WaK
+	id S1760893AbXE3WbV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbXE3WbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:30:10 -0400
-Received: from waste.org ([66.93.16.53]:54712 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751980AbXE3WaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:30:08 -0400
-Date: Wed, 30 May 2007 17:27:15 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530222715.GK11166@waste.org>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+	Wed, 30 May 2007 18:31:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:2771 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbXE3WbB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 18:31:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hZ6UpKFhuLnJIbR74jveHozl7h9WP1EREMgTrFHFx+6lYILpfON8AonFd5x54F1ecDsNxBhm9I7ZdnMFCejoJxE4mBLpwqwJpEH8oAn4La0SK/r0POMqlcNMyvNlmqhN1CeUIBCG+44J02rBvrBe0FsmUiPf/cokcdbHMYzp1cU=
+Message-ID: <75b66ecd0705301531q1ba78d39od07d2611573c9150@mail.gmail.com>
+Date: Wed, 30 May 2007 18:31:00 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Daniel J Blueman" <daniel.blueman@gmail.com>
+Subject: Re: Compact Flash performance...
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <6278d2220705301510y2d81f69eu38fb778d32de05e1@mail.gmail.com>
+X-Google-Sender-Auth: 23e4097d9d232cda
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 01:00:30PM -0700, Linus Torvalds wrote:
-> Which *could* be something as simple as saying "bit 30 in the file 
-> descriptor specifies a separate fd space" along with some flags to make 
-> open and friends return those separate fd's. That makes them useless for 
-> "select()" (which assumes a flat address space, of course), but would be 
-> useful for just about anything else.
+On 5/30/07, Daniel J Blueman <daniel.blueman@gmail.com> wrote:
+> I have a SanDisk Extreme IV 4GB CF card, capable of 40MB/s read, but
+> am seeing 30MB/s read [1], connected directly to the IDE bus on my
+> ICH8 controller.
 
-Or.. we could have a method of swizzling in and out an entire FD
-array, similar to UML's trick for swizzling MMs.
+How do you know it's capable of 40MB/s read?
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Lee
