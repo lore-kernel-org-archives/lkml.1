@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbXE3VsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759397AbXE3Vsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760110AbXE3VsE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760292AbXE3Vq7
+	id S1759397AbXE3Vsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760573AbXE3Vrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:46:59 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:48280 "EHLO
+	Wed, 30 May 2007 17:47:47 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:38627 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760149AbXE3Vq5 (ORCPT
+	by vger.kernel.org with ESMTP id S1760207AbXE3Vrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:46:57 -0400
-Date: Wed, 30 May 2007 14:46:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Emelianov <xemul@openvz.org>
-Cc: Paul Menage <menage@google.com>, Balbir Singh <balbir@in.ibm.com>,
+	Wed, 30 May 2007 17:47:46 -0400
+Date: Wed, 30 May 2007 14:44:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org, Kirill Korotaev <dev@openvz.org>
-Subject: Re: [PATCH 7/8] Scanner changes needed to implement per-container
- scanner
-Message-Id: <20070530144647.0ace89f3.akpm@linux-foundation.org>
-In-Reply-To: <465D9ABD.7050506@openvz.org>
-References: <465D9739.8070209@openvz.org>
-	<465D9ABD.7050506@openvz.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <465DEE59.9070901@goop.org>
+Message-ID: <alpine.LFD.0.98.0705301442000.26602@woody.linux-foundation.org>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
+ <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
+ <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+ <465DEE59.9070901@goop.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 19:39:41 +0400
-Pavel Emelianov <xemul@openvz.org> wrote:
 
-> The core change is that the isolate_lru_pages() call is
-> replaced with struct scan_controll->isolate_pages() call.
+
+On Wed, 30 May 2007, Jeremy Fitzhardinge wrote:
 > 
-> Other changes include exporting __isolate_lru_page() for
-> per-container isolator and handling variable-to-pointer
-> changes in try_to_free_pages().
-> 
-> This makes possible to use different isolation routines
-> for per-container page reclamation. This will be used by
-> the following patch.
-> 
-> ...
->
-> +struct rss_container;
-> +extern unsigned long try_to_free_pages_in_container(struct rss_container *);
-> +int __isolate_lru_page(struct page *page, int mode);
+> Some programs - legitimately, I think - scan /proc/self/fd to close
+> everything.  The question is whether the glibc-private fds should appear
+> there.  And something like a "close-on-fork" flag might be useful,
+> though I guess glibc can keep track of its own fds closely enough to not
+> need something like that.
 
+Sure. I think there are things we can do (like make the non-linear fd's 
+appear somewhere else, and make them close-on-exec by default etc).
 
->  extern unsigned long shrink_all_memory(unsigned long nr_pages);
->  extern int vm_swappiness;
->  extern int remove_mapping(struct address_space *mapping, struct page *page);
-> diff -upr linux-2.6.22-rc2-mm1.orig/mm/vmscan.c linux-2.6.22-rc2-mm1-0/mm/vmscan.c
-> --- linux-2.6.22-rc2-mm1.orig/mm/vmscan.c	2007-05-30 12:32:36.000000000 +0400
-> +++ linux-2.6.22-rc2-mm1-0/mm/vmscan.c	2007-05-30 16:13:09.000000000 +0400
-> @@ -47,6 +47,8 @@
->  
->  #include "internal.h"
->  
-> +#include <linux/rss_container.h>
-> +
->  struct scan_control {
->  	/* Incremented by the number of inactive pages that were scanned */
->  	unsigned long nr_scanned;
-> @@ -70,6 +72,13 @@ struct scan_control {
->  	int all_unreclaimable;
->  
->  	int order;
-> +
-> +	struct rss_container *cnt;
+And it's not like it's necessarily at all the only way to do things. 
 
-Can we please have a better name?  "cnt" is usually a (poorly-chosen) name
-for an integer counter.  Perhaps "container", or even "rss_container".
+I just threw it out as a possible solution - and one that is almost 
+certainly *superior* to trying to work around the fd thing with some 
+shared memory area which has tons of much more serious problems of its own 
+(*).
 
-> +		nr_reclaimed += shrink_zones(priority, zones, sc);
-> +		if (sc->cnt == NULL)
-> +			shrink_slab(sc->nr_scanned, gfp_mask, lru_pages);
+		Linus
 
-We don't we shrink slab if called to shrink a container.
-
-This is a fundamental design decision, and a design shortcoming.  A full
-discussion of this is absolutely appropriate to the patch changelog. 
-Please don't just hide stuff like this in the patch and leave people
-wondering, or ignorant.
-
-
+(*) Ranging from: specialized-only interfaces, inability to pass it 
+around, lack of any abstraction interfaces, and almost impossible to 
+debug. The security implications of kernel and user space sharing 
+read-write access to some shared area are also legion!
