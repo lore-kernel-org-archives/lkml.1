@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbXE3Vt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbXE3Vtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760473AbXE3Vt2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759593AbXE3Vsb
+	id S1761069AbXE3Vtp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760424AbXE3Vsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:48:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35554 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759642AbXE3Vsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:48:30 -0400
-Message-ID: <465DF0B4.2050203@sandeen.net>
-Date: Wed, 30 May 2007 16:46:28 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
-References: <20070524165935.GB19709@duck.suse.cz> <20070524170554.GC19709@duck.suse.cz> <20070524203653.GA7693@duck.suse.cz>
-In-Reply-To: <20070524203653.GA7693@duck.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 30 May 2007 17:48:47 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:50424 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760406AbXE3Vsq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 17:48:46 -0400
+Date: Wed, 30 May 2007 14:48:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andi Kleen <ak@suse.de>, Russell King <rmk@arm.linux.org.uk>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gerd Hoffmann <kraxel@suse.de>,
+       David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 4/5] serial: convert early_uart to earlycon for 8250
+Message-Id: <20070530144826.5f396d4e.akpm@linux-foundation.org>
+In-Reply-To: <200705301358.54255.yinghai.lu@sun.com>
+References: <200705291844.00308.yinghai.lu@sun.com>
+	<465DD753.5040208@sun.com>
+	<20070530131819.641e1548.akpm@linux-foundation.org>
+	<200705301358.54255.yinghai.lu@sun.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
->   Hello,
-> 
-> On Thu 24-05-07 19:05:54, Jan Kara wrote:
->>   Hello,
->>
->>   attached is a patch that fixes possible leakage of free blocks / use of
->> free blocks in UDF (which spilled nice assertion failures I've added in my
->> first round of patches). More details in the changelog. Andrew, please apply.
->> Both changes have survived some time of fsx and fsstress testing so they
->> should be reasonably safe.
->   Sorry for replying to myself but this patch had a minor problem of
-> printing some bogus warnings when directories were deleted (I wonder why
-> fsstress didn't find it). Attached is a new version of the patch without
-> this problem.
+On Wed, 30 May 2007 13:58:52 -0700
+Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-Jan, something seems busted here.  I'm getting lockups when testing udf
-on a single cpu with this last patch in place...
+> On Wednesday 30 May 2007 13:18, Andrew Morton wrote:
+> > On Wed, 30 May 2007 12:58:11 -0700
+> > Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> > 
+> > > >> +int update_console_cmdline(char *name, int idx, char *name_new, int idx_new, char *options)
+> > > >> +{
+> > > >> +	struct console_cmdline *c;
+> > > >> +	int i;
+> > > >> +
+> > > >> +	for (i = 0; i < MAX_CMDLINECONSOLES && console_cmdline[i].name[0]; i++)
+> > > >> +		if (strcmp(console_cmdline[i].name, name) == 0 &&
+> > > >> +			  console_cmdline[i].index == idx) {
+> > > >> +				c = &console_cmdline[i];
+> > > >> +				memcpy(c->name, name_new, sizeof(c->name));
+> > > >> +				c->name[sizeof(c->name) - 1] = 0;
+> > > >> +				c->options = options;
+> > > >> +				c->index = idx_new;
+> > > >> +				return i;
+> > > >> +		}
+> > > >> +	/* not found */
+> > > >> +	return -1;
+> > > >> +}
+> > > > 
+> > > > Shouldn't this be __init?
+> > > > 
+> > > > serial8250_find_port_for_earlycon() had its __init removed.  Why?
+> > > with __init, the compiler will cry about .init.text and .text missection.
+> > 
+> > But was this the correct fix for that?  afaict the only caller of
+> > this function is __init anyway.
+> > 
+> You are right.
+> serial8250_find_port_for_earlycon and
+> update_console_cmdline in kernel/printk.c
+> could be __init
 
-I think it's the BKL stumbling on itself.
-
-for example...
-
-static int udf_symlink(struct inode * dir, struct dentry * dentry, const
-char * symname)
-{
-...
-        lock_kernel();
-...
-out:
-        unlock_kernel();
-        return err;
-
-out_no_entry:
-        inode_dec_link_count(inode);
-        iput(inode);
-        goto out;
-}
-
-but iput goes
-iput->iput_final->drop_inode->udf_drop_inode->lock_kernel() again
-
-looking for the right way around it but figured I'd ping you early :)
-
--Eric
+OK, please send a fixup sometime.
