@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbXE3ULK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbXE3ULc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758594AbXE3ULK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbXE3UK4
+	id S1758902AbXE3ULc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbXE3ULX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:10:56 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:33328 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753418AbXE3UK4 (ORCPT
+	Wed, 30 May 2007 16:11:23 -0400
+Received: from mga02.intel.com ([134.134.136.20]:6095 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752120AbXE3ULW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:10:56 -0400
-Message-ID: <465DD97D.9010807@cosmosbay.com>
-Date: Wed, 30 May 2007 22:07:25 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 30 May 2007 16:11:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,594,1170662400"; 
+   d="scan'208";a="249015440"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Mark Lord <lkml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org> <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org> <20070530160913.GA14261@elte.hu> <465DCAE4.1010206@rtr.ca> <alpine.LFD.0.98.0705301212520.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705301212520.26602@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 30 May 2007 22:07:32 +0200 (CEST)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Date: Wed, 30 May 2007 13:11:17 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A019298C6@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070530044448.GK86004887@sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Thread-Index: AceidUxNxSoPh603TmuA63jfLFtPZgAgET+w
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "David Chinner" <dgc@sgi.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "lkml" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>
+X-OriginalArrivalTime: 30 May 2007 20:11:20.0011 (UTC) FILETIME=[AFE651B0:01C7A2F6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds a écrit :
-> 
-> On Wed, 30 May 2007, Mark Lord wrote:
->> I wonder how useful it would be to reimplement sendfile()
->> using splice(), either in glibc or inside the kernel itself?
-> 
-> I'd like that, if only because right now we have two separate paths that 
-> kind of do the same thing, and splice really is the only one that is 
-> generic.
-> 
-> I thought Jens even had some experimental patches for it. It might be 
-> worth to "just do it" - there's some internal overhead, but on the other 
-> hand, it's also likely the best way to make sure any issues get sorted 
-> out.
-> 
+> Hmmm - I wonder if my tree is screwed up in some weird way. I'm seeing link
+> warnings as well:
+>
+> WARNING: init/built-in.o - Section mismatch: reference to .init.data: from .sdata after 'root_mountflags' (at offset 0x38)
 
-Last time I played with splice(), I found a bug with readahead logic, most 
-probably because nobody but me tried it before.
+I thought that I'd got the section mis-match warnings down to
+just one (and that was in ACPI code, so I sent a patch to Len
+for it).
 
-(corrected by Fengguang Wu in commit 9ae9d68cbf3fe0ec17c17c9ecaa2188ffb854a66 )
+Are you building from defconfig, or one of the standard ones? Changing
+config options always has the possibility of unearthing new spots
+where there are conflicts between __init, __cpuinit and __devinit.
 
-So yes, reimplement sendfile() should help to find last splice() bugs, and as 
-a bonus it could add non blocking disk io, (O_NONBLOCK on input file -> socket)
+But I've had other complaints that these Section mismatch warnings
+are still showing up in kernels built from the "standard" config
+files (arch/ia64/configs/*) ... which I'm not seeing.  So I'm more
+than a little confused about this.
+
+These errors are unlikely to be related to the strace bug that
+you've reported.  I'll try to pound on this some more when I'm
+back on the same continent as my test machines.
 
 
+-Tony
