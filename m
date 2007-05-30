@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbXE3Re4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbXE3Rgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757043AbXE3Re4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXE3Ret
+	id S1756119AbXE3Rgq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbXE3Rgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:34:49 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:10306 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753118AbXE3Ret (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:34:49 -0400
-Date: Wed, 30 May 2007 19:33:55 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530173353.GO15559@kernel.dk>
-References: <20070529212718.GH7875@mami.zabbo.net> <20070530074031.GV15559@kernel.dk> <20070530165511.GB5488@mami.zabbo.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 May 2007 13:36:37 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:39001 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbXE3Rgg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 13:36:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QldlOBzjcc5Ez3PDJtSG5fNWLcEQUujC9LIotLtwKZxMhxtZ9sMVxYLMn0Jenm0q55JMYAZUAnt+U0uYrh3pb6yoOq1vz3FhJ37+IAhyqrMaURAkahM+gdsR6ebvMwG9T7thgGx5u66XlEBs5N2OiuMHAtly9ksctTvU+Isg7N8=
+Message-ID: <86802c440705301036q45e4bed4ra08a5c4394eafa0e@mail.gmail.com>
+Date: Wed, 30 May 2007 10:36:35 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+Subject: Re: [PATCH] aacraid: fix shutdown handler to also disable interrupts.
+Cc: linux-scsi@vger.kernel.org, vgoyal@in.ibm.com,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01A55087@otce2k301.adaptec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070530165511.GB5488@mami.zabbo.net>
+References: <AE4F746F2AECFC4DA4AADD66A1DFEF01A55010@otce2k301.adaptec.com>
+	 <AE4F746F2AECFC4DA4AADD66A1DFEF01A55087@otce2k301.adaptec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30 2007, Zach Brown wrote:
-> > Yeah, it'll confuse CFQ a lot actually. The threads either need to share
-> > an io context (clean approach, however will introduce locking for things
-> > that were previously lockless), or CFQ needs to get better support for
-> > cooperating processes.
-> 
-> Do let me know if I can be of any help in this.
+On 5/30/07, Salyzyn, Mark <mark_salyzyn@adaptec.com> wrote:
+> Moves quiesce, thread and interrupt shutdown into aacraid drivers'
+> .shutdown handler. This fix to the aac_shutdown handler will remove the
+> superfluous reset of the adapter during a (clean) kexec.
+>
+> This fix may mitigate the active investigation 'kexec and aacraid
+> broken' but it is unlikely to affect the root cause (issue likely
+> present in both kexec and kdump). This patch reduces the chance the
+> problem will occur with a kexec. The fix for root cause is currently
+> expected to be the minimum value check to the aacraid.startup_timeout
+> driver variable after an adapter reset within aacraid_commit_reset.patch
+> submitted on 05/22/2007 and awaiting testing by Yinghai to confirm.
+>
+> This attached patch is against current scsi-misc-2.6
+>
+> ObligatoryDisclaimer: Please accept my condolences regarding Outlook's
+> handling of patch attachments.
+>
+> Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
+>
+> Sincerely -- Mark Salyzyn
+>
+the kernel with this patch -4  and even without
 
-Thanks, it should not be a lot of work though.
+1. [SCSI] aacraid: superfluous adapter reset for IBM 8 series
+ServeRAID controllers
+2. [SCSI] aacraid: kexec fix (reset interrupt handler)
+3. aacraid_commit_reset.patch
 
-> > For the fio testing, we can make some improvements there. Right now you
-> > don't get any concurrency of the io requests if you set eg iodepth=32,
-> > as the 32 requests will be submitted as a linked chain of atoms. For io
-> > saturation, that's not really what you want.
-> 
-> Just to be clear: I'm currently focusing on supporting sys_io_*() so I'm
-> using fio's libaio engine.  I'm not testing the syslet syscall interface
-> yet.
+can load other kernel with or without patch 1,2,3
 
-Ah ok, then there's no issue from that end!
-
--- 
-Jens Axboe
-
+YH
