@@ -1,161 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbXE3QJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbXE3QLE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755840AbXE3QJJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 12:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXE3QI5
+	id S1756944AbXE3QLE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 12:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbXE3QKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 12:08:57 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:30138 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752290AbXE3QI4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 12:08:56 -0400
-Message-Id: <20070530125335.585917242@chello.nl>
-References: <20070530124903.882133089@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Wed, 30 May 2007 14:49:05 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/6] lockdep: sanitise CONFIG_PROVE_LOCKING
-Content-Disposition: inline; filename=lockdep-prove-locking.patch
+	Wed, 30 May 2007 12:10:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50122 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752290AbXE3QKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 12:10:54 -0400
+Date: Wed, 30 May 2007 18:09:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+Message-ID: <20070530160913.GA14261@elte.hu>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org> <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure that all of the lock dependency tracking code is under
-CONFIG_PROVE_LOCKING. This allows us to use the held lock tracking code
-for other purposes.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Jason Baron <jbaron@redhat.com>
----
- kernel/lockdep.c  |   13 ++++++++++++-
- kernel/spinlock.c |    4 ++--
- 2 files changed, 14 insertions(+), 3 deletions(-)
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Index: linux-2.6-git/kernel/lockdep.c
-===================================================================
---- linux-2.6-git.orig/kernel/lockdep.c
-+++ linux-2.6-git/kernel/lockdep.c
-@@ -95,6 +95,7 @@ static int lockdep_initialized;
- unsigned long nr_list_entries;
- static struct lock_list list_entries[MAX_LOCKDEP_ENTRIES];
- 
-+#ifdef CONFIG_PROVE_LOCKING
- /*
-  * Allocate a lockdep entry. (assumes the graph_lock held, returns
-  * with NULL on failure)
-@@ -111,6 +112,7 @@ static struct lock_list *alloc_list_entr
- 	}
- 	return list_entries + nr_list_entries++;
- }
-+#endif
- 
- /*
-  * All data structures here are protected by the global debug_lock.
-@@ -140,7 +142,9 @@ LIST_HEAD(all_lock_classes);
- static struct list_head classhash_table[CLASSHASH_SIZE];
- 
- unsigned long nr_lock_chains;
-+#ifdef CONFIG_PROVE_LOCKING
- static struct lock_chain lock_chains[MAX_LOCKDEP_CHAINS];
-+#endif
- 
- /*
-  * We put the lock dependency chains into a hash-table as well, to cache
-@@ -486,6 +490,7 @@ static void print_lock_dependencies(stru
- 	}
- }
- 
-+#ifdef CONFIG_PROVE_LOCKING
- /*
-  * Add a new dependency to the head of the list:
-  */
-@@ -545,6 +550,7 @@ print_circular_bug_entry(struct lock_lis
- 
- 	return 0;
- }
-+#endif
- 
- static void print_kernel_version(void)
- {
-@@ -553,6 +559,7 @@ static void print_kernel_version(void)
- 		init_utsname()->version);
- }
- 
-+#ifdef CONFIG_PROVE_LOCKING
- /*
-  * When a circular dependency is detected, print the
-  * header first:
-@@ -643,6 +650,7 @@ check_noncircular(struct lock_class *sou
- 	}
- 	return 1;
- }
-+#endif
- 
- static int very_verbose(struct lock_class *class)
- {
-@@ -827,6 +835,7 @@ check_usage(struct task_struct *curr, st
- 
- #endif
- 
-+#ifdef CONFIG_PROVE_LOCKING
- static int
- print_deadlock_bug(struct task_struct *curr, struct held_lock *prev,
- 		   struct held_lock *next)
-@@ -1091,7 +1100,7 @@ out_bug:
- 
- 	return 0;
- }
--
-+#endif
- 
- /*
-  * Is this the address of a static object:
-@@ -1311,6 +1320,7 @@ out_unlock_set:
- 	return class;
- }
- 
-+#ifdef CONFIG_PROVE_LOCKING
- /*
-  * Look up a dependency chain. If the key is not present yet then
-  * add it and return 1 - in this case the new dependency chain is
-@@ -1385,6 +1395,7 @@ cache_hit:
- 
- 	return 1;
- }
-+#endif
- 
- /*
-  * We are building curr_chain_key incrementally, so double-check
-Index: linux-2.6-git/kernel/spinlock.c
-===================================================================
---- linux-2.6-git.orig/kernel/spinlock.c
-+++ linux-2.6-git/kernel/spinlock.c
-@@ -88,7 +88,7 @@ unsigned long __lockfunc _spin_lock_irqs
- 	 * _raw_spin_lock_flags() code, because lockdep assumes
- 	 * that interrupts are not re-enabled during lock-acquire:
- 	 */
--#ifdef CONFIG_PROVE_LOCKING
-+#ifdef CONFIG_LOCKDEP
- 	_raw_spin_lock(lock);
- #else
- 	_raw_spin_lock_flags(lock, &flags);
-@@ -305,7 +305,7 @@ unsigned long __lockfunc _spin_lock_irqs
- 	 * _raw_spin_lock_flags() code, because lockdep assumes
- 	 * that interrupts are not re-enabled during lock-acquire:
- 	 */
--#ifdef CONFIG_PROVE_SPIN_LOCKING
-+#ifdef CONFIG_LOCKDEP
- 	_raw_spin_lock(lock);
- #else
- 	_raw_spin_lock_flags(lock, &flags);
+> > To echo Uli and paraphrase an ad, "it's the interface, silly."
+> 
+> THERE IS NO INTERFACE! You're just making that up, and glossing over 
+> the most important part of the whole thing!
+> 
+> If you could actually point to something specific that matches what 
+> everybody needs, and is architecture-neutral, it would be a different 
+> issue. As is, you're just saying "memory-mapped interfaces" without 
+> actually going into enough detail to show HOW MUCH IT SUCKS.
+> 
+> There really are very few programs that would use them. [...]
 
---
+looking over the list of our new generic APIs (see further below) i 
+think there are three important things that are needed for an API to 
+become widely used:
 
---
+ 1) it should solve a real problem (ha ;-), it should be intuitive to 
+    humans and it should fit into existing things naturally.
 
+ 2) it should be ubiquitous. (if it's about IO it should cover block IO,
+    network IO, timers, signals and everything) Even if it might look
+    silly in some of the cases, having complete, utter, no compromises,
+    100% coverage for everything massively helps the uptake of an API, 
+    because it allows the user-space coder to pick just one paradigm 
+    that is closest to his application and stick to it and only to it.
+
+ 3) it should be end-to-end supported by glibc.
+
+our failed API attempts so far were:
+
+ - sendfile(). This API mainly failed on #2. It partly failed on #1 too.
+   (couldnt be used in certain types of scenarios so was unintuitive.)
+   splice() fixes this almost completely.
+
+ - KAIO. It fails on #2 and #3.
+
+our more successful new APIs:
+
+ - futexes. After some hickups they form the base of all modern 
+   user-space locking.
+
+ - splice. (a bit too early to tell but it's looking good so far. Would
+   be nice if someone did a brute-force memcpy() based vmsplice to user
+   memory, just to make usage fully symmetric.)
+
+partially successful, not yet failed new APIs:
+
+ - epoll. It currently fails at #2 (v2.6.22 mostly fills the gaps but
+   not completely). Despite the non-complete coverage of event domains a
+   good number of apps are using it, and in particular a couple really
+   'high end' apps with massive amounts of event sources - which apps 
+   would have no chance with poll, select or threads.
+
+ - inotify. It's being used quite happily on the desktop, despite some
+   of its limitations. (Possibly integratable into epoll?)
+
+	Ingo
