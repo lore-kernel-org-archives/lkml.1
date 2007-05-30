@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbXE3TOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbXE3TRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755265AbXE3TOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXE3TOj
+	id S1756315AbXE3TRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbXE3TRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:14:39 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:22036 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753481AbXE3TOi (ORCPT
+	Wed, 30 May 2007 15:17:20 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:44155 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753529AbXE3TRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:14:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M/V4rBaziY8gUCvL46JktK1QnnweK8syb0HirebFVjPOKcxnAqSMFsNwC5vgP4h2OdgLw2tqx1Png2+XnIsTVwZAnQNhUlFeYK+yLT8DCq6hgJQJ7qvUgPG9cYFltASLs5r8gU8zF1hnuz9HbavEUb/uaNhQd98CT28Z7/nuGAo=
-Message-ID: <a781481a0705301214h3295315esa31c40933ae4a539@mail.gmail.com>
-Date: Thu, 31 May 2007 00:44:30 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Tilman Schmidt" <tilman@imap.cc>
-Subject: Re: dealing with gcc 'comparison is always false' warnings
-Cc: "Roland Dreier" <rdreier@cisco.com>, openib-general@openib.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <465DC9E9.3040904@imap.cc>
+	Wed, 30 May 2007 15:17:19 -0400
+Date: Wed, 30 May 2007 12:15:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mark Lord <lkml@rtr.ca>
+cc: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <465DCAE4.1010206@rtr.ca>
+Message-ID: <alpine.LFD.0.98.0705301212520.26602@woody.linux-foundation.org>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org>
+ <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org>
+ <20070530160913.GA14261@elte.hu> <465DCAE4.1010206@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070530080518.GA29195@nostromo.devel.redhat.com>
-	 <adazm3mqqh3.fsf@cisco.com>
-	 <a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com>
-	 <465DC9E9.3040904@imap.cc>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On 5/31/07, Tilman Schmidt <tilman@imap.cc> wrote:
-> Am 30.05.2007 17:41 schrieb Satyam Sharma:
-> > On 5/30/07, Roland Dreier <rdreier@cisco.com> wrote:
-> >> thanks... I'm wondering if there's a consensus among kernel hackers
-> >> about changes like:
-> >>
-> >>  > -    if (hdr.cmd < 0 || hdr.cmd >= ARRAY_SIZE(ucma_cmd_table))
-> >>  > +    if (hdr.cmd >= ARRAY_SIZE(ucma_cmd_table))
-> >>  >              return -EINVAL;
-> >>
-> >> I understand that new gcc sees that hdr.cmd is unsigned and hence
-> >> can't be < 0, and generates a warning for that, and having a build
-> >> cluttered with warnings hides bugs and so on.  However the code here
-> >> looks quite sensible to me -- otherwise we end up with missing range
-> >> checking if hdr.cmd ever changes to a signed type.  This seems like a
-> >> good way to introduce bugs: delete valid range checking code to shut
-> >> up a silly gcc warning, and then change the type of a variable.
-> >
-> > You're *absolutely* correct about the issue that these "fixes" that remove
-> > such conditions end up remove range-checking making the code more
-> > flakey / less readable.
+
+On Wed, 30 May 2007, Mark Lord wrote:
 >
-> I disagree. Changing the type of a variable is a significant
-> modification. If someone does that, he or she *must* check every
-> use of that variable, at which point he or she will also modify
-> any range checks accordingly. Having checks that don't fit with
-> the previous type *distracts* from that job. "Oh, did I modify
-> that part already? Guess I can skip checking the rest of that
-> function then." Oops.
+> I wonder how useful it would be to reimplement sendfile()
+> using splice(), either in glibc or inside the kernel itself?
 
-I did not suggest the change-variable-type-from-unsigned-to-signed
-thing as a "general" solution to such cases! ... in fact what I said
-was that such cases do _not_ have a general solution at all, and
-that shutting gcc up might not be a good idea, because a lot of
-times such warnings do un-hide bugs. [ BTW when I gave the
-change-type-from-unsigned-to-signed example, I had the size_t vs
-ssize_t typo/bug in mind, for which changing the type is the proper
-fix; and note that similar bugs can occur for non-size_t cases too. ]
+I'd like that, if only because right now we have two separate paths that 
+kind of do the same thing, and splice really is the only one that is 
+generic.
 
-> Nor is readability a suitable argument. Checking if hdr.cmd is
-> less than zero gives the misleading impression that it *could*
-> be less than zero, thus *impairing* readability.
+I thought Jens even had some experimental patches for it. It might be 
+worth to "just do it" - there's some internal overhead, but on the other 
+hand, it's also likely the best way to make sure any issues get sorted 
+out.
 
-Hmmm, but I tend to agree with the sentiment expressed in:
-http://lkml.org/lkml/2006/11/28/206
-
-Satyam
+		Linus
