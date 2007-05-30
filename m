@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbXE3U0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbXE3U1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758744AbXE3U0V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbXE3U0O
+	id S1758775AbXE3U1a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXE3U1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:26:14 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:53538
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751782AbXE3U0N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:26:13 -0400
-Date: Wed, 30 May 2007 22:28:00 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: axboe@kernel.dk, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] drivers/block/ub.c: use list_for_each_entry()
-Message-ID: <20070530202800.GL14284@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Pete Zaitcev <zaitcev@redhat.com>, axboe@kernel.dk,
-	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070530084752.GE14284@traven> <20070530123840.e54d73c2.zaitcev@redhat.com>
+	Wed, 30 May 2007 16:27:20 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:21794 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751994AbXE3U1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 16:27:19 -0400
+Message-ID: <465DDE1D.3000809@cfl.rr.com>
+Date: Wed, 30 May 2007 16:27:09 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070530123840.e54d73c2.zaitcev@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: device-mapper development <dm-devel@redhat.com>
+CC: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, linux-fsdevel@vger.kernel.org,
+       Andreas Dilger <adilger@clusterfs.com>,
+       Stefan Bader <Stefan.Bader@de.ibm.com>
+Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices,
+ filesystems, and dm/md.
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <465DAA15.3070703@cfl.rr.com>
+In-Reply-To: <465DAA15.3070703@cfl.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 May 2007 20:27:32.0280 (UTC) FILETIME=[F36ACB80:01C7A2F8]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15208.001
+X-TM-AS-Result: No--11.982500-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Wed, May 30, 2007 at 12:38:40PM -0700 Pete Zaitcev ha dit:
+Phillip Susi wrote:
+> Hrm... I may have misunderstood the perspective you were talking from. 
+> Yes, when the bio is completed it must be on the media, but the 
+> filesystem should issue both requests, and then really not care when 
+> they complete.  That is to say, the filesystem should not wait for block 
+> A to finish before issuing block B; it should issue both, and use 
+> barriers to make sure they hit the disk in the correct order.
 
-> On Wed, 30 May 2007 10:47:52 +0200, Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
+Actually now that I think about it, that wasn't correct.  The request 
+CAN be completed before the data has hit the medium.  The barrier just 
+constrains the ordering of the writes, but they can still sit in the 
+disk write back cache for some time.
+
+Stefan Bader wrote:
+> That would be the exactly how I understand Documentation/block/barrier.txt:
 > 
-> > @@ -1608,8 +1605,7 @@ static void ub_reset_task(struct work_struct *work)
-> >  	spin_lock_irqsave(sc->lock, flags);
-> >  	sc->reset = 0;
-> >  	tasklet_schedule(&sc->tasklet);
-> > -	list_for_each(p, &sc->luns) {
-> > -		lun = list_entry(p, struct ub_lun, link);
-> > +	list_for_each_entry(lun, &sc->luns, link) {
-> >  		blk_start_queue(lun->disk->queue);
-> >  	}
-> >  	wake_up(&sc->reset_wait);
+> "In other words, I/O barrier requests have the following two properties.
+> 1. Request ordering
+> ...
+> 2. Forced flushing to physical medium"
 > 
-> This patch straddles the border of acceptable. The pointless obfuscation
-> is balanced against the removal of explicit type in list_entry() and thus
-> a possible mismatched struct. I'm not acking nor naking this.
+> "So, I/O barriers need to guarantee that requests actually get written
+> to non-volatile medium in order." 
 
-if i understand you correctly the problem isn't so much the patch, but
-the use of list_for_each_entry() in general. i thought
-list_for_each_entry() is preferred over list_for_each() when its use
-is possible. 
+I think you misinterpret this, and it probably could be worded a bit 
+better.  The barrier request is about constraining the order.  The 
+forced flushing is one means to implement that constraint.  The other 
+alternative mentioned there is to use ordered tags.  The key part there 
+is "requests actually get written to non-volatile medium _in order_", 
+not "before the request completes", which would be synchronous IO.
 
-i understand your point, though i think only a chain of errors would
-make list_for_each_entry() a problem without being notified by the
-compiler:
-
-1) the mismatched struct must have a list_head pointer
-2) the name of this list_head pointer must match the name in
-list_for_each_entry()
-3) the mismatched struct must be 'compatible' with the code in the
-loop
-
-please correct me if i misinterpreted the reason of your concerns
-
-regards
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-      El trabajo es el refugio de los que no tienen nada que hacer
-                            (Oscar Wilde)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
