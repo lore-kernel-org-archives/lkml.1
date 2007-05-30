@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXE3NmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbXE3Nmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbXE3NmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbXE3NmO
+	id S1755184AbXE3Nmz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbXE3Nmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:42:14 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40249 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752122AbXE3NmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:42:13 -0400
-Date: Wed, 30 May 2007 23:42:06 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Robin Holt <holt@sgi.com>
-Cc: Stephane Eranian <eranian@frankl.hpl.hp.com>, linux-kernel@vger.kernel.org,
-       eranian@hpl.hp.com
-Subject: Re: [PATCH 02/22] 2.6.22-rc3 perfmon2 : generic kernel
- modifications
-Message-Id: <20070530234206.ae2bec8d.sfr@canb.auug.org.au>
-In-Reply-To: <20070530113403.GA14480@lnx-holt.americas.sgi.com>
-References: <200705291348.l4TDmG1Y019632@frankl.hpl.hp.com>
-	<20070530004658.732451ad.sfr@canb.auug.org.au>
-	<20070530113403.GA14480@lnx-holt.americas.sgi.com>
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__30_May_2007_23_42_06_+1000_P_LUyEnTrVg9vE+L"
+	Wed, 30 May 2007 09:42:47 -0400
+Received: from smtp.nokia.com ([131.228.20.171]:25528 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752281AbXE3Nmq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 09:42:46 -0400
+Message-ID: <465D7EFB.8090609@yandex.ru>
+Date: Wed, 30 May 2007 16:41:15 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Daniel Hazelton <dhazelton@enter.net>,
+       Michael-Luke Jones <mlj28@cam.ac.uk>,
+       lkml <linux-kernel@vger.kernel.org>, dwmw2@infradead.org,
+       madler@alumni.caltech.edu, jloup@gzip.org
+Subject: Re: JFFS2 using 'private' zlib header (was [RFC] LZO de/compression
+ support - take 6)
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>	 <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>	 <231C137C-D0BF-44F7-B2D5-AE610284D00A@cam.ac.uk>	 <200705290943.11176.dhazelton@enter.net> <a781481a0705290815y32758055te52cb8657f34acc@mail.gmail.com>
+In-Reply-To: <a781481a0705290815y32758055te52cb8657f34acc@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 30 May 2007 13:41:15.0715 (UTC) FILETIME=[31DA2930:01C7A2C0]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__30_May_2007_23_42_06_+1000_P_LUyEnTrVg9vE+L
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Satyam Sharma wrote:
+> Hmmm, either jffs2 thinks the zlib interfaces exposed through
+> include/linux/zlib.h are insufficient, or it isn't using zlib properly
+> (or at least the way it was supposed to be used :-)
+> 
 
-On Wed, 30 May 2007 06:34:03 -0500 Robin Holt <holt@sgi.com> wrote:
->
-> That breaks git-bisect.  Just introducing new text, but not actually using
-> it makes it appear to somebody using git-bisect to identify the source of
-> a problem as though all the changes came in at the same time.  Bad idea.
+I do not remember many details, but yes, JFFS2 uses zlib trickily.
 
-But the patch set as it is includes references to files that do not exist
-and so breaks the build.
+Traditionally, zlib is used like this: you have an input buffer, and you have
+a large enough out put buffer, you compress whole input buffer to the output
+buffer.
 
-Ideally, you would introduce references to files as the files are
-introduced. I was suggesting a simpler reordering of the patches.
+JFFS2 needs: it has _big_ input buffer, and _small_ output buffer, and it wants
+zlib to compress as much as possible from the input buffer, and make the output
+buffer full or nearly full of compressed data.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This is why JFFS2 uses different hacks, but I do not remember details anymore.
+Otherwise it could just use cryptoapi instead. In fact, I tried this 2
+years ago, but gave up: http://lkml.org/lkml/2005/3/25/104
 
---Signature=_Wed__30_May_2007_23_42_06_+1000_P_LUyEnTrVg9vE+L
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGXX8zFdBgD/zoJvwRAgyBAJ9n8ac60GPY//eSofi7+azhuRgNMwCeKDvt
-GZhRcxIagZvq6i8svrQAqr4=
-=+dWX
------END PGP SIGNATURE-----
-
---Signature=_Wed__30_May_2007_23_42_06_+1000_P_LUyEnTrVg9vE+L--
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
