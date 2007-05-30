@@ -1,101 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbXE3JuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbXE3JzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125AbXE3JuW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 05:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXE3JuL
+	id S1752550AbXE3JzH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 05:55:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXE3Jy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 05:50:11 -0400
-Received: from c3po.0xdef.net ([217.172.181.57]:1199 "EHLO c3po.0xdef.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750748AbXE3JuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 05:50:09 -0400
-Date: Wed, 30 May 2007 11:50:07 +0200
-From: Hagen Paul Pfeifer <hagen@jauu.net>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Hagen Paul Pfeifer <pfeifer@netlab.nec.de>
-Subject: [PATCH] INTERNODE_CACHE_SHIFT redefinition for hot spot structures
-Message-ID: <20070530095007.GA24087@c3po.0xdef.net>
-Reply-To: Hagen Paul Pfeifer <pfeifer@netlab.nec.de>
-Mail-Followup-To: Hagen Paul Pfeifer <pfeifer@netlab.nec.de>,
-	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+	Wed, 30 May 2007 05:54:56 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3513 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbXE3Jyz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 05:54:55 -0400
+Message-ID: <465D49F3.7010005@shadowen.org>
+Date: Wed, 30 May 2007 10:54:59 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="dDRMvlgZJXvWKvBx"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Maciej W. Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] zs: Move to the serial subsystem
+References: <Pine.LNX.4.64N.0705291258390.14456@blysk.ds.pg.gda.pl> <20070530011224.bf36d2df.akpm@linux-foundation.org>
+In-Reply-To: <20070530011224.bf36d2df.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Tue, 29 May 2007 14:03:54 +0100 (BST) "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=iso-8859-1; format=fixed
-Content-Disposition: inline
+> Hey, you have volatiles and checkpatch.pl didn't complain.  Andy, a
+> reference to Documentation/volatile-considered-harmful.txt would suit.
+> 
+> (That's
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/broken-out/volatile-considered-harmful-take-3.patch)
 
-I followed code in include/linux/mmzone.h and attract attention to the padding
-construct for struct zone:
+Added ...
 
-struct zone_padding {
-  char x[0];
-} ____cacheline_internodealigned_in_smp;
-                                                                                                                                                                                                                    
-The definition for ____cacheline_internodealigned_in_smp
-is definded as __attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))                                                                                                                                          
+Use of volatile is usually wrong: see
+Documentation/volatile-considered-harmful.txt
+PATCH: XXX.eml:374:
+FILE: linux-2.6.22-rc2/drivers/serial/zs.c:131:
++       volatile void __iomem *control = zport->port.membase +
 
-INTERNODE_CACHE_SHIFT in turn is defined as L1_CACHE_SHIFT for all
-architectures (expect x86_64) as L1_CACHE_SHIFT - which is not that what
-everybody should expected if they use ____cacheline_internodealigned_in_smp!
-The comment stated out: "The maximum alignment needed for some critical
-structures. These could be inter-node cacheline sizes/L3 cacheline size etc.
-Define this in asm/cache.h for your arch"                                                                                                                                                                           
-If a architecture redefine INTERNODE_CACHE_SHIFT (as x86_64) this patch has no
-effects at all. All other architecture will profit from a better cache line
-utilization.
+[...]
 
-The superior solution is to utilize the gcc 4.2 alternative to use the cpuid
-instruction (which is new in gcc release 4.2) to gather CPU attributes at
-compile time and replace the static
-#define L1_CACHE_BYTES  (1 << L1_CACHE_SHIFT)
-macros for at least amd/intel processors- but that is another thought ...
-(Which _user_ knows the l1/l2 cache line size of the current CPU if they are
-different for different models (e.g P4)? If this fails -> fall back to standard
-size). But as I said - this is a idea.
+I will batch up any changes to checkpatch.pl and send you them as a blob
+when they get "interesting" if that suits.
 
-See gcc/config/i386/driver-i386.c:host_detect_local_cpu() for more information
-in the gcc devel branch.
-
-Salaam
-Hagen Paul Pfeifer
-
-
-Increase (double) the definition for INTERNODE_CACHE_SHIFT to accommodate a
-higher cache line size for l2 and l3 cacheline sizes - compared to l1 cache
-line size. The introduced overhead for architectures where the l1 cache line
-size correspond to the l2  cache line size is evanescent small, cause
-INTERNODE_CACHE_SHIFT is used only for hot spots.
-
-Signed-off-by: Hagen Paul Pfeifer <hagen@jauu.net>
----
- include/linux/cache.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
---dDRMvlgZJXvWKvBx
-Content-Type: text/x-patch; charset=us-ascii;
-	name="46130e6afdad1c3df698bde8b86ab89568a3f6d9.diff"
-Content-Disposition: inline; filename="46130e6afdad1c3df698bde8b86ab89568a3f6d9.diff"
-Content-Transfer-Encoding: 8bit
-
-diff --git a/include/linux/cache.h b/include/linux/cache.h
-index 4552504..ebc366c 100644
---- a/include/linux/cache.h
-+++ b/include/linux/cache.h
-@@ -48,7 +48,7 @@
-  * size etc.  Define this in asm/cache.h for your arch
-  */
- #ifndef INTERNODE_CACHE_SHIFT
--#define INTERNODE_CACHE_SHIFT L1_CACHE_SHIFT
-+#define INTERNODE_CACHE_SHIFT (L1_CACHE_SHIFT + 1)
- #endif
- 
- #if !defined(____cacheline_internodealigned_in_smp)
-
---dDRMvlgZJXvWKvBx--
+-apw
