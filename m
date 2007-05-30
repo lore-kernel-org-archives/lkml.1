@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752538AbXE3J3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbXE3Jaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752538AbXE3J3A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 05:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbXE3J2w
+	id S1752159AbXE3Jaz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 05:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbXE3Jat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 05:28:52 -0400
-Received: from linux.dunaweb.hu ([62.77.196.1]:44414 "EHLO linux.dunaweb.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbXE3J2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 05:28:51 -0400
-Message-ID: <465D43C0.60609@dunaweb.hu>
-Date: Wed, 30 May 2007 11:28:32 +0200
-From: Zoltan Boszormenyi <zboszor@dunaweb.hu>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: Kernel 2.6.21.3 does not work with 8GB of RAM on Intel 965WH
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 30 May 2007 05:30:49 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37345 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750748AbXE3Jas (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 05:30:48 -0400
+Date: Wed, 30 May 2007 10:35:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arkadiusz Mehlich <ris@elsat.net.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: pata_amd hangs system
+Message-ID: <20070530103550.4ddc5ba7@the-village.bc.nu>
+In-Reply-To: <loom.20070530T002505-935@post.gmane.org>
+References: <loom.20070530T002505-935@post.gmane.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 29 May 2007 22:33:17 +0000 (UTC)
+Arkadiusz Mehlich <ris@elsat.net.pl> wrote:
 
-> Look at how slow the raid benchmarks are in dmesg with 8GB of memory!
->
-> [   59.592560] raid6: using algorithm sse2x4 (476 MB/s)
-> [   59.597558] raid5: using function: generic_sse (56.000 MB/sec)
->
-> Yikes!
->
-> With mem=4096M:
-> [   60.336352] raid6: using algorithm sse2x4 (6804 MB/s)
-> [   60.341345] raid5: using function: generic_sse (8552.000 MB/sec)
->
-> What is going on here?
->
-> Justin.
+> Hi,
+> Recently i switched from old ide interface to new libata (pata) interface.
+> With old drivers all's be ok.
+> 
+> When i switch to new driver (pata_amd on MCP55) my burning software (k3b) totaly
+> hangs system when i have DVD-R, DVD+R in my drive ... with CD-R, CD-ROM, DVD-ROM
+> work fine.
+> 
+> System hungs on 'detecting media' stage.
+> 
+> There is workaround or patch to fix this problem ?
+> Is not k3b problem !
 
-I saw a similar effect on a P5 board that could
-only cache 64MB of memory a long time ago.
-Putting more memory into it made the machine slower
-and e.g. made the sym2 driver giving up at initialization.
-Maybe it's a modern reincarnation of the problem?
+Please file a bug in bugzilla.kernel.org, include kernel version, lspci
+-vvxx, dmesg and as much info as you can get when it hangs (it may help
+to try cdrecord on the command line here and see if that also hangs as if
+you are not in X you'll get any kernel panic messages needed to debug it).
 
-Best regards,
-Zoltán Böszörményi
+Also if you have time to roll your own kernel with all the kernel debug
+options on (especially lock debugging) and do the same as the above that
+may also produce interesting traces.
 
+Alan
