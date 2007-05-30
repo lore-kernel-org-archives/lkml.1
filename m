@@ -1,390 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbXE3OE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbXE3OF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756913AbXE3OE7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 10:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbXE3ODO
+	id S1757062AbXE3OF0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbXE3ODP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 10:03:14 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:46559 "EHLO smtp.polymtl.ca"
+	Wed, 30 May 2007 10:03:15 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:46564 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756042AbXE3ODL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756043AbXE3ODL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 May 2007 10:03:11 -0400
-Message-Id: <20070530140227.398040643@polymtl.ca>
+Message-Id: <20070530140229.082726276@polymtl.ca>
 References: <20070530140025.917261793@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 30 May 2007 10:00:27 -0400
+Date: Wed, 30 May 2007 10:00:32 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 2/9] Conditional Calls - Hash Table
-Content-Disposition: inline; filename=conditional-calls-hash-table.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 30 May 2007 14:02:27 +0000
+Subject: [patch 7/9] Conditional Calls - Documentation
+Content-Disposition: inline; filename=conditional-calls-documentation.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 30 May 2007 14:02:29 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reimplementation of the cond calls which uses a hash table to hold the active
-cond_calls. It permits to first arm a cond_call and then load supplementary
-modules that contain this cond_call.
-
-Without this, the order of loading a module containing a cond_call and arming a
-cond_call matters and there is no symbol dependency to check this.
-
-At module load time, each cond_call checks if it is enabled in the hash table
-and is set accordingly.
-
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- include/linux/condcall.h |    2 
- kernel/module.c          |  205 +++++++++++++++++++++++++++++------------------
- 2 files changed, 129 insertions(+), 78 deletions(-)
+ Documentation/condcall.txt |   60 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
-Index: linux-2.6-lttng/kernel/module.c
+Index: linux-2.6-lttng/Documentation/condcall.txt
 ===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-05-17 01:42:50.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2007-05-17 01:46:42.000000000 -0400
-@@ -33,6 +33,8 @@
- #include <linux/moduleparam.h>
- #include <linux/errno.h>
- #include <linux/condcall.h>
-+#include <linux/jhash.h>
-+#include <linux/list.h>
- #include <linux/err.h>
- #include <linux/vermagic.h>
- #include <linux/notifier.h>
-@@ -71,6 +73,20 @@
- 
- static BLOCKING_NOTIFIER_HEAD(module_notify_list);
- 
-+#ifdef CONFIG_COND_CALL
-+/* Conditional call hash table, containing the active cond_calls.
-+ * Protected by module_mutex. */
-+#define COND_CALL_HASH_BITS 6
-+#define COND_CALL_TABLE_SIZE (1 << COND_CALL_HASH_BITS)
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/condcall.txt	2007-05-17 01:55:05.000000000 -0400
+@@ -0,0 +1,60 @@
++		        Using the Conditional Calls
 +
-+struct cond_call_entry {
-+	struct hlist_node hlist;
-+	char name[0];
-+};
++			    Mathieu Desnoyers
 +
-+static struct hlist_head cond_call_table[COND_CALL_TABLE_SIZE];
-+#endif //CONFIG_COND_CALL
 +
- int register_module_notifier(struct notifier_block * nb)
- {
- 	return blocking_notifier_chain_register(&module_notify_list, nb);
-@@ -305,6 +321,68 @@
- }
- 
- #ifdef CONFIG_COND_CALL
-+/* Check if the cond_call is present in the hash table.
-+ * Returns 1 if present, 0 if not. */
-+static int hash_check_cond_call(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct cond_call_entry *e;
-+	size_t len = strlen(name);
-+	u32 hash = jhash(name, len, 0);
++This document introduces Conditional Calls and their use.
 +
-+	head = &cond_call_table[hash & ((1 << COND_CALL_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name))
-+			return 1;
-+	return 0;
-+}
++* Purpose of conditional calls
 +
-+/* Add the cond_call to the hash table. Must be called with mutex_lock held. */
-+static int hash_add_cond_call(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct cond_call_entry *e;
-+	size_t len = strlen(name);
-+	u32 hash = jhash(name, len, 0);
++A conditional call is used to compile into the kernel a function call that is
++disabled at compile-time. Then, at runtime, it can be enabled dynamically. As
++explained below, the opposite can also be done.
 +
-+	head = &cond_call_table[hash & ((1 << COND_CALL_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name))
-+			return 0;	/* Already there */
-+	/* Using kmalloc here to allocate a variable length element. Could
-+	 * cause some memory fragmentation if overused. */
-+	e = kmalloc(sizeof(struct cond_call_entry) + len + 1, GFP_KERNEL);
-+	if (!e)
-+		return -ENOMEM;
-+	memcpy(&e->name[0], name, len + 1);
-+	hlist_add_head(&e->hlist, head);
-+	return 0;
-+}
 +
-+/* Remove the cond_call from the hash table. Must be called with mutex_lock
-+ * held. */
-+static void hash_remove_cond_call(const char *name)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct cond_call_entry *e;
-+	int found = 0;
-+	size_t len = strlen(name);
-+	u32 hash = jhash(name, len, 0);
++* Usage
 +
-+	head = &cond_call_table[hash & ((1 << COND_CALL_HASH_BITS)-1)];
-+	hlist_for_each_entry(e, node, head, hlist)
-+		if (!strcmp(name, e->name)) {
-+			found = 1;
-+			break;
-+		}
-+	if (found) {
-+		hlist_del(&e->hlist);
-+		kfree(e);
-+	}
-+}
- 
- /* Set the enable bit of the cond_call, choosing the generic or architecture
-  * specific functions depending on the cond_call's flags.
-@@ -317,59 +395,53 @@
- 		return cond_call_generic_set_enable(address, enable);
- }
- 
--/* Query the state of a cond_calls range. */
--static int _cond_call_query_range(const char *name,
--	const struct __cond_call_struct *begin,
--	const struct __cond_call_struct *end)
-+static int cond_call_get_enable(void *address, int flags)
-+{
-+	if (flags & CF_OPTIMIZED)
-+		return COND_CALL_OPTIMIZED_ENABLE(address);
-+	else
-+		return COND_CALL_GENERIC_ENABLE(address);
-+}
++In order to use the macro cond_call, you should include linux/condcall.h.
 +
-+/* Setup the cond_call according to the data present in the cond_call hash
-+ * upon module load. */
-+void module_cond_call_setup(struct module *mod)
- {
- 	const struct __cond_call_struct *iter;
--	int ret = 0;
-+	int enable;
- 
--	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->name) != 0)
--			continue;
--		if (iter->flags & CF_OPTIMIZED)
--			ret = COND_CALL_OPTIMIZED_ENABLE(iter->enable);
--		else
--			ret = COND_CALL_GENERIC_ENABLE(iter->enable);
--		if (ret)
--			break;
-+	for (iter = mod->cond_calls;
-+		iter < mod->cond_calls+mod->num_cond_calls; iter++) {
-+		enable = hash_check_cond_call(iter->name);
-+		if (enable != cond_call_get_enable(iter->enable, iter->flags))
-+			cond_call_set_enable(iter->enable, enable, iter->flags);
- 	}
--	return ret;
- }
- 
- /* Sets a range of cond_calls to a enabled state : set the enable bit. */
--static int _cond_call_arm_range(const char *name,
-+static void _cond_call_arm_range(const char *name,
- 	const struct __cond_call_struct *begin,
- 	const struct __cond_call_struct *end)
- {
- 	const struct __cond_call_struct *iter;
--	int found = 0;
- 
- 	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->name) != 0)
--			continue;
--		cond_call_set_enable(iter->enable, 1, iter->flags);
--		found++;
-+		if (!strcmp(name, iter->name))
-+			cond_call_set_enable(iter->enable, 1, iter->flags);
- 	}
--	return found;
- }
- 
- /* Sets a range of cond_calls to a disabled state : unset the enable bit. */
--static int _cond_call_disarm_range(const char *name,
-+static void _cond_call_disarm_range(const char *name,
- 	const struct __cond_call_struct *begin,
- 	const struct __cond_call_struct *end)
- {
- 	const struct __cond_call_struct *iter;
--	int found = 0;
- 
- 	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->name) != 0)
--			continue;
--		cond_call_set_enable(iter->enable, 0, iter->flags);
--		found++;
-+		if (!strcmp(name, iter->name))
-+			cond_call_set_enable(iter->enable, 0, iter->flags);
- 	}
--	return found;
- }
- 
- /* Provides a listing of the cond_calls present in the kernel with their type
-@@ -397,105 +469,79 @@
- 	return found;
- }
- 
--/* Calls _cond_call_query_range for the core cond_calls and modules cond_calls.
-- */
--static int _cond_call_query(const char *name)
--{
--	struct module *mod;
--	int ret = 0;
--
--	/* Core kernel cond_calls */
--	ret = _cond_call_query_range(name,
--			__start___cond_call, __stop___cond_call);
--	if (ret)
--		return ret;
--	/* Cond_calls in modules. */
--	list_for_each_entry(mod, &modules, list) {
--		if (mod->taints)
--			continue;
--		ret = _cond_call_query_range(name,
--			mod->cond_calls, mod->cond_calls+mod->num_cond_calls);
--		if (ret)
--			break;
--	}
--	return ret;
--}
--
- /* Cond_call enabling/disabling use the module_mutex to synchronize.
-- * Returns 1 if enabled, 0 if disabled or not present. */
-+ * Returns 1 if enabled, 0 if disabled. */
- int cond_call_query(const char *name)
- {
--	int ret = 0;
-+	int ret;
- 
- 	mutex_lock(&module_mutex);
--	ret = _cond_call_query(name);
-+	ret = hash_check_cond_call(name);
- 	mutex_unlock(&module_mutex);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(cond_call_query);
- 
--/* Calls _cond_call_arm_range for the core cond_calls and modules cond_calls.
-- * FIXME : cond_call will not be active on modules loaded later than the
-- * cond_call_arm. */
-+/* Calls _cond_call_arm_range for the core cond_calls and modules cond_calls. */
- static int _cond_call_arm(const char *name)
- {
- 	struct module *mod;
--	int found = 0;
-+	int ret;
++#include <linux/condcall.h>
 +
-+	ret = hash_add_cond_call(name);
-+	if (ret)
-+		return ret;
- 
- 	/* Core kernel cond_calls */
--	found += _cond_call_arm_range(name,
-+	_cond_call_arm_range(name,
- 			__start___cond_call, __stop___cond_call);
- 	/* Cond_calls in modules. */
- 	list_for_each_entry(mod, &modules, list) {
- 		if (mod->taints)
- 			continue;
--		found += _cond_call_arm_range(name,
-+		_cond_call_arm_range(name,
- 			mod->cond_calls, mod->cond_calls+mod->num_cond_calls);
- 	}
--	return found;
-+	return ret;
- }
- 
- /* Cond_call enabling/disabling use the module_mutex to synchronize. */
- int cond_call_arm(const char *name)
- {
--	int found = 0;
-+	int ret;
- 
- 	mutex_lock(&module_mutex);
--	found = _cond_call_arm(name);
-+	ret = _cond_call_arm(name);
- 	mutex_unlock(&module_mutex);
--	return found;
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(cond_call_arm);
- 
- /* Calls _cond_call_disarm_range for the core cond_calls and modules cond_calls.
-  */
--static int _cond_call_disarm(const char *name)
-+static void _cond_call_disarm(const char *name)
- {
- 	struct module *mod;
--	int found = 0;
- 
- 	/* Core kernel cond_calls */
--	found += _cond_call_disarm_range(name,
-+	_cond_call_disarm_range(name,
- 			__start___cond_call, __stop___cond_call);
- 	/* Cond_calls in modules. */
- 	list_for_each_entry(mod, &modules, list) {
- 		if (mod->taints)
- 			continue;
--		found += _cond_call_disarm_range(name,
-+		_cond_call_disarm_range(name,
- 			mod->cond_calls, mod->cond_calls+mod->num_cond_calls);
- 	}
--	return found;
-+	hash_remove_cond_call(name);
- }
- 
- /* Cond_call enabling/disabling use the module_mutex to synchronize. */
--int cond_call_disarm(const char *name)
-+void cond_call_disarm(const char *name)
- {
--	int found = 0;
--
- 	mutex_lock(&module_mutex);
--	found = _cond_call_disarm(name);
-+	_cond_call_disarm(name);
- 	mutex_unlock(&module_mutex);
--	return found;
- }
- EXPORT_SYMBOL_GPL(cond_call_disarm);
- 
-@@ -525,7 +571,10 @@
- 	return found;
- }
- EXPORT_SYMBOL_GPL(cond_call_list);
--
-+#else
-+static void module_cond_call_setup(struct module *mod)
-+{
-+}
- #endif
- 
- #ifdef CONFIG_SMP
-@@ -2211,6 +2260,8 @@
- 
- 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
- 
-+	module_cond_call_setup(mod);
++Add, in your code :
 +
- 	err = module_finalize(hdr, sechdrs, mod);
- 	if (err < 0)
- 		goto cleanup;
-Index: linux-2.6-lttng/include/linux/condcall.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/condcall.h	2007-05-17 01:42:50.000000000 -0400
-+++ linux-2.6-lttng/include/linux/condcall.h	2007-05-17 01:46:42.000000000 -0400
-@@ -81,7 +81,7 @@
- #define COND_CALL_MAX_FORMAT_LEN	1024
- 
- extern int cond_call_arm(const char *name);
--extern int cond_call_disarm(const char *name);
-+extern void cond_call_disarm(const char *name);
- 
- /* cond_call_query : Returns 1 if enabled, 0 if disabled or not present */
- extern int cond_call_query(const char *name);
++ret = cond_call(examplecondcall, myfunc(a, b));
++
++Where :
++- examplecondcall is the conditional call identifier
++- myfunc(a, b) is a call to myfunc with valid parameters.
++- "ret" is, optionally, the variable in which the return value of myfunc() must
++  be put. If the conditional call is disabled, ret will be set to 0 casted to
++  the type of the return value of myfunc().
++
++Use cond_call_arm("examplecondcall") to activate the conditional call.
++
++Use cond_call_disarm("examplecondcall") to deactivate the conditional call.
++
++Use cond_call_query("examplecondcall") to query the conditional call state.
++
++The cond_call mechanism supports inserting multiple instances of the same
++cond_call. Conditional calls can be put in inline functions, inlined static
++functions, and unrolled loops.
++
++
++* Optimization for a given architecture
++
++One can implement optimized conditional calls for a given architecture by
++replacing asm-$ARCH/condcall.h.
++
++The CF_* flags can be used to control the type of conditional call. See the
++include/linux/condcall.h header for the list of flags. They can be specified as
++the first parameter of the _cond_call() macro, as in the following example,
++which declares a cond_call enabled statically (which can be disabled/reenabled
++dynamically)
++
++ret = _cond_call(CF_DEFAULT | CF_STATIC_ENABLE, examplecondcall, myfunc(a, b));
++
++Another example of flag usage is to declare a cond_call that always uses the
++generic version of the cond_calls. It can be useful to use this when cond_calls
++are placed in kernel code presenting particular reentrancy challenges.
++
++ret = _cond_call(CF_DEFAULT & ~CF_OPTIMIZED, examplecondcall, myfunc(a, b));
 
 -- 
 Mathieu Desnoyers
