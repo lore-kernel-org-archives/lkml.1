@@ -1,83 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbXE3WLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbXE3WMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760700AbXE3WLX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758067AbXE3WLO
+	id S1760738AbXE3WMS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758375AbXE3WMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:11:14 -0400
-Received: from waste.org ([66.93.16.53]:41489 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754968AbXE3WLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:11:11 -0400
-Date: Wed, 30 May 2007 17:10:39 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: David Miller <davem@davemloft.net>
-Cc: kaber@trash.net, shemminger@linux-foundation.org,
-       akpm@linux-foundation.org, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
-Message-ID: <20070530221039.GJ11166@waste.org>
-References: <20070530105936.6c988da5.akpm@linux-foundation.org> <20070530112056.0aeb9498@freepuppy> <465DC598.5060407@trash.net> <20070530.125551.41636333.davem@davemloft.net>
+	Wed, 30 May 2007 18:12:01 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:35565 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758253AbXE3WL7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 18:11:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Qbzlh3rEefN+2ySilXbJifkcz2WSUqVgM12CXi1XIcHV8nKqGuiEfz5WftbrcIwtCLed3XF8d2mU8/wsYNuy5UReIWEaqfy2uHRrctgC9aSPuB1w1twZCkeVeOqZnRJa5+JS1A6HpBQoJcGal0q/nHJoT6XUWEXUp/BtCvybC5Q=
+Message-ID: <a781481a0705301511p69387b2ep754c8c754ba09f36@mail.gmail.com>
+Date: Thu, 31 May 2007 03:41:57 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 1/3] hexdump: more output formatting
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, hugh@veritas.com
+In-Reply-To: <465DF49B.7040100@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070530.125551.41636333.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
+	 <20070524073131.GA17501@elte.hu>
+	 <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
+	 <20070524142908.f39f42ea.akpm@linux-foundation.org>
+	 <20070524145517.1f32cd94.randy.dunlap@oracle.com>
+	 <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com>
+	 <20070530143428.2f20446a.randy.dunlap@oracle.com>
+	 <a781481a0705301456n246e7185ife2a144eae3179b3@mail.gmail.com>
+	 <465DF49B.7040100@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 12:55:51PM -0700, David Miller wrote:
-> From: Patrick McHardy <kaber@trash.net>
-> Date: Wed, 30 May 2007 20:42:32 +0200
-> 
-> > Stephen Hemminger wrote:
-> > >>>Index: linux-2.6.22-rc-mm/net/sched/sch_generic.c
-> > >>>===================================================================
-> > >>>--- linux-2.6.22-rc-mm.orig/net/sched/sch_generic.c	2007-05-24 11:16:03.000000000 -0700
-> > >>>+++ linux-2.6.22-rc-mm/net/sched/sch_generic.c	2007-05-25 15:10:02.000000000 -0700
-> > >>>@@ -224,7 +224,8 @@
-> > >>> 	if (dev->tx_timeout) {
-> > >>> 		if (dev->watchdog_timeo <= 0)
-> > >>> 			dev->watchdog_timeo = 5*HZ;
-> > >>>-		if (!mod_timer(&dev->watchdog_timer, jiffies + dev->watchdog_timeo))
-> > >>>+		if (!mod_timer(&dev->watchdog_timer,
-> > >>>+			       round_jiffies(jiffies + dev->watchdog_timeo)))
-> > >>> 			dev_hold(dev);
-> > >>> 	}
-> > >>> }
-> > >>
-> > >>Please cc netdev on net patches.
-> > >>
-> > >>Again, I worry that if people set the watchdog timeout to, say, 0.1 seconds
-> > >>then they will get one second, which is grossly different.
-> > >>
-> > >>And if they were to set it to 1.5 seconds, they'd get 2.0 which is pretty
-> > >>significant, too.
-> > > 
-> > > 
-> > > Alternatively, we could change to a timer that is pushed forward after each
-> > > TX, maybe using hrtimer and hrtimer_forward().  That way the timer would
-> > > never run in normal case.
-> > 
-> > 
-> > It seems wasteful to add per-packet overhead for tx timeouts, which
-> > should be an exception. Do drivers really care about the exact
-> > timeout value? Compared to a packet transmission time its incredibly
-> > long anyways ..
-> 
-> I agree, this change is absolutely rediculious and is just a blind
-> cookie-cutter change made without consideration of what the code is
-> doing and what it's requirements are.
+On 5/31/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> Satyam Sharma wrote:
+> > Hello Randy,
+> >
+> >> Add a prefix string parameter.  Callers are responsible for any
+> >> string length/alignment that they want to see in the output.  I.e.,
+> >> callers should pad strings to achieve alignment if they want that.
+> >>
+> >> Add rowsize parameter.  This is the number of raw data bytes
+> >> to be printed per line.  Must be 16 or 32.
+> >>
+> >> Add a group_size parameter.  This allows callers to dump values
+> >> as 1-byte, 2-byte, 4-byte, or 8-byte numbers.  Default is
+> >> 1-byte numbers.  If the total length is not an even multiple
+> >> of group_size, 1-byte numbers are printed.
+> >
+> > I wonder if (over-)engineering could hurt its adoption by more kernel
+> > users. There aren't very many 8-argument monsters in the kernel,
+> > and one would expect hexdump() to be easier on the fingers to
+> > type? :-) Why not just continue with reasonable default/fixed rowsize
+> > and groupsize values?
+>
+> Yes, one can try to satisfy the users/callers by adapting to their
+> needs (wishes), which requires parameters or such; or one can have
+> no callers and end up with (around 11 currently) different hex dump
+> functions in the kernel source tree, but no users of lib/hexdump.c.
 
-What are you agreeing with, Dave?
+Yes, you're right, but I was just wondering whether any users really
+cared enough about the rowsize and groupsize, also seeing that
+accommodating these two args leads to a lot of increase in code.
 
-Are you agreeing that "it seems wasteful to add per-packet overhead"?
-This patch is not doing that.
+> But it won't take much more "requirements" for me to drop the patch.
 
-A quick grep shows that most things are using multi-second timeouts
-here. Of the ones that aren't, a number are using .4s, and many more
-aren't even in units of HZ. Makes me wonder if the various boards
-using 50ms are being overzealous.
+Please, don't drop this! I only complained because when global or
+commonly-used functions have very long arglists, one tends to forget
+which arg goes at which number, and it becomes necessary to write
+the calls with having the prototype simultaneously open in another
+terminal for reference! ...
 
--- 
-Mathematics is the supreme nostalgia of our time.
+> >> Add an "ascii" output parameter.  This causes ASCII data output
+> >> following the hex data output.
+> > [...]
+> >> +       if (!ascii)
+> >> +               goto nil;
+> >> +
+> >> +       if ((lx + 1) < linebuflen)
+> >>                 linebuf[lx++] = ' ';
+> >> -       }
+> >> -       for (j = 0; (j < 16) && (j < len) && (lx + 2) < linebuflen; j++)
+> >> +       for (j = 0; (j < rowsize) && (j < len) && (lx + 2) <
+> >> linebuflen; j++)
+> >>                 linebuf[lx++] = isprint(ptr[j]) ? ptr[j] : '.';
+> >> +nil:
+> >>         linebuf[lx++] = '\0';
+> >
+> > if (ascii) {
+> > ...
+> > }
+> >
+> > linebuf[lx++] = '\0';
+> >
+> > would help lose a goto and label.
+>
+> The label has another reference already, so it wouldn't be lost.
+
+Oh yes, I'd missed that if (!len) goto nil; -- sorry for the noise.
+
+Thanks,
+Satyam
