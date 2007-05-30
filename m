@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760672AbXE3Vt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbXE3Vue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760672AbXE3Vt7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760177AbXE3Vs7
+	id S1756648AbXE3Vue (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759646AbXE3VtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:48:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35684 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760850AbXE3Vs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:48:58 -0400
-Message-ID: <465DF0F5.6050000@redhat.com>
-Date: Wed, 30 May 2007 14:47:33 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 30 May 2007 17:49:01 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:51431 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760859AbXE3VtA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 17:49:00 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Chris Wedgwood <cw@f00f.org>
+Subject: Re: [patch 1/3] Fix XFS_IOC_FSGEOMETRY_V1 in compat mode
+Date: Wed, 30 May 2007 23:48:53 +0200
+User-Agent: KMail/1.9.6
+Cc: Michal Marek <mmarek@suse.cz>, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org
+References: <20070530125954.706423971@suse.cz> <20070530143043.216024061@suse.cz> <20070530170530.GA4197@tuatara.stupidest.org>
+In-Reply-To: <20070530170530.GA4197@tuatara.stupidest.org>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org> <465DE992.6070803@redhat.com> <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705302348.54259.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18LiNsCkpbVE1/CP2zcJ0EUExEA8iG02Fm1wzs
+ de6uNuFZOz21y391AD1MXyinJTz8tvflD2FRzkFa5oP8yru6OZ
+ ZOaqp/3cyeHll2P6uUjoQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Wednesday 30 May 2007, Chris Wedgwood wrote:
+> 
+> On Wed, May 30, 2007 at 02:59:55PM +0200, Michal Marek wrote:
+> 
+> > +typedef struct xfs_fsop_geom_v132 {
+> 
+> wouldn't xfs_fsop_geom_v1_32
+> † † † † † † † † † † † † †^
+> 
+> > +†††††__u32†††††††††††blocksize;††††††/* filesystem (data) block size */
+> 
+> [...]
+> 
+> > +†††††__u32†††††††††††dirblocksize;†††/* directory block size, bytes††*/
+> > +} __attribute__((packed)) xfs_fsop_geom_v132_t;
+> 
+> and xfs_fsop_geom_v1_32_t
+> † † † † † † † † † † ^
+> 
+> read better there?
 
-Linus Torvalds wrote:
-> Well, don't think of it as a special case at all: think of bit 30 as a 
-> "the user asked for a non-linear fd".
+Actually, the current convention would be struct compat_xfs_fsop_geom_v1
+and compat_xfs_fsop_geom_v1_t.
 
-This sounds easy but doesn't really solve all the issues.  Let me repeat
-your example and the solution currently in use:
-
-problem: application wants to close all file descriptors except a select
-few, cleaning up what is currently open.  It doesn't know all the
-descriptors that are open.  Maybe all this in preparation of an exec call.
-
-Today the best method to do this is to readdir() /proc/self/fd and
-exclude the descriptors on the whitelist.
-
-If the special, non-sequential descriptors are also listed in that
-directory the runtimes still cannot use them since they are visible.
-
-If you go ahead with this, then at the very least add a flag which
-causes the descriptor to not show up in /proc/*/fd.
-
-
-You also have to be aware that open() is just one piece of the puzzle.
-What about socket()?  I've cursed this interface many times before and
-now it's biting you: there is parameter to pass a flag.  What about
-transferring file descriptors via Unix domain sockets?  How can I decide
-the transferred descriptor should be in the private namespace?
-
-There are likely many many more problems and cornercases like this.
-
-- --
-‚ûß Ulrich Drepper ‚ûß Red Hat, Inc. ‚ûß 444 Castro St ‚ûß Mountain View, CA ‚ùñ
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGXfD12ijCOnn/RHQRAk4nAJ0Zjevd9Y0lQa/fLzKK+BshcLVbngCfSspI
-ALNKu8VCKy7CvoIqJD3Xs/Y=
-=+fM8
------END PGP SIGNATURE-----
+	Arnd <><
