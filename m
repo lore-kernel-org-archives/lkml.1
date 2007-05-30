@@ -1,56 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbXE3R7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbXE3SAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbXE3R7y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbXE3R7l
+	id S1758255AbXE3SAk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 14:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbXE3SAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:59:41 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:47303 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753951AbXE3R7j (ORCPT
+	Wed, 30 May 2007 14:00:31 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:16221 "EHLO
+	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755275AbXE3SAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:59:39 -0400
-Date: Wed, 30 May 2007 10:59:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
-Message-Id: <20070530105936.6c988da5.akpm@linux-foundation.org>
-In-Reply-To: <20070529180112.GC5411@linux-os.sc.intel.com>
-References: <20070529180112.GC5411@linux-os.sc.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 14:00:31 -0400
+Message-Id: <20070530164454.BRLI25882.amsfep16-int.chello.nl@123-d7a287c5cae>
+Date: Wed, 30 May 2007 18:44:56 +0200
+From: <tsu@cable-62-205-112-84.upc.chello.be>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007 11:01:13 -0700
-Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
-
-> round_jiffies for net dev watchdog timer.
-> 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> 
-> Index: linux-2.6.22-rc-mm/net/sched/sch_generic.c
-> ===================================================================
-> --- linux-2.6.22-rc-mm.orig/net/sched/sch_generic.c	2007-05-24 11:16:03.000000000 -0700
-> +++ linux-2.6.22-rc-mm/net/sched/sch_generic.c	2007-05-25 15:10:02.000000000 -0700
-> @@ -224,7 +224,8 @@
->  	if (dev->tx_timeout) {
->  		if (dev->watchdog_timeo <= 0)
->  			dev->watchdog_timeo = 5*HZ;
-> -		if (!mod_timer(&dev->watchdog_timer, jiffies + dev->watchdog_timeo))
-> +		if (!mod_timer(&dev->watchdog_timer,
-> +			       round_jiffies(jiffies + dev->watchdog_timeo)))
->  			dev_hold(dev);
->  	}
->  }
-
-Please cc netdev on net patches.
-
-Again, I worry that if people set the watchdog timeout to, say, 0.1 seconds
-then they will get one second, which is grossly different.
-
-And if they were to set it to 1.5 seconds, they'd get 2.0 which is pretty
-significant, too.
