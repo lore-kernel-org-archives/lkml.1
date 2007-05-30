@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbXE3IEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbXE3IH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752736AbXE3IEH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 04:04:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbXE3IDx
+	id S1752713AbXE3IH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 04:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXE3IHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 04:03:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40054 "EHLO mx1.redhat.com"
+	Wed, 30 May 2007 04:07:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41292 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbXE3IDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 04:03:51 -0400
-Date: Wed, 30 May 2007 04:01:59 -0400
+	id S1749667AbXE3IHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 04:07:12 -0400
+Date: Wed, 30 May 2007 04:05:18 -0400
 From: Bill Nottingham <notting@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
-Subject: [PATCH] drivers/video: Fix comparisons between negative and
-	unsigned
-Message-ID: <20070530080159.GA29146@nostromo.devel.redhat.com>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	linux-fbdev-devel@lists.sourceforge.net
+To: openib-general@openib.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers/infiniband: fix comparsion between unsigned and
+	negative
+Message-ID: <20070530080518.GA29195@nostromo.devel.redhat.com>
+Mail-Followup-To: openib-general@openib.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -30,130 +29,108 @@ Recent gcc versions emit warnings when unsigned variables are compared < 0 or >=
 Signed-off-by: Bill Nottingham <notting@redhat.com>
 
 ---
- aty/aty128fb.c       |    3 ---
- aty/radeon_base.c    |    5 -----
- cirrusfb.c           |    5 -----
- fbmem.c              |    8 ++++----
- intelfb/intelfbdrv.c |    5 -----
- riva/fbdev.c         |    5 -----
- vga16fb.c            |    2 +-
- 7 files changed, 5 insertions(+), 28 deletions(-)
+ core/sysfs.c       |    2 +-
+ core/ucm.c         |    2 +-
+ core/ucma.c        |    2 +-
+ core/user_mad.c    |    5 ++---
+ core/uverbs_main.c |    3 +--
+ core/verbs.c       |    3 +--
+ hw/mlx4/qp.c       |    2 +-
+ 7 files changed, 8 insertions(+), 11 deletions(-)
 
-diff -ru linux-2.6.21-old/drivers/video/aty/aty128fb.c linux-2.6.21/drivers/video/aty/aty128fb.c
---- linux-2.6.21-old/drivers/video/aty/aty128fb.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/aty/aty128fb.c	2007-05-30 02:28:35.000000000 -0400
-@@ -1350,9 +1350,6 @@
- 		}
- 	}
+diff -ru linux-2.6.21-old/drivers/infiniband/core/sysfs.c linux-2.6.21/drivers/infiniband/core/sysfs.c
+--- linux-2.6.21-old/drivers/infiniband/core/sysfs.c	2007-05-30 02:52:52.000000000 -0400
++++ linux-2.6.21/drivers/infiniband/core/sysfs.c	2007-05-30 02:07:31.000000000 -0400
+@@ -112,7 +112,7 @@
+ 		return ret;
  
--	if (pll->post_divider < 0)
--		return -EINVAL;
--
- 	/* calculate feedback divider */
- 	n = c.ref_divider * output_freq;
- 	d = c.ref_clk;
-diff -ru linux-2.6.21-old/drivers/video/aty/radeon_base.c linux-2.6.21/drivers/video/aty/radeon_base.c
---- linux-2.6.21-old/drivers/video/aty/radeon_base.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/aty/radeon_base.c	2007-05-30 02:28:13.000000000 -0400
-@@ -813,11 +813,6 @@
- 	if (v.xres_virtual < v.xres)
- 		v.xres = v.xres_virtual;
+ 	return sprintf(buf, "%d: %s\n", attr.state,
+-		       attr.state >= 0 && attr.state < ARRAY_SIZE(state_name) ?
++		       attr.state < ARRAY_SIZE(state_name) ?
+ 		       state_name[attr.state] : "UNKNOWN");
+ }
  
--	if (v.xoffset < 0)
--                v.xoffset = 0;
--        if (v.yoffset < 0)
--                v.yoffset = 0;
--         
-         if (v.xoffset > v.xres_virtual - v.xres)
-                 v.xoffset = v.xres_virtual - v.xres - 1;
-                         
-diff -ru linux-2.6.21-old/drivers/video/cirrusfb.c linux-2.6.21/drivers/video/cirrusfb.c
---- linux-2.6.21-old/drivers/video/cirrusfb.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/cirrusfb.c	2007-05-30 02:29:21.000000000 -0400
-@@ -729,11 +729,6 @@
- 	if (var->yres_virtual < var->yres)
- 		var->yres_virtual = var->yres;
+diff -ru linux-2.6.21-old/drivers/infiniband/core/ucma.c linux-2.6.21/drivers/infiniband/core/ucma.c
+--- linux-2.6.21-old/drivers/infiniband/core/ucma.c	2007-05-30 02:52:52.000000000 -0400
++++ linux-2.6.21/drivers/infiniband/core/ucma.c	2007-05-30 02:09:34.000000000 -0400
+@@ -955,7 +955,7 @@
+ 	if (copy_from_user(&hdr, buf, sizeof(hdr)))
+ 		return -EFAULT;
  
--	if (var->xoffset < 0)
--		var->xoffset = 0;
--	if (var->yoffset < 0)
--		var->yoffset = 0;
--
- 	/* truncate xoffset and yoffset to maximum if too high */
- 	if (var->xoffset > var->xres_virtual - var->xres)
- 		var->xoffset = var->xres_virtual - var->xres - 1;
-diff -ru linux-2.6.21-old/drivers/video/fbmem.c linux-2.6.21/drivers/video/fbmem.c
---- linux-2.6.21-old/drivers/video/fbmem.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/fbmem.c	2007-05-30 02:27:25.000000000 -0400
-@@ -392,7 +392,7 @@
- 			image->dx += image->width + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_UD) {
--		for (x = 0; x < num && image->dx >= 0; x++) {
-+		for (x = 0; x < num; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dx -= image->width + 8;
- 		}
-@@ -404,7 +404,7 @@
- 			image->dy += image->height + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_CCW) {
--		for (x = 0; x < num && image->dy >= 0; x++) {
-+		for (x = 0; x < num; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dy -= image->height + 8;
- 		}
-@@ -973,9 +973,9 @@
- 	case FBIOPUT_CON2FBMAP:
- 		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
- 			return - EFAULT;
--		if (con2fb.console < 0 || con2fb.console > MAX_NR_CONSOLES)
-+		if (con2fb.console > MAX_NR_CONSOLES)
- 		    return -EINVAL;
--		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
-+		if (con2fb.framebuffer >= FB_MAX)
- 		    return -EINVAL;
- #ifdef CONFIG_KMOD
- 		if (!registered_fb[con2fb.framebuffer])
-diff -ru linux-2.6.21-old/drivers/video/intelfb/intelfbdrv.c linux-2.6.21/drivers/video/intelfb/intelfbdrv.c
---- linux-2.6.21-old/drivers/video/intelfb/intelfbdrv.c	2007-05-30 02:53:13.000000000 -0400
-+++ linux-2.6.21/drivers/video/intelfb/intelfbdrv.c	2007-05-30 02:30:32.000000000 -0400
-@@ -1343,11 +1343,6 @@
- 		break;
- 	}
- 
--	if (v.xoffset < 0)
--		v.xoffset = 0;
--	if (v.yoffset < 0)
--		v.yoffset = 0;
--
- 	if (v.xoffset > v.xres_virtual - v.xres)
- 		v.xoffset = v.xres_virtual - v.xres;
- 	if (v.yoffset > v.yres_virtual - v.yres)
-diff -ru linux-2.6.21-old/drivers/video/riva/fbdev.c linux-2.6.21/drivers/video/riva/fbdev.c
---- linux-2.6.21-old/drivers/video/riva/fbdev.c	2007-05-30 02:53:00.000000000 -0400
-+++ linux-2.6.21/drivers/video/riva/fbdev.c	2007-05-30 02:29:05.000000000 -0400
-@@ -1185,11 +1185,6 @@
- 	if (rivafb_do_maximize(info, var, nom, den) < 0)
+-	if (hdr.cmd < 0 || hdr.cmd >= ARRAY_SIZE(ucma_cmd_table))
++	if (hdr.cmd >= ARRAY_SIZE(ucma_cmd_table))
  		return -EINVAL;
  
--	if (var->xoffset < 0)
--		var->xoffset = 0;
--	if (var->yoffset < 0)
--		var->yoffset = 0;
--
- 	/* truncate xoffset and yoffset to maximum if too high */
- 	if (var->xoffset > var->xres_virtual - var->xres)
- 		var->xoffset = var->xres_virtual - var->xres - 1;
-diff -ru linux-2.6.21-old/drivers/video/vga16fb.c linux-2.6.21/drivers/video/vga16fb.c
---- linux-2.6.21-old/drivers/video/vga16fb.c	2007-05-30 02:53:01.000000000 -0400
-+++ linux-2.6.21/drivers/video/vga16fb.c	2007-05-30 02:30:08.000000000 -0400
-@@ -1092,7 +1092,7 @@
- 	sy += (dy - old_dy);
+ 	if (hdr.in + sizeof(hdr) > len)
+diff -ru linux-2.6.21-old/drivers/infiniband/core/ucm.c linux-2.6.21/drivers/infiniband/core/ucm.c
+--- linux-2.6.21-old/drivers/infiniband/core/ucm.c	2007-05-30 02:52:52.000000000 -0400
++++ linux-2.6.21/drivers/infiniband/core/ucm.c	2007-05-30 02:08:01.000000000 -0400
+@@ -1125,7 +1125,7 @@
+ 	if (copy_from_user(&hdr, buf, sizeof(hdr)))
+ 		return -EFAULT;
  
- 	/* the source must be completely inside the virtual screen */
--	if (sx < 0 || sy < 0 || (sx + width) > vxres || (sy + height) > vyres)
-+	if ((sx + width) > vxres || (sy + height) > vyres)
- 		return;
+-	if (hdr.cmd < 0 || hdr.cmd >= ARRAY_SIZE(ucm_cmd_table))
++	if (hdr.cmd >= ARRAY_SIZE(ucm_cmd_table))
+ 		return -EINVAL;
  
- 	switch (info->fix.type) {
+ 	if (hdr.in + sizeof(hdr) > len)
+diff -ru linux-2.6.21-old/drivers/infiniband/core/user_mad.c linux-2.6.21/drivers/infiniband/core/user_mad.c
+--- linux-2.6.21-old/drivers/infiniband/core/user_mad.c	2007-05-30 02:52:52.000000000 -0400
++++ linux-2.6.21/drivers/infiniband/core/user_mad.c	2007-05-30 02:08:32.000000000 -0400
+@@ -455,8 +455,7 @@
+ 		goto err;
+ 	}
+ 
+-	if (packet->mad.hdr.id < 0 ||
+-	    packet->mad.hdr.id >= IB_UMAD_MAX_AGENTS) {
++	if (packet->mad.hdr.id >= IB_UMAD_MAX_AGENTS) {
+ 		ret = -EINVAL;
+ 		goto err;
+ 	}
+@@ -665,7 +664,7 @@
+ 
+ 	down_write(&file->port->mutex);
+ 
+-	if (id < 0 || id >= IB_UMAD_MAX_AGENTS || !__get_agent(file, id)) {
++	if (id >= IB_UMAD_MAX_AGENTS || !__get_agent(file, id)) {
+ 		ret = -EINVAL;
+ 		goto out;
+ 	}
+diff -ru linux-2.6.21-old/drivers/infiniband/core/uverbs_main.c linux-2.6.21/drivers/infiniband/core/uverbs_main.c
+--- linux-2.6.21-old/drivers/infiniband/core/uverbs_main.c	2007-05-30 02:52:52.000000000 -0400
++++ linux-2.6.21/drivers/infiniband/core/uverbs_main.c	2007-05-30 02:09:07.000000000 -0400
+@@ -592,8 +592,7 @@
+ 	if (hdr.in_words * 4 != count)
+ 		return -EINVAL;
+ 
+-	if (hdr.command < 0				||
+-	    hdr.command >= ARRAY_SIZE(uverbs_cmd_table) ||
++	if (hdr.command >= ARRAY_SIZE(uverbs_cmd_table) ||
+ 	    !uverbs_cmd_table[hdr.command]		||
+ 	    !(file->device->ib_dev->uverbs_cmd_mask & (1ull << hdr.command)))
+ 		return -EINVAL;
+diff -ru linux-2.6.21-old/drivers/infiniband/core/verbs.c linux-2.6.21/drivers/infiniband/core/verbs.c
+--- linux-2.6.21-old/drivers/infiniband/core/verbs.c	2007-05-30 02:52:52.000000000 -0400
++++ linux-2.6.21/drivers/infiniband/core/verbs.c	2007-05-30 02:07:06.000000000 -0400
+@@ -535,8 +535,7 @@
+ {
+ 	enum ib_qp_attr_mask req_param, opt_param;
+ 
+-	if (cur_state  < 0 || cur_state  > IB_QPS_ERR ||
+-	    next_state < 0 || next_state > IB_QPS_ERR)
++	if (cur_state  > IB_QPS_ERR || next_state > IB_QPS_ERR)
+ 		return 0;
+ 
+ 	if (mask & IB_QP_CUR_STATE  &&
+diff -ru linux-2.6.21-old/drivers/infiniband/hw/mlx4/qp.c linux-2.6.21/drivers/infiniband/hw/mlx4/qp.c
+--- linux-2.6.21-old/drivers/infiniband/hw/mlx4/qp.c	2007-05-30 02:52:52.000000000 -0400
++++ linux-2.6.21/drivers/infiniband/hw/mlx4/qp.c	2007-05-30 02:10:18.000000000 -0400
+@@ -1284,7 +1284,7 @@
+ 		 */
+ 		wmb();
+ 
+-		if (wr->opcode < 0 || wr->opcode >= ARRAY_SIZE(mlx4_ib_opcode)) {
++		if (wr->opcode >= ARRAY_SIZE(mlx4_ib_opcode)) {
+ 			err = -EINVAL;
+ 			goto out;
+ 		}
