@@ -1,168 +1,308 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbXE3MDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbXE3MGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752632AbXE3MDn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 08:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbXE3MDf
+	id S1753202AbXE3MGn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 08:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbXE3MGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 08:03:35 -0400
-Received: from posti6.jyu.fi ([130.234.4.43]:54473 "EHLO posti6.jyu.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751514AbXE3MDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 08:03:34 -0400
-Date: Wed, 30 May 2007 15:02:49 +0300 (EEST)
-From: Tero Roponen <teanropo@jyu.fi>
-X-X-Sender: teanropo@jalava.cc.jyu.fi
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: tty-related oops in latest kernel(s)?
-In-Reply-To: <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705301458400.4634@jalava.cc.jyu.fi>
-References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi> 
- <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com> 
- <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com> 
- <Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi> 
- <84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com> 
- <Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
- <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
+	Wed, 30 May 2007 08:06:36 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:3102 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbXE3MGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 08:06:34 -0400
+Date: Wed, 30 May 2007 13:06:30 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-mips@linux-mips.org, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] zs: Move to the serial subsystem
+In-Reply-To: <20070530011224.bf36d2df.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64N.0705301136150.27697@blysk.ds.pg.gda.pl>
+References: <Pine.LNX.4.64N.0705291258390.14456@blysk.ds.pg.gda.pl>
+ <20070530011224.bf36d2df.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-360566268-1904625238-1180526569=:4634"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Andrew!
 
----360566268-1904625238-1180526569=:4634
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+ Thanks for the review -- I'll address all the issues below.
 
-On Wed, 30 May 2007, Pekka Enberg wrote:
+> So..  how many people use this, and how do we know when it's been tested
+> enough?
 
-> On 5/30/07, Tero Roponen <teanropo@jyu.fi> wrote:
-> > Hmmm, I just found something interesting. In 2.6.21.3 the /sbin/init
-> > gets corrupted when I watch the video!
-> >
-> > $ cp /sbin/init init.before
-> > $ mplayer kiwi.flv
-> > $ cp /sbin/init init.after
-> >
-> > The sha1sums are here:
-> >
-> > 52c8d643057619cbe137b8e69d4709ce3bdd832d  init.after
-> > 8efc7864a5b535a9e336fa82e9d7f112f3d956c1  init.before
-> >
-> > It seems that something corrupts memory somewhere...
-> 
-> To debug this a bit further:
-> 
-> $ od -a -t x1 -v init.after > init.after.dump
-> $ od -a -t x1 -v init.before > init.before.dump
-> $ diff -u init.before.dump init.after.dump | less
-> 
-> -0011340  nul nul nul  e9  f0  fe  ff  ff  ff   %   < soh enq  bs   h  80
-> -           00  00  00  e9  f0  fe  ff  ff  ff  25  3c  01  05  08  68  80
-> +0010000    y ack nul nul   y ack nul nul   y ack nul nul   y ack nul nul
-> +           79  06  00  00  79  06  00  00  79  06  00  00  79  06  00  00
-> +0010020    y ack nul nul   y ack nul nul   y ack nul nul   y ack nul nul
-> +           79  06  00  00  79  06  00  00  79  06  00  00  79  06  00  00
-> +0011340    y ack nul nul   y ack nul nul  ff   %   < soh enq  bs   h  80
-> +           79  06  00  00  79  06  00  00  ff  25  3c  01  05  08  68  80
-> 
-> The file at offset 0010000 - 0011348 is overwritten with the byte
-> pattern 79 06 00 00.
-> 
-> Do you see anything in the logs or is this a silent corruption? Did
-> you see this corruption with 2.6.19 or 2.6.22-rc3?
-> 
+ Well, the reality is the current code as in Linus tree is unusable at all 
+-- there is no way to build drivers/char/decserial.c whis is the wrapper 
+that calls zs_init().  So even a broken driver is probably an improvement 
+and it works as a console device for me, so it's not that entirely broken.
 
-I recompiled 2.6.22-rc3 and booted it with slub_debug. Now I can't oops
-the kernel, but ./slab_info -v gives me a warning:
+ You can actually use the linux-mips.org tree to make the old driver work, 
+but given the number of reports about the DECstation I have seen recently 
+(none for at least a year or something) the response for a testing request 
+may take a long, long time.  If someone complains of the new driver I'll 
+take care of investigating the problem.
 
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-neofb: no support for 32bpp
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1024x768) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1152x864) larger than the LCD panel (800x600)
-Mode (1024x1024) larger than the LCD panel (800x600)
-Mode (1024x1024) larger than the LCD panel (800x600)
-Mode (1024x1024) larger than the LCD panel (800x600)
-Mode (1024x1024) larger than the LCD panel (800x600)
-Mode (1280x1024) larger than the LCD panel (800x600)
-Mode (1280x1024) larger than the LCD panel (800x600)
-Mode (1280x1024) larger than the LCD panel (800x600)
-Mode (1280x1024) larger than the LCD panel (800x600)
-*** SLUB kmalloc-1024: Redzone Active@0xc10be860 slab 0xc10217c0
-    offset=2144 flags=0x80004082 inuse=7 freelist=0x00000000
-  Bytes b4 0xc10be850:  00 00 00 00 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a ........ZZZZZZZZ
-    Object 0xc10be860:  00 00 00 00 00 20 00 00 20 03 00 00 58 02 00 00 ............X...
-    Object 0xc10be870:  20 03 00 00 58 02 00 00 00 00 00 00 00 00 00 00 ....X...........
-    Object 0xc10be880:  10 00 00 00 00 00 00 00 0b 00 00 00 05 00 00 00 ................
-    Object 0xc10be890:  00 00 00 00 05 00 00 00 06 00 00 00 00 00 00 00 ................
-    Object 0xc10be8a0:  00 00 00 00 05 00 00 00 00 00 00 00 00 00 00 00 ................
-    Object 0xc10be8b0:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
-    Object 0xc10be8c0:  ff ff ff ff ff ff ff ff 00 00 00 00 a8 61 00 00 ÿÿÿÿÿÿÿÿ....¨a..
-    Object 0xc10be8d0:  58 00 00 00 28 00 00 00 17 00 00 00 01 00 00 00 X...(...........
-   Redzone 0xc10bec60:  4d 6b 00 00                                     Mk..            
-FreePointer 0xc10bec64 -> 0x00006b4d
-Last alloc: 0x6b4d jiffies_ago=4294923792 cpu=27469 pid=27469
-Last free : 0x6b4d jiffies_ago=4294923792 cpu=27469 pid=27469
-    Filler 0xc10bec88:  4d 6b 00 00 4d 6b 00 00                         Mk..Mk..        
- [<c013f717>] check_object+0x64/0x23d
- [<c0141371>] validate_slab+0xff/0x12a
- [<c01413aa>] validate_slab_slab+0xe/0x51
- [<c0141488>] validate_store+0x9b/0xe8
- [<c01343d1>] __handle_mm_fault+0x370/0x68b
- [<c01413ed>] validate_store+0x0/0xe8
- [<c013eaa6>] slab_attr_store+0x1e/0x22
- [<c016e470>] sysfs_write_file+0xad/0xd6
- [<c016e3c3>] sysfs_write_file+0x0/0xd6
- [<c0143341>] vfs_write+0x8a/0x10c
- [<c01437d7>] sys_write+0x41/0x67
- [<c01022c2>] sysenter_past_esp+0x5f/0x85
- =======================
-@@@ SLUB kmalloc-1024: Restoring redzone (0xcc) from 0xc10bec60-0xc10bec63
+ One is certain -- at least one person uses it. ;-)
 
---
-Tero Roponen
----360566268-1904625238-1180526569=:4634--
+> For starters, let's see what the new checkpatch.pl says:
+
+ Didn't know about this one -- thanks for the point.
+
+> Use #include <linux/bug.h> instead of <asm/bug.h>
+
+ Will fix -- wasn't there in 2.6.18 that I used for testing.
+
+> Use #include <linux/io.h> instead of <asm/io.h>
+
+ Will fix.
+
+> line over 80 characters
+
+ Tricky -- not visible on the terminal, thanks.
+
+> printk() should include KERN_ facility level
+
+ Debugging stuff, not normally build, but could use some annotation for 
+purity, indeed.
+
+> Hey, you have volatiles and checkpatch.pl didn't complain.  Andy, a
+> reference to Documentation/volatile-considered-harmful.txt would suit.
+
+ Fixed. 
+
+> > +#define RECOVERY_DELAY  udelay(2)
+> 
+> static inline void recovery_delay(void)
+> {
+> 	udelay(2);
+> }
+> 
+> ?
+
+ Hmm, maybe...
+
+> > +#define to_zport(uport) container_of(uport, struct zs_port, port)
+> 
+> This could be a C function too.
+
+ Everybody else seems to use a macro for it.
+
+> > +static u8 zs_init_regs[ZS_NUM_REGS] __initdata = {
+> > +	0,				/* write 0 */
+> > +	PAR_SPEC,			/* write 1 */
+> > +	0,				/* write 2 */
+> > +	0,				/* write 3 */
+> > +	X16CLK | SB1,			/* write 4 */
+> > +	0,				/* write 5 */
+> > +	0, 0, 0,			/* write 6, 7, 8 */
+> > +	MIE | DLC | NV,			/* write 9 */
+> > +	NRZ,				/* write 10 */
+> > +	TCBR | RCBR,			/* write 11 */
+> > +	0, 0,				/* BRG time constant, write 12 + 13 */
+> > +	BRSRC | BRENABL,		/* write 14 */
+> > +	0,				/* write 15 */
+> > +};
+> 
+> one could use the [1] = PAR_SPEC, thingy here, but the above seems clear
+> enough to me.
+
+ I'd say it would be unnecessary clutter otherwise -- this is not a 
+struct!
+
+> This is too large to inline (I suspect) and it has many callsites, and some
+> of those callsites are inlined too.
+> 
+> You'll probably get some nice savings by nuking the lot.
+
+ Yes, probably -- after the fight with the modem lines I forgot to have 
+this fixed.  As none of these functions are actually required to be 
+inline, I'll just remove the marking entirely and let GCC do its job.
+
+> Make this static?
+
+ Could potentially be called by a debugging module.  Not compiled by 
+default anyway.
+
+> > +static inline void zs_spin_lock_cond_irq(spinlock_t* lock, int irq)
+> > +{
+> > +	if (irq)
+> > +		spin_lock_irq(lock);
+> > +	else
+> > +		spin_lock(lock);
+> > +}
+> 
+> This `irq' thing looks a bit hacky.
+
+ Probably the best solution I could thought of -- I want to relieve the 
+system for the duration of the delay, so I want to enable the interrupts 
+if possible.  But the callers of this function may be called indirectly 
+from outside of the driver with an arbitrary state of the interrupt mask, 
+so what else could I do?  At slow bps rates, draining of the transmit 
+buffer register may take a looong time.  The chip has a single character 
+transmit "FIFO".
+
+> > +	spin_lock_irqsave(&scc->zlock, flags);
+> > +	status = read_zsreg(zport, R1);
+> > +	spin_unlock_irqrestore(&scc->zlock, flags);
+> 
+> How come this read_zsreg() needs the lock
+
+ Well, because it is not atomic?  A read of any register but the R0 
+consists of a write of the index to the control register and then a read 
+of same which retrieves data from the indexed register.  If another 
+operation is performed on the control register inbetween, then not only 
+the wrong register will be read, but also some internal state will be 
+corrupted as the subsequent write to the the control register after the 
+first one will actually write the value to the register indexed previously 
+rather than selecting a new value of the index.
+
+ And please be kind enough not to curse the design of this chip -- it's 
+over 25 years old!  It's a follow-on to the SIO, a member of the family of 
+chips surrounding the Z80.
+
+> Actually the callers _do_ seem kinda OK, but please chech that carefully.
+
+ Did already.  All *_raw_* functions assume locking has been done by the 
+caller.
+
+> Some of the callers are using spin_lock(zlock) and some others are using
+> spin_lock_irq().  Could be deadlocky - please review all of that.
+
+ No need for spin_lock_irq() in the interrupt handler (AFAIK).
+
+> FRM_ERR and PAR_ERR are mutually exclusive, and cannot be set if either
+> Rx_SYS or Rx_BRK are set?
+
+ Correct.  FRM_ERR overrules PAR_ERR, because it means the reception was 
+completely garbled and as such there was nothing to parity-protect in the 
+first place (or, IOW, PAR_ERR == random()).
+
+ The Rx_SYS or Rx_BRK bits are merely software flags -- the chip leaves a 
+single null character in its receive buffer with no special conditions by 
+definition once the BREAK condition has been removed.  It's a dummy 
+reception -- nothing has actually been received, so nothing could have 
+been corrupted (OK, I suppose this is just a side effect of how the 
+receiver works -- BREAK drives the receive line low and this state is 
+being shifted through the receive register for the duration of the 
+condition; note that for the purpose of detecting the condition BREAK is 
+defined as a null character with a framing error).  The driver records a 
+BREAK condition seen (this chip signals it as a status change, not a 
+receive condition) and later on when a null character is "received", it is 
+discarded according to the chip spec.
+
+> > +static int zs_startup(struct uart_port *uport)
+> > +{
+> > +	struct zs_port *zport = to_zport(uport);
+> > +	struct zs_scc *scc = zport->scc;
+> > +	unsigned long flags;
+> > +	int ret;
+> > +
+> > +	if (!scc->irq_guard) {
+> > +		ret = request_irq(zport->port.irq, zs_interrupt,
+> > +				  IRQF_SHARED, "scc", scc);
+> > +		if (ret) {
+> > +			printk(KERN_ERR "zs: can't get irq %d\n",
+> > +			       zport->port.irq);
+> > +			return ret;
+> > +		}
+> > +	}
+> > +	scc->irq_guard++;
+> 
+> The ->irq_guard handling looks a little racy?
+> 
+> Perhaps higher-level locks prevent this.  If so, a comment explaining this
+> would be reassuring.
+
+ The serial API says this function is called with port_sem taken -- I can 
+certainly paste the comment here too.
+
+> > +static void zs_shutdown(struct uart_port *uport)
+> > +{
+> > +	struct zs_port *zport = to_zport(uport);
+> > +	struct zs_scc *scc = zport->scc;
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&scc->zlock, flags);
+> > +
+> > +	zport->regs[5] &= ~TxENAB;
+> > +	zport->regs[3] &= ~RxENABLE;
+> > +	write_zsreg(zport, R5, zport->regs[5]);
+> > +	write_zsreg(zport, R3, zport->regs[3]);
+> > +
+> > +	spin_unlock_irqrestore(&scc->zlock, flags);
+> > +
+> > +	scc->irq_guard--;
+> 
+> Ditto.
+
+ Ditto. :-)
+
+> > +static void zs_reset(struct zs_port *zport)
+> > +{
+> > +	struct zs_scc *scc = zport->scc;
+> > +	int irq;
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&scc->zlock, flags);
+> > +	irq = !irqs_disabled_flags(flags);
+> 
+> hacky?
+
+ See the comment above -- any ideas?
+
+> > +	switch (zport->clk_mode) {
+> > +	case 64:
+> > +		zport->regs[4] |= X64CLK;
+> > +		break;
+> > +	case 32:
+> > +		zport->regs[4] |= X32CLK;
+> > +		break;
+> > +	case 16:
+> > +		zport->regs[4] |= X16CLK;
+> > +		break;
+> > +	case 1:
+> > +		zport->regs[4] |= X1CLK;
+> > +		break;
+> > +	default:
+> > +		BUG();
+> > +	}
+> 
+> afacit clk_mode = 16 is the only value possible in this driver.
+
+ I doesn't hurt to handle all the cases.  Perhaps I'll add an ioctl() to 
+handle changing of clk_mode for `setserial' or suchalike.  Note that X1CLK 
+is isochronous mode. ;-)
+
+> > +static struct uart_driver zs_reg;
+> > +static struct console zs_sercons = {
+> > +	.name	= "ttyS",
+> > +	.write	= zs_console_write,
+> > +	.device	= uart_console_device,
+> > +	.setup	= zs_console_setup,
+> > +	.flags	= CON_PRINTBUFFER,
+> 
+> You might want to set CON_BOOT here.  See the recently-merged
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/fixes-and-cleanups-for-earlyprintk-aka-boot-console.patch
+
+ Done.  Thanks for the point (now I recall seeing the patch, but I have 
+obviously already forgotten about it).
+
+> I think there was some great controversy recently concerning the naming of
+> the device which the z8530 driver drives.  Perhaps you're not affected
+> here.  It was dwmw2 vs Stephen Rothwell ;)
+
+ Hmm, it sounds intriguing, but Google doesn't seem to be able to find 
+anything relevant for me -- any pointers?
+
+ Now the real fun with this thing will happen if I ever get to supporting 
+synchronous operation as well -- these chips are certainly capable of (in 
+addition to that isochronous thingy mentioned above) and they indeed are 
+wired correctly for this to work, which generally means TxC and RxC lines 
+are on the respective connectors. ;-)
+
+ I can see you have applied the patch regardless, so I'll send you just a 
+diff with updates shortly -- once I have tested the changes with a piece 
+of hardware.
+
+  Maciej
