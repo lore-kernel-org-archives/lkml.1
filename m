@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbXE3UBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbXE3UEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758640AbXE3UBg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbXE3UB2
+	id S1758290AbXE3UEH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:04:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXE3UDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:01:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38938
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752120AbXE3UB1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:01:27 -0400
-Date: Wed, 30 May 2007 13:01:40 -0700 (PDT)
-Message-Id: <20070530.130140.97293476.davem@davemloft.net>
-To: mikpe@it.uu.se
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [BUG sparc64] 2.6.22-rc broke X on Ultra5
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200705301933.l4UJXIE0023913@alkaid.it.uu.se>
-References: <200705301933.l4UJXIE0023913@alkaid.it.uu.se>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 30 May 2007 16:03:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44369 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751424AbXE3UDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 16:03:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@nigel.suspend2.net
+Subject: Re: Sending signals to a kernel thread, broken in 2.6.22
+Date: Wed, 30 May 2007 22:09:20 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0705291649010.2974-100000@iolanthe.rowland.org> <1180528720.3976.42.camel@nigel.suspend2.net>
+In-Reply-To: <1180528720.3976.42.camel@nigel.suspend2.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705302209.20963.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikael Pettersson <mikpe@it.uu.se>
-Date: Wed, 30 May 2007 21:33:18 +0200 (MEST)
+On Wednesday, 30 May 2007 14:38, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Tue, 2007-05-29 at 16:55 -0400, Alan Stern wrote:
+> > The g_file_storage driver uses a kernel thread and communicates with
+> > that thread in part by means of signals.  It also relies on the thread 
+> > receiving signals from userspace as an indication that the thread 
+> > should terminate.
+> > 
+> > This was all working in 2.6.21, but as of 2.6.22-rc3 the signal 
+> > delivery mechanism (entirely within the kernel!) is no longer 
+> > functional.
+> > 
+> > What's the story?  Do I need to do something new and different to get 
+> > signals working again?  Should I avoid using signals entirely?
+> > 
+> > Thanks for any help,
+> > 
+> > Alan Stern
+> 
+> Hmm. Given Oleg's reply, it could pay to check that freezable kernel
+> threads are still being frozen.
 
-> You were spot on. 2.6.21 + patches up to but not including
-> the first one above works. Adding that one gave me a kernel
-> that wouldn't boot (hung after "uncompressing kernel").
-> Adding the second one above gave me a kernel that booted, but
-> where X failed to mmap() the frame buffer as I described.
+I think they are.  Otherwise the freezer would have been failing.
 
-Thanks for all of your testing.
+> I'm about to go off to bed, and am away for half the day tomorrow, but
+> will check as soon as I can if noone else gets to it first. (Rafael
+> added for a heads-up, just in case he hasn't noticed this thread).
 
-I'll try to figure this out on one of my Ultra5's here.
+I have noticed it, but thanks anyway. :-)
+
+Greetings,
+Rafael
