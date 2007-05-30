@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752383AbXE3CSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbXE3Cbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752383AbXE3CSg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 22:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbXE3CS1
+	id S1752048AbXE3Cbc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 22:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbXE3CbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 22:18:27 -0400
-Received: from omta04ps.mx.bigpond.com ([144.140.83.156]:51117 "EHLO
-	omta04ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbXE3CS0 (ORCPT
+	Tue, 29 May 2007 22:31:25 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:32389 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbXE3CbY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 22:18:26 -0400
-Message-ID: <465CDEEA.9060507@bigpond.net.au>
-Date: Wed, 30 May 2007 12:18:18 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Con Kolivas <kernel@kolivas.org>, Christoph Lameter <clameter@sgi.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v12
-References: <464DA61A.4040406@bigpond.net.au> <b647ffbd0705210825y25331066x8b2a4d50cdb7c266@mail.gmail.com> <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au> <4655423E.6000202@bigpond.net.au> <20070524164538.GA13301@linux-os.sc.intel.com> <46561E67.3030207@bigpond.net.au> <20070529204557.GB3693@linux-os.sc.intel.com> <465CBD35.2000109@bigpond.net.au> <20070530005052.GE3693@linux-os.sc.intel.com>
-In-Reply-To: <20070530005052.GE3693@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 29 May 2007 22:31:24 -0400
+X-IronPort-AV: i="4.14,590,1170651600"; 
+   d="scan'208"; a="40484536:sNHT214713361394"
+Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
+References: <11803414753217-git-send-email-bryan.wu@analog.com>
+	 <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta08ps.mx.bigpond.com from [60.231.45.148] using ID pwil3058@bigpond.net.au at Wed, 30 May 2007 02:18:23 +0000
+Organization: Analog Devices, Inc.
+Date: Wed, 30 May 2007 10:31:49 +0800
+Message-Id: <1180492309.15597.7.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Siddha, Suresh B wrote:
-> On Tue, May 29, 2007 at 04:54:29PM -0700, Peter Williams wrote:
->>> I tried with various refresh rates of top too.. Do you see the issue
->>> at runlevel 3 too?
->> I haven't tried that.
->>
->> Do your spinners ever relinquish the CPU voluntarily?
+On Tue, 2007-05-29 at 13:59 -0700, Linus Torvalds wrote:
 > 
-> Nope. Simple and plain while(1); 's
+> On Mon, 28 May 2007, Bryan Wu wrote:
+> > 
+> >  - Blackfin arch update including BF54x initial supporting
+> >  - Blackfin driver update: serial/spi/rtc
+> >  - Provide new Blackfin watchdog driver
+> >  - binfmt_flat.c for Blackfin arch modification
 > 
-> I can try 32-bit kernel to check.
+> I realize that this all just touches blackfin-specific stuff, but after 
+> -rc3 I really prefer not to bother with these things..
+> 
 
-Don't bother.  I just checked 2.6.22-rc3 and the problem is not present 
-which means something between rc2 and rc3 has fixed the problem.  I hate 
-it when problems (appear to) fix themselves as it usually means they're 
-just hiding.
+Yes, I see. It should be maintained by git-merge or git-pull easily.
 
-I didn't see any patches between rc2 and rc3 that were likely to have 
-fixed this (but doesn't mean there wasn't one).  I'm wondering whether I 
-should do a git bisect to see if I can find where it got fixed?
+> Also, for stuff that is really just an architecture that I can't even 
+> test, and where there is a clear maintainership thing, I'd actually prefer 
+> to just do a git merge, if possible. It's not like I will likely start 
+> looking at some blackfin-specific patches. Judging from the diffs, you do 
+> actually use git, do you have a place where you could export these kinds 
+> of patch-series as a git tree instead?
 
-Could you see if you can reproduce it on 2.6.22-rc2?
+We are waiting for your command to do this, -:)).
+So, can we setup a git-tree in kernel.org?
 
-Thanks
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
-
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+Thanks a lot
+Best Regards,
+-Bryan Wu
