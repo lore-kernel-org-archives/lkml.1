@@ -1,47 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXE3PG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbXE3PKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbXE3PG2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbXE3PGD
+	id S1754068AbXE3PKE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbXE3PJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:06:03 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:60987 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752767AbXE3PGC (ORCPT
+	Wed, 30 May 2007 11:09:55 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:31735 "EHLO
+	viefep13-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752087AbXE3PJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:06:02 -0400
-Date: Wed, 30 May 2007 08:05:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH -mm] 1/2: MMCONFIG: validate against ACPI motherboard
- resources
-In-Reply-To: <465D8BA1.1080800@shaw.ca>
-Message-ID: <alpine.LFD.0.98.0705300804140.26602@woody.linux-foundation.org>
-References: <465CF794.1070406@shaw.ca> <alpine.LFD.0.98.0705292125511.26602@woody.linux-foundation.org>
- <465D8BA1.1080800@shaw.ca>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 30 May 2007 11:09:55 -0400
+Message-Id: <20070530125335.349120074@chello.nl>
+References: <20070530124903.882133089@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Wed, 30 May 2007 14:49:04 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 1/6] fix raw_spinlock_t vs lockdep
+Content-Disposition: inline; filename=raw_spinlock_fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+raw_spinlock_t should not use lockdep (and doesn't) since lockdep itself relies
+on it.
 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/spinlock_types.h    |    4 ++--
+ include/linux/spinlock_types_up.h |    9 +--------
+ 2 files changed, 3 insertions(+), 10 deletions(-)
 
-On Wed, 30 May 2007, Robert Hancock wrote:
-> 
-> I'll try and fix up the formatting and repost this patch.
+Index: linux-2.6-git/include/linux/spinlock_types_up.h
+===================================================================
+--- linux-2.6-git.orig/include/linux/spinlock_types_up.h
++++ linux-2.6-git/include/linux/spinlock_types_up.h
+@@ -12,14 +12,10 @@
+  * Released under the General Public License (GPL).
+  */
+ 
+-#if defined(CONFIG_DEBUG_SPINLOCK) || \
+-	defined(CONFIG_DEBUG_LOCK_ALLOC)
++#ifdef CONFIG_DEBUG_SPINLOCK
+ 
+ typedef struct {
+ 	volatile unsigned int slock;
+-#ifdef CONFIG_DEBUG_LOCK_ALLOC
+-	struct lockdep_map dep_map;
+-#endif
+ } raw_spinlock_t;
+ 
+ #define __RAW_SPIN_LOCK_UNLOCKED { 1 }
+@@ -34,9 +30,6 @@ typedef struct { } raw_spinlock_t;
+ 
+ typedef struct {
+ 	/* no debug version on UP */
+-#ifdef CONFIG_DEBUG_LOCK_ALLOC
+-	struct lockdep_map dep_map;
+-#endif
+ } raw_rwlock_t;
+ 
+ #define __RAW_RW_LOCK_UNLOCKED { }
+Index: linux-2.6-git/include/linux/spinlock_types.h
+===================================================================
+--- linux-2.6-git.orig/include/linux/spinlock_types.h
++++ linux-2.6-git/include/linux/spinlock_types.h
+@@ -9,14 +9,14 @@
+  * Released under the General Public License (GPL).
+  */
+ 
+-#include <linux/lockdep.h>
+-
+ #if defined(CONFIG_SMP)
+ # include <asm/spinlock_types.h>
+ #else
+ # include <linux/spinlock_types_up.h>
+ #endif
+ 
++#include <linux/lockdep.h>
++
+ typedef struct {
+ 	raw_spinlock_t raw_lock;
+ #if defined(CONFIG_PREEMPT) && defined(CONFIG_SMP)
 
-Thanks.
+--
 
->							 I suspect some
-> of the issues are from the added code clashing with the way the existing
-> code was formatted.
-
-Well, I have to admit that I might not have reacted so much if it hadn't 
-been for the Thunderbird thing, which made it look _really_ strange at 
-first, so then I had to go outside my mail client to look closer. And once 
-I looked closer, I just went "aiieee, it wasn't all the email client" ;)
-
-		Linus
