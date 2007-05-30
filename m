@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbXE3EOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXE3Eeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397AbXE3EOe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 00:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbXE3EO1
+	id S1751980AbXE3Eeg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 00:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbXE3Ee0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 00:14:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56215 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751483AbXE3EO0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 00:14:26 -0400
-Date: Tue, 29 May 2007 21:14:23 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 7/7] Add /proc/sys/vm/compact_node for the explicit
- compaction of a node
-In-Reply-To: <20070529173830.1570.91184.sendpatchset@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0705292109460.29854@schroedinger.engr.sgi.com>
-References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
- <20070529173830.1570.91184.sendpatchset@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 May 2007 00:34:26 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47778 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1749667AbXE3EeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 00:34:25 -0400
+Date: Wed, 30 May 2007 06:35:22 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Ingo Molnar <mingo@elte.hu>, linux-acpi@vger.kernel.org,
+       Len Brown <lenb@kernel.org>, Thierry Volpiatto <tvolpiatt@neuf.fr>,
+       alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@suse.cz>, Ben Collins <bcollins@ubuntu.com>,
+       Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
+       Florin Iucha <florin@iucha.net>, Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [1/4] 2.6.22-rc3: known regressions
+Message-ID: <20070530043522.GA11512@uranus.ravnborg.org>
+References: <465C2225.2000100@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <465C2225.2000100@googlemail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 May 2007, Mel Gorman wrote:
+On Tue, May 29, 2007 at 02:52:53PM +0200, Michal Piotrowski wrote:
+> Hi all,
+> 
+> Here is a list of some known regressions in 2.6.22-rc3.
+> 
+> 
+> Kbuild
+> 
+> Subject    : make M=$PWD modules_install does nothing
+> References : http://lkml.org/lkml/2007/5/27/190
+> Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
+> Status     : Unknown
+Closed - see http://lkml.org/lkml/2007/5/29/497
 
-> +	if (nodeid < 0)
-> +		return -EINVAL;
-> +
-> +	pgdat = NODE_DATA(nodeid);
-> +	if (!pgdat || pgdat->node_id != nodeid)
-> +		return -EINVAL;
-
-You cannot pass an arbitrary number to node data since NODE_DATA may do a 
-simple array lookup.
-
-Check for node < nr_node_ids first.
-
-pgdat->node_id != nodeid? Sounds like something you should BUG() on.
-
-IA64's NODE_DATA is
-
-struct ia64_node_data {
-        short                   active_cpu_count;
-        short                   node;
-        struct pglist_data      *pg_data_ptrs[MAX_NUMNODES];
-};
-
-/*
- * Given a node id, return a pointer to the pg_data_t for the node.
- *
- * NODE_DATA    - should be used in all code not related to system
- *                initialization. It uses pernode data structures to minimize
- *                offnode memory references. However, these structure are not
- *                present during boot. This macro can be used once cpu_init
- *                completes.
- */
-#define NODE_DATA(nid)          (local_node_data->pg_data_ptrs[nid])
-
-x86_64 also does
-
-#define NODE_DATA(nid)          (node_data[nid])
-
+	Sam
