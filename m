@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbXE3RJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbXE3RMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757398AbXE3RJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbXE3RJU
+	id S1757669AbXE3RMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbXE3RMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:09:20 -0400
-Received: from homer.mvista.com ([63.81.120.158]:9877 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbXE3RJT (ORCPT
+	Wed, 30 May 2007 13:12:13 -0400
+Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:33887 "HELO
+	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753910AbXE3RMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:09:19 -0400
-Subject: Re: [PATCH 3/5] lockstat: core infrastructure
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Huey <billh@gnuppy.monkey.org>, Jason Baron <jbaron@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20070530134907.GA27085@elte.hu>
-References: <20070529125248.877196281@chello.nl>
-	 <20070529130107.112347096@chello.nl>
-	 <1180470525.32594.71.camel@imap.mvista.com>
-	 <20070530132431.GA23947@elte.hu>
-	 <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com>
-	 <20070530134907.GA27085@elte.hu>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 10:06:35 -0700
-Message-Id: <1180544796.32594.184.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 13:12:12 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 13:12:12 EDT
+X-YMail-OSG: jkGYUiQVM1lMn5GuDgSvymRfwhOO_t3PbokgcLZNVXTcBoMgIThJ.KXeatLFP8vz3flUIGfczw--
+Date: Wed, 30 May 2007 10:05:30 -0700
+From: Chris Wedgwood <cw@f00f.org>
+To: Michal Marek <mmarek@suse.cz>
+Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] Fix XFS_IOC_FSGEOMETRY_V1 in compat mode
+Message-ID: <20070530170530.GA4197@tuatara.stupidest.org>
+References: <20070530125954.706423971@suse.cz> <20070530143043.216024061@suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530143043.216024061@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-30 at 15:49 +0200, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > [...] We can argue that sched_clock is "good enough".  If someone 
-> > wants better accounting of locks on some other arch, they can simply 
-> > change sched_clock to be more precise.
-> 
-> exactly. Imprecise sched_clock() if there's a better fast clock source 
-> available is a bug in the architecture code. If the only available 
-> clocksource is 1 msec resolution then there's no solution and nothing to 
-> talk about - lock statistics will be 1msec granular just as much as 
-> scheduling.
+On Wed, May 30, 2007 at 02:59:55PM +0200, Michal Marek wrote:
 
+> +typedef struct xfs_fsop_geom_v132 {
 
-I don't agree .. sched_clock() is obsoleted by timekeepings clocksource
-structure.. sched_clock() was a quick way to get lowlevel time stamps
-just for the scheduler. The timekeeping clocksource structure is a more
-complete solution.
+wouldn't xfs_fsop_geom_v1_32
+                         ^
 
->From the architecture perspective there are two low level clock hooks to
-implement one is sched_clock() , and at least one clocksource structure.
-Both do essentially the same thing. With timekeepings clocksource
-structure actually being easier to implement cause the math is built in.
+> +	__u32		blocksize;	/* filesystem (data) block size */
 
-It's clear to me that architectures will implement clocksource
-structures .. However, they will not implement sched_clock() because
-there is no benefit associated with it. As you have said the scheduler
-works fine with a jiffies resolution clock, even a large number of x86
-machines use a jiffies sched_clock() ..
+[...]
 
-So I don't think it's a bug if sched_clock() is lowres, and it shouldn't
-be a bug in the future..
+> +	__u32		dirblocksize;	/* directory block size, bytes	*/
+> +} __attribute__((packed)) xfs_fsop_geom_v132_t;
 
-Daniel
+and xfs_fsop_geom_v1_32_t
+                    ^
+
+read better there?
 
