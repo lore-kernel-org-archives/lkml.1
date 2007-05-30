@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758600AbXE3XTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbXE3XUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758600AbXE3XTY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 19:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXE3XTQ
+	id S1759195AbXE3XUI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 19:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbXE3XT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 19:19:16 -0400
-Received: from mga01.intel.com ([192.55.52.88]:15895 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750746AbXE3XTO convert rfc822-to-8bit (ORCPT
+	Wed, 30 May 2007 19:19:56 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:61349 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752884AbXE3XTz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 19:19:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,595,1170662400"; 
-   d="scan'208";a="251436318"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 30 May 2007 19:19:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EHn/sILrSkbXVBTpcNjdNJX3jCzZ7GWTDwID9ESE5AuTWIii2rYrUiHHs7rk2NBCQKmwwawT/mhT9Zfmm7OvxpFnUO05qjugjOzfOOlBQ82gf5o3LlAzoTuG2PhwBlOK2wkaOgPi0GsOzG00KZDEaC+Z678ouhvgtoi7KVd/r90=
+Message-ID: <ec36785a0705301619x470f4ecel5f1c191afa429c78@mail.gmail.com>
+Date: Wed, 30 May 2007 20:19:43 -0300
+From: "Reinaldo Carvalho" <reinaldow@gmail.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: megaraid.c, all kernel versions, problem with multi-luns
+In-Reply-To: <9a8748490705301615y73a11fcfn5fc7a88bf6eef2b1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Date: Wed, 30 May 2007 16:19:11 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A01929C15@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <Pine.LNX.4.64.0705301537450.1529@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: BUG: sleeping function called from invalid context at kernel/fork.c:385
-Thread-Index: AcejC1sbWAlRp/THTMu0gMjj+3I3vAABQ/Rw
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Cc: "David Chinner" <dgc@sgi.com>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "lkml" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
-       "Sam Ravnborg" <sam@ravnborg.org>
-X-OriginalArrivalTime: 30 May 2007 23:19:13.0804 (UTC) FILETIME=[EF9A9CC0:01C7A310]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ec36785a0705301609t62676c76q3a2b726bf51d50db@mail.gmail.com>
+	 <9a8748490705301615y73a11fcfn5fc7a88bf6eef2b1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yes CONFIG_SCSI_MULTI_LUN as build-in.
 
-> `.exit.text' referenced in section `.init.text' of drivers/built-in.o: 
-> defined in discarded section `.exit.text' of drivers/built-in.o
+-- 
+Reinaldo Carvalho
 
 
-This one is a fatal error ... the code is trying to call a function
-that has been marked __exit in a driver that has been built-in, instead
-of as a module.  Since a builtin driver can never be unloaded, the kernel
-has thrown away all the __exit routines (at link time).
-
-The error message appears less than helpful in tracking down which
-routine in which driver is the problem though.
-
--Tony
+2007/5/30, Jesper Juhl <jesper.juhl@gmail.com>:
+> On 31/05/07, Reinaldo Carvalho <reinaldow@gmail.com> wrote:
+> > Hi,
+> >
+> > I have a Dell PowerEdge Expandable RAID controller, with a hardware
+> > Raid-5 at Channel 01 running perfectly, and a nCipher Crypter at
+> > Channel 02.
+> >
+> > This controller doesn't correctly detect devices (e.g. nCipher
+> > Crypter) with multiples LUNs. Only one LUN is detected.
+> >
+> > At another controller (e.g. Adaptec 79xx) two LUNs were detect. I
+> > compiled 2.6.8, 2.6.18 and 2.6.21.3 to test megaraid driver and all
+> > failed detecting two LUNs.
+> >
+>
+> Did you build your kernel with CONFIG_SCSI_MULTI_LUN enabled?  This
+> option will force the SCSI driver to probe for multiple LUN's.
+> Without this option only one LUN may be detected, and since that's the
+> common case (devices only having one LUN) people often forget about
+> this option :)
+>
+> --
+> Jesper Juhl <jesper.juhl@gmail.com>
+> Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+> Plain text mails only, please      http://www.expita.com/nomime.html
+>
