@@ -1,78 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbXE3NnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbXE3Nqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbXE3NnZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbXE3NnR
+	id S1754073AbXE3Nqp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbXE3Nqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:43:17 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:31726 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbXE3NnQ (ORCPT
+	Wed, 30 May 2007 09:46:38 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:24659 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbXE3Nqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:43:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=aF8ecuwNVEBpK8CiM+te/twC+t4pM2LHJJlZYWHF6LhXxakHpSXB16UzJqexq9peY6tmpfT3l2zs7GU7tyrIP3WHVZoLXLReRvn+y9g2ETU2apAbmWpMsEbWuIRpXuQJNxVDAclstfuo6lakh24FpxTx2zaD3sbZDf8vTXDPblo=
-Message-ID: <465D7F2C.4040203@gmail.com>
-Date: Wed, 30 May 2007 22:42:04 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 30 May 2007 09:46:38 -0400
+X-IronPort-AV: i="4.14,593,1170651600"; 
+   d="scan'208"; a="31247528:sNHT6345791858"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
+Date: Wed, 30 May 2007 09:48:31 -0400
+User-Agent: KMail/1.9.5
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Bryan Wu" <bryan.wu@analog.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <11803414753217-git-send-email-bryan.wu@analog.com> <200705300909.13419.rgetz@blackfin.uclinux.org> <20070530133042.GA14693@uranus.ravnborg.org>
+In-Reply-To: <20070530133042.GA14693@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: davids@webmaster.com, linux-kernel@vger.kernel.org
-Subject: Re: epoll,threading
-References: <MDEHLPKNGKAHNMBLJOLKGEJIEBAC.davids@webmaster.com> <465C809C.60507@gmail.com> <20070530072528.GP943@1wt.eu> <465D4DF1.5040500@gmail.com> <20070530131221.GC19105@1wt.eu>
-In-Reply-To: <20070530131221.GC19105@1wt.eu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705300948.31790.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 30 May 2007 13:45:52.0889 (UTC) FILETIME=[D70F8E90:01C7A2C0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed 30 May 2007 09:30, Sam Ravnborg pondered:
+> Any possibility for you to provide cross-toolchain for x86?
+> I have no plans running on actual HW but adding a bit more compile
+> coverage would be great.
 
-Willy Tarreau wrote:
->> The thing is that the synchronization overhead is something you'll have
->> to pay anyway to support multiple processors.
-> 
-> But you don't need to sync *everything*. It is doable to have 1 thread
-> per processor, each with their own data, and sync the minimum information
-> (eg: statistics).
+Pre-compiled tarballs, and rpms (debs comming soon), are at:
 
-Agreed it's doable but the list of things to synchronize tends to grow
-and it's really hurts when it does.  Also, the list becomes much less
-different between async and threaded model with multi processor support.
+http://blackfin.uclinux.org/gf/project/toolchain/frs
 
-[--snip--]
->>  You need to restrict per-thread
->> stack size and use epoll for idle threads, if you wanna scale.  Workers
->> + async monitoring of idle clients scale pretty well.
-> 
-> I agree with a small pool of workers. But they must be dedicated to CPU
-> only, and perform no I/O. Then you can have 1 thread/CPU.
+Should already be in Gentoo's portage.
 
-Well, if you go that far, it's basically async model with multiprocessor
-support.  Not my favorite one.  :-)
-
->>> However, I agree that few uses really require to spend time writing
->>> and debugging async programs.
->> Yeap, also there are several things which just are too painful in async
->> server - e.g. adding coordination with another server (virus scan,
->> sharing cached data), implementing pluggable extension framwork for
->> third parties (and what happens if they should be able to stack!), and
->> maintaining the damn thing while trying to add a few features.  :-)
->>
->> IMHO, complex pure async server doesn't really make sense anymore.
-> 
-> That's clearly not my opinion, but I don't want to enter a flamewar on
-> the subject, it's not interesting. As long as people like us will push
-> the system to limits using either model, at least there will be
-> references for comparisons :-)
-
-Yeap, it's getting off-topic.  Let's see what future brings.  :-)
-
-Thanks.
-
--- 
-tejun
+-Robin
