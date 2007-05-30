@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbXE3S3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbXE3Scg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754034AbXE3S3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 14:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbXE3S3M
+	id S1756575AbXE3Scg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 14:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbXE3Sc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 14:29:12 -0400
-Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:57282 "EHLO
-	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753843AbXE3S3M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 14:29:12 -0400
-Date: Wed, 30 May 2007 14:29:09 -0400 (EDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@d.namei
+	Wed, 30 May 2007 14:32:27 -0400
+Received: from smtp.osdl.org ([207.189.120.12]:59286 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753852AbXE3Sc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 14:32:26 -0400
+Date: Wed, 30 May 2007 11:20:56 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH][RFC] security: revalidate rw permissions for sys_splice
- and  sys_vmsplice
-In-Reply-To: <20070530111743.e638c841.akpm@linux-foundation.org>
-Message-ID: <Line.LNX.4.64.0705301425570.17724@d.namei>
-References: <Line.LNX.4.64.0705291617260.9955@d.namei> <20070530071500.GU15559@kernel.dk>
- <20070530111743.e638c841.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
+Message-ID: <20070530112056.0aeb9498@freepuppy>
+In-Reply-To: <20070530105936.6c988da5.akpm@linux-foundation.org>
+References: <20070529180112.GC5411@linux-os.sc.intel.com>
+	<20070530105936.6c988da5.akpm@linux-foundation.org>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, Andrew Morton wrote:
+On Wed, 30 May 2007 10:59:36 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Wed, 30 May 2007 09:15:01 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Tue, 29 May 2007 11:01:13 -0700
+> Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
 > 
-> > On Tue, May 29 2007, James Morris wrote:
-> > > Revalidate read/write permissions for splice(2) and vmslice(2), in case 
-> > > security policy has changed since the files were opened.
+> > round_jiffies for net dev watchdog timer.
 > > 
-> > I guess it was inevitably going to happen :-)
+> > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 > > 
-> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > 
+> > Index: linux-2.6.22-rc-mm/net/sched/sch_generic.c
+> > ===================================================================
+> > --- linux-2.6.22-rc-mm.orig/net/sched/sch_generic.c	2007-05-24 11:16:03.000000000 -0700
+> > +++ linux-2.6.22-rc-mm/net/sched/sch_generic.c	2007-05-25 15:10:02.000000000 -0700
+> > @@ -224,7 +224,8 @@
+> >  	if (dev->tx_timeout) {
+> >  		if (dev->watchdog_timeo <= 0)
+> >  			dev->watchdog_timeo = 5*HZ;
+> > -		if (!mod_timer(&dev->watchdog_timer, jiffies + dev->watchdog_timeo))
+> > +		if (!mod_timer(&dev->watchdog_timer,
+> > +			       round_jiffies(jiffies + dev->watchdog_timeo)))
+> >  			dev_hold(dev);
+> >  	}
+> >  }
 > 
-> Probably acked-by was more appropriate.
+> Please cc netdev on net patches.
 > 
-> James, is this considered needed-for-2.6.22?
-
-No, it's tightening things up.  We don't have full revocation in any case, 
-and the primary security check is performed on open.
-
-> > +	ret = security_file_permission(out, MAY_WRITE);
-> > +	if (unlikely(ret < 0))
-> > +		return ret;
+> Again, I worry that if people set the watchdog timeout to, say, 0.1 seconds
+> then they will get one second, which is grossly different.
 > 
-> 
-> ot: all the unlikely()s are irksome.  I wonder if there was some way of
-> doing this in security_file_permission() instead.  eg:
+> And if they were to set it to 1.5 seconds, they'd get 2.0 which is pretty
+> significant, too.
 
-This is the only place where we do this -- it's to remain consistent with 
-the surrounding splice code, which does this for other checks.  Given that 
-it's calling out to a typically non-trivial security module, it may be 
-better to remove the unlikelys here.
+Alternatively, we could change to a timer that is pushed forward after each
+TX, maybe using hrtimer and hrtimer_forward().  That way the timer would
+never run in normal case.
 
-
-
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+Stephen Hemminger <shemminger@linux-foundation.org>
