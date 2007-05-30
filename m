@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbXE3AUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbXE3A3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752431AbXE3AUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXE3AUJ
+	id S1751825AbXE3A3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbXE3A3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:20:09 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:17231 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbXE3AUH (ORCPT
+	Tue, 29 May 2007 20:29:10 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52593 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750799AbXE3A3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:20:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VX+E9VN57RYrCbyH8rUKJ1gmKBdV0+YtavUOGKmhqzUTyBQbqsB4YuJSY3qeKGaITPF7c7+X8alo0RsLhBP/4YSL5w3AGpn55qeJGA5WwZE/ZqLiG5GL3dhtcRtyvsladTInjCW1xlmD1TYP0hca5qvdEb4uiZ4L4ep3YgsOze0=
-Message-ID: <a8e1da0705291720i417752ceyf581970e91e037df@mail.gmail.com>
-Date: Wed, 30 May 2007 00:20:06 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch -mm 1/1] remove useless tolower in isofs
-Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070529161737.a19af5e6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 29 May 2007 20:29:07 -0400
+Date: Wed, 30 May 2007 10:28:57 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add procfs tunable to enable immediate panic when there are busy inodes after umount
+Message-ID: <20070530002857.GW85884050@sgi.com>
+References: <20070529114042.5fe0b810.jlayton@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a8e1da0705271808w3a6dc453rfb47dd3db100718@mail.gmail.com>
-	 <alpine.DEB.0.99.0705272248110.6131@sigma.j-a-k-j.com>
-	 <a8e1da0705272011g6ad2550eo153eb0e98590b11a@mail.gmail.com>
-	 <20070529161737.a19af5e6.akpm@linux-foundation.org>
+In-Reply-To: <20070529114042.5fe0b810.jlayton@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Thank you, andrew.
+On Tue, May 29, 2007 at 11:40:42AM -0400, Jeff Layton wrote:
+> After spending quite a bit of time tracking down a "VFS: busy inodes
+> after unmount" problem, it occurs to me that it would be nice to be
+> able to force a panic when that occurs. While an oops message alone is
+> not generally helpful for tracking down this sort of problem,
+> collecting and analyzing a coredump when this occurs can be.
 
-> Your email client replaces tabs with spaces.
+Agreed - we've found that we've had roughly 50% success in finding
+the cause of these problems from crash dumps triggered immediately
+like this vs ~0% from a crash that occurred some time later.
 
-Really? I use gmail web via firefox,  next time I will use mutt to
-send patches.
+Given that this problem will always result in a crash of the kernel
+at some random time in the future, why don't we just make this error
+an unconditional panic on get the crash over and done with?
 
-Regards
-dave
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
