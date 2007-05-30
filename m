@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbXE3UuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757533AbXE3U6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758728AbXE3UuB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXE3Uty
+	id S1757533AbXE3U6i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbXE3U6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:49:54 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:48964 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751296AbXE3Utx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:49:53 -0400
-Message-ID: <465DE2BB.2060608@cosmosbay.com>
-Date: Wed, 30 May 2007 22:46:51 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 30 May 2007 16:58:30 -0400
+Received: from holomorphy.com ([66.93.40.71]:58834 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754325AbXE3U6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 16:58:30 -0400
+Date: Wed, 30 May 2007 13:59:27 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 9/9] Scheduler profiling - Use conditional calls
+Message-ID: <20070530205927.GE6909@holomorphy.com>
+References: <20070530140025.917261793@polymtl.ca> <20070530140229.811672406@polymtl.ca>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Mark Lord <lkml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org> <alpine.LFD.0.98.0705300820350.26602@woody.linux-foundation.org> <20070530160913.GA14261@elte.hu> <465DCAE4.1010206@rtr.ca> <alpine.LFD.0.98.0705301212520.26602@woody.linux-foundation.org> <465DD97D.9010807@cosmosbay.com> <alpine.LFD.0.98.0705301327090.26602@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705301327090.26602@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 30 May 2007 22:46:59 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530140229.811672406@polymtl.ca>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds a écrit :
-> 
-> On Wed, 30 May 2007, Eric Dumazet wrote:
->> So yes, reimplement sendfile() should help to find last splice() bugs, and as
->> a bonus it could add non blocking disk io, (O_NONBLOCK on input file ->
->> socket)
-> 
-> Well, to get those kinds of advantages, you'd have to use splice directly, 
-> since sendfile() hasn't supported nonblocking disk IO, and the interface 
-> doesn't really allow for it.
+On Wed, May 30, 2007 at 10:00:34AM -0400, Mathieu Desnoyers wrote:
+> Use conditional calls with lower d-cache hit in optimized version as a
+> condition for scheduler profiling call.
+[...]
+> +	if (prof_on)
+> +		BUG_ON(cond_call_arm("profile_on"));
 
-sendfile() interface doesnt allow it, but if you open("somediskfile", O_RDONLY 
-| O_NONBLOCK), then splice() based sendfile() can perform a non blocking disk 
-io, (while starting an io with readahead)
+What's the point of this BUG_ON()? The condition is a priori impossible.
 
-I actually use this trick myself :)
 
-(splice(disk -> pipe, NONBLOCK), splice(pipe -> worker))
+On Wed, May 30, 2007 at 10:00:34AM -0400, Mathieu Desnoyers wrote:
+> -	profile_hit(SCHED_PROFILING, __builtin_return_address(0));
+> +	cond_call(profile_on,
+> +		profile_hit(SCHED_PROFILING, __builtin_return_address(0)));
 
-non blocking disk io, + zero copy :)
+It'd probably be prettier to stuff cond_call() inside a macro that does
+something like this named profile_hit() with the old profile_hit()
+renamed to __profile_hit() etc. Otherwise fine.
 
-> 
-> In fact, since nonblocking accesses require also some *polling* method, 
-> and we don't have that for files, I suspect the best option for those 
-> things is to simply mix AIO and splice(). AIO tends to be the right thing 
-> for disk waits (read: short, often cached), and if we can improve AIO 
-> performance for the cached accesses (which is exactly what the threadlets 
-> should hopefully allow us to do), I would seriously suggest going that 
-> route.
-> 
-> But the pure "use splice to _implement_ sendfile()" thing is worth doing 
-> for all the other reasons, even if nonblocking file access is not likely 
-> one of them.
-> 
-> 		Linus
-> 
-> 
 
+-- wli
