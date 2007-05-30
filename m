@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbXE3SSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbXE3S2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbXE3SSS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 14:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbXE3SSD
+	id S1755855AbXE3S2x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 14:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXE3S2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 14:18:03 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:58542 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753408AbXE3SSB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 14:18:01 -0400
-Date: Wed, 30 May 2007 11:17:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: James Morris <jmorris@namei.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH][RFC] security: revalidate rw permissions for sys_splice
- and  sys_vmsplice
-Message-Id: <20070530111743.e638c841.akpm@linux-foundation.org>
-In-Reply-To: <20070530071500.GU15559@kernel.dk>
-References: <Line.LNX.4.64.0705291617260.9955@d.namei>
-	<20070530071500.GU15559@kernel.dk>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 14:28:45 -0400
+Received: from posti5.jyu.fi ([130.234.4.34]:37052 "EHLO posti5.jyu.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753840AbXE3S2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 14:28:45 -0400
+Date: Wed, 30 May 2007 21:27:32 +0300 (EEST)
+From: Tero Roponen <teanropo@jyu.fi>
+X-X-Sender: teanropo@jalava.cc.jyu.fi
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: tty-related oops in latest kernel(s)?
+In-Reply-To: <465DBEBD.7000205@cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0705302127050.6489@jalava.cc.jyu.fi>
+References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
+ <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
+ <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
+ <Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi>
+ <84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com>
+ <Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
+ <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
+ <Pine.LNX.4.64.0705301458400.4634@jalava.cc.jyu.fi>
+ <20070530083953.9909bcef.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705301857370.29485@jalava.cc.jyu.fi> <465DBEBD.7000205@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 09:15:01 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Wed, 30 May 2007, Pekka Enberg wrote:
 
-> On Tue, May 29 2007, James Morris wrote:
-> > Revalidate read/write permissions for splice(2) and vmslice(2), in case 
-> > security policy has changed since the files were opened.
+> Tero Roponen wrote:
+> > after some trial and error I found a simple way to trigger the
+> > corruption:
 > 
-> I guess it was inevitably going to happen :-)
-> 
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> 
+> Nice. This triggers on the file corruption on 2.6.21.3 also?
+>
 
-Probably acked-by was more appropriate.
+Yes:
 
-James, is this considered needed-for-2.6.22?
+[root@terrop ~]# init
+Usage: init 0123456SsQqAaBbCcUu
+[root@terrop ~]# ./oops
+[root@terrop ~]# init
+init: error while loading shared libraries: unexpected PLT reloc type 0xcc
 
-> +	ret = security_file_permission(out, MAY_WRITE);
-> +	if (unlikely(ret < 0))
-> +		return ret;
-
-
-ot: all the unlikely()s are irksome.  I wonder if there was some way of
-doing this in security_file_permission() instead.  eg:
-
-static inline int security_file_permission (struct file *file, int mask)
-{
-	int ret = security_ops->file_permission (file, mask);
-
-	if (likely(ret == 0))
-		return 0;
-	return ret;
-}
+-- 
+Tero Roponen
