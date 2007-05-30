@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbXE3WjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbXE3Wlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbXE3WjZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbXE3WjR
+	id S1754601AbXE3Wlt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXE3Wll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:39:17 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55824 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751369AbXE3WjQ (ORCPT
+	Wed, 30 May 2007 18:41:41 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:11285 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbXE3Wlk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:39:16 -0400
-Date: Wed, 30 May 2007 15:39:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Luck, Tony" <tony.luck@intel.com>
-cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: RE: BUG: sleeping function called from invalid context at
- kernel/fork.c:385
-In-Reply-To: <617E1C2C70743745A92448908E030B2A019298C6@scsmsx411.amr.corp.intel.com>
-Message-ID: <Pine.LNX.4.64.0705301537450.1529@schroedinger.engr.sgi.com>
-References: <617E1C2C70743745A92448908E030B2A019298C6@scsmsx411.amr.corp.intel.com>
+	Wed, 30 May 2007 18:41:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bMFsCdfyP5sK47ob+XyhfraywlE/SDuQwYNuKfDI91kIdwynQakX7MLGLWSHnCGvTkasycaodFs1Jklhebf0EGf9VEe9KF7Y+1Wt7J2+Vpbc/UriofvYAuEHSOhE2gSi24bNty4tzSF/OnD7frbVf7Qkd6azFhuRsxjAiAH1NOo=
+Message-ID: <a781481a0705301541h242d679fhebf314c2f6721901@mail.gmail.com>
+Date: Thu, 31 May 2007 04:11:36 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH 1/3] hexdump: more output formatting
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, hugh@veritas.com
+In-Reply-To: <Pine.LNX.4.64.0705301515290.14642@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
+	 <20070524142908.f39f42ea.akpm@linux-foundation.org>
+	 <20070524145517.1f32cd94.randy.dunlap@oracle.com>
+	 <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com>
+	 <20070530143428.2f20446a.randy.dunlap@oracle.com>
+	 <a781481a0705301456n246e7185ife2a144eae3179b3@mail.gmail.com>
+	 <465DF49B.7040100@oracle.com>
+	 <a781481a0705301511p69387b2ep754c8c754ba09f36@mail.gmail.com>
+	 <Pine.LNX.4.64.0705301515290.14642@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, Luck, Tony wrote:
+On 5/31/07, Christoph Lameter <clameter@sgi.com> wrote:
+> On Thu, 31 May 2007, Satyam Sharma wrote:
+>
+> > Yes, you're right, but I was just wondering whether any users really
+> > cared enough about the rowsize and groupsize, also seeing that
+> > accommodating these two args leads to a lot of increase in code.
+>
+> Have two functions
+>
+> 1. A function that prints full lines with address and ascii
+>         This defaults to 16 bytes by default + ascii.
+>
+> hex_dump?
+>
+> 2. A function to convert a few bytes for use in other output.
+>
+> sprint_hex?
 
-> > WARNING: init/built-in.o - Section mismatch: reference to .init.data: from .sdata after 'root_mountflags' (at offset 0x38)
-> 
-> I thought that I'd got the section mis-match warnings down to
-> just one (and that was in ACPI code, so I sent a patch to Len
-> for it).
+Yes, or we could go the whole hog and have a total of 4 functions:
 
-Hmmm... My compilation of 2.6.21-rc2-mm1 just aborted with:
-(used sn2_defconfig).
+(1) For users that want to use a short version, and are fine with
+the default values for the grouping / other parameters -- also have
+both the print_to_buffer/sprint_hex and print_to_console/hex_dump
+variants.
 
- LD      .tmp_vmlinux1
-`.exit.text' referenced in section `.init.text' of drivers/built-in.o: 
-defined in discarded section `.exit.text' of drivers/built-in.o
-make[2]: *** [.tmp_vmlinux1] Error 1
-make[1]: *** [targz-pkg] Error 2
-make: *** [targz-pkg] Error 2
+(2) For users that care about these parameters, both the variants
+with the expanded arglist (the ones listed above in (1) would then
+just be inlines wrapping over these ones)
 
+Just that it would be nice if there is some simple (with short arglist)
+function that works well-enough for most people that everyone would
+be able to adopt/use quickly.
