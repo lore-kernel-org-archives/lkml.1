@@ -1,88 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbXE3JGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbXE3JKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753385AbXE3JGn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 05:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbXE3JG1
+	id S1751999AbXE3JKZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 05:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbXE3JKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 05:06:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43229 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751569AbXE3JG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 05:06:26 -0400
-Date: Wed, 30 May 2007 11:05:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530090537.GB17744@elte.hu>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <20070530085159.GC21528@2ka.mipt.ru>
+	Wed, 30 May 2007 05:10:09 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:6409 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbXE3JKH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 05:10:07 -0400
+Date: Wed, 30 May 2007 11:10:03 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Cc: "Heiko Carstens" <heiko.carstens@de.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "Kyle McMartin" <kyle@parisc-linux.org>, linux-kernel@vger.kernel.org,
+       James.Bottomley@steeleye.com, "Tejun Heo" <htejun@gmail.com>,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "Martin Schwidefsky" <schwidefsky@de.ibm.com>, geert@linux-m68k.org,
+       zippel@linux-m68k.org, spyro@f2s.com, uclinux-v850@lsi.nec.co.jp,
+       ysato@users.sourceforge.jp
+Subject: Re: [patch] Introduce CONFIG_HAS_DMA.
+Message-ID: <20070530111003.1d813d74@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <e9c3a7c20705250936n2689c1f3wce8ccb0ee4a22b9e@mail.gmail.com>
+References: <20070223005945.GA13084@tuxdriver.com>
+	<20070223034243.GA7988@osiris.ibm.com>
+	<20070223061332.GB27126@osiris.ibm.com>
+	<20070223135740.GA28270@athena.road.mcmartin.ca>
+	<20070223143938.GA5815@tuxdriver.com>
+	<20070226135743.GB7925@osiris.boeblingen.de.ibm.com>
+	<e9c3a7c20705250936n2689c1f3wce8ccb0ee4a22b9e@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070530085159.GC21528@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 25 May 2007 09:36:31 -0700,
+"Dan Williams" <dan.j.williams@intel.com> wrote:
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> I went back and read the thread leading up to this patch and I am of
+> the opinion that John's approach (adding more stubs to
+> dma-mapping-broken.h:
+> http://marc.info/?l=linux-kernel&m=117219377712232&w=2)  is needed in
+> _addition_ to this Kconfig option.  In my particular case I have an
+> API with a DMA and a non-DMA path written in such a way that the DMA
+> path can be compiled away.  Without dma-mapping-broken.h support the
+> API is unnecessarily forced to violate point 2 of
+> Documentation/SubmittingPatches (#ifdefs are ugly).
 
-> On Wed, May 30, 2007 at 10:42:52AM +0200, Ingo Molnar (mingo@elte.hu) wrote:
-> > it is a serious flexibility issue that should not be ignored. The 
-> > unified fd space is a blessing on one hand because it's simple and 
-> > powerful, but it's also a curse because nested use of the fd space for 
-> > libraries is currently not possible. But it should be detached from any
-> > fundamental question of kevent vs. epoll. (By improving library use of
-> > file descriptors we'll improve the utility of all syscalls - by ducking
-> > to a memory based API we only solve that particular event based usage.)
-> 
-> There is another issue with file descriptors - userspace must dig into 
-> kernel each time it wants to get a new set of events, while with 
-> memory based approach it has them without doing so. After it has 
-> returned from kernel and know that there are some evetns, kernel can 
-> add more of them into the ring (if there is a place) and userspace 
-> will process them withouth additional syscalls.
+IMO, well-placed #ifdefs are preferrable to dragging non-working code
+around. Like:
 
-Firstly, this is not a fundamental property of epoll. If we wanted to, 
-it would be possible to extend epoll to fill in a ring of events from 
-the wakeup handler. It's an incremental add-on to epoll that should not 
-impact the design. How much info to put into a single event is another 
-incremental thing - for most of the high-performance cases all the 
-information we need is the type of the event and the fd it occured on. 
-Currently epoll supports that minimal approach.
+- put the DMA path in a file only build for MY_STUFF_USE_DMA
+- let MY_STUFF select MY_STUFF_USE_DMA if HAS_DMA
+- have a header file that points to the implementation for
+  MY_STUFF_USE_DMA and uses well defined stubs for !MY_STUFF_USE_DMA,
+  like returning ICannotDoThat for check_if_can_do() (kind of like what
+  include/linux/sysfs.h does, for example)
 
-Secondly, our current syscall overhead is below 0.1 usecs on latest 
-hardware:
+This contains the #ifdefs in a header, doesn't compile stuff that won't
+work anyway on !HAS_DMA, and adds the ability to disable
+MY_STUFF_USE_DMA even if HAS_DMA at a later time if someone wants it.
 
-  dione:~/l> ./lat_syscall null
-  Simple syscall: 0.0911 microseconds
+> In other words let CONFIG_HAS_DMA prevent pure DMA code from being
+> built, but do not preclude "clever" implementations from calling
+> broken code.
 
-so you need millions of events _per cpu_ for the syscall overhead to 
-show up.
+If it calls broken code, it may not be so "clever" after all :)
 
-Thirdly, our main problem was not the structure of epoll, our main 
-problem was that event APIs were not widely available, so applications 
-couldnt go to a pure event based design - they always had to handle 
-certain types of event domains specially, due to lack of coverage. The
-latest epoll patches largely address that. This was a huge barrier
-against adoption of epoll.
+What I don't like about this is
 
-	Ingo
+- compiles stuff that is not needed on !HAS_DMA
+- worse, compiles stuff that will not work on !HAS_DMA
+- does not encourage to split code properly into a DMA and a non-DMA
+  part
