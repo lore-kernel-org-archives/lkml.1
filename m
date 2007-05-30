@@ -1,100 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636AbXE3JGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbXE3JGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752636AbXE3JGa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 05:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbXE3JGX
+	id S1753385AbXE3JGn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 05:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbXE3JG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 05:06:23 -0400
-Received: from team.teamix.net ([194.150.191.72]:36936 "EHLO rproxy.teamix.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750803AbXE3JGX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 05:06:23 -0400
-X-Greylist: delayed 1929 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 05:06:22 EDT
-From: Martin Steigerwald <ms@teamix.de>
-Organization: team(ix) GmbH
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Mainline plans
-Date: Wed, 30 May 2007 10:33:53 +0200
-User-Agent: KMail/1.9.5
-References: <200705292130.57072.kernel@kolivas.org> <200705311138.11935.kernel@kolivas.org> (sfid-20070530_083908_421282_98F50744)
-In-Reply-To: <200705311138.11935.kernel@kolivas.org>
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1215186.ADDR7nir21";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705301034.04703.ms@teamix.de>
+	Wed, 30 May 2007 05:06:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43229 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751569AbXE3JG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 05:06:26 -0400
+Date: Wed, 30 May 2007 11:05:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+Message-ID: <20070530090537.GB17744@elte.hu>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <20070530085159.GC21528@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530085159.GC21528@2ka.mipt.ru>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1215186.ADDR7nir21
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Am Donnerstag, 31. Mai 2007 03:38 schrieb Con Kolivas:
-> On Tuesday 29 May 2007 21:30, Con Kolivas wrote:
+* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-> Again, as usual, I'm' frustrated. If cfs has yet to beat SD, why should
-> mainline go with cfs? Ingo said to me offlist that the scheduler that
-> performs the required task the best was what should go into mainline. I b=
-et
-> a million bucks that given Linus has given the go-ahead for cfs into
-> mainline that he won't turn around and say "but wait, SD still has lots of
-> case reports of better behaviour", so we should go with that. This is kin=
-da
-> funny I have to say. Ingo, I know you're reading, and no I don't believe
-> there is evidence CFS is better in real world workloads yet. Sure, there's
-> other issues of maintainability, code understanding and blah blah that
-> you'll pull out as reasons cfs' superiority. Of course, performance is the
-> ultimate judge, BUT as I said, I'm over it, mainline has caused me far too
-> much pain anyway. .
+> On Wed, May 30, 2007 at 10:42:52AM +0200, Ingo Molnar (mingo@elte.hu) wrote:
+> > it is a serious flexibility issue that should not be ignored. The 
+> > unified fd space is a blessing on one hand because it's simple and 
+> > powerful, but it's also a curse because nested use of the fd space for 
+> > libraries is currently not possible. But it should be detached from any
+> > fundamental question of kevent vs. epoll. (By improving library use of
+> > file descriptors we'll improve the utility of all syscalls - by ducking
+> > to a memory based API we only solve that particular event based usage.)
+> 
+> There is another issue with file descriptors - userspace must dig into 
+> kernel each time it wants to get a new set of events, while with 
+> memory based approach it has them without doing so. After it has 
+> returned from kernel and know that there are some evetns, kernel can 
+> add more of them into the ring (if there is a place) and userspace 
+> will process them withouth additional syscalls.
 
-Hi Con!
+Firstly, this is not a fundamental property of epoll. If we wanted to, 
+it would be possible to extend epoll to fill in a ring of events from 
+the wakeup handler. It's an incremental add-on to epoll that should not 
+impact the design. How much info to put into a single event is another 
+incremental thing - for most of the high-performance cases all the 
+information we need is the type of the event and the fd it occured on. 
+Currently epoll supports that minimal approach.
 
-Maybe reports about scheduler tests and feedback should by default go to th=
-is=20
-mailing list *and* the kernel mailinglist.
+Secondly, our current syscall overhead is below 0.1 usecs on latest 
+hardware:
 
-I bet that Linus doesn't read this list and thus misses most of the favorab=
-le=20
-reports for SD.
+  dione:~/l> ./lat_syscall null
+  Simple syscall: 0.0911 microseconds
 
-I am using 2.6.21-ck2 everywhere now and I am really happy.
+so you need millions of events _per cpu_ for the syscall overhead to 
+show up.
 
-I did not test recent CFS, but Ingo asked me do to it with my Amarok machin=
-e,=20
-to test for regressions since introduction of increased 3D performance. In =
-my=20
-last tests SD and CFS behaved quite equivalent to one another - that was wi=
-th=20
-CFS-v11. If CFS-v14 has not regressed, it would work for me as well.
+Thirdly, our main problem was not the structure of epoll, our main 
+problem was that event APIs were not widely available, so applications 
+couldnt go to a pure event based design - they always had to handle 
+certain types of event domains specially, due to lack of coverage. The
+latest epoll patches largely address that. This was a huge barrier
+against adoption of epoll.
 
-But I also appreciate the other enhancements in ck patchset and I would lik=
-e=20
-to have as much as possible of it into mainline.
-
-Actually I think the decision on which scheduler to put into mainline shoul=
-d=20
-depend on its technical merits and the user feedback.
-
-Regards,
-=2D-=20
-Martin Steigerwald - team(ix) GmbH - http://www.teamix.de
-gpg: 19E3 8D42 896F D004 08AC A0CA 1E10 C593 0399 AE90
-
---nextPart1215186.ADDR7nir21
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGXTb8HhDFkwOZrpARAusLAJ9WIPTHwYoudKbgXTZtpZz2IGGOyACfbPwW
-/WdsV42W0gox69nvPQCtcLM=
-=sMJy
------END PGP SIGNATURE-----
-
---nextPart1215186.ADDR7nir21--
+	Ingo
