@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbXE3WY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbXE3WYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761910AbXE3WY0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759144AbXE3WYP
+	id S1762014AbXE3WYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbXE3WY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:24:15 -0400
-Received: from holomorphy.com ([66.93.40.71]:55037 "EHLO holomorphy.com"
+	Wed, 30 May 2007 18:24:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45435 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759250AbXE3WYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:24:14 -0400
-Date: Wed, 30 May 2007 15:24:44 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530222444.GD31925@holomorphy.com>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org> <465DE992.6070803@redhat.com> <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org>
+	id S1761631AbXE3WY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 18:24:26 -0400
+Message-ID: <465DF91F.3010201@sandeen.net>
+Date: Wed, 30 May 2007 17:22:23 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Eric Sandeen <sandeen@sandeen.net>
+CC: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: Re: [PATCH 2/2] Fix possible leakage of blocks in UDF
+References: <20070524165935.GB19709@duck.suse.cz> <20070524170554.GC19709@duck.suse.cz> <20070524203653.GA7693@duck.suse.cz> <465DF0B4.2050203@sandeen.net>
+In-Reply-To: <465DF0B4.2050203@sandeen.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 02:27:52PM -0700, Linus Torvalds wrote:
-> Well, don't think of it as a special case at all: think of bit 30 as a 
-> "the user asked for a non-linear fd".
-> In fact, to make it effective, I'd suggest literally scrambling the low 
-> bits (using, for example, some silly per-boot xor value to to actually 
-> generate the "true" index - the equivalent of a really stupid randomizer). 
-> That way you'd have the legacy "linear" space, and a separate "non-linear 
-> space" where people simply *cannot* make assumptions about contiguous fd 
-> allocations. There's no special case there - it's just an extension which 
-> explicitly allows us to say "if you do that, your fd's won't be allocated 
-> the traditional way any more, but you *can* mix the traditional and the 
-> non-linear allocation".
+Eric Sandeen wrote:
 
-One could always stuff a seed or per-cpu seeds in the files_struct and
-use a PRNG. The only trick would be cacheline bounces and/or space
-consumption of seeds. Another possibility would be bitreversed
-contiguity or otherwise a bit permutation of some contiguous range,
-modulo (of course) the high bit used to tag the randomized range.
+> Jan, something seems busted here.  I'm getting lockups when testing udf
+> on a single cpu with this last patch in place...
+> 
+> I think it's the BKL stumbling on itself.
 
-With "truly" random/sparse fd numbers it may be meaningful to use a
-different data structure from a bitmap to track them in-kernel, though
-xor and other easily-computed mappings to/from contiguous ranges won't
-need such in earnest.
+To demonstrate, try this:
 
+# BIGFILENAME=`seq -s '' 1 1000`
+# ln -s $BIGFILENAME foo
 
--- wli
+instant deadlock :(
+
+-Eric
