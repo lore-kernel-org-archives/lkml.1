@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbXE3Qn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbXE3QpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755021AbXE3Qn6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 12:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXE3Qnv
+	id S1755396AbXE3QpV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 12:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbXE3QpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 12:43:51 -0400
-Received: from smtp.nokia.com ([131.228.20.170]:54493 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbXE3Qnv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 12:43:51 -0400
-Message-ID: <465DA9B7.30700@yandex.ru>
-Date: Wed, 30 May 2007 19:43:35 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 30 May 2007 12:45:07 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:17592 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750890AbXE3QpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 12:45:05 -0400
+Message-ID: <465DAA15.3070703@cfl.rr.com>
+Date: Wed, 30 May 2007 12:45:09 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Daniel Hazelton <dhazelton@enter.net>,
-       Michael-Luke Jones <mlj28@cam.ac.uk>,
-       lkml <linux-kernel@vger.kernel.org>, dwmw2@infradead.org,
-       Mark Adler <madler@alumni.caltech.edu>, jloup@gzip.org
-Subject: Re: JFFS2 using 'private' zlib header (was [RFC] LZO de/compression
- support - take 6)
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>	 <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>	 <231C137C-D0BF-44F7-B2D5-AE610284D00A@cam.ac.uk>	 <200705290943.11176.dhazelton@enter.net>	 <a781481a0705290815y32758055te52cb8657f34acc@mail.gmail.com>	 <465D7EFB.8090609@yandex.ru> <465D9C62.4070009@yandex.ru> <a781481a0705300912j4dc7776cjc50707cffd8a0cbf@mail.gmail.com>
-In-Reply-To: <a781481a0705300912j4dc7776cjc50707cffd8a0cbf@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 30 May 2007 16:43:35.0848 (UTC) FILETIME=[AAADFA80:01C7A2D9]
-X-Nokia-AV: Clean
+To: David Chinner <dgc@sgi.com>
+CC: Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Stefan Bader <Stefan.Bader@de.ibm.com>,
+       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems,
+ and dm/md.
+References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com>
+In-Reply-To: <20070529234832.GT85884050@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 May 2007 16:45:14.0680 (UTC) FILETIME=[E5968B80:01C7A2D9]
+X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15208.000
+X-TM-AS-Result: No--9.875600-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> Hi Artem,
+David Chinner wrote:
+>> Barrier != synchronous write,
 > 
-> On 5/30/07, Artem Bityutskiy <dedekind@yandex.ru> wrote:
->> Err, and important note is that it also wants this compressed data to be
->> independently uncompressable.
+> Of course. FYI, XFS only issues barriers on *async* writes.
 > 
-> Hmm, okay.
-> 
-> But what I meant was that if jffs2's needs are "standard" enough in
-> the sense that they could conceivably be required by other users too
-> (and this one mentioned by you does appear to be one of those),
-> then why not make such hacks (if they are necessary and suitable
-> indeed, lets wait for Mark's response) part of zlib itself?
+> But barrier semantics - as far as they've been described by everyone
+> but you indicate that the barrier write is guaranteed to be on stable
+> storage when it returns.
 
-I really not sure - I vaguely remember that zlib just cannot provide this
-capability. And what JFFS2 does is not always correct. But again, it was
-so long time ago...
+Hrm... I may have misunderstood the perspective you were talking from. 
+Yes, when the bio is completed it must be on the media, but the 
+filesystem should issue both requests, and then really not care when 
+they complete.  That is to say, the filesystem should not wait for block 
+A to finish before issuing block B; it should issue both, and use 
+barriers to make sure they hit the disk in the correct order.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+> XFS relies on the block being stable before any other write
+> goes to disk. That is the semantic that the barrier I/Os currently
+> have. How that is implemented in the device is irrelevant to me,
+> but if I issue a barrier I/O, I do not expect *any* I/O to be
+> reordered around it.
+
+Right... it just needs to control the order of the requests, just not 
+wait on one to finish before issuing the next.
+
+
