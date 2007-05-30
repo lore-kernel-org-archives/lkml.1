@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752509AbXE3Fcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752417AbXE3FeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752509AbXE3Fcb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 01:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXE3FcP
+	id S1752417AbXE3FeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 01:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbXE3FeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 01:32:15 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:19006 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbXE3FcM (ORCPT
+	Wed, 30 May 2007 01:34:10 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50186 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbXE3FeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 01:32:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TM+EioyztF/moRs2CT2XNE2h3lQE0ADkGj4CDMqxrGfjQuAmmOc3IdSyHycj1h5NTRlM1hoBbq+i5xlx8AAotYMgaWcltyvvFrMqeMoYiOJP4QIGv1sMtw+Uc+e0qI6jx1bGC6qsv0afTePndOnFkmXlE/fkTHScQ5/IUoPZ7eE=
-Message-ID: <a8e1da0705292232g4f53a18h303908193bf7b466@mail.gmail.com>
-Date: Wed, 30 May 2007 05:32:11 +0000
-From: "young dave" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [patch -mm 1/1] remove useless tolower in isofs
-Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <a8e1da0705291720i417752ceyf581970e91e037df@mail.gmail.com>
+	Wed, 30 May 2007 01:34:09 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 30 May 2007 07:33:47 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 2.6.21.3] ieee1394: eth1394: bring back a parent device
+To: stable@kernel.org
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.ba04f8fb4ccaa257@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0705271808w3a6dc453rfb47dd3db100718@mail.gmail.com>
-	 <alpine.DEB.0.99.0705272248110.6131@sigma.j-a-k-j.com>
-	 <a8e1da0705272011g6ad2550eo153eb0e98590b11a@mail.gmail.com>
-	 <20070529161737.a19af5e6.akpm@linux-foundation.org>
-	 <a8e1da0705291720i417752ceyf581970e91e037df@mail.gmail.com>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Date: Mon, 21 May 2007 01:05:41 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: ieee1394: eth1394: bring back a parent device
 
-> Your email client replaces tabs with spaces.
+This adds a real parent device to eth1394's ethX device like in Linux
+2.6.20 and older.  However, due to unfinished conversion of the ieee1394
+away from class_device, we now refer to the FireWire controller's PCI
+device as the parent, not to the ieee1394 driver's fw-host device.
 
-The  tabs replacing was caused by copying them from vi session in
-gnome-terminal. I find the proper way is to copy them from some gui
-editor.
+Having a real parent device instead of a virtual one allows udev scripts
+to distinguish eth1394 interfaces from networking bridges, bondings and
+the likes.
 
-Regards
-dave
+Fixes a regression since 2.6.21:
+https://bugs.gentoo.org/show_bug.cgi?id=177199
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+Same as commit ef50a6c59dc66f22eba67704e291d709f21e0456.
+
+ drivers/ieee1394/eth1394.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+Index: linux-2.6.21.3/drivers/ieee1394/eth1394.c
+===================================================================
+--- linux-2.6.21.3.orig/drivers/ieee1394/eth1394.c
++++ linux-2.6.21.3/drivers/ieee1394/eth1394.c
+@@ -584,10 +584,9 @@ static void ether1394_add_host (struct h
+         }
+ 
+ 	SET_MODULE_OWNER(dev);
+-#if 0
+-	/* FIXME - Is this the correct parent device anyway? */
+-	SET_NETDEV_DEV(dev, &host->device);
+-#endif
++
++	/* This used to be &host->device in Linux 2.6.20 and before. */
++	SET_NETDEV_DEV(dev, host->device.parent);
+ 
+ 	priv = netdev_priv(dev);
+ 
+
+-- 
+Stefan Richter
+-=====-=-=== -=-= ====-
+http://arcgraph.de/sr/
+
