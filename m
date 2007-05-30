@@ -1,96 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbXE3UjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbXE3UjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758634AbXE3UjA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbXE3Uiw
+	id S1759269AbXE3UjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758563AbXE3Ui7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:38:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44508 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755164AbXE3Uiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:38:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH -mm 1/3] PM: Hibernation and suspend notifiers
-Date: Wed, 30 May 2007 22:44:24 +0200
-User-Agent: KMail/1.9.5
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Oliver Neukum <oliver@neukum.org>
-References: <Pine.LNX.4.44L0.0705281155270.22682-100000@netrider.rowland.org> <200705300024.32455.rjw@sisk.pl> <20070530153740.GA4772@ucw.cz>
-In-Reply-To: <20070530153740.GA4772@ucw.cz>
+	Wed, 30 May 2007 16:38:59 -0400
+Received: from keetweej.vanheusden.com ([213.84.46.114]:54377 "EHLO
+	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758388AbXE3Ui6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 16:38:58 -0400
+Date: Wed, 30 May 2007 22:38:57 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
+       stable@kernel.org
+Subject: Re: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole
+	module
+Message-ID: <20070530203857.GE9806@vanheusden.com>
+References: <20070526154011.GB3735@vanheusden.com> <20070529005628.f7f3abc6.akpm@linux-foundation.org> <465D7BE9.70702@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200705302244.25927.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <465D7BE9.70702@windriver.com>
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Thu May 31 22:26:34 CEST 2007
+X-Message-Flag: www.unixexpert.nl
+User-Agent: Mutt/1.5.15+20070515 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch seems to solve the problem.
+I removed (and inserted) the module twice without any oopses or panics
+or hangs in general.
 
-On Wednesday, 30 May 2007 17:37, Pavel Machek wrote:
-> Hi!
+On Wed, May 30, 2007 at 08:28:09AM -0500, Jason Wessel wrote:
+>
+> Attached is a patch to fix the soft lockup problem when removing the 
+> netconsole module.
+>
+> It looks different than the original patch I posted because the context had 
+> to change to maintain 80 column code.  For reference the original e-mail + 
+> patch was "[BUG] 2.6.21 hang in cancel_rearming_delayed_workqueue()" sent 
+> on 5/25/07.
+>
+> Jason.
+>
+>
+
+> >From 102a018d601e954f658d272d4daeef139ae40e0e Mon Sep 17 00:00:00 2001
+> From: Jason Wessel <jason.wessel@windriver.com>
+> Date: Wed, 30 May 2007 08:03:52 -0500
+> Subject: [PATCH] The netpoll_cleanup handler can hang the kernel if there is no work in
+> the work queue because a call to cancel_rearming_delayed_work() with
+> no work goes into an infinite loop.
 > 
-> > +Suspend notifiers
-> > +	(C) 2007 Rafael J. Wysocki <rjw@sisk.pl>, GPL
-> > +
-> > +There are some operations that device drivers may want to carry out in their
-> > +.suspend() routines, but shouldn't, because they can cause the hibernation or
-> > +suspend to fail. For example, a driver may want to allocate a substantial amount
-> > +of memory (like 50 MB) in .suspend(), but that shouldn't be done after the
-> > +swsusp's memory shrinker has run.
-> > +
-> > +Also, there may be some operations, that subsystems want to carry out before a
-> > +hibernation/suspend or after a restore/resume, requiring the system to be fully
-> > +functional, so the drivers' .suspend() and .resume() routines are not suitable
-> > +for this purpose.  For example, device drivers may want to upload firmware to
-> > +their devices after a restore from a hibernation image, but they cannot do it by
-> > +calling request_firmware() from their .resume() routines (user land processes
-> > +are frozen at this point).  The solution may be to load the firmware into
-> > +memory before processes are frozen and upload it from there in the .resume()
-> > +routine.  Of course, a hibernation notifier may be used for this purpose.
-> > +
-> > +The subsystems that have such needs can register suspend notifiers that will be
-> > +called upon the following events by the suspend core:
-> > +
-> > +PM_PRE_FREEZE		The system is going to hibernate or suspend, tasks will
-> > +			be frozen immediately
+> The typical case where this is a problem is on removing a kernel
+> module such as the netconsole driver or kgdboe.
 > 
-> Hmm, looks like bad idea if we are going to remove freezer from
-> suspend...?
-
-We need PM_PRE_FREEZE anyway and it's a different question whether or not
-it'll be used for suspend (STR) too.
-
-The timing is not the best one, but so far the freezer is in the suspend code
-path and I need to take this into account.
- 
-> > +PM_POST_THAW		Tasks have just been thawed after a resume or restore
-> > +			from a hibernation image
-> > +
-> > +PM_HIBERNATION_PREPARE	The system is preparing for hibernation.  Tasks have
-> > +			been frozen, memory is going to be freed and devices
-> > +			are going to be suspended.
+> To maintain 80 column code, the function had to have one level of braces
+> dropped.
 > 
-> Is not PRE_FREEZE enough? We can allocate memory for drivers there,
-> too...
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> ---
+>  net/core/netpoll.c |   36 +++++++++++++++++++-----------------
+>  1 files changed, 19 insertions(+), 17 deletions(-)
+> 
+> diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+> index 4581ece..28fa50e 100644
+> --- a/net/core/netpoll.c
+> +++ b/net/core/netpoll.c
+> @@ -766,30 +766,32 @@ void netpoll_cleanup(struct netpoll *np)
+>  	struct netpoll_info *npinfo;
+>  	unsigned long flags;
+>  
+> -	if (np->dev) {
+> -		npinfo = np->dev->npinfo;
+> -		if (npinfo) {
+> -			if (npinfo->rx_np == np) {
+> -				spin_lock_irqsave(&npinfo->rx_lock, flags);
+> -				npinfo->rx_np = NULL;
+> -				npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
+> -				spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+> -			}
+> +	if (!np->dev)
+> +		return;
+> +
+> +	npinfo = np->dev->npinfo;
+> +	if (npinfo) {
+> +		if (npinfo->rx_np == np) {
+> +			spin_lock_irqsave(&npinfo->rx_lock, flags);
+> +			npinfo->rx_np = NULL;
+> +			npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
+> +			spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+> +		}
+>  
+> -			np->dev->npinfo = NULL;
+> -			if (atomic_dec_and_test(&npinfo->refcnt)) {
+> -				skb_queue_purge(&npinfo->arp_tx);
+> -				skb_queue_purge(&npinfo->txq);
+> +		np->dev->npinfo = NULL;
+> +		if (atomic_dec_and_test(&npinfo->refcnt)) {
+> +			skb_queue_purge(&npinfo->arp_tx);
+> +			skb_queue_purge(&npinfo->txq);
+> +			if (delayed_work_pending(&npinfo->tx_work)) {
+>  				cancel_rearming_delayed_work(&npinfo->tx_work);
+>  				flush_scheduled_work();
+> -
+> -				kfree(npinfo);
+>  			}
+> -		}
+>  
+> -		dev_put(np->dev);
+> +			kfree(npinfo);
+> +		}
+>  	}
+>  
+> +	dev_put(np->dev);
+>  	np->dev = NULL;
+>  }
+>  
+> -- 
+> 1.5.0.6
+> 
 
-Well, there is a reason for not doing this.  Namely, if the memory if freed on
-PM_POST_HIBERNATION after the image has been created, we can use it for saving
-the image (and speed up the saving).
 
-Besides, if the freezer is dropped from the suspend code, the notifiers will be
-useful to it anyway IMO, and PRE_FREEZE won't make sense in that case.
 
-I think the rule should be: If you need to do something _before_ tasks are
-frozen, do it in PM_PRE_FREEZE, but if you can do that after the tasks have
-been frozen, do it on PM_HIBERNATION_PREPARE (or PM_SUSPEND_PREPARE in the
-suspend case).
+Folkert van Heusden
 
-Greetings,
-Rafael
+-- 
+
+Multitail - gibkaja utilita po sledovaniju log-fajlov i vyvoda
+kommand. Fil'trovanie, raskrašivanie, slijanie, vizual'noe sravnenie,
+i t.d.  http://www.vanheusden.com/multitail/
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
