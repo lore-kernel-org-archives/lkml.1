@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbXE3Hl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750832AbXE3Ho2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbXE3Hl3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 03:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbXE3HlW
+	id S1750832AbXE3Ho2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 03:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXE3HoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 03:41:22 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:14568 "EHLO kernel.dk"
+	Wed, 30 May 2007 03:44:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33877 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbXE3HlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 03:41:21 -0400
-Date: Wed, 30 May 2007 09:40:32 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530074031.GV15559@kernel.dk>
-References: <20070529212718.GH7875@mami.zabbo.net>
-Mime-Version: 1.0
+	id S1750796AbXE3HoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 03:44:20 -0400
+Date: Wed, 30 May 2007 03:42:35 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] mm: fix comparisons against unsigned
+Message-ID: <20070530074235.GA28866@nostromo.devel.redhat.com>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070529212718.GH7875@mami.zabbo.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29 2007, Zach Brown wrote:
+Recent gcc versions emit warnings when unsigned variables are compared < 0 or >= 0.
 
-Thanks for picking this up, Zach!
+Signed-off-by: Bill Nottingham <notting@redhat.com>
 
->  - cfq gets confused, share io_context amongst threads?
+---
 
-Yeah, it'll confuse CFQ a lot actually. The threads either need to share
-an io context (clean approach, however will introduce locking for things
-that were previously lockless), or CFQ needs to get better support for
-cooperating processes. The problem is that CFQ will wait for a dependent
-IO for a given process, which may arrive from a totally unrelated
-process.
+ filemap.c |   34 ++++++++++++++++------------------
+ slub.c    |    2 --
+ 2 files changed, 16 insertions(+), 20 deletions(-)
 
-For the fio testing, we can make some improvements there. Right now you
-don't get any concurrency of the io requests if you set eg iodepth=32,
-as the 32 requests will be submitted as a linked chain of atoms. For io
-saturation, that's not really what you want.
+Patch is noisy due to whitespace.
 
-I'll take a stab at improving both of the above.
-
--- 
-Jens Axboe
-
+diff -ru linux-2.6.21-old/mm/filemap.c linux-2.6.21/mm/filemap.c
+--- linux-2.6.21-old/mm/filemap.c	2007-05-30 02:53:04.000000000 -0400
++++ linux-2.6.21/mm/filemap.c	2007-05-30 01:43:30.000000000 -0400
+@@ -2176,24 +2176,22 @@
+ 			continue;
+ 		}
+ zero_length_segment:
+-		if (likely(copied >= 0)) {
+-			if (!status)
+-				status = copied;
+-
+-			if (status >= 0) {
+-				written += status;
+-				count -= status;
+-				pos += status;
+-				buf += status;
+-				if (unlikely(nr_segs > 1)) {
+-					filemap_set_next_iovec(&cur_iov,
+-							&iov_base, status);
+-					if (count)
+-						buf = cur_iov->iov_base +
+-							iov_base;
+-				} else {
+-					iov_base += status;
+-				}
++		if (!status)
++			status = copied;
++
++		if (status >= 0) {
++			written += status;
++			count -= status;
++			pos += status;
++			buf += status;
++			if (unlikely(nr_segs > 1)) {
++				filemap_set_next_iovec(&cur_iov,
++						&iov_base, status);
++				if (count)
++					buf = cur_iov->iov_base +
++						iov_base;
++			} else {
++				iov_base += status;
+ 			}
+ 		}
+ 		if (unlikely(copied != bytes))
+diff -ru linux-2.6.21-old/mm/slub.c linux-2.6.21/mm/slub.c
+--- linux-2.6.21-old/mm/slub.c	2007-05-30 02:53:06.000000000 -0400
++++ linux-2.6.21/mm/slub.c	2007-05-30 01:45:33.000000000 -0400
+@@ -1966,8 +1966,6 @@
+ 	s->size = size;
+ 
+ 	s->order = calculate_order(size);
+-	if (s->order < 0)
+-		return 0;
+ 
+ 	/*
+ 	 * Determine the number of objects per slab
