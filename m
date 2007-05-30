@@ -1,121 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbXE3VbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbXE3Vbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbXE3VbO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbXE3VbA
+	id S1759431AbXE3Vbq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbXE3Vbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:31:00 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:58882 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755765AbXE3Va7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:30:59 -0400
-X-IronPort-AV: E=Sophos;i="4.14,594,1170662400"; 
-   d="scan'208";a="64689941"
-Subject: [GIT] Please pull one more NFS client fix...
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Wed, 30 May 2007 17:30:39 -0400
-Message-Id: <1180560639.6770.58.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 30 May 2007 21:30:40.0606 (UTC) FILETIME=[C56F77E0:01C7A301]
+	Wed, 30 May 2007 17:31:38 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4383 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755765AbXE3Vbh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 17:31:37 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 30 May 2007 14:31:35 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Ulrich Drepper <drepper@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <465DDF0A.8080107@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0705301426160.6272@alien.or.mcafeemobile.com>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
+ <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
+ <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+ <465DDF0A.8080107@cosmosbay.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wed, 30 May 2007, Eric Dumazet wrote:
 
-Please pull from the "fixes" branch of the repository at
+> > So library routines *must not* open file descriptors in the normal space.
+> > 
+> > (The same is true of real applications doing the equivalent of
+> > 
+> > 	for (i = 0; i < NR_OPEN; i++)
+> > 		close(i);
+> 
+> Quite buggy IMHO
 
-   git pull git://git.linux-nfs.org/pub/linux/nfs-2.6.git fixes
+Looking at it now, I'd agree (although I think I have that somewhere in my 
+old code too). Consider though, that such code is contained also in 
+reference books like Richard Stevens "UNIX Network Programming".
 
-This will update the following files through the appended changesets.
 
-  Cheers,
-    Trond
 
-----
- fs/nfs/direct.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
+- Davide
 
-commit b4946ffb1860597b187d78d61ac6504177eb0ff8
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Wed May 30 12:58:00 2007 -0400
 
-    NFS: Fix a refcount leakage in O_DIRECT
-    
-    The current code is leaking a reference to dreq->kref when the calls to
-    nfs_direct_read_schedule() and nfs_direct_write_schedule() return an
-    error.
-    This patch moves the call to kref_put() from nfs_direct_wait() back into
-    nfs_direct_read() and nfs_direct_write() (which are the functions that
-    actually took the reference in the first place) fixing the leak.
-    
-    Thanks to Denis V. Lunev for spotting the bug and proposing the original
-    fix.
-    
-    Acked-by: Denis V. Lunev <dlunev@gmail.com>
-    Acked-by: Chuck Lever <chuck.lever@oracle.com>
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
-index 0c542ec..00eee87 100644
---- a/fs/nfs/direct.c
-+++ b/fs/nfs/direct.c
-@@ -168,7 +168,7 @@ static inline struct nfs_direct_req *nfs_direct_req_alloc(void)
- 	return dreq;
- }
- 
--static void nfs_direct_req_release(struct kref *kref)
-+static void nfs_direct_req_free(struct kref *kref)
- {
- 	struct nfs_direct_req *dreq = container_of(kref, struct nfs_direct_req, kref);
- 
-@@ -177,6 +177,11 @@ static void nfs_direct_req_release(struct kref *kref)
- 	kmem_cache_free(nfs_direct_cachep, dreq);
- }
- 
-+static void nfs_direct_req_release(struct nfs_direct_req *dreq)
-+{
-+	kref_put(&dreq->kref, nfs_direct_req_free);
-+}
-+
- /*
-  * Collects and returns the final error value/byte-count.
-  */
-@@ -196,7 +201,6 @@ static ssize_t nfs_direct_wait(struct nfs_direct_req *dreq)
- 		result = dreq->count;
- 
- out:
--	kref_put(&dreq->kref, nfs_direct_req_release);
- 	return (ssize_t) result;
- }
- 
-@@ -214,7 +218,7 @@ static void nfs_direct_complete(struct nfs_direct_req *dreq)
- 	}
- 	complete_all(&dreq->completion);
- 
--	kref_put(&dreq->kref, nfs_direct_req_release);
-+	nfs_direct_req_release(dreq);
- }
- 
- /*
-@@ -369,6 +373,7 @@ static ssize_t nfs_direct_read(struct kiocb *iocb, unsigned long user_addr, size
- 	if (!result)
- 		result = nfs_direct_wait(dreq);
- 	rpc_clnt_sigunmask(clnt, &oldset);
-+	nfs_direct_req_release(dreq);
- 
- 	return result;
- }
-@@ -716,6 +721,7 @@ static ssize_t nfs_direct_write(struct kiocb *iocb, unsigned long user_addr, siz
- 	if (!result)
- 		result = nfs_direct_wait(dreq);
- 	rpc_clnt_sigunmask(clnt, &oldset);
-+	nfs_direct_req_release(dreq);
- 
- 	return result;
- }
