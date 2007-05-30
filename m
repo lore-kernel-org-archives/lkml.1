@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbXE3NWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbXE3NZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676AbXE3NWd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 09:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbXE3NW0
+	id S1754294AbXE3NZF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbXE3NYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 09:22:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39821 "EHLO mx3.mail.elte.hu"
+	Wed, 30 May 2007 09:24:53 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42097 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751188AbXE3NW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 09:22:26 -0400
-Date: Wed, 30 May 2007 15:20:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530132030.GA22330@elte.hu>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org> <20070530130237.GA19162@elte.hu>
+	id S1752669AbXE3NYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 09:24:52 -0400
+Date: Wed, 30 May 2007 18:54:30 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: kexec and aacraid broken
+Message-ID: <20070530132430.GA3773@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070529191347.9b1edd8b.akpm@linux-foundation.org> <AE4F746F2AECFC4DA4AADD66A1DFEF01A54FB1@otce2k301.adaptec.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070530130237.GA19162@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01A54FB1@otce2k301.adaptec.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 30, 2007 at 07:44:02AM -0400, Salyzyn, Mark wrote:
+> I believe this issue is a result of the aacraid_commit_reset patch (as
+> posted for scsi-misc-2.6, enclosed to permit testing) not yet propagated
+> to the 2.6.22-rc3 tree.
+> 
+> This is the adapter taking longer than 3 minutes to start after a reset.
+> I seriously doubt either of these patches suggested below will have an
+> affect. And if they do, they are not root cause, one reduces the chances
+> that the card will be reset during initialization (thus applied would
+> likely mitigate this problem), the other prevents a panic when the
+> Adapter is reset (removed, would result in dogs and cats sleeping with
+> each other).
+> 
+> Please use kernel parameter aacraid.startup_timeout=540 (merely larger
+> than the default 180 seconds) when spawning the kexec or see if the
+> aacraid_commit_reset.patch resolves the issue to confirm my hunch.
+> 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Hi Mark,
 
-> epoll is very much is capable of doing it - but why bother if 
-> something more flexible than a ring can be used and the performance 
-> difference is negligible? (Read my other reply in this thread for 
-> further points.)
+During a normal kexec (not kdump) adapter reset should not have taken
+place at all. device_shutdown() routines should have taken care to
+bring the device to a known sane state in first kernel so that second
+kernel can initialize it without doing a reset.
 
-in particular i'd like to (re-)stress this point:
+With reset patch, now reset triggers on every kexec. Previously
+that was not the case with kexec and adapter used to come up. I think
+this needs to be looked into.
 
- Thirdly, our main problem was not the structure of epoll, our main
- problem was that event APIs were not widely available, so applications
- couldnt go to a pure event based design - they always had to handle
- certain types of event domains specially, due to lack of coverage. The
- latest epoll patches largely address that. This was a huge barrier
- against adoption of epoll.
-
-starting with putting limits into the design by going to over-smart data 
-structures like rings is just stupid. Lets fix, enhance and speed up 
-what we have now (epoll) so that it becomes ubiquitous, and _then_ we 
-can extend epoll to maybe fill events into rings. We should have our 
-priorities right and should stop rewriting the whole world, especially 
-when it comes to user APIs. Right now we have _no_ event API with 
-complete coverage, and that's far more of a problem than the actual 
-micro-structure of the API.
-
-	Ingo
+Thanks
+Vivek
