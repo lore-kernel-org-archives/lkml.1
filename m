@@ -1,93 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbXE3ORt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbXE3OYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbXE3ORt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 10:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbXE3ORj
+	id S1753938AbXE3OYf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbXE3OY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 10:17:39 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:42857 "EHLO e5.ny.us.ibm.com"
+	Wed, 30 May 2007 10:24:28 -0400
+Received: from lucidpixels.com ([75.144.35.66]:45907 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbXE3ORh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 10:17:37 -0400
-Date: Wed, 30 May 2007 19:47:23 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: kexec and aacraid broken
-Message-ID: <20070530141723.GB3773@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070530132430.GA3773@in.ibm.com> <AE4F746F2AECFC4DA4AADD66A1DFEF01A54FEE@otce2k301.adaptec.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01A54FEE@otce2k301.adaptec.com>
-User-Agent: Mutt/1.5.11
+	id S1751984AbXE3OY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 10:24:27 -0400
+Date: Wed, 30 May 2007 10:24:26 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Zoltan Boszormenyi <zboszor@dunaweb.hu>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       crmotherboard@mailbox.cps.intel.com
+Subject: Case: 225446: Linux 2.6.21.3 does not work with 8GB of RAM on Intel
+ 965WH
+In-Reply-To: <Pine.LNX.4.64.0705300712230.5844@p34.internal.lan>
+Message-ID: <Pine.LNX.4.64.0705301023541.13945@p34.internal.lan>
+References: <465D43C0.60609@dunaweb.hu> <Pine.LNX.4.64.0705300712230.5844@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1554075124-1180535066=:13945"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 09:57:08AM -0400, Salyzyn, Mark wrote:
-> This is clouding the issue, Vivek.
-> 
-> There should be no harm, except to time, resetting the adapter. I do
-> want to optimize for boot time, but do not view this as a 'bug' if the
-> Adapter should reset during the initialization procedure. We need
-> instead to harden the driver to deal with Adapters that behave in an
-> untimely manner as a result of the reset since this generically deals
-> with all possible transitions (boot w/o BIOS, w/BIOS, kexec and kdump).
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Hi Mark,
-
-I agree. We should make sure that we should be able to do a software
-reset of adapters.
-
-> I will look into a possibility the driver is not performing the clean
-> shutdown as a result of a kexec, but that is a refinement and should not
-> be considered a fix for *this* reported problem; it merely moves the
-> problem to a kdump.
-
-Agreed. I just wanted to bring out this point that right now we are
-triggering software reset on every kexec and probably that is not 
-required. One can avoid it to save boot time. That was the whole
-purpose of kexec (fastboot) project.  
-
-But this is not a fix for this problem. We should any way be able to
-reset the device and should root cause this.
-
-> The driver only disables the interrupts when the
-> driver is .remove'd (aac_remove_one) and not for .shutdown
-> (aac_shutdown). The later merely tells the firmware to stop performing
-> builds if in progress, flush the cache, and all subsequent writes are
-> performed in write-through mode; it does not clear out the driver
-> resources and leaves that to the .remove function only. The failure of
-> .remove being called may be a result of this being a boot driver?
-> 
+---1463747160-1554075124-1180535066=:13945
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
 
-> Also, the code:
-> 
->         dev->OIMR = status = rx_readb (dev, MUnit.OIMR);
->         if ((((status & 0x0c) != 0x0c) . . .
-> 
-> detects if the adapter's interrupts were disabled, as would happen on a
-> clean shutdown. Some of the Adapters can NOT disable their interrupts,
-> and some have a default state with the interrupts enabled. If the
-> Adapter still has active interrupts, then there is no telling what
-> transpired before and it is considered a safety measure to reset the
-> Adapter in these cases. I'd prefer to err on the side of resetting the
-> Adapter superfluously than deal with a condition where the Adapter could
-> be in an unknown state with a possibility of sustaining an outstanding
-> command and associated interrupt (which was the whole reason this code
-> was introduced).
-> 
 
-So most likely if we start disabling the interrupts in .shutdown routine
-we might skip resetting adapter on every kexec without any side affects?
+On Wed, 30 May 2007, Justin Piszcz wrote:
 
-Thanks
-Vivek
+>
+>
+> On Wed, 30 May 2007, Zoltan Boszormenyi wrote:
+>
+>> Hi,
+>>=20
+>>> Look at how slow the raid benchmarks are in dmesg with 8GB of memory!
+>>>=20
+>>> [   59.592560] raid6: using algorithm sse2x4 (476 MB/s)
+>>> [   59.597558] raid5: using function: generic_sse (56.000 MB/sec)
+>>>=20
+>>> Yikes!
+>>>=20
+>>> With mem=3D4096M:
+>>> [   60.336352] raid6: using algorithm sse2x4 (6804 MB/s)
+>>> [   60.341345] raid5: using function: generic_sse (8552.000 MB/sec)
+>>>=20
+>>> What is going on here?
+>>>=20
+>>> Justin.
+>>=20
+>> I saw a similar effect on a P5 board that could
+>> only cache 64MB of memory a long time ago.
+>> Putting more memory into it made the machine slower
+>> and e.g. made the sym2 driver giving up at initialization.
+>> Maybe it's a modern reincarnation of the problem?
+>>=20
+>> Best regards,
+>> Zolt=E1n B=F6sz=F6rm=E9nyi
+>>=20
+>
+> I see, so Intel 965 motherboards do not work with 8GB of memory?  Or is t=
+his=20
+> a Linux issue?
+>
+> I have an Intel Case ID open 225446 but so far we have not gotten anywher=
+e=20
+> with this problem.  Currently I have 8GB in the machine and boot with=20
+> mem=3D4096M.  Was there any type of fix?  Any recommendations as to what =
+I can=20
+> do?  Continue to speak with Intel?  Or perhaps someone with more knowledg=
+e of=20
+> the kernel and chime in as to what exactly is happening here?
+>
+> Justin.
+
+Adding Intel to CC list.
+---1463747160-1554075124-1180535066=:13945--
