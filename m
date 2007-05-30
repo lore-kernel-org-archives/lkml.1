@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbXE3WHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760508AbXE3WIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760951AbXE3WHF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760444AbXE3WGq
+	id S1760508AbXE3WIA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbXE3WHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:06:46 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:19071 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760389AbXE3WGo (ORCPT
+	Wed, 30 May 2007 18:07:52 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:28643 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756382AbXE3WHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:06:44 -0400
-Message-ID: <465DF566.7000000@oracle.com>
-Date: Wed, 30 May 2007 15:06:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 30 May 2007 18:07:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Qlqer54c/PRQH7flVFPKVSbS2aLc9Dge3YZq2mMLZcqGvNwtpxNclYbpRAGED1WLSkdla5lbVuXH8/O0VrYQ9SAfvQFZMd9lHLbWDNn34UTGLmg3ASGaBOaOAOCAaSQYe9Z+5TpnHRebuFcTtUTTKVAE7HcuboOEkyCKjyikt3o=
+Message-ID: <21d7e9970705301507o2a89e824xdc6a980e8dbedaaf@mail.gmail.com>
+Date: Thu, 31 May 2007 08:07:45 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: GFP_DMA32 and PAE x86 machines
+Cc: "Linus Torvalds" <torvalds@osdl.org>, "Andi Kleen" <ak@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <465DECD7.8030104@zytor.com>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3 -mm] slub: use lib/hexdump
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org> <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org> <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com> <20070523153730.e0e9e91d.akpm@linux-foundation.org> <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com> <20070523182145.7d7f1f7e.randy.dunlap@oracle.com> <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com> <20070524073131.GA17501@elte.hu> <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com> <20070524142908.f39f42ea.akpm@linux-foundation.org> <20070524145517.1f32cd94.randy.dunlap@oracle.com> <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com> <20070530143451.f4a844bc.randy.dunlap@oracle.com> <Pine.LNX.4.64.0705301443020.3358@schroedinger.engr.sgi.com> <465DF135.80202@oracle.com> <Pine.LNX.4.64.0705301451140.3709@schroedinger.engr.sgi.c!  om> <465DF2A2.2070801@oracle.com> <Pine.LNX.4.64.0705301501470.7502@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0705301501470.7502@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+References: <21d7e9970705301410m16ded9esdf7a49371c60a155@mail.gmail.com>
+	 <465DECD7.8030104@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> I'd prefer something like this:
-> 
-> Use hexdump in slub.
+Depending on split all lowmem is below 1GB which isn't exactly
+optimal, I'd llike all 4GB for DMA.
 
-Sure, that's fine.
+Dave.
 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> Index: slub/mm/slub.c
-> ===================================================================
-> --- slub.orig/mm/slub.c	2007-05-30 14:56:14.000000000 -0700
-> +++ slub/mm/slub.c	2007-05-30 15:01:33.000000000 -0700
-> @@ -339,34 +339,10 @@ static char *slub_debug_slabs;
->   */
->  static void print_section(char *text, u8 *addr, unsigned int length)
->  {
-> -	int i, offset;
-> -	int newline = 1;
-> -	char ascii[17];
-> -
-> -	ascii[16] = 0;
-> -
-> -	for (i = 0; i < length; i++) {
-> -		if (newline) {
-> -			printk(KERN_ERR "%8s 0x%p: ", text, addr + i);
-> -			newline = 0;
-> -		}
-> -		printk(" %02x", addr[i]);
-> -		offset = i % 16;
-> -		ascii[offset] = isgraph(addr[i]) ? addr[i] : '.';
-> -		if (offset == 15) {
-> -			printk(" %s\n",ascii);
-> -			newline = 1;
-> -		}
-> -	}
-> -	if (!newline) {
-> -		i %= 16;
-> -		while (i < 16) {
-> -			printk("   ");
-> -			ascii[i] = ' ';
-> -			i++;
-> -		}
-> -		printk(" %s\n", ascii);
-> -	}
-> +	char buf[10];
-> +
-> +	sprintf(buf, "%8s:", text);
-> +	print_hex_dump(KERN_ERR, buf, DUMP_PREFIX_ADDRESS, 16, 1, addr, length, 1);
->  }
->  
->  static struct track *get_track(struct kmem_cache *s, void *object,
-> 
-
-
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+On 5/31/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Dave Airlie wrote:
+> > Just a question,
+> >
+> > So we have GFP_DMA32 on x86-64 to gives us memory below 4G? so we not
+> > have the same on PAE based x86 machines so I can use a consistent API
+> > from the drm?
+> >
+> > Otherwise it'll be stick some ifdefs in the drm to deal with it..
+> >
+>
+> Well, all lowmem is below 4 GB on i386...
+>
+> 	-hpa
+>
