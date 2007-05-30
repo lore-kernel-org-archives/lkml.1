@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbXE3A3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752461AbXE3AbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751825AbXE3A3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbXE3A3K
+	id S1752461AbXE3AbS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbXE3AbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:29:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52593 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750799AbXE3A3H (ORCPT
+	Tue, 29 May 2007 20:31:11 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:37950 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751094AbXE3AbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:29:07 -0400
-Date: Wed, 30 May 2007 10:28:57 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add procfs tunable to enable immediate panic when there are busy inodes after umount
-Message-ID: <20070530002857.GW85884050@sgi.com>
-References: <20070529114042.5fe0b810.jlayton@redhat.com>
+	Tue, 29 May 2007 20:31:10 -0400
+Date: Tue, 29 May 2007 17:30:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthieu CASTET <castet.matthieu@free.fr>
+Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] RTC: Use fallback IRQ if PNP tables don't provide one
+Message-Id: <20070529173058.c003e18c.akpm@linux-foundation.org>
+In-Reply-To: <pan.2007.05.28.18.50.22@free.fr>
+References: <20070527190351.GA21387@srcf.ucam.org>
+	<20070527233911.GA23491@srcf.ucam.org>
+	<20070528003822.GA23759@srcf.ucam.org>
+	<200705271844.54589.david-b@pacbell.net>
+	<20070528172418.GA2076@srcf.ucam.org>
+	<pan.2007.05.28.18.50.22@free.fr>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070529114042.5fe0b810.jlayton@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 11:40:42AM -0400, Jeff Layton wrote:
-> After spending quite a bit of time tracking down a "VFS: busy inodes
-> after unmount" problem, it occurs to me that it would be nice to be
-> able to force a panic when that occurs. While an oops message alone is
-> not generally helpful for tracking down this sort of problem,
-> collecting and analyzing a coredump when this occurs can be.
+On Mon, 28 May 2007 18:50:22 +0000 (UTC)
+Matthieu CASTET <castet.matthieu@free.fr> wrote:
 
-Agreed - we've found that we've had roughly 50% success in finding
-the cause of these problems from crash dumps triggered immediately
-like this vs ~0% from a crash that occurred some time later.
+> Hi,
+> 
+> 
+> On Mon, 28 May 2007 18:24:18 +0100, Matthew Garrett wrote:
+> 
+> > From: Matthew Garrett <mjg59@srcf.ucam.org>
+> > 
+> > Intel Macs (and possibly other machines) provide a PNP entry for the
+> > RTC, but provide no IRQ. As a result the rtc-cmos driver doesn't allow
+> > wakeup alarms. If the RTC is located at the legacy ioport range, assume
+> > that it's on IRQ 8 unless the tables say otherwise.
+> I post something via gmane this morning, but it seems it was lost :
+> 
+> Did you check if there aren't multiple configuration for rtc (one with 
+> irq, and
+> one without it) ?
+> 
+> What's the ouput of 
+> $ for i in /sys/bus/pnp/devices/*; do if [ "$(cat $i/id)" = PNP0b00 ]; 
+> then cat
+> $i/resources; echo options; cat $i/options; fi; done
+> 
 
-Given that this problem will always result in a crash of the kernel
-at some random time in the future, why don't we just make this error
-an unconditional panic on get the crash over and done with?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Matthew didn't reply to this, almost surely because you removed him
+(and David) from the cc.  Please don't ever do that.
