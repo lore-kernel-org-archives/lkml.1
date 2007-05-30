@@ -1,118 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbXE3AC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbXE3AFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753168AbXE3AC7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbXE3ACw
+	id S1752894AbXE3AFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbXE3AEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:02:52 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:33378 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751255AbXE3ACv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:02:51 -0400
-Date: Tue, 29 May 2007 17:02:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>, <a.zummo@towertech.it>
-Subject: Re: [PATCH 6/8] Char: rtc, use wait_event_interruptible
-Message-Id: <20070529170244.9b2c5629.akpm@linux-foundation.org>
-In-Reply-To: <1365159682097121268@wsc.cz>
-References: <12191294601255228079@wsc.cz>
-	<1365159682097121268@wsc.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 29 May 2007 20:04:55 -0400
+Received: from mxfep03.bredband.com ([195.54.107.76]:39732 "EHLO
+	mxfep03.bredband.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbXE3AEy (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 29 May 2007 20:04:54 -0400
+Subject: Re: [BUG] Something goes wrong with timer statistics.
+From: Ian Kumlien <iank@bredband.net>
+To: David Miller <davem@davemloft.net>
+Cc: michal.k.k.piotrowski@gmail.com, Linux-kernel@vger.kernel.org
+In-Reply-To: <20070529.160338.51845499.davem@davemloft.net>
+References: <6bffcb0e0705291541q7e6d6faen5cd6345074c4c92a@mail.gmail.com>
+	 <20070529.154406.104042418.davem@davemloft.net>
+	 <1180479122.19814.8.camel@pi.pomac.com>
+	 <20070529.160338.51845499.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 02:04:31 +0200
+Message-Id: <1180483481.30698.3.camel@pi.pomac.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 May 2007 15:29:50 +0200 (CEST)
-Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> rtc, use wait_event_interruptible
+On tis, 2007-05-29 at 16:03 -0700, David Miller wrote:
+> From: Ian Kumlien <iank@bredband.net>
+> Date: Wed, 30 May 2007 00:51:52 +0200
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> > On tis, 2007-05-29 at 15:44 -0700, David Miller wrote:
+> > > From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+> > > Date: Wed, 30 May 2007 00:41:46 +0200
+> > > 
+> > > > On 30/05/07, David Miller <davem@davemloft.net> wrote:
+> > > > > From: Ian Kumlien <iank@bredband.net>
+> > > > > Date: Tue, 29 May 2007 23:38:48 +0200
+> > > > >
+> > > > > > As the daystar sets, i try to play some with my new would be
+> > > > > > firewall/server, but since this will be running for quite some time i
+> > > > > > have been experimenting with powertop to find out what i can do to limit
+> > > > > > it's power usage.
+> > > > > >
+> > > > > > But, if i run powertop for too long or a few times to many... this
+> > > > > > happens:
+> > > > > > http://pomac.netswarm.net/pics/kernel_panic.jpg
+> > > > > >
+> > > > > > If i don't run powertop, it is rock solid... Compiling for hours,
+> > > > > > running memtest for hours etc etc...
+> > > > >
+> > > > > I see this same exact problem on sparc64.
+> > > > 
+> > > > Have you tried this patch?
+> > > > http://lkml.org/lkml/2007/5/29/392
+> > > 
+> > > Of course, I worked with Thomas on the fix :-)
+> > 
+> > I dunno if this applies to me, i run a 32 bit userspace...
 > 
-> ---
-> commit 62bd843054a7b2b2a3e3003a6b57b6359f199837
-> tree 7c6912d4ed42581ca46d384ab2467bfb9d9d9dbe
-> parent 2b7813d0f34703e0a4b18593a3186bdc7e719c06
-> author Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 21:58:54 +0200
-> committer Jiri Slaby <jirislaby@gmail.com> Sat, 26 May 2007 21:58:54 +0200
-> 
->  drivers/char/rtc.c |   40 +++++++++++++++-------------------------
->  1 files changed, 15 insertions(+), 25 deletions(-)
-> 
-> diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
-> index 20380a2..787b520 100644
-> --- a/drivers/char/rtc.c
-> +++ b/drivers/char/rtc.c
-> @@ -353,33 +353,26 @@ static ssize_t rtc_read(struct file *file, char __user *buf,
->  	if (count != sizeof(unsigned int) && count !=  sizeof(unsigned long))
->  		return -EINVAL;
->  
-> -	add_wait_queue(&rtc_wait, &wait);
-> -
-> -	do {
-> -		/* First make it right. Then make it fast. Putting this whole
-> -		 * block within the parentheses of a while would be too
-> -		 * confusing. And no, xchg() is not the answer. */
-> -
-> -		__set_current_state(TASK_INTERRUPTIBLE);
-> -		
-> -		spin_lock_irq (&rtc_lock);
-> -		data = rtc_irq_data;
-> -		rtc_irq_data = 0;
-> -		spin_unlock_irq (&rtc_lock);
-> -
-> -		if (data != 0)
-> -			break;
-> +	spin_lock_irq (&rtc_lock);
-> +	data = rtc_irq_data;
-> +	rtc_irq_data = 0;
-> +	spin_unlock_irq (&rtc_lock);
->  
-> +	if (data == 0) {
->  		if (file->f_flags & O_NONBLOCK) {
->  			retval = -EAGAIN;
->  			goto out;
->  		}
-> -		if (signal_pending(current)) {
-> -			retval = -ERESTARTSYS;
-> +		retval = wait_event_interruptible(rtc_wait, ({
-> +			spin_lock_irq (&rtc_lock);
-> +			data = rtc_irq_data;
-> +			rtc_irq_data = 0;
-> +			spin_unlock_irq (&rtc_lock);
-> +			data;
-> +		}));
-> +		if (retval)
->  			goto out;
-> -		}
-> -		schedule();
-> -	} while (1);
-> +	}
->  
->  	if (count == sizeof(unsigned int))
->  		retval = put_user(data, (unsigned int __user *)buf) ?: sizeof(int);
-> @@ -387,10 +380,7 @@ static ssize_t rtc_read(struct file *file, char __user *buf,
->  		retval = put_user(data, (unsigned long __user *)buf) ?: sizeof(long);
->  	if (!retval)
->  		retval = count;
-> - out:
-> -	__set_current_state(TASK_RUNNING);
-> -	remove_wait_queue(&rtc_wait, &wait);
-> -
-> +out:
->  	return retval;
->  #endif
+> That patch fixes a problem on 64-bit kernels, regardless of
+> userspace, when NOHZ is enabled.
 
-erm, I'm not sure that really improved the code.
+Sorry, i run all 32 bit, i was on the phone while typing that, so a wee
+bit distracted. Anyways, i run a nohz 32 bit kernel.
 
-Note that wait_event_interruptible() evaluates the condition twice, so
-that's now three copies we have in there.  A little helper function would
-make this all much better.
+I dunno how good a intel T7200 is when it comes to 64 bit
+kernel/userspace.. (Haven't really read up on it)
 
-Also, feel free to sneak in a s/spin_lock_irq (/spin_lock_irq(/ cleanup
-when making changes like this.
-
+-- 
+Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
