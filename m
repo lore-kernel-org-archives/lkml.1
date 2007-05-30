@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXE3Eeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751645AbXE3EpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751980AbXE3Eeg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 00:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbXE3Ee0
+	id S1751645AbXE3EpM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 00:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbXE3Eo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 00:34:26 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47778 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbXE3EeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 00:34:25 -0400
-Date: Wed, 30 May 2007 06:35:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 30 May 2007 00:44:59 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56970 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1749667AbXE3Eo6 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 00:44:58 -0400
+Date: Wed, 30 May 2007 14:44:48 +1000
+From: David Chinner <dgc@sgi.com>
+To: David Chinner <dgc@sgi.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Ingo Molnar <mingo@elte.hu>, linux-acpi@vger.kernel.org,
-       Len Brown <lenb@kernel.org>, Thierry Volpiatto <tvolpiatt@neuf.fr>,
-       alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
-       Jaroslav Kysela <perex@suse.cz>, Ben Collins <bcollins@ubuntu.com>,
-       Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       Florin Iucha <florin@iucha.net>, Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [1/4] 2.6.22-rc3: known regressions
-Message-ID: <20070530043522.GA11512@uranus.ravnborg.org>
-References: <465C2225.2000100@googlemail.com>
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: BUG: sleeping function called from invalid context at kernel/fork.c:385
+Message-ID: <20070530044448.GK86004887@sgi.com>
+References: <20070522234314.54081817.akpm@linux-foundation.org> <617E1C2C70743745A92448908E030B2A01882BFD@scsmsx411.amr.corp.intel.com> <20070530033041.GH86004887@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <465C2225.2000100@googlemail.com>
+In-Reply-To: <20070530033041.GH86004887@sgi.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 02:52:53PM +0200, Michal Piotrowski wrote:
-> Hi all,
+On Wed, May 30, 2007 at 01:30:41PM +1000, David Chinner wrote:
+> On Wed, May 23, 2007 at 10:44:16AM -0700, Luck, Tony wrote:
+> > > > Saw this when running strace -f on a script on 2.6.21 on ia64:
+> > > > 
+> > > > BUG: sleeping function called from invalid context at kernel/fork.c:385
+> > > > in_atomic():1, irqs_disabled():0
+> >     ... snip ...
+> > > > I could reproduce it via 'strace -f sleep 1'
+> > > > 
+> > >
+> > > I'd say this is specific to ia64.   Someone would have spotted it on
+> > > x86 by now.
+> > 
+> > I tried the "strace -f sleep 1" on 2.6.22-rc2, and I didn't see this "BUG"
+> > there.  Can you try your other test cases on the latest kernel.  If it has
+> > already been fixed we can see about identifying the patch for possible backport
+> > to 2.6.21.stable
 > 
-> Here is a list of some known regressions in 2.6.22-rc3.
-> 
-> 
-> Kbuild
-> 
-> Subject    : make M=$PWD modules_install does nothing
-> References : http://lkml.org/lkml/2007/5/27/190
-> Submitter  : Andrey Borzenkov <arvidjaar@mail.ru>
-> Status     : Unknown
-Closed - see http://lkml.org/lkml/2007/5/29/497
+> Sorry for taking so long to get back to this - I still see this in
+> 2.6.22-rc2.
 
-	Sam
+Hmmm - I wonder if my tree is screwed up in some weird way. I'm seeing link
+warnings as well:
+
+  AS      .tmp_kallsyms2.o
+  LD      vmlinux
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  MODPOST vmlinux
+WARNING: init/built-in.o - Section mismatch: reference to .init.data: from .sdata after 'root_mountflags' (at offset 0x38)
+WARNING: init/built-in.o - Section mismatch: reference to .init.data:ino from .sdata after 'root_mountflags' (at offset 0x40)
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:smp_boot_data from .sdata before 'acpi_irq_model' (at offset -0x0)
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:rsvd_region from .sdata between 'ia64_sal' (at offset 0x118) and 'ia64_i_cache_stride_shift'
+WARNING: arch/ia64/kernel/built-in.o - Section mismatch: reference to .init.data:smp_boot_data from .sdata between 'cpu.25267' (at offset0x2e8) and 'sal_state_for_booting_cpu'
+WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x50) and 'first_time.25897'
+WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x68) and 'first_time.25897'
+WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x70) and 'first_time.25897'
+WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x88) and 'first_time.25897'
+WARNING: arch/ia64/mm/built-in.o - Section mismatch: reference to .init.data: from .sdata between 'hpage_shift' (at offset 0x90) and 'first_time.25897'
+.....
+
+There's more errors, but they are all section mismatch warnings.
+I tried a make mrproper to see if that would fix but it didn't....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
