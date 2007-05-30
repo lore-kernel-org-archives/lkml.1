@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbXE3Lrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752070AbXE3LsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860AbXE3Lrx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 07:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbXE3Lro
+	id S1752070AbXE3LsM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 07:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbXE3Lrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 07:47:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44932 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751595AbXE3Lrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 07:47:43 -0400
-Date: Wed, 30 May 2007 07:47:45 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: David Chinner <dgc@sgi.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add procfs tunable to enable immediate panic when there
- are busy inodes after umount
-Message-Id: <20070530074745.15b8355b.jlayton@redhat.com>
-In-Reply-To: <20070530002857.GW85884050@sgi.com>
-References: <20070529114042.5fe0b810.jlayton@redhat.com>
-	<20070530002857.GW85884050@sgi.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 May 2007 07:47:53 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:40786 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753841AbXE3Lrv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 07:47:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=nVOBQPqY+9XsW9NCt6OFKpcklUFdvo+4ZaLY2A8xzu3MYlOi3i5eOZrdyQdacicgM1fskhEUoVZzLrwMdYCXPAamSMtEx8tbDF/ff2IwCVCMa2OMgieZidXK4Y9Kp6m09XH+QTjQLDAIgW2CQd7h0KiTS45N9u1JgCClClBSv2M=
+Message-ID: <465D6460.6030003@gmail.com>
+Date: Wed, 30 May 2007 13:47:44 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: Bill Nottingham <notting@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] alsa: fix comparison of unsigned < 0
+References: <20070530073554.GA28809@nostromo.devel.redhat.com> <s5h7iqqhb09.wl%tiwai@suse.de>
+In-Reply-To: <s5h7iqqhb09.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 10:28:57 +1000
-David Chinner <dgc@sgi.com> wrote:
-
-> On Tue, May 29, 2007 at 11:40:42AM -0400, Jeff Layton wrote:
-> > After spending quite a bit of time tracking down a "VFS: busy inodes
-> > after unmount" problem, it occurs to me that it would be nice to be
-> > able to force a panic when that occurs. While an oops message alone is
-> > not generally helpful for tracking down this sort of problem,
-> > collecting and analyzing a coredump when this occurs can be.
+Takashi Iwai napsal(a):
+> Hi,
 > 
-> Agreed - we've found that we've had roughly 50% success in finding
-> the cause of these problems from crash dumps triggered immediately
-> like this vs ~0% from a crash that occurred some time later.
+> thanks for checking this.
+> They seem actually hitting some real bugs.
+
+Bug fixes are ok, but keep on your mind this (I haven't checked if this is
+the case):
+http://lkml.org/lkml/2006/11/28/206
+
+> At Wed, 30 May 2007 03:35:54 -0400,
+> Bill Nottingham wrote:
+>> diff -ru linux-2.6.21-old/sound/pci/ac97/ac97_patch.c linux-2.6.21/sound/pci/ac97/ac97_patch.c
+>> --- linux-2.6.21-old/sound/pci/ac97/ac97_patch.c	2007-05-30 02:53:05.000000000 -0400
+>> +++ linux-2.6.21/sound/pci/ac97/ac97_patch.c	2007-05-30 02:32:41.000000000 -0400
+>> @@ -2086,8 +2086,7 @@
+>>  	struct snd_ac97 *ac97 = snd_kcontrol_chip(kcontrol);
+>>  	unsigned short val;
+>>  
+>> -	if (ucontrol->value.enumerated.item[0] > 3
+>> -	    || ucontrol->value.enumerated.item[0] < 0)
+>> +	if (ucontrol->value.enumerated.item[0] > 3)
+>>  		return -EINVAL;
+>>  	val = ctrl2reg[ucontrol->value.enumerated.item[0]]
+>>  	      << AC97_AD198X_VREF_SHIFT;
 > 
-> Given that this problem will always result in a crash of the kernel
-> at some random time in the future, why don't we just make this error
-> an unconditional panic on get the crash over and done with?
-> 
+> This one is fine.
+[...]
 
-Perhaps that's the best course of action. Then again, there can be a
-long time between the problem and crash (weeks even). For someone who
-can't collect a coredump, it might be preferable to not immediately
-crash the box and allow them to try to reboot it at a convenient time.
-That was my reasoning for adding the procfs tunable.
-
-Either way, if the machine doesn't crash immediately, I'd like to see a
-different error message here. The current one is confusing to users.
-They see it and figure "my box didn't crash in 5 mins, so everything
-must be OK!"
-
+regards,
 -- 
-Jeff Layton <jlayton@redhat.com>
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
