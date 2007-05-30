@@ -1,147 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbXE3UjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbXE3Ujl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759269AbXE3UjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758563AbXE3Ui7
+	id S1759393AbXE3Ujl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbXE3Ujc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:38:59 -0400
-Received: from keetweej.vanheusden.com ([213.84.46.114]:54377 "EHLO
-	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758388AbXE3Ui6 (ORCPT
+	Wed, 30 May 2007 16:39:32 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:37813 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755853AbXE3Uja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:38:58 -0400
-Date: Wed, 30 May 2007 22:38:57 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       stable@kernel.org
-Subject: Re: [PATCH] Re: [2.6.21.1] soft lockup when removing netconsole
-	module
-Message-ID: <20070530203857.GE9806@vanheusden.com>
-References: <20070526154011.GB3735@vanheusden.com> <20070529005628.f7f3abc6.akpm@linux-foundation.org> <465D7BE9.70702@windriver.com>
+	Wed, 30 May 2007 16:39:30 -0400
+Message-ID: <465DDF0A.8080107@cosmosbay.com>
+Date: Wed, 30 May 2007 22:31:06 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com> <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <465D7BE9.70702@windriver.com>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Thu May 31 22:26:34 CEST 2007
-X-Message-Flag: www.unixexpert.nl
-User-Agent: Mutt/1.5.15+20070515 (2007-05-02)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 30 May 2007 22:31:13 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch seems to solve the problem.
-I removed (and inserted) the module twice without any oopses or panics
-or hangs in general.
-
-On Wed, May 30, 2007 at 08:28:09AM -0500, Jason Wessel wrote:
->
-> Attached is a patch to fix the soft lockup problem when removing the 
-> netconsole module.
->
-> It looks different than the original patch I posted because the context had 
-> to change to maintain 80 column code.  For reference the original e-mail + 
-> patch was "[BUG] 2.6.21 hang in cancel_rearming_delayed_workqueue()" sent 
-> on 5/25/07.
->
-> Jason.
->
->
-
-> >From 102a018d601e954f658d272d4daeef139ae40e0e Mon Sep 17 00:00:00 2001
-> From: Jason Wessel <jason.wessel@windriver.com>
-> Date: Wed, 30 May 2007 08:03:52 -0500
-> Subject: [PATCH] The netpoll_cleanup handler can hang the kernel if there is no work in
-> the work queue because a call to cancel_rearming_delayed_work() with
-> no work goes into an infinite loop.
+Linus Torvalds a écrit :
 > 
-> The typical case where this is a problem is on removing a kernel
-> module such as the netconsole driver or kgdboe.
+> On Wed, 30 May 2007, Davide Libenzi wrote:
+>> Here I think we are forgetting that glibc is userspace and there's no 
+>> separation between the application code and glibc code. An application 
+>> linking to glibc can break glibc in thousand ways, indipendently from fds 
+>> or not fds. Like complaining that glibc is broken because printf() 
+>> suddendly does not work anymore ;)
 > 
-> To maintain 80 column code, the function had to have one level of braces
-> dropped.
-> 
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> ---
->  net/core/netpoll.c |   36 +++++++++++++++++++-----------------
->  1 files changed, 19 insertions(+), 17 deletions(-)
-> 
-> diff --git a/net/core/netpoll.c b/net/core/netpoll.c
-> index 4581ece..28fa50e 100644
-> --- a/net/core/netpoll.c
-> +++ b/net/core/netpoll.c
-> @@ -766,30 +766,32 @@ void netpoll_cleanup(struct netpoll *np)
->  	struct netpoll_info *npinfo;
->  	unsigned long flags;
->  
-> -	if (np->dev) {
-> -		npinfo = np->dev->npinfo;
-> -		if (npinfo) {
-> -			if (npinfo->rx_np == np) {
-> -				spin_lock_irqsave(&npinfo->rx_lock, flags);
-> -				npinfo->rx_np = NULL;
-> -				npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
-> -				spin_unlock_irqrestore(&npinfo->rx_lock, flags);
-> -			}
-> +	if (!np->dev)
-> +		return;
-> +
-> +	npinfo = np->dev->npinfo;
-> +	if (npinfo) {
-> +		if (npinfo->rx_np == np) {
-> +			spin_lock_irqsave(&npinfo->rx_lock, flags);
-> +			npinfo->rx_np = NULL;
-> +			npinfo->rx_flags &= ~NETPOLL_RX_ENABLED;
-> +			spin_unlock_irqrestore(&npinfo->rx_lock, flags);
-> +		}
->  
-> -			np->dev->npinfo = NULL;
-> -			if (atomic_dec_and_test(&npinfo->refcnt)) {
-> -				skb_queue_purge(&npinfo->arp_tx);
-> -				skb_queue_purge(&npinfo->txq);
-> +		np->dev->npinfo = NULL;
-> +		if (atomic_dec_and_test(&npinfo->refcnt)) {
-> +			skb_queue_purge(&npinfo->arp_tx);
-> +			skb_queue_purge(&npinfo->txq);
-> +			if (delayed_work_pending(&npinfo->tx_work)) {
->  				cancel_rearming_delayed_work(&npinfo->tx_work);
->  				flush_scheduled_work();
-> -
-> -				kfree(npinfo);
->  			}
-> -		}
->  
-> -		dev_put(np->dev);
-> +			kfree(npinfo);
-> +		}
->  	}
->  
-> +	dev_put(np->dev);
->  	np->dev = NULL;
->  }
->  
-> -- 
-> 1.5.0.6
+> No, Davide, the problem is that some applications depend on getting 
+> _specific_ file descriptors.
 > 
 
+Fix the application, and not adding kernel bloat ?
+
+> For example, if you do
+> 
+> 	close(0);
+> 	.. something else ..
+> 	if (open("myfile", O_RDONLY) < 0)
+> 		exit(1);
+> 
+> you can (and should) depend on the open returning zero.
+
+Then you can also exclude multi-threading, since a thread (even not inside 
+glibc) can also use socket()/pipe()/open()/whatever and take the zero file 
+descriptor as well.
+
+Frankly I dont buy this fd namespace stuff.
+
+The only hardcoded thing in Unix is 0, 1 and 2 fds.
+People usually take care of these, or should use a Microsoft OS.
+
+POSIX mandates that open() returns the lowest available fd.
+But this obviously works only if you dont have another thread messing with 
+fds, or if you dont call a library function that opens a file.
+
+Thats all.
+
+> 
+> So library routines *must not* open file descriptors in the normal space.
+> 
+> (The same is true of real applications doing the equivalent of
+> 
+> 	for (i = 0; i < NR_OPEN; i++)
+> 		close(i);
+
+Quite buggy IMHO
+
+This hack was to avoid bugs coming from ancestors applications, 
+forking/execing a shell, and at times where one process could not open more 
+than 20 files (AT&T Unix, 21 years ago)
+
+Unix has fcntl(fd, F_SETFD, FD_CLOEXEC). A library should use this to make 
+sure fd is not propagated at exec() time.
+
+> 
+> to clean up all file descriptors before doing something new. And yes, I 
+> think it was bash that used to *literally* do something like that a long 
+> time ago.
+> 
+> Another example of the same thing: people open file descriptors and know 
+> that they'll be "dense" in the result, and then use "select()" on them.
+
+poll() is nice. Even AT&T Unix had it 21 years ago :)
+
+> 
+> So it's true that file descriptors can't be used randomly by the standard 
+> libraries - they'd need to have some kind of separate "private space".
+> 
+> Which *could* be something as simple as saying "bit 30 in the file 
+> descriptor specifies a separate fd space" along with some flags to make 
+> open and friends return those separate fd's. That makes them useless for 
+> "select()" (which assumes a flat address space, of course), but would be 
+> useful for just about anything else.
+> 
+
+Please dont do that. Second class fds.
+
+Then what about having ten different shared libraries ? Third class fds ?
 
 
-Folkert van Heusden
-
--- 
-
-Multitail - gibkaja utilita po sledovaniju log-fajlov i vyvoda
-kommand. Fil'trovanie, raskrašivanie, slijanie, vizual'noe sravnenie,
-i t.d.  http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
