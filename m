@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbXE3LeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbXE3Lig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbXE3LeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 07:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbXE3LeJ
+	id S1752790AbXE3Lig (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 07:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXE3Lia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 07:34:09 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45708 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751477AbXE3LeI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 07:34:08 -0400
-Date: Wed, 30 May 2007 06:34:03 -0500
-From: Robin Holt <holt@sgi.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Stephane Eranian <eranian@frankl.hpl.hp.com>, linux-kernel@vger.kernel.org,
-       eranian@hpl.hp.com
-Subject: Re: [PATCH 02/22] 2.6.22-rc3 perfmon2 : generic kernel modifications
-Message-ID: <20070530113403.GA14480@lnx-holt.americas.sgi.com>
-References: <200705291348.l4TDmG1Y019632@frankl.hpl.hp.com> <20070530004658.732451ad.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 May 2007 07:38:30 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34642 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751449AbXE3Li3 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 07:38:29 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1+RfaNlOU2R7SG5JtAqUe6RvQpkrmgCrH0A+wLeDY
+	JOMSuLGFLXApLl
+Date: Wed, 30 May 2007 13:38:25 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Ian Kumlien <iank@bredband.net>, Linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [BUG] Something goes wrong with timer statistics.
+Message-ID: <20070530113825.GA5203@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Ian Kumlien <iank@bredband.net>, Linux-kernel@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+References: <1180474738.22497.25.camel@pi.pomac.com> <6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com> <1180478288.20546.39.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070530004658.732451ad.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1180478288.20546.39.camel@chaos>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 12:46:58AM +1000, Stephen Rothwell wrote:
-> On Tue, 29 May 2007 06:48:16 -0700 Stephane Eranian <eranian@frankl.hpl.hp.com> wrote:
-> >
-> > Only in linux-2.6.22/Documentation: perfmon2.txt
+On 2007.05.30 00:38:08 +0200, Thomas Gleixner wrote:
+> On Wed, 2007-05-30 at 00:24 +0200, Michal Piotrowski wrote:
+> > Hi Ian,
+> > 
+> > (Thomas "The Wizard of Time" added to CC :))
 > 
-> Did part of the patch go missing?
+> Added more wizards :)
 > 
-> > diff --exclude=.git -urp --exclude-from=/tmp/excl315935 linux-2.6.22.base/Makefile linux-2.6.22/Makefile
-> > --- linux-2.6.22.base/Makefile	2007-05-29 03:17:15.000000000 -0700
-> > +++ linux-2.6.22/Makefile	2007-05-29 03:24:14.000000000 -0700
-> > @@ -553,7 +553,7 @@ export mod_strip_cmd
-> >
-> >
-> >  ifeq ($(KBUILD_EXTMOD),)
-> > -core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
-> > +core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ perfmon/
+> > On 29/05/07, Ian Kumlien <iank@bredband.net> wrote:
+> > > Hi,
+> > >
+> > > As the daystar sets, i try to play some with my new would be
+> > > firewall/server, but since this will be running for quite some time i
+> > > have been experimenting with powertop to find out what i can do to limit
+> > > it's power usage.
+> > >
+> > > But, if i run powertop for too long or a few times to many... this
+> > > happens:
+> > > http://pomac.netswarm.net/pics/kernel_panic.jpg
 > 
-> This should go near the end of the patch set so that the kernel will
-> build at each step (if at all possible).
-> 
-> Seeing as what is missing below, naybe you should reorder the patch set
-> so that the generic changes are at the end i.e. introduce all the new
-> files and then wire them into the current ifrastructure.
+> This was reported before. It's incredibly hard to reproduce.
 
-That breaks git-bisect.  Just introducing new text, but not actually using
-it makes it appear to somebody using git-bisect to identify the source of
-a problem as though all the changes came in at the same time.  Bad idea.
+OK, second try, this time with a patch. In timer_stats_update_stats,
+input is allocated on the stack, so it is uninitialized, in particular
+the "next" field is random. Now in tstat_lookup, the new entry "curr" is
+initialized with the values from "input" (passed as "entry") and "next"
+is set to NULL _after_ it is added to the list, so if a second CPU is
+running the fastpath lookup while we're inserting the new element, it
+might get the garbage value in "next". The patch below fixes that.
 
-Thanks,
-Robin
+Björn
+
+
+
+Initialize the "next" field of a timer stats entry before it is inserted
+into the list to avoid a race with the fastpath lookup.
+
+Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
+---
+diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
+index 868f1bc..5bc8f91 100644
+--- a/kernel/time/timer_stats.c
++++ b/kernel/time/timer_stats.c
+@@ -202,12 +202,12 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
+ 	if (curr) {
+ 		*curr = *entry;
+ 		curr->count = 0;
++		curr->next = NULL;
+ 		memcpy(curr->comm, comm, TASK_COMM_LEN);
+ 		if (prev)
+ 			prev->next = curr;
+ 		else
+ 			*head = curr;
+-		curr->next = NULL;
+ 	}
+  out_unlock:
+ 	spin_unlock(&table_lock);
+
