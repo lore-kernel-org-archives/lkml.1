@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751513AbXE3GwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751537AbXE3HCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751513AbXE3GwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 02:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbXE3GwK
+	id S1751537AbXE3HCj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 03:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbXE3HCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 02:52:10 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37501 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751119AbXE3GwI (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 02:52:08 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19xnm0pA9Fx9vPSRSNYw7yMgET3Ujf/eC8PbGKCud
-	wngyJgQHDwHH6a
-Date: Wed, 30 May 2007 08:52:04 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ian Kumlien <iank@bredband.net>, Linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [BUG] Something goes wrong with timer statistics.
-Message-ID: <20070530065204.GA2226@atjola.homenet>
-Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-	Ian Kumlien <iank@bredband.net>, Linux-kernel@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-References: <1180474738.22497.25.camel@pi.pomac.com> <6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com> <1180478288.20546.39.camel@chaos>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1180478288.20546.39.camel@chaos>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+	Wed, 30 May 2007 03:02:30 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:45421 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbXE3HCa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 03:02:30 -0400
+Subject: Re: Regression: USB is nfg after suspend/resume(RAM) cycle onIntel 
+	chipset
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+Cc: webmaster@kernel.org, Mark Lord <lkml@rtr.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <29495f1d0705291007p2448ea9dl51fa597c59a2d16f@mail.gmail.com>
+References: <465C566E.4030009@rtr.ca> 
+	<alpine.LFD.0.98.0705290945520.26602@woody.linux-foundation.org> 
+	<465C5C16.7020001@rtr.ca> <465C5D25.2050303@rtr.ca> 
+	<29495f1d0705291007p2448ea9dl51fa597c59a2d16f@mail.gmail.com>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Wed, 30 May 2007 09:02:29 +0200
+Message-Id: <1180508549.9181.4.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.05.30 00:38:08 +0200, Thomas Gleixner wrote:
-> On Wed, 2007-05-30 at 00:24 +0200, Michal Piotrowski wrote:
-> > Hi Ian,
-> > 
-> > (Thomas "The Wizard of Time" added to CC :))
-> 
-> Added more wizards :)
-> 
-> > On 29/05/07, Ian Kumlien <iank@bredband.net> wrote:
-> > > Hi,
-> > >
-> > > As the daystar sets, i try to play some with my new would be
-> > > firewall/server, but since this will be running for quite some time i
-> > > have been experimenting with powertop to find out what i can do to limit
-> > > it's power usage.
-> > >
-> > > But, if i run powertop for too long or a few times to many... this
-> > > happens:
-> > > http://pomac.netswarm.net/pics/kernel_panic.jpg
-> 
-> This was reported before. It's incredibly hard to reproduce.
+On Tue, 2007-05-29 at 10:07 -0700, Nish Aravamudan wrote:
 
-Hm, tstats_write() only grabs show_mutex, but it calls reset_entries()
-which happily messes with the entries table, shouldn't the table_lock
-also be held in that case?
+> Click on "raw"? e.g.:
+>
+> summary | shortlog | log | commit | commitdiff | tree
+> raw (parent: 1ea0975)
+>
+> Neare the top.
 
-Bj�rn
+Hmmm...yes, but if you click raw, you ave "500 internal error", and a
+raw html source (that is, content: header is right :-) a least).
+
+Added  webmaster to Cc:, as per instruction in the error itself.
+
+Romano
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+
