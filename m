@@ -1,227 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbXE3PWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbXE3PXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbXE3PWc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbXE3PWY
+	id S1755094AbXE3PXB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbXE3PWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:22:24 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:37970 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756098AbXE3PWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:22:22 -0400
-Message-ID: <465D97AA.3020806@openvz.org>
-Date: Wed, 30 May 2007 19:26:34 +0400
-From: Pavel Emelianov <xemul@openvz.org>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Wed, 30 May 2007 11:22:50 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:3409 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753772AbXE3PWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 11:22:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AbqK5ESshic40LykmI+RTFP8Pf5wPobKMR//9jz4jfgxMQQf4koKO/TR5CHEhlOkh2ZJD6vGx0Z0MFhCwaTBCvXUHJd2RQmvE/pKb0JCxqURAVBKUdqktqgZWFGWAegcvaRFyslEqYNmSqwt5ihv1OlMlHru2odhMzq3rLtet0M=
+Message-ID: <2bd9ebfa0705300822s453fe5ccva18bf244e1551098@mail.gmail.com>
+Date: Wed, 30 May 2007 20:52:29 +0530
+From: "Tej Parkash" <tejparkash.d@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: Linux-kernel-digest Digest, Vol 32, Issue 795
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070530151209.GA15335@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@in.ibm.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Kirill Korotaev <dev@openvz.org>
-Subject: [PATCH 1/8] Resource counters
-References: <465D9739.8070209@openvz.org>
-In-Reply-To: <465D9739.8070209@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <mailman.13746.1180510421.20629.linux-kernel-digest@lists.us.dell.com>
+	 <2bd9ebfa0705300735l51dcf4ceubf7f83ab44703010@mail.gmail.com>
+	 <2bd9ebfa0705300737t4f11ee71mca114b37a969db01@mail.gmail.com>
+	 <20070530151209.GA15335@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce generic structures and routines for resource accounting.
+On 5/30/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Wed, May 30, 2007 at 08:07:53PM +0530, Tej Parkash wrote:
+> > On 5/30/07, Tej Parkash <tejparkash.d@gmail.com> wrote:
+> > >> > >
+> > >> > > while building module i was getting following warning and it
+> > >terminate
+> > >> > > module building stage
+> > >> > The below are only warnings and your build should succeed.
+> > >> >
+> > >> > It is obviously i386 - is it a clean allmodconfig or any changes?
+> > >> > Is it latest -linus or some older version of the codebase?
+> > >> Did an allmodconfig build of i386 - I see (almost) all warnings here.
+> > >> So I will take a look based on this.
+> >
+> > yaa i got the warning but as i said building stage is also getting
+> > terminated, without any error.
+> >
+> > >The MODPOST stage took a while but it proceeded with no hick-ups.
+> > > MDOPSOT deals with ~2000 modules in my case and that consumes a bit
+> > > of memory. Maybe you are hitting the limit with respect to available RAM
+> > > / SWAP?
+> > >
+> > >        Sam
+> > >
+> > >
+> > I don't think so that RAM or SWAP space is a constraint, is it related
+> > to kernel build option or some change in arch. config files
+> > I am not aware of the required patches for the same.
+> Can you please post relevant parts of a build with make V=2
+> That is the last couple of commands before the build suddenly stops.
+> Also to error-code reported by make must be included.
+>
+> Ohh, and exact command-line + config you use.
+>
+>         Sam
+>
 
-Each resource accounting container is supposed to aggregate it,
-container_subsystem_state and its resource-specific members within.
+make -C /lib/modules/2.6.21.3/build/ SUBDIR=/home/tej/Offload modules
+make[1]: Entering directory `/home/tej/linux_src/linux-2.6.21.3'
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  Building modules, stage 2.
+  MODPOST 1889 modules
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:start_kernel from .text between 'is386' (at offset
+0xc0101171) and 'check_x87'
+WARNING: vmlinux - Section mismatch: reference to .init.text: from
+.text between 'rest_init' (at offset 0xc0101458) and 'try_name'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:__alloc_bootmem from .text between 'init_gdt' (at offset
+0xc010adfb) and 'cpu_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:__alloc_bootmem from .text between 'init_gdt' (at offset
+0xc010ae11) and 'cpu_init'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:sysenter_setup from .text between 'identify_cpu' (at offset
+0xc010b46b) and 'display_cacheinfo'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:mtrr_bp_init from .text between 'identify_cpu' (at offset
+0xc010b475) and 'display_cacheinfo'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:trap_init_f00f_bug from .text between 'init_intel' (at
+offset 0xc010d576) and 'cpuid4_cache_lookup'
+WARNING: vmlinux - Section mismatch: reference to .init.text: from
+.text between 'iret_exc' (at offset 0xc02f2c2e) and '_etext'
+WARNING: vmlinux - Section mismatch: reference to
+.init.data:initkmem_list3 from .text between 'set_up_list3s' (at
+offset 0xc0173aff) and 's_start'
+WARNING: vmlinux - Section mismatch: reference to
+.init.text:eisa_root_register from .text between
+'virtual_eisa_root_init' (at offset 0xc026fecf) and
+'cpufreq_unregister_driver'
+WARNING: vmlinux - Section mismatch: reference to .init.text: from
+.text between 'iret_exc' (at offset 0xc02f32c8) and '_etext'
+make[1]: Leaving directory `/home/tej/linux_src/linux-2.6.21.3'
 
-Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
----
+the actaul kernel where i am running this make is in
+/home/tej/linux_src/linux-2.6.21.3.
 
-diff -upr linux-2.6.22-rc2-mm1.orig/include/linux/res_counter.h linux-2.6.22-rc2-mm1-0/include/linux/res_counter.h
---- linux-2.6.22-rc2-mm1.orig/include/linux/res_counter.h	2007-05-30 16:16:58.000000000 +0400
-+++ linux-2.6.22-rc2-mm1-0/include/linux/res_counter.h	2007-05-30 16:13:09.000000000 +0400
-@@ -0,0 +1,83 @@
-+#ifndef __RES_COUNTER_H__
-+#define __RES_COUNTER_H__
-+/*
-+ * resource counters
-+ *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ *
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-+ */
-+
-+#include <linux/container.h>
-+
-+struct res_counter {
-+	unsigned long usage;
-+	unsigned long limit;
-+	unsigned long failcnt;
-+	spinlock_t lock;
-+};
-+
-+enum {
-+	RES_USAGE,
-+	RES_LIMIT,
-+	RES_FAILCNT,
-+};
-+
-+ssize_t res_counter_read(struct res_counter *cnt, int member,
-+		const char __user *buf, size_t nbytes, loff_t *pos);
-+ssize_t res_counter_write(struct res_counter *cnt, int member,
-+		const char __user *buf, size_t nbytes, loff_t *pos);
-+
-+static inline void res_counter_init(struct res_counter *cnt)
-+{
-+	spin_lock_init(&cnt->lock);
-+	cnt->limit = (unsigned long)LONG_MAX;
-+}
-+
-+static inline int res_counter_charge_locked(struct res_counter *cnt,
-+		unsigned long val)
-+{
-+	if (cnt->usage <= cnt->limit - val) {
-+		cnt->usage += val;
-+		return 0;
-+	}
-+
-+	cnt->failcnt++;
-+	return -ENOMEM;
-+}
-+
-+static inline int res_counter_charge(struct res_counter *cnt,
-+		unsigned long val)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cnt->lock, flags);
-+	ret = res_counter_charge_locked(cnt, val);
-+	spin_unlock_irqrestore(&cnt->lock, flags);
-+	return ret;
-+}
-+
-+static inline void res_counter_uncharge_locked(struct res_counter *cnt,
-+		unsigned long val)
-+{
-+	if (unlikely(cnt->usage < val)) {
-+		WARN_ON(1);
-+		val = cnt->usage;
-+	}
-+
-+	cnt->usage -= val;
-+}
-+
-+static inline void res_counter_uncharge(struct res_counter *cnt,
-+		unsigned long val)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cnt->lock, flags);
-+	res_counter_uncharge_locked(cnt, val);
-+	spin_unlock_irqrestore(&cnt->lock, flags);
-+}
-+
-+#endif
-diff -upr linux-2.6.22-rc2-mm1.orig/init/Kconfig linux-2.6.22-rc2-mm1-0/init/Kconfig
---- linux-2.6.22-rc2-mm1.orig/init/Kconfig	2007-05-30 16:13:08.000000000 +0400
-+++ linux-2.6.22-rc2-mm1-0/init/Kconfig	2007-05-30 16:13:09.000000000 +0400
-@@ -328,6 +328,10 @@ config CPUSETS
- 
- 	  Say N if unsure.
- 
-+config RESOURCE_COUNTERS
-+	bool
-+	select CONTAINERS
-+
- config SYSFS_DEPRECATED
- 	bool "Create deprecated sysfs files"
- 	default y
-diff -upr linux-2.6.22-rc2-mm1.orig/kernel/Makefile linux-2.6.22-rc2-mm1-0/kernel/Makefile
---- linux-2.6.22-rc2-mm1.orig/kernel/Makefile	2007-05-30 16:13:08.000000000 +0400
-+++ linux-2.6.22-rc2-mm1-0/kernel/Makefile	2007-05-30 16:13:09.000000000 +0400
-@@ -56,6 +56,7 @@ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
- obj-$(CONFIG_UTS_NS) += utsname.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
-+obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
- 
- ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
- # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-diff -upr linux-2.6.22-rc2-mm1.orig/kernel/res_counter.c linux-2.6.22-rc2-mm1-0/kernel/res_counter.c
---- linux-2.6.22-rc2-mm1.orig/kernel/res_counter.c	2007-05-30 16:16:58.000000000 +0400
-+++ linux-2.6.22-rc2-mm1-0/kernel/res_counter.c	2007-05-30 16:13:09.000000000 +0400
-@@ -0,0 +1,73 @@
-+/*
-+ * resource containers
-+ *
-+ * Copyright 2007 OpenVZ SWsoft Inc
-+ *
-+ * Author: Pavel Emelianov <xemul@openvz.org>
-+ *
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/parser.h>
-+#include <linux/fs.h>
-+#include <linux/res_counter.h>
-+#include <asm/uaccess.h>
-+
-+static inline unsigned long *res_counter_member(struct res_counter *cnt, int member)
-+{
-+	switch (member) {
-+	case RES_USAGE:
-+		return &cnt->usage;
-+	case RES_LIMIT:
-+		return &cnt->limit;
-+	case RES_FAILCNT:
-+		return &cnt->failcnt;
-+	};
-+
-+	BUG();
-+	return NULL;
-+}
-+
-+ssize_t res_counter_read(struct res_counter *cnt, int member, 
-+		const char __user *userbuf, size_t nbytes, loff_t *pos)
-+{
-+	unsigned long *val;
-+	char buf[64], *s;
-+
-+	s = buf;
-+	val = res_counter_member(cnt, member);
-+	s += sprintf(s, "%lu\n", *val);
-+	return simple_read_from_buffer((void __user *)userbuf, nbytes,
-+			pos, buf, s - buf);
-+}
-+
-+ssize_t res_counter_write(struct res_counter *cnt, int member,
-+		const char __user *userbuf, size_t nbytes, loff_t *pos)
-+{
-+	int ret;
-+	char *buf, *end;
-+	unsigned long tmp, *val;
-+
-+	buf = kmalloc(nbytes + 1, GFP_KERNEL);
-+	ret = -ENOMEM;
-+	if (buf == NULL)
-+		goto out;
-+
-+	buf[nbytes] = 0;
-+	ret = -EFAULT;
-+	if (copy_from_user(buf, userbuf, nbytes))
-+		goto out_free;
-+
-+	ret = -EINVAL;
-+	tmp = simple_strtoul(buf, &end, 10);
-+	if (*end != '\0')
-+		goto out_free;
-+
-+	val = res_counter_member(cnt, member);
-+	*val = tmp;
-+	ret = nbytes;
-+out_free:
-+	kfree(buf);
-+out:
-+	return ret;
-+}
-
+thanks
+tej
