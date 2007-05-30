@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbXE3PrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbXE3Pxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbXE3PrI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:47:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbXE3Pq4
+	id S1753870AbXE3Pxt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbXE3Pxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:46:56 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:50297 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752118AbXE3Pq4 (ORCPT
+	Wed, 30 May 2007 11:53:41 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:60905 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750756AbXE3Pxl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:46:56 -0400
-Message-ID: <465D9C62.4070009@yandex.ru>
-Date: Wed, 30 May 2007 18:46:42 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 30 May 2007 11:53:41 -0400
+Date: Wed, 30 May 2007 08:53:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+cc: Bryan Wu <bryan.wu@analog.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/20] Blackfin update for 2.6.22-rc3
+In-Reply-To: <200705300909.13419.rgetz@blackfin.uclinux.org>
+Message-ID: <alpine.LFD.0.98.0705300842340.26602@woody.linux-foundation.org>
+References: <11803414753217-git-send-email-bryan.wu@analog.com>
+ <alpine.LFD.0.98.0705291356290.26602@woody.linux-foundation.org>
+ <200705300909.13419.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Daniel Hazelton <dhazelton@enter.net>,
-       Michael-Luke Jones <mlj28@cam.ac.uk>,
-       lkml <linux-kernel@vger.kernel.org>, dwmw2@infradead.org
-Subject: Re: JFFS2 using 'private' zlib header (was [RFC] LZO de/compression
- support - take 6)
-References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>	 <a781481a0705290427n3bad472aqf4e0b8276780b405@mail.gmail.com>	 <231C137C-D0BF-44F7-B2D5-AE610284D00A@cam.ac.uk>	 <200705290943.11176.dhazelton@enter.net> <a781481a0705290815y32758055te52cb8657f34acc@mail.gmail.com> <465D7EFB.8090609@yandex.ru>
-In-Reply-To: <465D7EFB.8090609@yandex.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 30 May 2007 15:46:42.0697 (UTC) FILETIME=[B8487790:01C7A2D1]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-> JFFS2 needs: it has _big_ input buffer, and _small_ output buffer, and 
-> it wants
-> zlib to compress as much as possible from the input buffer, and make the 
-> output
-> buffer full or nearly full of compressed data.
- 
-Err, and important note is that it also wants this compressed data to be
-independently uncompressable.
 
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+On Wed, 30 May 2007, Robin Getz wrote:
+> 
+> In one of my (how did Andrew word it...) circumlocutious threads about 
+> Blackfin a while ago, I offered hardware to anyone who wanted to try things 
+> out. Greg KH was the only person who read through the entire thing, and asked 
+> (and got one). Offer still good for qualified developers.
+
+I applaud that, but I end up spending all my time on email, and I suspect 
+that's true for most of the core developers. So I actually suspect that 
+you'll get much better community and testing from offering these things at 
+Linux users groups, and similar places where you find people who may be 
+really interested in getting into something new, and don't already have 
+some kernel subsystem that they are basically maintaining full time..
+
+Not that offering them to known kernel developers is _bad_, mind you, but 
+I think you'll actually find that a lot of them end up being so busy with 
+their current thing that they don't have much time for another 
+architecture. I know I do..
+
+			Linus
