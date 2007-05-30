@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbXE3JzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752417AbXE3J7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbXE3JzH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 05:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbXE3Jy4
+	id S1752417AbXE3J7J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 05:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXE3J65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 05:54:56 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3513 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbXE3Jyz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 05:54:55 -0400
-Message-ID: <465D49F3.7010005@shadowen.org>
-Date: Wed, 30 May 2007 10:54:59 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Maciej W. Rozycki" <macro@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] zs: Move to the serial subsystem
-References: <Pine.LNX.4.64N.0705291258390.14456@blysk.ds.pg.gda.pl> <20070530011224.bf36d2df.akpm@linux-foundation.org>
-In-Reply-To: <20070530011224.bf36d2df.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 05:58:57 -0400
+Received: from verein.lst.de ([213.95.11.210]:54726 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750888AbXE3J65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 05:58:57 -0400
+Date: Wed, 30 May 2007 11:58:22 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: cbe-oss-dev@ozlabs.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [Cbe-oss-dev] [RFC] Cell: shutdown method for spu_sysdev_class
+Message-ID: <20070530095821.GA24373@lst.de>
+References: <463D1A2F.10708@am.sony.com> <200705292023.49968.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705292023.49968.arnd@arndb.de>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 29 May 2007 14:03:54 +0100 (BST) "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
-
-> Hey, you have volatiles and checkpatch.pl didn't complain.  Andy, a
-> reference to Documentation/volatile-considered-harmful.txt would suit.
+On Tue, May 29, 2007 at 08:23:49PM +0200, Arnd Bergmann wrote:
+> On Sunday 06 May 2007, Geoff Levand wrote:
+> > --- ps3-linux-dev.orig/arch/powerpc/platforms/cell/spu_base.c
+> > +++ ps3-linux-dev/arch/powerpc/platforms/cell/spu_base.c
+> > @@ -463,8 +463,21 @@ void spu_free(struct spu *spu)
+> >  }
+> >  EXPORT_SYMBOL_GPL(spu_free);
+> >
+> > +static int spu_shutdown(struct sys_device *sysdev)
+> > +{
+> > +       struct spu *spu = container_of(sysdev, struct spu, sysdev);
+> > +
+> > +       // what else here???
+> > +
+> > +       spu_free_irqs(spu);
+> > +       spu_destroy_spu(spu);
+> > +       kfree(spu);
+> > +       return 0;
+> > +}
+> > +
+> >  struct sysdev_class spu_sysdev_class = {
+> > -       set_kset_name("spu")
+> > +       set_kset_name("spu"),
+> > +       .shutdown = spu_shutdown,
+> >  };
+> >
+> >  int spu_add_sysdev_attr(struct sysdev_attribute *attr)
 > 
-> (That's
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc2/2.6.22-rc2-mm1/broken-out/volatile-considered-harmful-take-3.patch)
+> After some debugging, I found that this patch creates an oops when slab
+> debugging is enabled, the reason for that being that sysdev_shutdown()
+> iterates over all system devices using list_for_each_entry(), not
+> list_for_each_entry_safe().
+> 
+> There are two ways of fixing this:
+> 
+> - use list_for_each_entry_safe() to go over all devices so they
+>   can be freed in their ->shutdown method.
+> - not free the device, because we know the system is going down
+>   anyway.
+> 
+> Is it documented or implied somewhere that ->shutdown must not free
+> the device? If not, the first option is probably the safer choice.
 
-Added ...
-
-Use of volatile is usually wrong: see
-Documentation/volatile-considered-harmful.txt
-PATCH: XXX.eml:374:
-FILE: linux-2.6.22-rc2/drivers/serial/zs.c:131:
-+       volatile void __iomem *control = zport->port.membase +
-
-[...]
-
-I will batch up any changes to checkpatch.pl and send you them as a blob
-when they get "interesting" if that suits.
-
--apw
+It's not documented anywhere, but implicitly assumed.  I don't know
+of any shutdown implementation that frees the device.
