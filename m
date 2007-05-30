@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbXEaBNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbXEaBQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759332AbXEaBNa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 21:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXEaBNY
+	id S1757782AbXEaBQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 21:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbXEaBQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 21:13:24 -0400
-Received: from imf25aec.mail.bellsouth.net ([205.152.59.73]:58125 "EHLO
-	imf25aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752172AbXEaBNX (ORCPT
+	Wed, 30 May 2007 21:16:11 -0400
+Received: from spark.anonyhost.net ([88.255.80.78]:48400 "EHLO
+	spark.anonyhost.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752937AbXEaBQK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 21:13:23 -0400
-Date: Wed, 30 May 2007 20:13:20 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with atl1 and msi in kernel 2.6.22-rc3
-Message-ID: <20070530201320.1cec6a31@osprey.hogchain.net>
-In-Reply-To: <20070530220739.GA26408@kroah.com>
-References: <200705300200.25412.jareguero@telefonica.net>
-	<20070530064711.570162f1@osprey.hogchain.net>
-	<20070530220739.GA26408@kroah.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 21:16:10 -0400
+X-Greylist: delayed 32586 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 21:16:10 EDT
+Message-ID: <e197c5b31fc4f8697b3313ce1989a059@gmail.com>
+From: "=?iso-8859-9?B?SGFzYXIgRGFu/f5tYW79?=" <hesapgunu@gmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: =?iso-8859-9?B?3WwgdmUg3WznZWxlcmRlIFRlbXNpbGNpbGlrbGVyIHZlcml5b3J1eg==?=
+Date: Wed, 30 May 2007 19:12:55 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-9"
+Content-Transfer-Encoding: 8BIT
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - spark.anonyhost.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - gmail.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 15:07:39 -0700
-Greg KH <greg@kroah.com> wrote:
+Son 5 yýl içinde siz veya bir yakýnýnýz trafik kazasý maðduru ise bizimle irtibata geçin. 
 
-> Sorry, I'm catching up on PCI stuff right now (am traveling in Tokyo
-> right now, gotta love jet lag...)
-> 
-> thanks for your patience.
+Türkiye'nin tüm illerinde temsilcilikler veriyoruz.  Baþvurunuzu www.sigorta.in web sitemizden yapabilirsiniz. 
 
-Thanks a lot for the note, Greg.  I appreciate it.  I'll be patient.
+Ýyi Günler
 
-Jay
+Göktaþ Trafik Kazalarý Danýþmanlýk Hizmetleri
+www.sigorta.in
+
+Uluðbey Mah. Furgandede Cad. Larende Han No:50/402
+KONYA
+Tel:(332) 353 3320
+
