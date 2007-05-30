@@ -1,79 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761219AbXE3WLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbXE3WLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761219AbXE3WLf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758441AbXE3WLQ
+	id S1760700AbXE3WLX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758067AbXE3WLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:11:16 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:49540 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757909AbXE3WLO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 May 2007 18:11:14 -0400
-Date: Thu, 31 May 2007 00:11:10 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.52
-Message-ID: <20070530221110.GW3899@stusta.de>
+Received: from waste.org ([66.93.16.53]:41489 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754968AbXE3WLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 18:11:11 -0400
+Date: Wed, 30 May 2007 17:10:39 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: David Miller <davem@davemloft.net>
+Cc: kaber@trash.net, shemminger@linux-foundation.org,
+       akpm@linux-foundation.org, venkatesh.pallipadi@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
+Message-ID: <20070530221039.GJ11166@waste.org>
+References: <20070530105936.6c988da5.akpm@linux-foundation.org> <20070530112056.0aeb9498@freepuppy> <465DC598.5060407@trash.net> <20070530.125551.41636333.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20070530.125551.41636333.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
+On Wed, May 30, 2007 at 12:55:51PM -0700, David Miller wrote:
+> From: Patrick McHardy <kaber@trash.net>
+> Date: Wed, 30 May 2007 20:42:32 +0200
+> 
+> > Stephen Hemminger wrote:
+> > >>>Index: linux-2.6.22-rc-mm/net/sched/sch_generic.c
+> > >>>===================================================================
+> > >>>--- linux-2.6.22-rc-mm.orig/net/sched/sch_generic.c	2007-05-24 11:16:03.000000000 -0700
+> > >>>+++ linux-2.6.22-rc-mm/net/sched/sch_generic.c	2007-05-25 15:10:02.000000000 -0700
+> > >>>@@ -224,7 +224,8 @@
+> > >>> 	if (dev->tx_timeout) {
+> > >>> 		if (dev->watchdog_timeo <= 0)
+> > >>> 			dev->watchdog_timeo = 5*HZ;
+> > >>>-		if (!mod_timer(&dev->watchdog_timer, jiffies + dev->watchdog_timeo))
+> > >>>+		if (!mod_timer(&dev->watchdog_timer,
+> > >>>+			       round_jiffies(jiffies + dev->watchdog_timeo)))
+> > >>> 			dev_hold(dev);
+> > >>> 	}
+> > >>> }
+> > >>
+> > >>Please cc netdev on net patches.
+> > >>
+> > >>Again, I worry that if people set the watchdog timeout to, say, 0.1 seconds
+> > >>then they will get one second, which is grossly different.
+> > >>
+> > >>And if they were to set it to 1.5 seconds, they'd get 2.0 which is pretty
+> > >>significant, too.
+> > > 
+> > > 
+> > > Alternatively, we could change to a timer that is pushed forward after each
+> > > TX, maybe using hrtimer and hrtimer_forward().  That way the timer would
+> > > never run in normal case.
+> > 
+> > 
+> > It seems wasteful to add per-packet overhead for tx timeouts, which
+> > should be an exception. Do drivers really care about the exact
+> > timeout value? Compared to a packet transmission time its incredibly
+> > long anyways ..
+> 
+> I agree, this change is absolutely rediculious and is just a blind
+> cookie-cutter change made without consideration of what the code is
+> doing and what it's requirements are.
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+What are you agreeing with, Dave?
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+Are you agreeing that "it seems wasteful to add per-packet overhead"?
+This patch is not doing that.
 
+A quick grep shows that most things are using multi-second timeouts
+here. Of the ones that aren't, a number are using .4s, and many more
+aren't even in units of HZ. Makes me wonder if the various boards
+using 50ms are being overzealous.
 
-Changes since 2.6.16.51:
-
-Adrian Bunk (2):
-      Linux 2.6.16.52-rc1
-      Linux 2.6.16.52
-
-Andrew Morton (1):
-      gcc-4.1.0 is bust
-
-Corey Mutter (1):
-      [IPV6]: Reverse sense of promisc tests in ip6_mc_input
-
-David L Stevens (1):
-      [IPV6]: Send ICMPv6 error on scope violations.
-
-Eric Sesterhenn (1):
-      [IPV6]: Fix slab corruption running ip6sic
-
-Jamal Hadi Salim (1):
-      [NET_SCHED]: prio qdisc boundary condition
-
-Sergei Shtylyov (2):
-      [NETPOLL]: Fix TX queue overflow in trapped mode.
-      [NETPOLL]: Remove CONFIG_NETPOLL_RX
-
-Srinivas Aji (1):
-      [TCP]: zero out rx_opt in tcp_disconnect()
-
-Stephen Hemminger (1):
-      [IPV6]: Track device renames in snmp6.
-
-
- Makefile                  |    2 +-
- drivers/net/Kconfig       |    5 -----
- include/linux/netdevice.h |    8 +++-----
- init/main.c               |    4 ++++
- net/ipv4/tcp.c            |    3 +--
- net/ipv6/addrconf.c       |    6 ++++--
- net/ipv6/ip6_input.c      |    2 +-
- net/ipv6/ip6_output.c     |   13 ++++++++++---
- net/ipv6/proc.c           |    1 +
- net/ipv6/xfrm6_tunnel.c   |    2 +-
- net/sched/sch_prio.c      |    2 +-
- 11 files changed, 27 insertions(+), 21 deletions(-)
-
+-- 
+Mathematics is the supreme nostalgia of our time.
