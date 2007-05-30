@@ -1,123 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751914AbXE3HH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751795AbXE3HKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751914AbXE3HH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 03:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXE3HHU
+	id S1751795AbXE3HKQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 03:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXE3HKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 03:07:20 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35311 "HELO mail.gmx.net"
+	Wed, 30 May 2007 03:10:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49149 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751099AbXE3HHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 03:07:19 -0400
-X-Authenticated: #14603182
-X-Provags-ID: V01U2FsdGVkX1/fQkVtiNLfNhTN3Gu4SJSL4l2lyiX/n6S1dQlDb0
-	dCyJbCMm4mDyaO
-Message-ID: <465D22A6.4090107@gmx.de>
-Date: Wed, 30 May 2007 09:07:18 +0200
-From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	id S1751188AbXE3HKC (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 03:10:02 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1/uYosBx/nuBmuRbGGb54ZC5bOm4yiQSLbtbI4V1k
+	z/Cjd2TBt7tvj7
+Date: Wed, 30 May 2007 09:10:00 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Thomas Gleixner <tglx@linutronix.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Ian Kumlien <iank@bredband.net>, Linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [BUG] Something goes wrong with timer statistics.
+Message-ID: <20070530071000.GB2226@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Ian Kumlien <iank@bredband.net>, Linux-kernel@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+References: <1180474738.22497.25.camel@pi.pomac.com> <6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com> <1180478288.20546.39.camel@chaos> <20070530065204.GA2226@atjola.homenet>
 MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org
-Subject: Re: How to access correctly serial port inside module?
-References: <46485D84.1010902@gmx.de> <46489EF1.2020509@gmx.de> <Pine.LNX.4.61.0705142158340.9570@yvahk01.tjqt.qr> <4648E9F7.5090908@imap.cc> <Pine.LNX.4.61.0705151020310.9570@yvahk01.tjqt.qr> <46536C0F.50101@imap.cc> <4655676A.1000102@gmx.de> <4655C554.7030000@imap.cc> <4655C93D.40005@gmx.de> <Pine.LNX.4.61.0705241927410.31549@yvahk01.tjqt.qr> <4655E463.7000201@gmx.de> <465B0BC9.2040502@imap.cc>
-In-Reply-To: <465B0BC9.2040502@imap.cc>
-Content-Type: multipart/mixed;
- boundary="------------000608090800030401010401"
-X-PGP-KeyID: 9D6D68DF
-X-Request-PGP: 
-X-OpenPGP-Key-ID: 000A26609D6D68DF
-X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
-X-OpenPGP-Key-URL: 
-X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070530065204.GA2226@atjola.homenet>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 2007.05.30 08:52:04 +0200, Björn Steinbrink wrote:
+> On 2007.05.30 00:38:08 +0200, Thomas Gleixner wrote:
+> > On Wed, 2007-05-30 at 00:24 +0200, Michal Piotrowski wrote:
+> > > Hi Ian,
+> > > 
+> > > (Thomas "The Wizard of Time" added to CC :))
+> > 
+> > Added more wizards :)
+> > 
+> > > On 29/05/07, Ian Kumlien <iank@bredband.net> wrote:
+> > > > Hi,
+> > > >
+> > > > As the daystar sets, i try to play some with my new would be
+> > > > firewall/server, but since this will be running for quite some time i
+> > > > have been experimenting with powertop to find out what i can do to limit
+> > > > it's power usage.
+> > > >
+> > > > But, if i run powertop for too long or a few times to many... this
+> > > > happens:
+> > > > http://pomac.netswarm.net/pics/kernel_panic.jpg
+> > 
+> > This was reported before. It's incredibly hard to reproduce.
+> 
+> Hm, tstats_write() only grabs show_mutex, but it calls reset_entries()
+> which happily messes with the entries table, shouldn't the table_lock
+> also be held in that case?
 
---------------000608090800030401010401
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hrmpf, nevermind, I missed the active flag...
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Tilman Schmidt schrieb:
-> Am 24.05.2007 21:15 schrieb Lars K.W. Gohlke:
->> Jan Engelhardt schrieb:
-> [code proposal]
->>> [I've warned about it... ;-) ]
->> is it the way to access from kernelspace the userspace fs?
->> the not-correct-way?
->
-> Yes, indeed.
->
->> If it is so, I will wait for another solution ;)
->
-> I'm not sure waiting will help. The roasted pigeons will not come
-> flying into your mouth.
->
-> The possible solutions have been sketched out for you:
->
-> a) open the device file from the kernel (described by Jan):
->    actively discouraged by the kernelnewbies.org FAQ document,
->    and probably won't even work IMHO
->
-> b) program the serial port directly (described by Jan):
->    will work only with one type of hardware and you'll have to
->    disable the regular serial driver first; frowned upon by kernel
->    gurus as "reinventing the wheel"
->
-> c) abuse the line discipline interface (described by me):
->    moderately well documented, and there's precedent for using it
->    that way in the well-accepted PPP module as well as my humble
->    contribution, the ser_gigaset driver; requires a userspace
->    daemon for pushing the line discipline module on the serial
->    port and keeping it there
->
-> d) use the serio interface (described by Ying Huang):
->    potentially cleaner conceptually and seems to work without a
->    userspace daemon, but apparently not documented anywhere
->    except in the source files drivers/input/serio/serport.c
->    and linux/drivers/input/mouse/sermouse.c
->
-> Now it's your turn to decide.
->
-> HTH
-> T.
->
-
-When I'm chosing option d) can smb. help me step by step? There are so
-many pieces of code I don't understand.
-
-Ok, let's begin:
-
-my kernel source base is : ubuntu-lts 6.06 and 2.6.15-7
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.15.y.git;a=tree;f=drivers/input/serio;
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
-
-iD8DBQFGXSKoAAomYJ1taN8RApggAJ99t+yMvPScr4yhOoTOS9TvYVUMsgCeJAbI
-nGTvFGb49gUOzJG17Nmypq4=
-=K4W8
------END PGP SIGNATURE-----
-
---------------000608090800030401010401
-Content-Type: text/x-vcard; charset=utf-8;
- name="lkwg82.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="lkwg82.vcf"
-
-begin:vcard
-fn:Lars K.W. Gohlke
-n:Gohlke;Lars K.W.
-email;internet:lkwg82@gmx.de
-x-mozilla-html:FALSE
-version:2.1
-end:vcard
-
-
---------------000608090800030401010401--
-
+Sorry,
+Björn
