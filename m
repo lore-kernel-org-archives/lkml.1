@@ -1,110 +1,439 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXE3Mo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbXE3Mzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbXE3Mo6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 08:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbXE3Mov
+	id S1753488AbXE3Mzo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 08:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbXE3Mzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 08:44:51 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:58268 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751871AbXE3Mou convert rfc822-to-8bit (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 08:44:50 -0400
-Date: Wed, 30 May 2007 14:44:49 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: =?ISO-8859-1?B?Qmr2cm4=?= Steinbrink <B.Steinbrink@gmx.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Ian Kumlien <iank@bredband.net>, Linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [BUG] Something goes wrong with timer statistics.
-Message-Id: <20070530144449.36811a4d.dada1@cosmosbay.com>
-In-Reply-To: <20070530113825.GA5203@atjola.homenet>
-References: <1180474738.22497.25.camel@pi.pomac.com>
-	<6bffcb0e0705291524y2752d646p94b0bf6ca87af68f@mail.gmail.com>
-	<1180478288.20546.39.camel@chaos>
-	<20070530113825.GA5203@atjola.homenet>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 30 May 2007 08:55:36 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:10683 "EHLO
+	viefep22-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751918AbXE3Mzf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 08:55:35 -0400
+Message-Id: <20070530125336.322824180@chello.nl>
+References: <20070530124903.882133089@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Wed, 30 May 2007 14:49:08 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 5/6] lockstat: human readability tweaks
+Content-Disposition: inline; filename=lockstat-output.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 13:38:25 +0200
-Björn Steinbrink <B.Steinbrink@gmx.de> wrote:
+Present all this fancy new lock statistics information:
 
-> On 2007.05.30 00:38:08 +0200, Thomas Gleixner wrote:
-> > On Wed, 2007-05-30 at 00:24 +0200, Michal Piotrowski wrote:
-> > > Hi Ian,
-> > > 
-> > > (Thomas "The Wizard of Time" added to CC :))
-> > 
-> > Added more wizards :)
-> > 
-> > > On 29/05/07, Ian Kumlien <iank@bredband.net> wrote:
-> > > > Hi,
-> > > >
-> > > > As the daystar sets, i try to play some with my new would be
-> > > > firewall/server, but since this will be running for quite some time i
-> > > > have been experimenting with powertop to find out what i can do to limit
-> > > > it's power usage.
-> > > >
-> > > > But, if i run powertop for too long or a few times to many... this
-> > > > happens:
-> > > > http://pomac.netswarm.net/pics/kernel_panic.jpg
-> > 
-> > This was reported before. It's incredibly hard to reproduce.
-> 
-> OK, second try, this time with a patch. In timer_stats_update_stats,
-> input is allocated on the stack, so it is uninitialized, in particular
-> the "next" field is random. Now in tstat_lookup, the new entry "curr" is
-> initialized with the values from "input" (passed as "entry") and "next"
-> is set to NULL _after_ it is added to the list, so if a second CPU is
-> running the fastpath lookup while we're inserting the new element, it
-> might get the garbage value in "next". The patch below fixes that.
-> 
-> Björn
-> 
-> 
-> 
-> Initialize the "next" field of a timer stats entry before it is inserted
-> into the list to avoid a race with the fastpath lookup.
-> 
-> Signed-off-by: Björn Steinbrink <B.Steinbrink@gmx.de>
-> ---
-> diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
-> index 868f1bc..5bc8f91 100644
-> --- a/kernel/time/timer_stats.c
-> +++ b/kernel/time/timer_stats.c
-> @@ -202,12 +202,12 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
->  	if (curr) {
->  		*curr = *entry;
->  		curr->count = 0;
-> +		curr->next = NULL;
->  		memcpy(curr->comm, comm, TASK_COMM_LEN);
->  		if (prev)
->  			prev->next = curr;
->  		else
->  			*head = curr;
-> -		curr->next = NULL;
->  	}
->   out_unlock:
->  	spin_unlock(&table_lock);
-> 
+*warning, _wide_ output ahead*
 
-Your analysis might be right, not the fix.
+(output edited for purpose of brevity)
 
-You *cannot* assume curr->next = NULL will be done before insert.
+ # cat /proc/lock_stat
+lock_stat version 0.1
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+                              class name    contentions   waittime-min   waittime-max waittime-total   acquisitions   holdtime-min   holdtime-max holdtime-total
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-You probably also need a memory barrier.
+                         &inode->i_mutex:         14458           6.57      398832.75     2469412.23        6768876           0.34    11398383.65   339410830.89
+                         ---------------
+                         &inode->i_mutex           4486          [<ffffffff802a08f9>] pipe_wait+0x86/0x8d
+                         &inode->i_mutex              0          [<ffffffff802a01e8>] pipe_write_fasync+0x29/0x5d
+                         &inode->i_mutex              0          [<ffffffff802a0e18>] pipe_read+0x74/0x3a5
+                         &inode->i_mutex              0          [<ffffffff802a1a6a>] do_lookup+0x81/0x1ae
 
-	curr->next = NULL;
-	memcpy(curr->comm, comm, TASK_COMM_LEN);
+.................................................................................................................................................................
 
-	smp_mb(); /* commit all writes to curr before insert */
+              &inode->i_data.tree_lock-W:           491           0.27          62.47         493.89        2477833           0.39         468.89     1146584.25
+              &inode->i_data.tree_lock-R:            65           0.44           4.27          48.78       26288792           0.36         184.62    10197458.24
+              --------------------------
+                &inode->i_data.tree_lock             46          [<ffffffff80277095>] __do_page_cache_readahead+0x69/0x24f
+                &inode->i_data.tree_lock             31          [<ffffffff8026f9fb>] add_to_page_cache+0x31/0xba
+                &inode->i_data.tree_lock              0          [<ffffffff802770ee>] __do_page_cache_readahead+0xc2/0x24f
+                &inode->i_data.tree_lock              0          [<ffffffff8026f6e4>] find_get_page+0x1a/0x58
 
-	if (prev)
-		prev->next = curr;
-	else
-		*head = curr;
+.................................................................................................................................................................
+
+                      proc_inum_idr.lock:             0           0.00           0.00           0.00             36           0.00          65.60         148.26
+                        proc_subdir_lock:             0           0.00           0.00           0.00        3049859           0.00         106.81     1563212.42
+                        shrinker_rwsem-W:             0           0.00           0.00           0.00              5           0.00           1.73           3.68
+                        shrinker_rwsem-R:             0           0.00           0.00           0.00            633           2.57         246.57       10909.76
+
+'contentions' and 'acquisitions' are the number of such events measured (since 
+the last reset). The waittime- and holdtime- (min, max, total) numbers are 
+presented in microseconds.
+ 
+If there are any contention points, the lock class is presented in the block
+format (as i_mutex and tree_lock above), otherwise a single line of output is
+presented.
+
+The output is sorted on absolute number of contentions (read + write), this
+should get the worst offenders presented first, so that:
+
+ # grep : /proc/lock_stat | head
+
+will quickly show who's bad.
+
+The stats can be reset using:
+
+ # echo 0 > /proc/lock_stat
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Jason Baron <jbaron@redhat.com>
+---
+ kernel/lockdep.c      |   44 ++++++++
+ kernel/lockdep_proc.c |  266 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 310 insertions(+)
+
+Index: linux-2.6-git/kernel/lockdep.c
+===================================================================
+--- linux-2.6-git.orig/kernel/lockdep.c
++++ linux-2.6-git/kernel/lockdep.c
+@@ -149,6 +149,50 @@ static void lock_time_inc(struct lock_ti
+ 	lt->nr++;
+ }
+ 
++static inline void lock_time_add(struct lock_time *src, struct lock_time *dst)
++{
++	dst->min += src->min;
++	dst->max += src->max;
++	dst->total += src->total;
++	dst->nr += src->nr;
++}
++
++struct lock_class_stats lock_stats(struct lock_class *class)
++{
++	struct lock_class_stats stats;
++	int cpu, i;
++
++	memset(&stats, 0, sizeof(struct lock_class_stats));
++	for_each_possible_cpu(cpu) {
++		struct lock_class_stats *pcs =
++			&per_cpu(lock_stats, cpu)[class - lock_classes];
++
++		for (i = 0; i < ARRAY_SIZE(stats.contention_point); i++)
++			stats.contention_point[i] += pcs->contention_point[i];
++
++		lock_time_add(&pcs->read_waittime, &stats.read_waittime);
++		lock_time_add(&pcs->write_waittime, &stats.write_waittime);
++
++		lock_time_add(&pcs->read_holdtime, &stats.read_holdtime);
++		lock_time_add(&pcs->write_holdtime, &stats.write_holdtime);
++	}
++
++	return stats;
++}
++
++void clear_lock_stats(struct lock_class *class)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu) {
++		struct lock_class_stats *cpu_stats =
++			&per_cpu(lock_stats, cpu)[class - lock_classes];
++
++		memset(cpu_stats, 0, sizeof(struct lock_class_stats));
++	}
++	memset(class->contention_point, 0, sizeof(class->contention_point));
++}
++
+ static struct lock_class_stats *get_lock_stats(struct lock_class *class)
+ {
+ 	return &get_cpu_var(lock_stats)[class - lock_classes];
+Index: linux-2.6-git/kernel/lockdep_proc.c
+===================================================================
+--- linux-2.6-git.orig/kernel/lockdep_proc.c
++++ linux-2.6-git/kernel/lockdep_proc.c
+@@ -15,6 +15,10 @@
+ #include <linux/seq_file.h>
+ #include <linux/kallsyms.h>
+ #include <linux/debug_locks.h>
++#include <linux/vmalloc.h>
++#include <linux/sort.h>
++#include <asm/uaccess.h>
++#include <asm/div64.h>
+ 
+ #include "lockdep_internals.h"
+ 
+@@ -344,6 +348,262 @@ static const struct file_operations proc
+ 	.release	= seq_release,
+ };
+ 
++#ifdef CONFIG_LOCK_STAT
++
++struct lock_stat_data {
++	struct lock_class *class;
++	struct lock_class_stats stats;
++};
++
++struct lock_stat_seq {
++	struct lock_stat_data *iter;
++	struct lock_stat_data *iter_end;
++	struct lock_stat_data stats[MAX_LOCKDEP_KEYS];
++};
++
++/*
++ * sort on absolute number of contentions
++ */
++int lock_stat_cmp(const void *l, const void *r)
++{
++	const struct lock_stat_data *dl = l, *dr = r;
++	unsigned long nl, nr;
++
++	nl = dl->stats.read_waittime.nr + dl->stats.write_waittime.nr;
++	nr = dr->stats.read_waittime.nr + dr->stats.write_waittime.nr;
++
++	return nr - nl;
++}
++
++static void seq_line(struct seq_file *m, char c, int offset, int length)
++{
++	int i;
++
++	for (i = 0; i < offset; i++)
++		seq_puts(m, " ");
++	for (i = 0; i < length; i++)
++		seq_printf(m, "%c", c);
++	seq_puts(m, "\n");
++}
++
++static void snprint_time(char *buf, size_t bufsiz, s64 nr)
++{
++	unsigned long rem;
++
++	rem = do_div(nr, 1000); /* XXX: do_div_signed */
++	snprintf(buf, bufsiz, "%lld.%02d", nr, ((int)rem+5)/10);
++}
++
++static void seq_time(struct seq_file *m, s64 time)
++{
++	char num[15];
++
++	snprint_time(num, sizeof(num), time);
++	seq_printf(m, " %14s", num);
++}
++
++static void seq_lock_time(struct seq_file *m, struct lock_time *lt)
++{
++	seq_printf(m, "%14lu", lt->nr);
++	seq_time(m, lt->min);
++	seq_time(m, lt->max);
++	seq_time(m, lt->total);
++}
++
++static void seq_stats(struct seq_file *m, struct lock_stat_data *data)
++{
++	char name[39];
++	struct lock_class *class;
++	struct lock_class_stats *stats;
++	int i, namelen;
++
++	class = data->class;
++	stats = &data->stats;
++
++	snprintf(name, 38, "%s", class->name);
++	namelen = strlen(name);
++
++	if (stats->write_holdtime.nr) {
++		if (stats->read_holdtime.nr)
++			seq_printf(m, "%38s-W:", name);
++		else
++			seq_printf(m, "%40s:", name);
++
++		seq_lock_time(m, &stats->write_waittime);
++		seq_puts(m, " ");
++		seq_lock_time(m, &stats->write_holdtime);
++		seq_puts(m, "\n");
++	}
++
++	if (stats->read_holdtime.nr) {
++		seq_printf(m, "%38s-R:", name);
++		seq_lock_time(m, &stats->read_waittime);
++		seq_puts(m, " ");
++		seq_lock_time(m, &stats->read_holdtime);
++		seq_puts(m, "\n");
++	}
++
++	if (stats->read_waittime.nr + stats->write_waittime.nr == 0)
++		return;
++
++	if (stats->read_holdtime.nr)
++		namelen += 2;
++
++	for (i = 0; i < ARRAY_SIZE(class->contention_point); i++) {
++		char sym[KSYM_SYMBOL_LEN];
++		char ip[32];
++
++		if (class->contention_point[i] == 0)
++			break;
++
++		if (!i)
++			seq_line(m, '-', 40-namelen, namelen);
++
++		sprint_symbol(sym, class->contention_point[i]);
++		snprintf(ip, sizeof(ip), "[<%p>]",
++				(void *)class->contention_point[i]);
++		seq_printf(m, "%40s %14lu %29s %s\n", name,
++				stats->contention_point[i],
++				ip, sym);
++	}
++	if (i) {
++		seq_puts(m, "\n");
++		seq_line(m, '.', 0, 40 + 1 + 8 * (14 + 1));
++		seq_puts(m, "\n");
++	}
++}
++
++static void seq_header(struct seq_file *m)
++{
++	seq_printf(m, "lock_stat version 0.1\n");
++	seq_line(m, '-', 0, 40 + 1 + 8 * (14 + 1));
++	seq_printf(m, "%40s %14s %14s %14s %14s %14s %14s %14s %14s\n",
++			"class name",
++			"contentions",
++			"waittime-min",
++			"waittime-max",
++			"waittime-total",
++			"acquisitions",
++			"holdtime-min",
++			"holdtime-max",
++			"holdtime-total");
++	seq_line(m, '-', 0, 40 + 1 + 8 * (14 + 1));
++	seq_printf(m, "\n");
++}
++
++static void *ls_start(struct seq_file *m, loff_t *pos)
++{
++	struct lock_stat_seq *data = m->private;
++
++	if (data->iter == data->stats)
++		seq_header(m);
++
++	return data->iter;
++}
++
++static void *ls_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	struct lock_stat_seq *data = m->private;
++
++	(*pos)++;
++
++	data->iter = v;
++	data->iter++;
++	if (data->iter == data->iter_end)
++		data->iter = NULL;
++
++	return data->iter;
++}
++
++static void ls_stop(struct seq_file *m, void *v)
++{
++}
++
++static int ls_show(struct seq_file *m, void *v)
++{
++	struct lock_stat_seq *data = m->private;
++
++	seq_stats(m, data->iter);
++	return 0;
++}
++
++static struct seq_operations lockstat_ops = {
++	.start	= ls_start,
++	.next	= ls_next,
++	.stop	= ls_stop,
++	.show	= ls_show,
++};
++
++static int lock_stat_open(struct inode *inode, struct file *file)
++{
++	int res;
++	struct lock_class *class;
++	struct lock_stat_seq *data = vmalloc(sizeof(struct lock_stat_seq));
++
++	if (!data)
++		return -ENOMEM;
++
++	res = seq_open(file, &lockstat_ops);
++	if (!res) {
++		struct lock_stat_data *iter = data->stats;
++		struct seq_file *m = file->private_data;
++
++		data->iter = iter;
++		list_for_each_entry(class, &all_lock_classes, lock_entry) {
++			iter->class = class;
++			iter->stats = lock_stats(class);
++			iter++;
++		}
++		data->iter_end = iter;
++
++		sort(data->stats, data->iter_end - data->iter,
++				sizeof(struct lock_stat_data),
++				lock_stat_cmp, NULL);
++
++		m->private = data;
++	} else
++		vfree(data);
++
++	return res;
++}
++
++ssize_t lock_stat_write(struct file *file, const char __user *buf,
++		size_t count, loff_t *ppos)
++{
++	struct lock_class *class;
++	char c;
++
++	if (count) {
++		if (get_user(c, buf))
++			return -EFAULT;
++
++		if (c != '0')
++			return count;
++
++		list_for_each_entry(class, &all_lock_classes, lock_entry)
++			clear_lock_stats(class);
++	}
++	return count;
++}
++
++static int lock_stat_release(struct inode *inode, struct file *file)
++{
++	struct seq_file *seq = file->private_data;
++
++	vfree(seq->private);
++	seq->private = NULL;
++	return seq_release(inode, file);
++}
++
++static const struct file_operations proc_lock_stat_operations = {
++	.open		= lock_stat_open,
++	.write		= lock_stat_write,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= lock_stat_release,
++};
++#endif /* CONFIG_LOCK_STAT */
++
+ static int __init lockdep_proc_init(void)
+ {
+ 	struct proc_dir_entry *entry;
+@@ -356,6 +616,12 @@ static int __init lockdep_proc_init(void
+ 	if (entry)
+ 		entry->proc_fops = &proc_lockdep_stats_operations;
+ 
++#ifdef CONFIG_LOCK_STAT
++	entry = create_proc_entry("lock_stat", S_IRUSR, NULL);
++	if (entry)
++		entry->proc_fops = &proc_lock_stat_operations;
++#endif
++
+ 	return 0;
+ }
+ 
+
+--
+
