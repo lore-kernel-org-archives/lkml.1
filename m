@@ -1,94 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbXE3M6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbXE3NE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbXE3M6U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 08:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXE3M6N
+	id S1753598AbXE3NE1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 09:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbXE3NET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 08:58:13 -0400
-Received: from 1wt.eu ([62.212.114.60]:2783 "EHLO 1wt.eu"
+	Wed, 30 May 2007 09:04:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33114 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974AbXE3M6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 08:58:12 -0400
-Date: Wed, 30 May 2007 14:58:03 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David Schwartz <davids@webmaster.com>
-Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: epoll,threading
-Message-ID: <20070530125803.GB19105@1wt.eu>
-References: <20070530072528.GP943@1wt.eu> <MDEHLPKNGKAHNMBLJOLKCEPKECAC.davids@webmaster.com>
+	id S1751707AbXE3NES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 09:04:18 -0400
+Date: Wed, 30 May 2007 15:02:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+Message-ID: <20070530130237.GA19162@elte.hu>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D43A0.8040307@garzik.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKCEPKECAC.davids@webmaster.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <465D43A0.8040307@garzik.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 01:07:08AM -0700, David Schwartz wrote:
-> 
-> > In my experience, it's not much the context switch by itself which causes
-> > performance degradation, but the fact that with threads, you have to put
-> > mutexes everywhere. And frankly, walking a list with locks everywhere
-> > is quite slower than doing it in one run at a rate of 3 or 4 cycles per
-> > entry. Also, local storage in function returns is not possible anymore,
-> > and some functions even need to malloc() instead of returning statically
-> > allocated data. I believe this is the reason for openssl being twice as
-> > slow when compiled thread-safe than in native mode.
-> 
-> I don't know where you got this idea from, but several experiments of mine
-> failed to confirm it. Here, for example, are two identical builds of
-> OpenSSL, one with 'threads' and one with 'no-threads'. Same compiler, same
-> other flags, same hardware (Linux 2.6.21.2, P3-1Ghz):
 
-I can see that your numbers are equal in both cases. You have openssl 0.9.8d,
-and doing functions benchmarks. I observed this on openssl 0.9.6 + apache 1.3
-+ mod_ssl. The difference in terms of hits/s was 1 to 2, just with -DREENTRANT.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-Most probably some water has flowed under the bridges since... Anyway, that
-makes 0.9.8 interesting to look at ;-)
+> >>You should pick up the kevent work :)
+> >
+> >3 months ago i verified the published kevent vs. epoll benchmark and 
+> >found that benchmark to be fatally flawed. When i redid it properly 
+> >kevent showed no significant advantage over epoll. Note that i did 
+> >those measurements _before_ the recent round of epoll speedups. So 
+> >unless someone does believable benchmarks i consider kevent an 
+> >over-hyped, mis-benchmarked complication to do something that epoll 
+> >is perfectly capable of doing.
+> 
+> You snipped the key part of my response, so I'll say it again:
+> 
+> Event rings (a) most closely match what is going on in the hardware 
+> and (b) often closely match what is going on in multi-socket, 
+> event-driven software application.
 
-Willy
+event rings are just pure data structures that describe a set of data, 
+and they have advantages and disadvantages. For the record, we've 
+already got direct experience with rings as software APIs: they were 
+used for KAIO and they were an implementational and maintainance 
+nightmare and nobody used them. Kevent might be better, but you make it 
+sound as if it was a trivial design choice while it certainly isnt!
 
-> 
-> OpenSSL 0.9.8d 28 Sep 2006
-> built on: Wed May 30 00:55:25 PDT 2007
-> options:bn(64,32) md2(int) rc4(idx,int) des(ptr,risc1,16,long) aes(partial)
-> idea(int) blowfish(idx)
-> compiler:
-> gcc -DDSO_DLFCN -DHAVE_DLFCN_H -mcpu=pentium -DL_ENDIAN -DTERMIO -O3 -fomit-
-> frame-pointer -Wall -DOPENSSL_BN_ASM_PART_WORDS -DOPENSSL_IA32_SSE2 -DSHA1_A
-> SM -DMD5_ASM -DRMD160_ASM -DAES_ASM
-> available timing options: TIMES TIMEB HZ=100 [sysconf value]
-> timing function used: times
-> The 'numbers' are in 1000s of bytes per second processed.
-> type             16 bytes     64 bytes    256 bytes   1024 bytes   8192
-> bytes
-> md5               5295.13k    18837.99k    56614.66k   113037.65k
-> 157575.85k
-> des cbc          21280.46k    22224.36k    22536.87k    22626.65k
-> 22686.38k
->                   sign    verify    sign/s verify/s
-> rsa 1024 bits 0.007653s 0.000381s    130.7   2626.1
-> 
-> OpenSSL 0.9.8d 28 Sep 2006
-> built on: Wed May 30 00:55:23 PDT 2007
-> options:bn(64,32) md2(int) rc4(idx,int) des(ptr,risc1,16,long) aes(partial)
-> idea(int) blowfish(idx)
-> compiler:
-> gcc -DOPENSSL_THREADS -D_REENTRANT -DDSO_DLFCN -DHAVE_DLFCN_H -mcpu=pentium 
-> -DL_ENDIAN -DTERMIO -O3 -fomit-frame-pointer -Wall -DOPENSSL_BN_ASM_PART_WOR
-> DS -DOPENSSL_IA32_SSE2 -DSHA1_ASM -DMD5_ASM -DRMD160_ASM -DAES_ASM
-> available timing options: TIMES TIMEB HZ=100 [sysconf value]
-> timing function used: times
-> The 'numbers' are in 1000s of bytes per second processed.
-> type             16 bytes     64 bytes    256 bytes   1024 bytes   8192
-> bytes
-> md5               5355.29k    18880.64k    56515.93k   113145.51k
-> 157908.99k
-> des cbc          21361.71k    22185.28k    22494.72k    22654.29k
-> 22659.07k
->                   sign    verify    sign/s verify/s
-> rsa 1024 bits 0.007612s 0.000380s    131.4   2629.5
-> 
-> 	DS
-> 
+Sure, for hardware interfaces like networking cards tx and rx rings are 
+the best thing but that is apples to oranges: hardware itself is about 
+_limited_ physical resources, matching a _limited_ data structure like a 
+ring quite well. But for software APIs, the built-in limit of rings 
+makes it a baroque data structure that has a fair share disadvantages in 
+addition to its obvious advantages.
+
+> This is not something epoll is capable of doing, at the present time.
+
+epoll is very much is capable of doing it - but why bother if something 
+more flexible than a ring can be used and the performance difference is 
+negligible? (Read my other reply in this thread for further points.)
+
+but, for the record, syslets very much use a completion ring, so i'm not 
+fundamentally opposed to the idea. I just think it's seriously 
+over-hyped, just like most other bits of the kevent approach. (Nor do we 
+have to attach this to syslets and threadlets - kevents are an 
+orthogonal approach not directly related to asynchronous syscalls - 
+syslets/threadlets can make use of epoll just as much as they can make 
+use of kevent APIs.)
+
+	Ingo
