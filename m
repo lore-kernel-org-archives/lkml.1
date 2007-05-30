@@ -1,72 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbXE3PWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbXE3PWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbXE3PWO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXE3PV7
+	id S1756684AbXE3PWc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbXE3PWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:21:59 -0400
-Received: from moci.net4u.de ([217.7.64.195]:55599 "EHLO moci.net4u.de"
+	Wed, 30 May 2007 11:22:24 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:37970 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753503AbXE3PV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:21:58 -0400
-X-Greylist: delayed 1862 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 May 2007 11:21:58 EDT
-From: Ernst Herzberg <list-lkml@net4u.de>
-Reply-To: earny@net4u.de
-Organization: Net4U
-To: linux-kernel@vger.kernel.org
-Subject: Re: Case: 7454422: Re: Kernel 2.6.21.3 does not work with 8GB of RAM on Intel 965WH motherboards.
-Date: Wed, 30 May 2007 16:50:48 +0200
-User-Agent: KMail/1.9.5
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, Robert Hancock <hancockr@shaw.ca>,
-       crmotherboard@mailbox.cps.intel.com
-References: <fa.4kEpre7NAj1mG6fooUMp/WVc8tg@ifi.uio.no> <465D89E1.7030301@shaw.ca> <Pine.LNX.4.64.0705301029500.13945@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0705301029500.13945@p34.internal.lan>
+	id S1756098AbXE3PWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 11:22:22 -0400
+Message-ID: <465D97AA.3020806@openvz.org>
+Date: Wed, 30 May 2007 19:26:34 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@in.ibm.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       Kirill Korotaev <dev@openvz.org>
+Subject: [PATCH 1/8] Resource counters
+References: <465D9739.8070209@openvz.org>
+In-Reply-To: <465D9739.8070209@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705301650.50899.list-lkml@net4u.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 May 2007 16:33, Justin Piszcz wrote:
+Introduce generic structures and routines for resource accounting.
 
-> Am I the first person to try using 8 gigabytes of RAM on the 965
-> chipset?
->
+Each resource accounting container is supposed to aggregate it,
+container_subsystem_state and its resource-specific members within.
 
-No. See http://lkml.org/lkml/2007/3/29/222
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
-Same problem on  ASUS P5B-VM with 4GB memory, if "memory remap feature" in
-BIOS is activated. Without this option only 2.8GB of memory is avaliable.
+---
 
-lspci:
-00:00.0 Host bridge: Intel Corporation 82P965/G965 Memory Controller Hub (rev 02)
-00:01.0 PCI bridge: Intel Corporation 82P965/G965 PCI Express Root Port (rev 02)
-00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Contoller #4 (rev 02)
-00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #5 (rev 02)
-00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #2 (rev 02)
-00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 02)
-00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 1 (rev 02)
-00:1c.4 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 5 (rev 02)
-00:1c.5 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express Port 6 (rev 02)
-00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #1 (rev 02)
-00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #2 (rev 02)
-00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI Controller #3 (rev 02)
-00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI Controller #1 (rev 02)
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev f2)
-00:1f.0 ISA bridge: Intel Corporation 82801HB/HR (ICH8/R) LPC Interface Controller (rev 02)
-00:1f.2 IDE interface: Intel Corporation 82801H (ICH8 Family) 4 port SATA IDE Controller (rev 02)
-00:1f.3 SMBus: Intel Corporation 82801H (ICH8 Family) SMBus Controller (rev 02)
-00:1f.5 IDE interface: Intel Corporation 82801H (ICH8 Family) 2 port SATA IDE Controller (rev 02)
-01:00.0 VGA compatible controller: ATI Technologies Inc RV515 PRO [Radeon X1300/X1550 Series]
-01:00.1 Display controller: ATI Technologies Inc RV515 PRO [Radeon X1300/X1550 Series] (Secondary)
-02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
-03:00.0 SATA controller: JMicron Technologies, Inc. JMicron 20360/20363 AHCI Controller (rev 02)
-03:00.1 IDE interface: JMicron Technologies, Inc. JMicron 20360/20363 AHCI Controller (rev 02)
-05:01.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A IEEE-1394a-2000 Controller (PHY/Link)
-05:03.0 Ethernet controller: Marvell Technology Group Ltd. 88w8335 [Libertas] 802.11b/g Wireless (rev 03)
-05:04.0 Multimedia controller: Philips Semiconductors SAA7134/SAA7135HL Video Broadcast Decoder (rev 01)
+diff -upr linux-2.6.22-rc2-mm1.orig/include/linux/res_counter.h linux-2.6.22-rc2-mm1-0/include/linux/res_counter.h
+--- linux-2.6.22-rc2-mm1.orig/include/linux/res_counter.h	2007-05-30 16:16:58.000000000 +0400
++++ linux-2.6.22-rc2-mm1-0/include/linux/res_counter.h	2007-05-30 16:13:09.000000000 +0400
+@@ -0,0 +1,83 @@
++#ifndef __RES_COUNTER_H__
++#define __RES_COUNTER_H__
++/*
++ * resource counters
++ *
++ * Copyright 2007 OpenVZ SWsoft Inc
++ *
++ * Author: Pavel Emelianov <xemul@openvz.org>
++ *
++ */
++
++#include <linux/container.h>
++
++struct res_counter {
++	unsigned long usage;
++	unsigned long limit;
++	unsigned long failcnt;
++	spinlock_t lock;
++};
++
++enum {
++	RES_USAGE,
++	RES_LIMIT,
++	RES_FAILCNT,
++};
++
++ssize_t res_counter_read(struct res_counter *cnt, int member,
++		const char __user *buf, size_t nbytes, loff_t *pos);
++ssize_t res_counter_write(struct res_counter *cnt, int member,
++		const char __user *buf, size_t nbytes, loff_t *pos);
++
++static inline void res_counter_init(struct res_counter *cnt)
++{
++	spin_lock_init(&cnt->lock);
++	cnt->limit = (unsigned long)LONG_MAX;
++}
++
++static inline int res_counter_charge_locked(struct res_counter *cnt,
++		unsigned long val)
++{
++	if (cnt->usage <= cnt->limit - val) {
++		cnt->usage += val;
++		return 0;
++	}
++
++	cnt->failcnt++;
++	return -ENOMEM;
++}
++
++static inline int res_counter_charge(struct res_counter *cnt,
++		unsigned long val)
++{
++	int ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	ret = res_counter_charge_locked(cnt, val);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return ret;
++}
++
++static inline void res_counter_uncharge_locked(struct res_counter *cnt,
++		unsigned long val)
++{
++	if (unlikely(cnt->usage < val)) {
++		WARN_ON(1);
++		val = cnt->usage;
++	}
++
++	cnt->usage -= val;
++}
++
++static inline void res_counter_uncharge(struct res_counter *cnt,
++		unsigned long val)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	res_counter_uncharge_locked(cnt, val);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++}
++
++#endif
+diff -upr linux-2.6.22-rc2-mm1.orig/init/Kconfig linux-2.6.22-rc2-mm1-0/init/Kconfig
+--- linux-2.6.22-rc2-mm1.orig/init/Kconfig	2007-05-30 16:13:08.000000000 +0400
++++ linux-2.6.22-rc2-mm1-0/init/Kconfig	2007-05-30 16:13:09.000000000 +0400
+@@ -328,6 +328,10 @@ config CPUSETS
+ 
+ 	  Say N if unsure.
+ 
++config RESOURCE_COUNTERS
++	bool
++	select CONTAINERS
++
+ config SYSFS_DEPRECATED
+ 	bool "Create deprecated sysfs files"
+ 	default y
+diff -upr linux-2.6.22-rc2-mm1.orig/kernel/Makefile linux-2.6.22-rc2-mm1-0/kernel/Makefile
+--- linux-2.6.22-rc2-mm1.orig/kernel/Makefile	2007-05-30 16:13:08.000000000 +0400
++++ linux-2.6.22-rc2-mm1-0/kernel/Makefile	2007-05-30 16:13:09.000000000 +0400
+@@ -56,6 +56,7 @@ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+ obj-$(CONFIG_UTS_NS) += utsname.o
+ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+ obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
++obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
+ 
+ ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
+ # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+diff -upr linux-2.6.22-rc2-mm1.orig/kernel/res_counter.c linux-2.6.22-rc2-mm1-0/kernel/res_counter.c
+--- linux-2.6.22-rc2-mm1.orig/kernel/res_counter.c	2007-05-30 16:16:58.000000000 +0400
++++ linux-2.6.22-rc2-mm1-0/kernel/res_counter.c	2007-05-30 16:13:09.000000000 +0400
+@@ -0,0 +1,73 @@
++/*
++ * resource containers
++ *
++ * Copyright 2007 OpenVZ SWsoft Inc
++ *
++ * Author: Pavel Emelianov <xemul@openvz.org>
++ *
++ */
++
++#include <linux/types.h>
++#include <linux/parser.h>
++#include <linux/fs.h>
++#include <linux/res_counter.h>
++#include <asm/uaccess.h>
++
++static inline unsigned long *res_counter_member(struct res_counter *cnt, int member)
++{
++	switch (member) {
++	case RES_USAGE:
++		return &cnt->usage;
++	case RES_LIMIT:
++		return &cnt->limit;
++	case RES_FAILCNT:
++		return &cnt->failcnt;
++	};
++
++	BUG();
++	return NULL;
++}
++
++ssize_t res_counter_read(struct res_counter *cnt, int member, 
++		const char __user *userbuf, size_t nbytes, loff_t *pos)
++{
++	unsigned long *val;
++	char buf[64], *s;
++
++	s = buf;
++	val = res_counter_member(cnt, member);
++	s += sprintf(s, "%lu\n", *val);
++	return simple_read_from_buffer((void __user *)userbuf, nbytes,
++			pos, buf, s - buf);
++}
++
++ssize_t res_counter_write(struct res_counter *cnt, int member,
++		const char __user *userbuf, size_t nbytes, loff_t *pos)
++{
++	int ret;
++	char *buf, *end;
++	unsigned long tmp, *val;
++
++	buf = kmalloc(nbytes + 1, GFP_KERNEL);
++	ret = -ENOMEM;
++	if (buf == NULL)
++		goto out;
++
++	buf[nbytes] = 0;
++	ret = -EFAULT;
++	if (copy_from_user(buf, userbuf, nbytes))
++		goto out_free;
++
++	ret = -EINVAL;
++	tmp = simple_strtoul(buf, &end, 10);
++	if (*end != '\0')
++		goto out_free;
++
++	val = res_counter_member(cnt, member);
++	*val = tmp;
++	ret = nbytes;
++out_free:
++	kfree(buf);
++out:
++	return ret;
++}
 
-<earny>
