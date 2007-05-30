@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXE3WDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760190AbXE3WEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbXE3WDU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 18:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbXE3WDN
+	id S1760190AbXE3WEH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 18:04:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbXE3WDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 18:03:13 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53968 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756967AbXE3WDM (ORCPT
+	Wed, 30 May 2007 18:03:55 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:36823 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756967AbXE3WDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 18:03:12 -0400
-Date: Wed, 30 May 2007 15:03:11 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3 -mm] slub: use lib/hexdump
-In-Reply-To: <465DF2A2.2070801@oracle.com>
-Message-ID: <Pine.LNX.4.64.0705301501470.7502@schroedinger.engr.sgi.com>
-References: <20070523004233.5ae5f6fd.akpm@linux-foundation.org>
- <4654AC94.6080601@googlemail.com> <20070523150122.f9946f37.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231526350.22666@schroedinger.engr.sgi.com>
- <20070523153730.e0e9e91d.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705231635370.23144@schroedinger.engr.sgi.com>
- <20070523182145.7d7f1f7e.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0705232000140.24066@schroedinger.engr.sgi.com>
- <20070524073131.GA17501@elte.hu> <Pine.LNX.4.64.0705241418270.31613@schroedinger.engr.sgi.com>
- <20070524142908.f39f42ea.akpm@linux-foundation.org>
- <20070524145517.1f32cd94.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0705241533510.32401@schroedinger.engr.sgi.com>
- <20070530143451.f4a844bc.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0705301443020.3358@schroedinger.engr.sgi.com>
- <465DF135.80202@oracle.com> <Pine.LNX.4.64.0705301451140.3709@schroedinger.engr.sgi.c!
-  om> <465DF2A2.2070801@oracle.com>
+	Wed, 30 May 2007 18:03:54 -0400
+Date: Wed, 30 May 2007 15:01:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+cc: Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <Pine.LNX.4.64.0705301443340.6272@alien.or.mcafeemobile.com>
+Message-ID: <alpine.LFD.0.98.0705301457350.26602@woody.linux-foundation.org>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
+ <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
+ <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+ <465DE992.6070803@redhat.com> <alpine.LFD.0.98.0705301422230.26602@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0705301443340.6272@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd prefer something like this:
 
-Use hexdump in slub.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+On Wed, 30 May 2007, Davide Libenzi wrote:
+> 
+> I agree. What would be a good interface to allocate fds in such area? We 
+> don't want to replicate syscalls, so maybe a special new dup function?
 
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-05-30 14:56:14.000000000 -0700
-+++ slub/mm/slub.c	2007-05-30 15:01:33.000000000 -0700
-@@ -339,34 +339,10 @@ static char *slub_debug_slabs;
-  */
- static void print_section(char *text, u8 *addr, unsigned int length)
- {
--	int i, offset;
--	int newline = 1;
--	char ascii[17];
--
--	ascii[16] = 0;
--
--	for (i = 0; i < length; i++) {
--		if (newline) {
--			printk(KERN_ERR "%8s 0x%p: ", text, addr + i);
--			newline = 0;
--		}
--		printk(" %02x", addr[i]);
--		offset = i % 16;
--		ascii[offset] = isgraph(addr[i]) ? addr[i] : '.';
--		if (offset == 15) {
--			printk(" %s\n",ascii);
--			newline = 1;
--		}
--	}
--	if (!newline) {
--		i %= 16;
--		while (i < 16) {
--			printk("   ");
--			ascii[i] = ' ';
--			i++;
--		}
--		printk(" %s\n", ascii);
--	}
-+	char buf[10];
-+
-+	sprintf(buf, "%8s:", text);
-+	print_hex_dump(KERN_ERR, buf, DUMP_PREFIX_ADDRESS, 16, 1, addr, length, 1);
- }
- 
- static struct track *get_track(struct kmem_cache *s, void *object,
+I'd do it with something like "newfd = dup2(fd, NONLINEAR_FD)" or similar, 
+and just have NONLINEAR_FD be some magic value (for example, make it be 
+0x40000000 - the bit that says "private, nonlinear" in the first place).
 
+But what's gotten lost in the current discussion is that we probably don't 
+actually _need_ such a private space. I'm just saying that if the *choice* 
+is between memory-mapped interfaces and a private fd-space, we should 
+probably go for the latter. "Everything is a file" is the UNIX way, after 
+all. But there's little reason to introduce private fd's otherwise.
+
+			Linus
