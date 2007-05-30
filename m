@@ -1,124 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbXE3GSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbXE3G0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751924AbXE3GSV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 02:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXE3GSG
+	id S1752000AbXE3G0l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 02:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbXE3G0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 02:18:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34095 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751180AbXE3GSE (ORCPT
+	Wed, 30 May 2007 02:26:33 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:46421 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751246AbXE3G0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 02:18:04 -0400
-Date: Wed, 30 May 2007 16:17:23 +1000
-From: David Chinner <dgc@sgi.com>
-To: david@lang.hm
-Cc: David Chinner <dgc@sgi.com>, Phillip Susi <psusi@cfl.rr.com>,
-       Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Stefan Bader <Stefan.Bader@de.ibm.com>,
-       Andreas Dilger <adilger@clusterfs.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
-Message-ID: <20070530061723.GY85884050@sgi.com>
-References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 30 May 2007 02:26:33 -0400
+Date: Wed, 30 May 2007 08:26:31 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+cc: Jesse Barnes <jesse.barnes@intel.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       James Simmons <jsimmons@pentafluge.infradead.org>,
+       Dave Airlie <airlied@gmail.com>,
+       Jakob Bornecrantz <wallbraker@gmail.com>,
+       dri-devel@lists.sourceforge.net,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 1/3] allow console unregistration
+In-Reply-To: <1180483232.10390.7.camel@daplas>
+Message-ID: <Pine.LNX.4.62.0705300824340.16818@pademelon.sonytel.be>
+References: <200705171423.46748.jesse.barnes@intel.com>
+ <200705171532.28799.jesse.barnes@intel.com> <1180483232.10390.7.camel@daplas>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 05:01:24PM -0700, david@lang.hm wrote:
-> On Wed, 30 May 2007, David Chinner wrote:
+	Hi Tony,
+
+On Wed, 30 May 2007, Antonino A. Daplas wrote:
+> On Thu, 2007-05-17 at 15:32 -0700, Jesse Barnes wrote:
+> > Randy just informed me that the patch limits are bigger now, so here are the
+> > actual patches.
+> > 
+> > This patch allows for proper console unregistration via the VT layer, and
+> > updates the FB layer to use it.  This makes debugging new console drivers
+> > much easier, since you can properly clean them up before unloading.
+> > Antonio already checked it out (and suggested a tweak for the fbcon side)
+> > so I think it's on its way already via the FB tree.
+> > 
 > 
-> >On Tue, May 29, 2007 at 04:03:43PM -0400, Phillip Susi wrote:
-> >>David Chinner wrote:
-> >>>The use of barriers in XFS assumes the commit write to be on stable
-> >>>storage before it returns.  One of the ordering guarantees that we
-> >>>need is that the transaction (commit write) is on disk before the
-> >>>metadata block containing the change in the transaction is written
-> >>>to disk and the current barrier behaviour gives us that.
-> >>
-> >>Barrier != synchronous write,
-> >
-> >Of course. FYI, XFS only issues barriers on *async* writes.
-> >
-> >But barrier semantics - as far as they've been described by everyone
-> >but you indicate that the barrier write is guaranteed to be on stable
-> >storage when it returns.
+> Jesse,
 > 
-> this doesn't match what I have seen
+> I already implemented (and tested) selective framebuffer/console
+> unregistration in my tree using your patch as a base. I'll send this
+> patch to akpm soon.
 > 
-> wtih barriers it's perfectly legal to have the following sequence of 
-> events
+> Geert,
 > 
-> 1. app writes block 10 to OS
-> 2. app writes block 4 to OS
-> 3. app writes barrier to OS
-> 4. app writes block 5 to OS
-> 5. app writes block 20 to OS
+> Is this something that you might need for ps3fb? It should address 2 of
+> your concerns. The only thing is that you will need
+> CONFIG_VT_HW_CONSOLE_BINDING=y.  You can default this to 'y' in your
+> platform, or select it.
 
-hmmmmm - applications can't issue barriers to the filesystem.
-However, if you consider the barrier to be an "fsync()" for example,
-then it's still the filesystem that is issuing the barrier and
-there's a block that needs to be written that is associated with
-that barrier (either an inode or a transaction commit) that needs to
-be on stable storage before the filesystem returns to userspace.
+I was going to look at Jesse's patch, but it didn't happen yet.
+So yes, I'm definitely interested in your patch! Can you please send it to
+linux-fbdev-devel already?
 
-> 6. OS writes block 4 to disk drive
-> 7. OS writes block 10 to disk drive
-> 8. OS writes barrier to disk drive
-> 9. OS writes block 5 to disk drive
-> 10. OS writes block 20 to disk drive
+Gr{oetje,eeting}s,
 
-Replace OS with filesystem, and combine 7+8 together - we don't have
-zero-length barriers and hence they are *always* associated with a
-write to a certain block on disk. i.e.:
+						Geert
 
-1. FS writes block 4 to disk drive
-2. FS writes block 10 to disk drive
-3. FS writes *barrier* block X to disk drive
-4. FS writes block 5 to disk drive
-5. FS writes block 20 to disk drive
-
-The order that these are expected by the filesystem to hit stable
-storage are:
-
-1. block 4 and 10 on stable storage in any order
-2. barrier block X on stable storage
-3. block 5 and 20 on stable storage in any order
-
-The point I'm trying to make is that in XFS,  block 5 and 20 cannot
-be allowed to hit the disk before the barrier block because they
-have strict order dependency on block X being stable before them,
-just like block X has strict order dependency that block 4 and 10
-must be stable before we start the barrier block write.
-
-> 11. disk drive writes block 10 to platter
-> 12. disk drive writes block 4 to platter
-> 13. disk drive writes block 20 to platter
-> 14. disk drive writes block 5 to platter
-
-> if the disk drive doesn't support barriers then step #8 becomes 'issue 
-> flush' and steps 11 and 12 take place before step #9, 13, 14
-
-No, you need a flush on either side of the block X write to maintain
-the same semantics as barrier writes currently have.
-
-We have filesystems that require barriers to prevent reordering of
-writes in both directions and to ensure that the block associated
-with the barrier is on stable storage when I/o completion is
-signalled.  The existing barrier implementation (where it works)
-provide these requirements. We need barriers to retain these
-semantics, otherwise we'll still have to do special stuff in
-the filesystems to get the semantics that we need.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
