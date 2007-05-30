@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbXE3UmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbXE3Uqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759017AbXE3UmV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbXE3UmK
+	id S1758206AbXE3Uqn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXE3Uqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:42:10 -0400
-Received: from smtp.osdl.org ([207.189.120.12]:60713 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754084AbXE3UmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:42:09 -0400
-Date: Wed, 30 May 2007 13:30:39 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: kaber@trash.net, akpm@linux-foundation.org, venkatesh.pallipadi@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 3/4] Make net watchdog timers 1 sec jiffy aligned
-Message-ID: <20070530133039.7feb2064@freepuppy>
-In-Reply-To: <20070530.125551.41636333.davem@davemloft.net>
-References: <20070530105936.6c988da5.akpm@linux-foundation.org>
-	<20070530112056.0aeb9498@freepuppy>
-	<465DC598.5060407@trash.net>
-	<20070530.125551.41636333.davem@davemloft.net>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 16:46:36 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:38804 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753409AbXE3Uqf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 16:46:35 -0400
+Date: Wed, 30 May 2007 13:44:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <465DDF0A.8080107@cosmosbay.com>
+Message-ID: <alpine.LFD.0.98.0705301341480.26602@woody.linux-foundation.org>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
+ <20070530084252.GA15708@elte.hu> <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
+ <alpine.LFD.0.98.0705301254210.26602@woody.linux-foundation.org>
+ <465DDF0A.8080107@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-1113153342-1180557882=:26602"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007 12:55:51 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> From: Patrick McHardy <kaber@trash.net>
-> Date: Wed, 30 May 2007 20:42:32 +0200
-> 
-> > Stephen Hemminger wrote:
-> > >>>Index: linux-2.6.22-rc-mm/net/sched/sch_generic.c
-> > >>>===================================================================
-> > >>>--- linux-2.6.22-rc-mm.orig/net/sched/sch_generic.c	2007-05-24 11:16:03.000000000 -0700
-> > >>>+++ linux-2.6.22-rc-mm/net/sched/sch_generic.c	2007-05-25 15:10:02.000000000 -0700
-> > >>>@@ -224,7 +224,8 @@
-> > >>> 	if (dev->tx_timeout) {
-> > >>> 		if (dev->watchdog_timeo <= 0)
-> > >>> 			dev->watchdog_timeo = 5*HZ;
-> > >>>-		if (!mod_timer(&dev->watchdog_timer, jiffies + dev->watchdog_timeo))
-> > >>>+		if (!mod_timer(&dev->watchdog_timer,
-> > >>>+			       round_jiffies(jiffies + dev->watchdog_timeo)))
-> > >>> 			dev_hold(dev);
-> > >>> 	}
-> > >>> }
-> > >>
-> > >>Please cc netdev on net patches.
-> > >>
-> > >>Again, I worry that if people set the watchdog timeout to, say, 0.1 seconds
-> > >>then they will get one second, which is grossly different.
-> > >>
-> > >>And if they were to set it to 1.5 seconds, they'd get 2.0 which is pretty
-> > >>significant, too.
-> > > 
-> > > 
-> > > Alternatively, we could change to a timer that is pushed forward after each
-> > > TX, maybe using hrtimer and hrtimer_forward().  That way the timer would
-> > > never run in normal case.
+---1463790079-1113153342-1180557882=:26602
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
+
+
+
+On Wed, 30 May 2007, Eric Dumazet wrote:
 > > 
-> > 
-> > It seems wasteful to add per-packet overhead for tx timeouts, which
-> > should be an exception. Do drivers really care about the exact
-> > timeout value? Compared to a packet transmission time its incredibly
-> > long anyways ..
+> > No, Davide, the problem is that some applications depend on getting
+> > _specific_ file descriptors.
 > 
-> I agree, this change is absolutely rediculious and is just a blind
-> cookie-cutter change made without consideration of what the code is
-> doing and what it's requirements are.
-> 
+> Fix the application, and not adding kernel bloat ?
 
-what about the obvious compromise:
+No. The application is _correct_. It's how file descriptors are defined to 
+work. 
 
---- a/net/sched/sch_generic.c	2007-05-30 11:42:18.000000000 -0700
-+++ b/net/sched/sch_generic.c	2007-05-30 13:29:34.000000000 -0700
-@@ -203,7 +203,11 @@ static void dev_watchdog(unsigned long a
- 				       dev->name);
- 				dev->tx_timeout(dev);
- 			}
--			if (!mod_timer(&dev->watchdog_timer, round_jiffies(jiffies + dev->watchdog_timeo)))
-+
-+			if (!mod_timer(&dev->watchdog_timer,
-+				       dev->watchdog_timeo > 2 * HZ
-+				       ? round_jiffies(jiffies + dev->watchdog_timeo)
-+				       : jiffies + dev->watchdog_timeo))
- 				dev_hold(dev);
- 		}
- 	}
+> Then you can also exclude multi-threading, since a thread (even not inside
+> glibc) can also use socket()/pipe()/open()/whatever and take the zero file
+> descriptor as well.
 
+Totally different. That's an application internal issue. It does *not* 
+mean that we can break existing standards.
 
+> The only hardcoded thing in Unix is 0, 1 and 2 fds.
 
+Wrong. I already gave an example of real code that just didn't bother to 
+keep track of which fd's it had open, and closed them all. Partly, in 
+fact, because you can't even _know_ which fd's you have open when somebody 
+else just execve's you.
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
+You can call it buggy, but the fact is, if you do, you're SIMPLY WRONG. 
+
+You cannot just change years and years of coding practice, and standard 
+documentations. The behaviour of file descriptors is a fact. Ignoring that 
+fact because you don't like it is naïve and simply not realistic.
+
+		Linus
+---1463790079-1113153342-1180557882=:26602--
