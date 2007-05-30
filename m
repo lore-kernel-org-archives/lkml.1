@@ -1,39 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbXE3RdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbXE3Re4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbXE3RdV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXE3RdM
+	id S1757043AbXE3Re4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXE3Ret
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:33:12 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37760 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753118AbXE3RdL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:33:11 -0400
-Date: Wed, 30 May 2007 10:33:09 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 7/7] Add /proc/sys/vm/compact_node for the explicit
- compaction of a node
-In-Reply-To: <Pine.LNX.4.64.0705300920150.16108@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0705301031210.1195@schroedinger.engr.sgi.com>
-References: <20070529173609.1570.4686.sendpatchset@skynet.skynet.ie>
- <20070529173830.1570.91184.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0705292109460.29854@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705300920150.16108@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 May 2007 13:34:49 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:10306 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753118AbXE3Ret (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 13:34:49 -0400
+Date: Wed, 30 May 2007 19:33:55 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+Message-ID: <20070530173353.GO15559@kernel.dk>
+References: <20070529212718.GH7875@mami.zabbo.net> <20070530074031.GV15559@kernel.dk> <20070530165511.GB5488@mami.zabbo.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070530165511.GB5488@mami.zabbo.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 May 2007, Mel Gorman wrote:
+On Wed, May 30 2007, Zach Brown wrote:
+> > Yeah, it'll confuse CFQ a lot actually. The threads either need to share
+> > an io context (clean approach, however will introduce locking for things
+> > that were previously lockless), or CFQ needs to get better support for
+> > cooperating processes.
+> 
+> Do let me know if I can be of any help in this.
 
-> > Check for node < nr_node_ids first.
-> Very good point. Will fix
+Thanks, it should not be a lot of work though.
 
-And check if the node is online first? F.e.
+> > For the fio testing, we can make some improvements there. Right now you
+> > don't get any concurrency of the io requests if you set eg iodepth=32,
+> > as the 32 requests will be submitted as a linked chain of atoms. For io
+> > saturation, that's not really what you want.
+> 
+> Just to be clear: I'm currently focusing on supporting sys_io_*() so I'm
+> using fio's libaio engine.  I'm not testing the syslet syscall interface
+> yet.
 
-node_online(node) ?
+Ah ok, then there's no issue from that end!
+
+-- 
+Jens Axboe
+
