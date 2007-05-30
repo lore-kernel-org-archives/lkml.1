@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbXE3Epv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbXE3FF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752516AbXE3Epv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 00:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXE3EpZ
+	id S1751937AbXE3FF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 01:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbXE3FFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 00:45:25 -0400
-Received: from mga03.intel.com ([143.182.124.21]:26865 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751969AbXE3EpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 00:45:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,590,1170662400"; 
-   d="scan'208";a="233435704"
-Date: Tue, 29 May 2007 21:42:01 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Con Kolivas <kernel@kolivas.org>, Christoph Lameter <clameter@sgi.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] CFS scheduler, -v12
-Message-ID: <20070530044201.GF3693@linux-os.sc.intel.com>
-References: <46523081.6050007@bigpond.net.au> <465275EF.8060905@bigpond.net.au> <4652DC03.60801@bigpond.net.au> <4655423E.6000202@bigpond.net.au> <20070524164538.GA13301@linux-os.sc.intel.com> <46561E67.3030207@bigpond.net.au> <20070529204557.GB3693@linux-os.sc.intel.com> <465CBD35.2000109@bigpond.net.au> <20070530005052.GE3693@linux-os.sc.intel.com> <465CDEEA.9060507@bigpond.net.au>
+	Wed, 30 May 2007 01:05:13 -0400
+Received: from xenotime.net ([66.160.160.81]:57030 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1749667AbXE3FFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 01:05:11 -0400
+Date: Tue, 29 May 2007 22:12:02 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [patch] tweak make htmldocs (nochunks and better index).
+Message-Id: <20070529221202.8aef10bf.rdunlap@xenotime.net>
+In-Reply-To: <200705291528.34092.rob@landley.net>
+References: <200705291528.34092.rob@landley.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <465CDEEA.9060507@bigpond.net.au>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 29, 2007 at 07:18:18PM -0700, Peter Williams wrote:
-> Siddha, Suresh B wrote:
-> > I can try 32-bit kernel to check.
+On Tue, 29 May 2007 15:28:33 -0400 Rob Landley wrote:
+
+> Signed-off-by: Rob Landley <rob@landley.net>
 > 
-> Don't bother.  I just checked 2.6.22-rc3 and the problem is not present
-> which means something between rc2 and rc3 has fixed the problem.  I hate
-> it when problems (appear to) fix themselves as it usually means they're
-> just hiding.
+> A) The "xmtml-nochunks" version of "make htmldocs" is easier to print.
+
+and makes it darn near impossible to print one page or function
+if that's all that someone is interested in.
+
+I'd prefer to leave the html output in separate files and use
+pdf or ps output for printing entire files.  But that's just my take on it.
+
+
+> B) Update the generated index.html to use the html <title> as a
+>    description for each file it links to.
 > 
-> I didn't see any patches between rc2 and rc3 that were likely to have
-> fixed this (but doesn't mean there wasn't one).  I'm wondering whether I
-> should do a git bisect to see if I can find where it got fixed?
+> --
 > 
-> Could you see if you can reproduce it on 2.6.22-rc2?
+> --- git/Documentation/DocBook/Makefile	2007-05-23 16:36:56.000000000 -0400
+> +++ work/Documentation/DocBook/Makefile	2007-05-26 23:11:36.000000000 -0400
+> @@ -141,9 +141,12 @@
+>  		   cat $(HTML) >> $(main_idx)
+>  
+>  quiet_cmd_db2html = HTML   $@
+> -      cmd_db2html = xmlto xhtml $(XMLTOFLAGS) -o $(patsubst %.html,%,$@) $< && \
+> -		echo '<a HREF="$(patsubst %.html,%,$(notdir $@))/index.html"> \
+> -        $(patsubst %.html,%,$(notdir $@))</a><p>' > $@
+> +      cmd_db2html = xmlto xhtml-nochunks $(XMLTOFLAGS) -o $(patsubst %.html,%,$@) $< && \
+> +		NAME='$(patsubst %.html,%,$(notdir $@))'; \
+> +		echo -n "<p><a HREF=\"$$NAME/$$NAME.html\">$$NAME</a>" > $@ ; \
+> +		sed -nre 's@.*<title>(.*)</title>.*@\1@p' \
+> +			"Documentation/DocBook/$$NAME/$$NAME.html" >> $@ ; \
+> +		echo '<\p>' >> $@
+>  %.html:	%.xml
+>  	@(which xmlto > /dev/null 2>&1) || \
 
-No. Just tried 2.6.22-rc2 64-bit version at runlevel 3 on my remote
-system at office. 15 attempts didn't show the issue.
+(repeating due to email bounced/rejected when from @oracle.com:)
 
-Sure that nothing changed in your test setup?
+What is <\p> supposed to do?
 
-More experiments tomorrow morning..
+Here's what I see in index.html (beginning lines of it):
 
-thanks,
-suresh
+Linux Kernel HTML Documentation
+Kernel Version: 2.6.22-rc3
+
+deviceiobookBus-Independent Device Accesses <\p>
+
+filesystemsLinux Filesystems API <\p>
+
+gadgetUSB Gadget API for Linux <\p>
+
+genericirqLinux generic IRQ handling <\p>
+
+kernel-apiThe Linux Kernel API <\p>
+
+kernel-hackingUnreliable Guide To Hacking The Linux Kernel <\p>
+
+kernel-lockingUnreliable Guide To Locking <\p>
+
+---
+so it looks like it could use a space after the short name/before
+the long name/title, and fix the <\p>.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
