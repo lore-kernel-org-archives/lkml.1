@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbXE3Xcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbXE3XgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759659AbXE3Xcd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 19:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759050AbXE3XcS
+	id S1757644AbXE3XgZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 19:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXE3XgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 19:32:18 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:30237 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbXE3XcO (ORCPT
+	Wed, 30 May 2007 19:36:17 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:42846 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752824AbXE3XgQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 19:32:14 -0400
-Date: Wed, 30 May 2007 17:31:52 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH -mm] 0/2: PCI MMCONFIG-related updates
-In-reply-to: <200705300821.11555.jbarnes@virtuousgeek.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+	Wed, 30 May 2007 19:36:16 -0400
+Date: Wed, 30 May 2007 16:34:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>, David Chinner <dgc@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Message-id: <465E0968.90707@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <465CF712.2010604@shaw.ca>
- <200705300821.11555.jbarnes@virtuousgeek.org>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+       lkml <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: BUG: sleeping function called from invalid context at
+ kernel/fork.c:385
+Message-Id: <20070530163413.87ecfe18.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0705301630360.3568@schroedinger.engr.sgi.com>
+References: <617E1C2C70743745A92448908E030B2A01929C15@scsmsx411.amr.corp.intel.com>
+	<Pine.LNX.4.64.0705301630360.3568@schroedinger.engr.sgi.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Tuesday, May 29, 2007 9:01:22 Robert Hancock wrote:
->> These two patches implement some changes in behavior related to PCI
->> MMCONFIG configuration space access. One changes the way in which we
->> validate the MCFG table provided by the BIOS by checking it against
->> ACPI motherboard resources instead of the E820 table. The BIOS is not
->> required to reserve this area in the E820 table, so checking that
->> results in MMCONFIG being unnecessarily disabled on some machines.
->>
->> Some Intel chipsets where MMCONFIG was being disabled previously
->> (but won't be with the first patch) had problems, not due to the
->> MCFG table being broken, but because the access was hosed by the way
->> in which we do PCI BAR sizing. The second patch fixes this problem.
->>
->> This is requested for inclusion in the -mm tree for testing.
+On Wed, 30 May 2007 16:31:35 -0700 (PDT) Christoph Lameter wrote:
+
+> On Wed, 30 May 2007, Luck, Tony wrote:
 > 
-> Robert, should we also pull in the 915 and 965 chipset specific register 
-> poking code?  It might be a good sanity check against ACPI (i.e. if ACPI and 
-> the actual register window disagree, we can assume the BIOS is broken and 
-> MCFG is not safe to use).  If so, I'll update and repost them against your 
-> patchset.
+> > 
+> > > `.exit.text' referenced in section `.init.text' of drivers/built-in.o: 
+> > > defined in discarded section `.exit.text' of drivers/built-in.o
+> > 
+> > 
+> > This one is a fatal error ... the code is trying to call a function
+> > that has been marked __exit in a driver that has been built-in, instead
+> > of as a module.  Since a builtin driver can never be unloaded, the kernel
+> > has thrown away all the __exit routines (at link time).
+> > 
+> > The error message appears less than helpful in tracking down which
+> > routine in which driver is the problem though.
+> 
+> Right. I have no idea where to look. The function has no name? Or is the 
+> segment .exit.text referenced by namne in .init.text?
 
-Probably not a bad idea..
+Maybe 'objdump drivers/built-in.o and then grep that output (file)
+for /exit.text/ ...
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
