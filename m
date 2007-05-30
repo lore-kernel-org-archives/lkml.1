@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbXE3Tj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXE3TlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbXE3Tj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbXE3TjU
+	id S1757119AbXE3TlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbXE3TlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:39:20 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:49248 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753004AbXE3TjT (ORCPT
+	Wed, 30 May 2007 15:41:04 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1360 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbXE3TlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:39:19 -0400
-Subject: Re: [PATCH 5/6] lockstat: human readability tweaks
-From: Matthew Helsley <matthltc@us.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Jason Baron <jbaron@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20070530125336.322824180@chello.nl>
-References: <20070530124903.882133089@chello.nl>
-	 <20070530125336.322824180@chello.nl>
-Content-Type: text/plain
-Date: Wed, 30 May 2007 12:39:05 -0700
-Message-Id: <1180553945.4738.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 May 2007 15:41:03 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 30 May 2007 12:40:59 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Zach Brown <zach.brown@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       "David S. Miller" <davem@davemloft.net>,
+       Suparna Bhattacharya <suparna@in.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Syslets, Threadlets, generic AIO support, v6
+In-Reply-To: <20070530084252.GA15708@elte.hu>
+Message-ID: <Pine.LNX.4.64.0705301148150.6272@alien.or.mcafeemobile.com>
+References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org>
+ <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com>
+ <20070530084252.GA15708@elte.hu>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-30 at 14:49 +0200, Peter Zijlstra wrote:
-> plain text document attachment (lockstat-output.patch)
-> Present all this fancy new lock statistics information:
-> 
-> *warning, _wide_ output ahead*
-> 
-> (output edited for purpose of brevity)
-> 
->  # cat /proc/lock_stat
-> lock_stat version 0.1
-> -----------------------------------------------------------------------------------------------------------------------------------------------------------------
->                               class name    contentions   waittime-min   waittime-max waittime-total   acquisitions   holdtime-min   holdtime-max holdtime-total
-> -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+On Wed, 30 May 2007, Ingo Molnar wrote:
 
-<snip>
+> yeah - this is a fundamental design question for Linus i guess :-) glibc 
+> (and other infrastructure libraries) have a fundamental problem: they 
+> cannot (and do not) presently use persistent file descriptors to make 
+> use of kernel functionality, due to ABI side-effects. [applications can 
+> dup into an fd used by glibc, applications can close it - shells close 
+> fds blindly for example, etc.] Today glibc simply cannot open a file 
+> descriptor and keep it open while application code is running due to 
+> these problems.
 
-> 'contentions' and 'acquisitions' are the number of such events measured (since 
-> the last reset). The waittime- and holdtime- (min, max, total) numbers are 
-> presented in microseconds.
+Here I think we are forgetting that glibc is userspace and there's no 
+separation between the application code and glibc code. An application 
+linking to glibc can break glibc in thousand ways, indipendently from fds 
+or not fds. Like complaining that glibc is broken because printf() 
+suddendly does not work anymore ;)
 
-I think it would make sense to actually mention the time scale in the
-output header someplace. Then a tool written to analyze this file will
-have a way of determining the time scale without using error-prone
-heuristics (like "kernel version foo uses microseconds while kernel foo
-+ 100 uses nanoseconds").
+#include <stdio.h>
+int main(void) {
+        close(fileno(stdout));
+        printf("Whiskey Tango Foxtrot?\n");
+        return 0;
+}
 
-<snip>
 
-Cheers,
-	-Matt Helsley
+
+- Davide
+
 
