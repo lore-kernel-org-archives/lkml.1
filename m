@@ -1,90 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbXE3IgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbXE3IkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752760AbXE3IgK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 04:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbXE3Ifu
+	id S1751961AbXE3IkR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 04:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXE3IkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 04:35:50 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:41855 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751470AbXE3Ifs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 04:35:48 -0400
-Date: Wed, 30 May 2007 12:32:54 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530083254.GA21528@2ka.mipt.ru>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070530072055.GA3077@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 30 May 2007 12:33:21 +0400 (MSD)
+	Wed, 30 May 2007 04:40:00 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:42208 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbXE3Ij7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 04:39:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=Mf/WLrgBG7UQk9ut//v8jHmhwEv2fks6iVWJK8CaZxStIn0jSTr0WRI84f8XFyI8eow4HbGim6ch1YEJjKQWETkLI1zxLsLUKX/JEvfS7HV1kzCHTU3r24EQS8Bhy+U7vD5dwjFWoizTfXSyjFNLPtRmefVZmrm7v0CG4yqY5aU=
+Message-ID: <465D384C.4060006@gmail.com>
+Date: Wed, 30 May 2007 16:39:40 +0800
+From: Rankle_ <crquan@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: [PATCH] merge dst_discard in & out into one, removed a duplicate
+ function
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, developers.
+On 5/28/07, Jan Engelhardt <jengelh@linux01.gwdg.de 
+<mailto:jengelh@linux01.gwdg.de>> wrote:
+ > Uhm, just replace every invocation of dst_discard_in/_out() directly
+ > by dst_discard ... don't add macros for that.
 
-On Wed, May 30, 2007 at 09:20:55AM +0200, Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Jeff Garzik <jeff@garzik.org> wrote:
-> 
-> > You should pick up the kevent work :)
-> 
-> 3 months ago i verified the published kevent vs. epoll benchmark and 
-> found that benchmark to be fatally flawed. When i redid it properly 
-> kevent showed no significant advantage over epoll. Note that i did those 
-> measurements _before_ the recent round of epoll speedups. So unless 
-> someone does believable benchmarks i consider kevent an over-hyped, 
-> mis-benchmarked complication to do something that epoll is perfectly 
-> capable of doing.
+merge dst_discard in & out into one, this removed a duplicate function.
 
-I did not want to start with another round of ping-pong insults :), but, 
-Ingo, you did not show that kevent works worse. I did show that
-sometimes it works better. It flawed from 0 to 30% win in that tests, 
-in results Johann Bork presented kevent and epoll behaved the same. In
-results I posted earlier, I said, that sometimes epoll behaved better, 
-sometimes kevent. What does it say? Just the fact, that in that given 
-workload result was the one we saw. Nothing more, nothing less.
-It does not show something is broken, and definitely not that it is:
-citation1:
-we're heading to yet-another monolitic interface, we're heading with no
-valid reasons given if other than some handwaving.
-citation2:
-consider kevent an over-hyped, mis-benchmarked complication to do 
-something that epoll is perfectly
+Signed-off-by: Denis Cheng <crquan@gmail.com <mailto:crquan@gmail.com>>
 
-Getting into account another features kevent has (and what it was
-designed for originally - for network AIO, which is quite hard 
-(if ever possible) with files and epoll, I'm not talking about syslets
-as AIO, it is different approach and likely it is simpler, getting even
-only that it is already very good), it is not what people said in above 
-citations.
+---
 
-It looks like you have some personal insults on that, which I do not
-understand. But it has nothing with technical side of the problem, so
-lets stop such rethoric and concentrate on real problem and forget any
-possible personal issues which might be raised sometimes :).
+Is there anybody also found this duplicate? I found this duplcate had
+existed from linux-2.2 linux-2.4 to the latest kernel tree, you could
+check it in the lxr site conveniently:
+http://lxr.linux.no/source/net/core/dst.c?v=2.2.26 
+<http://lxr.linux.no/source/net/core/dst.c?v=2.2.26>
+http://lxr.linux.no/source/net/core/dst.c?v=2.4.18 
+<http://lxr.linux.no/source/net/core/dst.c?v=2.4.18>
+http://lxr.linux.no/source/net/core/dst.c 
+<http://lxr.linux.no/source/net/core/dst.c>
+With little difference, the 2.2 and 2.4 version use two different
+function name: dst_discard and dst_blackhole, but the definition of
+them are the same, so they are  same substantially. Additionally, the
+two same function are two local(static) functions in a single file
+dst.c, I don't know why there should exist two same functions. I
+wonder what the consideration of this design is, because I'm just a
+kernel newbie; this problem has been confusing me for many days, so if
+you know why, please drop me some directions.
 
-Although I closed kevent and eventfs projects, I would gladly continue
-if we can and want to have progress in that area.
+--- net/core/dst.c      2007-05-30 16:33:45.000000000 +0800
++++ net/core/dst.c.new  2007-05-28 18:22:36.000000000 +0800
+@@ -111,13 +111,7 @@ out:
+        spin_unlock(&dst_lock);
+ }
+ 
+-static int dst_discard_in(struct sk_buff *skb)
+-{
+-       kfree_skb(skb);
+-       return 0;
+-}
+-
+-static int dst_discard_out(struct sk_buff *skb)
++static int dst_discard(struct sk_buff *skb)
+ {
+        kfree_skb(skb);
+        return 0;
+@@ -138,8 +132,7 @@ void * dst_alloc(struct dst_ops * ops)
+        dst->ops = ops;
+        dst->lastuse = jiffies;
+        dst->path = dst;
+-       dst->input = dst_discard_in;
+-       dst->output = dst_discard_out;
++       dst->input = dst->output = dst_discard;
+ #if RT_CACHE_DEBUG >= 2
+        atomic_inc(&dst_total);
+ #endif
+@@ -153,8 +146,7 @@ static void ___dst_free(struct dst_entry
+           protocol module is unloaded.
+         */
+        if (dst->dev == NULL || !(dst->dev->flags&IFF_UP)) {
+-               dst->input = dst_discard_in;
+-               dst->output = dst_discard_out;
++               dst->input = dst->output = dst_discard;
+        }
+        dst->obsolete = 2;
+ }
+@@ -242,8 +234,7 @@ static inline void dst_ifdown(struct dst
+                return;
+ 
+        if (!unregister) {
+-               dst->input = dst_discard_in;
+-               dst->output = dst_discard_out;
++               dst->input = dst->output = dst_discard;
+        } else {
+                dst->dev = &loopback_dev;
+                dev_hold(&loopback_dev);
 
-Thanks.
 
-> 	Ingo
+--
+Denis Cheng
+Linux Application Developer
 
--- 
-	Evgeniy Polyakov
