@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbXE3RYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbXE3R2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbXE3RYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXE3RYH
+	id S1754718AbXE3R2L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbXE3R16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:24:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40650 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756105AbXE3RYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:24:04 -0400
-Date: Wed, 30 May 2007 13:23:31 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH -mm] 1/2: MMCONFIG: validate against ACPI motherboard resources
-Message-ID: <20070530172331.GB2794@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Robert Hancock <hancockr@shaw.ca>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <465CF794.1070406@shaw.ca> <alpine.LFD.0.98.0705292125511.26602@woody.linux-foundation.org> <465D8BA1.1080800@shaw.ca> <alpine.LFD.0.98.0705300804140.26602@woody.linux-foundation.org>
+	Wed, 30 May 2007 13:27:58 -0400
+Received: from homer.mvista.com ([63.81.120.158]:27160 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063AbXE3R15 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 13:27:57 -0400
+Subject: Re: [PATCH 3/5] lockstat: core infrastructure
+From: Daniel Walker <dwalker@mvista.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, Jason Baron <jbaron@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <1180545380.2958.1.camel@lappy>
+References: <20070529125248.877196281@chello.nl>
+	 <20070529130107.112347096@chello.nl>
+	 <1180470525.32594.71.camel@imap.mvista.com>
+	 <20070530132431.GA23947@elte.hu>
+	 <Pine.LNX.4.58.0705300936390.15841@gandalf.stny.rr.com>
+	 <20070530134907.GA27085@elte.hu>
+	 <1180544796.32594.184.camel@imap.mvista.com>
+	 <1180545380.2958.1.camel@lappy>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 10:25:13 -0700
+Message-Id: <1180545913.32594.194.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705300804140.26602@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 08:05:28AM -0700, Linus Torvalds wrote:
- > 
- > 
- > On Wed, 30 May 2007, Robert Hancock wrote:
- > > 
- > > I'll try and fix up the formatting and repost this patch.
- > 
- > Thanks.
- > 
- > >							 I suspect some
- > > of the issues are from the added code clashing with the way the existing
- > > code was formatted.
- > 
- > Well, I have to admit that I might not have reacted so much if it hadn't 
- > been for the Thunderbird thing, which made it look _really_ strange at 
- > first, so then I had to go outside my mail client to look closer. And once 
- > I looked closer, I just went "aiieee, it wasn't all the email client" ;)
+On Wed, 2007-05-30 at 19:16 +0200, Peter Zijlstra wrote:
 
-I got fed up of telling people to reconfigure their MUAs a long time
-ago and ended up with this in my .procmailrc
+> > >From the architecture perspective there are two low level clock hooks to
+> > implement one is sched_clock() , and at least one clocksource structure.
+> > Both do essentially the same thing. With timekeepings clocksource
+> > structure actually being easier to implement cause the math is built in.
+> 
+> I think you are mistaken here; the two are similar but not identical.
+> 
+> I see sched_clock() as fast first, accurate second. Whereas the
+> clocksource thing is accurate first, fast second.
 
-:0fw
-| /usr/bin/perl -pe 's/^(Content-Type: .*)format=flowed/\1format=flawed/'
+This is true .. However, if there is a speed different it's small.
+In the past I've replace sched_clock() with a clocksource, and there was
+no noticeable speed different .. Just recently I replaced x86's
+sched_clock() math with the clocksource math with no noticable
+difference .. At least not from my benchmarks ..
 
-It doesn't solve all the worlds problems, but it least makes that crap
-readable in _my_ MUA.  Sadly, if it's a patch that I have to apply
-then chances are I'll have to get them to resend it with something
-else anyway, as it's inevitably buggered in some other way because
-thunderbird really is that dire.
+> There is room for both of them.
 
-I'm convinced there's some contest to see who can make the worst
-graphical mail client for Linux. I'm not sure what the prize is,
-or who's winning, but the entries so far are horrific.
+There is room, but we don't need sched_clock() .. Certainly we shouldn't
+force architectures to implement sched_clock() by calling it a "bug" if
+it's lowres.
 
-	Dave
+Daniel
 
--- 
-http://www.codemonkey.org.uk
