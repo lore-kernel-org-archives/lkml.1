@@ -1,65 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbXE3U1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756998AbXE3Udg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbXE3U1a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 16:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbXE3U1U
+	id S1756998AbXE3Udg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 16:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbXE3Ud2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 16:27:20 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:21794 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751994AbXE3U1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 16:27:19 -0400
-Message-ID: <465DDE1D.3000809@cfl.rr.com>
-Date: Wed, 30 May 2007 16:27:09 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: device-mapper development <dm-devel@redhat.com>
-CC: David Chinner <dgc@sgi.com>, Tejun Heo <htejun@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, linux-fsdevel@vger.kernel.org,
-       Andreas Dilger <adilger@clusterfs.com>,
-       Stefan Bader <Stefan.Bader@de.ibm.com>
-Subject: Re: [dm-devel] Re: [RFD] BIO_RW_BARRIER - what it means for devices,
- filesystems, and dm/md.
-References: <18006.38689.818186.221707@notabene.brown> <18010.12472.209452.148229@notabene.brown> <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com> <20070529234832.GT85884050@sgi.com> <465DAA15.3070703@cfl.rr.com>
-In-Reply-To: <465DAA15.3070703@cfl.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 30 May 2007 16:33:28 -0400
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:58153 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751424AbXE3Ud1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 16:33:27 -0400
+Date: Wed, 30 May 2007 13:32:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/9] Conditional Calls - Architecture Independent Code
+Message-Id: <20070530133242.9a0d2c71.akpm@linux-foundation.org>
+In-Reply-To: <20070530140227.070136408@polymtl.ca>
+References: <20070530140025.917261793@polymtl.ca>
+	<20070530140227.070136408@polymtl.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 May 2007 20:27:32.0280 (UTC) FILETIME=[F36ACB80:01C7A2F8]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15208.001
-X-TM-AS-Result: No--11.982500-5.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Susi wrote:
-> Hrm... I may have misunderstood the perspective you were talking from. 
-> Yes, when the bio is completed it must be on the media, but the 
-> filesystem should issue both requests, and then really not care when 
-> they complete.  That is to say, the filesystem should not wait for block 
-> A to finish before issuing block B; it should issue both, and use 
-> barriers to make sure they hit the disk in the correct order.
+On Wed, 30 May 2007 10:00:26 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-Actually now that I think about it, that wasn't correct.  The request 
-CAN be completed before the data has hit the medium.  The barrier just 
-constrains the ordering of the writes, but they can still sit in the 
-disk write back cache for some time.
-
-Stefan Bader wrote:
-> That would be the exactly how I understand Documentation/block/barrier.txt:
+> Conditional calls are used to compile in code that is meant to be dynamically
+> enabled at runtime. When code is disabled, it has a very small footprint.
 > 
-> "In other words, I/O barrier requests have the following two properties.
-> 1. Request ordering
-> ...
-> 2. Forced flushing to physical medium"
+> It has a generic cond_call version and optimized per architecture cond_calls.
+> The optimized cond_call uses a load immediate to remove a data cache hit.
 > 
-> "So, I/O barriers need to guarantee that requests actually get written
-> to non-volatile medium in order." 
+> It adds a new rodata section "__cond_call" to place the pointers to the enable
+> value.
+> 
+> cond_call activation functions sits in module.c.
+> 
 
-I think you misinterpret this, and it probably could be worded a bit 
-better.  The barrier request is about constraining the order.  The 
-forced flushing is one means to implement that constraint.  The other 
-alternative mentioned there is to use ordered tags.  The key part there 
-is "requests actually get written to non-volatile medium _in order_", 
-not "before the request completes", which would be synchronous IO.
+The above doesn't really describe what these things are, nor what they are
+used for, nor how they actually work.  It's all a bit of a mystery.
+
+The i386 implementation appears to be using self-modifying code, which is
+intriguing.
+
+<finds the documentation patch>
+
+OK, that helps somewhat.
+
+> ---
+>  include/asm-generic/vmlinux.lds.h |   16 +-
+>  include/linux/condcall.h          |   91 +++++++++++++
+>  include/linux/module.h            |    4 
+>  kernel/module.c                   |  248 ++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 356 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6-lttng/include/linux/condcall.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-lttng/include/linux/condcall.h	2007-05-17 02:13:53.000000000 -0400
+> @@ -0,0 +1,91 @@
+> +#ifndef _LINUX_CONDCALL_H
+> +#define _LINUX_CONDCALL_H
+> +
+> +/*
+> + * Conditional function calls. Cheap when disabled, enabled at runtime.
+> + *
+> + * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> + *
+> + * This file is released under the GPLv2.
+> + * See the file COPYING for more details.
+> + */
+> +
+> +#ifdef __KERNEL__
+> +
+> +struct __cond_call_struct {
+> +	const char *name;
+> +	void *enable;
+> +	int flags;
+> +} __attribute__((packed));
+
+Please document data structures lavishly.
+
+> +
+> +/* Cond call flags : selects the mechanism used to enable the conditional calls
+> + * and prescribe what can be executed within their function. This is primarily
+> + * used at reentrancy-unfriendly sites. */
+
+You consistently use the wrong commenting style.  We prefer
+
+/* Cond call flags : selects the mechanism used to enable the conditional calls
+ * and prescribe what can be executed within their function. This is primarily
+ * used at reentrancy-unfriendly sites.
+ */
+
+or
+
+/*
+ * Cond call flags : selects the mechanism used to enable the conditional calls
+ * and prescribe what can be executed within their function. This is primarily
+ * used at reentrancy-unfriendly sites.
+ */
+
+> +#ifdef CONFIG_COND_CALL_ENABLE_OPTIMIZATION
+> +#include <asm/condcall.h>		/* optimized cond_call flavor */
+> +#else
+> +#include <asm-generic/condcall.h>	/* fallback on generic cond_call */
+> +#endif
+
+The preferred way to do this is to give every architecture an
+asm/condcall.h and from within that, include asm-generic/condcall.h.  Your
+[patch 3/9] does most of that, but it didn't remove the above ifdef, and I
+don't think it removed the should-be-unneeded
+CONFIG_COND_CALL_ENABLE_OPTIMIZATION either?
+
+> +#define COND_CALL_MAX_FORMAT_LEN	1024
+> +
+> +extern int cond_call_arm(const char *name);
+> +extern int cond_call_disarm(const char *name);
+> +
+> +/* cond_call_query : Returns 1 if enabled, 0 if disabled or not present */
+> +extern int cond_call_query(const char *name);
+> +extern int cond_call_list(const char *name);
+> +
+> +#endif /* __KERNEL__ */
+> +#endif
+> Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-05-17 02:12:25.000000000 -0400
+> +++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-05-17 02:13:42.000000000 -0400
+> @@ -116,11 +116,22 @@
+>  		*(__kcrctab_gpl_future)					\
+>  		VMLINUX_SYMBOL(__stop___kcrctab_gpl_future) = .;	\
+>  	}								\
+> -									\
+> +	/* Conditional calls: pointers */				\
+> +	__cond_call : AT(ADDR(__cond_call) - LOAD_OFFSET) {		\
+> +		VMLINUX_SYMBOL(__start___cond_call) = .;		\
+> +		*(__cond_call)						\
+> +		VMLINUX_SYMBOL(__stop___cond_call) = .;			\
+> +	}								\
+>  	/* Kernel symbol table: strings */				\
+>          __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
+>  		*(__ksymtab_strings)					\
+> -	}								\
+> + 	}								\
+> +	/* Conditional calls: strings */				\
+> +        __cond_call_strings : AT(ADDR(__cond_call_strings) - LOAD_OFFSET) { \
+
+whitespace went bad here.
+
 
