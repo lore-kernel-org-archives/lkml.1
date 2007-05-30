@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbXE3IzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbXE3Ize@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbXE3IzD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 04:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbXE3Iyt
+	id S1753502AbXE3Ize (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 04:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbXE3IzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 04:54:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57327 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752479AbXE3Iyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 04:54:47 -0400
-Date: Wed, 30 May 2007 10:54:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Jeff Garzik <jeff@garzik.org>, Zach Brown <zach.brown@oracle.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ulrich Drepper <drepper@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530085400.GA17744@elte.hu>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <20070530083254.GA21528@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 May 2007 04:55:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:31616 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbXE3IzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 04:55:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GYiCEHQH1H6zxvawzvmFnZy/E1WQUks0gLoy58FKTnf/x/ABhYSNeDwPd+7xHHCCBqWHIk1lRce1yZ/SysQ/e6k0XMzd3cCouJiybaCm5wBYDtx60ejMRV/Wnnbj860fg/sRFv6FV68GGOh7fMuhxkKhDNI1OGbImpxZ11vq9kA=
+Message-ID: <5201e28f0705300155ue7ce985m3f318ff7ff1a1396@mail.gmail.com>
+Date: Wed, 30 May 2007 10:55:13 +0200
+From: "Stefan Bader" <Stefan.Bader@de.ibm.com>
+To: "David Chinner" <dgc@sgi.com>
+Subject: Re: [RFD] BIO_RW_BARRIER - what it means for devices, filesystems, and dm/md.
+Cc: david@lang.hm, "Phillip Susi" <psusi@cfl.rr.com>,
+       "Neil Brown" <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
+       "Andreas Dilger" <adilger@clusterfs.com>,
+       "Tejun Heo" <htejun@gmail.com>
+In-Reply-To: <20070530061723.GY85884050@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070530083254.GA21528@2ka.mipt.ru>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <18006.38689.818186.221707@notabene.brown>
+	 <18010.12472.209452.148229@notabene.brown>
+	 <20070528024559.GA85884050@sgi.com> <465C871F.708@cfl.rr.com>
+	 <20070529234832.GT85884050@sgi.com>
+	 <Pine.LNX.4.64.0705291653230.31474@asgard.lang.hm>
+	 <20070530061723.GY85884050@sgi.com>
+X-Google-Sender-Auth: 940b2ce0dd5d7d96
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> The order that these are expected by the filesystem to hit stable
+> storage are:
+>
+> 1. block 4 and 10 on stable storage in any order
+> 2. barrier block X on stable storage
+> 3. block 5 and 20 on stable storage in any order
+>
+> The point I'm trying to make is that in XFS,  block 5 and 20 cannot
+> be allowed to hit the disk before the barrier block because they
+> have strict order dependency on block X being stable before them,
+> just like block X has strict order dependency that block 4 and 10
+> must be stable before we start the barrier block write.
+>
 
-* Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+That would be the exactly how I understand Documentation/block/barrier.txt:
 
-> I did not want to start with another round of ping-pong insults :), 
-> but, Ingo, you did not show that kevent works worse. I did show that 
-> sometimes it works better. It flawed from 0 to 30% win in that tests, 
-> in results Johann Bork presented kevent and epoll behaved the same. In 
-> results I posted earlier, I said, that sometimes epoll behaved better, 
-> sometimes kevent. [...]
+"In other words, I/O barrier requests have the following two properties.
+1. Request ordering
+...
+2. Forced flushing to physical medium"
 
-let me refresh your recollection:
+"So, I/O barriers need to guarantee that requests actually get written
+to non-volatile medium in order."
 
-  http://lkml.org/lkml/2007/2/25/116
-
-where you said:
-
- "But note, that on my athlon64 3500 test machine kevent is about 7900
-  requests per second compared to 4000+ epoll, so expect a challenge."
-
-for a long time you made much fuss about how kevents is so much better 
-and how epoll cannot perform and scale as well (you said various 
-arguments why that is supposedly so), and some people bought into the 
-performance argument and advocated kevent due to its supposed 
-performance and scalability advantages - while now we are down to "epoll 
-and kevent are break-even"?
-
-in my book that is way too much of a difference, it is (best-case) a way 
-too sloppy approach to something as fundamental as Linux's basic event 
-model and design, and it is also compounded by your continued "nothing 
-happened, really, lets move on" stance. Losing trust is easy, winning it 
-back is hard. Let me reuse a phrase of yours: "expect a challenge".
-
-	Ingo
+Stefan
