@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbXE3Tlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXE3TnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbXE3Tlp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbXE3Tlc
+	id S1758234AbXE3TnU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbXE3TnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:41:32 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:55492 "EHLO mailer.gwdg.de"
+	Wed, 30 May 2007 15:43:12 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:56136 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757641AbXE3Tla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:41:30 -0400
-Date: Wed, 30 May 2007 21:40:42 +0200 (MEST)
+	id S1753536AbXE3TnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 15:43:11 -0400
+Date: Wed, 30 May 2007 21:41:37 +0200 (MEST)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: kkeil@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 05/06] Use menuconfig objects 4 - ISDN part 5/6 (CONFIG_CAPI_AVM)
+cc: kkeil@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mac@melware.de
+Subject: [PATCH 06/06] Use menuconfig objects 4 - ISDN part 6/6 (CONFIG_CAPI_EICON)
 In-Reply-To: <200705301906.l4UJ62hC002388@shell0.pdx.osdl.net>
-Message-ID: <Pine.LNX.4.61.0705302140210.11140@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0705302140430.11140@yvahk01.tjqt.qr>
 References: <200705301906.l4UJ62hC002388@shell0.pdx.osdl.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,76 +33,72 @@ the menu first.
 Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
 ---
- drivers/isdn/hardware/avm/Kconfig |   22 ++++++++++------------
- 1 file changed, 10 insertions(+), 12 deletions(-)
+ drivers/isdn/hardware/eicon/Kconfig |   21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
 
-Index: linux-2.6.22-rc3-git1/drivers/isdn/hardware/avm/Kconfig
+Index: linux-2.6.22-rc3-git1/drivers/isdn/hardware/eicon/Kconfig
 ===================================================================
---- linux-2.6.22-rc3-git1.orig/drivers/isdn/hardware/avm/Kconfig
-+++ linux-2.6.22-rc3-git1/drivers/isdn/hardware/avm/Kconfig
-@@ -2,22 +2,22 @@
- # ISDN AVM drivers
+--- linux-2.6.22-rc3-git1.orig/drivers/isdn/hardware/eicon/Kconfig
++++ linux-2.6.22-rc3-git1/drivers/isdn/hardware/eicon/Kconfig
+@@ -2,51 +2,50 @@
+ # ISDN DIVAS Eicon driver
  #
  
--menu "Active AVM cards"
+-menu "Active Eicon DIVA Server cards"
 -
--config CAPI_AVM
--	bool "Support AVM cards"
-+menuconfig CAPI_AVM
-+	bool "Active AVM cards"
+-config CAPI_EICON
+-	bool "Support Eicon cards"
++menuconfig CAPI_EICON
++	bool "Active Eicon DIVA Server cards"
  	help
- 	  Enable support for AVM active ISDN cards.
+ 	  Enable support for Eicon Networks active ISDN cards.
  
-+if CAPI_AVM
++if CAPI_EICON
 +
- config ISDN_DRV_AVMB1_B1ISA
- 	tristate "AVM B1 ISA support"
--	depends on CAPI_AVM && ISA
-+	depends on ISA
+ config ISDN_DIVAS
+ 	tristate "Support Eicon DIVA Server cards"
+-	depends on CAPI_EICON && PROC_FS && PCI
++	depends on PROC_FS && PCI
  	help
- 	  Enable support for the ISA version of the AVM B1 card.
+ 	  Say Y here if you have an Eicon Networks DIVA Server PCI ISDN card.
+ 	  In order to use this card, additional firmware is necessary, which
+ 	  has to be downloaded into the card using the divactrl utility.
  
- config ISDN_DRV_AVMB1_B1PCI
- 	tristate "AVM B1 PCI support"
--	depends on CAPI_AVM && PCI
-+	depends on PCI
++if ISDN_DIVAS
++
+ config ISDN_DIVAS_BRIPCI
+ 	bool "DIVA Server BRI/PCI support"
+-	depends on ISDN_DIVAS
  	help
- 	  Enable support for the PCI version of the AVM B1 card.
+ 	  Enable support for DIVA Server BRI-PCI.
  
-@@ -29,14 +29,13 @@ config ISDN_DRV_AVMB1_B1PCIV4
- 
- config ISDN_DRV_AVMB1_T1ISA
- 	tristate "AVM T1/T1-B ISA support"
--	depends on CAPI_AVM && ISA
-+	depends on ISA
+ config ISDN_DIVAS_PRIPCI
+ 	bool "DIVA Server PRI/PCI support"
+-	depends on ISDN_DIVAS
  	help
- 	  Enable support for the AVM T1 T1B card.
- 	  Note: This is a PRI card and handle 30 B-channels.
+ 	  Enable support for DIVA Server PRI-PCI.
  
- config ISDN_DRV_AVMB1_B1PCMCIA
- 	tristate "AVM B1/M1/M2 PCMCIA support"
--	depends on CAPI_AVM
+ config ISDN_DIVAS_DIVACAPI
+ 	tristate "DIVA CAPI2.0 interface support"
+-	depends on ISDN_DIVAS
  	help
- 	  Enable support for the PCMCIA version of the AVM B1 card.
+ 	  You need this to provide the CAPI interface
+ 	  for DIVA Server cards.
  
-@@ -49,17 +48,16 @@ config ISDN_DRV_AVMB1_AVM_CS
- 
- config ISDN_DRV_AVMB1_T1PCI
- 	tristate "AVM T1/T1-B PCI support"
--	depends on CAPI_AVM && PCI
-+	depends on PCI
+ config ISDN_DIVAS_USERIDI
+ 	tristate "DIVA User-IDI interface support"
+-	depends on ISDN_DIVAS
  	help
- 	  Enable support for the AVM T1 T1B card.
- 	  Note: This is a PRI card and handle 30 B-channels.
+ 	  Enable support for user-mode IDI interface.
  
- config ISDN_DRV_AVMB1_C4
- 	tristate "AVM C4/C2 support"
--	depends on CAPI_AVM && PCI
-+	depends on PCI
+ config ISDN_DIVAS_MAINT
+ 	tristate "DIVA Maint driver support"
+-	depends on ISDN_DIVAS && m
++	depends on m
  	help
- 	  Enable support for the AVM C4/C2 PCI cards.
- 	  These cards handle 4/2 BRI ISDN lines (8/4 channels).
+ 	  Enable Divas Maintenance driver.
  
 -endmenu
--
-+endif # CAPI_AVM
++endif # ISDN_DIVAS
+ 
++endif # CAPI_EICON
