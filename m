@@ -1,47 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbXE3AqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbXE3AxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886AbXE3AqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 May 2007 20:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXE3AqJ
+	id S1752195AbXE3AxN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 May 2007 20:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbXE3Aw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 May 2007 20:46:09 -0400
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:33979 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751185AbXE3AqH (ORCPT
+	Tue, 29 May 2007 20:52:59 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:39824 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbXE3Aw6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 May 2007 20:46:07 -0400
-Date: Tue, 29 May 2007 17:45:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch 2/2] m68k: Discontinuous memory support
-Message-Id: <20070529174556.20c551a0.akpm@linux-foundation.org>
-In-Reply-To: <20070528191715.597623909@mail.of.borg>
-References: <20070528191630.377693320@mail.of.borg>
-	<20070528191715.597623909@mail.of.borg>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 29 May 2007 20:52:58 -0400
+Subject: [RFC][PATCH] Replacing the /proc/<pid|self>/exe symlink code
+From: Matt Helsley <matthltc@us.ibm.com>
+To: linux-mm@kvack.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Tue, 29 May 2007 17:52:49 -0700
+Message-Id: <1180486369.11715.69.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 May 2007 21:16:32 +0200
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+This patch avoids holding the mmap semaphore while walking VMAs in response to
+programs which read or follow the /proc/<pid|self>/exe symlink. This also allows us
+to merge mmu and nommu proc_exe_link() functions. The costs are holding a separate
+reference to the executable file stored in the task struct and increased code in
+fork, exec, and exit paths.
 
-> -#define __page_address(page)	(PAGE_OFFSET + (((page) - mem_map) << PAGE_SHIFT))
-> -#define page_to_phys(page)	virt_to_phys((void *)__page_address(page))
-> +#ifdef CONFIG_SINGLE_MEMORY_CHUNK
-> +#define page_to_phys(page) \
-> +	__pa(PAGE_OFFSET + (((page) - pg_data_map[0].node_mem_map) << PAGE_SHIFT))
-> +#else
-> +#define page_to_phys(page) ({						\
-> +	struct pglist_data *pgdat;					\
-> +	pgdat = pg_data_table[page_to_nid(page)];			\
-> +	page_to_pfn(page) << PAGE_SHIFT;				\
-> +})
-> +#endif
+Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+---
 
-macros which evaluate their args more than once are dangerous.
+Compiled and passed simple tests for regressions when patched against a 2.6.20
+and 2.6.22-rc2-mm1 kernel.
+
+ fs/exec.c             |    5 +++--
+ fs/proc/base.c        |   20 ++++++++++++++++++++
+ fs/proc/internal.h    |    1 -
+ fs/proc/task_mmu.c    |   34 ----------------------------------
+ fs/proc/task_nommu.c  |   34 ----------------------------------
+ include/linux/sched.h |    1 +
+ kernel/exit.c         |    2 ++
+ kernel/fork.c         |   10 +++++++++-
+ 8 files changed, 35 insertions(+), 72 deletions(-)
+
+Index: linux-2.6.22-rc2-mm1/include/linux/sched.h
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/include/linux/sched.h
++++ linux-2.6.22-rc2-mm1/include/linux/sched.h
+@@ -988,10 +988,11 @@ struct task_struct {
+ 	int oomkilladj; /* OOM kill score adjustment (bit shift). */
+ 	char comm[TASK_COMM_LEN]; /* executable name excluding path
+ 				     - access with [gs]et_task_comm (which lock
+ 				       it with task_lock())
+ 				     - initialized normally by flush_old_exec */
++	struct file *exe_file;
+ /* file system info */
+ 	int link_count, total_link_count;
+ #ifdef CONFIG_SYSVIPC
+ /* ipc stuff */
+ 	struct sysv_sem sysvsem;
+Index: linux-2.6.22-rc2-mm1/fs/exec.c
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/fs/exec.c
++++ linux-2.6.22-rc2-mm1/fs/exec.c
+@@ -1106,12 +1106,13 @@ int search_binary_handler(struct linux_b
+ 			read_unlock(&binfmt_lock);
+ 			retval = fn(bprm, regs);
+ 			if (retval >= 0) {
+ 				put_binfmt(fmt);
+ 				allow_write_access(bprm->file);
+-				if (bprm->file)
+-					fput(bprm->file);
++				if (current->exe_file)
++					fput(current->exe_file);
++				current->exe_file = bprm->file;
+ 				bprm->file = NULL;
+ 				current->did_exec = 1;
+ 				proc_exec_connector(current);
+ 				return retval;
+ 			}
+Index: linux-2.6.22-rc2-mm1/fs/proc/base.c
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/fs/proc/base.c
++++ linux-2.6.22-rc2-mm1/fs/proc/base.c
+@@ -951,10 +951,30 @@ const struct file_operations proc_pid_sc
+ 	.write		= sched_write,
+ 	.llseek		= seq_lseek,
+ 	.release	= seq_release,
+ };
+ 
++static int proc_exe_link(struct inode *inode, struct dentry **dentry,
++    			 struct vfsmount **mnt)
++{
++	int error;
++	struct task_struct *task;
++
++	task = get_proc_task(inode);
++	if (!task)
++		return -ENOENT;
++	error = -ENOSYS;
++	if (!task->exe_file)
++		goto out;
++	*mnt = mntget(task->exe_file->f_path.mnt);
++	*dentry = dget(task->exe_file->f_path.dentry);
++	error = 0;
++out:
++	put_task_struct(task);
++	return error;
++}
++
+ static void *proc_pid_follow_link(struct dentry *dentry, struct nameidata *nd)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error = -EACCES;
+ 
+Index: linux-2.6.22-rc2-mm1/kernel/exit.c
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/kernel/exit.c
++++ linux-2.6.22-rc2-mm1/kernel/exit.c
+@@ -924,10 +924,12 @@ fastcall void do_exit(long code)
+ 	if (unlikely(tsk->audit_context))
+ 		audit_free(tsk);
+ 
+ 	taskstats_exit(tsk, group_dead);
+ 
++	if (tsk->exe_file)
++		fput(tsk->exe_file);
+ 	exit_mm(tsk);
+ 
+ 	if (group_dead)
+ 		acct_process();
+ 	exit_sem(tsk);
+Index: linux-2.6.22-rc2-mm1/kernel/fork.c
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/kernel/fork.c
++++ linux-2.6.22-rc2-mm1/kernel/fork.c
+@@ -1163,10 +1163,13 @@ static struct task_struct *copy_process(
+ 
+ 	/* ok, now we should be set up.. */
+ 	p->exit_signal = (clone_flags & CLONE_THREAD) ? -1 : (clone_flags & CSIGNAL);
+ 	p->pdeath_signal = 0;
+ 	p->exit_state = 0;
++	p->exe_file = current->exe_file;
++	if (p->exe_file)
++		get_file(p->exe_file);
+ 
+ 	/*
+ 	 * Ok, make it visible to the rest of the system.
+ 	 * We dont wake it up yet.
+ 	 */
+@@ -1218,11 +1221,11 @@ static struct task_struct *copy_process(
+  	recalc_sigpending();
+ 	if (signal_pending(current)) {
+ 		spin_unlock(&current->sighand->siglock);
+ 		write_unlock_irq(&tasklist_lock);
+ 		retval = -ERESTARTNOINTR;
+-		goto bad_fork_cleanup_namespaces;
++		goto bad_fork_cleanup_exe_file;
+ 	}
+ 
+ 	if (clone_flags & CLONE_THREAD) {
+ 		p->group_leader = current->group_leader;
+ 		list_add_tail_rcu(&p->thread_group, &p->group_leader->thread_group);
+@@ -1274,10 +1277,15 @@ static struct task_struct *copy_process(
+ 		put_user(p->pid, parent_tidptr);
+ 
+ 	proc_fork_connector(p);
+ 	return p;
+ 
++bad_fork_cleanup_exe_file:
++	if (p->exe_file) {
++		fput(p->exe_file);
++		p->exe_file = NULL;
++	}
+ bad_fork_cleanup_namespaces:
+ 	exit_task_namespaces(p);
+ bad_fork_cleanup_keys:
+ 	exit_keys(p);
+ bad_fork_cleanup_mm:
+Index: linux-2.6.22-rc2-mm1/fs/proc/task_mmu.c
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/fs/proc/task_mmu.c
++++ linux-2.6.22-rc2-mm1/fs/proc/task_mmu.c
+@@ -71,44 +71,10 @@ int task_statm(struct mm_struct *mm, int
+ 	*data = mm->total_vm - mm->shared_vm;
+ 	*resident = *shared + get_mm_counter(mm, anon_rss);
+ 	return mm->total_vm;
+ }
+ 
+-int proc_exe_link(struct inode *inode, struct dentry **dentry, struct vfsmount **mnt)
+-{
+-	struct vm_area_struct * vma;
+-	int result = -ENOENT;
+-	struct task_struct *task = get_proc_task(inode);
+-	struct mm_struct * mm = NULL;
+-
+-	if (task) {
+-		mm = get_task_mm(task);
+-		put_task_struct(task);
+-	}
+-	if (!mm)
+-		goto out;
+-	down_read(&mm->mmap_sem);
+-
+-	vma = mm->mmap;
+-	while (vma) {
+-		if ((vma->vm_flags & VM_EXECUTABLE) && vma->vm_file)
+-			break;
+-		vma = vma->vm_next;
+-	}
+-
+-	if (vma) {
+-		*mnt = mntget(vma->vm_file->f_path.mnt);
+-		*dentry = dget(vma->vm_file->f_path.dentry);
+-		result = 0;
+-	}
+-
+-	up_read(&mm->mmap_sem);
+-	mmput(mm);
+-out:
+-	return result;
+-}
+-
+ static void pad_len_spaces(struct seq_file *m, int len)
+ {
+ 	len = 25 + sizeof(void*) * 6 - len;
+ 	if (len < 1)
+ 		len = 1;
+Index: linux-2.6.22-rc2-mm1/fs/proc/task_nommu.c
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/fs/proc/task_nommu.c
++++ linux-2.6.22-rc2-mm1/fs/proc/task_nommu.c
+@@ -102,44 +102,10 @@ int task_statm(struct mm_struct *mm, int
+ 	up_read(&mm->mmap_sem);
+ 	*resident = size;
+ 	return size;
+ }
+ 
+-int proc_exe_link(struct inode *inode, struct dentry **dentry, struct vfsmount **mnt)
+-{
+-	struct vm_list_struct *vml;
+-	struct vm_area_struct *vma;
+-	struct task_struct *task = get_proc_task(inode);
+-	struct mm_struct *mm = get_task_mm(task);
+-	int result = -ENOENT;
+-
+-	if (!mm)
+-		goto out;
+-	down_read(&mm->mmap_sem);
+-
+-	vml = mm->context.vmlist;
+-	vma = NULL;
+-	while (vml) {
+-		if ((vml->vma->vm_flags & VM_EXECUTABLE) && vml->vma->vm_file) {
+-			vma = vml->vma;
+-			break;
+-		}
+-		vml = vml->next;
+-	}
+-
+-	if (vma) {
+-		*mnt = mntget(vma->vm_file->f_path.mnt);
+-		*dentry = dget(vma->vm_file->f_path.dentry);
+-		result = 0;
+-	}
+-
+-	up_read(&mm->mmap_sem);
+-	mmput(mm);
+-out:
+-	return result;
+-}
+-
+ /*
+  * display mapping lines for a particular process's /proc/pid/maps
+  */
+ static int show_map(struct seq_file *m, void *_vml)
+ {
+Index: linux-2.6.22-rc2-mm1/fs/proc/internal.h
+===================================================================
+--- linux-2.6.22-rc2-mm1.orig/fs/proc/internal.h
++++ linux-2.6.22-rc2-mm1/fs/proc/internal.h
+@@ -38,11 +38,10 @@ extern int nommu_vma_show(struct seq_fil
+ #endif
+ 
+ extern int maps_protect;
+ 
+ extern void create_seq_entry(char *name, mode_t mode, const struct file_operations *f);
+-extern int proc_exe_link(struct inode *, struct dentry **, struct vfsmount **);
+ extern int proc_tid_stat(struct task_struct *,  char *);
+ extern int proc_tgid_stat(struct task_struct *, char *);
+ extern int proc_pid_status(struct task_struct *, char *);
+ extern int proc_pid_statm(struct task_struct *, char *);
+ extern loff_t mem_lseek(struct file * file, loff_t offset, int orig);
+
+
