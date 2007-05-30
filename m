@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbXE3MSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbXE3MV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbXE3MSh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 08:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbXE3MSa
+	id S1753457AbXE3MV6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 08:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbXE3MVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 08:18:30 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:53985 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbXE3MS3 (ORCPT
+	Wed, 30 May 2007 08:21:48 -0400
+Received: from imf06aec.mail.bellsouth.net ([205.152.59.54]:34225 "EHLO
+	imf06aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751449AbXE3MVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 08:18:29 -0400
-X-Originating-Ip: 72.143.65.211
-Date: Wed, 30 May 2007 08:17:13 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: should "create_proc_read_entry" enforce read-only semantics?
-Message-ID: <Pine.LNX.4.64.0705300813150.13465@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 30 May 2007 08:21:47 -0400
+Date: Wed, 30 May 2007 06:47:11 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Jose Alberto Reguero <jareguero@telefonica.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: Problem with atl1 and msi in kernel 2.6.22-rc3
+Message-ID: <20070530064711.570162f1@osprey.hogchain.net>
+In-Reply-To: <200705300200.25412.jareguero@telefonica.net>
+References: <200705300200.25412.jareguero@telefonica.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 May 2007 02:00:25 +0200
+Jose Alberto Reguero <jareguero@telefonica.net> wrote:
 
-  admittedly more nitpickery, but it strikes me as a bit confusing
-that you can use create_proc_read_entry() to create writable proc
-files, since that routine is simply a wrapper for create_proc_entry
-that passes the mode untouched and unexamined.
+> I have problems with a M2V motherboard and atl1 driver with msi and
+> kernel 2.6.22-rc3. With kernel 2.6.21 I had no problems.
+> I must add in drivers/pci/quirks.c (line 1723):
+> 
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RS480, 
+> quirk_disable_msi);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, 0xe238,
+> quirk_disable_msi);
+> 
+> to disable msi in the atl1.
 
-  that's why you can get stuff like this from drivers/scsi/scsi_proc.c
+See http://bugzilla.kernel.org/show_bug.cgi?id=8472.
 
-...
-        p = create_proc_read_entry(name, S_IFREG | S_IRUGO | S_IWUSR,
-                        sht->proc_dir, proc_scsi_read, shost);
-        if (!p) {
-                printk(KERN_ERR "%s: Failed to register host %d in"
-                       "%s\n", __FUNCTION__, shost->host_no,
-                       sht->proc_name);
-                return;
-        }
+A more general solution is to disable MSI for the VIA VT3351 (used by
+the Asus M2V).  I attempted to do this in the -stable tree with
+http://lkml.org/lkml/2007/5/26/167, but it was shot down because the
+patch isn't upstream yet.
 
-        p->write_proc = proc_scsi_write_proc;
-...
+Unfortunately, I can't submit it upstream because the enabling
+patch hasn't yet been applied upstream by the PCI maintainer. My
+request for info on the status of the patch went unanswered.
+http://lkml.org/lkml/2007/5/19/74
 
-  it just seems to abuse the semantics to use a routine called
-"create_proc_read_entry" to create a writable file.  but that's just
-me.
+The enabling patch was submitted by Tejun Heo 9 May.
+http://lkml.org/lkml/2007/5/9/213
 
-rday
+It was applied to -stable (2.6.21.2) 23 May.
+http://lkml.org/lkml/2007/5/23/385
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+It has not yet been applied upstream.  When it is, I'll push the atl1
+MSI patch.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Jay
+
