@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbXE3P4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbXE3P5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbXE3P4v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 11:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXE3P4o
+	id S1756225AbXE3P5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 11:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbXE3P5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 11:56:44 -0400
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:13895 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbXE3P4n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 11:56:43 -0400
-X-IronPort-AV: i="4.14,594,1170662400"; 
-   d="scan'208"; a="3250645:sNHT19608270"
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org
-Subject: Re: [ofa-general] Re: dealing with gcc 'comparison is always false' warnings
-X-Message-Flag: Warning: May contain useful information
-References: <20070530080518.GA29195@nostromo.devel.redhat.com>
-	<adazm3mqqh3.fsf@cisco.com>
-	<a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 30 May 2007 08:56:37 -0700
-In-Reply-To: <a781481a0705300841k2a02335eg66985129eaed28f4@mail.gmail.com> (Satyam Sharma's message of "Wed, 30 May 2007 21:11:29 +0530")
-Message-ID: <adaveeaqp8q.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 May 2007 15:56:38.0038 (UTC) FILETIME=[1B224B60:01C7A2D3]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Wed, 30 May 2007 11:57:06 -0400
+Received: from www.osadl.org ([213.239.205.134]:49660 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751632AbXE3P5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 11:57:05 -0400
+Subject: Re: add_timer_on and CONFIG_NO_HZ
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Joe Korty <joe.korty@ccur.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070530132844.GA3630@tsunami.ccur.com>
+References: <20070530132844.GA3630@tsunami.ccur.com>
+Content-Type: text/plain
+Date: Wed, 30 May 2007 17:57:00 +0200
+Message-Id: <1180540620.3930.1.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > However, gcc is _just as correct_. It is only crying about seeing a condition
- > that the programmer could have written with some purpose in mind but which
- > is being completely compiled away by it when generating the code because
- > of it being a tautology / contradiction ...
+Joe,
 
-Well, OK, but there's lots of things gcc could warn about.  How about
+On Wed, 2007-05-30 at 09:28 -0400, Joe Korty wrote:
+> Hi Thomas,
+>  It seems that when add_timer_on() is used to put a timer
+> on another cpu's timer queue, that remote cpu should be
+> made to reprogram its hardware APIC timer, when CONFIG_NO_HZ=y
+> and the new timer is put at the front of the timer wheel.
 
-	while (1) { ...
+indeed, that makes sense. I look into this. Thanks for pointing it out.
 
-By your argument gcc should warn that '1' always evaluates to true.
-Or how about
+	tglx
 
-#if 0
 
-why shouldn't the preprocessor warn that the conditional is always false?
-
- > No, shutting gcc up wouldn't be the right thing, IMHO. These warnings are
- > a good reminder to the programmer to go and see if there is a real bug
- > somewhere and if something really needs to be done with the code (could
- > be simply to change the type of a variable to signed that was mistakenly
- > declared unsigned, f.e.).
-
-OK, but suppose I looked at it and there's no bug.  Leaving the
-warning has a cost too: it hides useful warnings (that might be
-showing real bugs) in all the clutter.
-
- - R.
