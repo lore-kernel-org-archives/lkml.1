@@ -1,60 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbXE3OiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbXE3OuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780AbXE3OiH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 10:38:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbXE3Oh5
+	id S1753839AbXE3OuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbXE3Otx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 10:37:57 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:43237 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752275AbXE3Oh4 (ORCPT
+	Wed, 30 May 2007 10:49:53 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:6400 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751188AbXE3Otw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 10:37:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=k+WJ1nYh2nYb6j/Hj9nK/uk1Ve/85JYlIrCZsDNeCp5vAchkGkS+CLeoSsZhMyutWuWvTTY/tqcaXRJjisVq+f9O3b5e1txxA0RzwwDw/m6oFoczinZcou+/HHrGoXfPGVTVmPpq0tYZ2YZhM5sj+i6xW9oExw+T6ObLj91Qhrc=
-Message-ID: <2bd9ebfa0705300737t4f11ee71mca114b37a969db01@mail.gmail.com>
-Date: Wed, 30 May 2007 20:07:53 +0530
-From: "Tej Parkash" <tejparkash.d@gmail.com>
-To: sam@ravnborg.org
-Subject: Re: Linux-kernel-digest Digest, Vol 32, Issue 795
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <2bd9ebfa0705300735l51dcf4ceubf7f83ab44703010@mail.gmail.com>
+	Wed, 30 May 2007 10:49:52 -0400
+To: LKML <linux-kernel@vger.kernel.org>
+From: Maxim Uvarov <muvarov@ru.mvista.com>
+Subject: [PATCH] Performance Stats: Kernel patch
+Date: Wed, 30 May 2007 18:49:46 +0000
+Message-ID: <20070530184945.28147.50305.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <mailman.13746.1180510421.20629.linux-kernel-digest@lists.us.dell.com>
-	 <2bd9ebfa0705300735l51dcf4ceubf7f83ab44703010@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/30/07, Tej Parkash <tejparkash.d@gmail.com> wrote:
-> > > >
-> > > > while building module i was getting following warning and it terminate
-> > > > module building stage
-> > > The below are only warnings and your build should succeed.
-> > >
-> > > It is obviously i386 - is it a clean allmodconfig or any changes?
-> > > Is it latest -linus or some older version of the codebase?
-> > Did an allmodconfig build of i386 - I see (almost) all warnings here.
-> > So I will take a look based on this.
 
- yaa i got the warning but as i said building stage is also getting
-terminated, without any error.
-
-> The MODPOST stage took a while but it proceeded with no hick-ups.
->  MDOPSOT deals with ~2000 modules in my case and that consumes a bit
->  of memory. Maybe you are hitting the limit with respect to available RAM / SWAP?
->
->         Sam
->
->
- I don't think so that RAM or SWAP space is a constraint, is it related
- to kernel build option or some change in arch. config files
- I am not aware of the required patches for the same.
+Removed syscall counters from patch.
 
 
- thanks
- TEJ
+
+
+Patch makes available to the user the following
+task and process performance statistics:
+	* Involuntary Context Switches (task_struct->nivcsw)
+	* Voluntary Context Switches (task_struct->nvcsw)
+	           
+Statistics information is available from:
+        1. taskstats interface (Documentation/accounting/)
+	2. /proc/PID/status (task only).
+
+This data is useful for detecting hyperactivity
+patterns between processes.
+Signed-off-by: Maxim Uvarov <muvarov@ru.mvista.com>
+                                                      
+---
+
+ Documentation/accounting/getdelays.c          |   19 +++++++++++++++++--
+ Documentation/accounting/taskstats-struct.txt |    6 ++++++
+ fs/proc/array.c                               |    8 ++++++++
+ include/linux/taskstats.h                     |    5 ++++-
+ kernel/taskstats.c                            |    4 ++++
+ 5 files changed, 39 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+index e9126e7..18d22ad 100644
+--- a/Documentation/accounting/getdelays.c
++++ b/Documentation/accounting/getdelays.c
+@@ -49,6 +49,7 @@ char name[100];
+ int dbg;
+ int print_delays;
+ int print_io_accounting;
++int print_task_stats;
+ __u64 stime, utime;
+ 
+ #define PRINTF(fmt, arg...) {			\
+@@ -187,7 +188,7 @@ void print_delayacct(struct taskstats *t)
+ 	       "IO    %15s%15s\n"
+ 	       "      %15llu%15llu\n"
+ 	       "MEM   %15s%15s\n"
+-	       "      %15llu%15llu\n\n",
++	       "      %15llu%15llu\n"
+ 	       "count", "real total", "virtual total", "delay total",
+ 	       t->cpu_count, t->cpu_run_real_total, t->cpu_run_virtual_total,
+ 	       t->cpu_delay_total,
+@@ -196,6 +197,14 @@ void print_delayacct(struct taskstats *t)
+ 	       "count", "delay total", t->swapin_count, t->swapin_delay_total);
+ }
+ 
++void print_taskstats(struct taskstats *t)
++{
++	printf("\n\nTask   %15s%15s\n"
++	       "       %15lu%15lu\n",
++	       "voluntary", "nonvoluntary",
++	       t->nvcsw, t->nivcsw);
++}
++
+ void print_ioacct(struct taskstats *t)
+ {
+ 	printf("%s: read=%llu, write=%llu, cancelled_write=%llu\n",
+@@ -227,7 +236,7 @@ int main(int argc, char *argv[])
+ 	struct msgtemplate msg;
+ 
+ 	while (1) {
+-		c = getopt(argc, argv, "diw:r:m:t:p:v:l");
++		c = getopt(argc, argv, "qdiw:r:m:t:p:v:l");
+ 		if (c < 0)
+ 			break;
+ 
+@@ -240,6 +249,10 @@ int main(int argc, char *argv[])
+ 			printf("printing IO accounting\n");
+ 			print_io_accounting = 1;
+ 			break;
++		case 'q':
++			printf("printing task/process stasistics:\n");
++			print_task_stats = 1;
++			break;
+ 		case 'w':
+ 			strncpy(logfile, optarg, MAX_FILENAME);
+ 			printf("write to file %s\n", logfile);
+@@ -381,6 +394,8 @@ int main(int argc, char *argv[])
+ 							print_delayacct((struct taskstats *) NLA_DATA(na));
+ 						if (print_io_accounting)
+ 							print_ioacct((struct taskstats *) NLA_DATA(na));
++						if (print_task_stats)
++							print_taskstats((struct taskstats *) NLA_DATA(na));
+ 						if (fd) {
+ 							if (write(fd, NLA_DATA(na), na->nla_len) < 0) {
+ 								err(1,"write error\n");
+diff --git a/Documentation/accounting/taskstats-struct.txt b/Documentation/accounting/taskstats-struct.txt
+index 661c797..c3ae6a9 100644
+--- a/Documentation/accounting/taskstats-struct.txt
++++ b/Documentation/accounting/taskstats-struct.txt
+@@ -22,6 +22,8 @@ There are three different groups of fields in the struct taskstats:
+     /* Extended accounting fields end */
+     Their values are collected if CONFIG_TASK_XACCT is set.
+ 
++4) Per-task and per-thread statistics
++
+ Future extension should add fields to the end of the taskstats struct, and
+ should not change the relative position of each field within the struct.
+ 
+@@ -158,4 +160,8 @@ struct taskstats {
+ 
+ 	/* Extended accounting fields end */
+ 
++4) Per-task and per-thread statistics
++	__u64	nvcsw;			/* Context voluntary switch counter */
++	__u64	nivcsw;			/* Context involuntary switch counter */
++
+ }
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 70e4fab..52e2bd9 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -290,6 +290,13 @@ static inline char *task_cap(struct task_struct *p, char *buffer)
+ 			    cap_t(p->cap_permitted),
+ 			    cap_t(p->cap_effective));
+ }
++static inline char *task_perf(struct task_struct *p, char *buffer)
++{
++	return buffer + sprintf(buffer, "voluntary_ctxt_switches:\t%lu\n"
++			    "nonvoluntary_ctxt_switches:\t%lu\n",
++			    p->nvcsw,
++			    p->nivcsw);
++}
+ 
+ int proc_pid_status(struct task_struct *task, char * buffer)
+ {
+@@ -309,6 +316,7 @@ int proc_pid_status(struct task_struct *task, char * buffer)
+ #if defined(CONFIG_S390)
+ 	buffer = task_show_regs(task, buffer);
+ #endif
++	buffer = task_perf(task, buffer);
+ 	return buffer - orig;
+ }
+ 
+diff --git a/include/linux/taskstats.h b/include/linux/taskstats.h
+index 3fced47..6927f81 100644
+--- a/include/linux/taskstats.h
++++ b/include/linux/taskstats.h
+@@ -31,7 +31,7 @@
+  */
+ 
+ 
+-#define TASKSTATS_VERSION	3
++#define TASKSTATS_VERSION	4
+ #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
+ 					 * in linux/sched.h */
+ 
+@@ -146,6 +146,9 @@ struct taskstats {
+ 	__u64	read_bytes;		/* bytes of read I/O */
+ 	__u64	write_bytes;		/* bytes of write I/O */
+ 	__u64	cancelled_write_bytes;	/* bytes of cancelled write I/O */
++
++	__u64  nvcsw;			/* voluntary_ctxt_switches */
++	__u64  nivcsw;			/* nonvoluntary_ctxt_switches */
+ };
+ 
+ 
+diff --git a/kernel/taskstats.c b/kernel/taskstats.c
+index 4c3476f..e5bc666 100644
+--- a/kernel/taskstats.c
++++ b/kernel/taskstats.c
+@@ -196,6 +196,8 @@ static int fill_pid(pid_t pid, struct task_struct *tsk,
+ 
+ 	/* fill in basic acct fields */
+ 	stats->version = TASKSTATS_VERSION;
++	stats->nvcsw = tsk->nvcsw;
++	stats->nivcsw = tsk->nivcsw;
+ 	bacct_add_tsk(stats, tsk);
+ 
+ 	/* fill in extended acct fields */
+@@ -242,6 +244,8 @@ static int fill_tgid(pid_t tgid, struct task_struct *first,
+ 		 */
+ 		delayacct_add_tsk(stats, tsk);
+ 
++		stats->nvcsw += tsk->nvcsw;
++		stats->nivcsw += tsk->nivcsw;
+ 	} while_each_thread(first, tsk);
+ 
+ 	unlock_task_sighand(first, &flags);
+
