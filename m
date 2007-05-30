@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbXE3Izv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbXE3I6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753679AbXE3Izv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 04:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXE3Ize
+	id S1753401AbXE3I6n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 04:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbXE3I6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 04:55:34 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:40540 "EHLO 2ka.mipt.ru"
+	Wed, 30 May 2007 04:58:36 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:17524 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752444AbXE3Izc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 04:55:32 -0400
-Date: Wed, 30 May 2007 12:51:59 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ulrich Drepper <drepper@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Zach Brown <zach.brown@oracle.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Andrew Morton <akpm@zip.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Suparna Bhattacharya <suparna@in.ibm.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Syslets, Threadlets, generic AIO support, v6
-Message-ID: <20070530085159.GC21528@2ka.mipt.ru>
-References: <20070529212718.GH7875@mami.zabbo.net> <465CA654.5000505@garzik.org> <20070530072055.GA3077@elte.hu> <465D286E.2080807@redhat.com> <20070530084252.GA15708@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070530084252.GA15708@elte.hu>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Wed, 30 May 2007 12:52:18 +0400 (MSD)
+	id S1751433AbXE3I6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 04:58:35 -0400
+Message-ID: <465D3D91.5010807@openvz.org>
+Date: Wed, 30 May 2007 13:02:09 +0400
+From: Pavel Emelianov <xemul@openvz.org>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>, menage@google.com, dev@sw.ru,
+       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
+       haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       pj@sgi.com, cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       mbligh@google.com, rohitseth@google.com, devel@openvz.org
+Subject: Re: [PATCH 00/10] Containers(V10): Generic Process Containers
+References: <20070529130104.461765000@menage.corp.google.com> <20070530001455.45cf1dc5.akpm@linux-foundation.org> <465D3141.305@linux.vnet.ibm.com>
+In-Reply-To: <465D3141.305@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 30, 2007 at 10:42:52AM +0200, Ingo Molnar (mingo@elte.hu) wrote:
-> it is a serious flexibility issue that should not be ignored. The 
-> unified fd space is a blessing on one hand because it's simple and 
-> powerful, but it's also a curse because nested use of the fd space for 
-> libraries is currently not possible. But it should be detached from any
-> fundamental question of kevent vs. epoll. (By improving library use of
-> file descriptors we'll improve the utility of all syscalls - by ducking
-> to a memory based API we only solve that particular event based usage.)
-
-There is another issue with file descriptors - userspace must dig into
-kernel each time it wants to get a new set of events, while with memory
-based approach it has them without doing so. After it has returned from
-kernel and know that there are some evetns, kernel can add more of them
-into the ring (if there is a place) and userspace will process them
-withouth additional syscalls.
-Although syscall overhead is very small, it does exist and should not be 
-ignored in the design.
-
+Balbir Singh wrote:
+> Andrew Morton wrote:
+>> On Tue, 29 May 2007 06:01:04 -0700 menage@google.com wrote:
+>>
+>>> This is an update to my multi-hierarchy multi-subsystem generic
+>>> process containers patch.
+>>>
+>>> ...
+>>>
+>>> Still TODO:
+>>>
+>>> ...
+>>>
+>>> - lots more testing
+>>>
+>> So how do we do this?
+>>
+>> Is there any sneaky way in which we can modify the kernel so that this new
+>> code gets exercised more?  Obviously, tossing init into some default
+>> system-wide container would be a start.  But I wonder if we can be
+>> sneakier - for example, create a new container on each setuid(), toss the
+>> task into that.  Or something along those lines?
 > 
-> 	Ingo
+> Please, lets get the RSS controller in. It's ready, been tested
 
--- 
-	Evgeniy Polyakov
+It is not 100% ready yet actually :) I am working on it right now
+and hope to get ready till tomorrow.
+
+> and commented on widely.
+
+Yup :) Balbir, thanks for testing, your patches are already in.
+
+> I'll also start porting my containerstats patches on top of -v10.
+> 
+
