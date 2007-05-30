@@ -1,38 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbXE3VSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759076AbXE3VUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbXE3VSs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 17:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbXE3VSb
+	id S1759076AbXE3VUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 17:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXE3VTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 17:18:31 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:22499 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755265AbXE3VSa (ORCPT
+	Wed, 30 May 2007 17:19:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:42265 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754906AbXE3VTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 17:18:30 -0400
+	Wed, 30 May 2007 17:19:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=UIUDD9BGdcW/+A/455iO0IxUSXbU119SSXzMGwi49CaOCHJj6Zh3rlrtRHLdQatMGTQazMqiuFrN7aeQtoSZ1pdc8ciY3YqppfKf4Wgt+VjsaQ8Mcii7XtOQAAhZvtI0mTSwmdVu1qpXqrJ9+uT8zjRjKM0/BZ+IGx1T7nHBgm4=
-Message-ID: <21d7e9970705301410m16ded9esdf7a49371c60a155@mail.gmail.com>
-Date: Thu, 31 May 2007 07:10:52 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Linus Torvalds" <torvalds@osdl.org>, "Andi Kleen" <ak@suse.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: GFP_DMA32 and PAE x86 machines
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aGGkDcpiP+mnN6XNsEh6rwR41NfoG/Gm3QoYahfuaj0c1mTlMr3koqAYQBzJoubahtqC/mywkk74Sjhr0EN5Y0QtnXtYkWtL20FJ2u2hJKwert/otIxZZvy9JqoUM/WZQQtYjV3SCg9e3rfgAgcgyK6UkKhuEMtmXF7TZTDhp5c=
+Message-ID: <86802c440705301419g2ed59773vda15c3d2a9e90479@mail.gmail.com>
+Date: Wed, 30 May 2007 14:19:49 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
+Subject: Re: kexec and aacraid broken
+Cc: vgoyal@in.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01A55010@otce2k301.adaptec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20070530141723.GB3773@in.ibm.com>
+	 <AE4F746F2AECFC4DA4AADD66A1DFEF01A55010@otce2k301.adaptec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a question,
+On 5/30/07, Salyzyn, Mark <mark_salyzyn@adaptec.com> wrote:
+> Vivek Goyal [mailto:vgoyal@in.ibm.com] writes:
+> > So most likely if we start disabling the interrupts
+> > in .shutdown routine we might skip resetting adapter
+> > on every kexec without any side affects?
+>
+> Not that simple. The .shutdown would need to perform more resource
+> cleanups of the .remove call to prevent side effects. I need to move
+> some of the .remove activity into the .shutdown handler to make sure the
+> adapter is quiesced.
+>
+> I will hold off on submitting any of these changes until they are
+> evaluated and tested; I am waiting for feedback from Yinghai on the
+> other mitigations that I feel are closer to the root cause.
+>
+1. [SCSI] aacraid: superfluous adapter reset for IBM 8 series
+ServeRAID controllers
+2. [SCSI] aacraid: kexec fix (reset interrupt handler)
+3. aacraid_commit_reset.patch
+4. [PATCH] aacraid: fix shutdown handler to also disable interrupts
 
-So we have GFP_DMA32 on x86-64 to gives us memory below 4G? so we not
-have the same on PAE based x86 machines so I can use a consistent API
-from the drm?
+the kernel with this patch -4  and even without 1, 2, 3
 
-Otherwise it'll be stick some ifdefs in the drm to deal with it..
+can load other kernel with or without patch 1,2,3
 
-Dave.
+YH
