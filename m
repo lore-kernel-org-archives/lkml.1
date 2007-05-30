@@ -1,135 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbXE3OCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbXE3OCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbXE3OCg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 10:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbXE3OC2
+	id S1755767AbXE3OCs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 10:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbXE3OCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 10:02:28 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:23064 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753677AbXE3OC2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 10:02:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=SgCVaVvA0r6dyHjsDE0ZIACXMWqo7/vc/GY1qHvQ1SBgJTTwaAY2nOmFu/m+dnyXu
-	08QNmwTtqUCd84WVACeKQ==
-Message-ID: <6599ad830705300702k3ce8d7a4obaba5dc869fc77e2@mail.gmail.com>
-Date: Wed, 30 May 2007 07:02:00 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 01/10] Containers(V10): Basic container framework
-Cc: dev@sw.ru, xemul@sw.ru, serue@us.ibm.com, vatsa@in.ibm.com,
-       ebiederm@xmission.com, haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com,
-       balbir@in.ibm.com, pj@sgi.com, cpw@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
-       devel@openvz.org
-In-Reply-To: <20070530001552.ea5ff6f8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070529130104.461765000@menage.corp.google.com>
-	 <20070529132142.052411000@menage.corp.google.com>
-	 <20070530001552.ea5ff6f8.akpm@linux-foundation.org>
+	Wed, 30 May 2007 10:02:34 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:46322 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754043AbXE3OCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 10:02:33 -0400
+Message-Id: <20070530140025.917261793@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Wed, 30 May 2007 10:00:25 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/9] Conditional Calls - for 2.6.22-rc2-mm1
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Wed, 30 May 2007 14:02:27 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/30/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> Holy cow, do we need all those?
+Hi,
 
-I'll experiment to see which ones we can get rid of.
+Here is the port of the conditional calls to 2.6.22-rc2-mm1.
 
->
-> > +typedef enum {
-> > +     CONT_REMOVED,
-> > +} container_flagbits_t;
->
-> typedefs are verboten.  Fortunately this one is never referred to - only
-> the values are used, so we can delete it.
+Quoting my last post:
 
-OK.
+Following Andi Kleen's advice, I splitted the jump-over-call into a speparate
+piece of infrastructure so it can be used more widely.
 
->
-> Taking dcache_lock in here is unfortunate.  A filesystem really shouldn't
-> be playing with that lock.
+It also use a hash table to permit cond_call enable/disable both when the
+cond_call is armed and when a module containing an armed cond_call is loaded.
 
-Is there a recommended way to do what I want to do, i.e. clear out all
-the dentries from a virtual fs directory and rebuild them whilst
-holding the directory's i_sem so no one can see the transiently empty
-directory?
+Please add at the end of the 2.6.22-rc2-mm1 series,
 
->
-> The code's a bit short on comments.
+conditional-calls-architecture-independent-code.patch
+conditional-calls-hash-table.patch
+conditional-calls-non-optimized-architectures.patch
+conditional-calls-kconfig-menus.patch
+conditional-calls-i386-optimization.patch
+conditional-calls-powerpc-optimization.patch
+conditional-calls-documentation.patch
+#
+f00f-bug-use-cond-calls.patch
+profiling-use-cond-calls.patch
 
-I'll add some.
+Mathieu
 
-> > +     root = d_alloc_root(inode);
-> > +     if (!root) {
-> > +             iput(inode);
-> > +             return -ENOMEM;
->
-> I bet that iput() hasn't been tested ;)
 
-Correct.
-
->
-> People have hit unpleasant problems before now running iput() against
-> partially-constructed inodes.
-
-What kinds of problems? Are there bits of state that I should fully
-construct even if I'm going to iput() it, or is there a better
-function to call? fs/ext3/super.c seems to do the same thing.
-
-> > +             if (ret)
-> > +                     goto out_unlock;
->
-> Did we just leak *root?
-
-I believe we did. I'll fix that.
-
-> >
-> > +static inline void get_first_subsys(const struct container *cont,
-> > +                                 struct container_subsys_state **css,
-> > +                                 int *subsys_id) {
-> > +     const struct containerfs_root *root = cont->root;
-> > +     const struct container_subsys *test_ss;
-> > +     BUG_ON(list_empty(&root->subsys_list));
-> > +     test_ss = list_entry(root->subsys_list.next,
-> > +                          struct container_subsys, sibling);
-> > +     if (css) {
-> > +             *css = cont->subsys[test_ss->subsys_id];
-> > +             BUG_ON(!*css);
-> > +     }
-> > +     if (subsys_id)
-> > +             *subsys_id = test_ss->subsys_id;
-> > +}
->
-> This ends up having several callers and its too large to inline.
-
-Two large from a compiler PoV or from a style PoV? It's basically just
-six dereferences and two comparisons, plus the BUG_ON()s.
-
->
-> Do we actually want to support lseek on these things?
->
-> If not we can leave this null and use nonseekable_open() in ->open.
-
-I inherited that from cpusets without thinking about it too much. I
-guess that we don't really need seekability.
-
-> > +     } else if (S_ISREG(mode)) {
-> > +             inode->i_size = 0;
-> > +             inode->i_fop = &container_file_operations;
-> > +     }
->
-> The S_ISREG files have no ->i_ops?
-
-Not currently. I don't see anything in inode_operations that we want
-to be able to do on non-directories.
-
-Paul
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
