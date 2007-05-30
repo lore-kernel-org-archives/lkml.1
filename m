@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXE3TnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbXE3Tnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbXE3TnU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 15:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbXE3TnM
+	id S1758721AbXE3Tnc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 15:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbXE3TnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 15:43:12 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:56136 "EHLO mailer.gwdg.de"
+	Wed, 30 May 2007 15:43:17 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:56185 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbXE3TnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 15:43:11 -0400
-Date: Wed, 30 May 2007 21:41:37 +0200 (MEST)
+	id S1755761AbXE3TnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 15:43:15 -0400
+Date: Wed, 30 May 2007 21:39:26 +0200 (MEST)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 cc: kkeil@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mac@melware.de
-Subject: [PATCH 06/06] Use menuconfig objects 4 - ISDN part 6/6 (CONFIG_CAPI_EICON)
+       hjlipp@web.de, tilman@imap.cc, gigaset307x-common@lists.sourceforge.net
+Subject: [PATCH 03/06] Use menuconfig objects 4 - ISDN part 3/6
+ (CONFIG_ISDN_DRV_GIGASET)
 In-Reply-To: <200705301906.l4UJ62hC002388@shell0.pdx.osdl.net>
-Message-ID: <Pine.LNX.4.61.0705302140430.11140@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0705302138340.11140@yvahk01.tjqt.qr>
 References: <200705301906.l4UJ62hC002388@shell0.pdx.osdl.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	0.0 UPPERCASE_25_50        message body is 25-50% uppercase
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -33,72 +34,58 @@ the menu first.
 Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
 ---
- drivers/isdn/hardware/eicon/Kconfig |   21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+ drivers/isdn/gigaset/Kconfig |   15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-Index: linux-2.6.22-rc3-git1/drivers/isdn/hardware/eicon/Kconfig
+Index: linux-2.6.22-rc3-git1/drivers/isdn/gigaset/Kconfig
 ===================================================================
---- linux-2.6.22-rc3-git1.orig/drivers/isdn/hardware/eicon/Kconfig
-+++ linux-2.6.22-rc3-git1/drivers/isdn/hardware/eicon/Kconfig
-@@ -2,51 +2,50 @@
- # ISDN DIVAS Eicon driver
- #
- 
--menu "Active Eicon DIVA Server cards"
+--- linux-2.6.22-rc3-git1.orig/drivers/isdn/gigaset/Kconfig
++++ linux-2.6.22-rc3-git1/drivers/isdn/gigaset/Kconfig
+@@ -1,6 +1,4 @@
+-menu "Siemens Gigaset"
 -
--config CAPI_EICON
--	bool "Support Eicon cards"
-+menuconfig CAPI_EICON
-+	bool "Active Eicon DIVA Server cards"
- 	help
- 	  Enable support for Eicon Networks active ISDN cards.
+-config ISDN_DRV_GIGASET
++menuconfig ISDN_DRV_GIGASET
+ 	tristate "Siemens Gigaset support (isdn)"
+ 	select CRC_CCITT
+ 	select BITREVERSE
+@@ -13,11 +11,11 @@ config ISDN_DRV_GIGASET
+ 	  one of the connection specific parts that follow.
+ 	  This will build a module called "gigaset".
  
-+if CAPI_EICON
-+
- config ISDN_DIVAS
- 	tristate "Support Eicon DIVA Server cards"
--	depends on CAPI_EICON && PROC_FS && PCI
-+	depends on PROC_FS && PCI
- 	help
- 	  Say Y here if you have an Eicon Networks DIVA Server PCI ISDN card.
- 	  In order to use this card, additional firmware is necessary, which
- 	  has to be downloaded into the card using the divactrl utility.
+-if ISDN_DRV_GIGASET!=n
++if ISDN_DRV_GIGASET
  
-+if ISDN_DIVAS
-+
- config ISDN_DIVAS_BRIPCI
- 	bool "DIVA Server BRI/PCI support"
--	depends on ISDN_DIVAS
+ config GIGASET_BASE
+ 	tristate "Gigaset base station support"
+-	depends on ISDN_DRV_GIGASET && USB
++	depends on USB
  	help
- 	  Enable support for DIVA Server BRI-PCI.
+ 	  Say M here if you want to use the USB interface of the Gigaset
+ 	  base for connection to your system.
+@@ -25,7 +23,7 @@ config GIGASET_BASE
  
- config ISDN_DIVAS_PRIPCI
- 	bool "DIVA Server PRI/PCI support"
--	depends on ISDN_DIVAS
+ config GIGASET_M105
+ 	tristate "Gigaset M105 support"
+-	depends on ISDN_DRV_GIGASET && USB
++	depends on USB
  	help
- 	  Enable support for DIVA Server PRI-PCI.
+ 	  Say M here if you want to connect to the Gigaset base via DECT
+ 	  using a Gigaset M105 (Sinus 45 Data 2) USB DECT device.
+@@ -33,7 +31,6 @@ config GIGASET_M105
  
- config ISDN_DIVAS_DIVACAPI
- 	tristate "DIVA CAPI2.0 interface support"
--	depends on ISDN_DIVAS
+ config GIGASET_M101
+ 	tristate "Gigaset M101 support"
+-	depends on ISDN_DRV_GIGASET
  	help
- 	  You need this to provide the CAPI interface
- 	  for DIVA Server cards.
+ 	  Say M here if you want to connect to the Gigaset base via DECT
+ 	  using a Gigaset M101 (Sinus 45 Data 1) RS232 DECT device.
+@@ -53,6 +50,4 @@ config GIGASET_UNDOCREQ
+ 	  features like configuration mode of M105, say yes. If you
+ 	  care about your device, say no.
  
- config ISDN_DIVAS_USERIDI
- 	tristate "DIVA User-IDI interface support"
--	depends on ISDN_DIVAS
- 	help
- 	  Enable support for user-mode IDI interface.
- 
- config ISDN_DIVAS_MAINT
- 	tristate "DIVA Maint driver support"
--	depends on ISDN_DIVAS && m
-+	depends on m
- 	help
- 	  Enable Divas Maintenance driver.
- 
+-endif
+-
 -endmenu
-+endif # ISDN_DIVAS
- 
-+endif # CAPI_EICON
++endif # ISDN_DRV_GIGASET
+
