@@ -1,107 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbXE3RGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbXE3RH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756993AbXE3RGf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 13:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbXE3RG1
+	id S1757803AbXE3RH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 13:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbXE3RHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 13:06:27 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:48182 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751646AbXE3RG0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 13:06:26 -0400
-Date: Wed, 30 May 2007 22:44:05 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Peter Williams <pwil3058@bigpond.net.au>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, ckrm-tech@lists.sourceforge.net,
-       Balbir Singh <balbir@in.ibm.com>, efault@gmx.de,
-       linux-kernel@vger.kernel.org, tingy@cs.umass.edu,
-       Kirill Korotaev <dev@sw.ru>, kernel@kolivas.org, tong.n.li@intel.com,
-       containers@lists.osdl.org, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Guillaume Chazarain <guichaz@yahoo.fr>
-Subject: Re: [ckrm-tech] [RFC] [PATCH 0/3] Add group fairness to CFS
-Message-ID: <20070530171405.GA21062@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070523183824.GA7388@elte.hu> <4654BF88.3030404@yahoo.fr> <20070525074500.GD6157@in.ibm.com> <20070525082951.GA25280@elte.hu> <4656DF0C.9090306@sw.ru> <20070525153450.GA4679@in.ibm.com> <46570C70.4050209@sw.ru> <20070525180850.GA26884@in.ibm.com> <46577CA6.8000807@bigpond.net.au> <20070526154112.GA31925@holomorphy.com>
+	Wed, 30 May 2007 13:07:15 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37320 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753923AbXE3RHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 13:07:14 -0400
+Date: Wed, 30 May 2007 19:08:14 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Meelis Roos <mroos@linux.ee>
+Cc: unlisted-recipients:"; no To-header on input" <""@mail.ravnborg.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Illegal-Object: Syntax error in Cc: address found on vger.kernel.org:
+	Cc:	unlisted-recipients:;no To-header on input <""@mail.ravnborg.org>
+					     ^-missing end of address
+Illegal-Object: Syntax error in Cc: address found on vger.kernel.org:
+	Cc:	unlisted-recipients:;no To-header on input <""@mail.ravnborg.org>
+					     ^-missing end of address
+Subject: Re: [PATCH] [ppc] fix mot_info section
+Message-ID: <20070530170814.GD15335@uranus.ravnborg.org>
+References: <Pine.SOC.4.64.0705141717110.23895@math> <20070515204540.GC22966@uranus.ravnborg.org> <Pine.SOC.4.64.0705301652250.23769@math> <a781481a0705300758t5f16235al1f420f09472af780@mail.gmail.com> <Pine.SOC.4.64.0705301805390.23769@math>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070526154112.GA31925@holomorphy.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <Pine.SOC.4.64.0705301805390.23769@math>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 26, 2007 at 08:41:12AM -0700, William Lee Irwin III wrote:
-> The smpnice affair is better phrased in terms of task weighting. It's
-> simple to honor nice in such an arrangement. First unravel the
-> grouping hierarchy, then weight by nice. This looks like
+On Wed, May 30, 2007 at 07:14:49PM +0300, Meelis Roos wrote:
+> The following patch makes mot_info __initdata since it is used only in 
+> __init functions. prep_pci.c change has been tested in real life on 
+> Motorola Powerstack II (compiles without modpost warnings and boots 
+> fine), pplus.c has not been tested but seems similar.
 > 
-> task    nice    hier1   hier2   ...     hierN
-> t_1     w_n1    w_h11   w_h21   ...     w_hN1
-> t_2     w_n2    w_h12   w_h22   ...     w_hN2
-> ...
+> Signed-off-by: Meelis Roos <mroos@linux.ee>
 > 
-> For the example of nice 0 vs. nice 10 as distinct users with 10%
-> steppings between nice levels, one would have
-> 
-> task    nice   hier1
-> t_1     1      1
-> t_2     0.3855 1
-> 
-> w_1, the weight of t_1, would be
->         (w_h11*w_n1/(w_h11*w_n1 + w_h12*w_n2))
->                 = (1*1/(1 + 1*0.3855..))
->                 = 0.7217..
-> w_2, the weight of t_2, would be
->         (w_h12*w_n2/(w_h11*w_n1 + w_h12*w_n2))
->                 = (1*0.3855../(1 + 1*0.3855..))
->                 = 0.27826..
-> This just so happens to work out to being the same as if t_1 and t_2
-> had their respective nice numbers without the scheduler grouping, which
-> is basically what everyone wants to happen.
-> 
-> It's more obvious how to extend it to more tasks than levels of
-> hierarchy. An example of that follows:
-> 
-> task    nice    hier1   hier2   ...     hierN
-> t_1     0.3     0.6     *       ...     *
-> t_2     0.7     0.4     *       ...     *
-> 
-> hier2 through hierN are ignorable since t_1 and t_2 are both the only
-> members at those levels of hierarchy. We then get something just like
-> the above example, w_1 = 0.3*0.6/(0.3*0.6+0.7*0.4) = 0.3913.. and
-> w2 = 0.7*0.4/(0.3*0.6+0.7*0.4) = 0.6087..
-> 
-> It's more interesting with enough tasks to have more meaningful levels
-> of hierarchy.
-> 
-> task    nice    hier1   hier2
-> t_1     0.7     0.6     0.6
-> t_2     0.3     0.6     0.4
-> t_3     0.7     0.4     0.6
-> t_4     0.3     0.4     0.4
-> 
-> where t_1 and t_2 share a hier1 grouping and t_3 and t_4 also share
-> a hier1 grouping, but the hier1 grouping for t_1 and t_2 is distinct
-> from the hier1 grouping for t_3 and t_4. All hier2 groupings are
-> distinct. So t_1 would have pre-nice weight 0.6*0.6, t_2 0.6*0.4,
-> t_3 0.6*0.4, and t_4 0.4*0.4 (the numbers were chosen so denominators
-> conveniently collapse to 1). Now that the hierarchy is flattened,
-> nice numbers can be factored in for t_1's final weight being
-> 0.7*0.36/(0.7*0.36+0.3*0.24+0.7*0.24+0.3*0.16) = 0.252/0.54 = 0.467..
-> and the others being 0.133.. (t_2), 0.311.. (t_3), and 0.0889.. (t_4).
+> diff --git a/arch/ppc/platforms/pplus.c b/arch/ppc/platforms/pplus.c
+> index 8a1788c..9744108 100644
+> --- a/arch/ppc/platforms/pplus.c
+> +++ b/arch/ppc/platforms/pplus.c
+> @@ -256,7 +256,7 @@ struct brd_info {
+>  	const char *name;
+>  	int (*map_irq) (struct pci_dev *, unsigned char, unsigned char);
+>  };
+> -struct brd_info mot_info[] = {
+> +__initdata struct brd_info mot_info[] = {
+>  	{0x300, 0x00, 0x00, "MVME 2400", Genesis2_map_irq},
+>  	{0x1E0, 0xE0, 0x00, "Mesquite cPCI (MCP750)", mesquite_map_irq},
+>  	{0x1E0, 0xE1, 0x00, "Sitka cPCI (MCPN750)", sitka_map_irq},
+> diff --git a/arch/ppc/platforms/prep_pci.c b/arch/ppc/platforms/prep_pci.c
+> index 1df3150..bdec1f1 100644
+> --- a/arch/ppc/platforms/prep_pci.c
+> +++ b/arch/ppc/platforms/prep_pci.c
+> @@ -792,7 +792,7 @@ raven_init(void)
+>  	return 1;
+>  }
+>  
+> -struct mot_info {
+> +__initdata struct mot_info {
+>  	int		cpu_type;	/* 0x100 mask assumes for Raven and Hawk boards that the level/edge are set */
+>  					/* 0x200 if this board has a Hawk chip. */
+>  	int		base_type;
 
-Hmm ..so do you think this weight decomposition can be used to flatten
-the tree all the way to a single level in case of cfs? That would mean we can 
-achieve group fairness with single level scheduling in cfs ..I am
-somewhat skeptical that we can achieve group fairness with a single
-level rb-tree (and w/o substantial changes to pick_next_task logic in cfs
-that is), but if it can be accomplished would definitely be a great win.
+The way you place __initdata is bogus.
+Please read following from init.h again:
 
-> In such a manner nice numbers obey the principle of least surprise.
+ * For initialized data:
+ * You should insert __initdata between the variable name and equal
+ * sign followed by value, e.g.:
+ *
+ * static int init_variable __initdata = 0;
+ * static char linux_logo[] __initdata = { 0x32, 0x36, ... };
 
--- 
-Regards,
-vatsa
+If gcc happes to accept your placement does not make it correct.
+It is still bogus and unreadable.
+
+	Sam
