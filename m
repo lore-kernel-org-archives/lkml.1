@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752337AbXE3FyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbXE3Fys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752337AbXE3FyR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 01:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbXE3FyI
+	id S1752684AbXE3Fys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 01:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbXE3Fyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 01:54:08 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:21769 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbXE3FyF (ORCPT
+	Wed, 30 May 2007 01:54:40 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:27049 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750950AbXE3Fyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 01:54:05 -0400
+	Wed, 30 May 2007 01:54:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CjPcDtr79Et5hDt7/4C8gu0VkZixsaejzMXXdDsecGE47kbyZCbI4vYUeQzhomKJBwchIaMIVIOpeHtGj+suImNVEEIuJ14Dr9JD3ldcqHYYF/9Tytpw/mbZk5NOOolbzVkdwnvTL+WcIhXRSSEi8kXaiUxNWdn+c96DvUjkvv0=
-Message-ID: <84144f020705292254o319f6619m787bf29491c92509@mail.gmail.com>
-Date: Wed, 30 May 2007 08:54:04 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Tero Roponen" <teanropo@jyu.fi>
-Subject: Re: tty-related oops in latest kernel(s)?
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Andy Whitcroft" <apw@shadowen.org>
-In-Reply-To: <Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uB40mmpqifrnvyLnoFYX6J/qMefPtcf3QiKOnNGxUx+hOdq3HusdaKISD6faLVFGURloi8B4Q9O8jDJu9j1UigGIETkGhSNRJb98dyui7MR7xQCuUeKruE1FbCISBlnS8QZJJ1pGfdTJlx5PIscuk4FNx9xdfEBm0RhfaOe1rAo=
+Message-ID: <4cefeab80705292254k33079e90j52a32a813b12a887@mail.gmail.com>
+Date: Wed, 30 May 2007 11:24:36 +0530
+From: "Nitin Gupta" <nitingupta910@gmail.com>
+To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
+Subject: Re: [RFC] LZO de/compression support - take 6
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm-cc@laptop.org,
+       linuxcompressed-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Richard Purdie" <richard@openedhand.com>,
+       "Bret Towe" <magnade@gmail.com>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>
+In-Reply-To: <Pine.LNX.4.61.0705292236490.11140@yvahk01.tjqt.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0705271200360.4955@jalava.cc.jyu.fi>
-	 <84144f020705280022lf3902caj1def02ed56e0bff@mail.gmail.com>
-	 <84144f020705280234g39aa04b3hfe369f4477e6043d@mail.gmail.com>
-	 <Pine.LNX.4.64.0705291900001.32656@jalava.cc.jyu.fi>
-	 <84144f020705291157k465ec6c4sb81081844bb57514@mail.gmail.com>
-	 <Pine.LNX.4.64.0705300654493.5241@jalava.cc.jyu.fi>
-X-Google-Sender-Auth: 4e35a4621e6d359b
+References: <4cefeab80705280734i37df1742k6738cd4200813684@mail.gmail.com>
+	 <Pine.LNX.4.61.0705292236490.11140@yvahk01.tjqt.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/30/07, Tero Roponen <teanropo@jyu.fi> wrote:
-> Hmmm, I just found something interesting. In 2.6.21.3 the /sbin/init
-> gets corrupted when I watch the video!
+On 5/30/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
 >
-> $ cp /sbin/init init.before
-> $ mplayer kiwi.flv
-> $ cp /sbin/init init.after
+> On May 28 2007 20:04, Nitin Gupta wrote:
+> >
+> > * Changelog vs. original LZO:
+> > 1) Used standard/kernel defined data types: (this eliminated _huge_
+> > #ifdef chunks)
+> > lzo_bytep -> unsigned char *
+> > lzo_uint -> size_t
+> > lzo_xint -> size_t
 >
-> The sha1sums are here:
+> Is this safe (as far as compressed LZO stream is concerned) --
+> or is it even needed (could it be unsigned int)?
 >
-> 52c8d643057619cbe137b8e69d4709ce3bdd832d  init.after
-> 8efc7864a5b535a9e336fa82e9d7f112f3d956c1  init.before
+> > -                             m_pos -= (*(const unsigned short *)ip) >> 2;
+> > -#else
+> > -                             m_pos = op - 1;
+> > -                             m_pos -= (ip[0] >> 2) + (ip[1] << 6);
+> > -#endif
+> >
+> > + m_pos = op - 1 - (cpu_to_le16(*(const u16 *)ip) >> 2);
+> >
+> > (Andrey suggested le16_to_cpu for above but I think it should be cpu_to_le16).
+> > *** Need testing on big endian machine ***
 >
-> It seems that something corrupts memory somewhere...
+> On i386, both cpu_to_le16 and le16_to_cpu do nothing.
+> On sparc for example, cpu_to_leXX and leXX_to_cpu do 'the same' ;-)
+> they swap 1234<->4321.
+>
+> It is the bytestream (ip) that is reinterpreted as uint16_t.
+> And I really doubt that the LZO author has a big-endian machine,
+> given the days of ubiquitous x86.
 
-To debug this a bit further:
+> le16_to_cpu it is.
+>
 
-$ od -a -t x1 -v init.after > init.after.dump
-$ od -a -t x1 -v init.before > init.before.dump
-$ diff -u init.before.dump init.after.dump | less
+I just missed the point that leXX_to_cpu() and cpu_to_leXX() are
+identical on BE machine anyway. But then why you think it should be
+le_16_cpu() -- how will this make any difference?
 
--0011340  nul nul nul  e9  f0  fe  ff  ff  ff   %   < soh enq  bs   h  80
--           00  00  00  e9  f0  fe  ff  ff  ff  25  3c  01  05  08  68  80
-+0010000    y ack nul nul   y ack nul nul   y ack nul nul   y ack nul nul
-+           79  06  00  00  79  06  00  00  79  06  00  00  79  06  00  00
-+0010020    y ack nul nul   y ack nul nul   y ack nul nul   y ack nul nul
-+           79  06  00  00  79  06  00  00  79  06  00  00  79  06  00  00
-+0011340    y ack nul nul   y ack nul nul  ff   %   < soh enq  bs   h  80
-+           79  06  00  00  79  06  00  00  ff  25  3c  01  05  08  68  80
+For your ref (from big_endian.h):
+#define __cpu_to_le16(x) ((__force __le16)__swab16((x)))
+#define __le16_to_cpu(x) __swab16((__force __u16)(__le16)(x))
 
-The file at offset 0010000 - 0011348 is overwritten with the byte
-pattern 79 06 00 00.
-
-Do you see anything in the logs or is this a silent corruption? Did
-you see this corruption with 2.6.19 or 2.6.22-rc3?
+- Nitin
