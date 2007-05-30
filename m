@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752070AbXE3LsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXE3Ltn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752070AbXE3LsM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 May 2007 07:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbXE3Lrx
+	id S1753922AbXE3Ltn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 May 2007 07:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbXE3Ltf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 May 2007 07:47:53 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:40786 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753841AbXE3Lrv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 May 2007 07:47:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=nVOBQPqY+9XsW9NCt6OFKpcklUFdvo+4ZaLY2A8xzu3MYlOi3i5eOZrdyQdacicgM1fskhEUoVZzLrwMdYCXPAamSMtEx8tbDF/ff2IwCVCMa2OMgieZidXK4Y9Kp6m09XH+QTjQLDAIgW2CQd7h0KiTS45N9u1JgCClClBSv2M=
-Message-ID: <465D6460.6030003@gmail.com>
-Date: Wed, 30 May 2007 13:47:44 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 30 May 2007 07:49:35 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42956 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751795AbXE3Lte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 May 2007 07:49:34 -0400
+Date: Wed, 30 May 2007 13:49:21 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Mark Lord <lkml@rtr.ca>,
+       Romano Giannetti <romanol@upcomillas.es>,
+       Chris Wright <chrisw@sous-sol.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pcmcia resume 60 second hang. Re: [patch 00/69] -stable review
+Message-ID: <20070530114920.GB26326@elf.ucw.cz>
+References: <1180058123.3997.91.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705241905490.26602@woody.linux-foundation.org> <1180059605.3997.100.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705241931240.26602@woody.linux-foundation.org> <1180062040.3997.112.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705242021560.26602@woody.linux-foundation.org> <1180067587.3997.136.camel@nigel.suspend2.net> <465C366C.2070900@rtr.ca> <1180473765.20718.47.camel@nigel.suspend2.net> <alpine.LFD.0.98.0705291428410.26602@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Bill Nottingham <notting@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] alsa: fix comparison of unsigned < 0
-References: <20070530073554.GA28809@nostromo.devel.redhat.com> <s5h7iqqhb09.wl%tiwai@suse.de>
-In-Reply-To: <s5h7iqqhb09.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705291428410.26602@woody.linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai napsal(a):
-> Hi,
+Hi!
+
+> > > How about blocking brk() and mmap(MAP_ANONYMOUS) in addition to
+> > > the filesystem VFS callers?   Or is that starting to get messy again?
+> > 
+> > Yeah. Getting messy again :)
 > 
-> thanks for checking this.
-> They seem actually hitting some real bugs.
-
-Bug fixes are ok, but keep on your mind this (I haven't checked if this is
-the case):
-http://lkml.org/lkml/2006/11/28/206
-
-> At Wed, 30 May 2007 03:35:54 -0400,
-> Bill Nottingham wrote:
->> diff -ru linux-2.6.21-old/sound/pci/ac97/ac97_patch.c linux-2.6.21/sound/pci/ac97/ac97_patch.c
->> --- linux-2.6.21-old/sound/pci/ac97/ac97_patch.c	2007-05-30 02:53:05.000000000 -0400
->> +++ linux-2.6.21/sound/pci/ac97/ac97_patch.c	2007-05-30 02:32:41.000000000 -0400
->> @@ -2086,8 +2086,7 @@
->>  	struct snd_ac97 *ac97 = snd_kcontrol_chip(kcontrol);
->>  	unsigned short val;
->>  
->> -	if (ucontrol->value.enumerated.item[0] > 3
->> -	    || ucontrol->value.enumerated.item[0] < 0)
->> +	if (ucontrol->value.enumerated.item[0] > 3)
->>  		return -EINVAL;
->>  	val = ctrl2reg[ucontrol->value.enumerated.item[0]]
->>  	      << AC97_AD198X_VREF_SHIFT;
+> Indeed. And also misses the point - the point being that we don't actually 
+> need to freeze anything at all most of the time. There's nothing wrong 
+> with making memory allocations etc.
 > 
-> This one is fine.
-[...]
+> And yes, suspend is different from hibernate. I can see how hibernate 
+> people are worried about people writing to things after doing the 
+> snapshot, but those concerns don't exist with suspend. With suspend, the 
+> biggest concern is accessing a device after it has been suspended, but on 
+> the other hand, also the fact that we end up having driver writers used 
+> to the system being "runnable", so they do things that really do require a 
+> full-fledged system (and sometimes that means just some delayed action 
+> using a kernel thread, other times it seems to rely on more complex 
+> behaviour like firmware loading :^p )
 
-regards,
+Notice that we want to be able to suspend while hibernating -- for
+suspend to both behaviour. So drivers may _not_ rely on system being
+runnable.
+
+(Suspend to both is: write image to disk, then suspend to RAM. If you
+do not run out of battery, resume is from RAM and fast, if you do, you
+still can do resume from disk, not loosing your data).
+								Pavel
 -- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
